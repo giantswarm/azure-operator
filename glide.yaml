@@ -1,0 +1,19 @@
+package: github.com/giantswarm/azure-operator
+import:
+- package: github.com/giantswarm/azuretpr
+  version: master
+- package: github.com/giantswarm/operatorkit
+  version: master
+- package: github.com/giantswarm/microerror
+  version: master
+- package: github.com/giantswarm/micrologger
+  version: master
+- package: github.com/giantswarm/microkit
+  version: master
+# Pinned versions.
+- package: google.golang.org/grpc
+  version: b5071124392bfd416c713e6595ac149b387f7186
+- package: github.com/spf13/pflag
+  version: 08b1a584251b5b62f458943640fc8ebd4d50aaa5
+- package: github.com/spf13/cobra
+  version: 4c05eb1145f16d0e6bb4a3e1b6d769f4713cb41f
