@@ -37,6 +37,7 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/binary"
+	"fmt"
 	"io"
 	"io/ioutil"
 	"math"
@@ -49,7 +50,6 @@ import (
 	"google.golang.org/grpc/metadata"
 	"google.golang.org/grpc/peer"
 	"google.golang.org/grpc/stats"
-	"google.golang.org/grpc/status"
 	"google.golang.org/grpc/transport"
 )
 
@@ -189,9 +189,7 @@ func Trailer(md *metadata.MD) CallOption {
 // unary RPC.
 func Peer(peer *peer.Peer) CallOption {
 	return afterCall(func(c *callInfo) {
-		if c.peer != nil {
-			*peer = *c.peer
-		}
+		*peer = *c.peer
 	})
 }
 
@@ -372,56 +370,88 @@ func recv(p *parser, c Codec, s *transport.Stream, dc Decompressor, m interface{
 	return nil
 }
 
+// rpcError defines the status from an RPC.
+type rpcError struct {
+	code codes.Code
+	desc string
+}
+
+func (e *rpcError) Error() string {
+	return fmt.Sprintf("rpc error: code = %s desc = %s", e.code, e.desc)
+}
+
 // Code returns the error code for err if it was produced by the rpc system.
 // Otherwise, it returns codes.Unknown.
-//
-// Deprecated; use status.FromError and Code method instead.
 func Code(err error) codes.Code {
-	if s, ok := status.FromError(err); ok {
-		return s.Code()
+	if err == nil {
+		return codes.OK
+	}
+	if e, ok := err.(*rpcError); ok {
+		return e.code
 	}
 	return codes.Unknown
 }
 
 // ErrorDesc returns the error description of err if it was produced by the rpc system.
 // Otherwise, it returns err.Error() or empty string when err is nil.
-//
-// Deprecated; use status.FromError and Message method instead.
 func ErrorDesc(err error) string {
-	if s, ok := status.FromError(err); ok {
-		return s.Message()
+	if err == nil {
+		return ""
+	}
+	if e, ok := err.(*rpcError); ok {
+		return e.desc
 	}
 	return err.Error()
 }
 
 // Errorf returns an error containing an error code and a description;
 // Errorf returns nil if c is OK.
-//
-// Deprecated; use status.Errorf instead.
 func Errorf(c codes.Code, format string, a ...interface{}) error {
-	return status.Errorf(c, format, a...)
+	if c == codes.OK {
+		return nil
+	}
+	return &rpcError{
+		code: c,
+		desc: fmt.Sprintf(format, a...),
+	}
 }
 
-// toRPCErr converts an error into an error from the status package.
+// toRPCErr converts an error into a rpcError.
 func toRPCErr(err error) error {
 	switch e := err.(type) {
-	case status.Status:
+	case *rpcError:
 		return err
 	case transport.StreamError:
-		return status.Error(e.Code, e.Desc)
+		return &rpcError{
+			code: e.Code,
+			desc: e.Desc,
+		}
 	case transport.ConnectionError:
-		return status.Error(codes.Internal, e.Desc)
+		return &rpcError{
+			code: codes.Internal,
+			desc: e.Desc,
+		}
 	default:
 		switch err {
 		case context.DeadlineExceeded:
-			return status.Error(codes.DeadlineExceeded, err.Error())
+			return &rpcError{
+				code: codes.DeadlineExceeded,
+				desc: err.Error(),
+			}
 		case context.Canceled:
-			return status.Error(codes.Canceled, err.Error())
+			return &rpcError{
+				code: codes.Canceled,
+				desc: err.Error(),
+			}
 		case ErrClientConnClosing:
-			return status.Error(codes.FailedPrecondition, err.Error())
+			return &rpcError{
+				code: codes.FailedPrecondition,
+				desc: err.Error(),
+			}
 		}
+
 	}
-	return status.Error(codes.Unknown, err.Error())
+	return Errorf(codes.Unknown, "%v", err)
 }
 
 // convertCode converts a standard Go error into its canonical code. Note that
@@ -499,4 +529,4 @@ type ServiceConfig struct {
 const SupportPackageIsVersion4 = true
 
 // Version is the current grpc version.
-const Version = "1.3.0-dev"
+const Version = "1.2.1"
