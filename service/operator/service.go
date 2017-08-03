@@ -122,14 +122,17 @@ func (s *Service) Boot() {
 	})
 }
 
-// addFunc TODO
 func (s *Service) addFunc(obj interface{}) {
 	customObject := *obj.(*azuretpr.CustomObject)
-	s.Config.Logger.Log("debug", fmt.Sprintf("creating custom object for cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
+	s.Config.Logger.Log("debug", fmt.Sprintf("creating cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
+
+	// TODO Add stub code for creating an Azure Resource Group.
 }
 
 // deleteFunc TODO
 func (s *Service) deleteFunc(obj interface{}) {
 	customObject := *obj.(*azuretpr.CustomObject)
-	s.Config.Logger.Log("debug", fmt.Sprintf("deleting custom object for cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
+	s.Config.Logger.Log("debug", fmt.Sprintf("deleting cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
+
+	// TODO Add stub code for deleting the Azure Resource Group.
 }
