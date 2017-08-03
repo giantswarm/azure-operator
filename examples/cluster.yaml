@@ -1,0 +1,59 @@
+apiVersion: "giantswarm.io/v1"
+kind: AzureCluster
+metadata:
+  name: example-cluster
+spec:
+  cluster:
+    cluster:
+      id: "example-cluster"
+
+    customer:
+      id: "example-customer"
+
+    docker:
+      imageNamespace: "giantswarm"
+
+    etcd:
+      domain: "etcd.example.azure.giantswarm.io"
+      prefix: "example-cluster"
+      port: 2379
+
+    calico:
+      subnet: "192.168.0.0"
+      cidr: 24
+      mtu: 1500
+
+    kubernetes:
+      api:
+        domain: "api.example.azure.giantswarm.io"
+        insecurePort: 8080
+        ip: "172.31.0.1" 
+        securePort: 443
+        clusterIPRange: "172.31.0.0/24"
+      dns:
+        ip: "172.31.0.10"
+      domain: "cluster.local"
+      hyperkube:
+        docker:
+          image: "quay.io/giantswarm/hyperkube:v1.6.4_coreos.0"
+      ingressController:
+        docker:
+          image: "quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.1"
+        insecurePort: 30010
+        securePort: 30011
+        domain: "ingress.example.azure.gigantic.io"
+        wildcardDomain: "*.example.azure.gigantic.io"
+      kubelet:
+        port: 10250
+      networkSetup:
+        docker:
+          image: "giantswarm/k8s-setup-network-environment:ba2b57155d859a1fc5d378c2a09a77d7c2c755ed"
+
+    masters:
+    - hostname: "master-1"
+
+    workers:
+    - hostname: "worker-1"
+
+  azure:
+    location: "westeurope"
