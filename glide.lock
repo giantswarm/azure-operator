@@ -1,5 +1,5 @@
-hash: a2e1a0a42b874ece68cca2baffb4fd9fed8e7090bdf05b1ca84d2abb627f85f6
-updated: 2017-08-03T12:07:52.719221961+02:00
+hash: e47410530478b85335be5dd6fe8605249f6233f563774b5584630cea39a1ed27
+updated: 2017-08-03T17:18:50.217695877+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -57,14 +57,14 @@ imports:
   - spec/kubernetes/kubectl
   - spec/kubernetes/networksetup
 - name: github.com/giantswarm/microendpoint
-  version: 58eb3fd2ce3a2d454045e40130ec502c890ec15e
+  version: be51c217f00140cf36ace95699c8dfe66a5c4262
   subpackages:
   - endpoint/version
   - service/version
 - name: github.com/giantswarm/microerror
-  version: 7bf6a0a6d24b1e3a03af3ed3a8e3531d792ea3e3
+  version: 5ade94eb4ee35ef72eb9382228470caeddb29989
 - name: github.com/giantswarm/microkit
-  version: b7202f147321db2dded732146cf40ecbb31e0c24
+  version: 2d2b437193ccf7fc29e78d3654cfc6a305533001
   subpackages:
   - command
   - command/daemon
@@ -75,7 +75,6 @@ imports:
   - command/daemon/flag/server/tls
   - command/version
   - flag
-  - logger
   - server
   - storage
   - storage/etcd
@@ -86,9 +85,9 @@ imports:
   - transaction/context/id
   - transaction/context/tracked
 - name: github.com/giantswarm/micrologger
-  version: 97740d3352f783c3b774db8bab314deff165f43b
+  version: 3fc80a5b178fd25a757c8bbe54599b21b11a1110
 - name: github.com/giantswarm/operatorkit
-  version: be4331cdb2d518c233732b54a21093ae05231c84
+  version: eb43a99a26b6dabf17e39b5006924308f9e78bf5
   subpackages:
   - client/k8s
   - tpr

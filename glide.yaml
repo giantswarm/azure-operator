@@ -11,4 +11,4 @@ import:
 - package: github.com/giantswarm/microkit
   version: master
 - package: github.com/giantswarm/microendpoint
-  version: initial
+  version: master
