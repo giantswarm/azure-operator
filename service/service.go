@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	versionservice "github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	k8sutil "github.com/giantswarm/operatorkit/client/k8s"
@@ -55,7 +56,7 @@ func New(config Config) (*Service, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
-	config.Logger.Log("debug", fmt.Sprintf("creating kubeadm-token-operator with config: %#v", config))
+	config.Logger.Log("debug", fmt.Sprintf("creating azure-operator with config: %#v", config))
 
 	// Settings.
 	if config.Flag == nil {
@@ -101,10 +102,24 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var versionService *versionservice.Service
+	{
+		versionConfig := versionservice.DefaultConfig()
+		versionConfig.Description = config.Description
+		versionConfig.GitCommit = config.GitCommit
+		versionConfig.Name = config.Name
+		versionConfig.Source = config.Source
+
+		versionService, err = versionservice.New(versionConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	newService := &Service{
 		// Dependencies.
 		Operator: operatorService,
-		// Version:  versionService,
+		Version:  versionService,
 
 		// Internals
 		bootOnce: sync.Once{},
@@ -116,7 +131,7 @@ func New(config Config) (*Service, error) {
 type Service struct {
 	// Dependencies.
 	Operator *operator.Service
-	// Version  *version.Service
+	Version  *versionservice.Service
 
 	// Internals.
 	bootOnce sync.Once

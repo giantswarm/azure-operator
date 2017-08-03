@@ -7,10 +7,13 @@ import (
 	"net/http"
 	"sync"
 
+	"github.com/giantswarm/microerror"
 	microserver "github.com/giantswarm/microkit/server"
 	"github.com/giantswarm/micrologger"
 	kithttp "github.com/go-kit/kit/transport/http"
 
+	"github.com/giantswarm/azure-operator/server/endpoint"
+	"github.com/giantswarm/azure-operator/server/middleware"
 	"github.com/giantswarm/azure-operator/service"
 )
 
@@ -37,7 +40,6 @@ func DefaultConfig() Config {
 
 // New creates a new configured server object.
 func New(config Config) (microserver.Server, error) {
-	/* TODO Add healthz and version endpoints.
 	var err error
 
 	var middlewareCollection *middleware.Middleware
@@ -62,7 +64,6 @@ func New(config Config) (microserver.Server, error) {
 			return nil, microerror.Mask(err)
 		}
 	}
-	*/
 
 	newServer := &server{
 		// Dependencies.
@@ -76,12 +77,9 @@ func New(config Config) (microserver.Server, error) {
 	}
 
 	// Apply internals to the micro server config.
-	/* TODO Add endpoints.
 	newServer.config.Endpoints = []microserver.Endpoint{
-		endpointCollection.Healthz,
 		endpointCollection.Version,
 	}
-	*/
 	newServer.config.ErrorEncoder = newServer.newErrorEncoder()
 
 	return newServer, nil

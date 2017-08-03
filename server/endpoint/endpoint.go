@@ -1,6 +1,8 @@
 package endpoint
 
 import (
+	versionendpoint "github.com/giantswarm/microendpoint/endpoint/version"
+	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/server/middleware"
@@ -28,13 +30,26 @@ func DefaultConfig() Config {
 
 // New creates a new configured endpoint.
 func New(config Config) (*Endpoint, error) {
-	newEndpoint := &Endpoint{}
+	var err error
+
+	var versionEndpoint *versionendpoint.Endpoint
+	{
+		versionConfig := versionendpoint.DefaultConfig()
+		versionConfig.Logger = config.Logger
+		versionConfig.Service = config.Service.Version
+		versionEndpoint, err = versionendpoint.New(versionConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	newEndpoint := &Endpoint{
+		Version: versionEndpoint,
+	}
 	return newEndpoint, nil
 }
 
 // Endpoint is the endpoint collection.
 type Endpoint struct {
-	// TODO Add endpoints
-	// Healthz *healthz.Endpoint
-	// Version *version.Endpoint
+	Version *versionendpoint.Endpoint
 }
