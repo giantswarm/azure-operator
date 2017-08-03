@@ -16,11 +16,6 @@ import (
 	"github.com/giantswarm/azure-operator/flag"
 )
 
-const (
-	TPRVersion     = "v1"
-	TPRDescription = "Managed Kubernetes clusters in Giantnetes running on Azure"
-)
-
 // Config represents the configuration used to create an Operator service.
 type Config struct {
 	// Dependencies.
@@ -77,8 +72,8 @@ func New(config Config) (*Service, error) {
 		K8sClient:   config.K8sClient,
 		Logger:      config.Logger,
 		Name:        azuretpr.Name,
-		Version:     TPRVersion,
-		Description: TPRDescription,
+		Version:     azuretpr.VersionV1,
+		Description: azuretpr.Description,
 	}
 	tpr, err := tpr.New(tprConfig)
 	if err != nil {
