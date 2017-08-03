@@ -1,0 +1,14 @@
+package: github.com/giantswarm/azure-operator
+import:
+- package: github.com/giantswarm/azuretpr
+  version: master
+- package: github.com/giantswarm/operatorkit
+  version: master
+- package: github.com/giantswarm/microerror
+  version: master
+- package: github.com/giantswarm/micrologger
+  version: master
+- package: github.com/giantswarm/microkit
+  version: master
+- package: github.com/giantswarm/microendpoint
+  version: master
