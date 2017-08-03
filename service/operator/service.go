@@ -5,7 +5,6 @@ import (
 	"sync"
 
 	"github.com/giantswarm/azuretpr"
-	"github.com/giantswarm/certificatetpr"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/tpr"
@@ -77,7 +76,7 @@ func New(config Config) (*Service, error) {
 	tprConfig := tpr.Config{
 		K8sClient:   config.K8sClient,
 		Logger:      config.Logger,
-		Name:        certificatetpr.Name,
+		Name:        azuretpr.Name,
 		Version:     TPRVersion,
 		Description: TPRDescription,
 	}
