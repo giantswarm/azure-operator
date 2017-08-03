@@ -1,5 +1,5 @@
-hash: 0783fcc37036306f284c8968265fdfc537ee3d4a7f2162246a8c5c80a119f265
-updated: 2017-08-02T14:46:29.602545793+02:00
+hash: a2e1a0a42b874ece68cca2baffb4fd9fed8e7090bdf05b1ca84d2abb627f85f6
+updated: 2017-08-03T12:07:52.719221961+02:00
 imports:
 - name: github.com/beorn7/perks
   version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
@@ -46,8 +46,6 @@ imports:
   version: 32a7ab664cbb9036f6e1707cbdb7ce1b2d1593b8
   subpackages:
   - spec
-- name: github.com/giantswarm/certificatetpr
-  version: 4621214c8364e0fc8234013911211e384bfd3ddf
 - name: github.com/giantswarm/clustertpr
   version: e00ef3f59c4d55ce1a2cf70b7739e34a0604d748
   subpackages:
@@ -58,10 +56,15 @@ imports:
   - spec/kubernetes/ingress
   - spec/kubernetes/kubectl
   - spec/kubernetes/networksetup
+- name: github.com/giantswarm/microendpoint
+  version: 58eb3fd2ce3a2d454045e40130ec502c890ec15e
+  subpackages:
+  - endpoint/version
+  - service/version
 - name: github.com/giantswarm/microerror
   version: 7bf6a0a6d24b1e3a03af3ed3a8e3531d792ea3e3
 - name: github.com/giantswarm/microkit
-  version: 4e085764fbe2e0301e2065bbb01d74847e47c4cc
+  version: b7202f147321db2dded732146cf40ecbb31e0c24
   subpackages:
   - command
   - command/daemon
@@ -71,7 +74,6 @@ imports:
   - command/daemon/flag/server/listen
   - command/daemon/flag/server/tls
   - command/version
-  - error
   - flag
   - logger
   - server
@@ -119,11 +121,6 @@ imports:
   version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
   subpackages:
   - proto
-  - ptypes/any
-- name: github.com/google/go-genproto
-  version: 09f6ed296fc66555a25fe4ce95173148778dfa85
-  subpackages:
-  - googleapis/rpc/status
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
 - name: github.com/gorilla/context
@@ -195,11 +192,11 @@ imports:
 - name: github.com/spf13/cast
   version: acbeb36b902d72a7a4c18e8f3241075e7ab763e4
 - name: github.com/spf13/cobra
-  version: 4c05eb1145f16d0e6bb4a3e1b6d769f4713cb41f
+  version: b26b538f693051ac6518e65672de3144ce3fbedc
 - name: github.com/spf13/jwalterweatherman
   version: 0efa5202c04663c757d84f90f5219c1250baf94f
 - name: github.com/spf13/pflag
-  version: 08b1a584251b5b62f458943640fc8ebd4d50aaa5
+  version: e57e3eeb33f795204c1ca35f56c44f83227c6e66
 - name: github.com/spf13/viper
   version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
 - name: github.com/tylerb/graceful
@@ -238,7 +235,7 @@ imports:
   - unicode/norm
   - width
 - name: google.golang.org/grpc
-  version: b5071124392bfd416c713e6595ac149b387f7186
+  version: 8050b9cbc271307e5a716a9d782803d09b0d6f2d
   subpackages:
   - codes
   - credentials
@@ -249,7 +246,6 @@ imports:
   - naming
   - peer
   - stats
-  - status
   - tap
   - transport
 - name: gopkg.in/inf.v0
