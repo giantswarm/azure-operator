@@ -4,10 +4,10 @@ import (
 	"fmt"
 	"sync"
 
-	versionservice "github.com/giantswarm/microendpoint/service/version"
+	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	k8sutil "github.com/giantswarm/operatorkit/client/k8s"
+	"github.com/giantswarm/operatorkit/client/k8s"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 
@@ -70,19 +70,15 @@ func New(config Config) (*Service, error) {
 
 	var k8sClient kubernetes.Interface
 	{
-		k8sConfig := k8sutil.Config{
-			Logger: config.Logger,
+		k8sConfig := k8s.DefaultConfig()
+		k8sConfig.Address = config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
+		k8sConfig.Logger = config.Logger
+		k8sConfig.InCluster = config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
+		k8sConfig.TLS.CAFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile)
+		k8sConfig.TLS.CrtFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile)
+		k8sConfig.TLS.KeyFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile)
 
-			TLS: k8sutil.TLSClientConfig{
-				CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
-				CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
-				KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
-			},
-			Address:   config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
-			InCluster: config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
-		}
-
-		k8sClient, err = k8sutil.NewClient(k8sConfig)
+		k8sClient, err = k8s.NewClient(k8sConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -102,15 +98,15 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var versionService *versionservice.Service
+	var versionService *version.Service
 	{
-		versionConfig := versionservice.DefaultConfig()
+		versionConfig := version.DefaultConfig()
 		versionConfig.Description = config.Description
 		versionConfig.GitCommit = config.GitCommit
 		versionConfig.Name = config.Name
 		versionConfig.Source = config.Source
 
-		versionService, err = versionservice.New(versionConfig)
+		versionService, err = version.New(versionConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -131,7 +127,7 @@ func New(config Config) (*Service, error) {
 type Service struct {
 	// Dependencies.
 	Operator *operator.Service
-	Version  *versionservice.Service
+	Version  *version.Service
 
 	// Internals.
 	bootOnce sync.Once

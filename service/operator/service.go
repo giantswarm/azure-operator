@@ -68,13 +68,13 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "viper must not be empty")
 	}
 
-	tprConfig := tpr.Config{
-		K8sClient:   config.K8sClient,
-		Logger:      config.Logger,
-		Name:        azuretpr.Name,
-		Version:     azuretpr.VersionV1,
-		Description: azuretpr.Description,
-	}
+	tprConfig := tpr.DefaultConfig()
+	tprConfig.K8sClient = config.K8sClient
+	tprConfig.Logger = config.Logger
+	tprConfig.Name = azuretpr.Name
+	tprConfig.Version = azuretpr.VersionV1
+	tprConfig.Description = azuretpr.Description
+
 	tpr, err := tpr.New(tprConfig)
 	if err != nil {
 		return nil, microerror.Maskf(err, "creating TPR for %#v", tprConfig)
@@ -118,16 +118,24 @@ func (s *Service) Boot() {
 }
 
 func (s *Service) addFunc(obj interface{}) {
-	customObject := *obj.(*azuretpr.CustomObject)
-	s.Config.Logger.Log("debug", fmt.Sprintf("creating cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
+	customObject, ok := obj.(*azuretpr.CustomObject)
+	if !ok {
+		s.Logger.Log("error", "could not convert to azuretpr.CustomObject")
+	}
+
+	s.Logger.Log("debug", fmt.Sprintf("creating cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
 
 	// TODO Add stub code for creating an Azure Resource Group.
 }
 
 // deleteFunc TODO
 func (s *Service) deleteFunc(obj interface{}) {
-	customObject := *obj.(*azuretpr.CustomObject)
-	s.Config.Logger.Log("debug", fmt.Sprintf("deleting cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
+	customObject, ok := obj.(*azuretpr.CustomObject)
+	if !ok {
+		s.Logger.Log("error", "could not convert object to azuretpr.CustomObject")
+	}
+
+	s.Logger.Log("debug", fmt.Sprintf("deleting cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
 
 	// TODO Add stub code for deleting the Azure Resource Group.
 }
