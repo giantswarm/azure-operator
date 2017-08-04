@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/azure-operator.svg?style=svg)](https://circleci.com/gh/giantswarm/azure-operator)
+[![CircleCI](https://circleci.com/gh/giantswarm/azure-operator.svg?style=svg)](https://circleci.com/gh/giantswarm/azure-operator) [![Docker Repository on Quay](https://quay.io/repository/giantswarm/azure-operator/status "Docker Repository on Quay")](https://quay.io/repository/giantswarm/azure-operator)
 
 # azure-operator
 
@@ -15,6 +15,14 @@ Build it using the standard `go build` command.
 ```
 go build github.com/giantswarm/azure-operator
 ```
+
+The azure-operator is still under development.
+
+## Running azure-operator
+
+See [this guide][examples-local].
+
+[examples-local]: https://github.com/giantswarm/azure-operator/blob/master/examples/local
 
 ## Contact
 
