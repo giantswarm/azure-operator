@@ -4,6 +4,9 @@
 
 The azure-operator manages Kubernetes clusters running in Giantnetes on Azure.
 
+The azure-operator is still under development. See our [aws-operator](https://github.com/giantswarm/aws-operator)
+for launching Giantnetes clusters on AWS.
+
 ## Getting Project
 
 Clone the git repository: https://github.com/giantswarm/azure-operator.git
@@ -15,8 +18,6 @@ Build it using the standard `go build` command.
 ```
 go build github.com/giantswarm/azure-operator
 ```
-
-The azure-operator is still under development.
 
 ## Running azure-operator
 
