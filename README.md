@@ -1,4 +1,4 @@
-[![CircleCI](https://circleci.com/gh/giantswarm/azure-operator.svg?style=svg)](https://circleci.com/gh/giantswarm/azure-operator)
+[![CircleCI](https://circleci.com/gh/giantswarm/azure-operator.svg?style=svg)](https://circleci.com/gh/giantswarm/azure-operator) [![Docker Repository on Quay](https://quay.io/repository/giantswarm/azure-operator/status "Docker Repository on Quay")](https://quay.io/repository/giantswarm/azure-operator)
 
 # azure-operator
 
