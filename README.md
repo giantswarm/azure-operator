@@ -16,6 +16,14 @@ Build it using the standard `go build` command.
 go build github.com/giantswarm/azure-operator
 ```
 
+The azure-operator is still under development.
+
+## Running azure-operator
+
+See [this guide][examples-local].
+
+[examples-local]: https://github.com/giantswarm/azure-operator/blob/master/examples/local
+
 ## Contact
 
 - Mailing list: [giantswarm](https://groups.google.com/forum/!forum/giantswarm)
