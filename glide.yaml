@@ -12,3 +12,9 @@ import:
   version: master
 - package: github.com/giantswarm/microendpoint
   version: master
+- package: github.com/Azure/azure-sdk-for-go
+  subpackages:
+  - arm/resources/resources
+  version: master
+- package: github.com/Azure/go-autorest
+  version: master

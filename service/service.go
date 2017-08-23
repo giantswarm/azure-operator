@@ -11,6 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/operator"
 )
@@ -18,10 +19,11 @@ import (
 // Config represents the configuration used to create a new service.
 type Config struct {
 	// Dependencies.
-	KubernetesClient *kubernetes.Clientset
-	Logger           micrologger.Logger
+
+	Logger micrologger.Logger
 
 	// Settings.
+
 	Flag  *flag.Flag
 	Viper *viper.Viper
 
@@ -36,8 +38,7 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		KubernetesClient: nil,
-		Logger:           nil,
+		Logger: nil,
 
 		// Settings.
 		Flag:  nil,
@@ -68,6 +69,15 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
+	var azureConfig *client.AzureConfig
+	{
+		azureConfig = client.DefaultAzureConfig()
+		azureConfig.ClientID = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
+		azureConfig.ClientSecret = config.Viper.GetString(config.Flag.Service.Azure.ClientSecret)
+		azureConfig.SubscriptionID = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
+		azureConfig.TenantID = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
+	}
+
 	var k8sClient kubernetes.Interface
 	{
 		k8sConfig := k8s.DefaultConfig()
@@ -87,6 +97,7 @@ func New(config Config) (*Service, error) {
 	var operatorService *operator.Service
 	{
 		operatorConfig := operator.DefaultConfig()
+		operatorConfig.AzureConfig = azureConfig
 		operatorConfig.Flag = config.Flag
 		operatorConfig.K8sClient = k8sClient
 		operatorConfig.Logger = config.Logger

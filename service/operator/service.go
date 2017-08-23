@@ -13,16 +13,20 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 )
 
 // Config represents the configuration used to create an Operator service.
 type Config struct {
 	// Dependencies.
-	Logger    micrologger.Logger
-	K8sClient kubernetes.Interface
+
+	AzureConfig *client.AzureConfig
+	Logger      micrologger.Logger
+	K8sClient   kubernetes.Interface
 
 	// Settings.
+
 	Flag  *flag.Flag
 	Viper *viper.Viper
 }
@@ -32,8 +36,9 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		K8sClient: nil,
-		Logger:    nil,
+		AzureConfig: nil,
+		K8sClient:   nil,
+		Logger:      nil,
 
 		// Settings.
 		Flag:  nil,
@@ -46,6 +51,7 @@ type Service struct {
 	Config
 
 	// Internals.
+
 	bootOnce sync.Once
 	tpr      *tpr.TPR
 }
@@ -121,6 +127,14 @@ func (s *Service) addFunc(obj interface{}) {
 	customObject, ok := obj.(*azuretpr.CustomObject)
 	if !ok {
 		s.Logger.Log("error", "could not convert to azuretpr.CustomObject")
+	}
+
+	// Here we create the Azure API clients. This is done in the addFunc because
+	// the auth tokens can expire. We should add auto renewal support so the
+	// clients are created in the service.
+	_, err := client.NewAzureClientSet(s.AzureConfig)
+	if err != nil {
+		s.Logger.Log("error", "could not create azure api clients '%#v'")
 	}
 
 	s.Logger.Log("debug", fmt.Sprintf("creating cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
