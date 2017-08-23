@@ -19,11 +19,11 @@ import (
 // Config represents the configuration used to create a new service.
 type Config struct {
 	// Dependencies.
-	AzureConfig      azure.Config
-	KubernetesClient *kubernetes.Clientset
-	Logger           micrologger.Logger
+
+	Logger micrologger.Logger
 
 	// Settings.
+
 	Flag  *flag.Flag
 	Viper *viper.Viper
 
@@ -38,8 +38,7 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		KubernetesClient: nil,
-		Logger:           nil,
+		Logger: nil,
 
 		// Settings.
 		Flag:  nil,
