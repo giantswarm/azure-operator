@@ -1,4 +1,4 @@
-package azure
+package client
 
 import (
 	"github.com/giantswarm/microerror"
@@ -10,8 +10,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
-// Config contains the common attributes to create an Azure client.
-type Config struct {
+// AzureConfig contains the common attributes to create an Azure client.
+type AzureConfig struct {
 	// Dependencies.
 
 	Logger micrologger.Logger
@@ -26,9 +26,9 @@ type Config struct {
 	TenantID string
 }
 
-// DefaultConfig provides a default configuration to create an Azure client by
-// best effort.
-func DefaultConfig() *Config {
+// DefaultAzureConfig provides a default configuration to create an Azure client
+// by best effort.
+func DefaultAzureConfig() *AzureConfig {
 	var err error
 
 	var newLogger micrologger.Logger
@@ -40,7 +40,7 @@ func DefaultConfig() *Config {
 		}
 	}
 
-	return &Config{
+	return &AzureConfig{
 		// Dependencies.
 		Logger: newLogger,
 
@@ -52,22 +52,22 @@ func DefaultConfig() *Config {
 	}
 }
 
-// Clients is the collection of Azure API clients.
-type Clients struct {
+// AzureClientSet is the collection of Azure API clients.
+type AzureClientSet struct {
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupClient manages ARM resource groups.
 	GroupClient *resources.GroupClient
 }
 
-// NewClients returns the Azure API clients.
-func NewClients(config *Config) (*Clients, error) {
-	// Dependencies
+// NewAzureClientSet returns the Azure API clients.
+func NewAzureClientSet(config *AzureConfig) (*AzureClientSet, error) {
+	// Dependencies.
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 
-	// Settings
+	// Settings.
 	if config.ClientID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.ClientID must not be empty")
 	}
@@ -91,15 +91,15 @@ func NewClients(config *Config) (*Clients, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	clients := &Clients{
+	clientset := &AzureClientSet{
 		DeploymentsClient: deploymentsClient,
 		GroupClient:       groupClient,
 	}
 
-	return clients, nil
+	return clientset, nil
 }
 
-func newDeploymentsClient(config *Config) (*resources.DeploymentsClient, error) {
+func newDeploymentsClient(config *AzureConfig) (*resources.DeploymentsClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -111,7 +111,7 @@ func newDeploymentsClient(config *Config) (*resources.DeploymentsClient, error) 
 	return &client, nil
 }
 
-func newGroupClient(config *Config) (*resources.GroupClient, error) {
+func newGroupClient(config *AzureConfig) (*resources.GroupClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -123,7 +123,7 @@ func newGroupClient(config *Config) (*resources.GroupClient, error) {
 	return &client, nil
 }
 
-func newServicePrincipalToken(config *Config, scope string) (*adal.ServicePrincipalToken, error) {
+func newServicePrincipalToken(config *AzureConfig, scope string) (*adal.ServicePrincipalToken, error) {
 	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
 		return nil, microerror.Mask(err)

@@ -1,4 +1,4 @@
-package azure
+package client
 
 import (
 	"github.com/giantswarm/microerror"

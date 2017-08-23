@@ -11,7 +11,7 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/client/azure"
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/operator"
 )
@@ -70,9 +70,9 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
-	var azureConfig *azure.Config
+	var azureConfig *client.AzureConfig
 	{
-		azureConfig := azure.DefaultConfig()
+		azureConfig = client.DefaultAzureConfig()
 		azureConfig.ClientID = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
 		azureConfig.ClientSecret = config.Viper.GetString(config.Flag.Service.Azure.ClientSecret)
 		azureConfig.SubscriptionID = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)

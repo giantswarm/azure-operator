@@ -13,18 +13,20 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
-	"github.com/giantswarm/azure-operator/client/azure"
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 )
 
 // Config represents the configuration used to create an Operator service.
 type Config struct {
 	// Dependencies.
-	AzureConfig *azure.Config
+
+	AzureConfig *client.AzureConfig
 	Logger      micrologger.Logger
 	K8sClient   kubernetes.Interface
 
 	// Settings.
+
 	Flag  *flag.Flag
 	Viper *viper.Viper
 }
@@ -49,6 +51,7 @@ type Service struct {
 	Config
 
 	// Internals.
+
 	bootOnce sync.Once
 	tpr      *tpr.TPR
 }
@@ -126,7 +129,7 @@ func (s *Service) addFunc(obj interface{}) {
 		s.Logger.Log("error", "could not convert to azuretpr.CustomObject")
 	}
 
-	_, err := azure.NewClients(s.AzureConfig)
+	_, err := client.NewAzureClientSet(s.AzureConfig)
 	if err != nil {
 		s.Logger.Log("error", "could not create azure api clients '%#v'")
 	}
