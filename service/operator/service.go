@@ -129,6 +129,9 @@ func (s *Service) addFunc(obj interface{}) {
 		s.Logger.Log("error", "could not convert to azuretpr.CustomObject")
 	}
 
+	// Here we create the Azure API clients. This is done in the addFunc because
+	// the auth tokens can expire. We should add auto renewal support so the
+	// clients are created in the service.
 	_, err := client.NewAzureClientSet(s.AzureConfig)
 	if err != nil {
 		s.Logger.Log("error", "could not create azure api clients '%#v'")
