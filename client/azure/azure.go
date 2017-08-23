@@ -27,7 +27,7 @@ type Config struct {
 
 // DefaultConfig provides a default configuration to create an Azure client by
 // best effort.
-func DefaultConfig() Config {
+func DefaultConfig() *Config {
 	var err error
 
 	var newLogger micrologger.Logger
@@ -39,7 +39,7 @@ func DefaultConfig() Config {
 		}
 	}
 
-	return Config{
+	return &Config{
 		// Dependencies.
 		Logger: newLogger,
 
@@ -60,7 +60,7 @@ type Clients struct {
 }
 
 // NewClients returns the Azure API clients.
-func NewClients(config Config) (*Clients, error) {
+func NewClients(config *Config) (*Clients, error) {
 	// Dependencies
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
@@ -98,7 +98,7 @@ func NewClients(config Config) (*Clients, error) {
 	return clients, nil
 }
 
-func newDeploymentsClient(config Config) (*resources.DeploymentsClient, error) {
+func newDeploymentsClient(config *Config) (*resources.DeploymentsClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -110,7 +110,7 @@ func newDeploymentsClient(config Config) (*resources.DeploymentsClient, error) {
 	return &client, nil
 }
 
-func newGroupClient(config Config) (*resources.GroupClient, error) {
+func newGroupClient(config *Config) (*resources.GroupClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -122,7 +122,7 @@ func newGroupClient(config Config) (*resources.GroupClient, error) {
 	return &client, nil
 }
 
-func newServicePrincipalToken(config Config, scope string) (*adal.ServicePrincipalToken, error) {
+func newServicePrincipalToken(config *Config, scope string) (*adal.ServicePrincipalToken, error) {
 	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
 		return nil, microerror.Mask(err)

@@ -13,14 +13,16 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/tools/cache"
 
+	"github.com/giantswarm/azure-operator/client/azure"
 	"github.com/giantswarm/azure-operator/flag"
 )
 
 // Config represents the configuration used to create an Operator service.
 type Config struct {
 	// Dependencies.
-	Logger    micrologger.Logger
-	K8sClient kubernetes.Interface
+	AzureConfig *azure.Config
+	Logger      micrologger.Logger
+	K8sClient   kubernetes.Interface
 
 	// Settings.
 	Flag  *flag.Flag
@@ -32,8 +34,9 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		K8sClient: nil,
-		Logger:    nil,
+		AzureConfig: nil,
+		K8sClient:   nil,
+		Logger:      nil,
 
 		// Settings.
 		Flag:  nil,
@@ -121,6 +124,11 @@ func (s *Service) addFunc(obj interface{}) {
 	customObject, ok := obj.(*azuretpr.CustomObject)
 	if !ok {
 		s.Logger.Log("error", "could not convert to azuretpr.CustomObject")
+	}
+
+	_, err := azure.NewClients(s.AzureConfig)
+	if err != nil {
+		s.Logger.Log("error", "could not create azure api clients '%#v'")
 	}
 
 	s.Logger.Log("debug", fmt.Sprintf("creating cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
