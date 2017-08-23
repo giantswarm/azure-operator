@@ -12,7 +12,8 @@ import (
 
 // Config contains the common attributes to create an Azure client.
 type Config struct {
-	// Dependencies
+	// Dependencies.
+
 	Logger micrologger.Logger
 
 	// ClientID is the ID of the Active Directory Service Principal.
