@@ -1,0 +1,82 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "apiVersion": {
+      "type": "string",
+      "defaultValue": "2017-03-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/virtualNetworks resources."
+      }
+    },
+    "addressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "The main address block reserved for this virtual network."
+      }
+    },
+    "subnetMasterCIDR": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "The CIDR block for the Kubernetes masters' subnet"
+      }
+    },
+    "subnetWorkerCIDR": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/24",
+      "metadata": {
+        "description": "The CIDR block for the Kubernetes workers' subnet"
+      }
+    }
+  },
+  "variables": {
+    "virtualNetworkName": "[concat(uniquestring(resourceGroup().id), '-clustervn')]",
+    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+    "subnetMasterName": "[concat(variables('virtualNetworkName'), '-masterSubnet')]",
+    "subnetMasterURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('subnetMasterName'))]",
+    "subnetWorkerName": "[concat(variables('virtualNetworkName'), '-workerSubnet')]",
+    "subnetWorkerURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('subnetWorkerName'))]",
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "apiVersion": "[parameters('apiVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('subnetMasterName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetMasterCIDR')]"
+            }
+          },
+          {
+            "name": "[variables('subnetWorkerName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetWorkerCIDR')]"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "subnetMasterURI": {
+      "type": "string",
+      "value": "[variables('subnetMasterURI')]"
+    },
+    "subnetWorkerURI": {
+      "type": "string",
+      "value": "[variables('subnetWorkerURI')]"
+    }
+  }
+}
