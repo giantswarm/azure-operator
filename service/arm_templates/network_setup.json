@@ -45,12 +45,12 @@
     "mastersSecurityGroupName": "[concat(uniquestring(resourceGroup().id), '-MastersSecurityGroup')]",
     "mastersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('mastersSecurityGroupName'))]",
     "mastersSubnetName": "[concat(variables('virtualNetworkName'), '-MastersSubnet')]",
-    "mastersSubnetURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('mastersSubnetName'))]",
+    "mastersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('mastersSubnetName'))]",
 
     "workersSecurityGroupName": "[concat(uniquestring(resourceGroup().id), '-WorkersSecurityGroup')]",
     "workersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workersSecurityGroupName'))]",
     "workersSubnetName": "[concat(variables('virtualNetworkName'), '-WorkersSubnet')]",
-    "workersSubnetURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workersSubnetName'))]"
+    "workersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workersSubnetName'))]"
 
   },
   "resources": [
@@ -197,13 +197,25 @@
     }
   ],
   "outputs": {
-    "mastersSubnetURI": {
+    "virtualNetworkID": {
       "type": "string",
-      "value": "[variables('mastersSubnetURI')]"
+      "value": "[variables('virtualNetworkID')]"
     },
-    "workersSubnetURI": {
+    "mastersSubnetID": {
       "type": "string",
-      "value": "[variables('workersSubnetURI')]"
+      "value": "[variables('mastersSubnetID')]"
+    },
+    "workersSubnetID": {
+      "type": "string",
+      "value": "[variables('workersSubnetID')]"
+    },
+    "mastersSecurityGroupID": {
+      "type": "string",
+      "value": "[variables('mastersSecurityGroupID')]"
+    },
+    "workersSecurityGroupID": {
+      "type": "string",
+      "value": "[variables('workersSecurityGroupID')]"
     }
   }
 }
