@@ -39,18 +39,18 @@
     }
   },
   "variables": {
-    "securityGroupMasterName": "[concat(uniquestring(resourceGroup().id), '-securityGroupMaster')]",
-    "securityGroupMasterID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupMasterName'))]",
-    "securityGroupWorkerName": "[concat(uniquestring(resourceGroup().id), '-securityGroupWorker')]",
-    "securityGroupWorkerID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('securityGroupWorkerName'))]",
-
-    "virtualNetworkName": "[concat(uniquestring(resourceGroup().id), '-virtualNetwork')]",
+    "virtualNetworkName": "[concat(uniquestring(resourceGroup().id), '-VirtualNetwork')]",
     "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
 
-    "subnetMasterName": "[concat(variables('virtualNetworkName'), '-masterSubnet')]",
-    "subnetMasterURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('subnetMasterName'))]",
-    "subnetWorkerName": "[concat(variables('virtualNetworkName'), '-workerSubnet')]",
-    "subnetWorkerURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('subnetWorkerName'))]",
+    "mastersSecurityGroupName": "[concat(uniquestring(resourceGroup().id), '-MastersSecurityGroup')]",
+    "mastersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('mastersSecurityGroupName'))]",
+    "mastersSubnetName": "[concat(variables('virtualNetworkName'), '-MastersSubnet')]",
+    "mastersSubnetURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('mastersSubnetName'))]",
+
+    "workersSecurityGroupName": "[concat(uniquestring(resourceGroup().id), '-WorkersSecurityGroup')]",
+    "workersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workersSecurityGroupName'))]",
+    "workersSubnetName": "[concat(variables('virtualNetworkName'), '-WorkersSubnet')]",
+    "workersSubnetURI": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workersSubnetName'))]"
 
   },
   "resources": [
@@ -60,8 +60,8 @@
       "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('securityGroupMasterName'))]",
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('securityGroupWorkerName'))]"
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('mastersSecurityGroupName'))]",
+        "[concat('Microsoft.Network/networkSecurityGroups/', variables('workersSecurityGroupName'))]"
       ],
       "properties": {
         "addressSpace": {
@@ -71,20 +71,20 @@
         },
         "subnets": [
           {
-            "name": "[variables('subnetMasterName')]",
+            "name": "[variables('mastersSubnetName')]",
             "properties": {
               "addressPrefix": "[parameters('subnetMasterCIDR')]",
               "networkSecurityGroup": {
-                "id": "[variables('securityGroupMasterID')]"
+                "id": "[variables('mastersSecurityGroupID')]"
               }
             }
           },
           {
-            "name": "[variables('subnetWorkerName')]",
+            "name": "[variables('workersSubnetName')]",
             "properties": {
               "addressPrefix": "[parameters('subnetWorkerCIDR')]",
               "networkSecurityGroup": {
-                "id": "[variables('securityGroupWorkerID')]"
+                "id": "[variables('workersSecurityGroupID')]"
               }
             }
           }
@@ -93,7 +93,7 @@
     },
     {
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('securityGroupMasterName')]",
+      "name": "[variables('mastersSecurityGroupName')]",
       "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
       "location": "[resourceGroup().location]",
       "properties": {
@@ -145,7 +145,7 @@
     },
     {
       "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('securityGroupWorkerName')]",
+      "name": "[variables('workersSecurityGroupName')]",
       "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
       "location": "[resourceGroup().location]",
       "properties": {
@@ -197,13 +197,13 @@
     }
   ],
   "outputs": {
-    "subnetMasterURI": {
+    "mastersSubnetURI": {
       "type": "string",
-      "value": "[variables('subnetMasterURI')]"
+      "value": "[variables('mastersSubnetURI')]"
     },
-    "subnetWorkerURI": {
+    "workersSubnetURI": {
       "type": "string",
-      "value": "[variables('subnetWorkerURI')]"
+      "value": "[variables('workersSubnetURI')]"
     }
   }
 }
