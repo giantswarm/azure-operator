@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/operatorkit/framework"
 	"github.com/giantswarm/operatorkit/tpr"
 	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -21,9 +22,11 @@ import (
 type Config struct {
 	// Dependencies.
 
-	AzureConfig *client.AzureConfig
-	Logger      micrologger.Logger
-	K8sClient   kubernetes.Interface
+	AzureConfig       *client.AzureConfig
+	Logger            micrologger.Logger
+	OperatorFramework *framework.Framework
+	K8sClient         kubernetes.Interface
+	Resources         []framework.Resource
 
 	// Settings.
 
@@ -36,9 +39,11 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		AzureConfig: nil,
-		K8sClient:   nil,
-		Logger:      nil,
+		AzureConfig:       nil,
+		K8sClient:         nil,
+		Logger:            nil,
+		OperatorFramework: nil,
+		Resources:         nil,
 
 		// Settings.
 		Flag:  nil,
@@ -50,6 +55,11 @@ func DefaultConfig() Config {
 type Service struct {
 	Config
 
+	// Dependencies.
+	logger            micrologger.Logger
+	operatorFramework *framework.Framework
+	resources         []framework.Resource
+
 	// Internals.
 
 	bootOnce sync.Once
@@ -59,19 +69,28 @@ type Service struct {
 // New creates a new configured Operator service.
 func New(config Config) (*Service, error) {
 	// Dependencies.
+	if config.AzureConfig == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty")
+	}
 	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "kubernetes client must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+	}
+	if config.OperatorFramework == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.OperatorFramework must not be empty")
+	}
+	if config.Resources == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.Resources must not be empty")
 	}
 
 	// Settings.
 	if config.Flag == nil {
-		return nil, microerror.Maskf(invalidConfigError, "flag must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "config.Flag must not be empty")
 	}
 	if config.Viper == nil {
-		return nil, microerror.Maskf(invalidConfigError, "viper must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "config.Viper must not be empty")
 	}
 
 	tprConfig := tpr.DefaultConfig()
@@ -89,7 +108,12 @@ func New(config Config) (*Service, error) {
 	newService := &Service{
 		Config: config,
 
-		// Internals
+		// Dependencies.
+		logger:            config.Logger,
+		operatorFramework: config.OperatorFramework,
+		resources:         config.Resources,
+
+		// Internals.
 		bootOnce: sync.Once{},
 		tpr:      tpr,
 	}
@@ -124,32 +148,19 @@ func (s *Service) Boot() {
 }
 
 func (s *Service) addFunc(obj interface{}) {
-	customObject, ok := obj.(*azuretpr.CustomObject)
-	if !ok {
-		s.Logger.Log("error", "could not convert to azuretpr.CustomObject")
-	}
+	s.logger.Log("debug", "executing the operator's addFunc")
 
-	// Here we create the Azure API clients. This is done in the addFunc because
-	// the auth tokens can expire. We should add auto renewal support so the
-	// clients are created in the service.
-	_, err := client.NewAzureClientSet(s.AzureConfig)
+	err := s.operatorFramework.ProcessCreate(obj, s.resources)
 	if err != nil {
-		s.Logger.Log("error", "could not create azure api clients '%#v'")
+		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "create")
 	}
-
-	s.Logger.Log("debug", fmt.Sprintf("creating cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
-
-	// TODO Add stub code for creating an Azure Resource Group.
 }
 
-// deleteFunc TODO
 func (s *Service) deleteFunc(obj interface{}) {
-	customObject, ok := obj.(*azuretpr.CustomObject)
-	if !ok {
-		s.Logger.Log("error", "could not convert object to azuretpr.CustomObject")
+	s.logger.Log("debug", "executing the operator's deleteFunc")
+
+	err := s.operatorFramework.ProcessDelete(obj, s.resources)
+	if err != nil {
+		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "delete")
 	}
-
-	s.Logger.Log("debug", fmt.Sprintf("deleting cluster '%s'", customObject.Spec.Cluster.Cluster.ID))
-
-	// TODO Add stub code for deleting the Azure Resource Group.
 }
