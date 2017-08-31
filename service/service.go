@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8s"
+	"github.com/giantswarm/operatorkit/framework"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 
@@ -94,6 +95,18 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var operatorFramework *framework.Framework
+	{
+		frameworkConfig := framework.DefaultConfig()
+
+		frameworkConfig.Logger = config.Logger
+
+		operatorFramework, err = framework.New(frameworkConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorService *operator.Service
 	{
 		operatorConfig := operator.DefaultConfig()
@@ -101,6 +114,8 @@ func New(config Config) (*Service, error) {
 		operatorConfig.Flag = config.Flag
 		operatorConfig.K8sClient = k8sClient
 		operatorConfig.Logger = config.Logger
+		operatorConfig.OperatorFramework = operatorFramework
+		operatorConfig.Resources = []framework.Resource{}
 		operatorConfig.Viper = config.Viper
 
 		operatorService, err = operator.New(operatorConfig)
