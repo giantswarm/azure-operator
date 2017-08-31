@@ -100,8 +100,6 @@ func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "computing the new resource group")
-
 	tags := map[string]string{
 		clusterIDTag:  key.ClusterID(customObject),
 		customerIDTag: key.ClusterCustomer(customObject),
@@ -113,18 +111,12 @@ func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
 		Tags:      to.StringMapPtr(tags),
 	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "computed the new resource group")
-
 	return resourceGroup, nil
 }
 
 // GetCreateState returns the resource group for this cluster if it should be
 // created.
 func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (interface{}, error) {
-	customObject, err := toCustomObject(obj)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 	currentResourceGroup, err := toResourceGroup(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -134,14 +126,10 @@ func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "checking if the resource group has to be created")
-
 	var resourceGroupToCreate *azureresource.Group
 	if currentResourceGroup == nil {
 		resourceGroupToCreate = desiredResourceGroup
 	}
-
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "checked if the resource group has to be created")
 
 	return resourceGroupToCreate, nil
 }
@@ -149,10 +137,6 @@ func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (
 // GetDeleteState returns the resource group for this cluster if it should be
 // deleted.
 func (r *Resource) GetDeleteState(obj, currentState, desiredState interface{}) (interface{}, error) {
-	customObject, err := toCustomObject(obj)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 	currentResourceGroup, err := toResourceGroup(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -162,14 +146,10 @@ func (r *Resource) GetDeleteState(obj, currentState, desiredState interface{}) (
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "checking if the resource group has to be deleted")
-
 	var resourceGroupToDelete *azureresource.Group
 	if currentResourceGroup != nil {
 		resourceGroupToDelete = desiredResourceGroup
 	}
-
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "checked if the resource group has to be deleted")
 
 	return resourceGroupToDelete, nil
 }
