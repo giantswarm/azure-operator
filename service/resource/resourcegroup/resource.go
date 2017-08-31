@@ -28,7 +28,7 @@ type Config struct {
 	Logger      micrologger.Logger
 }
 
-// DefaultConfig provides a default configuration to create a new service by
+// DefaultConfig provides a default configuration to create a new resource by
 // best effort.
 func DefaultConfig() Config {
 	return Config{
