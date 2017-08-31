@@ -137,6 +137,7 @@ func (s *Service) Boot() {
 		newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
 			AddFunc:    s.addFunc,
 			DeleteFunc: s.deleteFunc,
+			UpdateFunc: s.updateFunc,
 		}
 		newZeroObjectFactory := &tpr.ZeroObjectFactoryFuncs{
 			NewObjectFunc:     func() runtime.Object { return &azuretpr.CustomObject{} },
@@ -162,5 +163,14 @@ func (s *Service) deleteFunc(obj interface{}) {
 	err := s.operatorFramework.ProcessDelete(obj, s.resources)
 	if err != nil {
 		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "delete")
+	}
+}
+
+func (s *Service) updateFunc(oldObj interface{}, newObj interface{}) {
+	s.logger.Log("debug", "executing the operator's updateFunc")
+
+	err := s.operatorFramework.ProcessUpdate(newObj, s.resources)
+	if err != nil {
+		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "update")
 	}
 }
