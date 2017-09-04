@@ -1,6 +1,8 @@
 package client
 
 import (
+	"net/http"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -56,8 +58,8 @@ func DefaultAzureConfig() *AzureConfig {
 type AzureClientSet struct {
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
-	// GroupClient manages ARM resource groups.
-	GroupClient *resources.GroupClient
+	// GroupsClient manages ARM resource groups.
+	GroupsClient *resources.GroupsClient
 }
 
 // NewAzureClientSet returns the Azure API clients.
@@ -86,17 +88,27 @@ func NewAzureClientSet(config *AzureConfig) (*AzureClientSet, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	groupClient, err := newGroupClient(config)
+	groupsClient, err := newGroupsClient(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	clientset := &AzureClientSet{
 		DeploymentsClient: deploymentsClient,
-		GroupClient:       groupClient,
+		GroupsClient:      groupsClient,
 	}
 
 	return clientset, nil
+}
+
+// ResponseWasNotFound returns true if the response code from the Azure API
+// was a 404.
+func ResponseWasNotFound(resp autorest.Response) bool {
+	if resp.StatusCode == http.StatusNotFound {
+		return true
+	}
+
+	return false
 }
 
 func newDeploymentsClient(config *AzureConfig) (*resources.DeploymentsClient, error) {
@@ -111,13 +123,13 @@ func newDeploymentsClient(config *AzureConfig) (*resources.DeploymentsClient, er
 	return &client, nil
 }
 
-func newGroupClient(config *AzureConfig) (*resources.GroupClient, error) {
+func newGroupsClient(config *AzureConfig) (*resources.GroupsClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	client := resources.NewGroupClient(config.SubscriptionID)
+	client := resources.NewGroupsClient(config.SubscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(spt)
 
 	return &client, nil

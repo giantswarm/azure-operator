@@ -64,6 +64,7 @@ type Service struct {
 
 	bootOnce sync.Once
 	tpr      *tpr.TPR
+	mutex    sync.Mutex
 }
 
 // New creates a new configured Operator service.
@@ -115,6 +116,7 @@ func New(config Config) (*Service, error) {
 
 		// Internals.
 		bootOnce: sync.Once{},
+		mutex:    sync.Mutex{},
 		tpr:      tpr,
 	}
 
@@ -137,6 +139,7 @@ func (s *Service) Boot() {
 		newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
 			AddFunc:    s.addFunc,
 			DeleteFunc: s.deleteFunc,
+			UpdateFunc: s.updateFunc,
 		}
 		newZeroObjectFactory := &tpr.ZeroObjectFactoryFuncs{
 			NewObjectFunc:     func() runtime.Object { return &azuretpr.CustomObject{} },
@@ -148,6 +151,15 @@ func (s *Service) Boot() {
 }
 
 func (s *Service) addFunc(obj interface{}) {
+	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
+	// addFunc/deleteFunc/updateFunc is executed at a time.
+	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
+	// the source of truth for the azure-operator are Azure resources.
+	// In case we would run the operator logic in parallel, we would run into race
+	// conditions.
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	s.logger.Log("debug", "executing the operator's addFunc")
 
 	err := s.operatorFramework.ProcessCreate(obj, s.resources)
@@ -157,10 +169,40 @@ func (s *Service) addFunc(obj interface{}) {
 }
 
 func (s *Service) deleteFunc(obj interface{}) {
+	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
+	// addFunc/deleteFunc/updateFunc is executed at a time.
+	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
+	// the source of truth for the azure-operator are Azure resources.
+	// In case we would run the operator logic in parallel, we would run into race
+	// conditions.
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
 	s.logger.Log("debug", "executing the operator's deleteFunc")
 
 	err := s.operatorFramework.ProcessDelete(obj, s.resources)
 	if err != nil {
 		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "delete")
+	}
+}
+
+func (s *Service) updateFunc(oldObj interface{}, newObj interface{}) {
+	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
+	// addFunc/deleteFunc/updateFunc is executed at a time.
+	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
+	// the source of truth for the azure-operator are Azure resources.
+	// In case we would run the operator logic in parallel, we would run into race
+	// conditions.
+	s.mutex.Lock()
+	defer s.mutex.Unlock()
+
+	s.logger.Log("debug", "executing the operator's updateFunc")
+
+	// Creating Azure resources should be idempotent so here we call
+	// ProcessCreate rather than ProcessUpdate.
+	// TODO Decide if we need to implement ProcessUpdate for this operator.
+	err := s.operatorFramework.ProcessCreate(newObj, s.resources)
+	if err != nil {
+		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "update")
 	}
 }

@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/operator"
+	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
 )
 
 // Config represents the configuration used to create a new service.
@@ -95,6 +96,18 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var resourceGroupResource framework.Resource
+	{
+		resourceGroupConfig := resourcegroup.DefaultConfig()
+		resourceGroupConfig.AzureConfig = azureConfig
+		resourceGroupConfig.Logger = config.Logger
+
+		resourceGroupResource, err = resourcegroup.New(resourceGroupConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorFramework *framework.Framework
 	{
 		frameworkConfig := framework.DefaultConfig()
@@ -115,7 +128,9 @@ func New(config Config) (*Service, error) {
 		operatorConfig.K8sClient = k8sClient
 		operatorConfig.Logger = config.Logger
 		operatorConfig.OperatorFramework = operatorFramework
-		operatorConfig.Resources = []framework.Resource{}
+		operatorConfig.Resources = []framework.Resource{
+			resourceGroupResource,
+		}
 		operatorConfig.Viper = config.Viper
 
 		operatorService, err = operator.New(operatorConfig)
