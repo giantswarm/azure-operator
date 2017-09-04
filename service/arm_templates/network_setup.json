@@ -9,13 +9,6 @@
         "description": "API version used by the Microsoft.Network/virtualNetworks resource."
       }
     },
-    "networkSecurityGroupsAPIVersion": {
-      "type": "string",
-      "defaultValue": "2017-03-01",
-      "metadata": {
-        "description": "API version used by the Microsoft.Network/networkSecurityGroups resource."
-      }
-    },
     "addressPrefix": {
       "type": "string",
       "defaultValue": "10.0.0.0/16",
@@ -90,110 +83,6 @@
           }
         ]
       }
-    },
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('mastersSecurityGroupName')]",
-      "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "securityRules": [
-          {
-            "name": "defaultInboundRule",
-            "properties": {
-              "description": "Default rule that denies any inbound traffic.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "[parameters('subnetMasterCIDR')]",
-              "access": "Deny",
-              "direction": "Inbound",
-              "priority": 1000
-            }
-          },
-          {
-            "name": "defaultOutboundRule",
-            "properties": {
-              "description": "Default rule that allows any outbound traffic.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('subnetMasterCIDR')]",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "direction": "Outbound",
-              "priority": 1001
-            }
-          },
-          {
-            "name": "workerToMasterRule",
-            "properties": {
-              "description": "Allow the worker subnet to talk with the master subnet.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('subnetWorkerCIDR')]",
-              "destinationAddressPrefix": "[parameters('subnetMasterCIDR')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": 100
-            }
-          }
-        ]
-      }
-    },
-    {
-      "type": "Microsoft.Network/networkSecurityGroups",
-      "name": "[variables('workersSecurityGroupName')]",
-      "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "securityRules": [
-          {
-            "name": "defaultInboundRule",
-            "properties": {
-              "description": "Default rule that denies any inbound traffic.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "[parameters('subnetWorkerCIDR')]",
-              "access": "Deny",
-              "direction": "Inbound",
-              "priority": 1000
-            }
-          },
-          {
-            "name": "defaultOutboundRule",
-            "properties": {
-              "description": "Default rule that allows any outbound traffic.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('subnetWorkerCIDR')]",
-              "destinationAddressPrefix": "*",
-              "access": "Allow",
-              "direction": "Outbound",
-              "priority": 1001
-            }
-          },
-          {
-            "name": "masterToWorkerRule",
-            "properties": {
-              "description": "Allow the master subnet to talk with the worker subnet.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('subnetMasterCIDR')]",
-              "destinationAddressPrefix": "[parameters('subnetWorkerCIDR')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": 100
-            }
-          }
-        ]
-      }
     }
   ],
   "outputs": {
@@ -208,14 +97,6 @@
     "workersSubnetID": {
       "type": "string",
       "value": "[variables('workersSubnetID')]"
-    },
-    "mastersSecurityGroupID": {
-      "type": "string",
-      "value": "[variables('mastersSecurityGroupID')]"
-    },
-    "workersSecurityGroupID": {
-      "type": "string",
-      "value": "[variables('workersSecurityGroupID')]"
     }
   }
 }
