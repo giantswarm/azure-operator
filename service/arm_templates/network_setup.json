@@ -2,6 +2,9 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "clusterID": {
+      "type": "string"
+    },
     "virtualNetworksAPIVersion": {
       "type": "string",
       "defaultValue": "2017-03-01",
@@ -38,7 +41,7 @@
     }
   },
   "variables": {
-    "virtualNetworkName": "[concat(uniquestring(resourceGroup().id), '-VirtualNetwork')]",
+    "virtualNetworkName": "[concat(parameters('clusterID'), '-VirtualNetwork')]",
     "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
 
     "mastersSubnetName": "[concat(variables('virtualNetworkName'), '-MastersSubnet')]",
