@@ -29,19 +29,21 @@
       "metadata": {
         "description": "The CIDR block for the Kubernetes workers' subnet"
       }
+    },
+    "mastersSecurityGroupID": {
+      "type": "string"
+    },
+    "workersSecurityGroupID": {
+      "type": "string"
     }
   },
   "variables": {
     "virtualNetworkName": "[concat(uniquestring(resourceGroup().id), '-VirtualNetwork')]",
     "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
 
-    "mastersSecurityGroupName": "[concat(uniquestring(resourceGroup().id), '-MastersSecurityGroup')]",
-    "mastersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('mastersSecurityGroupName'))]",
     "mastersSubnetName": "[concat(variables('virtualNetworkName'), '-MastersSubnet')]",
     "mastersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('mastersSubnetName'))]",
 
-    "workersSecurityGroupName": "[concat(uniquestring(resourceGroup().id), '-WorkersSecurityGroup')]",
-    "workersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workersSecurityGroupName'))]",
     "workersSubnetName": "[concat(variables('virtualNetworkName'), '-WorkersSubnet')]",
     "workersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workersSubnetName'))]"
 
@@ -52,10 +54,6 @@
       "name": "[variables('virtualNetworkName')]",
       "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
       "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('mastersSecurityGroupName'))]",
-        "[concat('Microsoft.Network/networkSecurityGroups/', variables('workersSecurityGroupName'))]"
-      ],
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -68,7 +66,7 @@
             "properties": {
               "addressPrefix": "[parameters('subnetMasterCIDR')]",
               "networkSecurityGroup": {
-                "id": "[variables('mastersSecurityGroupID')]"
+                "id": "[parameters('mastersSecurityGroupID')]"
               }
             }
           },
@@ -77,7 +75,7 @@
             "properties": {
               "addressPrefix": "[parameters('subnetWorkerCIDR')]",
               "networkSecurityGroup": {
-                "id": "[variables('workersSecurityGroupID')]"
+                "id": "[parameters('workersSecurityGroupID')]"
               }
             }
           }
