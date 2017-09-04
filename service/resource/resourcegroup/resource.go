@@ -204,9 +204,6 @@ func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
 		}
 
 		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "created the resource group in the Azure API")
-
-	} else {
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "the resource group already exists in the Azure API")
 	}
 
 	return nil
@@ -244,9 +241,6 @@ func (r *Resource) ProcessDeleteState(obj, deleteState interface{}) error {
 		}
 
 		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleted the resource group in the Azure API")
-
-	} else {
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "the resource group does not exist in the Azure API")
 	}
 
 	return nil
