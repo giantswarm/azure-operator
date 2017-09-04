@@ -75,25 +75,30 @@ func (r *Resource) GetCurrentState(obj interface{}) (interface{}, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	var resourceGroup azureresource.Group
+	var group *Group
 	{
 		groupsClient, err := r.getGroupsClient()
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		resourceGroup, err = groupsClient.Get(key.ClusterID(customObject))
+		resourceGroup, err := groupsClient.Get(key.ClusterID(customObject))
 		if err != nil {
 			if client.ResponseWasNotFound(resourceGroup.Response) {
 				// Fall through.
-				return nil, nil
+				return &Group{}, nil
 			}
 
 			return nil, microerror.Mask(err)
 		}
+		group = &Group{
+			Name:     *resourceGroup.Name,
+			Location: *resourceGroup.Location,
+			Tags:     to.StringMap(*resourceGroup.Tags),
+		}
 	}
 
-	return &resourceGroup, nil
+	return group, nil
 }
 
 // GetDesiredState returns the desired resource group for this cluster.
@@ -107,11 +112,10 @@ func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
 		clusterIDTag:  key.ClusterID(customObject),
 		customerIDTag: key.ClusterCustomer(customObject),
 	}
-	resourceGroup := &azureresource.Group{
-		Name:      to.StringPtr(key.ClusterID(customObject)),
-		Location:  to.StringPtr(key.Location(customObject)),
-		ManagedBy: to.StringPtr(managedBy),
-		Tags:      to.StringMapPtr(tags),
+	resourceGroup := &Group{
+		Name:     key.ClusterID(customObject),
+		Location: key.Location(customObject),
+		Tags:     tags,
 	}
 
 	return resourceGroup, nil
@@ -120,17 +124,17 @@ func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
 // GetCreateState returns the resource group for this cluster if it should be
 // created.
 func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentResourceGroup, err := toResourceGroup(currentState)
+	currentResourceGroup, err := toGroup(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	desiredResourceGroup, err := toResourceGroup(desiredState)
+	desiredResourceGroup, err := toGroup(desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	var resourceGroupToCreate *azureresource.Group
-	if currentResourceGroup == nil {
+	var resourceGroupToCreate *Group
+	if currentResourceGroup == nil || currentResourceGroup.Name == "" {
 		resourceGroupToCreate = desiredResourceGroup
 	}
 
@@ -140,27 +144,27 @@ func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (
 // GetDeleteState returns the resource group for this cluster if it should be
 // deleted.
 func (r *Resource) GetDeleteState(obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentResourceGroup, err := toResourceGroup(currentState)
+	currentResourceGroup, err := toGroup(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	desiredResourceGroup, err := toResourceGroup(desiredState)
+	desiredResourceGroup, err := toGroup(desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	var resourceGroupToDelete *azureresource.Group
-	if currentResourceGroup != nil {
+	var resourceGroupToDelete *Group
+	if currentResourceGroup != nil && currentResourceGroup.Name != "" {
 		resourceGroupToDelete = desiredResourceGroup
 	}
 
 	return resourceGroupToDelete, nil
 }
 
-// GetUpdateState returns nil for the create, delete and update states because
-// resource groups are not updated.
+// GetUpdateState returns an empty group for the create, delete and update
+// states because resource groups are not updated.
 func (r *Resource) GetUpdateState(obj, currentState, desiredState interface{}) (interface{}, interface{}, interface{}, error) {
-	return nil, nil, nil, nil
+	return &Group{}, &Group{}, &Group{}, nil
 }
 
 // Name returns the resource name.
@@ -175,12 +179,12 @@ func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	resourceGroupToCreate, err := toResourceGroup(createState)
+	resourceGroupToCreate, err := toGroup(createState)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if resourceGroupToCreate != nil {
+	if resourceGroupToCreate != nil && resourceGroupToCreate.Name != "" {
 		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating the resource group in the Azure API")
 
 		groupClient, err := r.getGroupsClient()
@@ -188,7 +192,13 @@ func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		_, err = groupClient.CreateOrUpdate(*resourceGroupToCreate.Name, *resourceGroupToCreate)
+		resourceGroup := azureresource.Group{
+			Name:      to.StringPtr(resourceGroupToCreate.Name),
+			Location:  to.StringPtr(resourceGroupToCreate.Location),
+			ManagedBy: to.StringPtr(managedBy),
+			Tags:      to.StringMapPtr(resourceGroupToCreate.Tags),
+		}
+		_, err = groupClient.CreateOrUpdate(resourceGroupToCreate.Name, resourceGroup)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -208,12 +218,12 @@ func (r *Resource) ProcessDeleteState(obj, deleteState interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	resourceGroupToDelete, err := toResourceGroup(deleteState)
+	resourceGroupToDelete, err := toGroup(deleteState)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if resourceGroupToDelete != nil {
+	if resourceGroupToDelete != nil && resourceGroupToDelete.Name != "" {
 		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting the resource group in the Azure API")
 
 		groupsClient, err := r.getGroupsClient()
@@ -271,14 +281,14 @@ func toCustomObject(v interface{}) (azuretpr.CustomObject, error) {
 	return customObject, nil
 }
 
-func toResourceGroup(v interface{}) (*azureresource.Group, error) {
+func toGroup(v interface{}) (*Group, error) {
 	if v == nil {
-		return nil, nil
+		return &Group{}, nil
 	}
 
-	resourceGroup, ok := v.(*azureresource.Group)
+	resourceGroup, ok := v.(*Group)
 	if !ok {
-		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &azureresource.Group{}, v)
+		return &Group{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &Group{}, v)
 	}
 
 	return resourceGroup, nil
