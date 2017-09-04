@@ -198,7 +198,10 @@ func (s *Service) updateFunc(oldObj interface{}, newObj interface{}) {
 
 	s.logger.Log("debug", "executing the operator's updateFunc")
 
-	err := s.operatorFramework.ProcessUpdate(newObj, s.resources)
+	// Creating Azure resources should be idempotent so here we call
+	// ProcessCreate rather than ProcessUpdate.
+	// TODO Decide if we need to implement ProcessUpdate for this operator.
+	err := s.operatorFramework.ProcessCreate(newObj, s.resources)
 	if err != nil {
 		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "update")
 	}
