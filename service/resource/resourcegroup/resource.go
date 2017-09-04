@@ -1,6 +1,8 @@
 package resourcegroup
 
 import (
+	"time"
+
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/azuretpr"
@@ -18,6 +20,7 @@ const (
 
 	clusterIDTag  = "ClusterID"
 	customerIDTag = "CustomerID"
+	deleteTimeout = 5 * time.Minute
 	managedBy     = "azure-operator"
 )
 
@@ -220,10 +223,14 @@ func (r *Resource) ProcessDeleteState(obj, deleteState interface{}) error {
 
 		// Delete the resource group which also deletes all resources it
 		// contains. We wait for the error channel while the deletion happens.
-		_, errchan := groupsClient.Delete(*resourceGroupToDelete.Name, nil)
-		err = <-errchan
-		if err != nil {
-			return microerror.Mask(err)
+		_, errchan := groupsClient.Delete(resourceGroupToDelete.Name, nil)
+		select {
+		case err := <-errchan:
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		case <-time.After(deleteTimeout):
+			return microerror.Mask(deleteTimeoutError)
 		}
 
 		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleted the resource group in the Azure API")
