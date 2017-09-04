@@ -86,9 +86,9 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 				t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 			}
 
-			group, ok := result.(*Group)
+			group, ok := result.(Group)
 			if !ok {
-				t.Fatalf("case %d expected '%T', got '%T'", i+1, &Group{}, group)
+				t.Fatalf("case %d expected '%T', got '%T'", i+1, Group{}, group)
 			}
 			if tc.ExpectedName != group.Name {
 				t.Fatalf("case %d expected name '%s' got '%s'", i+1, tc.ExpectedName, group.Name)
@@ -119,7 +119,7 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 		Obj           interface{}
 		Cur           interface{}
 		Des           interface{}
-		ExpectedGroup *Group
+		ExpectedGroup Group
 	}{
 		{
 			// Case 1. Current and desired states are the same. The resource
@@ -133,13 +133,13 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 					},
 				},
 			},
-			Cur: &Group{
+			Cur: Group{
 				Name: "5xchu",
 			},
-			Des: &Group{
+			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: nil,
+			ExpectedGroup: Group{},
 		},
 		{
 			// Case 2. Current state is nil. The resource group should be
@@ -153,11 +153,11 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 					},
 				},
 			},
-			Cur: &Group{},
-			Des: &Group{
+			Cur: Group{},
+			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: &Group{
+			ExpectedGroup: Group{
 				Name: "5xchu",
 			},
 		},
@@ -181,15 +181,14 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
 
-		if tc.ExpectedGroup == nil {
-			if tc.ExpectedGroup != result {
-				t.Fatalf("case %d expected '%#v' got '%#v'", i+1, tc.ExpectedGroup, result)
-			}
+		group, ok := result.(Group)
+		if !ok {
+			t.Fatalf("case %d expected '%T', got '%T'", i+1, Group{}, group)
+		}
+
+		if tc.ExpectedGroup.Name == "" && group.Name != "" {
+			t.Fatalf("case %d expected '%#v' got '%#v'", i+1, tc.ExpectedGroup, result)
 		} else {
-			group, ok := result.(*Group)
-			if !ok {
-				t.Fatalf("case %d expected '%T', got '%T'", i+1, &Group{}, group)
-			}
 			if tc.ExpectedGroup.Name != group.Name {
 				t.Fatalf("case %d expected '%s' got '%s'", i+1, tc.ExpectedGroup.Name, group.Name)
 			}
@@ -202,7 +201,7 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 		Obj           interface{}
 		Cur           interface{}
 		Des           interface{}
-		ExpectedGroup *Group
+		ExpectedGroup Group
 	}{
 		{
 			// Case 1. Current and desired states are the same. The resource
@@ -216,13 +215,13 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 					},
 				},
 			},
-			Cur: &Group{
+			Cur: Group{
 				Name: "5xchu",
 			},
-			Des: &Group{
+			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: &Group{
+			ExpectedGroup: Group{
 				Name: "5xchu",
 			},
 		},
@@ -238,11 +237,11 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 					},
 				},
 			},
-			Cur: nil,
-			Des: &Group{
+			Cur: Group{},
+			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: nil,
+			ExpectedGroup: Group{},
 		},
 	}
 
@@ -263,15 +262,13 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
-		if tc.ExpectedGroup == nil {
-			if tc.ExpectedGroup != result {
-				t.Fatalf("case %d expected '%#v' got '%#v'", i+1, tc.ExpectedGroup, result)
-			}
+		group, ok := result.(Group)
+		if !ok {
+			t.Fatalf("case %d expected '%T', got '%T'", i+1, Group{}, group)
+		}
+		if tc.ExpectedGroup.Name == "" && group.Name != "" {
+			t.Fatalf("case %d expected '%#v' got '%#v'", i+1, tc.ExpectedGroup, result)
 		} else {
-			group, ok := result.(*Group)
-			if !ok {
-				t.Fatalf("case %d expected '%T', got '%T'", i+1, &Group{}, group)
-			}
 			if tc.ExpectedGroup.Name != group.Name {
 				t.Fatalf("case %d expected '%s' got '%s'", i+1, tc.ExpectedGroup.Name, group.Name)
 			}
