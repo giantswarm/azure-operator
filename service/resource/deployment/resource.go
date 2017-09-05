@@ -1,8 +1,6 @@
 package deployment
 
 import (
-	"time"
-
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/microerror"
@@ -16,9 +14,6 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "deployment"
-
-	createTimeout  = 5 * time.Minute
-	deploymentMode = "Incremental"
 )
 
 type Config struct {
