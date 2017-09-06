@@ -1,0 +1,277 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterID": {
+      "type": "string"
+    },
+    "networkSecurityGroupsAPIVersion": {
+      "type": "string",
+      "defaultValue": "2017-03-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/networkSecurityGroups resource."
+      }
+    },
+    "loadBalancerMastersCIDR": {
+      "type": "string"
+    },
+    "loadBalancerWorkersCIDR": {
+      "type": "string"
+    },
+    "subnetMastersCIDR": {
+      "type": "string"
+    },
+    "subnetWorkersCIDR": {
+      "type": "string"
+    },
+    "kubernetesAPISecurePort": {
+      "type": "string",
+      "defaultValue": "443"
+    },
+    "etcdPort": {
+      "type": "string",
+      "defaultValue": "2379"
+    },
+    "sshPort": {
+      "type": "string",
+      "defaultValue": "22"
+    },
+    "calicoBGPNetworkPort": {
+      "type": "string",
+      "defaultValue": "179"
+    },
+    "kubernetesIngressSecurePort": {
+      "type": "string",
+      "defaultValue": "30011"
+    },
+    "kubernetesIngressInsecurePort": {
+      "type": "string",
+      "defaultValue": "30010"
+    },
+    "kubernetesKubeletPort": {
+      "type": "string",
+      "defaultValue": "10250"
+    }
+  },
+  "variables": {
+    "mastersSecurityGroupName": "[concat(parameters('clusterID'), '-MastersSecurityGroup')]",
+    "mastersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('mastersSecurityGroupName'))]",
+
+    "workersSecurityGroupName": "[concat(parameters('clusterID'), '-WorkersSecurityGroup')]",
+    "workersSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workersSecurityGroupName'))]",
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('mastersSecurityGroupName')]",
+      "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "defaultInboundRule",
+            "properties": {
+              "description": "Default rule that denies any inbound traffic.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "access": "Deny",
+              "direction": "Inbound",
+              "priority": "4096"
+            }
+          },
+          {
+            "name": "defaultOutboundRule",
+            "properties": {
+              "description": "Default rule that allows any outbound traffic.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "direction": "Outbound",
+              "priority": "4095"
+            }
+          },
+          {
+            "name": "defaultInClusterRule",
+            "properties": {
+              "description": "Default rule that allows any traffic within the masters' subnet.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "4094"
+            }
+          },
+          {
+            "name": "mastersLBToKubernetesAPI",
+            "properties": {
+              "description": "Allow the masters' load balancer to reach the kubernetes API.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('kubernetesAPISecurePort')]",
+              "sourceAddressPrefix": "[parameters('loadBalancerMastersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3900"
+            }
+          },
+          {
+            "name": "mastersLBToEtcd",
+            "properties": {
+              "description": "Allow the masters' load balancer to reach etcd.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('etcdPort')]",
+              "sourceAddressPrefix": "[parameters('loadBalancerMastersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3800"
+            }
+          },
+          {
+            "name": "workersSubnetToMastersSubnet",
+            "properties": {
+              "description": "Allow the workers machines to reach the masters machines on any ports.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3700"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Network/networkSecurityGroups",
+      "name": "[variables('workersSecurityGroupName')]",
+      "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "securityRules": [
+          {
+            "name": "defaultInboundRule",
+            "properties": {
+              "description": "Default rule that denies any inbound traffic.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "*",
+              "destinationAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "access": "Deny",
+              "direction": "Inbound",
+              "priority": "4096"
+            }
+          },
+          {
+            "name": "defaultOutboundRule",
+            "properties": {
+              "description": "Default rule that allows any outbound traffic.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "direction": "Outbound",
+              "priority": "4095"
+            }
+          },
+          {
+            "name": "defaultInClusterRule",
+            "properties": {
+              "description": "Default rule that allows any traffic within the workers' subnet.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "4094"
+            }
+          },
+          {
+            "name": "workersLBToIngressSecurePort",
+            "properties": {
+              "description": "Allow the workers' load balancer to reach the ingress controller secure port.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('kubernetesIngressSecurePort')]",
+              "sourceAddressPrefix": "[parameters('loadBalancerWorkersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3900"
+            }
+          },
+          {
+            "name": "workersLBToIngressInsecurePort",
+            "properties": {
+              "description": "Allow the workers' load balancer to reach the ingress controller insecure port.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('kubernetesIngressInsecurePort')]",
+              "sourceAddressPrefix": "[parameters('loadBalancerWorkersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3800"
+            }
+          },
+          {
+            "name": "workersLBToKubelet",
+            "properties": {
+              "description": "Allow the workers' load balancer to reach the kubelet port.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[parameters('kubernetesKubeletPort')]",
+              "sourceAddressPrefix": "[parameters('loadBalancerWorkersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3700"
+            }
+          },
+          {
+            "name": "mastersSubnetToWorkersSubnet",
+            "properties": {
+              "description": "Allow the masters machines to reach the workers machines on any ports.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('subnetMastersCIDR')]",
+              "destinationAddressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3600"
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "mastersSecurityGroupID": {
+      "type": "string",
+      "value": "[variables('mastersSecurityGroupID')]"
+    },
+    "workersSecurityGroupID": {
+      "type": "string",
+      "value": "[variables('workersSecurityGroupID')]"
+    }
+  }
+}

@@ -1,0 +1,103 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterID": {
+      "type": "string"
+    },
+    "virtualNetworksAPIVersion": {
+      "type": "string",
+      "defaultValue": "2017-03-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/virtualNetworks resource."
+      }
+    },
+    "addressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "The main address block reserved for this virtual network."
+      }
+    },
+    "subnetMasterCIDR": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "The CIDR block for the Kubernetes masters' subnet"
+      }
+    },
+    "subnetWorkerCIDR": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/24",
+      "metadata": {
+        "description": "The CIDR block for the Kubernetes workers' subnet"
+      }
+    },
+    "mastersSecurityGroupID": {
+      "type": "string"
+    },
+    "workersSecurityGroupID": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "virtualNetworkName": "[concat(parameters('clusterID'), '-VirtualNetwork')]",
+    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+
+    "mastersSubnetName": "[concat(variables('virtualNetworkName'), '-MastersSubnet')]",
+    "mastersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('mastersSubnetName'))]",
+
+    "workersSubnetName": "[concat(variables('virtualNetworkName'), '-WorkersSubnet')]",
+    "workersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workersSubnetName'))]"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('addressPrefix')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('mastersSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetMasterCIDR')]",
+              "networkSecurityGroup": {
+                "id": "[parameters('mastersSecurityGroupID')]"
+              }
+            }
+          },
+          {
+            "name": "[variables('workersSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('subnetWorkerCIDR')]",
+              "networkSecurityGroup": {
+                "id": "[parameters('workersSecurityGroupID')]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "virtualNetworkID": {
+      "type": "string",
+      "value": "[variables('virtualNetworkID')]"
+    },
+    "mastersSubnetID": {
+      "type": "string",
+      "value": "[variables('mastersSubnetID')]"
+    },
+    "workersSubnetID": {
+      "type": "string",
+      "value": "[variables('workersSubnetID')]"
+    }
+  }
+}
