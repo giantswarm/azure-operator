@@ -12,7 +12,7 @@
         "description": "API version used by the Microsoft.Network/virtualNetworks resource."
       }
     },
-    "mainCidr": {
+    "virtualNetworkCidr": {
       "type": "string"
     },
     "masterSubnetCidr": {
@@ -48,7 +48,7 @@
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[parameters('mainCidr')]"
+            "[parameters('virtualNetworkCidr')]"
           ]
         },
         "subnets": [

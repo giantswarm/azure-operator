@@ -21,7 +21,7 @@
         "description": "Storage Account type."
       }
     },
-    "mainCidr": {
+    "virtualNetworkCidr": {
       "type": "string",
       "defaultValue": "10.0.0.0/16",
       "metadata": {
@@ -128,7 +128,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "mainCidr": {"value": "[parameters('mainCidr')]"},
+          "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
