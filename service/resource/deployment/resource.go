@@ -1,7 +1,11 @@
 package deployment
 
 import (
+	"fmt"
+	"time"
+
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -14,6 +18,9 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "deployment"
+
+	createTimeout  = 5 * time.Minute
+	deploymentMode = "Incremental"
 )
 
 type Config struct {
@@ -100,14 +107,44 @@ func (r *Resource) GetCurrentState(obj interface{}) (interface{}, error) {
 	return deployments, nil
 }
 
-// GetDesiredState is not yet implemented.
+// GetDesiredState returns the desired deployments for this cluster.
 func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
-	return []Deployment{}, nil
+	customObject, err := toCustomObject(obj)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	clusterSetup, err := newClusterSetupDeployment(customObject)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	deployments := []Deployment{
+		clusterSetup,
+	}
+	return deployments, nil
 }
 
-// GetCreateState is not yet implemented.
+// GetCreateState returns the deployments that should be created for this
+// cluster.
 func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (interface{}, error) {
-	return []Deployment{}, nil
+	currentDeployments, err := toDeployments(currentState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	desiredDeployments, err := toDeployments(desiredState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var deploymentsToCreate []Deployment
+
+	for _, desiredDeployment := range desiredDeployments {
+		if !existsDeploymentByName(currentDeployments, desiredDeployment.Name) {
+			deploymentsToCreate = append(deploymentsToCreate, desiredDeployment)
+		}
+	}
+
+	return deploymentsToCreate, nil
 }
 
 // GetDeleteState returns an empty deployments collection. Deployments and the
@@ -128,6 +165,63 @@ func (r *Resource) Name() string {
 
 // ProcessCreateState is not yet implemented.
 func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
+	customObject, err := toCustomObject(obj)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	deploymentsToCreate, err := toDeployments(createState)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if len(deploymentsToCreate) != 0 {
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating deployments in the Azure API")
+
+		resourceGroupName := key.ClusterID(customObject)
+		deploymentsClient, err := r.getDeploymentsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		for _, deploy := range deploymentsToCreate {
+			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating deployment %s", deploy.Name))
+
+			params := make(map[string]interface{}, len(deploy.Parameters))
+			for key, val := range deploy.Parameters {
+				params[key] = struct {
+					Value interface{}
+				}{
+					Value: val,
+				}
+			}
+			deployment := azureresource.Deployment{
+				Properties: &azureresource.DeploymentProperties{
+					Mode:       azureresource.Complete,
+					Parameters: &params,
+					TemplateLink: &azureresource.TemplateLink{
+						URI:            to.StringPtr(deploy.TemplateURI),
+						ContentVersion: to.StringPtr(deploy.TemplateVersion),
+					},
+				},
+			}
+
+			_, errchan := deploymentsClient.CreateOrUpdate(resourceGroupName, deploy.Name, deployment, nil)
+			select {
+			case err := <-errchan:
+				if err != nil {
+					return microerror.Mask(err)
+				}
+			case <-time.After(createTimeout):
+				return microerror.Mask(createTimeoutError)
+			}
+
+			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("created deployment %s", deploy.Name))
+		}
+
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "created the deployments in the Azure API")
+	}
+
 	return nil
 }
 

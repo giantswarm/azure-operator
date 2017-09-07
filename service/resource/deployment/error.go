@@ -4,6 +4,13 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+var createTimeoutError = microerror.New("create timeout")
+
+// IsCreateTimeoutError asserts createTimeoutError.
+func IsCreateTimeoutError(err error) bool {
+	return microerror.Cause(err) == createTimeoutError
+}
+
 var invalidConfigError = microerror.New("invalid config")
 
 // IsInvalidConfig asserts invalidConfigError.
