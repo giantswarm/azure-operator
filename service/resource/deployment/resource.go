@@ -67,7 +67,7 @@ func New(config Config) (*Resource, error) {
 	return newService, nil
 }
 
-// GetCurrentState gets the current deployments for this cluster from the
+// GetCurrentState gets the current deployments for this cluster via the
 // Azure API.
 func (r *Resource) GetCurrentState(obj interface{}) (interface{}, error) {
 	customObject, err := toCustomObject(obj)
@@ -164,7 +164,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-// ProcessCreateState is not yet implemented.
+// ProcessCreateState creates the deployments via the Azure API.
 func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
