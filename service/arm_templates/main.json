@@ -73,6 +73,18 @@
     "kubernetesKubeletPort": {
       "type": "string",
       "defaultValue": "10250"
+    },
+    "clusterSetupTemplate": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/cluster_setup.json"
+    },
+    "securityGroupsSetupTemplate": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/security_groups_setup.json"
+    },
+    "virtualNetworkSetupTemplate": {
+      "type": "string",
+      "defaultValue": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/virtual_network_setup.json"
     }
   },
   "resources": [
@@ -83,7 +95,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/cluster_setup.json",
+          "uri": "[parameters('clusterSetupTemplate')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -99,7 +111,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/security_groups_setup.json",
+          "uri": "[parameters('securityGroupsSetupTemplate')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -123,7 +135,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/virtual_network_setup.json",
+          "uri": "[parameters('virtualNetworkSetupTemplate')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
