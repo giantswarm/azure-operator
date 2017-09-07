@@ -95,10 +95,11 @@ func (r *Resource) GetCurrentState(obj interface{}) (interface{}, error) {
 			}
 
 			deployment := Deployment{
-				Name:          *deploymentExtended.Name,
-				Parameters:    *deploymentExtended.Properties.Parameters,
-				ResourceGroup: resourceGroupName,
-				Template:      *deploymentExtended.Properties.Template,
+				Name:            *deploymentExtended.Name,
+				Parameters:      *deploymentExtended.Properties.Parameters,
+				ResourceGroup:   resourceGroupName,
+				TemplateURI:     *deploymentExtended.Properties.TemplateLink.URI,
+				TemplateVersion: *deploymentExtended.Properties.TemplateLink.ContentVersion,
 			}
 			deployments = append(deployments, deployment)
 		}
