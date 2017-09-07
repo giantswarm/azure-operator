@@ -13,25 +13,13 @@
       }
     },
     "addressPrefix": {
-      "type": "string",
-      "defaultValue": "10.0.0.0/16",
-      "metadata": {
-        "description": "The main address block reserved for this virtual network."
-      }
+      "type": "string"
     },
-    "subnetMasterCIDR": {
-      "type": "string",
-      "defaultValue": "10.0.1.0/24",
-      "metadata": {
-        "description": "The CIDR block for the Kubernetes masters' subnet"
-      }
+    "subnetMastersCIDR": {
+      "type": "string"
     },
-    "subnetWorkerCIDR": {
-      "type": "string",
-      "defaultValue": "10.0.2.0/24",
-      "metadata": {
-        "description": "The CIDR block for the Kubernetes workers' subnet"
-      }
+    "subnetWorkersCIDR": {
+      "type": "string"
     },
     "mastersSecurityGroupID": {
       "type": "string"
