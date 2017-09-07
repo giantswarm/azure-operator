@@ -15,7 +15,7 @@
     "masterLoadBalancerCidr": {
       "type": "string"
     },
-    "masterLoadBalancerCidr": {
+    "workerLoadBalancerCidr": {
       "type": "string"
     },
     "masterSubnetCidr": {
@@ -98,7 +98,7 @@
             }
           },
           {
-            "name": "mastersLBToKubernetesAPI",
+            "name": "masterLBToKubernetesAPI",
             "properties": {
               "description": "Allow the masters' load balancer to reach the kubernetes API.",
               "protocol": "tcp",
@@ -112,7 +112,7 @@
             }
           },
           {
-            "name": "mastersLBToEtcd",
+            "name": "masterLBToEtcd",
             "properties": {
               "description": "Allow the masters' load balancer to reach etcd.",
               "protocol": "tcp",
@@ -126,7 +126,7 @@
             }
           },
           {
-            "name": "workersSubnetToMastersSubnet",
+            "name": "workerSubnetToMasterSubnet",
             "properties": {
               "description": "Allow the workers machines to reach the masters machines on any ports.",
               "protocol": "*",
@@ -192,7 +192,7 @@
             }
           },
           {
-            "name": "workersLBToIngressSecurePort",
+            "name": "workerLBToIngressSecurePort",
             "properties": {
               "description": "Allow the workers' load balancer to reach the ingress controller secure port.",
               "protocol": "tcp",
@@ -206,7 +206,7 @@
             }
           },
           {
-            "name": "workersLBToIngressInsecurePort",
+            "name": "workerLBToIngressInsecurePort",
             "properties": {
               "description": "Allow the workers' load balancer to reach the ingress controller insecure port.",
               "protocol": "tcp",
@@ -220,7 +220,7 @@
             }
           },
           {
-            "name": "workersLBToKubelet",
+            "name": "workerLBToKubelet",
             "properties": {
               "description": "Allow the workers' load balancer to reach the kubelet port.",
               "protocol": "tcp",
@@ -234,7 +234,7 @@
             }
           },
           {
-            "name": "mastersSubnetToWorkersSubnet",
+            "name": "masterSubnetToWorkersSubnet",
             "properties": {
               "description": "Allow the masters machines to reach the workers machines on any ports.",
               "protocol": "*",
@@ -254,11 +254,11 @@
   "outputs": {
     "mastersSecurityGroupID": {
       "type": "string",
-      "value": "[variables('mastersSecurityGroupID')]"
+      "value": "[variables('masterSecurityGroupID')]"
     },
     "workersSecurityGroupID": {
       "type": "string",
-      "value": "[variables('workersSecurityGroupID')]"
+      "value": "[variables('workerSecurityGroupID')]"
     }
   }
 }
