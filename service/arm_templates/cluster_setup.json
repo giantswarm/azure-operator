@@ -10,7 +10,7 @@
     }
   },
   "variables": {
-    "storageAccountName": "[concat(parameters('clusterID'), '-StorageAccount')]"
+    "storageAccountName": "[concat(uniquestring(resourceGroup().id), 'clustersa')]"
   },
   "resources": [
     {
