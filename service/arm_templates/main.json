@@ -131,8 +131,8 @@
           "mainCidr": {"value": "[parameters('mainCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
-          "mastersSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
-          "workersSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
+          "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
+          "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
         }
       }
     },

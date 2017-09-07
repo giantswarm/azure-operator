@@ -21,10 +21,10 @@
     "workerSubnetCidr": {
       "type": "string"
     },
-    "mastersSecurityGroupID": {
+    "masterSecurityGroupID": {
       "type": "string"
     },
-    "workersSecurityGroupID": {
+    "workerSecurityGroupID": {
       "type": "string"
     }
   },
@@ -32,11 +32,11 @@
     "virtualNetworkName": "[concat(parameters('clusterID'), '-VirtualNetwork')]",
     "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
 
-    "mastersSubnetName": "[concat(variables('virtualNetworkName'), '-MastersSubnet')]",
-    "mastersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('mastersSubnetName'))]",
+    "masterSubnetName": "[concat(variables('virtualNetworkName'), '-MasterSubnet')]",
+    "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
 
-    "workersSubnetName": "[concat(variables('virtualNetworkName'), '-WorkersSubnet')]",
-    "workersSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workersSubnetName'))]"
+    "workerSubnetName": "[concat(variables('virtualNetworkName'), '-WorkerSubnet')]",
+    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
 
   },
   "resources": [
@@ -53,20 +53,20 @@
         },
         "subnets": [
           {
-            "name": "[variables('mastersSubnetName')]",
+            "name": "[variables('masterSubnetName')]",
             "properties": {
               "addressPrefix": "[parameters('masterSubnetCidr')]",
               "networkSecurityGroup": {
-                "id": "[parameters('mastersSecurityGroupID')]"
+                "id": "[parameters('masterSecurityGroupID')]"
               }
             }
           },
           {
-            "name": "[variables('workersSubnetName')]",
+            "name": "[variables('workerSubnetName')]",
             "properties": {
               "addressPrefix": "[parameters('workerSubnetCidr')]",
               "networkSecurityGroup": {
-                "id": "[parameters('workersSecurityGroupID')]"
+                "id": "[parameters('workerSecurityGroupID')]"
               }
             }
           }
@@ -79,13 +79,13 @@
       "type": "string",
       "value": "[variables('virtualNetworkID')]"
     },
-    "mastersSubnetID": {
+    "masterSubnetID": {
       "type": "string",
-      "value": "[variables('mastersSubnetID')]"
+      "value": "[variables('masterSubnetID')]"
     },
-    "workersSubnetID": {
+    "workerSubnetID": {
       "type": "string",
-      "value": "[variables('workersSubnetID')]"
+      "value": "[variables('workerSubnetID')]"
     }
   }
 }
