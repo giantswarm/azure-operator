@@ -20,24 +20,92 @@
       "metadata": {
         "description": "Storage Account type."
       }
+    },
+    "subnetMastersCIDR": {
+      "type": "string",
+      "defaultValue": "10.0.1.0/24",
+      "metadata": {
+        "description": "The masters subnet's CIDR."
+      }
+    },
+    "subnetWorkersCIDR": {
+      "type": "string",
+      "defaultValue": "10.0.2.0/24",
+      "metadata": {
+        "description": "The masters subnet's CIDR."
+      }
+    },
+    "loadBalancerMastersCIDR": {
+      "type": "string",
+      "metadata": {
+        "description": "The masters load balancer's CIDR."
+      }
+    },
+    "loadBalancerWorkersCIDR": {
+      "type": "string",
+      "metadata": {
+        "description": "The workers load balancer's CIDR."
+      }
+    },
+    "kubernetesAPISecurePort": {
+      "type": "string",
+      "defaultValue": "443"
+    },
+    "etcdPort": {
+      "type": "string",
+      "defaultValue": "2379"
+    },
+    "kubernetesIngressSecurePort": {
+      "type": "string",
+      "defaultValue": "30011"
+    },
+    "kubernetesIngressInsecurePort": {
+      "type": "string",
+      "defaultValue": "30010"
+    },
+    "kubernetesKubeletPort": {
+      "type": "string",
+      "defaultValue": "10250"
     }
-  },
-  "variables": {
   },
   "resources": [
     {
       "apiVersion": "2017-05-10",
-      "name": "clusterSetup",
+      "name": "cluster_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/arm_templates/cluster_setup.json",
+          "uri": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/cluster_setup.json",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "storageAccountType": {"value": "[parameters('storageAccountType')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "security_groups_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/security_groups_setup.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "loadBalancerMastersCIDR": {"value": "[parameters('loadBalancerMastersCIDR')]"},
+          "loadBalancerWorkersCIDR": {"value": "[parameters('loadBalancerWorkersCIDR')]"},
+          "subnetMastersCIDR": {"value": "[parameters('subnetMastersCIDR')]"},
+          "subnetWorkersCIDR": {"value": "[parameters('subnetWorkersCIDR')]"},
+          "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
+          "etcdPort": {"value": "[parameters('etcdPort')]"},
+          "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
+          "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"},
+          "kubernetesKubeletPort": {"value": "[parameters('kubernetesKubeletPort')]"}
         }
       }
     }

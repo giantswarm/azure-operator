@@ -2,15 +2,15 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "clusterID": {
-      "type": "string"
-    },
     "networkSecurityGroupsAPIVersion": {
       "type": "string",
       "defaultValue": "2017-03-01",
       "metadata": {
         "description": "API version used by the Microsoft.Network/networkSecurityGroups resource."
       }
+    },
+    "clusterID": {
+      "type": "string"
     },
     "loadBalancerMastersCIDR": {
       "type": "string"
@@ -25,32 +25,22 @@
       "type": "string"
     },
     "kubernetesAPISecurePort": {
-      "type": "string",
-      "defaultValue": "443"
+      "type": "string"
     },
     "etcdPort": {
-      "type": "string",
-      "defaultValue": "2379"
+      "type": "string"
     },
     "sshPort": {
-      "type": "string",
-      "defaultValue": "22"
-    },
-    "calicoBGPNetworkPort": {
-      "type": "string",
-      "defaultValue": "179"
+      "type": "string"
     },
     "kubernetesIngressSecurePort": {
-      "type": "string",
-      "defaultValue": "30011"
+      "type": "string"
     },
     "kubernetesIngressInsecurePort": {
-      "type": "string",
-      "defaultValue": "30010"
+      "type": "string"
     },
     "kubernetesKubeletPort": {
-      "type": "string",
-      "defaultValue": "10250"
+      "type": "string"
     }
   },
   "variables": {
