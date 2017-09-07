@@ -21,6 +21,13 @@
         "description": "Storage Account type."
       }
     },
+    "addressPrefix": {
+      "type": "string",
+      "defaultValue": "10.0.0.0/16",
+      "metadata": {
+        "description": "The main CIDR block reserved for this virtual network."
+      }
+    },
     "subnetMastersCIDR": {
       "type": "string",
       "defaultValue": "10.0.1.0/24",
@@ -108,6 +115,26 @@
           "kubernetesKubeletPort": {"value": "[parameters('kubernetesKubeletPort')]"}
         }
       }
-    }
+    },
+    {
+      "apiVersion": "2017-05-10",
+      "name": "virtual_network_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/virtual_network_setup.json",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "addressPrefix": {"value": "[parameters('addressPrefix')]"},
+          "subnetMastersCIDR": {"value": "[parameters('subnetMastersCIDR')]"},
+          "subnetWorkersCIDR": {"value": "[parameters('subnetWorkersCIDR')]"},
+          "mastersSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.mastersSecurityGroupID.value]"},
+          "workersSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workersSecurityGroupID.value]"},
+        }
+      }
+    },
   ]
 }
