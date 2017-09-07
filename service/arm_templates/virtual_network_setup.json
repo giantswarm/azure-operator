@@ -12,13 +12,13 @@
         "description": "API version used by the Microsoft.Network/virtualNetworks resource."
       }
     },
-    "addressPrefix": {
+    "mainCidr": {
       "type": "string"
     },
-    "subnetMastersCIDR": {
+    "masterSubnetCidr": {
       "type": "string"
     },
-    "subnetWorkersCIDR": {
+    "workerSubnetCidr": {
       "type": "string"
     },
     "mastersSecurityGroupID": {
@@ -48,14 +48,14 @@
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
-            "[parameters('addressPrefix')]"
+            "[parameters('mainCidr')]"
           ]
         },
         "subnets": [
           {
             "name": "[variables('mastersSubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('subnetMastersCIDR')]",
+              "addressPrefix": "[parameters('masterSubnetCidr')]",
               "networkSecurityGroup": {
                 "id": "[parameters('mastersSecurityGroupID')]"
               }
@@ -64,7 +64,7 @@
           {
             "name": "[variables('workersSubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('subnetWorkersCIDR')]",
+              "addressPrefix": "[parameters('workerSubnetCidr')]",
               "networkSecurityGroup": {
                 "id": "[parameters('workersSecurityGroupID')]"
               }
