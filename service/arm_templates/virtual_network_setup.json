@@ -55,7 +55,7 @@
           {
             "name": "[variables('mastersSubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('subnetMasterCIDR')]",
+              "addressPrefix": "[parameters('subnetMastersCIDR')]",
               "networkSecurityGroup": {
                 "id": "[parameters('mastersSecurityGroupID')]"
               }
@@ -64,7 +64,7 @@
           {
             "name": "[variables('workersSubnetName')]",
             "properties": {
-              "addressPrefix": "[parameters('subnetWorkerCIDR')]",
+              "addressPrefix": "[parameters('subnetWorkersCIDR')]",
               "networkSecurityGroup": {
                 "id": "[parameters('workersSecurityGroupID')]"
               }
