@@ -30,9 +30,6 @@
     "etcdPort": {
       "type": "string"
     },
-    "sshPort": {
-      "type": "string"
-    },
     "kubernetesIngressSecurePort": {
       "type": "string"
     },
