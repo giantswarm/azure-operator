@@ -220,20 +220,6 @@
             }
           },
           {
-            "name": "workerLBToKubelet",
-            "properties": {
-              "description": "Allow the worker load balancer to reach the kubelet port.",
-              "protocol": "tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('kubernetesKubeletPort')]",
-              "sourceAddressPrefix": "[parameters('workerLoadBalancerCidr')]",
-              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": "3700"
-            }
-          },
-          {
             "name": "masterSubnetToWorkerSubnet",
             "properties": {
               "description": "Allow the master machines to reach the worker machines on any ports.",
