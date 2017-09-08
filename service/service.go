@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/operator"
+	"github.com/giantswarm/azure-operator/service/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
 )
 
@@ -108,6 +109,18 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var deploymentResource framework.Resource
+	{
+		deploymentConfig := deployment.DefaultConfig()
+		deploymentConfig.AzureConfig = azureConfig
+		deploymentConfig.Logger = config.Logger
+
+		deploymentResource, err = deployment.New(deploymentConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorFramework *framework.Framework
 	{
 		frameworkConfig := framework.DefaultConfig()
@@ -130,6 +143,7 @@ func New(config Config) (*Service, error) {
 		operatorConfig.OperatorFramework = operatorFramework
 		operatorConfig.Resources = []framework.Resource{
 			resourceGroupResource,
+			deploymentResource,
 		}
 		operatorConfig.Viper = config.Viper
 

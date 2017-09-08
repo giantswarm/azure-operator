@@ -266,6 +266,10 @@ func (r *Resource) getGroupsClient() (*azureresource.GroupsClient, error) {
 }
 
 func toCustomObject(v interface{}) (azuretpr.CustomObject, error) {
+	if v == nil {
+		return azuretpr.CustomObject{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &azuretpr.CustomObject{}, v)
+	}
+
 	customObjectPointer, ok := v.(*azuretpr.CustomObject)
 	if !ok {
 		return azuretpr.CustomObject{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &azuretpr.CustomObject{}, v)
