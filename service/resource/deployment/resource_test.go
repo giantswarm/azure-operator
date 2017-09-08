@@ -22,7 +22,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	}
 	expectedDeployments := []Deployment{
 		Deployment{
-			Name:          "cluster-setup",
+			Name:          "cluster-main-template",
 			ResourceGroup: "5xchu",
 		},
 	}
