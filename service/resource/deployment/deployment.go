@@ -23,17 +23,14 @@ func getDeploymentNames() []string {
 }
 
 func newClusterSetupDeployment(cluster azuretpr.CustomObject) (Deployment, error) {
-	var deployment Deployment
-	{
-		deployment = Deployment{
-			Name: clusterSetupDeploymentName,
-			Parameters: map[string]interface{}{
-				clusterIDParameterName: key.ClusterID(cluster),
-			},
-			ResourceGroup:   key.ClusterID(cluster),
-			TemplateURI:     templateURI(clusterSetupTemplate),
-			TemplateVersion: templateVersion,
-		}
+	deployment := Deployment{
+		Name: clusterSetupDeploymentName,
+		Parameters: map[string]interface{}{
+			clusterIDParameterName: key.ClusterID(cluster),
+		},
+		ResourceGroup:   key.ClusterID(cluster),
+		TemplateURI:     templateURI(clusterSetupTemplate),
+		TemplateVersion: templateVersion,
 	}
 
 	return deployment, nil
