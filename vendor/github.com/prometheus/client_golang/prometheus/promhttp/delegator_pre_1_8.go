@@ -11,6 +11,34 @@
 // See the License for the specific language governing permissions and
 // limitations under the License.
 
-// Package sysfs provides functions to retrieve system and kernel metrics
-// from the pseudo-filesystem sys.
-package sysfs
+// +build !go1.8
+
+package promhttp
+
+import (
+	"io"
+	"net/http"
+)
+
+func newDelegator(w http.ResponseWriter, observeWriteHeaderFunc func(int)) delegator {
+	d := &responseWriterDelegator{
+		ResponseWriter:     w,
+		observeWriteHeader: observeWriteHeaderFunc,
+	}
+
+	id := 0
+	if _, ok := w.(http.CloseNotifier); ok {
+		id += closeNotifier
+	}
+	if _, ok := w.(http.Flusher); ok {
+		id += flusher
+	}
+	if _, ok := w.(http.Hijacker); ok {
+		id += hijacker
+	}
+	if _, ok := w.(io.ReaderFrom); ok {
+		id += readerFrom
+	}
+
+	return pickDelegator[id](d)
+}
