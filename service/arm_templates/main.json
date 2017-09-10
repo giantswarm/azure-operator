@@ -10,83 +10,54 @@
     },
     "storageAccountType": {
       "type": "string",
-      "defaultValue": "Standard_LRS",
       "allowedValues": [
         "Standard_LRS",
         "Standard_GRS",
         "Standard_ZRS",
         "Premium_LRS"
-      ],
-      "metadata": {
-        "description": "Storage Account type."
-      }
+      ]
     },
     "virtualNetworkCidr": {
       "type": "string",
-      "defaultValue": "10.0.0.0/16",
       "metadata": {
         "description": "The main CIDR block reserved for this virtual network."
       }
     },
     "masterSubnetCidr": {
-      "type": "string",
-      "defaultValue": "10.0.1.0/24",
-      "metadata": {
-        "description": "The masters subnet's CIDR."
-      }
+      "type": "string"
     },
     "workerSubnetCidr": {
-      "type": "string",
-      "defaultValue": "10.0.2.0/24",
-      "metadata": {
-        "description": "The masters subnet's CIDR."
-      }
+      "type": "string"
     },
     "apiLoadBalancerCidr": {
-      "type": "string",
-      "metadata": {
-        "description": "The Kubernetes API load balancer's CIDR."
-      }
+      "type": "string"
     },
     "etcdLoadBalancerCidr": {
-      "type": "string",
-      "metadata": {
-        "description": "The Etcd load balancer's CIDR."
-      }
+      "type": "string"
     },
     "ingressLoadBalancerCidr": {
-      "type": "string",
-      "metadata": {
-        "description": "The ingress load balancer's CIDR."
-      }
+      "type": "string"
     },
     "kubernetesAPISecurePort": {
-      "type": "string",
-      "defaultValue": "443"
+      "type": "string"
     },
     "etcdPort": {
-      "type": "string",
-      "defaultValue": "2379"
+      "type": "string"
     },
     "kubernetesIngressSecurePort": {
-      "type": "string",
-      "defaultValue": "30011"
+      "type": "string"
     },
     "kubernetesIngressInsecurePort": {
-      "type": "string",
-      "defaultValue": "30010"
+      "type": "string"
     },
     "clusterSetupTemplate": {
-      "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/cluster_setup.json"
+      "type": "string"
     },
     "securityGroupsSetupTemplate": {
-      "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/security_groups_setup.json"
+      "type": "string"
     },
     "virtualNetworkSetupTemplate": {
-      "type": "string",
-      "defaultValue": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/virtual_network_setup.json"
+      "type": "string"
     }
   },
   "resources": [
