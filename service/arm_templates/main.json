@@ -42,10 +42,16 @@
         "description": "The masters subnet's CIDR."
       }
     },
-    "masterLoadBalancerCidr": {
+    "apiLoadBalancerCidr": {
       "type": "string",
       "metadata": {
-        "description": "The masters load balancer's CIDR."
+        "description": "The Kubernetes API load balancer's CIDR."
+      }
+    },
+    "etcdLoadBalancerCidr": {
+      "type": "string",
+      "metadata": {
+        "description": "The Etcd load balancer's CIDR."
       }
     },
     "workerLoadBalancerCidr": {
@@ -116,7 +122,8 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "masterLoadBalancerCidr": {"value": "[parameters('masterLoadBalancerCidr')]"},
+          "apiLoadBalancerCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
+          "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
           "workerLoadBalancerCidr": {"value": "[parameters('workerLoadBalancerCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},

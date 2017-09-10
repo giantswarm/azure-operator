@@ -12,7 +12,10 @@
     "clusterID": {
       "type": "string"
     },
-    "masterLoadBalancerCidr": {
+    "apiLoadBalancerCidr": {
+      "type": "string"
+    },
+    "etcdLoadBalancerCidr": {
       "type": "string"
     },
     "workerLoadBalancerCidr": {
@@ -95,13 +98,13 @@
             }
           },
           {
-            "name": "masterLBToKubernetesAPI",
+            "name": "apiLoadBalancerRule",
             "properties": {
-              "description": "Allow the master load balancer to reach the kubernetes API.",
+              "description": "Allow the API load balancer to reach the kubernetes API.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[parameters('kubernetesAPISecurePort')]",
-              "sourceAddressPrefix": "[parameters('masterLoadBalancerCidr')]",
+              "sourceAddressPrefix": "[parameters('apiLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
@@ -109,13 +112,13 @@
             }
           },
           {
-            "name": "masterLBToEtcd",
+            "name": "etcdLoadBalancerRule",
             "properties": {
-              "description": "Allow the master load balancer to reach etcd.",
+              "description": "Allow the Etcd load balancer to reach etcd.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[parameters('etcdPort')]",
-              "sourceAddressPrefix": "[parameters('masterLoadBalancerCidr')]",
+              "sourceAddressPrefix": "[parameters('etcdLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
