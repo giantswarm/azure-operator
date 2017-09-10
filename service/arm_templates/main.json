@@ -76,10 +76,6 @@
       "type": "string",
       "defaultValue": "30010"
     },
-    "kubernetesKubeletPort": {
-      "type": "string",
-      "defaultValue": "10250"
-    },
     "clusterSetupTemplate": {
       "type": "string",
       "defaultValue": "https://raw.githubusercontent.com/giantswarm/azure-operator/main-arm-template/service/arm_templates/cluster_setup.json"
@@ -131,7 +127,6 @@
           "etcdPort": {"value": "[parameters('etcdPort')]"},
           "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
           "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"},
-          "kubernetesKubeletPort": {"value": "[parameters('kubernetesKubeletPort')]"}
         }
       }
     },
