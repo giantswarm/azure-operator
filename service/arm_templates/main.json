@@ -54,10 +54,10 @@
         "description": "The Etcd load balancer's CIDR."
       }
     },
-    "workerLoadBalancerCidr": {
+    "ingressLoadBalancerCidr": {
       "type": "string",
       "metadata": {
-        "description": "The workers load balancer's CIDR."
+        "description": "The ingress load balancer's CIDR."
       }
     },
     "kubernetesAPISecurePort": {
@@ -124,7 +124,7 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "apiLoadBalancerCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
           "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "workerLoadBalancerCidr": {"value": "[parameters('workerLoadBalancerCidr')]"},
+          "ingressLoadBalancerCidr": {"value": "[parameters('ingressLoadBalancerCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},

@@ -18,7 +18,7 @@
     "etcdLoadBalancerCidr": {
       "type": "string"
     },
-    "workerLoadBalancerCidr": {
+    "ingressLoadBalancerCidr": {
       "type": "string"
     },
     "masterSubnetCidr": {
@@ -192,13 +192,13 @@
             }
           },
           {
-            "name": "workerLBToIngressSecurePort",
+            "name": "ingressSecurePortRule",
             "properties": {
-              "description": "Allow the worker load balancer to reach the ingress controller secure port.",
+              "description": "Allow the ingress load balancer to reach the ingress controller secure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[parameters('kubernetesIngressSecurePort')]",
-              "sourceAddressPrefix": "[parameters('workerLoadBalancerCidr')]",
+              "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
@@ -206,13 +206,13 @@
             }
           },
           {
-            "name": "workerLBToIngressInsecurePort",
+            "name": "ingressInsecurePortRule",
             "properties": {
-              "description": "Allow the worker load balancer to reach the ingress controller insecure port.",
+              "description": "Allow the ingress load balancer to reach the ingress controller insecure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[parameters('kubernetesIngressInsecurePort')]",
-              "sourceAddressPrefix": "[parameters('workerLoadBalancerCidr')]",
+              "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
