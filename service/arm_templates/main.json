@@ -39,16 +39,16 @@
       "type": "string"
     },
     "kubernetesAPISecurePort": {
-      "type": "string"
+      "type": "int"
     },
     "etcdPort": {
-      "type": "string"
+      "type": "int"
     },
     "kubernetesIngressSecurePort": {
-      "type": "string"
+      "type": "int"
     },
     "kubernetesIngressInsecurePort": {
-      "type": "string"
+      "type": "int"
     },
     "templatesBaseURI" : {
       "type": "string",

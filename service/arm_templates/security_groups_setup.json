@@ -28,16 +28,16 @@
       "type": "string"
     },
     "kubernetesAPISecurePort": {
-      "type": "string"
+      "type": "int"
     },
     "etcdPort": {
-      "type": "string"
+      "type": "int"
     },
     "kubernetesIngressSecurePort": {
-      "type": "string"
+      "type": "int"
     },
     "kubernetesIngressInsecurePort": {
-      "type": "string"
+      "type": "int"
     }
   },
   "variables": {
@@ -103,7 +103,7 @@
               "description": "Allow the API load balancer to reach the kubernetes API.",
               "protocol": "tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('kubernetesAPISecurePort')]",
+              "destinationPortRange": "[string(parameters('kubernetesAPISecurePort'))]",
               "sourceAddressPrefix": "[parameters('apiLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
@@ -117,7 +117,7 @@
               "description": "Allow the Etcd load balancer to reach etcd.",
               "protocol": "tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('etcdPort')]",
+              "destinationPortRange": "[string(parameters('etcdPort'))]",
               "sourceAddressPrefix": "[parameters('etcdLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
@@ -197,7 +197,7 @@
               "description": "Allow the ingress load balancer to reach the ingress controller secure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('kubernetesIngressSecurePort')]",
+              "destinationPortRange": "[string(parameters('kubernetesIngressSecurePort'))]",
               "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
@@ -211,7 +211,7 @@
               "description": "Allow the ingress load balancer to reach the ingress controller insecure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
-              "destinationPortRange": "[parameters('kubernetesIngressInsecurePort')]",
+              "destinationPortRange": "[string(parameters('kubernetesIngressInsecurePort'))]",
               "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
