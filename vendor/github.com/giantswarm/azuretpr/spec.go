@@ -1,8 +1,9 @@
 package azuretpr
 
 import (
-	"github.com/giantswarm/azuretpr/spec"
 	"github.com/giantswarm/clustertpr"
+
+	"github.com/giantswarm/azuretpr/spec"
 )
 
 type Spec struct {

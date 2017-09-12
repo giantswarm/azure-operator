@@ -1,5 +1,5 @@
-hash: 9f370b5ea91ad94c718a8019452ad4da09a10f07a487299bf81862088fc9dd39
-updated: 2017-09-08T14:21:51.42114773+02:00
+hash: ee080f3bc30e963126d65b388cb5de3df6fa89020769af90569819fc84311163
+updated: 2017-09-12T18:55:23.686594985+02:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: df4dd90d076ebbf6e87d08d3f00bfac8ff4bde1a
@@ -41,10 +41,11 @@ imports:
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/giantswarm/azuretpr
-  version: 39b23dfc8bebc3a706b3b8dd286a3612e0fe35b2
+  version: 32783bc0bbcfecda0c84e5533c6b692fe64c018f
   subpackages:
   - spec
   - spec/azure
+  - spec/azure/loadbalancer
 - name: github.com/giantswarm/clustertpr
   version: 1ac2fe67efb012ab2ff0002769c0ae3463f3aa09
   subpackages:
@@ -129,7 +130,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 0eeaf8392f5b04950925b8a69fe70f110fa7cbfc
 - name: github.com/hashicorp/hcl
-  version: 392dba7d905ed5d04a5794ba89f558b27e2ba1ca
+  version: 8f6b1344a92ff8877cf24a5de9177bf7d0a2a187
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -148,7 +149,7 @@ imports:
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
 - name: github.com/magiconair/properties
-  version: be5ece7dd465ab0765a9682137865547526d1dfb
+  version: 8d7837e64d3c1ee4e54a880c5a920ab4316fc90a
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
@@ -162,7 +163,7 @@ imports:
 - name: github.com/mitchellh/mapstructure
   version: d0303fe809921458f417bcf828397a65db30a7e4
 - name: github.com/pelletier/go-toml
-  version: 4692b8f9babfc93db58cc592ba2689d8736781de
+  version: 1d6b12b7cb290426e27e6b4e38b89fcda3aeef03
 - name: github.com/prometheus/client_golang
   version: 671c87b04728565380d95c621edc687bfa00664c
   subpackages:
@@ -173,13 +174,13 @@ imports:
   subpackages:
   - go
 - name: github.com/prometheus/common
-  version: 49fee292b27bfff7f354ee0f64e1bc4850462edf
+  version: 2f17f4a9d485bf34b4bfaccc273805040e4f86c8
   subpackages:
   - expfmt
   - internal/bitbucket.org/ww/goautoneg
   - model
 - name: github.com/prometheus/procfs
-  version: a1dba9ce8baed984a2495b658c82687f8157b98f
+  version: e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2
   subpackages:
   - xfs
 - name: github.com/PuerkitoBio/purell
@@ -187,7 +188,7 @@ imports:
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
 - name: github.com/spf13/afero
-  version: 9be650865eab0c12963d8753212f4f9c66cdcf12
+  version: ee1bd8ee15a1306d1f9201acc41ef39cd9f99a1b
   subpackages:
   - mem
 - name: github.com/spf13/cast
@@ -195,7 +196,7 @@ imports:
 - name: github.com/spf13/cobra
   version: b78744579491c1ceeaaa3b40205e56b0591b93a3
 - name: github.com/spf13/jwalterweatherman
-  version: 0efa5202c04663c757d84f90f5219c1250baf94f
+  version: 12bd96e66386c1960ab0f74ced1362f66f552f7b
 - name: github.com/spf13/pflag
   version: 7aff26db30c1be810f9de5038ec5ef96ac41fd7c
 - name: github.com/spf13/viper
@@ -207,7 +208,7 @@ imports:
   subpackages:
   - codec
 - name: golang.org/x/net
-  version: 1c05540f6879653db88113bc4a2b70aec4bd491f
+  version: 66aacef3dd8a676686c7ae3716979581e8b03c47
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
@@ -222,7 +223,7 @@ imports:
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: e56139fd9c5bc7244c76116c68e500765bb6db6b
+  version: 440ad626b4c13d3fb15784f0e9750d0e86ffd688
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
@@ -241,7 +242,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
 - name: k8s.io/apimachinery
   version: 85ace5365f33b16fc735c866a12e3c765b9700f2
   subpackages:

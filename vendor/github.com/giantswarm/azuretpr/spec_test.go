@@ -5,10 +5,6 @@ import (
 	"net"
 	"testing"
 
-	yaml "gopkg.in/yaml.v2"
-
-	"github.com/giantswarm/azuretpr/spec"
-	"github.com/giantswarm/azuretpr/spec/azure"
 	"github.com/giantswarm/clustertpr"
 	clustertprspec "github.com/giantswarm/clustertpr/spec"
 	clustertprdocker "github.com/giantswarm/clustertpr/spec/docker"
@@ -19,6 +15,11 @@ import (
 	clustertprkubernetesnetworksetup "github.com/giantswarm/clustertpr/spec/kubernetes/networksetup"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/stretchr/testify/require"
+	yaml "gopkg.in/yaml.v2"
+
+	"github.com/giantswarm/azuretpr/spec"
+	"github.com/giantswarm/azuretpr/spec/azure"
+	"github.com/giantswarm/azuretpr/spec/azure/loadbalancer"
 )
 
 func TestSpecYamlEncoding(t *testing.T) {
@@ -121,10 +122,18 @@ func TestSpecYamlEncoding(t *testing.T) {
 		},
 		Azure: spec.Azure{
 			Location: "westeurope",
+			Storage: azure.Storage{
+				AccountType: "Standard_LRS",
+			},
 			VirtualNetwork: azure.VirtualNetwork{
 				CIDR:             "10.0.0.0/16",
 				MasterSubnetCIDR: "10.0.1.0/24",
 				WorkerSubnetCIDR: "10.0.2.0/24",
+				LoadBalancer: loadbalancer.LoadBalancer{
+					APICIDR:     "10.0.3.0/25",
+					EtcdCIDR:    "10.0.3.128/25",
+					IngressCIDR: "10.0.4.0/25",
+				},
 			},
 		},
 	}
