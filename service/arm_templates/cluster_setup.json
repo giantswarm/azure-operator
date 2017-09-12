@@ -4,22 +4,9 @@
   "parameters": {
     "clusterID": {
       "type": "string",
-      "metadata": {
-        "description": "Unique ID of this guest cluster."
-      }
     },
     "storageAccountType": {
       "type": "string",
-      "defaultValue": "Standard_LRS",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_GRS",
-        "Standard_ZRS",
-        "Premium_LRS"
-      ],
-      "metadata": {
-        "description": "Storage Account type."
-      }
     }
   },
   "variables": {
@@ -29,7 +16,7 @@
     {
       "type": "Microsoft.Storage/storageAccounts",
       "name": "[variables('storageAccountName')]",
-      "apiVersion": "2016-01-01",
+      "apiVersion": "2016-05-01",
       "location": "[resourceGroup().location]",
       "sku": {
         "name": "[parameters('storageAccountType')]"

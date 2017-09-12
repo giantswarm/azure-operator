@@ -1,0 +1,91 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterID": {
+      "type": "string"
+    },
+    "virtualNetworksAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/virtualNetworks resource."
+      }
+    },
+    "virtualNetworkCidr": {
+      "type": "string"
+    },
+    "masterSubnetCidr": {
+      "type": "string"
+    },
+    "workerSubnetCidr": {
+      "type": "string"
+    },
+    "masterSecurityGroupID": {
+      "type": "string"
+    },
+    "workerSecurityGroupID": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "virtualNetworkName": "[concat(parameters('clusterID'), '-VirtualNetwork')]",
+    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+
+    "masterSubnetName": "[concat(variables('virtualNetworkName'), '-MasterSubnet')]",
+    "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
+
+    "workerSubnetName": "[concat(variables('virtualNetworkName'), '-WorkerSubnet')]",
+    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
+
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/virtualNetworks",
+      "name": "[variables('virtualNetworkName')]",
+      "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressSpace": {
+          "addressPrefixes": [
+            "[parameters('virtualNetworkCidr')]"
+          ]
+        },
+        "subnets": [
+          {
+            "name": "[variables('masterSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('masterSubnetCidr')]",
+              "networkSecurityGroup": {
+                "id": "[parameters('masterSecurityGroupID')]"
+              }
+            }
+          },
+          {
+            "name": "[variables('workerSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('workerSubnetCidr')]",
+              "networkSecurityGroup": {
+                "id": "[parameters('workerSecurityGroupID')]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "virtualNetworkID": {
+      "type": "string",
+      "value": "[variables('virtualNetworkID')]"
+    },
+    "masterSubnetID": {
+      "type": "string",
+      "value": "[variables('masterSubnetID')]"
+    },
+    "workerSubnetID": {
+      "type": "string",
+      "value": "[variables('workerSubnetID')]"
+    }
+  }
+}

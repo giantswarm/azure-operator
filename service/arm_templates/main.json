@@ -1,0 +1,139 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterID": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique ID of this guest cluster."
+      }
+    },
+    "storageAccountType": {
+      "type": "string",
+      "allowedValues": [
+        "Standard_LRS",
+        "Standard_GRS",
+        "Standard_ZRS",
+        "Premium_LRS"
+      ]
+    },
+    "virtualNetworkCidr": {
+      "type": "string",
+      "metadata": {
+        "description": "The main CIDR block reserved for this virtual network."
+      }
+    },
+    "masterSubnetCidr": {
+      "type": "string"
+    },
+    "workerSubnetCidr": {
+      "type": "string"
+    },
+    "apiLoadBalancerCidr": {
+      "type": "string"
+    },
+    "etcdLoadBalancerCidr": {
+      "type": "string"
+    },
+    "ingressLoadBalancerCidr": {
+      "type": "string"
+    },
+    "kubernetesAPISecurePort": {
+      "type": "int"
+    },
+    "etcdPort": {
+      "type": "int"
+    },
+    "kubernetesIngressSecurePort": {
+      "type": "int"
+    },
+    "kubernetesIngressInsecurePort": {
+      "type": "int"
+    },
+    "templatesBaseURI" : {
+      "type": "string",
+      "metadata": {
+        "description": "The base URI from which the templates will be fetched. Ends with a trailing '/'."
+      }
+    },
+    "clusterSetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "cluster_setup.json"
+    },
+    "securityGroupsSetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "security_groups_setup.json"
+    },
+    "virtualNetworkSetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "virtual_network_setup.json"
+    }
+  },
+  "variables": {
+    "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
+    "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
+    "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2016-09-01",
+      "name": "cluster_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('clusterSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "storageAccountType": {"value": "[parameters('storageAccountType')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "security_groups_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('securityGroupsSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "apiLoadBalancerCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
+          "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
+          "ingressLoadBalancerCidr": {"value": "[parameters('ingressLoadBalancerCidr')]"},
+          "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
+          "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
+          "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
+          "etcdPort": {"value": "[parameters('etcdPort')]"},
+          "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
+          "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"},
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "virtual_network_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('virtualNetworkSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
+          "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
+          "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
+          "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
+          "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
+        }
+      }
+    },
+  ]
+}
