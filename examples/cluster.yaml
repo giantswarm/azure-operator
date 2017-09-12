@@ -35,10 +35,10 @@ spec:
       domain: "cluster.local"
       hyperkube:
         docker:
-          image: "quay.io/giantswarm/hyperkube:v1.6.4_coreos.0"
+          image: "quay.io/giantswarm/hyperkube:v1.7.5_coreos.0"
       ingressController:
         docker:
-          image: "quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.1"
+          image: "quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.11"
         insecurePort: 30010
         securePort: 30011
         domain: "ingress.example.azure.gigantic.io"
@@ -57,3 +57,13 @@ spec:
 
   azure:
     location: "westeurope"
+    storage:
+      accountType: "Standard_LRS"
+    virtualNetwork:
+      cidr: "10.0.0.0/16"
+      masterSubnetCidr: "10.0.1.0/24"
+      workerSubnetCidr: "10.0.2.0/24"      
+      loadBalancer:
+        apiCidr: "10.0.3.0/25"
+        etcdCidr: "10.0.3.128/25"
+        ingressCidr: "10.0.4.0/25"
