@@ -21,9 +21,14 @@ const (
 
 	createTimeout  = 5 * time.Minute
 	deploymentMode = "Incremental"
+	masterBranch   = "master"
 )
 
 type Config struct {
+	// TemplateBranch is the GitHub branch for deploying ARM templates.
+	// Defaults to master.
+	TemplateBranch string
+
 	// Dependencies.
 
 	AzureConfig *client.AzureConfig
@@ -34,6 +39,8 @@ type Config struct {
 // best effort.
 func DefaultConfig() Config {
 	return Config{
+		TemplateBranch: masterBranch,
+
 		// Dependencies.
 		AzureConfig: nil,
 		Logger:      nil,
@@ -41,6 +48,8 @@ func DefaultConfig() Config {
 }
 
 type Resource struct {
+	templateBranch string
+
 	// Dependencies.
 
 	azureConfig *client.AzureConfig
@@ -62,6 +71,7 @@ func New(config Config) (*Resource, error) {
 		logger: config.Logger.With(
 			"resource", Name,
 		),
+		templateBranch: config.TemplateBranch,
 	}
 
 	return newService, nil
