@@ -125,12 +125,12 @@ func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	clusterSetup, err := newMainDeployment(customObject)
+	mainDeployment, err := r.newMainDeployment(customObject)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 	deployments := []Deployment{
-		clusterSetup,
+		mainDeployment,
 	}
 	return deployments, nil
 }
