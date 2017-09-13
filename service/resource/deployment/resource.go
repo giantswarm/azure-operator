@@ -25,35 +25,40 @@ const (
 )
 
 type Config struct {
-	// URIVersion is used when creating template links for ARM templates.
-	// Defaults to master for deploying templates hosted on GitHub.
-	URIVersion string
-
 	// Dependencies.
 
 	AzureConfig *client.AzureConfig
 	Logger      micrologger.Logger
+
+	// Settings.
+
+	// URIVersion is used when creating template links for ARM templates.
+	// Defaults to master for deploying templates hosted on GitHub.
+	URIVersion string
 }
 
 // DefaultConfig provides a default configuration to create a new resource by
 // best effort.
 func DefaultConfig() Config {
 	return Config{
-		URIVersion: masterBranch,
-
 		// Dependencies.
 		AzureConfig: nil,
 		Logger:      nil,
+
+		// Settings.
+		URIVersion: masterBranch,
 	}
 }
 
 type Resource struct {
-	uriVersion string
-
 	// Dependencies.
 
 	azureConfig *client.AzureConfig
 	logger      micrologger.Logger
+
+	// Settings.
+
+	uriVersion string
 }
 
 // New creates a new configured deploy resource.
