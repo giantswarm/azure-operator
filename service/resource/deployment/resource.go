@@ -21,6 +21,7 @@ const (
 
 	createTimeout  = 5 * time.Minute
 	deploymentMode = "Incremental"
+	masterBranch   = "master"
 )
 
 type Config struct {
@@ -28,6 +29,12 @@ type Config struct {
 
 	AzureConfig *client.AzureConfig
 	Logger      micrologger.Logger
+
+	// Settings.
+
+	// URIVersion is used when creating template links for ARM templates.
+	// Defaults to master for deploying templates hosted on GitHub.
+	URIVersion string
 }
 
 // DefaultConfig provides a default configuration to create a new resource by
@@ -37,6 +44,9 @@ func DefaultConfig() Config {
 		// Dependencies.
 		AzureConfig: nil,
 		Logger:      nil,
+
+		// Settings.
+		URIVersion: masterBranch,
 	}
 }
 
@@ -45,6 +55,10 @@ type Resource struct {
 
 	azureConfig *client.AzureConfig
 	logger      micrologger.Logger
+
+	// Settings.
+
+	uriVersion string
 }
 
 // New creates a new configured deploy resource.
@@ -62,6 +76,7 @@ func New(config Config) (*Resource, error) {
 		logger: config.Logger.With(
 			"resource", Name,
 		),
+		uriVersion: config.URIVersion,
 	}
 
 	return newService, nil
@@ -115,12 +130,12 @@ func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	clusterSetup, err := newClusterSetupDeployment(customObject)
+	mainDeployment, err := r.newMainDeployment(customObject)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 	deployments := []Deployment{
-		clusterSetup,
+		mainDeployment,
 	}
 	return deployments, nil
 }
@@ -188,18 +203,10 @@ func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
 		for _, deploy := range deploymentsToCreate {
 			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating deployment %s", deploy.Name))
 
-			params := make(map[string]interface{}, len(deploy.Parameters))
-			for key, val := range deploy.Parameters {
-				params[key] = struct {
-					Value interface{}
-				}{
-					Value: val,
-				}
-			}
 			deployment := azureresource.Deployment{
 				Properties: &azureresource.DeploymentProperties{
 					Mode:       azureresource.Complete,
-					Parameters: &params,
+					Parameters: &deploy.Parameters,
 					TemplateLink: &azureresource.TemplateLink{
 						URI:            to.StringPtr(deploy.TemplateURI),
 						ContentVersion: to.StringPtr(deploy.TemplateVersion),

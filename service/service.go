@@ -112,6 +112,7 @@ func New(config Config) (*Service, error) {
 	var deploymentResource framework.Resource
 	{
 		deploymentConfig := deployment.DefaultConfig()
+		deploymentConfig.URIVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 		deploymentConfig.AzureConfig = azureConfig
 		deploymentConfig.Logger = config.Logger
 
