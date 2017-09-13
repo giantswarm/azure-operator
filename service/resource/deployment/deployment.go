@@ -61,11 +61,11 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 }
 
 func (r Resource) templateBaseURI() (string, error) {
-	if r.armTemplateBranch == "" {
+	if r.templateBranch == "" {
 		return "", microerror.Maskf(invalidConfigError, "Missing ARM template branch")
 	}
 
-	return fmt.Sprintf(templatesBaseURI, r.armTemplateBranch), nil
+	return fmt.Sprintf(templatesBaseURI, r.templateBranch), nil
 }
 
 func (r Resource) templateURI(templateFileName string) (string, error) {
