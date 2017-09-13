@@ -1,5 +1,9 @@
 package template
 
+import (
+	"github.com/giantswarm/azure-operator/flag/service/azure/template/uri"
+)
+
 type Template struct {
-	Branch string
+	URI uri.URI
 }

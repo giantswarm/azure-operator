@@ -25,9 +25,9 @@ const (
 )
 
 type Config struct {
-	// TemplateBranch is the GitHub branch for deploying ARM templates.
-	// Defaults to master.
-	TemplateBranch string
+	// URIVersion is used when creating template links for ARM templates.
+	// Defaults to master for deploying templates hosted on GitHub.
+	URIVersion string
 
 	// Dependencies.
 
@@ -39,7 +39,7 @@ type Config struct {
 // best effort.
 func DefaultConfig() Config {
 	return Config{
-		TemplateBranch: masterBranch,
+		URIVersion: masterBranch,
 
 		// Dependencies.
 		AzureConfig: nil,
@@ -48,7 +48,7 @@ func DefaultConfig() Config {
 }
 
 type Resource struct {
-	templateBranch string
+	uriVersion string
 
 	// Dependencies.
 
@@ -71,7 +71,7 @@ func New(config Config) (*Resource, error) {
 		logger: config.Logger.With(
 			"resource", Name,
 		),
-		templateBranch: config.TemplateBranch,
+		uriVersion: config.URIVersion,
 	}
 
 	return newService, nil
