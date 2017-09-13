@@ -198,18 +198,10 @@ func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
 		for _, deploy := range deploymentsToCreate {
 			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating deployment %s", deploy.Name))
 
-			params := make(map[string]interface{}, len(deploy.Parameters))
-			for key, val := range deploy.Parameters {
-				params[key] = struct {
-					Value interface{}
-				}{
-					Value: val,
-				}
-			}
 			deployment := azureresource.Deployment{
 				Properties: &azureresource.DeploymentProperties{
 					Mode:       azureresource.Complete,
-					Parameters: &params,
+					Parameters: &deploy.Parameters,
 					TemplateLink: &azureresource.TemplateLink{
 						URI:            to.StringPtr(deploy.TemplateURI),
 						ContentVersion: to.StringPtr(deploy.TemplateVersion),

@@ -34,24 +34,25 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
+	params := map[string]interface{}{
+		"clusterID":                     key.ClusterID(cluster),
+		"storageAccountType":            cluster.Spec.Azure.Storage.AccountType,
+		"virtualNetworkCidr":            cluster.Spec.Azure.VirtualNetwork.CIDR,
+		"masterSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.MasterSubnetCIDR,
+		"workerSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR,
+		"apiLoadBalancerCidr":           cluster.Spec.Azure.VirtualNetwork.LoadBalancer.APICIDR,
+		"etcdLoadBalancerCidr":          cluster.Spec.Azure.VirtualNetwork.LoadBalancer.EtcdCIDR,
+		"ingressLoadBalancerCidr":       cluster.Spec.Azure.VirtualNetwork.LoadBalancer.IngressCIDR,
+		"kubernetesAPISecurePort":       cluster.Spec.Cluster.Kubernetes.API.SecurePort,
+		"etcdPort":                      cluster.Spec.Cluster.Etcd.Port,
+		"kubernetesIngressSecurePort":   cluster.Spec.Cluster.Kubernetes.IngressController.SecurePort,
+		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
+		"templatesBaseURI":              templateBaseURI,
+	}
 
 	deployment := Deployment{
-		Name: mainDeploymentName,
-		Parameters: map[string]interface{}{
-			"clusterID":                     key.ClusterID(cluster),
-			"storageAccountType":            cluster.Spec.Azure.Storage.AccountType,
-			"virtualNetworkCidr":            cluster.Spec.Azure.VirtualNetwork.CIDR,
-			"masterSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.MasterSubnetCIDR,
-			"workerSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR,
-			"apiLoadBalancerCidr":           cluster.Spec.Azure.VirtualNetwork.LoadBalancer.APICIDR,
-			"etcdLoadBalancerCidr":          cluster.Spec.Azure.VirtualNetwork.LoadBalancer.EtcdCIDR,
-			"ingressLoadBalancerCidr":       cluster.Spec.Azure.VirtualNetwork.LoadBalancer.IngressCIDR,
-			"kubernetesAPISecurePort":       cluster.Spec.Cluster.Kubernetes.API.SecurePort,
-			"etcdPort":                      cluster.Spec.Cluster.Etcd.Port,
-			"kubernetesIngressSecurePort":   cluster.Spec.Cluster.Kubernetes.IngressController.SecurePort,
-			"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
-			"templatesBaseURI":              templateBaseURI,
-		},
+		Name:            mainDeploymentName,
+		Parameters:      convertParameters(params),
 		ResourceGroup:   key.ClusterID(cluster),
 		TemplateURI:     mainTemplateURI,
 		TemplateVersion: templateVersion,
@@ -75,4 +76,18 @@ func (r Resource) templateURI(templateFileName string) (string, error) {
 	}
 
 	return fmt.Sprintf("%s%s", baseURI, templateFileName), nil
+}
+
+// convertParameters converts the map into the structure used by the Azure API.
+func convertParameters(inputs map[string]interface{}) map[string]interface{} {
+	params := make(map[string]interface{}, len(inputs))
+	for key, val := range inputs {
+		params[key] = struct {
+			Value interface{}
+		}{
+			Value: val,
+		}
+	}
+
+	return params
 }
