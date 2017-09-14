@@ -40,8 +40,8 @@
       "name": "[variables('masterAvailabitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "PlatformFaultDomainCount": "[variables('masterFaultDomainCount')]",
-        "PlatformUpdateDomainCount": "[variables('masterUpdateDomainCount')]"
+        "PlatformFaultDomainCount": "[parameters('masterFaultDomainCount')]",
+        "PlatformUpdateDomainCount": "[parameters('masterUpdateDomainCount')]"
       }
     },
     {
@@ -50,8 +50,8 @@
       "name": "[variables('workerAvailabitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "PlatformFaultDomainCount": "[variables('workerFaultDomainCount')]",
-        "PlatformUpdateDomainCount": "[variables('workerUpdateDomainCount')]"
+        "PlatformFaultDomainCount": "[parameters('workerFaultDomainCount')]",
+        "PlatformUpdateDomainCount": "[parameters('workerUpdateDomainCount')]"
       }
     }
   ]
