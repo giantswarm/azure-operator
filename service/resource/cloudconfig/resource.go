@@ -3,16 +3,22 @@ package cloudconfig
 import (
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/certificatetpr"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/key"
 )
 
 const (
+	FileOwner      = "root:root"
+	FilePermission = 0700
 	// Name is the identifier of the resource.
-	Name = "cloudconfig"
+	Name         = "cloudconfig"
+	PrefixMaster = "master"
+	PrefixWorker = "worker"
 )
 
 // Config represents the configuration used to create a new cloud config resource.
@@ -73,9 +79,20 @@ func (r *Resource) GetCurrentState(obj interface{}) (interface{}, error) {
 	return []CloudConfigBlob{}, nil
 }
 
-// TODO GetDesiredState is not yet implemented.
+// GetDesiredState returns the cloud config blobs that should be created for
+// this cluster.
 func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
-	return []CloudConfigBlob{}, nil
+	customObject, err := toCustomObject(obj)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	cloudConfigBlobs, err := r.newCloudConfigBlobs(customObject)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cloudConfigBlobs, nil
 }
 
 // GetCreateState returns the cloud config blobs that should be created for
@@ -136,6 +153,64 @@ func (r *Resource) ProcessUpdateState(obj, updateState interface{}) error {
 // Underlying returns the underlying resource.
 func (r *Resource) Underlying() framework.Resource {
 	return r
+}
+
+func getCloudConfigNames() []string {
+	return []string{
+		PrefixMaster,
+		PrefixWorker,
+	}
+}
+
+func (r Resource) newCloudConfigBlobs(customObject azuretpr.CustomObject) ([]CloudConfigBlob, error) {
+	var cloudConfigBlobs []CloudConfigBlob
+
+	certs, err := r.certWatcher.SearchCerts(key.ClusterID(customObject))
+	if err != nil {
+		return []CloudConfigBlob{}, microerror.Mask(err)
+	}
+
+	masterBlob, err := newCloudConfigBlob(PrefixMaster, k8scloudconfig.MasterTemplate, customObject, certs)
+	if err != nil {
+		return []CloudConfigBlob{}, microerror.Mask(err)
+	}
+	workerBlob, err := newCloudConfigBlob(PrefixWorker, k8scloudconfig.WorkerTemplate, customObject, certs)
+	if err != nil {
+		return []CloudConfigBlob{}, microerror.Mask(err)
+	}
+
+	cloudConfigBlobs = []CloudConfigBlob{
+		masterBlob,
+		workerBlob,
+	}
+
+	return cloudConfigBlobs, nil
+}
+
+func newCloudConfigBlob(prefix string, template string, customObject azuretpr.CustomObject, certs certificatetpr.AssetsBundle) (CloudConfigBlob, error) {
+	var cloudConfigBlob CloudConfigBlob
+
+	params := k8scloudconfig.Params{
+		Cluster: customObject.Spec.Cluster,
+		Extension: &MasterExtension{
+			certs: certs,
+		},
+	}
+	cloudConfig, err := k8scloudconfig.NewCloudConfig(k8scloudconfig.MasterTemplate, params)
+	if err != nil {
+		return CloudConfigBlob{}, microerror.Mask(err)
+	}
+	err = cloudConfig.ExecuteTemplate()
+	if err != nil {
+		return CloudConfigBlob{}, microerror.Mask(err)
+	}
+
+	cloudConfigBlob = CloudConfigBlob{
+		Name: prefix,
+		Data: cloudConfig.Base64(),
+	}
+
+	return cloudConfigBlob, nil
 }
 
 func existsCloudConfigByName(list []CloudConfigBlob, name string) bool {
