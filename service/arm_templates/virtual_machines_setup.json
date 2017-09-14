@@ -1,0 +1,58 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "availabilitySetsAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/availabilitySets resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "masterFaultDomainCount": {
+      "type": "string",
+      "defaultValue": "3"
+    },
+    "masterUpdateDomainCount": {
+      "type": "string",
+      "defaultValue": "5"
+    },
+    "workerFaultDomainCount": {
+      "type": "string",
+      "defaultValue": "3"
+    },
+    "workerUpdateDomainCount": {
+      "type": "string",
+      "defaultValue": "5"
+    }
+  },
+  "variables": {
+    "masterAvailabitySetName": "[concat(parameters('clusterID'), '-masterAvailabitySet')]",
+    "workerAvailabitySetName": "[concat(parameters('clusterID'), '-workerAvailabitySet')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[parameters('masterAvailabitySetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "PlatformFaultDomainCount": "[variables('masterFaultDomainCount')]",
+        "PlatformUpdateDomainCount": "[variables('masterUpdateDomainCount')]"
+      }
+    },
+    {
+      "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[parameters('workerAvailabitySetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "PlatformFaultDomainCount": "[variables('workerFaultDomainCount')]",
+        "PlatformUpdateDomainCount": "[variables('workerUpdateDomainCount')]"
+      }
+    },
+  ],
+  "outputs": {}
