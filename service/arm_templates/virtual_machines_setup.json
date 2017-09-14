@@ -54,5 +54,4 @@
         "PlatformUpdateDomainCount": "[variables('workerUpdateDomainCount')]"
       }
     },
-  ],
-  "outputs": {}
+  ]
