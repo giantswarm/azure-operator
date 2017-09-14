@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/giantswarm/certificatetpr"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -15,6 +16,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/operator"
+	"github.com/giantswarm/azure-operator/service/resource/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
 )
@@ -97,6 +99,17 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var certWatcher certificatetpr.Searcher
+	{
+		certConfig := certificatetpr.DefaultServiceConfig()
+		certConfig.K8sClient = k8sClient
+		certConfig.Logger = config.Logger
+		certWatcher, err = certificatetpr.NewService(certConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var resourceGroupResource framework.Resource
 	{
 		resourceGroupConfig := resourcegroup.DefaultConfig()
@@ -122,10 +135,22 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var cloudConfigResource framework.Resource
+	{
+		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.AzureConfig = azureConfig
+		cloudConfigConfig.CertWatcher = certWatcher
+		cloudConfigConfig.Logger = config.Logger
+
+		cloudConfigResource, err = cloudconfig.New(cloudConfigConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorFramework *framework.Framework
 	{
 		frameworkConfig := framework.DefaultConfig()
-
 		frameworkConfig.Logger = config.Logger
 
 		operatorFramework, err = framework.New(frameworkConfig)
@@ -145,6 +170,7 @@ func New(config Config) (*Service, error) {
 		operatorConfig.Resources = []framework.Resource{
 			resourceGroupResource,
 			deploymentResource,
+			cloudConfigResource,
 		}
 		operatorConfig.Viper = config.Viper
 

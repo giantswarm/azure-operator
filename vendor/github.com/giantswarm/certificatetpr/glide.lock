@@ -1,31 +1,10 @@
-hash: e16de26ffa3bf69eb33426b2d5f1e669c4db8f13cab386fb03c781d93a1e6987
-updated: 2017-09-13T19:29:51.312642424+02:00
+hash: 7500b358e8490b126a510dce546ea2f0b2374692ad30aedad45e93b2a88a4a72
+updated: 2017-09-08T18:06:46.71719445+02:00
 imports:
-- name: github.com/Azure/azure-sdk-for-go
-  version: df4dd90d076ebbf6e87d08d3f00bfac8ff4bde1a
-  subpackages:
-  - arm/resources/resources
-- name: github.com/Azure/go-autorest
-  version: 01e63fe45553a6a238f25f336bee5ba9c74b3289
-  subpackages:
-  - autorest
-  - autorest/adal
-  - autorest/azure
-  - autorest/date
-  - autorest/to
-  - autorest/validation
-- name: github.com/beorn7/perks
-  version: 4c0e84591b9aa9e6dcfdf3e020114cd81f89d5f9
-  subpackages:
-  - quantile
-- name: github.com/cenkalti/backoff
-  version: 61153c768f31ee5f130071d08fc82b85208528de
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
   - spew
-- name: github.com/dgrijalva/jwt-go
-  version: a539ee1a749a2b895533f979515ac7e6e0f5b650
 - name: github.com/docker/distribution
   version: cd27f179f2c10c5d300e6d09025b538c475b0d51
   subpackages:
@@ -36,74 +15,18 @@ imports:
   subpackages:
   - log
   - swagger
-- name: github.com/fsnotify/fsnotify
-  version: 4da3e2cfbabc9f751898f250b49f2439785783a1
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
-- name: github.com/giantswarm/azuretpr
-  version: b4e99b27e0e23b2820551304fede3cf2cebf7651
-  subpackages:
-  - spec
-  - spec/azure
-  - spec/azure/virtualnetwork
-- name: github.com/giantswarm/certificatetpr
-  version: 682eb790a45b54dd27f78aae511cabb8c42e8575
-- name: github.com/giantswarm/clustertpr
-  version: 1ac2fe67efb012ab2ff0002769c0ae3463f3aa09
-  subpackages:
-  - spec
-  - spec/docker
-  - spec/kubernetes
-  - spec/kubernetes/hyperkube
-  - spec/kubernetes/ingress
-  - spec/kubernetes/kubectl
-  - spec/kubernetes/networksetup
-- name: github.com/giantswarm/k8scloudconfig
-  version: 172f467982de9f3b765c9b63c43d9b817ff18b2b
-- name: github.com/giantswarm/microendpoint
-  version: 70547070da4072138bb5161e80a164b0bac075cc
-  subpackages:
-  - endpoint/version
-  - service/version
 - name: github.com/giantswarm/microerror
   version: 5ade94eb4ee35ef72eb9382228470caeddb29989
-- name: github.com/giantswarm/microkit
-  version: 9c50baa91bd1639e41bc5510b215d9d0801f94ca
-  subpackages:
-  - command
-  - command/daemon
-  - command/daemon/flag
-  - command/daemon/flag/config
-  - command/daemon/flag/server
-  - command/daemon/flag/server/listen
-  - command/daemon/flag/server/tls
-  - command/version
-  - flag
-  - server
-  - tls
-  - transaction
-  - transaction/context/id
-  - transaction/context/tracked
 - name: github.com/giantswarm/micrologger
   version: 8a69b2ab80ba2d0bd40d609206518fefacfc8fdf
-  subpackages:
-  - microloggertest
-- name: github.com/giantswarm/microstorage
-  version: f5c68d40459f0021cf8266501b7d8615ea4ff641
-  subpackages:
-  - memory
 - name: github.com/giantswarm/operatorkit
   version: ebba313a2a521c384192e0011959d58682220cb3
-  subpackages:
-  - client/k8s
-  - framework
-  - tpr
 - name: github.com/go-kit/kit
   version: a9ca6725cbbea455e61c6bc8a1ed28e81eb3493b
   subpackages:
-  - endpoint
   - log
-  - transport/http
 - name: github.com/go-logfmt/logfmt
   version: 390ab7935ee28ec6b286364bba9b4dd6410cb3d5
 - name: github.com/go-openapi/jsonpointer
@@ -123,117 +46,41 @@ imports:
   - sortkeys
 - name: github.com/golang/glog
   version: 44145f04b68cf362d9c4df2182967c2275eaefed
-- name: github.com/golang/protobuf
-  version: 8616e8ee5e20a1704615e6c8d7afcdac06087a67
-  subpackages:
-  - proto
 - name: github.com/google/gofuzz
   version: 44d81051d367757e1c7c6a5a86423ece9afcf63c
-- name: github.com/gorilla/context
-  version: 08b5f424b9271eedf6f9f0ce86cb9396ed337a42
-- name: github.com/gorilla/mux
-  version: 0eeaf8392f5b04950925b8a69fe70f110fa7cbfc
-- name: github.com/hashicorp/hcl
-  version: 8f6b1344a92ff8877cf24a5de9177bf7d0a2a187
-  subpackages:
-  - hcl/ast
-  - hcl/parser
-  - hcl/scanner
-  - hcl/strconv
-  - hcl/token
-  - json/parser
-  - json/scanner
-  - json/token
-- name: github.com/inconshreveable/mousetrap
-  version: 76626ae9c91c4f2a10f34cad8ce83ea42c93bb75
 - name: github.com/juju/errgo
   version: 08cceb5d0b5331634b9826762a8fd53b29b86ad8
 - name: github.com/juju/ratelimit
   version: 77ed1c8a01217656d2080ad51981f6e99adaa177
 - name: github.com/kr/logfmt
   version: b84e30acd515aadc4b783ad4ff83aff3299bdfe0
-- name: github.com/magiconair/properties
-  version: 8d7837e64d3c1ee4e54a880c5a920ab4316fc90a
 - name: github.com/mailru/easyjson
   version: d5b7844b561a7bc640052f1b935f7b800330d7e0
   subpackages:
   - buffer
   - jlexer
   - jwriter
-- name: github.com/matttproud/golang_protobuf_extensions
-  version: c12348ce28de40eed0136aa2b644d0ee0650e56c
-  subpackages:
-  - pbutil
-- name: github.com/mitchellh/mapstructure
-  version: d0303fe809921458f417bcf828397a65db30a7e4
-- name: github.com/pelletier/go-toml
-  version: 1d6b12b7cb290426e27e6b4e38b89fcda3aeef03
-- name: github.com/prometheus/client_golang
-  version: 50b3332fd63be43e38472600ec187ceec39d26d6
-  subpackages:
-  - prometheus
-  - prometheus/promhttp
-- name: github.com/prometheus/client_model
-  version: 6f3806018612930941127f2a7c6c453ba2c527d2
-  subpackages:
-  - go
-- name: github.com/prometheus/common
-  version: 2f17f4a9d485bf34b4bfaccc273805040e4f86c8
-  subpackages:
-  - expfmt
-  - internal/bitbucket.org/ww/goautoneg
-  - model
-- name: github.com/prometheus/procfs
-  version: e645f4e5aaa8506fc71d6edbc5c4ff02c04c46f2
-  subpackages:
-  - xfs
 - name: github.com/PuerkitoBio/purell
   version: 8a290539e2e8629dbc4e6bad948158f790ec31f4
 - name: github.com/PuerkitoBio/urlesc
   version: 5bd2802263f21d8788851d5305584c82a5c75d7e
-- name: github.com/spf13/afero
-  version: ee1bd8ee15a1306d1f9201acc41ef39cd9f99a1b
-  subpackages:
-  - mem
-- name: github.com/spf13/cast
-  version: acbeb36b902d72a7a4c18e8f3241075e7ab763e4
-- name: github.com/spf13/cobra
-  version: b78744579491c1ceeaaa3b40205e56b0591b93a3
-- name: github.com/spf13/jwalterweatherman
-  version: 12bd96e66386c1960ab0f74ced1362f66f552f7b
 - name: github.com/spf13/pflag
-  version: 7aff26db30c1be810f9de5038ec5ef96ac41fd7c
-- name: github.com/spf13/viper
-  version: 25b30aa063fc18e48662b86996252eabdcf2f0c7
-- name: github.com/tylerb/graceful
-  version: 4654dfbb6ad53cb5e27f37d99b02e16c1872fbbb
+  version: 9ff6c6923cfffbcd502984b8e0c80539a94968b7
 - name: github.com/ugorji/go
   version: ded73eae5db7e7a0ef6f55aace87a2873c5d2b74
   subpackages:
   - codec
 - name: golang.org/x/net
-  version: b129b8e0fbeb39c8358e51a07ab6c50ad415e72e
-  repo: https://github.com/golang/net.git
-  vcs: git
+  version: e90d6d0afc4c315a0d87a568ae68577cc15149a0
   subpackages:
-  - .
-  - context
   - http2
   - http2/hpack
   - idna
   - lex/httplex
-- name: golang.org/x/sys
-  version: 8f0908ab3b2457e2e15403d3697c9ef5cb4b57a9
-  subpackages:
-  - unix
 - name: golang.org/x/text
-  version: acd49d43e9b95df46670431bf5c7ae59586daad8
-  repo: https://github.com/golang/text.git
-  vcs: git
+  version: 2910a502d2bf9e43193af9d68ca516529614eed3
   subpackages:
-  - .
   - cases
-  - internal
   - internal/tag
   - language
   - runes
@@ -246,7 +93,7 @@ imports:
 - name: gopkg.in/inf.v0
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
-  version: eb3733d160e74a9c7e442f435eb3bea458e1d19f
+  version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
 - name: k8s.io/apimachinery
   version: 85ace5365f33b16fc735c866a12e3c765b9700f2
   subpackages:
@@ -273,7 +120,6 @@ imports:
   - pkg/runtime/serializer/versioning
   - pkg/selection
   - pkg/types
-  - pkg/util/diff
   - pkg/util/errors
   - pkg/util/framer
   - pkg/util/intstr
@@ -360,7 +206,6 @@ imports:
   - pkg/version
   - rest
   - rest/watch
-  - tools/cache
   - tools/clientcmd/api
   - tools/metrics
   - transport
@@ -368,4 +213,18 @@ imports:
   - util/clock
   - util/flowcontrol
   - util/integer
-testImports: []
+testImports:
+- name: github.com/kylelemons/godebug
+  version: d65d576e9348f5982d7f6d83682b694e731a45c6
+  subpackages:
+  - diff
+  - pretty
+- name: github.com/pmezard/go-difflib
+  version: d8ed2627bdf02c080bf22230dbb337003b7aba2d
+  subpackages:
+  - difflib
+- name: github.com/stretchr/testify
+  version: 69483b4bd14f5845b5a1e55bca19e954e827f1d0
+  subpackages:
+  - assert
+  - require
