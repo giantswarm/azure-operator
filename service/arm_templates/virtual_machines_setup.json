@@ -31,7 +31,10 @@
   },
   "variables": {
     "masterAvailabitySetName": "[concat(parameters('clusterID'), '-masterAvailabitySet')]",
-    "workerAvailabitySetName": "[concat(parameters('clusterID'), '-workerAvailabitySet')]"
+    "masterAvailabitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('masterAvailabitySetName'))]",
+
+    "workerAvailabitySetName": "[concat(parameters('clusterID'), '-workerAvailabitySet')]",
+    "workerAvailabitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('workerAvailabitySetName'))]",
   },
   "resources": [
     {
@@ -54,5 +57,15 @@
         "PlatformUpdateDomainCount": "[parameters('workerUpdateDomainCount')]"
       }
     }
-  ]
+  ],
+  "outputs": {
+    "masterAvailabitySetID": {
+      "type": "string",
+      "value": "[variables('masterAvailabitySetID')]"
+    },
+    "workerAvailabitySetID": {
+      "type": "string",
+      "value": "[variables('workerAvailabitySetID')]"
+    }
+  }
 }
