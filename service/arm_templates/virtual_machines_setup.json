@@ -37,7 +37,7 @@
     {
       "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "[parameters('masterAvailabitySetName')]",
+      "name": "[variables('masterAvailabitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "PlatformFaultDomainCount": "[variables('masterFaultDomainCount')]",
@@ -47,7 +47,7 @@
     {
       "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "[parameters('workerAvailabitySetName')]",
+      "name": "[variables('workerAvailabitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "PlatformFaultDomainCount": "[variables('workerFaultDomainCount')]",
