@@ -53,5 +53,6 @@
         "PlatformFaultDomainCount": "[variables('workerFaultDomainCount')]",
         "PlatformUpdateDomainCount": "[variables('workerUpdateDomainCount')]"
       }
-    },
+    }
   ]
+}
