@@ -56,6 +56,10 @@
         "description": "The base URI from which the templates will be fetched. Ends with a trailing '/'."
       }
     },
+    "availabilitySetsTemplateFile": {
+      "type": "string",
+      "defaultValue": "availability_sets_setup.json"
+    },
     "clusterSetupTemplateFile": {
       "type": "string",
       "defaultValue": "cluster_setup.json"
@@ -64,14 +68,20 @@
       "type": "string",
       "defaultValue": "security_groups_setup.json"
     },
+    "virtualMachinesSetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "virtual_machines_setup.json"
+    },
     "virtualNetworkSetupTemplateFile": {
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
     }
   },
   "variables": {
+    "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
+    "virtualMachinesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualMachinesSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]"
   },
   "resources": [
@@ -135,5 +145,20 @@
         }
       }
     },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "availability_sets_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('availabilitySetsTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"}
+        }
+      }
+    }
   ]
 }
