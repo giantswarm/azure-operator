@@ -1,0 +1,54 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkInterfacesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/networkInterfaces resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "masterCount": {
+      "type": "int"
+    },
+    "masterIPAddresses": {
+      "type": "array"
+    },
+    "masterSubnetID": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "masterNICName": "[concat(parameters('clusterID'), '-MasterNIC')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('networkInterfacesAPIVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[concat(variables('masterNICName'), copyindex())]",
+      "location": "[resourceGroup().location]",
+      "copy": {
+        "name": "masterNICCopy",
+        "count": "[parameters('masterCount')]"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "MastersIpConfig",
+            "properties": {
+              "privateIPAllocationMethod": "Static",
+              "privateIPAddress": "[parameters('masterIPAddresses')[copyIndex()]]",
+              "subnet": {
+                "id": "[parameters('masterSubnetID')]"
+              }
+            }
+          }
+        ]
+      }
+    }
+  ]
+}
