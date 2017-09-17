@@ -9,7 +9,17 @@
         "description": "API version used by the Microsoft.Network/networkInterfaces resource."
       }
     },
+    "virtualMachinesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-08-30",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/virtualMachines resource."
+      }
+    },
     "clusterID": {
+      "type": "string"
+    },
+    "storageAccountName": {
       "type": "string"
     },
     "masterCount": {
@@ -20,16 +30,56 @@
     },
     "masterSubnetID": {
       "type": "string"
+    },
+    "masterAvailabitySetID": {
+      "type": "string"
+    },
+    "masterVMSize": {
+      "type": "string"
+    },
+    "masterDataDiskSizeGB": {
+      "type": "string"
+    },
+    "masterVMAdminUsername": {
+      "type": "string"
+    },
+    "masterVMAdminPassword": {
+      "type": "string"
+    },
+    "masterVMDisablePasswordAuth": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "masterVMAdminSSHKeyPath": {
+      "type": "string"
+    },
+    "masterVMAdminSSHKeyData": {
+      "type": "string"
+    },
+    "masterVMOSImagePublisher": {
+      "type": "string"
+    },
+    "masterVMOSImageOffer": {
+      "type": "string"
+    },
+    "masterVMOSImageSKU": {
+      "type": "string"
+    },
+    "masterVMOSImageVersion": {
+      "type": "string"
     }
   },
   "variables": {
-    "masterNICName": "[concat(parameters('clusterID'), '-MasterNIC')]"
+    "masterNICName": "[concat(parameters('clusterID'), '-MasterNIC-')]",
+    "masterVMName": "[concat(parameters('clusterID'), '-Master-')]",
+    "masterOSDiskName": "[concat(parameters('clusterID'), '-OSDisk-')]",
+    "masterDataDiskName": "[concat(parameters('clusterID'), '-DataDisk-')]"
   },
   "resources": [
     {
       "apiVersion": "[parameters('networkInterfacesAPIVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('masterNICName'), copyindex())]",
+      "name": "[concat(variables('masterNICName'), copyIndex())]",
       "location": "[resourceGroup().location]",
       "copy": {
         "name": "masterNICCopy",
@@ -48,6 +98,77 @@
             }
           }
         ]
+      }
+    },
+    {
+      "apiVersion": "[parameters('virtualMachinesAPIVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[concat(variables('masterVMName'), copyindex())]",
+      "copy": {
+        "name": "masterVMCopy",
+        "count": "[parameters('masterCount')]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('masterNICName'), copyIndex())]"
+      ],
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "availabilitySet": {
+          "id": "[parameters('masterAvailabitySetID')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('masterVMSize')]"
+        },
+        "osProfile": {
+          "computerName": "[concat(variables('masterVMName'), copyindex())]",
+          "adminUsername": "[parameters('masterVMAdminUsername')]",
+          "adminPassword": "[parameters('masterVMAdminPassword')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": "[parameters('masterVMDisablePasswordAuth')]",
+            "ssh": {
+              "publicKeys": [
+                {
+                  "path": "[parameters('masterVMAdminSSHKeyPath')]",
+                  "keyData": "[parameters('masterVMAdminSSHKeyData')]"
+                }
+              ]
+            }
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('masterVMOSImagePublisher')]",
+            "offer": "[parameters('masterVMOSImageOffer')]",
+            "sku": "[parameters('masterVMOSImageSKU')]",
+            "version": "[parameters('masterVMOSImageVersion')]"
+          },
+          "osDisk": {
+            "name": "[concat(variables('masterOSDiskName'), copyindex())]",
+            "vhd": {
+              "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', variables('masterOSDiskName'), copyindex(),'.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "name": "[concat(variables('masterDataDiskName'), copyindex())]",
+              "diskSizeGB": "[parameters('masterDataDiskSizeGB')]",
+              "lun": 0,
+              "vhd": {
+                "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', variables('masterDataDiskName'), copyIndex(), '.vhd')]"
+              },
+              "createOption": "Empty"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('masterNICName'), copyIndex()))]"
+            }
+          ]
+        }
       }
     }
   ]
