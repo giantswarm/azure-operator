@@ -30,10 +30,10 @@
     }
   },
   "variables": {
-    "masterAvailabitySetName": "[concat(parameters('clusterID'), '-masterAvailabitySet')]",
+    "masterAvailabitySetName": "[concat(parameters('clusterID'), '-MasterAvailabitySet')]",
     "masterAvailabitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('masterAvailabitySetName'))]",
 
-    "workerAvailabitySetName": "[concat(parameters('clusterID'), '-workerAvailabitySet')]",
+    "workerAvailabitySetName": "[concat(parameters('clusterID'), '-WorkerAvailabitySet')]",
     "workerAvailabitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('workerAvailabitySetName'))]",
   },
   "resources": [
