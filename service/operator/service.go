@@ -12,7 +12,6 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
@@ -136,11 +135,8 @@ func (s *Service) Boot() {
 
 		s.Logger.Log("debug", "starting list/watch")
 
-		newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
-			AddFunc:    s.addFunc,
-			DeleteFunc: s.deleteFunc,
-			UpdateFunc: s.updateFunc,
-		}
+		newResourceEventHandler := s.operatorFramework.NewCacheResourceEventHandler()
+
 		newZeroObjectFactory := &tpr.ZeroObjectFactoryFuncs{
 			NewObjectFunc:     func() runtime.Object { return &azuretpr.CustomObject{} },
 			NewObjectListFunc: func() runtime.Object { return &azuretpr.List{} },
@@ -148,61 +144,4 @@ func (s *Service) Boot() {
 
 		s.tpr.NewInformer(newResourceEventHandler, newZeroObjectFactory).Run(nil)
 	})
-}
-
-func (s *Service) addFunc(obj interface{}) {
-	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
-	// addFunc/deleteFunc/updateFunc is executed at a time.
-	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
-	// the source of truth for the azure-operator are Azure resources.
-	// In case we would run the operator logic in parallel, we would run into race
-	// conditions.
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	s.logger.Log("debug", "executing the operator's addFunc")
-
-	err := s.operatorFramework.ProcessCreate(obj, s.resources)
-	if err != nil {
-		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "create")
-	}
-}
-
-func (s *Service) deleteFunc(obj interface{}) {
-	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
-	// addFunc/deleteFunc/updateFunc is executed at a time.
-	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
-	// the source of truth for the azure-operator are Azure resources.
-	// In case we would run the operator logic in parallel, we would run into race
-	// conditions.
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	s.logger.Log("debug", "executing the operator's deleteFunc")
-
-	err := s.operatorFramework.ProcessDelete(obj, s.resources)
-	if err != nil {
-		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "delete")
-	}
-}
-
-func (s *Service) updateFunc(oldObj interface{}, newObj interface{}) {
-	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
-	// addFunc/deleteFunc/updateFunc is executed at a time.
-	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
-	// the source of truth for the azure-operator are Azure resources.
-	// In case we would run the operator logic in parallel, we would run into race
-	// conditions.
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	s.logger.Log("debug", "executing the operator's updateFunc")
-
-	// Creating Azure resources should be idempotent so here we call
-	// ProcessCreate rather than ProcessUpdate.
-	// TODO Decide if we need to implement ProcessUpdate for this operator.
-	err := s.operatorFramework.ProcessCreate(newObj, s.resources)
-	if err != nil {
-		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "update")
-	}
 }
