@@ -47,7 +47,6 @@ func DefaultConfig() Config {
 		K8sClient:         nil,
 		Logger:            nil,
 		OperatorFramework: nil,
-		Resources:         nil,
 
 		// Settings.
 		Flag:  nil,
@@ -63,7 +62,6 @@ type Service struct {
 	backoff           backoff.BackOff
 	logger            micrologger.Logger
 	operatorFramework *framework.Framework
-	resources         []framework.Resource
 
 	// Internals.
 
@@ -89,9 +87,6 @@ func New(config Config) (*Service, error) {
 	}
 	if config.OperatorFramework == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.OperatorFramework must not be empty")
-	}
-	if config.Resources == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Resources must not be empty")
 	}
 
 	// Settings.
@@ -121,7 +116,6 @@ func New(config Config) (*Service, error) {
 		backoff:           config.Backoff,
 		logger:            config.Logger,
 		operatorFramework: config.OperatorFramework,
-		resources:         config.Resources,
 
 		// Internals.
 		bootOnce: sync.Once{},
@@ -177,3 +171,4 @@ func (s *Service) bootWithError() error {
 	s.tpr.NewInformer(newResourceEventHandler, newZeroObjectFactory).Run(nil)
 
 	return nil
+}
