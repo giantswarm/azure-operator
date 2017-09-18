@@ -67,6 +67,12 @@
     },
     "masterOSImageVersion": {
       "type": "string"
+    },
+    "masterCloudConfigData": {
+      "type": "string",
+      "metadata": {
+        "description": "Base64-encoded cloud-config.yaml data."
+      }
     }
   },
   "variables": {
@@ -123,6 +129,7 @@
           "computerName": "[concat(variables('masterVMName'), copyindex())]",
           "adminUsername": "[parameters('masterAdminUsername')]",
           "adminPassword": "[parameters('masterAdminPassword')]",
+          "customData": "[parameters('masterCloudConfigData')]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "[parameters('masterDisablePasswordAuth')]",
             "ssh": {
