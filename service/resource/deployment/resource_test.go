@@ -1,6 +1,7 @@
 package deployment
 
 import (
+	"context"
 	"testing"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -36,7 +37,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		newResource, err = New(resourceConfig)
 	}
 
-	result, err := newResource.GetDesiredState(customObject)
+	result, err := newResource.GetDesiredState(context.TODO(), customObject)
 	if err != nil {
 		t.Fatalf("expected '%v' got '%#v'", nil, err)
 	}
@@ -155,7 +156,7 @@ func Test_Resource_Deployment_GetCreateState(t *testing.T) {
 		}
 	}
 	for i, tc := range testCases {
-		result, err := newResource.GetCreateState(tc.Obj, tc.Cur, tc.Des)
+		result, err := newResource.GetCreateState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
@@ -236,7 +237,7 @@ func Test_Resource_Deployment_GetDeleteState(t *testing.T) {
 		}
 	}
 	for i, tc := range testCases {
-		result, err := newResource.GetDeleteState(tc.Obj, tc.Cur, tc.Des)
+		result, err := newResource.GetDeleteState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
