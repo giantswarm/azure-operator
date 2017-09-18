@@ -129,6 +129,10 @@ func New(config Config) (*Service, error) {
 		frameworkConfig := framework.DefaultConfig()
 
 		frameworkConfig.Logger = config.Logger
+		frameworkConfig.Resources = []framework.Resource{
+			resourceGroupResource,
+			deploymentResource,
+		}
 
 		operatorFramework, err = framework.New(frameworkConfig)
 		if err != nil {
@@ -151,10 +155,6 @@ func New(config Config) (*Service, error) {
 		operatorConfig.K8sClient = k8sClient
 		operatorConfig.Logger = config.Logger
 		operatorConfig.OperatorFramework = operatorFramework
-		operatorConfig.Resources = []framework.Resource{
-			resourceGroupResource,
-			deploymentResource,
-		}
 		operatorConfig.Viper = config.Viper
 
 		operatorService, err = operator.New(operatorConfig)
