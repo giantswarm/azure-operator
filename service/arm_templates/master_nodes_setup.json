@@ -38,7 +38,7 @@
       "type": "string"
     },
     "masterDataDiskSizeGB": {
-      "type": "string"
+      "type": "int"
     },
     "masterAdminUsername": {
       "type": "string"
