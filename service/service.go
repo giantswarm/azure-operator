@@ -3,7 +3,9 @@ package service
 import (
 	"fmt"
 	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -134,10 +136,17 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var operatorBackOff *backoff.ExponentialBackOff
+	{
+		operatorBackOff = backoff.NewExponentialBackOff()
+		operatorBackOff.MaxElapsedTime = 5 * time.Minute
+	}
+
 	var operatorService *operator.Service
 	{
 		operatorConfig := operator.DefaultConfig()
 		operatorConfig.AzureConfig = azureConfig
+		operatorConfig.Backoff = operatorBackOff
 		operatorConfig.Flag = config.Flag
 		operatorConfig.K8sClient = k8sClient
 		operatorConfig.Logger = config.Logger
