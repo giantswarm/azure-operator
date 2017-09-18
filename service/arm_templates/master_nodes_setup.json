@@ -69,10 +69,7 @@
       "type": "string"
     },
     "masterCloudConfigData": {
-      "type": "string",
-      "metadata": {
-        "description": "Base64-encoded cloud-config.yaml data."
-      }
+      "type": "string"
     }
   },
   "variables": {
