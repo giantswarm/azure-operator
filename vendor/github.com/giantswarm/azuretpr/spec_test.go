@@ -19,7 +19,7 @@ import (
 
 	"github.com/giantswarm/azuretpr/spec"
 	"github.com/giantswarm/azuretpr/spec/azure"
-	"github.com/giantswarm/azuretpr/spec/azure/loadbalancer"
+	"github.com/giantswarm/azuretpr/spec/azure/virtualnetwork"
 )
 
 func TestSpecYamlEncoding(t *testing.T) {
@@ -129,7 +129,7 @@ func TestSpecYamlEncoding(t *testing.T) {
 				CIDR:             "10.0.0.0/16",
 				MasterSubnetCIDR: "10.0.1.0/24",
 				WorkerSubnetCIDR: "10.0.2.0/24",
-				LoadBalancer: loadbalancer.LoadBalancer{
+				LoadBalancer: virtualnetwork.LoadBalancer{
 					APICIDR:     "10.0.3.0/25",
 					EtcdCIDR:    "10.0.3.128/25",
 					IngressCIDR: "10.0.4.0/25",
