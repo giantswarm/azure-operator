@@ -40,32 +40,32 @@
     "masterDataDiskSizeGB": {
       "type": "string"
     },
-    "masterVMAdminUsername": {
+    "masterAdminUsername": {
       "type": "string"
     },
-    "masterVMAdminPassword": {
+    "masterAdminPassword": {
       "type": "string"
     },
-    "masterVMDisablePasswordAuth": {
+    "masterDisablePasswordAuth": {
       "type": "bool",
       "defaultValue": true
     },
-    "masterVMAdminSSHKeyPath": {
+    "masterAdminSSHKeyPath": {
       "type": "string"
     },
-    "masterVMAdminSSHKeyData": {
+    "masterAdminSSHKeyData": {
       "type": "string"
     },
-    "masterVMOSImagePublisher": {
+    "masterOSImagePublisher": {
       "type": "string"
     },
-    "masterVMOSImageOffer": {
+    "masterOSImageOffer": {
       "type": "string"
     },
-    "masterVMOSImageSKU": {
+    "masterOSImageSKU": {
       "type": "string"
     },
-    "masterVMOSImageVersion": {
+    "masterOSImageVersion": {
       "type": "string"
     }
   },
@@ -121,15 +121,15 @@
         },
         "osProfile": {
           "computerName": "[concat(variables('masterVMName'), copyindex())]",
-          "adminUsername": "[parameters('masterVMAdminUsername')]",
-          "adminPassword": "[parameters('masterVMAdminPassword')]",
+          "adminUsername": "[parameters('masterAdminUsername')]",
+          "adminPassword": "[parameters('masterAdminPassword')]",
           "linuxConfiguration": {
-            "disablePasswordAuthentication": "[parameters('masterVMDisablePasswordAuth')]",
+            "disablePasswordAuthentication": "[parameters('masterDisablePasswordAuth')]",
             "ssh": {
               "publicKeys": [
                 {
-                  "path": "[parameters('masterVMAdminSSHKeyPath')]",
-                  "keyData": "[parameters('masterVMAdminSSHKeyData')]"
+                  "path": "[parameters('masterAdminSSHKeyPath')]",
+                  "keyData": "[parameters('masterAdminSSHKeyData')]"
                 }
               ]
             }
@@ -137,10 +137,10 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[parameters('masterVMOSImagePublisher')]",
-            "offer": "[parameters('masterVMOSImageOffer')]",
-            "sku": "[parameters('masterVMOSImageSKU')]",
-            "version": "[parameters('masterVMOSImageVersion')]"
+            "publisher": "[parameters('masterOSImagePublisher')]",
+            "offer": "[parameters('masterOSImageOffer')]",
+            "sku": "[parameters('masterOSImageSKU')]",
+            "version": "[parameters('masterOSImageVersion')]"
           },
           "osDisk": {
             "name": "[concat(variables('masterOSDiskName'), copyindex())]",
