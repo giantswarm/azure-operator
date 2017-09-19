@@ -35,6 +35,12 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		return Deployment{}, microerror.Mask(err)
 	}
 
+	// TODO Certificates will be passed in as a template parameter.
+	_, err = r.certWatcher.SearchCerts(key.ClusterID(cluster))
+	if err != nil {
+		return Deployment{}, microerror.Mask(err)
+	}
+
 	// TODO Master CloudConfig will be passed in as a template parameter.
 	_, err = r.cloudConfig.NewMasterCloudConfig(cluster)
 	if err != nil {

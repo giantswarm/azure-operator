@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+	"github.com/giantswarm/certificatetpr"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -100,6 +101,17 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var certWatcher certificatetpr.Searcher
+	{
+		certConfig := certificatetpr.DefaultServiceConfig()
+		certConfig.K8sClient = k8sClient
+		certConfig.Logger = config.Logger
+		certWatcher, err = certificatetpr.NewService(certConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var cloudConfigService *cloudconfig.CloudConfig
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
@@ -130,6 +142,7 @@ func New(config Config) (*Service, error) {
 		deploymentConfig := deployment.DefaultConfig()
 		deploymentConfig.URIVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 		deploymentConfig.AzureConfig = azureConfig
+		deploymentConfig.CertWatcher = certWatcher
 		deploymentConfig.CloudConfig = cloudConfigService
 		deploymentConfig.Logger = config.Logger
 
