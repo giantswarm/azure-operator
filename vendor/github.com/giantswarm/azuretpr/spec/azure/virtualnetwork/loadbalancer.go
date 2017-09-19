@@ -1,4 +1,4 @@
-package loadbalancer
+package virtualnetwork
 
 type LoadBalancer struct {
 	// APICIDR is the CIDR for the apiserver load balancer.
