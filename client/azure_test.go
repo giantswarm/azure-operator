@@ -9,28 +9,36 @@ import (
 
 func Test_ResponseWasNotFound(t *testing.T) {
 	testCases := []struct {
-		StatusCode     int
+		Response       *http.Response
 		ExpectedResult bool
 	}{
 		{
-			StatusCode:     http.StatusOK,
-			ExpectedResult: false,
-		},
-		{
-			StatusCode:     http.StatusInternalServerError,
-			ExpectedResult: false,
-		},
-		{
-			StatusCode:     http.StatusNotFound,
+			Response: &http.Response{
+				StatusCode: http.StatusNotFound,
+			},
 			ExpectedResult: true,
+		},
+		{
+			Response: &http.Response{
+				StatusCode: http.StatusOK,
+			},
+			ExpectedResult: false,
+		},
+		{
+			Response: &http.Response{
+				StatusCode: http.StatusInternalServerError,
+			},
+			ExpectedResult: false,
+		},
+		{
+			Response:       nil,
+			ExpectedResult: false,
 		},
 	}
 
 	for i, tc := range testCases {
 		resp := autorest.Response{
-			Response: &http.Response{
-				StatusCode: tc.StatusCode,
-			},
+			Response: tc.Response,
 		}
 
 		if tc.ExpectedResult != ResponseWasNotFound(resp) {
