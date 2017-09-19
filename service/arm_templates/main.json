@@ -54,12 +54,6 @@
       "type": "int",
       "defaultValue": 1
     },
-    "masterIPAddresses": {
-      "type": "array",
-      "metadata": {
-        "description": "An array containing all the master nodes' ip addresses."
-      }
-    },
     "masterVMSize": {
       "type": "string"
     },
@@ -229,7 +223,6 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
           "masterCount": {"value": "[parameters('masterCount')]"},
-          "masterIPAddresses": {"value": "[parameters('masterIPAddresses')]"},
           "masterSubnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
           "masterAvailabitySetID": {"value": "[reference('availability_sets_setup').outputs.masterAvailabitySetID.value]"},
           "masterVMSize": {"value": "[parameters('masterVMSize')]"},

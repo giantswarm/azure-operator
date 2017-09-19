@@ -25,9 +25,6 @@
     "masterCount": {
       "type": "int"
     },
-    "masterIPAddresses": {
-      "type": "array"
-    },
     "masterSubnetID": {
       "type": "string"
     },
@@ -93,8 +90,7 @@
           {
             "name": "MastersIpConfig",
             "properties": {
-              "privateIPAllocationMethod": "Static",
-              "privateIPAddress": "[parameters('masterIPAddresses')[copyIndex()]]",
+              "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[parameters('masterSubnetID')]"
               }
