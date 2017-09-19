@@ -28,7 +28,7 @@
     "masterSubnetID": {
       "type": "string"
     },
-    "masterAvailabitySetID": {
+    "masterAvailabilitySetID": {
       "type": "string"
     },
     "masterVMSize": {
@@ -108,7 +108,7 @@
       "location": "[resourceGroup().location]",
       "properties": {
         "availabilitySet": {
-          "id": "[parameters('masterAvailabitySetID')]"
+          "id": "[parameters('masterAvailabilitySetID')]"
         },
         "hardwareProfile": {
           "vmSize": "[parameters('masterVMSize')]"

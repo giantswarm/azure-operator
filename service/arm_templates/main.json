@@ -218,7 +218,7 @@
           "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
           "masterCount": {"value": "[parameters('masterCount')]"},
           "masterSubnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
-          "masterAvailabitySetID": {"value": "[reference('availability_sets_setup').outputs.masterAvailabitySetID.value]"},
+          "masterAvailabilitySetID": {"value": "[reference('availability_sets_setup').outputs.masterAvailabilitySetID.value]"},
           "masterVMSize": {"value": "[parameters('masterVMSize')]"},
           "masterDataDiskSizeGB": {"value": "[parameters('masterDataDiskSizeGB')]"},
           "masterAdminUsername": {"value": "[parameters('masterAdminUsername')]"},

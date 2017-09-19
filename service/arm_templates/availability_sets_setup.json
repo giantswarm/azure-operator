@@ -30,17 +30,17 @@
     }
   },
   "variables": {
-    "masterAvailabitySetName": "[concat(parameters('clusterID'), '-MasterAvailabitySet')]",
-    "masterAvailabitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('masterAvailabitySetName'))]",
+    "masterAvailabilitySetName": "[concat(parameters('clusterID'), '-MasterAvailabilitySet')]",
+    "masterAvailabilitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('masterAvailabilitySetName'))]",
 
-    "workerAvailabitySetName": "[concat(parameters('clusterID'), '-WorkerAvailabitySet')]",
-    "workerAvailabitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('workerAvailabitySetName'))]",
+    "workerAvailabilitySetName": "[concat(parameters('clusterID'), '-WorkerAvailabilitySet')]",
+    "workerAvailabilitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('workerAvailabilitySetName'))]",
   },
   "resources": [
     {
       "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "[variables('masterAvailabitySetName')]",
+      "name": "[variables('masterAvailabilitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "PlatformFaultDomainCount": "[parameters('masterFaultDomainCount')]",
@@ -50,7 +50,7 @@
     {
       "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "[variables('workerAvailabitySetName')]",
+      "name": "[variables('workerAvailabilitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
         "PlatformFaultDomainCount": "[parameters('workerFaultDomainCount')]",
@@ -59,13 +59,13 @@
     }
   ],
   "outputs": {
-    "masterAvailabitySetID": {
+    "masterAvailabilitySetID": {
       "type": "string",
-      "value": "[variables('masterAvailabitySetID')]"
+      "value": "[variables('masterAvailabilitySetID')]"
     },
-    "workerAvailabitySetID": {
+    "workerAvailabilitySetID": {
       "type": "string",
-      "value": "[variables('workerAvailabitySetID')]"
+      "value": "[variables('workerAvailabilitySetID')]"
     }
   }
 }
