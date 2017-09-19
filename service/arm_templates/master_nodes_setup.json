@@ -40,15 +40,9 @@
     "masterAdminUsername": {
       "type": "string"
     },
-    "masterAdminPassword": {
-      "type": "string"
-    },
     "masterDisablePasswordAuth": {
       "type": "bool",
       "defaultValue": true
-    },
-    "masterAdminSSHKeyPath": {
-      "type": "string"
     },
     "masterAdminSSHKeyData": {
       "type": "string"
@@ -70,6 +64,7 @@
     }
   },
   "variables": {
+    "masterAdminSSHKeyPath": "[concat('/home/',parameters('masterAdminUsername'),'/.ssh/authorized_keys')]",
     "masterNICName": "[concat(parameters('clusterID'), '-MasterNIC-')]",
     "masterVMName": "[concat(parameters('clusterID'), '-Master-')]",
     "masterOSDiskName": "[concat(parameters('clusterID'), '-OSDisk-')]",
@@ -121,15 +116,14 @@
         "osProfile": {
           "computerName": "[concat(variables('masterVMName'), copyindex())]",
           "adminUsername": "[parameters('masterAdminUsername')]",
-          "adminPassword": "[parameters('masterAdminPassword')]",
           "customData": "[parameters('masterCloudConfigData')]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "[parameters('masterDisablePasswordAuth')]",
             "ssh": {
               "publicKeys": [
                 {
-                  "path": "[parameters('masterAdminSSHKeyPath')]",
-                  "keyData": "[parameters('masterAdminSSHKeyData')]"
+                  "keyData": "[parameters('masterAdminSSHKeyData')]",
+                  "path": "[variables('masterAdminSSHKeyPath')]"
                 }
               ]
             }
