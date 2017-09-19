@@ -63,15 +63,9 @@
     "masterAdminUsername": {
       "type": "string"
     },
-    "masterAdminPassword": {
-      "type": "string"
-    },
     "masterDisablePasswordAuth": {
       "type": "bool",
       "defaultValue": true
-    },
-    "masterAdminSSHKeyPath": {
-      "type": "string"
     },
     "masterAdminSSHKeyData": {
       "type": "string"
