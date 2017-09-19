@@ -16,6 +16,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
+	"github.com/giantswarm/azure-operator/service/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/operator"
 	"github.com/giantswarm/azure-operator/service/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
@@ -99,6 +100,19 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var cloudConfigService *cloudconfig.Service
+	{
+		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.Flag = config.Flag
+		cloudConfigConfig.Logger = config.Logger
+		cloudConfigConfig.Viper = config.Viper
+
+		cloudConfigService, err = cloudconfig.New(cloudConfigConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var resourceGroupResource framework.Resource
 	{
 		resourceGroupConfig := resourcegroup.DefaultConfig()
@@ -116,6 +130,7 @@ func New(config Config) (*Service, error) {
 		deploymentConfig := deployment.DefaultConfig()
 		deploymentConfig.URIVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 		deploymentConfig.AzureConfig = azureConfig
+		deploymentConfig.CloudConfig = cloudConfigService
 		deploymentConfig.Logger = config.Logger
 
 		deploymentResource, err = deployment.New(deploymentConfig)

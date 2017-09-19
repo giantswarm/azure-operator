@@ -34,6 +34,19 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
+
+	// TODO Master CloudConfig will be passed in as a template parameter.
+	_, err = r.cloudConfig.NewMasterCloudConfig(cluster)
+	if err != nil {
+		return Deployment{}, microerror.Mask(err)
+	}
+
+	// TODO Worker CloudConfig will be passed in as a template parameter.
+	_, err = r.cloudConfig.NewWorkerCloudConfig(cluster)
+	if err != nil {
+		return Deployment{}, microerror.Mask(err)
+	}
+
 	params := map[string]interface{}{
 		"clusterID":                     key.ClusterID(cluster),
 		"storageAccountType":            cluster.Spec.Azure.Storage.AccountType,

@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/key"
 )
 
@@ -29,6 +30,7 @@ type Config struct {
 	// Dependencies.
 
 	AzureConfig *client.AzureConfig
+	CloudConfig *cloudconfig.Service
 	Logger      micrologger.Logger
 
 	// Settings.
@@ -44,6 +46,7 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 		AzureConfig: nil,
+		CloudConfig: nil,
 		Logger:      nil,
 
 		// Settings.
@@ -55,6 +58,7 @@ type Resource struct {
 	// Dependencies.
 
 	azureConfig *client.AzureConfig
+	cloudConfig *cloudconfig.Service
 	logger      micrologger.Logger
 
 	// Settings.
@@ -68,12 +72,16 @@ func New(config Config) (*Resource, error) {
 	if config.AzureConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty.")
 	}
+	if config.CloudConfig == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty.")
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty.")
 	}
 
 	newService := &Resource{
 		azureConfig: config.AzureConfig,
+		cloudConfig: config.CloudConfig,
 		logger: config.Logger.With(
 			"resource", Name,
 		),
