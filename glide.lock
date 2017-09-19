@@ -1,5 +1,5 @@
-hash: ee080f3bc30e963126d65b388cb5de3df6fa89020769af90569819fc84311163
-updated: 2017-09-18T20:13:56.640941495+02:00
+hash: 31451d0184903da27e29efde882148c6f601e43e2d4535835718634c95d9e643
+updated: 2017-09-19T08:58:54.621915216+02:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: df4dd90d076ebbf6e87d08d3f00bfac8ff4bde1a
@@ -57,6 +57,8 @@ imports:
   - spec/kubernetes/kubectl
   - spec/kubernetes/networksetup
   - spec/kubernetes/ssh
+- name: github.com/giantswarm/k8scloudconfig
+  version: 9a50110b0038bf0c1b7883e3c0ecf76012c71763
 - name: github.com/giantswarm/microendpoint
   version: f5682d1d6fe0eb963397fb7e0535c1794644efce
   subpackages:
