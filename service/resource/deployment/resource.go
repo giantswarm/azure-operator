@@ -30,7 +30,7 @@ type Config struct {
 	// Dependencies.
 
 	AzureConfig *client.AzureConfig
-	CloudConfig *cloudconfig.Service
+	CloudConfig *cloudconfig.CloudConfig
 	Logger      micrologger.Logger
 
 	// Settings.
@@ -58,7 +58,7 @@ type Resource struct {
 	// Dependencies.
 
 	azureConfig *client.AzureConfig
-	cloudConfig *cloudconfig.Service
+	cloudConfig *cloudconfig.CloudConfig
 	logger      micrologger.Logger
 
 	// Settings.

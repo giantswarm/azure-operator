@@ -100,7 +100,7 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var cloudConfigService *cloudconfig.Service
+	var cloudConfigService *cloudconfig.CloudConfig
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
 		cloudConfigConfig.Flag = config.Flag

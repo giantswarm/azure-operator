@@ -35,13 +35,14 @@ func DefaultConfig() Config {
 	}
 }
 
-// Service implements the cloudconfig service interface.
-type Service struct {
-	Config
+// CloudConfig implements the cloudconfig service interface.
+type CloudConfig struct {
+	// Dependencies.
+	logger micrologger.Logger
 }
 
 // New creates a new configured cloudconfig service.
-func New(config Config) (*Service, error) {
+func New(config Config) (*CloudConfig, error) {
 	// Dependencies.
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "logger must not be empty")
@@ -55,8 +56,9 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Maskf(invalidConfigError, "viper must not be empty")
 	}
 
-	newService := &Service{
-		Config: config,
+	newService := &CloudConfig{
+		// Dependencies.
+		logger: config.Logger,
 	}
 
 	return newService, nil
@@ -64,7 +66,7 @@ func New(config Config) (*Service, error) {
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (s Service) NewMasterCloudConfig(customObject azuretpr.CustomObject) (string, error) {
+func (c CloudConfig) NewMasterCloudConfig(customObject azuretpr.CustomObject) (string, error) {
 	params := k8scloudconfig.Params{
 		Cluster:   customObject.Spec.Cluster,
 		Extension: &MasterExtension{},
@@ -75,7 +77,7 @@ func (s Service) NewMasterCloudConfig(customObject azuretpr.CustomObject) (strin
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
-func (s Service) NewWorkerCloudConfig(customObject azuretpr.CustomObject) (string, error) {
+func (c CloudConfig) NewWorkerCloudConfig(customObject azuretpr.CustomObject) (string, error) {
 	params := k8scloudconfig.Params{
 		Cluster:   customObject.Spec.Cluster,
 		Extension: &WorkerExtension{},
