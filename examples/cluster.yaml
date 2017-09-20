@@ -1,11 +1,11 @@
 apiVersion: "giantswarm.io/v1"
 kind: AzureCluster
 metadata:
-  name: rossf7-giantswarm-test
+  name: example-cluster
 spec:
   cluster:
     cluster:
-      id: "rossf7-giantswarm-test"
+      id: "example-cluster"
 
     customer:
       id: "example-customer"
