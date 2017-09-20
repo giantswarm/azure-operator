@@ -56,6 +56,8 @@ spec:
     - hostname: "worker-1"
 
   azure:
+    keyVault:
+      vaultName: "$(CLUSTER_NAME)-vault"
     location: "${AZURE_LOCATION}"
     storage:
       accountType: "Standard_LRS",
