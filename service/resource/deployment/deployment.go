@@ -3,6 +3,8 @@ package deployment
 import (
 	"fmt"
 
+	"github.com/giantswarm/certificatetpr"
+
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/microerror"
 
@@ -18,6 +20,17 @@ const (
 	securityGroupsSetupTemplate = "security_groups_setup.json"
 	virtualNetworkSetupTemplate = "virtual_network_setup.json"
 )
+
+// keyVaultSecrets is used to pass secrets to Key Vault as a secure object.
+type keyVaultSecrets struct {
+	Secrets []keyVaultSecret `json:"secrets"`
+}
+
+// keyVaultSecret is a secret stored in Key Vault.
+type keyVaultSecret struct {
+	SecretName  string `json:"secretName"`
+	SecretValue string `json:"secretValue"`
+}
 
 func getDeploymentNames() []string {
 	return []string{
@@ -35,11 +48,13 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		return Deployment{}, microerror.Mask(err)
 	}
 
-	// TODO Certificates will be passed in as a template parameter.
-	_, err = r.certWatcher.SearchCerts(key.ClusterID(cluster))
+	certs, err := r.certWatcher.SearchCerts(key.ClusterID(cluster))
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
+
+	// Convert certs files into a collection of key vault secrets.
+	certSecrets := convertCertsToSecrets(certs)
 
 	// TODO Master CloudConfig will be passed in as a template parameter.
 	_, err = r.cloudConfig.NewMasterCloudConfig(cluster)
@@ -66,6 +81,8 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		"etcdPort":                      cluster.Spec.Cluster.Etcd.Port,
 		"kubernetesIngressSecurePort":   cluster.Spec.Cluster.Kubernetes.IngressController.SecurePort,
 		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
+		"keyVaultName":                  key.KeyVaultName(cluster),
+		"keyVaultSecretsObject":         certSecrets,
 		"templatesBaseURI":              templateBaseURI,
 	}
 
@@ -109,4 +126,23 @@ func convertParameters(inputs map[string]interface{}) map[string]interface{} {
 	}
 
 	return params
+}
+
+// convertCertsToSecrets converts the certificate assets to a keyVaultSecrets
+// collection so it can be passed as a secure object template parameter.
+func convertCertsToSecrets(certs certificatetpr.AssetsBundle) keyVaultSecrets {
+	var secretsList []keyVaultSecret
+
+	for asset, value := range certs {
+		secret := keyVaultSecret{
+			SecretName:  key.SecretName(asset),
+			SecretValue: string(value),
+		}
+
+		secretsList = append(secretsList, secret)
+	}
+
+	return keyVaultSecrets{
+		Secrets: secretsList,
+	}
 }
