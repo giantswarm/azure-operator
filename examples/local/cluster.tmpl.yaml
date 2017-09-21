@@ -57,7 +57,7 @@ spec:
 
   azure:
     keyVault:
-      vaultName: "$(CLUSTER_NAME)-vault"
+      name: "$(CLUSTER_NAME)-vault"
     location: "${AZURE_LOCATION}"
     storage:
       accountType: "Standard_LRS",

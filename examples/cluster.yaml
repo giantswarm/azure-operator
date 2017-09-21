@@ -57,7 +57,7 @@ spec:
 
   azure:
     keyVault:
-      vaultName: "example-cluster-vault"
+      name: "example-cluster-vault"
     location: "westeurope"
     storage:
       accountType: "Standard_LRS"
