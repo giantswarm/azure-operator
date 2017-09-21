@@ -65,7 +65,7 @@ cluster:
   - id: cdd88
 azure:
   keyVault:
-    vaultName: abc12-vault
+    name: abc12-vault
   location: westeurope
   storage:
     accountType: Standard_LRS

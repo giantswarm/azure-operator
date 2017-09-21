@@ -1,5 +1,5 @@
-hash: 36de3bc53c8d69829d6a794945947c5b450811bcbbc2a062024f326eb9f14898
-updated: 2017-09-20T17:03:09.531247383+02:00
+hash: 1daaf3a5d0b6885a2b605117d8645fd385420ca3aef507ae6645c0460936e61c
+updated: 2017-09-21T09:26:08.598263393+02:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 821f0674de8f18bb3b04896b29044326f4484218
@@ -41,7 +41,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/giantswarm/azuretpr
-  version: c0f7b1335910877327dcf749d6ef77ae41a2e077
+  version: 69a2d61c2785a52d7c7e796b2fe7836e64122e92
   subpackages:
   - spec
   - spec/azure
@@ -62,7 +62,7 @@ imports:
   - spec/kubernetes/networksetup
   - spec/kubernetes/ssh
 - name: github.com/giantswarm/k8scloudconfig
-  version: 0f57b2b556a19766a7b63fbfa3928eb1aa9d31b9
+  version: 35006320452af2bdc4e64c6821a2d37e633b690d
 - name: github.com/giantswarm/microendpoint
   version: f5682d1d6fe0eb963397fb7e0535c1794644efce
   subpackages:
@@ -217,7 +217,7 @@ imports:
   subpackages:
   - codec
 - name: golang.org/x/net
-  version: 8351a756f30f1297fe94bbf4b767ec589c6ea6d0
+  version: b60f3a92103dfd93dfcb900ec77c6d0643510868
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
