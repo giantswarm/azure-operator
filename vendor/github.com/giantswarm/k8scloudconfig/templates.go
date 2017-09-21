@@ -918,6 +918,38 @@ write_files:
     # Non defaults (#100)
     ClientAliveCountMax 2
     PasswordAuthentication no
+- path: /etc/sysctl.d/hardening.conf
+  owner: root
+  permissions: 0600
+  content: |
+    kernel.kptr_restrict = 2
+    kernel.sysrq = 0
+    net.ipv4.conf.all.log_martians = 1
+    net.ipv4.conf.all.send_redirects = 0
+    net.ipv4.conf.default.accept_redirects = 0
+    net.ipv4.conf.default.log_martians = 1
+    net.ipv4.tcp_timestamps = 0
+    net.ipv6.conf.all.accept_redirects = 0
+    net.ipv6.conf.default.accept_redirects = 0
+
+- path: /etc/audit/rules.d/10-docker.rules
+  owner: root
+  permissions: 644
+  content: |
+    -w /usr/bin/docker -k docker
+    -w /var/lib/docker -k docker
+    -w /etc/docker -k docker
+    -w /etc/systemd/system/docker.service.d/10-giantswarm-extra-args.conf -k docker
+    -w /etc/systemd/system/docker.service.d/01-wait-docker.conf -k docker
+    -w /usr/lib/systemd/system/docker.service -k docker
+    -w /usr/lib/systemd/system/docker.socket -k docker
+
+- path: /etc/systemd/system/audit-rules.service.d/10-Wait-For-Docker.conf
+  owner: root
+  permissions: 644
+  content: |
+    [Service]
+    ExecStartPre=/bin/bash -c "while [ ! -f /etc/audit/rules.d/10-docker.rules ]; do echo 'Waiting for /etc/audit/rules.d/10-docker.rules to be written' && sleep 1; done"
 
 {{range .Extension.Files}}
 - path: {{.Metadata.Path}}
@@ -952,6 +984,21 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
+  - name: os-hardeing.service
+    enable: true
+    command: start
+    content: |
+      [Unit]
+      Description=Apply os hardening
+
+      [Service]
+      Type=oneshot
+      ExecStartPre=/bin/bash -c "gpasswd -d core rkt; gpasswd -d core docker; gpasswd -d core wheel"
+      ExecStartPre=/bin/bash -c "until [ -f '/etc/sysctl.d/hardening.conf' ]; do echo Waiting for sysctl file; sleep 1s;done;"
+      ExecStart=/usr/sbin/sysctl -p /etc/sysctl.d/hardening.conf
+
+      [Install]
+      WantedBy=multi-user.target
   - name: set-ownership-etcd-data-dir.service
     enable: true
     command: start
@@ -973,8 +1020,9 @@ coreos:
     - name: 10-giantswarm-extra-args.conf
       content: |
         [Service]
-        Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs {{.Cluster.Docker.Daemon.ExtraArgs}}"
+        Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs --disable-legacy-registry=true {{.Cluster.Docker.Daemon.ExtraArgs}}"
         Environment="DOCKER_OPT_BIP=--bip={{.Cluster.Docker.Daemon.CIDR}}"
+        Environment="DOCKER_OPTS=--live-restore"
   - name: k8s-setup-network-env.service
     enable: true
     command: start
@@ -1086,6 +1134,7 @@ coreos:
       --proxy-mode=iptables \
       --logtostderr=true \
       --kubeconfig=/etc/kubernetes/config/proxy-kubeconfig.yml \
+      --conntrack-max-per-core 131072 \
       --v=2"
       ExecStop=-/usr/bin/docker stop -t 10 $NAME
       ExecStopPost=-/usr/bin/docker rm -f $NAME
@@ -1333,6 +1382,7 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
+    
   update:
     reboot-strategy: off
 
@@ -1423,6 +1473,38 @@ write_files:
     # Non defaults (#100)
     ClientAliveCountMax 2
     PasswordAuthentication no
+- path: /etc/sysctl.d/hardening.conf
+  owner: root
+  permissions: 0600
+  content: |
+    kernel.kptr_restrict = 2
+    kernel.sysrq = 0
+    net.ipv4.conf.all.log_martians = 1
+    net.ipv4.conf.all.send_redirects = 0
+    net.ipv4.conf.default.accept_redirects = 0
+    net.ipv4.conf.default.log_martians = 1
+    net.ipv4.tcp_timestamps = 0
+    net.ipv6.conf.all.accept_redirects = 0
+    net.ipv6.conf.default.accept_redirects = 0
+
+- path: /etc/audit/rules.d/10-docker.rules
+  owner: root
+  permissions: 644
+  content: |
+    -w /usr/bin/docker -k docker
+    -w /var/lib/docker -k docker
+    -w /etc/docker -k docker
+    -w /etc/systemd/system/docker.service.d/10-giantswarm-extra-args.conf -k docker
+    -w /etc/systemd/system/docker.service.d/01-wait-docker.conf -k docker
+    -w /usr/lib/systemd/system/docker.service -k docker
+    -w /usr/lib/systemd/system/docker.socket -k docker
+
+- path: /etc/systemd/system/audit-rules.service.d/10-Wait-For-Docker.conf
+  owner: root
+  permissions: 644
+  content: |
+    [Service]
+    ExecStartPre=/bin/bash -c "while [ ! -f /etc/audit/rules.d/10-docker.rules ]; do echo 'Waiting for /etc/audit/rules.d/10-docker.rules to be written' && sleep 1; done"
 
 {{range .Extension.Files}}
 - path: {{.Metadata.Path}}
@@ -1457,6 +1539,21 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
+  - name: os-hardeing.service
+    enable: true
+    command: start
+    content: |
+      [Unit]
+      Description=Apply os hardening
+
+      [Service]
+      Type=oneshot
+      ExecStartPre=/bin/bash -c "gpasswd -d core rkt; gpasswd -d core docker; gpasswd -d core wheel"
+      ExecStartPre=/bin/bash -c "until [ -f '/etc/sysctl.d/hardening.conf' ]; do echo Waiting for sysctl file; sleep 1s;done;"
+      ExecStart=/usr/sbin/sysctl -p /etc/sysctl.d/hardening.conf
+
+      [Install]
+      WantedBy=multi-user.target
   - name: update-engine.service
     enable: false
     command: stop
@@ -1481,8 +1578,10 @@ coreos:
     - name: 10-giantswarm-extra-args.conf
       content: |
         [Service]
-        Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs {{.Cluster.Docker.Daemon.ExtraArgs}}"
+        Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs --disable-legacy-registry=true {{.Cluster.Docker.Daemon.ExtraArgs}}"
         Environment="DOCKER_OPT_BIP=--bip={{.Cluster.Docker.Daemon.CIDR}}"
+        Environment="DOCKER_OPTS=--live-restore"
+
   - name: k8s-setup-network-env.service
     enable: true
     command: start
@@ -1539,6 +1638,7 @@ coreos:
       --proxy-mode=iptables \
       --logtostderr=true \
       --kubeconfig=/etc/kubernetes/config/proxy-kubeconfig.yml \
+      --conntrack-max-per-core 131072 \
       --v=2"
       ExecStop=-/usr/bin/docker stop -t 10 $NAME
       ExecStopPost=-/usr/bin/docker rm -f $NAME
@@ -1635,6 +1735,7 @@ coreos:
 
       [Install]
       WantedBy=multi-user.target
+
   update:
     reboot-strategy: off
 

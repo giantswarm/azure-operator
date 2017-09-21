@@ -8,6 +8,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/azuretpr"
+	"github.com/giantswarm/certificatetpr"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
@@ -30,6 +31,7 @@ type Config struct {
 	// Dependencies.
 
 	AzureConfig *client.AzureConfig
+	CertWatcher certificatetpr.Searcher
 	CloudConfig *cloudconfig.CloudConfig
 	Logger      micrologger.Logger
 
@@ -46,6 +48,7 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 		AzureConfig: nil,
+		CertWatcher: nil,
 		CloudConfig: nil,
 		Logger:      nil,
 
@@ -58,6 +61,7 @@ type Resource struct {
 	// Dependencies.
 
 	azureConfig *client.AzureConfig
+	certWatcher certificatetpr.Searcher
 	cloudConfig *cloudconfig.CloudConfig
 	logger      micrologger.Logger
 
@@ -72,6 +76,9 @@ func New(config Config) (*Resource, error) {
 	if config.AzureConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty.")
 	}
+	if config.CertWatcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.CertWatcher must not be empty")
+	}
 	if config.CloudConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty.")
 	}
@@ -81,6 +88,7 @@ func New(config Config) (*Resource, error) {
 
 	newService := &Resource{
 		azureConfig: config.AzureConfig,
+		certWatcher: config.CertWatcher,
 		cloudConfig: config.CloudConfig,
 		logger: config.Logger.With(
 			"resource", Name,

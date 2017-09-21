@@ -1,0 +1,58 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+      "clusterID": {
+        "type": "string"
+      },
+      "keyVaultName": {
+        "type": "string"
+      },
+      "keyVaultSecretsObject": {
+        "type": "secureObject"
+      },
+      "keyVaultSKUFamily": {
+        "type": "string",
+        "defaultValue": "A"
+      },
+      "keyVaultSKUName": {
+        "type": "string",
+        "defaultValue": "standard"
+      }
+    },
+    "resources": [
+      {
+        "type": "Microsoft.KeyVault/vaults",
+        "name": "[parameters('keyVaultName')]",
+        "apiVersion": "2016-10-01",
+        "comments": "TODO Set accessPolicies to read access for cluster nodes.",
+        "location": "[resourceGroup().location]",
+        "tags": {
+          "clusterID": "[parameters('clusterID')]"
+        },
+        "properties": {
+          "sku": {
+            "family": "[parameters('keyVaultSKUFamily')]",
+            "name": "[parameters('keyVaultSKUName')]"
+          },
+          "tenantId": "[subscription().tenantId]",
+          "accessPolicies": []
+        }
+      },
+      {
+        "type": "Microsoft.KeyVault/vaults/secrets",
+        "name": "[concat(parameters('keyVaultName'), '/', parameters('keyVaultSecretsObject').secrets[copyIndex()].secretName)]",
+        "apiVersion": "2015-06-01",
+        "properties": {
+            "value": "[parameters('keyvaultSecretsObject').secrets[copyIndex()].secretValue]"
+        },
+        "dependsOn": [
+            "[concat('Microsoft.KeyVault/vaults/', parameters('keyVaultName'))]"
+        ],
+        "copy": {
+            "name": "keyVaultSecretsCopy",
+            "count": "[length(parameters('keyVaultSecretsObject').secrets)]"
+        }
+      }]
+  }
+  

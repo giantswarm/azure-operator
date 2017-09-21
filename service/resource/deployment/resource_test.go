@@ -5,6 +5,7 @@ import (
 	"testing"
 
 	"github.com/giantswarm/azuretpr"
+	"github.com/giantswarm/certificatetpr/certificatetprtest"
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
@@ -47,6 +48,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.CertWatcher = certificatetprtest.NewService()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
@@ -176,6 +178,7 @@ func Test_Resource_Deployment_GetCreateState(t *testing.T) {
 
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.CertWatcher = certificatetprtest.NewService()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
@@ -267,6 +270,7 @@ func Test_Resource_Deployment_GetDeleteState(t *testing.T) {
 
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.CertWatcher = certificatetprtest.NewService()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)

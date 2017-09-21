@@ -121,6 +121,9 @@ func TestSpecYamlEncoding(t *testing.T) {
 			},
 		},
 		Azure: spec.Azure{
+			KeyVault: azure.KeyVault{
+				Name: "abc12-vault",
+			},
 			Location: "westeurope",
 			Storage: azure.Storage{
 				AccountType: "Standard_LRS",

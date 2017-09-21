@@ -3,6 +3,8 @@ package deployment
 import (
 	"fmt"
 
+	"github.com/giantswarm/certificatetpr"
+
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/microerror"
 
@@ -35,6 +37,14 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		return Deployment{}, microerror.Mask(err)
 	}
 
+	certs, err := r.certWatcher.SearchCerts(key.ClusterID(cluster))
+	if err != nil {
+		return Deployment{}, microerror.Mask(err)
+	}
+
+	// Convert certs files into a collection of key vault secrets.
+	certSecrets := convertCertsToSecrets(certs)
+
 	// TODO Master CloudConfig will be passed in as a template parameter.
 	_, err = r.cloudConfig.NewMasterCloudConfig(cluster)
 	if err != nil {
@@ -60,6 +70,8 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		"etcdPort":                      cluster.Spec.Cluster.Etcd.Port,
 		"kubernetesIngressSecurePort":   cluster.Spec.Cluster.Kubernetes.IngressController.SecurePort,
 		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
+		"keyVaultName":                  key.KeyVaultName(cluster),
+		"keyVaultSecretsObject":         certSecrets,
 		"templatesBaseURI":              templateBaseURI,
 	}
 
@@ -103,4 +115,23 @@ func convertParameters(inputs map[string]interface{}) map[string]interface{} {
 	}
 
 	return params
+}
+
+// convertCertsToSecrets converts the certificate assets to a keyVaultSecrets
+// collection so it can be passed as a secure object template parameter.
+func convertCertsToSecrets(certs certificatetpr.AssetsBundle) keyVaultSecrets {
+	var secretsList []keyVaultSecret
+
+	for asset, value := range certs {
+		secret := keyVaultSecret{
+			SecretName:  key.SecretName(asset),
+			SecretValue: string(value),
+		}
+
+		secretsList = append(secretsList, secret)
+	}
+
+	return keyVaultSecrets{
+		Secrets: secretsList,
+	}
 }

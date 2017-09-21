@@ -56,6 +56,8 @@ spec:
     - hostname: "worker-1"
 
   azure:
+    keyVault:
+      name: "example-cluster-vault"
     location: "westeurope"
     storage:
       accountType: "Standard_LRS"

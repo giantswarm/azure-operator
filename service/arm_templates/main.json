@@ -50,11 +50,21 @@
     "kubernetesIngressInsecurePort": {
       "type": "int"
     },
+    "keyVaultName": {
+      "type": "string"
+    },
+    "keyVaultSecretsObject": {
+      "type": "secureObject"
+    },
     "templatesBaseURI" : {
       "type": "string",
       "metadata": {
         "description": "The base URI from which the templates will be fetched. Ends with a trailing '/'."
       }
+    },
+    "certificatesTemplateFile": {
+      "type": "string",
+      "defaultValue": "certificates.json"
     },
     "clusterSetupTemplateFile": {
       "type": "string",
@@ -70,6 +80,7 @@
     }
   },
   "variables": {
+    "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]"
@@ -132,6 +143,23 @@
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "certificates",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('certificatesTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "keyVaultName": {"value": "[parameters('keyVaultName')]"},
+          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"}
         }
       }
     },
