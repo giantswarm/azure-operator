@@ -110,10 +110,6 @@
       "type": "string",
       "defaultValue": "security_groups_setup.json"
     },
-    "virtualMachinesSetupTemplateFile": {
-      "type": "string",
-      "defaultValue": "virtual_machines_setup.json"
-    },
     "virtualNetworkSetupTemplateFile": {
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
@@ -124,7 +120,6 @@
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
     "masterNodesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('masterNodesSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
-    "virtualMachinesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualMachinesSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]"
   },
   "resources": [
