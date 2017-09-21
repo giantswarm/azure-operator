@@ -18,7 +18,7 @@ guide, all placeholders must be replaced with sensible values.
 - *COMMON_DOMAIN_INGRESS* - Ingress common domain.
 - *AZURE_LOCATION* - Azure location.
 - *AZURE_CLIENT_ID* - Client ID for the Active Directory Service Principal.
-- *AZURE_CLIENT_SECRET* - Client Secret for the AD Service Principal.
+- *AZURE_CLIENT_SECRET* - Client Secret for the Active Directory Service Principal.
 - *AZURE_SUBSCRIPTION_ID* - Azure Subscription ID.
 - *AZURE_TENANT_ID* - Azure Active Directory Tenant ID.
 - *AZURE_TEMPLATE_URI_VERSION* - Deploy templates pushed to a feature branch.
