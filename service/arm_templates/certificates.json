@@ -25,6 +25,7 @@
         "type": "Microsoft.KeyVault/vaults",
         "name": "[parameters('keyVaultName')]",
         "apiVersion": "2016-10-01",
+        "comments": "TODO Set accessPolicies to read access for cluster nodes.",
         "location": "[resourceGroup().location]",
         "tags": {
           "clusterID": "[parameters('clusterID')]"
