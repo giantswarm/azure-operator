@@ -65,7 +65,7 @@ func Test_KeyVaultName(t *testing.T) {
 		Spec: azuretpr.Spec{
 			Azure: azurespec.Azure{
 				KeyVault: azure.KeyVault{
-					VaultName: "test-cluster-vault",
+					Name: "test-cluster-vault",
 				},
 			},
 		},

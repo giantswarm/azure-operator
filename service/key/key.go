@@ -19,7 +19,7 @@ func ClusterID(customObject azuretpr.CustomObject) string {
 
 // KeyVaultName returns the Azure Key Vault name for this cluster.
 func KeyVaultName(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Azure.KeyVault.VaultName
+	return customObject.Spec.Azure.KeyVault.Name
 }
 
 // Location returns the physical location where the Resource Group is deployed.
