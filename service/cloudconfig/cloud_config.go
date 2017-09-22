@@ -151,7 +151,7 @@ func (we *WorkerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	unitsMeta := []k8scloudconfig.UnitMetadata{
 		{
 			AssetContent: getKeyVaultSecretsUnit,
-			Name:         "get-keyvault-secrets.service",
+			Name:         getKeyVaultSecretsUnitName,
 			Enable:       true,
 			Command:      "start",
 		},
@@ -228,9 +228,9 @@ func (we *WorkerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, e
 func (c *CloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
 	secretsMeta := k8scloudconfig.FileMetadata{
 		AssetContent: getKeyVaultSecretsTemplate,
-		Path:         "/opt/bin/get-key-vault-secrets",
-		Owner:        "root:root",
-		Permissions:  0700,
+		Path:         getKeyVaultSecretsFileName,
+		Owner:        fileOwner,
+		Permissions:  filePermission,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(secretsMeta.AssetContent, secrets)

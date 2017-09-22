@@ -1,6 +1,9 @@
 package cloudconfig
 
 const (
+	fileOwner                  = "root:root"
+	filePermission             = 0700
+	getKeyVaultSecretsFileName = "/opt/bin/get-key-vault-secrets"
 	getKeyVaultSecretsTemplate = `#!/bin/bash -e
 
 KEY_VAULT_HOST={{ .VaultName }}.vault.azure.net
@@ -17,7 +20,8 @@ chmod 0600 -R /etc/kubernetes/ssl/
 chown -R etcd:etcd /etc/kubernetes/ssl/etcd/
 `
 
-	getKeyVaultSecretsUnit = `
+	getKeyVaultSecretsUnitName = "get-keyvault-secrets.service"
+	getKeyVaultSecretsUnit     = `
 [Unit]
 Description=Download certificates from Key Vault
 
