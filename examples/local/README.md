@@ -53,6 +53,14 @@ done
 
 - Note: `|` characters are used in `sed` substitution to avoid escaping.
 
+## Cluster Certificates
+
+The easiest way to create certificates is to use the local [cert-operator]
+setup. See [this guide][cert-operator-local-setup] for details.
+
+- Note: `CLUSTER_NAME` and `COMMON_DOMAIN` values must match the values used
+  during this guide.
+
 ## Cluster-Local Docker Image
 
 The operator needs a connection to the K8s API. The simplest approach is to run
@@ -116,3 +124,6 @@ deployment and configuration.
 kubectl delete -f ./deployment.yaml
 kubectl delete -f ./configmap.yaml
 ```
+
+[cert-operator]: https://github.com/giantswarm/cert-operator
+[cert-operator-local-setup]: https://github.com/giantswarm/cert-operator/tree/master/examples/local
