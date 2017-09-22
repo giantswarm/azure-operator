@@ -107,7 +107,7 @@ func Test_SecretName(t *testing.T) {
 		Type:      "crt",
 	}
 
-	if SecretName(assetKey) != expectedSecretName {
-		t.Fatalf("Expected secret name %s but was %s", expectedSecretName, SecretName(assetKey))
+	if SecretName(assetKey.Component, assetKey.Type) != expectedSecretName {
+		t.Fatalf("Expected secret name %s but was %s", expectedSecretName, SecretName(assetKey.Component, assetKey.Type))
 	}
 }
