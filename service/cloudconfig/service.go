@@ -68,8 +68,12 @@ func New(config Config) (*CloudConfig, error) {
 // base64 encoded string.
 func (c CloudConfig) NewMasterCloudConfig(customObject azuretpr.CustomObject) (string, error) {
 	params := k8scloudconfig.Params{
-		Cluster:   customObject.Spec.Cluster,
-		Extension: &MasterExtension{},
+		Cluster: customObject.Spec.Cluster,
+		Extension: &MasterExtension{
+			CloudConfigExtension{
+				CustomObject: customObject,
+			},
+		},
 	}
 
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
@@ -79,8 +83,12 @@ func (c CloudConfig) NewMasterCloudConfig(customObject azuretpr.CustomObject) (s
 // base64 encoded string.
 func (c CloudConfig) NewWorkerCloudConfig(customObject azuretpr.CustomObject) (string, error) {
 	params := k8scloudconfig.Params{
-		Cluster:   customObject.Spec.Cluster,
-		Extension: &WorkerExtension{},
+		Cluster: customObject.Spec.Cluster,
+		Extension: &WorkerExtension{
+			CloudConfigExtension{
+				CustomObject: customObject,
+			},
+		},
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)

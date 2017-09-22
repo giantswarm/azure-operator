@@ -124,7 +124,7 @@ func convertCertsToSecrets(certs certificatetpr.AssetsBundle) keyVaultSecrets {
 
 	for asset, value := range certs {
 		secret := keyVaultSecret{
-			SecretName:  key.SecretName(asset),
+			SecretName:  key.SecretName(asset.Component, asset.Type),
 			SecretValue: string(value),
 		}
 

@@ -29,6 +29,6 @@ func Location(customObject azuretpr.CustomObject) string {
 
 // SecretName returns the name of the Key Vault secret for this certificate
 // asset.
-func SecretName(assetKey certificatetpr.AssetsBundleKey) string {
-	return fmt.Sprintf("%s-%s", assetKey.Component, assetKey.Type)
+func SecretName(clusterComponent certificatetpr.ClusterComponent, assetType certificatetpr.TLSAssetType) string {
+	return fmt.Sprintf("%s-%s", clusterComponent, assetType)
 }

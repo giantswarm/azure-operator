@@ -1,8 +1,8 @@
-hash: 1daaf3a5d0b6885a2b605117d8645fd385420ca3aef507ae6645c0460936e61c
-updated: 2017-09-21T09:26:08.598263393+02:00
+hash: aa95d00734b9fa5c9399e629663db486ebefc14deec18e16e6cd48d2dc7ff914
+updated: 2017-09-22T16:18:19.423322568+02:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
-  version: 821f0674de8f18bb3b04896b29044326f4484218
+  version: d3d05e536d5141916dadae8ee6fa98c62fb9a6ce
   subpackages:
   - arm/resources/resources
 - name: github.com/Azure/go-autorest
@@ -19,7 +19,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/cenkalti/backoff
-  version: 80e08cb804a3eb3e576876c777e957e874609a9a
+  version: 61ba96c4d1002f22e06acb8e34a7650611125a63
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
@@ -51,7 +51,7 @@ imports:
   subpackages:
   - certificatetprtest
 - name: github.com/giantswarm/clustertpr
-  version: 204c6262c75db8eddf6974c9373a42191db88a56
+  version: 34d49f599b2cc70af0d9c30b941a085aef772e64
   subpackages:
   - spec
   - spec/docker
@@ -62,7 +62,7 @@ imports:
   - spec/kubernetes/networksetup
   - spec/kubernetes/ssh
 - name: github.com/giantswarm/k8scloudconfig
-  version: 35006320452af2bdc4e64c6821a2d37e633b690d
+  version: 05b5ac2a4ed0d145efb1ce8002f26b228ae3cc1b
 - name: github.com/giantswarm/microendpoint
   version: f5682d1d6fe0eb963397fb7e0535c1794644efce
   subpackages:
@@ -93,11 +93,11 @@ imports:
   subpackages:
   - microloggertest
 - name: github.com/giantswarm/microstorage
-  version: e990a46ff7c9065f8d83c0a649cb1a6ef5d411d7
+  version: 31cedcac6cdcbcbf57dfdbb885c9a2dd40a9c403
   subpackages:
   - memory
 - name: github.com/giantswarm/operatorkit
-  version: 49ac418456193963d3c9e13c1a60e6e025eb665a
+  version: a6f6c824a13e17d683ff951edb2439238eaace37
   subpackages:
   - client/k8s
   - framework
@@ -174,7 +174,7 @@ imports:
 - name: github.com/pelletier/go-toml
   version: 1d6b12b7cb290426e27e6b4e38b89fcda3aeef03
 - name: github.com/prometheus/client_golang
-  version: 50b3332fd63be43e38472600ec187ceec39d26d6
+  version: 353b8c3f3776541879f9abfd8fa8b1ae162ab394
   subpackages:
   - prometheus
   - prometheus/promhttp
@@ -217,7 +217,7 @@ imports:
   subpackages:
   - codec
 - name: golang.org/x/net
-  version: b60f3a92103dfd93dfcb900ec77c6d0643510868
+  version: 0744d001aa8470aaa53df28d32e5ceeb8af9bd70
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
