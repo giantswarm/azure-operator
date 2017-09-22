@@ -1,6 +1,7 @@
 # Running azure-operator Locally
 
 **Note:** This should only be used for testing and development.
+A production configuration using Helm will be provided later.
 
 This guide explains how to get azure-operator running locally - on minikube, for
 example. 
@@ -16,6 +17,11 @@ guide, all placeholders must be replaced with sensible values.
 - *COMMON_DOMAIN* - Cluster's etcd and API common domain.
 - *COMMON_DOMAIN_INGRESS* - Ingress common domain.
 - *AZURE_LOCATION* - Azure location.
+- *AZURE_CLIENT_ID* - Client ID for the Active Directory Service Principal.
+- *AZURE_CLIENT_SECRET* - Client Secret for the Active Directory Service Principal.
+- *AZURE_SUBSCRIPTION_ID* - Azure Subscription ID.
+- *AZURE_TENANT_ID* - Azure Active Directory Tenant ID.
+- *AZURE_TEMPLATE_URI_VERSION* - Deploy templates pushed to a feature branch.
 
 This is a handy snippet that makes it painless - works in bash and zsh.
 
@@ -24,6 +30,11 @@ export CLUSTER_NAME="example-cluster"
 export COMMON_DOMAIN="internal.company.com"
 export COMMON_DOMAIN_INGRESS="company.com"
 export AZURE_LOCATION="westeurope"
+export AZURE_CLIENT_ID="XXXXX"
+export AZURE_CLIENT_SECRET="XXXXX"
+export AZURE_SUBSCRIPTION_ID="XXXXX"
+export AZURE_TENANT_ID="XXXXX"
+export AZURE_TEMPLATE_URI_VERSION="master"
 
 for f in *.tmpl.yaml; do
     sed \
@@ -31,11 +42,24 @@ for f in *.tmpl.yaml; do
         -e 's|${COMMON_DOMAIN}|'"${COMMON_DOMAIN}"'|g' \
         -e 's|${COMMON_DOMAIN_INGRESS}|'"${COMMON_DOMAIN_INGRESS}"'|g' \
         -e 's|${AZURE_LOCATION}|'"${AZURE_LOCATION}"'|g' \
+        -e 's|${AZURE_CLIENT_ID}|'"${AZURE_CLIENT_ID}"'|g' \
+        -e 's|${AZURE_CLIENT_SECRET}|'"${AZURE_CLIENT_SECRET}"'|g' \
+        -e 's|${AZURE_SUBSCRIPTION_ID}|'"${AZURE_SUBSCRIPTION_ID}"'|g' \
+        -e 's|${AZURE_TENANT_ID}|'"${AZURE_TENANT_ID}"'|g' \
+        -e 's|${AZURE_TEMPLATE_URI_VERSION}|'"${AZURE_TEMPLATE_URI_VERSION}"'|g' \
         ./$f > ./${f%.tmpl.yaml}.yaml
 done
 ```
 
 - Note: `|` characters are used in `sed` substitution to avoid escaping.
+
+## Cluster Certificates
+
+The easiest way to create certificates is to use the local [cert-operator]
+setup. See [this guide][cert-operator-local-setup] for details.
+
+- Note: `CLUSTER_NAME` and `COMMON_DOMAIN` values must match the values used
+  during this guide.
 
 ## Cluster-Local Docker Image
 
@@ -100,3 +124,6 @@ deployment and configuration.
 kubectl delete -f ./deployment.yaml
 kubectl delete -f ./configmap.yaml
 ```
+
+[cert-operator]: https://github.com/giantswarm/cert-operator
+[cert-operator-local-setup]: https://github.com/giantswarm/cert-operator/tree/master/examples/local
