@@ -4,7 +4,6 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig"
 )
 
-type MasterExtension struct{}
 
 // Files allows files to be injected into the master cloudconfig. It is
 // currently empty because the certificates will be stored in Key Vault.
@@ -23,7 +22,6 @@ func (me *MasterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
 }
 
-type WorkerExtension struct{}
 
 // Files allows files to be injected into the worker cloudconfig. It is
 // currently empty because the certificates will be stored in Key Vault.
