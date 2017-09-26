@@ -102,9 +102,9 @@
       "type": "string",
       "defaultValue": "cluster_setup.json"
     },
-    "masterNodesSetupTemplateFile": {
+    "nodesSetupTemplateFile": {
       "type": "string",
-      "defaultValue": "master_nodes_setup.json"
+      "defaultValue": "nodes_setup.json"
     },
     "securityGroupsSetupTemplateFile": {
       "type": "string",
@@ -118,9 +118,10 @@
   "variables": {
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
-    "masterNodesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('masterNodesSetupTemplateFile'))]",
+    "nodesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodesSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
-    "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]"
+    "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
+    "masterPrefix": "master"
   },
   "resources": [
     {
@@ -205,25 +206,26 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('masterNodesSetupTemplateURI')]",
+          "uri": "[variables('nodesSetupTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
-          "masterCount": {"value": "[parameters('masterCount')]"},
-          "masterSubnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
-          "masterAvailabilitySetID": {"value": "[reference('availability_sets_setup').outputs.masterAvailabilitySetID.value]"},
-          "masterVMSize": {"value": "[parameters('masterVMSize')]"},
-          "masterDataDiskSizeGB": {"value": "[parameters('masterDataDiskSizeGB')]"},
-          "masterAdminUsername": {"value": "[parameters('masterAdminUsername')]"},
-          "masterDisablePasswordAuth": {"value": "[parameters('masterDisablePasswordAuth')]"},
-          "masterAdminSSHKeyData": {"value": "[parameters('masterAdminSSHKeyData')]"},
-          "masterOSImagePublisher": {"value": "[parameters('masterOSImagePublisher')]"},
-          "masterOSImageOffer": {"value": "[parameters('masterOSImageOffer')]"},
-          "masterOSImageSKU": {"value": "[parameters('masterOSImageSKU')]"},
-          "masterOSImageVersion": {"value": "[parameters('masterOSImageVersion')]"},
-          "masterCloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
+          "prefix": {"value": "[variables('masterPrefix')]"},
+          "nodeCount": {"value": "[parameters('masterCount')]"},
+          "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
+          "availabilitySetID": {"value": "[reference('availability_sets_setup').outputs.masterAvailabilitySetID.value]"},
+          "vmSize": {"value": "[parameters('masterVMSize')]"},
+          "dataDiskSizeGB": {"value": "[parameters('masterDataDiskSizeGB')]"},
+          "adminUsername": {"value": "[parameters('masterAdminUsername')]"},
+          "disablePasswordAuth": {"value": "[parameters('masterDisablePasswordAuth')]"},
+          "adminSSHKeyData": {"value": "[parameters('masterAdminSSHKeyData')]"},
+          "osImagePublisher": {"value": "[parameters('masterOSImagePublisher')]"},
+          "osImageOffer": {"value": "[parameters('masterOSImageOffer')]"},
+          "osImageSKU": {"value": "[parameters('masterOSImageSKU')]"},
+          "osImageVersion": {"value": "[parameters('masterOSImageVersion')]"},
+          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
         }
       }
     }
