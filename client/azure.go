@@ -104,7 +104,7 @@ func NewAzureClientSet(config *AzureConfig) (*AzureClientSet, error) {
 // ResponseWasNotFound returns true if the response code from the Azure API
 // was a 404.
 func ResponseWasNotFound(resp autorest.Response) bool {
-	if resp.StatusCode == http.StatusNotFound {
+	if resp.Response != nil && resp.StatusCode == http.StatusNotFound {
 		return true
 	}
 

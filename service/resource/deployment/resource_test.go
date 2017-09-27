@@ -1,13 +1,19 @@
 package deployment
 
 import (
+	"context"
 	"testing"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azuretpr"
+	"github.com/giantswarm/certificatetpr/certificatetprtest"
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
+	"github.com/spf13/viper"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/flag"
+	"github.com/giantswarm/azure-operator/service/cloudconfig"
 )
 
 func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
@@ -30,13 +36,28 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	var err error
 	var newResource *Resource
 	{
+		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.Flag = flag.New()
+		cloudConfigConfig.Logger = microloggertest.New()
+		cloudConfigConfig.Viper = viper.New()
+
+		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
+		if err != nil {
+			t.Fatalf("expected '%v' got '%#v'", nil, err)
+		}
+
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.CertWatcher = certificatetprtest.NewService()
+		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
+		if err != nil {
+			t.Fatalf("expected '%v' got '%#v'", nil, err)
+		}
 	}
 
-	result, err := newResource.GetDesiredState(customObject)
+	result, err := newResource.GetDesiredState(context.TODO(), customObject)
 	if err != nil {
 		t.Fatalf("expected '%v' got '%#v'", nil, err)
 	}
@@ -143,11 +164,22 @@ func Test_Resource_Deployment_GetCreateState(t *testing.T) {
 		},
 	}
 
-	var err error
 	var newResource *Resource
 	{
+		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.Flag = flag.New()
+		cloudConfigConfig.Logger = microloggertest.New()
+		cloudConfigConfig.Viper = viper.New()
+
+		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
+		if err != nil {
+			t.Fatalf("expected '%#v' got '%#v'", nil, err)
+		}
+
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.CertWatcher = certificatetprtest.NewService()
+		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
 		if err != nil {
@@ -155,7 +187,7 @@ func Test_Resource_Deployment_GetCreateState(t *testing.T) {
 		}
 	}
 	for i, tc := range testCases {
-		result, err := newResource.GetCreateState(tc.Obj, tc.Cur, tc.Des)
+		result, err := newResource.GetCreateState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
@@ -224,11 +256,22 @@ func Test_Resource_Deployment_GetDeleteState(t *testing.T) {
 		},
 	}
 
-	var err error
 	var newResource *Resource
 	{
+		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.Flag = flag.New()
+		cloudConfigConfig.Logger = microloggertest.New()
+		cloudConfigConfig.Viper = viper.New()
+
+		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
+		if err != nil {
+			t.Fatalf("expected '%#v' got '%#v'", nil, err)
+		}
+
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.CertWatcher = certificatetprtest.NewService()
+		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
 		if err != nil {
@@ -236,7 +279,7 @@ func Test_Resource_Deployment_GetDeleteState(t *testing.T) {
 		}
 	}
 	for i, tc := range testCases {
-		result, err := newResource.GetDeleteState(tc.Obj, tc.Cur, tc.Des)
+		result, err := newResource.GetDeleteState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}

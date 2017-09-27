@@ -2,8 +2,11 @@ package operator
 
 import (
 	"fmt"
+	"os"
 	"sync"
+	"time"
 
+	"github.com/cenkalti/backoff"
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -12,7 +15,6 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/cache"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
@@ -23,6 +25,7 @@ type Config struct {
 	// Dependencies.
 
 	AzureConfig       *client.AzureConfig
+	Backoff           backoff.BackOff
 	Logger            micrologger.Logger
 	OperatorFramework *framework.Framework
 	K8sClient         kubernetes.Interface
@@ -40,10 +43,10 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 		AzureConfig:       nil,
+		Backoff:           nil,
 		K8sClient:         nil,
 		Logger:            nil,
 		OperatorFramework: nil,
-		Resources:         nil,
 
 		// Settings.
 		Flag:  nil,
@@ -56,9 +59,9 @@ type Service struct {
 	Config
 
 	// Dependencies.
+	backoff           backoff.BackOff
 	logger            micrologger.Logger
 	operatorFramework *framework.Framework
-	resources         []framework.Resource
 
 	// Internals.
 
@@ -73,6 +76,9 @@ func New(config Config) (*Service, error) {
 	if config.AzureConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty")
 	}
+	if config.Backoff == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.BackOff must not be empty")
+	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
 	}
@@ -81,9 +87,6 @@ func New(config Config) (*Service, error) {
 	}
 	if config.OperatorFramework == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.OperatorFramework must not be empty")
-	}
-	if config.Resources == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Resources must not be empty")
 	}
 
 	// Settings.
@@ -110,9 +113,9 @@ func New(config Config) (*Service, error) {
 		Config: config,
 
 		// Dependencies.
+		backoff:           config.Backoff,
 		logger:            config.Logger,
 		operatorFramework: config.OperatorFramework,
-		resources:         config.Resources,
 
 		// Internals.
 		bootOnce: sync.Once{},
@@ -126,83 +129,45 @@ func New(config Config) (*Service, error) {
 // Boot starts the service and implements the watch for azuretpr.
 func (s *Service) Boot() {
 	s.bootOnce.Do(func() {
-		err := s.tpr.CreateAndWait()
-		if tpr.IsAlreadyExists(err) {
-			s.Logger.Log("debug", "third party resource already exists")
-		} else if err != nil {
-			s.Logger.Log("error", fmt.Sprintf("%#v", err))
-			return
+		o := func() error {
+			err := s.bootWithError()
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			return nil
 		}
 
-		s.Logger.Log("debug", "starting list/watch")
-
-		newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
-			AddFunc:    s.addFunc,
-			DeleteFunc: s.deleteFunc,
-			UpdateFunc: s.updateFunc,
-		}
-		newZeroObjectFactory := &tpr.ZeroObjectFactoryFuncs{
-			NewObjectFunc:     func() runtime.Object { return &azuretpr.CustomObject{} },
-			NewObjectListFunc: func() runtime.Object { return &azuretpr.List{} },
+		n := func(err error, d time.Duration) {
+			s.logger.Log("warning", fmt.Sprintf("retrying operator boot due to error: %#v", microerror.Mask(err)))
 		}
 
-		s.tpr.NewInformer(newResourceEventHandler, newZeroObjectFactory).Run(nil)
+		err := backoff.RetryNotify(o, s.backoff, n)
+		if err != nil {
+			s.logger.Log("error", fmt.Sprintf("stop operator boot retries due to too many errors: %#v", microerror.Mask(err)))
+			os.Exit(1)
+		}
 	})
 }
 
-func (s *Service) addFunc(obj interface{}) {
-	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
-	// addFunc/deleteFunc/updateFunc is executed at a time.
-	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
-	// the source of truth for the azure-operator are Azure resources.
-	// In case we would run the operator logic in parallel, we would run into race
-	// conditions.
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
-
-	s.logger.Log("debug", "executing the operator's addFunc")
-
-	err := s.operatorFramework.ProcessCreate(obj, s.resources)
-	if err != nil {
-		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "create")
+func (s *Service) bootWithError() error {
+	err := s.tpr.CreateAndWait()
+	if tpr.IsAlreadyExists(err) {
+		s.Logger.Log("debug", "third party resource already exists")
+	} else if err != nil {
+		return microerror.Mask(err)
 	}
-}
 
-func (s *Service) deleteFunc(obj interface{}) {
-	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
-	// addFunc/deleteFunc/updateFunc is executed at a time.
-	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
-	// the source of truth for the azure-operator are Azure resources.
-	// In case we would run the operator logic in parallel, we would run into race
-	// conditions.
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.Logger.Log("debug", "starting list/watch")
 
-	s.logger.Log("debug", "executing the operator's deleteFunc")
+	newResourceEventHandler := s.operatorFramework.NewCacheResourceEventHandler()
 
-	err := s.operatorFramework.ProcessDelete(obj, s.resources)
-	if err != nil {
-		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "delete")
+	newZeroObjectFactory := &tpr.ZeroObjectFactoryFuncs{
+		NewObjectFunc:     func() runtime.Object { return &azuretpr.CustomObject{} },
+		NewObjectListFunc: func() runtime.Object { return &azuretpr.List{} },
 	}
-}
 
-func (s *Service) updateFunc(oldObj interface{}, newObj interface{}) {
-	// We lock the addFunc/deleteFunc/updateFunc to make sure only one
-	// addFunc/deleteFunc/updateFunc is executed at a time.
-	// addFunc/deleteFunc/updateFunc is not thread safe. This is important because
-	// the source of truth for the azure-operator are Azure resources.
-	// In case we would run the operator logic in parallel, we would run into race
-	// conditions.
-	s.mutex.Lock()
-	defer s.mutex.Unlock()
+	s.tpr.NewInformer(newResourceEventHandler, newZeroObjectFactory).Run(nil)
 
-	s.logger.Log("debug", "executing the operator's updateFunc")
-
-	// Creating Azure resources should be idempotent so here we call
-	// ProcessCreate rather than ProcessUpdate.
-	// TODO Decide if we need to implement ProcessUpdate for this operator.
-	err := s.operatorFramework.ProcessCreate(newObj, s.resources)
-	if err != nil {
-		s.logger.Log("error", fmt.Sprintf("%#v", err), "event", "update")
-	}
+	return nil
 }

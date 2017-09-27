@@ -1,12 +1,12 @@
-hash: ee080f3bc30e963126d65b388cb5de3df6fa89020769af90569819fc84311163
-updated: 2017-09-12T18:55:23.686594985+02:00
+hash: aa95d00734b9fa5c9399e629663db486ebefc14deec18e16e6cd48d2dc7ff914
+updated: 2017-09-22T16:18:19.423322568+02:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
-  version: df4dd90d076ebbf6e87d08d3f00bfac8ff4bde1a
+  version: d3d05e536d5141916dadae8ee6fa98c62fb9a6ce
   subpackages:
   - arm/resources/resources
 - name: github.com/Azure/go-autorest
-  version: 5432abe734f8d95c78340cd56712f912906e6514
+  version: f6be1abbb5abd0517522f850dd785990d373da7e
   subpackages:
   - autorest
   - autorest/adal
@@ -19,7 +19,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/cenkalti/backoff
-  version: 61153c768f31ee5f130071d08fc82b85208528de
+  version: 61ba96c4d1002f22e06acb8e34a7650611125a63
 - name: github.com/davecgh/go-spew
   version: 5215b55f46b2b919f50a1df0eaa5886afe4e3b3d
   subpackages:
@@ -41,13 +41,17 @@ imports:
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/giantswarm/azuretpr
-  version: 32783bc0bbcfecda0c84e5533c6b692fe64c018f
+  version: 69a2d61c2785a52d7c7e796b2fe7836e64122e92
   subpackages:
   - spec
   - spec/azure
-  - spec/azure/loadbalancer
+  - spec/azure/virtualnetwork
+- name: github.com/giantswarm/certificatetpr
+  version: 682eb790a45b54dd27f78aae511cabb8c42e8575
+  subpackages:
+  - certificatetprtest
 - name: github.com/giantswarm/clustertpr
-  version: 1ac2fe67efb012ab2ff0002769c0ae3463f3aa09
+  version: 34d49f599b2cc70af0d9c30b941a085aef772e64
   subpackages:
   - spec
   - spec/docker
@@ -56,15 +60,18 @@ imports:
   - spec/kubernetes/ingress
   - spec/kubernetes/kubectl
   - spec/kubernetes/networksetup
+  - spec/kubernetes/ssh
+- name: github.com/giantswarm/k8scloudconfig
+  version: 05b5ac2a4ed0d145efb1ce8002f26b228ae3cc1b
 - name: github.com/giantswarm/microendpoint
-  version: 70547070da4072138bb5161e80a164b0bac075cc
+  version: f5682d1d6fe0eb963397fb7e0535c1794644efce
   subpackages:
   - endpoint/version
   - service/version
 - name: github.com/giantswarm/microerror
   version: 5ade94eb4ee35ef72eb9382228470caeddb29989
 - name: github.com/giantswarm/microkit
-  version: 9c50baa91bd1639e41bc5510b215d9d0801f94ca
+  version: 4871f763488a16c5b7ea3c411bbd82cd5139e29a
   subpackages:
   - command
   - command/daemon
@@ -72,6 +79,7 @@ imports:
   - command/daemon/flag/config
   - command/daemon/flag/server
   - command/daemon/flag/server/listen
+  - command/daemon/flag/server/log
   - command/daemon/flag/server/tls
   - command/version
   - flag
@@ -85,14 +93,15 @@ imports:
   subpackages:
   - microloggertest
 - name: github.com/giantswarm/microstorage
-  version: f5c68d40459f0021cf8266501b7d8615ea4ff641
+  version: 31cedcac6cdcbcbf57dfdbb885c9a2dd40a9c403
   subpackages:
   - memory
 - name: github.com/giantswarm/operatorkit
-  version: ebba313a2a521c384192e0011959d58682220cb3
+  version: a6f6c824a13e17d683ff951edb2439238eaace37
   subpackages:
   - client/k8s
   - framework
+  - framework/canceledcontext
   - tpr
 - name: github.com/go-kit/kit
   version: a9ca6725cbbea455e61c6bc8a1ed28e81eb3493b
@@ -130,7 +139,7 @@ imports:
 - name: github.com/gorilla/mux
   version: 0eeaf8392f5b04950925b8a69fe70f110fa7cbfc
 - name: github.com/hashicorp/hcl
-  version: 8f6b1344a92ff8877cf24a5de9177bf7d0a2a187
+  version: 68e816d1c783414e79bc65b3994d9ab6b0a722ab
   subpackages:
   - hcl/ast
   - hcl/parser
@@ -165,7 +174,7 @@ imports:
 - name: github.com/pelletier/go-toml
   version: 1d6b12b7cb290426e27e6b4e38b89fcda3aeef03
 - name: github.com/prometheus/client_golang
-  version: 671c87b04728565380d95c621edc687bfa00664c
+  version: 353b8c3f3776541879f9abfd8fa8b1ae162ab394
   subpackages:
   - prometheus
   - prometheus/promhttp
@@ -208,7 +217,7 @@ imports:
   subpackages:
   - codec
 - name: golang.org/x/net
-  version: 66aacef3dd8a676686c7ae3716979581e8b03c47
+  version: 0744d001aa8470aaa53df28d32e5ceeb8af9bd70
   repo: https://github.com/golang/net.git
   vcs: git
   subpackages:
@@ -223,7 +232,7 @@ imports:
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 440ad626b4c13d3fb15784f0e9750d0e86ffd688
+  version: 1cbadb444a806fd9430d14ad08967ed91da4fa0a
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:

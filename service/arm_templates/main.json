@@ -88,6 +88,12 @@
         "description": "Base64-encoded cloud-config data."
       }
     },
+    "keyVaultName": {
+      "type": "string"
+    },
+    "keyVaultSecretsObject": {
+      "type": "secureObject"
+    },
     "templatesBaseURI" : {
       "type": "string",
       "metadata": {
@@ -97,6 +103,10 @@
     "availabilitySetsTemplateFile": {
       "type": "string",
       "defaultValue": "availability_sets_setup.json"
+    },
+    "certificatesTemplateFile": {
+      "type": "string",
+      "defaultValue": "certificates.json"
     },
     "clusterSetupTemplateFile": {
       "type": "string",
@@ -117,6 +127,7 @@
   },
   "variables": {
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
+    "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
     "nodesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodesSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
@@ -182,6 +193,23 @@
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "certificates",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('certificatesTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "keyVaultName": {"value": "[parameters('keyVaultName')]"},
+          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"}
         }
       }
     },

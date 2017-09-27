@@ -56,13 +56,16 @@ spec:
     - hostname: "worker-1"
 
   azure:
+    keyVault:
+      name: "${CLUSTER_NAME}-vault"
     location: "${AZURE_LOCATION}"
     storage:
-      accountType: "Standard_LRS",
+      accountType: "Standard_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
       workerSubnetCidr: "10.0.2.0/24"      
-      apiLoadBalancerCidr: "10.0.3.0/25"
-      etcdLoadBalancerCidr: "10.0.3.128/25"
-      ingressLoadBalancerCidr: "10.0.4.0/25"
+      loadBalancer:
+        apiCidr: "10.0.3.0/25"
+        etcdCidr: "10.0.3.128/25"
+        ingressCidr: "10.0.4.0/25"

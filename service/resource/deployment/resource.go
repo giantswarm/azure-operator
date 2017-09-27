@@ -1,17 +1,20 @@
 package deployment
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/azuretpr"
+	"github.com/giantswarm/certificatetpr"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/key"
 )
 
@@ -28,6 +31,8 @@ type Config struct {
 	// Dependencies.
 
 	AzureConfig *client.AzureConfig
+	CertWatcher certificatetpr.Searcher
+	CloudConfig *cloudconfig.CloudConfig
 	Logger      micrologger.Logger
 
 	// Settings.
@@ -43,6 +48,8 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 		AzureConfig: nil,
+		CertWatcher: nil,
+		CloudConfig: nil,
 		Logger:      nil,
 
 		// Settings.
@@ -54,6 +61,8 @@ type Resource struct {
 	// Dependencies.
 
 	azureConfig *client.AzureConfig
+	certWatcher certificatetpr.Searcher
+	cloudConfig *cloudconfig.CloudConfig
 	logger      micrologger.Logger
 
 	// Settings.
@@ -67,12 +76,20 @@ func New(config Config) (*Resource, error) {
 	if config.AzureConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty.")
 	}
+	if config.CertWatcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.CertWatcher must not be empty")
+	}
+	if config.CloudConfig == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty.")
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty.")
 	}
 
 	newService := &Resource{
 		azureConfig: config.AzureConfig,
+		certWatcher: config.CertWatcher,
+		cloudConfig: config.CloudConfig,
 		logger: config.Logger.With(
 			"resource", Name,
 		),
@@ -84,7 +101,7 @@ func New(config Config) (*Resource, error) {
 
 // GetCurrentState gets the current deployments for this cluster via the
 // Azure API.
-func (r *Resource) GetCurrentState(obj interface{}) (interface{}, error) {
+func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -124,7 +141,7 @@ func (r *Resource) GetCurrentState(obj interface{}) (interface{}, error) {
 }
 
 // GetDesiredState returns the desired deployments for this cluster.
-func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
+func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -142,7 +159,7 @@ func (r *Resource) GetDesiredState(obj interface{}) (interface{}, error) {
 
 // GetCreateState returns the deployments that should be created for this
 // cluster.
-func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) GetCreateState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
 	currentDeployments, err := toDeployments(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -165,12 +182,12 @@ func (r *Resource) GetCreateState(obj, currentState, desiredState interface{}) (
 
 // GetDeleteState returns an empty deployments collection. Deployments and the
 // resources they manage are deleted when the Resource Group is deleted.
-func (r *Resource) GetDeleteState(obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) GetDeleteState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
 	return []Deployment{}, nil
 }
 
 // GetUpdateState is not yet implemented.
-func (r *Resource) GetUpdateState(obj, currentState, desiredState interface{}) (interface{}, interface{}, interface{}, error) {
+func (r *Resource) GetUpdateState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, interface{}, interface{}, error) {
 	return []Deployment{}, []Deployment{}, []Deployment{}, nil
 }
 
@@ -180,7 +197,7 @@ func (r *Resource) Name() string {
 }
 
 // ProcessCreateState creates the deployments via the Azure API.
-func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
+func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState interface{}) error {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
 		return microerror.Mask(err)
@@ -234,12 +251,12 @@ func (r *Resource) ProcessCreateState(obj, createState interface{}) error {
 }
 
 // ProcessDeleteState returns nil because deployments are not deleted.
-func (r *Resource) ProcessDeleteState(obj, deleteState interface{}) error {
+func (r *Resource) ProcessDeleteState(ctx context.Context, obj, deleteState interface{}) error {
 	return nil
 }
 
 // ProcessUpdateState is not yet implemented.
-func (r *Resource) ProcessUpdateState(obj, updateState interface{}) error {
+func (r *Resource) ProcessUpdateState(ctx context.Context, obj, updateState interface{}) error {
 	return nil
 }
 

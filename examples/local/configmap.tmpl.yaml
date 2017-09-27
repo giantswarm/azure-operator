@@ -4,8 +4,17 @@ metadata:
   name: azure-operator-configmap
 data:
   config.yml: |
-    kubernetes:
-      incluster: true
+    service:
+      azure:
+        clientid: "${AZURE_CLIENT_ID}"
+        clientsecret: "${AZURE_CLIENT_SECRET}"
+        subscriptionid: "${AZURE_SUBSCRIPTION_ID}"
+        tenantid: "${AZURE_TENANT_ID}"
+        template:
+          uri:
+            version: "${AZURE_TEMPLATE_URI_VERSION}"
+      kubernetes:
+        incluster: true
     server:
       listen:
         address: 'http://0.0.0.0:8000'
