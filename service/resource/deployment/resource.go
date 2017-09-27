@@ -85,6 +85,7 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
+	// Settings.
 	if config.TemplateVersion == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
 	}
