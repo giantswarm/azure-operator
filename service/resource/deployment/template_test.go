@@ -10,7 +10,7 @@ func Test_TemplateURI(t *testing.T) {
 	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/v1.0.0-rc1/service/arm_templates/worker.json"
 
 	if uri != euri {
-		t.Error("expected '%s' got '%s'", euri, uri)
+		t.Errorf("expected '%s' got '%s'", euri, uri)
 	}
 }
 
@@ -19,7 +19,7 @@ func Test_BaseTemplateURI(t *testing.T) {
 	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/v2.0.0/service/arm_templates/"
 
 	if uri != euri {
-		t.Error("expected '%s', got '%s'", euri, uri)
+		t.Errorf("expected '%s', got '%s'", euri, uri)
 	}
 
 	// Additionaly make sure base URI ends with slash. This is important.
