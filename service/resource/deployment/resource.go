@@ -73,19 +73,19 @@ type Resource struct {
 func New(config Config) (*Resource, error) {
 	// Dependencies.
 	if config.AzureConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty")
 	}
 	if config.CertWatcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.CertWatcher must not be empty")
 	}
 	if config.CloudConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty")
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 	if config.TemplateURIVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
 	}
 
 	newService := &Resource{
