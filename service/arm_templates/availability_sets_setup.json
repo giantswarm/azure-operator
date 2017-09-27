@@ -12,60 +12,38 @@
     "clusterID": {
       "type": "string"
     },
-    "masterFaultDomainCount": {
+    "prefix": {
+      "type": "string"
+    },
+    "faultDomainCount": {
       "type": "string",
       "defaultValue": "3"
     },
-    "masterUpdateDomainCount": {
-      "type": "string",
-      "defaultValue": "5"
-    },
-    "workerFaultDomainCount": {
-      "type": "string",
-      "defaultValue": "3"
-    },
-    "workerUpdateDomainCount": {
+    "updateDomainCount": {
       "type": "string",
       "defaultValue": "5"
     }
   },
   "variables": {
-    "masterAvailabilitySetName": "[concat(parameters('clusterID'), '-MasterAvailabilitySet')]",
-    "masterAvailabilitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('masterAvailabilitySetName'))]",
-
-    "workerAvailabilitySetName": "[concat(parameters('clusterID'), '-WorkerAvailabilitySet')]",
-    "workerAvailabilitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('workerAvailabilitySetName'))]",
+    "availabilitySetName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-AvailabilitySet')]",
+    "availabilitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('availabilitySetName'))]"
   },
   "resources": [
     {
       "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
       "type": "Microsoft.Compute/availabilitySets",
-      "name": "[variables('masterAvailabilitySetName')]",
+      "name": "[variables('availabilitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "PlatformFaultDomainCount": "[parameters('masterFaultDomainCount')]",
-        "PlatformUpdateDomainCount": "[parameters('masterUpdateDomainCount')]"
-      }
-    },
-    {
-      "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
-      "type": "Microsoft.Compute/availabilitySets",
-      "name": "[variables('workerAvailabilitySetName')]",
-      "location": "[resourceGroup().location]",
-      "properties": {
-        "PlatformFaultDomainCount": "[parameters('workerFaultDomainCount')]",
-        "PlatformUpdateDomainCount": "[parameters('workerUpdateDomainCount')]"
+        "PlatformFaultDomainCount": "[parameters('faultDomainCount')]",
+        "PlatformUpdateDomainCount": "[parameters('updateDomainCount')]"
       }
     }
   ],
   "outputs": {
-    "masterAvailabilitySetID": {
+    "availabilitySetID": {
       "type": "string",
-      "value": "[variables('masterAvailabilitySetID')]"
-    },
-    "workerAvailabilitySetID": {
-      "type": "string",
-      "value": "[variables('workerAvailabilitySetID')]"
+      "value": "[variables('availabilitySetID')]"
     }
   }
 }
