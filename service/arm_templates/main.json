@@ -121,7 +121,8 @@
     "nodesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodesSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
-    "masterPrefix": "master"
+    "masterPrefix": "Master",
+    "workerPrefix": "Worker"
   },
   "resources": [
     {
@@ -186,7 +187,7 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "availability_sets_setup",
+      "name": "master_availability_sets_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -195,7 +196,24 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"}
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "[variables('masterPrefix')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "worker_availability_sets_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('availabilitySetsTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "[variables('workerPrefix')]"}
         }
       }
     },
@@ -215,7 +233,7 @@
           "prefix": {"value": "[variables('masterPrefix')]"},
           "nodeCount": {"value": "[parameters('masterCount')]"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
-          "availabilitySetID": {"value": "[reference('availability_sets_setup').outputs.masterAvailabilitySetID.value]"},
+          "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
           "vmSize": {"value": "[parameters('masterVMSize')]"},
           "dataDiskSizeGB": {"value": "[parameters('masterDataDiskSizeGB')]"},
           "adminUsername": {"value": "[parameters('masterAdminUsername')]"},
