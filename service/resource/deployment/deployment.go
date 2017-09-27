@@ -10,8 +10,8 @@ import (
 )
 
 const (
-	mainDeploymentName = "cluster-main-template"
-	templateVersion    = "1.0.0.0"
+	mainDeploymentName     = "cluster-main-template"
+	templateContentVersion = "1.0.0.0"
 )
 
 func getDeploymentNames() []string {
@@ -56,15 +56,15 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
 		"keyVaultName":                  key.KeyVaultName(cluster),
 		"keyVaultSecretsObject":         certSecrets,
-		"templatesBaseURI":              baseTemplateURI(r.templateURIVersion),
+		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
 	}
 
 	deployment := Deployment{
-		Name:            mainDeploymentName,
-		Parameters:      convertParameters(params),
-		ResourceGroup:   key.ClusterID(cluster),
-		TemplateURI:     templateURI(r.templateURIVersion, mainTemplate),
-		TemplateVersion: templateVersion,
+		Name:                   mainDeploymentName,
+		Parameters:             convertParameters(params),
+		ResourceGroup:          key.ClusterID(cluster),
+		TemplateURI:            templateURI(r.templateVersion, mainTemplate),
+		TemplateContentVersion: templateContentVersion,
 	}
 
 	return deployment, nil

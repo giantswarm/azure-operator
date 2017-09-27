@@ -35,10 +35,9 @@ type Config struct {
 
 	// Settings.
 
-	// TemplateURIVersion is used when creating template links for ARM
-	// templates. Defaults to master for deploying templates hosted on
-	// GitHub.
-	TemplateURIVersion string
+	// TemplateVersion is the ARM template version. Currently is the name
+	// of the git branch in which the version is stored.
+	TemplateVersion string
 }
 
 // DefaultConfig provides a default configuration to create a new resource by
@@ -46,13 +45,15 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
+
 		AzureConfig: nil,
 		CertWatcher: nil,
 		CloudConfig: nil,
 		Logger:      nil,
 
 		// Settings.
-		TemplateURIVersion: templateURIVersionDefault,
+
+		TemplateVersion: templateVersionDefault,
 	}
 }
 
@@ -66,7 +67,7 @@ type Resource struct {
 
 	// Settings.
 
-	templateURIVersion string
+	templateVersion string
 }
 
 // New creates a new configured deploy resource.
@@ -84,7 +85,7 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
-	if config.TemplateURIVersion == "" {
+	if config.TemplateVersion == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
 	}
 
@@ -95,7 +96,7 @@ func New(config Config) (*Resource, error) {
 		logger: config.Logger.With(
 			"resource", Name,
 		),
-		templateURIVersion: config.TemplateURIVersion,
+		templateVersion: config.TemplateVersion,
 	}
 
 	return newService, nil
@@ -129,11 +130,11 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			}
 
 			deployment := Deployment{
-				Name:            *deploymentExtended.Name,
-				Parameters:      *deploymentExtended.Properties.Parameters,
-				ResourceGroup:   resourceGroupName,
-				TemplateURI:     *deploymentExtended.Properties.TemplateLink.URI,
-				TemplateVersion: *deploymentExtended.Properties.TemplateLink.ContentVersion,
+				Name:                   *deploymentExtended.Name,
+				Parameters:             *deploymentExtended.Properties.Parameters,
+				ResourceGroup:          resourceGroupName,
+				TemplateURI:            *deploymentExtended.Properties.TemplateLink.URI,
+				TemplateContentVersion: *deploymentExtended.Properties.TemplateLink.ContentVersion,
 			}
 			deployments = append(deployments, deployment)
 		}
@@ -228,7 +229,7 @@ func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState inte
 					Parameters: &deploy.Parameters,
 					TemplateLink: &azureresource.TemplateLink{
 						URI:            to.StringPtr(deploy.TemplateURI),
-						ContentVersion: to.StringPtr(deploy.TemplateVersion),
+						ContentVersion: to.StringPtr(deploy.TemplateContentVersion),
 					},
 				},
 			}

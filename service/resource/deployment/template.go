@@ -3,16 +3,18 @@ package deployment
 import "fmt"
 
 const (
-	templateURIVersionDefault = "master"
-	templateURIFmt            = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/arm_templates/%s"
+	templateURIFmt = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/arm_templates/%s"
+
+	// templateVersionDefault is the default value for Config.TemplateVersion.
+	templateVersionDefault = "master"
 
 	mainTemplate = "main.json"
 )
 
-func templateURI(uriVersion, template string) string {
-	return fmt.Sprintf(templateURIFmt, uriVersion, template)
+func templateURI(version, template string) string {
+	return fmt.Sprintf(templateURIFmt, version, template)
 }
 
-func baseTemplateURI(uriVersion string) string {
-	return templateURI(uriVersion, "")
+func baseTemplateURI(version string) string {
+	return templateURI(version, "")
 }
