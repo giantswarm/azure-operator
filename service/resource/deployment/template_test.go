@@ -25,6 +25,6 @@ func Test_BaseTemplateURI(t *testing.T) {
 	// Additionaly make sure base URI ends with slash. This is important.
 	// See main.json ARM template.
 	if !strings.HasSuffix(uri, "/") {
-		t.Error("expected '/' suffix, got '%s'", uri)
+		t.Errorf("expected '/' suffix, got '%s'", uri)
 	}
 }
