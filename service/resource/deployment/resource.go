@@ -22,9 +22,7 @@ const (
 	// Name is the identifier of the resource.
 	Name = "deployment"
 
-	createTimeout  = 5 * time.Minute
-	deploymentMode = "Incremental"
-	masterBranch   = "master"
+	createTimeout = 5 * time.Minute
 )
 
 type Config struct {
@@ -37,9 +35,10 @@ type Config struct {
 
 	// Settings.
 
-	// URIVersion is used when creating template links for ARM templates.
-	// Defaults to master for deploying templates hosted on GitHub.
-	URIVersion string
+	// TemplateURIVersion is used when creating template links for ARM
+	// templates. Defaults to master for deploying templates hosted on
+	// GitHub.
+	TemplateURIVersion string
 }
 
 // DefaultConfig provides a default configuration to create a new resource by
@@ -53,7 +52,7 @@ func DefaultConfig() Config {
 		Logger:      nil,
 
 		// Settings.
-		URIVersion: masterBranch,
+		TemplateURIVersion: templateURIVersionDefault,
 	}
 }
 
@@ -67,7 +66,7 @@ type Resource struct {
 
 	// Settings.
 
-	uriVersion string
+	templateURIVersion string
 }
 
 // New creates a new configured deploy resource.
@@ -85,6 +84,9 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty.")
 	}
+	if config.TemplateURIVersion == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty.")
+	}
 
 	newService := &Resource{
 		azureConfig: config.AzureConfig,
@@ -93,7 +95,7 @@ func New(config Config) (*Resource, error) {
 		logger: config.Logger.With(
 			"resource", Name,
 		),
-		uriVersion: config.URIVersion,
+		templateURIVersion: config.TemplateURIVersion,
 	}
 
 	return newService, nil

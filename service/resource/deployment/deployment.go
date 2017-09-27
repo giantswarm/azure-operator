@@ -1,8 +1,6 @@
 package deployment
 
 import (
-	"fmt"
-
 	"github.com/giantswarm/certificatetpr"
 
 	"github.com/giantswarm/azuretpr"
@@ -12,13 +10,8 @@ import (
 )
 
 const (
-	mainDeploymentName          = "cluster-main-template"
-	templatesBaseURI            = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/arm_templates/"
-	templateVersion             = "1.0.0.0"
-	mainTemplate                = "main.json"
-	clusterSetupTemplate        = "cluster_setup.json"
-	securityGroupsSetupTemplate = "security_groups_setup.json"
-	virtualNetworkSetupTemplate = "virtual_network_setup.json"
+	mainDeploymentName = "cluster-main-template"
+	templateVersion    = "1.0.0.0"
 )
 
 func getDeploymentNames() []string {
@@ -28,15 +21,6 @@ func getDeploymentNames() []string {
 }
 
 func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, error) {
-	templateBaseURI, err := r.templateBaseURI()
-	if err != nil {
-		return Deployment{}, microerror.Mask(err)
-	}
-	mainTemplateURI, err := r.templateURI(mainTemplate)
-	if err != nil {
-		return Deployment{}, microerror.Mask(err)
-	}
-
 	certs, err := r.certWatcher.SearchCerts(key.ClusterID(cluster))
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
@@ -72,35 +56,18 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
 		"keyVaultName":                  key.KeyVaultName(cluster),
 		"keyVaultSecretsObject":         certSecrets,
-		"templatesBaseURI":              templateBaseURI,
+		"templatesBaseURI":              baseTemplateURI(r.templateURIVersion),
 	}
 
 	deployment := Deployment{
 		Name:            mainDeploymentName,
 		Parameters:      convertParameters(params),
 		ResourceGroup:   key.ClusterID(cluster),
-		TemplateURI:     mainTemplateURI,
+		TemplateURI:     templateURI(r.templateURIVersion, mainTemplate),
 		TemplateVersion: templateVersion,
 	}
 
 	return deployment, nil
-}
-
-func (r Resource) templateBaseURI() (string, error) {
-	if r.uriVersion == "" {
-		return "", microerror.Maskf(invalidConfigError, "Missing URI version for ARM templates")
-	}
-
-	return fmt.Sprintf(templatesBaseURI, r.uriVersion), nil
-}
-
-func (r Resource) templateURI(templateFileName string) (string, error) {
-	baseURI, err := r.templateBaseURI()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return fmt.Sprintf("%s%s", baseURI, templateFileName), nil
 }
 
 // convertParameters converts the map into the structure used by the Azure API.
