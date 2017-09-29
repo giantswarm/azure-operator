@@ -10,4 +10,6 @@ type Azure struct {
 	Location       string               `json:"location" yaml:"location"`
 	Storage        azure.Storage        `json:"storage" yaml:"storage"`
 	VirtualNetwork azure.VirtualNetwork `json:"virtualNetwork" yaml:"virtualNetwork"`
+	Masters        []azure.Node         `json:"masters" yaml:"masters"`
+	Workers        []azure.Node         `json:"workers" yaml:"workers"`
 }

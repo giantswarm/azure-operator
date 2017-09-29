@@ -19,6 +19,7 @@ import (
 
 	"github.com/giantswarm/azuretpr/spec"
 	"github.com/giantswarm/azuretpr/spec/azure"
+	"github.com/giantswarm/azuretpr/spec/azure/node"
 	"github.com/giantswarm/azuretpr/spec/azure/virtualnetwork"
 )
 
@@ -125,6 +126,34 @@ func TestSpecYamlEncoding(t *testing.T) {
 				Name: "abc12-vault",
 			},
 			Location: "westeurope",
+			Masters: []azure.Node{
+				{
+					VMSize:          "Standard_A1",
+					DataDiskSizeGB:  50,
+					AdminUsername:   "core",
+					AdminSSHKeyData: "ssh-rsa AAAAB3NzaC1y",
+					OSImage: node.OSImage{
+						Publisher: "GiantSwarm",
+						Offer:     "CoreOS",
+						SKU:       "Stable",
+						Version:   "1465.7.0",
+					},
+				},
+			},
+			Workers: []azure.Node{
+				{
+					VMSize:          "Standard_A1",
+					DataDiskSizeGB:  50,
+					AdminUsername:   "core",
+					AdminSSHKeyData: "ssh-rsa AAAAB3NzaC1y",
+					OSImage: node.OSImage{
+						Publisher: "GiantSwarm",
+						Offer:     "CoreOS",
+						SKU:       "Stable",
+						Version:   "1465.7.0",
+					},
+				},
+			},
 			Storage: azure.Storage{
 				AccountType: "Standard_LRS",
 			},
