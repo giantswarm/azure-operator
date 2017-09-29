@@ -25,68 +25,41 @@
     "prefix": {
       "type": "string"
     },
-    "nodeCount": {
-      "type": "int"
-    },
     "subnetID": {
       "type": "string"
     },
     "availabilitySetID": {
       "type": "string"
     },
-    "vmSize": {
-      "type": "string"
-    },
-    "dataDiskSizeGB": {
-      "type": "int"
-    },
-    "adminUsername": {
-      "type": "string"
-    },
     "disablePasswordAuth": {
       "type": "bool",
       "defaultValue": true
     },
-    "adminSSHKeyData": {
-      "type": "string"
-    },
-    "osImagePublisher": {
-      "type": "string"
-    },
-    "osImageOffer": {
-      "type": "string"
-    },
-    "osImageSKU": {
-      "type": "string"
-    },
-    "osImageVersion": {
-      "type": "string"
-    },
     "cloudConfigData": {
       "type": "string"
+    },
+    "nodeCustomConfig": {
+      "type": "object"
     }
   },
   "variables": {
-    "adminSSHKeyPath": "[concat('/home/',parameters('adminUsername'),'/.ssh/authorized_keys')]",
-    "nicName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-NIC-')]",
-    "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-')]",
-    "osDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk-')]",
-    "dataDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-DataDisk-')]"
+    "adminSSHKeyPath": "[concat('/home/', parameters('nodeCustomConfig').adminUsername, '/.ssh/authorized_keys')]",
+    "ipName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
+    "nicName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-NIC')]",
+    "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
+    "osDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk')]",
+    "dataDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-DataDisk')]"
   },
   "resources": [
     {
       "apiVersion": "[parameters('networkInterfacesAPIVersion')]",
       "type": "Microsoft.Network/networkInterfaces",
-      "name": "[concat(variables('nicName'), copyIndex(1))]",
+      "name": "[variables('nicName')]",
       "location": "[resourceGroup().location]",
-      "copy": {
-        "name": "[concat(parameters('prefix'), '-NICCopy')]",
-        "count": "[parameters('nodeCount')]"
-      },
       "properties": {
         "ipConfigurations": [
           {
-            "name": "[concat(parameters('prefix'), '-IPConfig')]",
+            "name": "[variables('ipName')]",
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
@@ -100,13 +73,9 @@
     {
       "apiVersion": "[parameters('virtualMachinesAPIVersion')]",
       "type": "Microsoft.Compute/virtualMachines",
-      "name": "[concat(variables('vmName'), copyIndex(1))]",
-      "copy": {
-        "name": "[concat(parameters('prefix'), '-VMCopy')]",
-        "count": "[parameters('nodeCount')]"
-      },
+      "name": "[variables('vmName')]",
       "dependsOn": [
-        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'), copyIndex(1))]"
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
       "location": "[resourceGroup().location]",
       "properties": {
@@ -114,18 +83,18 @@
           "id": "[parameters('availabilitySetID')]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('vmSize')]"
+          "vmSize": "[parameters('nodeCustomConfig').vmSize]"
         },
         "osProfile": {
-          "computerName": "[concat(variables('vmName'), copyIndex(1))]",
-          "adminUsername": "[parameters('adminUsername')]",
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[parameters('nodeCustomConfig').adminUsername]",
           "customData": "[parameters('cloudConfigData')]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
             "ssh": {
               "publicKeys": [
                 {
-                  "keyData": "[parameters('adminSSHKeyData')]",
+                  "keyData": "[parameters('nodeCustomConfig').adminSSHKeyData]",
                   "path": "[variables('adminSSHKeyPath')]"
                 }
               ]
@@ -134,26 +103,26 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[parameters('osImagePublisher')]",
-            "offer": "[parameters('osImageOffer')]",
-            "sku": "[parameters('osImageSKU')]",
-            "version": "[parameters('osImageVersion')]"
+            "publisher": "[parameters('nodeCustomConfig').osImage.publisher]",
+            "offer": "[parameters('nodeCustomConfig').osImage.offer]",
+            "sku": "[parameters('nodeCustomConfig').osImage.sku]",
+            "version": "[parameters('nodeCustomConfig').osImage.version]"
           },
           "osDisk": {
-            "name": "[concat(variables('osDiskName'), copyIndex(1))]",
+            "name": "[variables('osDiskName')]",
             "vhd": {
-              "uri": "[concat('http://',parameters('storageAccountName'),'.blob.core.windows.net/vhds/', variables('osDiskName'), copyIndex(1),'.vhd')]"
+              "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('osDiskName'), '.vhd')]"
             },
             "caching": "ReadWrite",
             "createOption": "FromImage"
           },
           "dataDisks": [
             {
-              "name": "[concat(variables('dataDiskName'), copyIndex(1))]",
-              "diskSizeGB": "[parameters('dataDiskSizeGB')]",
+              "name": "[variables('dataDiskName')]",
+              "diskSizeGB": "[parameters('nodeCustomConfig').dataDiskSizeGB]",
               "lun": 0,
               "vhd": {
-                "uri": "[concat('http://', parameters('storageAccountName'),'.blob.core.windows.net/vhds/', variables('dataDiskName'), copyIndex(1), '.vhd')]"
+                "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('dataDiskName'), '.vhd')]"
               },
               "createOption": "Empty"
             }
@@ -162,7 +131,7 @@
         "networkProfile": {
           "networkInterfaces": [
             {
-              "id": "[resourceId('Microsoft.Network/networkInterfaces', concat(variables('nicName'), copyIndex(1)))]"
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
             }
           ]
         }
