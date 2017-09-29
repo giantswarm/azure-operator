@@ -87,9 +87,9 @@
       "type": "string",
       "defaultValue": "cluster_setup.json"
     },
-    "nodesSetupTemplateFile": {
+    "nodeSetupTemplateFile": {
       "type": "string",
-      "defaultValue": "nodes_setup.json"
+      "defaultValue": "node_setup.json"
     },
     "securityGroupsSetupTemplateFile": {
       "type": "string",
@@ -104,7 +104,7 @@
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
-    "nodesSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodesSetupTemplateFile'))]",
+    "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "masterPrefix": "Master",
@@ -231,7 +231,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('nodesSetupTemplateURI')]",
+          "uri": "[variables('nodeSetupTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
