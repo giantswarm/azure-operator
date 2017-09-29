@@ -38,12 +38,33 @@
     "cloudConfigData": {
       "type": "string"
     },
-    "nodeCustomConfig": {
-      "type": "object"
+    "vmSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminSSHKeyData": {
+      "type": "string"
+    },
+    "dataDiskSizeGB": {
+      "type": "int"
+    },
+    "osImagePublisher": {
+      "type": "string"
+    },
+    "osImageOffer": {
+      "type": "string"
+    },
+    "osImageSKU": {
+      "type": "string"
+    },
+    "osImageVersion": {
+      "type": "string"
     }
   },
   "variables": {
-    "adminSSHKeyPath": "[concat('/home/', parameters('nodeCustomConfig').adminUsername, '/.ssh/authorized_keys')]",
+    "adminSSHKeyPath": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
     "ipName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
     "nicName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-NIC')]",
     "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
@@ -83,18 +104,18 @@
           "id": "[parameters('availabilitySetID')]"
         },
         "hardwareProfile": {
-          "vmSize": "[parameters('nodeCustomConfig').vmSize]"
+          "vmSize": "[parameters('vmSize')]"
         },
         "osProfile": {
           "computerName": "[variables('vmName')]",
-          "adminUsername": "[parameters('nodeCustomConfig').adminUsername]",
+          "adminUsername": "[parameters('adminUsername')]",
           "customData": "[parameters('cloudConfigData')]",
           "linuxConfiguration": {
             "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
             "ssh": {
               "publicKeys": [
                 {
-                  "keyData": "[parameters('nodeCustomConfig').adminSSHKeyData]",
+                  "keyData": "[parameters('adminSSHKeyData')]",
                   "path": "[variables('adminSSHKeyPath')]"
                 }
               ]
@@ -103,10 +124,10 @@
         },
         "storageProfile": {
           "imageReference": {
-            "publisher": "[parameters('nodeCustomConfig').osImage.publisher]",
-            "offer": "[parameters('nodeCustomConfig').osImage.offer]",
-            "sku": "[parameters('nodeCustomConfig').osImage.sku]",
-            "version": "[parameters('nodeCustomConfig').osImage.version]"
+            "publisher": "[parameters('osImagePublisher')]",
+            "offer": "[parameters('osImageOffer')]",
+            "sku": "[parameters('osImageSKU')]",
+            "version": "[parameters('osImageVersion')]"
           },
           "osDisk": {
             "name": "[variables('osDiskName')]",
@@ -119,7 +140,7 @@
           "dataDisks": [
             {
               "name": "[variables('dataDiskName')]",
-              "diskSizeGB": "[parameters('nodeCustomConfig').dataDiskSizeGB]",
+              "diskSizeGB": "[parameters('dataDiskSizeGB')]",
               "lun": 0,
               "vhd": {
                 "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('dataDiskName'), '.vhd')]"
