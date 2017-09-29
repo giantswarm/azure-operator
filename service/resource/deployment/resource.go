@@ -22,9 +22,7 @@ const (
 	// Name is the identifier of the resource.
 	Name = "deployment"
 
-	createTimeout  = 5 * time.Minute
-	deploymentMode = "Incremental"
-	masterBranch   = "master"
+	createTimeout = 5 * time.Minute
 )
 
 type Config struct {
@@ -37,9 +35,9 @@ type Config struct {
 
 	// Settings.
 
-	// URIVersion is used when creating template links for ARM templates.
-	// Defaults to master for deploying templates hosted on GitHub.
-	URIVersion string
+	// TemplateVersion is the ARM template version. Currently is the name
+	// of the git branch in which the version is stored.
+	TemplateVersion string
 }
 
 // DefaultConfig provides a default configuration to create a new resource by
@@ -47,13 +45,15 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
+
 		AzureConfig: nil,
 		CertWatcher: nil,
 		CloudConfig: nil,
 		Logger:      nil,
 
 		// Settings.
-		URIVersion: masterBranch,
+
+		TemplateVersion: templateVersionDefault,
 	}
 }
 
@@ -67,23 +67,27 @@ type Resource struct {
 
 	// Settings.
 
-	uriVersion string
+	templateVersion string
 }
 
 // New creates a new configured deploy resource.
 func New(config Config) (*Resource, error) {
 	// Dependencies.
 	if config.AzureConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty")
 	}
 	if config.CertWatcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.CertWatcher must not be empty")
 	}
 	if config.CloudConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty")
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+	}
+	// Settings.
+	if config.TemplateVersion == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
 	}
 
 	newService := &Resource{
@@ -93,7 +97,7 @@ func New(config Config) (*Resource, error) {
 		logger: config.Logger.With(
 			"resource", Name,
 		),
-		uriVersion: config.URIVersion,
+		templateVersion: config.TemplateVersion,
 	}
 
 	return newService, nil
@@ -127,11 +131,11 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			}
 
 			deployment := Deployment{
-				Name:            *deploymentExtended.Name,
-				Parameters:      *deploymentExtended.Properties.Parameters,
-				ResourceGroup:   resourceGroupName,
-				TemplateURI:     *deploymentExtended.Properties.TemplateLink.URI,
-				TemplateVersion: *deploymentExtended.Properties.TemplateLink.ContentVersion,
+				Name:                   *deploymentExtended.Name,
+				Parameters:             *deploymentExtended.Properties.Parameters,
+				ResourceGroup:          resourceGroupName,
+				TemplateURI:            *deploymentExtended.Properties.TemplateLink.URI,
+				TemplateContentVersion: *deploymentExtended.Properties.TemplateLink.ContentVersion,
 			}
 			deployments = append(deployments, deployment)
 		}
@@ -226,7 +230,7 @@ func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState inte
 					Parameters: &deploy.Parameters,
 					TemplateLink: &azureresource.TemplateLink{
 						URI:            to.StringPtr(deploy.TemplateURI),
-						ContentVersion: to.StringPtr(deploy.TemplateVersion),
+						ContentVersion: to.StringPtr(deploy.TemplateContentVersion),
 					},
 				},
 			}
