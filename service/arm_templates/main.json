@@ -241,7 +241,14 @@
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
           "disablePasswordAuth": {"value": "[parameters('masterDisablePasswordAuth')]"},
-          "nodeCustomConfig": {"value": "[parameters('mastersCustomConfig')[copyIndex()]]"},
+          "vmSize": {"value": "[parameters('mastersCustomConfig')[copyIndex()].vmSize]"},
+          "adminUsername": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminUsername]"},
+          "adminSSHKeyData": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminSSHKeyData]"},
+          "dataDiskSizeGB": {"value": "[parameters('mastersCustomConfig')[copyIndex()].dataDiskSizeGB]"},
+          "osImagePublisher": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.publisher]"},
+          "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
+          "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
+          "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
         }
       }
