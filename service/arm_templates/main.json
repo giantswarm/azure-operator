@@ -50,37 +50,12 @@
     "kubernetesIngressInsecurePort": {
       "type": "int"
     },
-    "masterCount": {
-      "type": "int",
-      "defaultValue": 1
-    },
-    "masterVMSize": {
-      "type": "string"
-    },
-    "masterDataDiskSizeGB": {
-      "type": "int"
-    },
-    "masterAdminUsername": {
-      "type": "string"
+    "mastersCustomConfig": {
+      "type": "array"
     },
     "masterDisablePasswordAuth": {
       "type": "bool",
       "defaultValue": true
-    },
-    "masterAdminSSHKeyData": {
-      "type": "string"
-    },
-    "masterOSImagePublisher": {
-      "type": "string"
-    },
-    "masterOSImageOffer": {
-      "type": "string"
-    },
-    "masterOSImageSKU": {
-      "type": "string"
-    },
-    "masterOSImageVersion": {
-      "type": "string"
     },
     "masterCloudConfigData": {
       "type": "string",
@@ -247,8 +222,12 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "master_nodes_setup",
+      "name": "[concat('master_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
+      "copy": {
+        "name": "master_nodes_setup_copy",
+        "count":  "[length(parameters('mastersCustomConfig'))]"
+      },
       "properties": {
         "mode": "incremental",
         "templateLink": {
@@ -258,19 +237,11 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
-          "prefix": {"value": "[variables('masterPrefix')]"},
-          "nodeCount": {"value": "[parameters('masterCount')]"},
+          "prefix": {"value": "[concat(variables('masterPrefix'), '-', copyIndex(1))]"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
-          "vmSize": {"value": "[parameters('masterVMSize')]"},
-          "dataDiskSizeGB": {"value": "[parameters('masterDataDiskSizeGB')]"},
-          "adminUsername": {"value": "[parameters('masterAdminUsername')]"},
           "disablePasswordAuth": {"value": "[parameters('masterDisablePasswordAuth')]"},
-          "adminSSHKeyData": {"value": "[parameters('masterAdminSSHKeyData')]"},
-          "osImagePublisher": {"value": "[parameters('masterOSImagePublisher')]"},
-          "osImageOffer": {"value": "[parameters('masterOSImageOffer')]"},
-          "osImageSKU": {"value": "[parameters('masterOSImageSKU')]"},
-          "osImageVersion": {"value": "[parameters('masterOSImageVersion')]"},
+          "nodeCustomConfig": {"value": "[parameters('mastersCustomConfig')[copyIndex()]]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
         }
       }
