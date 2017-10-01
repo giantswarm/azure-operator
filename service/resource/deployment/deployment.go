@@ -29,7 +29,6 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 	// Convert certs files into a collection of key vault secrets.
 	certSecrets := convertCertsToSecrets(certs)
 
-	// TODO Master CloudConfig will be passed in as a template parameter.
 	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(cluster)
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
