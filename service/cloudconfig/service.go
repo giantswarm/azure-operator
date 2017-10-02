@@ -1,6 +1,8 @@
 package cloudconfig
 
 import (
+	"encoding/base64"
+
 	"github.com/giantswarm/azuretpr"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig"
 	"github.com/giantswarm/microerror"
@@ -104,5 +106,5 @@ func newCloudConfig(template string, params k8scloudconfig.Params) (string, erro
 		return "", microerror.Mask(err)
 	}
 
-	return cloudConfig.Base64(), nil
+	return base64.StdEncoding.EncodeToString([]byte(cloudConfig.String())), nil
 }
