@@ -45,12 +45,14 @@ for f in *.tmpl.yaml; do
         -e 's|${CLUSTER_NAME}|'"${CLUSTER_NAME}"'|g' \
         -e 's|${COMMON_DOMAIN}|'"${COMMON_DOMAIN}"'|g' \
         -e 's|${COMMON_DOMAIN_INGRESS}|'"${COMMON_DOMAIN_INGRESS}"'|g' \
+        -e 's|${AZURE_INSTANCE_TYPE_MASTER}|'"${AZURE_INSTANCE_TYPE_MASTER}"'|g' \
         -e 's|${AZURE_LOCATION}|'"${AZURE_LOCATION}"'|g' \
         -e 's|${AZURE_CLIENT_ID}|'"${AZURE_CLIENT_ID}"'|g' \
         -e 's|${AZURE_CLIENT_SECRET}|'"${AZURE_CLIENT_SECRET}"'|g' \
         -e 's|${AZURE_SUBSCRIPTION_ID}|'"${AZURE_SUBSCRIPTION_ID}"'|g' \
         -e 's|${AZURE_TENANT_ID}|'"${AZURE_TENANT_ID}"'|g' \
         -e 's|${AZURE_TEMPLATE_URI_VERSION}|'"${AZURE_TEMPLATE_URI_VERSION}"'|g' \
+        -e 's|${ID_RSA_PUB}|'"${ID_RSA_PUB}"'|g' \
         ./$f > ./${f%.tmpl.yaml}.yaml
 done
 ```
