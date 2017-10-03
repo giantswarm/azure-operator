@@ -29,12 +29,16 @@ This is a handy snippet that makes it painless - works in bash and zsh.
 export CLUSTER_NAME="example-cluster"
 export COMMON_DOMAIN="internal.company.com"
 export COMMON_DOMAIN_INGRESS="company.com"
+export AZURE_INSTANCE_TYPE_MASTER="Standard_A1"
 export AZURE_LOCATION="westeurope"
 export AZURE_CLIENT_ID="XXXXX"
 export AZURE_CLIENT_SECRET="XXXXX"
 export AZURE_SUBSCRIPTION_ID="XXXXX"
 export AZURE_TENANT_ID="XXXXX"
 export AZURE_TEMPLATE_URI_VERSION="master"
+export ID_RSA_PUB="ssh-rsa AAAAB3NzaC1y user@location"
+
+- Note: Make sure your `ID_RSA_PUB` public key includes the "YOURUSER@YOURLOCATION" at the end of it, otherwises Azure will return an error. 
 
 for f in *.tmpl.yaml; do
     sed \
