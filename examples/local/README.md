@@ -16,12 +16,14 @@ guide, all placeholders must be replaced with sensible values.
 - *CLUSTER_NAME* - Cluster's name.
 - *COMMON_DOMAIN* - Cluster's etcd and API common domain.
 - *COMMON_DOMAIN_INGRESS* - Ingress common domain.
+- *AZURE_INSTANCE_TYPE_MASTER* - Master machines instance type.
 - *AZURE_LOCATION* - Azure location.
 - *AZURE_CLIENT_ID* - Client ID for the Active Directory Service Principal.
 - *AZURE_CLIENT_SECRET* - Client Secret for the Active Directory Service Principal.
 - *AZURE_SUBSCRIPTION_ID* - Azure Subscription ID.
 - *AZURE_TENANT_ID* - Azure Active Directory Tenant ID.
 - *AZURE_TEMPLATE_URI_VERSION* - Deploy templates pushed to a feature branch.
+- *ID_RSA_PUB* - SSH public key to be installed on nodes. Has to be formated like "ssh-rsa AAAAB3NzaC1y user@location"
 
 This is a handy snippet that makes it painless - works in bash and zsh.
 
@@ -37,8 +39,6 @@ export AZURE_SUBSCRIPTION_ID="XXXXX"
 export AZURE_TENANT_ID="XXXXX"
 export AZURE_TEMPLATE_URI_VERSION="master"
 export ID_RSA_PUB="ssh-rsa AAAAB3NzaC1y user@location"
-
-- Note: Make sure your `ID_RSA_PUB` public key includes the "YOURUSER@YOURLOCATION" at the end of it, otherwises Azure will return an error. 
 
 for f in *.tmpl.yaml; do
     sed \
