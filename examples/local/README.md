@@ -4,7 +4,7 @@
 A production configuration using Helm will be provided later.
 
 This guide explains how to get azure-operator running locally - on minikube, for
-example. 
+example.
 
 All commands are assumed to be run from `examples/local` directory.
 
@@ -70,12 +70,13 @@ In that case the Docker image needs to be accessible from the K8s cluster
 running the operator. For Minikube run `eval $(minikube docker-env)` before
 `docker build`, see [reusing the Docker daemon] for details.
 
-[reusing the docker daemon]: https://github.com/kubernetes/minikube/blob/master/docs/reusing_the_docker_daemon.md 
+[reusing the docker daemon]: https://github.com/kubernetes/minikube/blob/master/docs/reusing_the_docker_daemon.md
 
 ```bash
 # Optional. Only when using Minikube.
 eval $(minikube docker-env)
 
+# From the root of the project, where the Dockerfile resides
 GOOS=linux go build github.com/giantswarm/azure-operator
 docker build -t quay.io/giantswarm/azure-operator:local-dev .
 
