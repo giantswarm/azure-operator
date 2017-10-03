@@ -63,7 +63,7 @@ spec:
     - vmSize: "Standard_A1"
       dataDiskSizeGB: 50
       adminUsername: "core"
-      adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y"
+      adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
       osImage:
         publisher: "CoreOs"
         offer: "CoreOS"
