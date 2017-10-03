@@ -60,10 +60,10 @@ spec:
       name: "${CLUSTER_NAME}-vault"
     location: "${AZURE_LOCATION}"
     masters:
-    - vmSize: "Standard_A1"
+    - vmSize: "${AZURE_INSTANCE_TYPE_MASTER}"
       dataDiskSizeGB: 50
       adminUsername: "core"
-      adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y"
+      adminSSHKeyData: "${ID_RSA_PUB}"
       osImage:
         publisher: "CoreOS"
         offer: "CoreOS"
