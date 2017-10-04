@@ -34,7 +34,7 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		return Deployment{}, microerror.Mask(err)
 	}
 
-	workerCloudConfig, err = r.cloudConfig.NewWorkerCloudConfig(cluster)
+	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(cluster)
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
