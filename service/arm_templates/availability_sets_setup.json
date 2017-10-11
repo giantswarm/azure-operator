@@ -1,0 +1,49 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "availabilitySetsAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-08-30",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/availabilitySets resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "faultDomainCount": {
+      "type": "string",
+      "defaultValue": "3"
+    },
+    "updateDomainCount": {
+      "type": "string",
+      "defaultValue": "5"
+    }
+  },
+  "variables": {
+    "availabilitySetName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-AvailabilitySet')]",
+    "availabilitySetID": "[resourceId('Microsoft.Network/availabilitySets', variables('availabilitySetName'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('availabilitySetsAPIVersion')]",
+      "type": "Microsoft.Compute/availabilitySets",
+      "name": "[variables('availabilitySetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "PlatformFaultDomainCount": "[parameters('faultDomainCount')]",
+        "PlatformUpdateDomainCount": "[parameters('updateDomainCount')]"
+      }
+    }
+  ],
+  "outputs": {
+    "availabilitySetID": {
+      "type": "string",
+      "value": "[variables('availabilitySetID')]"
+    }
+  }
+}

@@ -4,7 +4,7 @@
 A production configuration using Helm will be provided later.
 
 This guide explains how to get azure-operator running locally - on minikube, for
-example. 
+example.
 
 All commands are assumed to be run from `examples/local` directory.
 
@@ -16,12 +16,14 @@ guide, all placeholders must be replaced with sensible values.
 - *CLUSTER_NAME* - Cluster's name.
 - *COMMON_DOMAIN* - Cluster's etcd and API common domain.
 - *COMMON_DOMAIN_INGRESS* - Ingress common domain.
+- *AZURE_INSTANCE_TYPE_MASTER* - Master machines instance type.
 - *AZURE_LOCATION* - Azure location.
 - *AZURE_CLIENT_ID* - Client ID for the Active Directory Service Principal.
 - *AZURE_CLIENT_SECRET* - Client Secret for the Active Directory Service Principal.
 - *AZURE_SUBSCRIPTION_ID* - Azure Subscription ID.
 - *AZURE_TENANT_ID* - Azure Active Directory Tenant ID.
 - *AZURE_TEMPLATE_URI_VERSION* - Deploy templates pushed to a feature branch.
+- *ID_RSA_PUB* - SSH public key to be installed on nodes. Has to be formated like "ssh-rsa AAAAB3NzaC1y user@location"
 
 This is a handy snippet that makes it painless - works in bash and zsh.
 
@@ -29,24 +31,28 @@ This is a handy snippet that makes it painless - works in bash and zsh.
 export CLUSTER_NAME="example-cluster"
 export COMMON_DOMAIN="internal.company.com"
 export COMMON_DOMAIN_INGRESS="company.com"
+export AZURE_INSTANCE_TYPE_MASTER="Standard_A1"
 export AZURE_LOCATION="westeurope"
 export AZURE_CLIENT_ID="XXXXX"
 export AZURE_CLIENT_SECRET="XXXXX"
 export AZURE_SUBSCRIPTION_ID="XXXXX"
 export AZURE_TENANT_ID="XXXXX"
 export AZURE_TEMPLATE_URI_VERSION="master"
+export ID_RSA_PUB="ssh-rsa AAAAB3NzaC1y user@location"
 
 for f in *.tmpl.yaml; do
     sed \
         -e 's|${CLUSTER_NAME}|'"${CLUSTER_NAME}"'|g' \
         -e 's|${COMMON_DOMAIN}|'"${COMMON_DOMAIN}"'|g' \
         -e 's|${COMMON_DOMAIN_INGRESS}|'"${COMMON_DOMAIN_INGRESS}"'|g' \
+        -e 's|${AZURE_INSTANCE_TYPE_MASTER}|'"${AZURE_INSTANCE_TYPE_MASTER}"'|g' \
         -e 's|${AZURE_LOCATION}|'"${AZURE_LOCATION}"'|g' \
         -e 's|${AZURE_CLIENT_ID}|'"${AZURE_CLIENT_ID}"'|g' \
         -e 's|${AZURE_CLIENT_SECRET}|'"${AZURE_CLIENT_SECRET}"'|g' \
         -e 's|${AZURE_SUBSCRIPTION_ID}|'"${AZURE_SUBSCRIPTION_ID}"'|g' \
         -e 's|${AZURE_TENANT_ID}|'"${AZURE_TENANT_ID}"'|g' \
         -e 's|${AZURE_TEMPLATE_URI_VERSION}|'"${AZURE_TEMPLATE_URI_VERSION}"'|g' \
+        -e 's|${ID_RSA_PUB}|'"${ID_RSA_PUB}"'|g' \
         ./$f > ./${f%.tmpl.yaml}.yaml
 done
 ```
@@ -70,12 +76,13 @@ In that case the Docker image needs to be accessible from the K8s cluster
 running the operator. For Minikube run `eval $(minikube docker-env)` before
 `docker build`, see [reusing the Docker daemon] for details.
 
-[reusing the docker daemon]: https://github.com/kubernetes/minikube/blob/master/docs/reusing_the_docker_daemon.md 
+[reusing the docker daemon]: https://github.com/kubernetes/minikube/blob/master/docs/reusing_the_docker_daemon.md
 
 ```bash
 # Optional. Only when using Minikube.
 eval $(minikube docker-env)
 
+# From the root of the project, where the Dockerfile resides
 GOOS=linux go build github.com/giantswarm/azure-operator
 docker build -t quay.io/giantswarm/azure-operator:local-dev .
 

@@ -50,6 +50,19 @@
     "kubernetesIngressInsecurePort": {
       "type": "int"
     },
+    "mastersCustomConfig": {
+      "type": "array"
+    },
+    "masterDisablePasswordAuth": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "masterCloudConfigData": {
+      "type": "string",
+      "metadata": {
+        "description": "Base64-encoded cloud-config data."
+      }
+    },
     "keyVaultName": {
       "type": "string"
     },
@@ -62,6 +75,10 @@
         "description": "The base URI from which the templates will be fetched. Ends with a trailing '/'."
       }
     },
+    "availabilitySetsTemplateFile": {
+      "type": "string",
+      "defaultValue": "availability_sets_setup.json"
+    },
     "certificatesTemplateFile": {
       "type": "string",
       "defaultValue": "certificates.json"
@@ -69,6 +86,10 @@
     "clusterSetupTemplateFile": {
       "type": "string",
       "defaultValue": "cluster_setup.json"
+    },
+    "nodeSetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "node_setup.json"
     },
     "securityGroupsSetupTemplateFile": {
       "type": "string",
@@ -80,10 +101,14 @@
     }
   },
   "variables": {
+    "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
+    "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
-    "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]"
+    "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
+    "masterPrefix": "Master",
+    "workerPrefix": "Worker"
   },
   "resources": [
     {
@@ -122,7 +147,7 @@
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
           "etcdPort": {"value": "[parameters('etcdPort')]"},
           "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
-          "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"},
+          "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"}
         }
       }
     },
@@ -142,7 +167,7 @@
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
-          "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
+          "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
         }
       }
     },
@@ -163,5 +188,70 @@
         }
       }
     },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "master_availability_sets_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('availabilitySetsTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "[variables('masterPrefix')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "worker_availability_sets_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('availabilitySetsTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "[variables('workerPrefix')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "[concat('master_nodes_setup_', copyIndex(1))]",
+      "type": "Microsoft.Resources/deployments",
+      "copy": {
+        "name": "master_nodes_setup_copy",
+        "count":  "[length(parameters('mastersCustomConfig'))]"
+      },
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('nodeSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
+          "prefix": {"value": "[concat(variables('masterPrefix'), '-', copyIndex(1))]"},
+          "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
+          "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
+          "disablePasswordAuth": {"value": "[parameters('masterDisablePasswordAuth')]"},
+          "vmSize": {"value": "[parameters('mastersCustomConfig')[copyIndex()].vmSize]"},
+          "adminUsername": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminUsername]"},
+          "adminSSHKeyData": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminSSHKeyData]"},
+          "dataDiskSizeGB": {"value": "[parameters('mastersCustomConfig')[copyIndex()].dataDiskSizeGB]"},
+          "osImagePublisher": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.publisher]"},
+          "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
+          "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
+          "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
+          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
+        }
+      }
+    }
   ]
 }

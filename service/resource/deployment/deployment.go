@@ -29,8 +29,7 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 	// Convert certs files into a collection of key vault secrets.
 	certSecrets := convertCertsToSecrets(certs)
 
-	// TODO Master CloudConfig will be passed in as a template parameter.
-	_, err = r.cloudConfig.NewMasterCloudConfig(cluster)
+	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(cluster)
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
@@ -50,10 +49,12 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		"apiLoadBalancerCidr":           cluster.Spec.Azure.VirtualNetwork.LoadBalancer.APICIDR,
 		"etcdLoadBalancerCidr":          cluster.Spec.Azure.VirtualNetwork.LoadBalancer.EtcdCIDR,
 		"ingressLoadBalancerCidr":       cluster.Spec.Azure.VirtualNetwork.LoadBalancer.IngressCIDR,
+		"mastersCustomConfig":           cluster.Spec.Azure.Masters,
 		"kubernetesAPISecurePort":       cluster.Spec.Cluster.Kubernetes.API.SecurePort,
 		"etcdPort":                      cluster.Spec.Cluster.Etcd.Port,
 		"kubernetesIngressSecurePort":   cluster.Spec.Cluster.Kubernetes.IngressController.SecurePort,
 		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
+		"masterCloudConfigData":         masterCloudConfig,
 		"keyVaultName":                  key.KeyVaultName(cluster),
 		"keyVaultSecretsObject":         certSecrets,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),

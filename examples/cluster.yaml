@@ -27,7 +27,7 @@ spec:
       api:
         domain: "api.example.azure.giantswarm.io"
         insecurePort: 8080
-        ip: "172.31.0.1" 
+        ip: "172.31.0.1"
         securePort: 443
         clusterIPRange: "172.31.0.0/24"
       dns:
@@ -59,12 +59,22 @@ spec:
     keyVault:
       name: "example-cluster-vault"
     location: "westeurope"
+    masters:
+    - vmSize: "Standard_A1"
+      dataDiskSizeGB: 50
+      adminUsername: "core"
+      adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
+      osImage:
+        publisher: "CoreOs"
+        offer: "CoreOS"
+        sku: "Stable"
+        version: "1465.7.0"
     storage:
       accountType: "Standard_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
-      workerSubnetCidr: "10.0.2.0/24"      
+      workerSubnetCidr: "10.0.2.0/24"
       loadBalancer:
         apiCidr: "10.0.3.0/25"
         etcdCidr: "10.0.3.128/25"

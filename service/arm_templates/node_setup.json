@@ -1,0 +1,162 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkInterfacesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/networkInterfaces resource."
+      }
+    },
+    "virtualMachinesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-08-30",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/virtualMachines resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "storageAccountName": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "subnetID": {
+      "type": "string"
+    },
+    "availabilitySetID": {
+      "type": "string"
+    },
+    "disablePasswordAuth": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "cloudConfigData": {
+      "type": "string"
+    },
+    "vmSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminSSHKeyData": {
+      "type": "string"
+    },
+    "dataDiskSizeGB": {
+      "type": "int"
+    },
+    "osImagePublisher": {
+      "type": "string"
+    },
+    "osImageOffer": {
+      "type": "string"
+    },
+    "osImageSKU": {
+      "type": "string"
+    },
+    "osImageVersion": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "adminSSHKeyPath": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+    "ipName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
+    "nicName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-NIC')]",
+    "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
+    "osDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk')]",
+    "dataDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-DataDisk')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('networkInterfacesAPIVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nicName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "ipConfigurations": [
+          {
+            "name": "[variables('ipName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('subnetID')]"
+              }
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[parameters('virtualMachinesAPIVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "name": "[variables('vmName')]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+      ],
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "availabilitySet": {
+          "id": "[parameters('availabilitySetID')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "customData": "[parameters('cloudConfigData')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
+            "ssh": {
+              "publicKeys": [
+                {
+                  "keyData": "[parameters('adminSSHKeyData')]",
+                  "path": "[variables('adminSSHKeyPath')]"
+                }
+              ]
+            }
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('osImagePublisher')]",
+            "offer": "[parameters('osImageOffer')]",
+            "sku": "[parameters('osImageSKU')]",
+            "version": "[parameters('osImageVersion')]"
+          },
+          "osDisk": {
+            "name": "[variables('osDiskName')]",
+            "vhd": {
+              "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('osDiskName'), '.vhd')]"
+            },
+            "caching": "ReadWrite",
+            "createOption": "FromImage"
+          },
+          "dataDisks": [
+            {
+              "name": "[variables('dataDiskName')]",
+              "diskSizeGB": "[parameters('dataDiskSizeGB')]",
+              "lun": 0,
+              "vhd": {
+                "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('dataDiskName'), '.vhd')]"
+              },
+              "createOption": "Empty"
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            }
+          ]
+        }
+      }
+    }
+  ]
+}
