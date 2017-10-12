@@ -1,0 +1,34 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "publicIPAddressesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/publicIPAddresses resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "publicIPName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancerIP')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[parameters('publicIPName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAddressVersion": "IPv4"
+      }
+    }
+  ]
+}
