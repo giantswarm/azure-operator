@@ -100,6 +100,10 @@
       "type": "string",
       "defaultValue": "cluster_setup.json"
     },
+    "loadBalancerSetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "load_balancer_setup.json"
+    },
     "nodeSetupTemplateFile": {
       "type": "string",
       "defaultValue": "node_setup.json"
@@ -117,6 +121,7 @@
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
+    "loadBalancerSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('loadBalancerSetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
@@ -235,6 +240,38 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "master_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('loadBalancerSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "[variables('masterPrefix')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "worker_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('loadBalancerSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "[variables('workerPrefix')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "[concat('master_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
@@ -262,7 +299,8 @@
           "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
+          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
+          "loadBalancerBackendPoolID": {"value": "[reference('master_load_balancer_setup').outputs.loadBalancerBackendPoolID.value]"}
         }
       }
     },
@@ -295,7 +333,8 @@
           "osImageOffer": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"}
+          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
+          "loadBalancerBackendPoolID": {"value": "[reference('worker_load_balancer_setup').outputs.loadBalancerBackendPoolID.value]"}
         }
       }
     }
