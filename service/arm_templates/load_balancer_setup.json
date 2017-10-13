@@ -85,8 +85,8 @@
                 "id": "[variables('loadBalancerBackendPoolID')]"
               },
               "protocol": "Tcp",
-              "frontendPort": 80,
-              "backendPort": 80,
+              "frontendPort": 443,
+              "backendPort": 443,
               "enableFloatingIP": false,
               "probe": {
                 "id": "[variables('loadBalancerProbeID')]"
@@ -99,7 +99,7 @@
             "name": "[variables('loadBalancerProbeName')]",
             "properties": {
               "protocol": "Tcp",
-              "port": 80,
+              "port": 443,
               "intervalInSeconds": 5,
               "numberOfProbes": 2
             }
