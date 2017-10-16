@@ -3,7 +3,7 @@ package cloudconfig
 const (
 	fileOwner                  = "root:root"
 	filePermission             = 0700
-	getKeyVaultSecretsFileName = "/opt/bin/get-key-vault-secrets"
+	getKeyVaultSecretsFileName = "/opt/bin/get-keyvault-secrets"
 	getKeyVaultSecretsTemplate = `#!/bin/bash -e
 
 KEY_VAULT_HOST={{ .VaultName }}.vault.azure.net
