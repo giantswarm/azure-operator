@@ -16,6 +16,13 @@
         "description": "API version used by the Microsoft.Compute/virtualMachines resource."
       }
     },
+    "virtualMachinesExtensionsAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-03-30",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/virtualMachines/extensions resource."
+      }
+    },
     "clusterID": {
       "type": "string"
     },
@@ -97,6 +104,25 @@
             }
           }
         ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'/ManagedIdentityExtensionForLinux')]",
+      "apiVersion": "[parameters('virtualMachinesExtensionsAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.ManagedIdentity",
+        "type": "ManagedIdentityExtensionForWindows",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "port": 50342
+        },
+        "protectedSettings": {}
       }
     },
     {
