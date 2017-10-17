@@ -34,8 +34,7 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		return Deployment{}, microerror.Mask(err)
 	}
 
-	// TODO Worker CloudConfig will be passed in as a template parameter.
-	_, err = r.cloudConfig.NewWorkerCloudConfig(cluster)
+	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(cluster)
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
@@ -50,11 +49,13 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 		"etcdLoadBalancerCidr":          cluster.Spec.Azure.VirtualNetwork.LoadBalancer.EtcdCIDR,
 		"ingressLoadBalancerCidr":       cluster.Spec.Azure.VirtualNetwork.LoadBalancer.IngressCIDR,
 		"mastersCustomConfig":           cluster.Spec.Azure.Masters,
+		"workersCustomConfig":           cluster.Spec.Azure.Workers,
 		"kubernetesAPISecurePort":       cluster.Spec.Cluster.Kubernetes.API.SecurePort,
 		"etcdPort":                      cluster.Spec.Cluster.Etcd.Port,
 		"kubernetesIngressSecurePort":   cluster.Spec.Cluster.Kubernetes.IngressController.SecurePort,
 		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
 		"masterCloudConfigData":         masterCloudConfig,
+		"workerCloudConfigData":         workerCloudConfig,
 		"keyVaultName":                  key.KeyVaultName(cluster),
 		"keyVaultSecretsObject":         certSecrets,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),

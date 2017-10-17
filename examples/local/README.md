@@ -17,6 +17,7 @@ guide, all placeholders must be replaced with sensible values.
 - *COMMON_DOMAIN* - Cluster's etcd and API common domain.
 - *COMMON_DOMAIN_INGRESS* - Ingress common domain.
 - *AZURE_INSTANCE_TYPE_MASTER* - Master machines instance type.
+- *AZURE_INSTANCE_TYPE_WORKER* - Worker machines instance type.
 - *AZURE_LOCATION* - Azure location.
 - *AZURE_CLIENT_ID* - Client ID for the Active Directory Service Principal.
 - *AZURE_CLIENT_SECRET* - Client Secret for the Active Directory Service Principal.
@@ -32,6 +33,7 @@ export CLUSTER_NAME="example-cluster"
 export COMMON_DOMAIN="internal.company.com"
 export COMMON_DOMAIN_INGRESS="company.com"
 export AZURE_INSTANCE_TYPE_MASTER="Standard_A1"
+export AZURE_INSTANCE_TYPE_WORKER="Standard_A1"
 export AZURE_LOCATION="westeurope"
 export AZURE_CLIENT_ID="XXXXX"
 export AZURE_CLIENT_SECRET="XXXXX"
@@ -46,6 +48,7 @@ for f in *.tmpl.yaml; do
         -e 's|${COMMON_DOMAIN}|'"${COMMON_DOMAIN}"'|g' \
         -e 's|${COMMON_DOMAIN_INGRESS}|'"${COMMON_DOMAIN_INGRESS}"'|g' \
         -e 's|${AZURE_INSTANCE_TYPE_MASTER}|'"${AZURE_INSTANCE_TYPE_MASTER}"'|g' \
+        -e 's|${AZURE_INSTANCE_TYPE_WORKER}|'"${AZURE_INSTANCE_TYPE_WORKER}"'|g' \
         -e 's|${AZURE_LOCATION}|'"${AZURE_LOCATION}"'|g' \
         -e 's|${AZURE_CLIENT_ID}|'"${AZURE_CLIENT_ID}"'|g' \
         -e 's|${AZURE_CLIENT_SECRET}|'"${AZURE_CLIENT_SECRET}"'|g' \

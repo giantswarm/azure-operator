@@ -69,6 +69,25 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
+    workers:
+    - vmSize: "${AZURE_INSTANCE_TYPE_WORKER}"
+      dataDiskSizeGB: 50
+      adminUsername: "core"
+      adminSSHKeyData: "${ID_RSA_PUB}"
+      osImage:
+        publisher: "CoreOS"
+        offer: "CoreOS"
+        sku: "Stable"
+        version: "1465.7.0"
+    - vmSize: "${AZURE_INSTANCE_TYPE_WORKER}"
+      dataDiskSizeGB: 50
+      adminUsername: "core"
+      adminSSHKeyData: "${ID_RSA_PUB}"
+      osImage:
+        publisher: "CoreOS"
+        offer: "CoreOS"
+        sku: "Stable"
+        version: "1465.7.0"
     storage:
       accountType: "Standard_LRS"
     virtualNetwork:
