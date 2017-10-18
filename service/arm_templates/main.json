@@ -309,7 +309,7 @@
       "name": "[concat('worker_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
-        "name": "master_nodes_setup_copy",
+        "name": "worker_nodes_setup_copy",
         "count":  "[length(parameters('workersCustomConfig'))]"
       },
       "properties": {
@@ -335,39 +335,6 @@
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
           "loadBalancerBackendPoolID": {"value": "[reference('worker_load_balancer_setup').outputs.loadBalancerBackendPoolID.value]"}
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "[concat('worker_nodes_setup_', copyIndex(1))]",
-      "type": "Microsoft.Resources/deployments",
-      "copy": {
-        "name": "master_nodes_setup_copy",
-        "count":  "[length(parameters('workersCustomConfig'))]"
-      },
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('nodeSetupTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
-          "prefix": {"value": "[concat(variables('workerPrefix'), '-', copyIndex(1))]"},
-          "subnetID": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
-          "availabilitySetID": {"value": "[reference('worker_availability_sets_setup').outputs.availabilitySetID.value]"},
-          "disablePasswordAuth": {"value": "[parameters('workerDisablePasswordAuth')]"},
-          "vmSize": {"value": "[parameters('workersCustomConfig')[copyIndex()].vmSize]"},
-          "adminUsername": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminUsername]"},
-          "adminSSHKeyData": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminSSHKeyData]"},
-          "dataDiskSizeGB": {"value": "[parameters('workersCustomConfig')[copyIndex()].dataDiskSizeGB]"},
-          "osImagePublisher": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.publisher]"},
-          "osImageOffer": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.offer]"},
-          "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
-          "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"}
         }
       }
     }
