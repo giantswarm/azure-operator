@@ -128,6 +128,9 @@
     {
       "apiVersion": "[parameters('virtualMachinesAPIVersion')]",
       "type": "Microsoft.Compute/virtualMachines",
+      "identity": {
+        "type": "systemAssigned"
+      },
       "name": "[variables('vmName')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
