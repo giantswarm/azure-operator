@@ -18,7 +18,7 @@
     },
     "virtualMachinesExtensionsAPIVersion": {
       "type": "string",
-      "defaultValue": "2016-09-01",
+      "defaultValue": "2016-08-30",
       "metadata": {
         "description": "API version used by the Microsoft.Compute/virtualMachines/extensions resource."
       }
