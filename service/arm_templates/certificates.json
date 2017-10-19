@@ -18,6 +18,9 @@
       "keyVaultSKUName": {
         "type": "string",
         "defaultValue": "standard"
+      },
+      "masterNodes": {
+        "type": "array"
       }
     },
     "resources": [
@@ -55,4 +58,3 @@
         }
       }]
   }
-  

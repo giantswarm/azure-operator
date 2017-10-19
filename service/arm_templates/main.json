@@ -121,7 +121,8 @@
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "masterPrefix": "Master",
-    "workerPrefix": "Worker"
+    "workerPrefix": "Worker",
+    "masterVMNamesArray":
   },
   "resources": [
     {
@@ -197,7 +198,14 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "keyVaultName": {"value": "[parameters('keyVaultName')]"},
-          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"}
+          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"},
+          "masterNodes": {
+            "copy": [{
+              "name": "value",
+              "count": "[length(parameters('mastersCustomConfig'))]",
+              "input": "test"
+            }]
+          }
         }
       }
     },
