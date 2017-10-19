@@ -45,7 +45,8 @@
             "name": "[parameters('keyVaultSKUName')]"
           },
           "tenantId": "[subscription().tenantId]",
-          "accessPolicies": []
+          "accessPolicies": [],
+          "enabledForDeployment": true
         }
       },
       {
