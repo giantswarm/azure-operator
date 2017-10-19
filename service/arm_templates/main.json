@@ -215,7 +215,7 @@
                 "name": "[concat(parameters('clusterID'), '-', variables('workerPrefix'), '-', add(copyIndex('value'), 1))]"
               }
             }]
-          },
+          }
         }
       }
     },
