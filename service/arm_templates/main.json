@@ -202,7 +202,9 @@
             "copy": [{
               "name": "value",
               "count": "[length(parameters('mastersCustomConfig'))]",
-              "input": "test"
+              "input": {
+                "name": "[concat(variables('masterPrefix'), '-', copyIndex('value'))]"
+              }
             }]
           }
         }
