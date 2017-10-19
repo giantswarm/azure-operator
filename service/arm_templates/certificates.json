@@ -62,5 +62,12 @@
             "name": "keyVaultSecretsCopy",
             "count": "[length(parameters('keyVaultSecretsObject').secrets)]"
         }
-      }]
+      }
+    ],
+    "outputs": {
+      "allNodesNames": {
+        "type": "array",
+        "value": "[variables('allNodesNames')]"
+      },
+    }
   }
