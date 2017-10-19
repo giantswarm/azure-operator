@@ -21,9 +21,6 @@
       },
       "masterNodesNames": {
         "type": "array"
-      },
-      "workerNodesNames": {
-        "type": "array"
       }
     },
     "variables": {
