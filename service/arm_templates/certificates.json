@@ -50,7 +50,7 @@
             "count": "[length(variables('allNodesNames'))]",
             "input": {
               "tenantId": "[subscription().tenantId]",
-              "objectId": "[variables('allNodesNames')[copyIndex('accessPolicies')].name]",
+              "objectId": "[resourceId('Microsoft.Compute/virtualMachines', variables('allNodesNames')[copyIndex('accessPolicies')].name)]",
               "permissions": {
                 "secrets": [
                   "get"
