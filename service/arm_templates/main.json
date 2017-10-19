@@ -121,8 +121,7 @@
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "masterPrefix": "Master",
-    "workerPrefix": "Worker",
-    "masterVMNamesArray":
+    "workerPrefix": "Worker"
   },
   "resources": [
     {
