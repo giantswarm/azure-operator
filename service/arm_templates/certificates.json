@@ -45,8 +45,19 @@
             "name": "[parameters('keyVaultSKUName')]"
           },
           "tenantId": "[subscription().tenantId]",
-          "accessPolicies": [],
-          "enabledForDeployment": true
+          "copy": [{
+            "name": "accessPolicies",
+            "count": "[length(variables('allNodesNames'))]",
+            "input": {
+              "tenantId": "[subscription().tenantId]",
+              "objectId": "[variables('allNodesNames')[copyIndex('accessPolicies')].name]",
+              "permissions": {
+                "secrets": [
+                  "get"
+                ]
+              }
+            }
+          }]
         }
       },
       {
