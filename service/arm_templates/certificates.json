@@ -19,9 +19,15 @@
         "type": "string",
         "defaultValue": "standard"
       },
-      "masterNodes": {
+      "masterNodesNames": {
+        "type": "array"
+      },
+      "workerNodesNames": {
         "type": "array"
       }
+    },
+    "variables": {
+      "allNodesNames": "[concat(parameters('masterNodesNames'), parameters('workerNodesNames'))]"
     },
     "resources": [
       {
@@ -39,7 +45,19 @@
             "name": "[parameters('keyVaultSKUName')]"
           },
           "tenantId": "[subscription().tenantId]",
-          "accessPolicies": []
+          "copy": [{
+            "name": "accessPolicies",
+            "count": "[length(variables('allNodesNames'))]",
+            "input": {
+              "tenantId": "[subscription().tenantId]",
+              "objectId": "[variables('allNodesNames')[copyIndex('accessPolicies').name]]",
+              "permissions": {
+                "secrets": [
+                  "get"
+                ]
+              }
+            }
+          }]
         }
       },
       {
