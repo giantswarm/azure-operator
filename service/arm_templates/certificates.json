@@ -45,19 +45,7 @@
             "name": "[parameters('keyVaultSKUName')]"
           },
           "tenantId": "[subscription().tenantId]",
-          "copy": [{
-            "name": "accessPolicies",
-            "count": "[length(variables('allNodesNames'))]",
-            "input": {
-              "tenantId": "[subscription().tenantId]",
-              "objectId": "[resourceId('Microsoft.Compute/virtualMachines', variables('allNodesNames')[copyIndex('accessPolicies')].name)]",
-              "permissions": {
-                "secrets": [
-                  "get"
-                ]
-              }
-            }
-          }]
+          "accessPolicies": []
         }
       },
       {
