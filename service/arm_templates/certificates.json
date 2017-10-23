@@ -53,6 +53,6 @@
             "name": "keyVaultSecretsCopy",
             "count": "[length(parameters('keyVaultSecretsObject').secrets)]"
         }
-      }]
+      }
+    ]
   }
-  
