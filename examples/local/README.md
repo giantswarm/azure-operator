@@ -1,74 +1,36 @@
 # Running azure-operator Locally
 
 **Note:** This should only be used for testing and development.
-A production configuration using Helm will be provided later.
+A production configuration will be provided later.
 
 This guide explains how to get azure-operator running locally - on minikube, for
 example.
 
 All commands are assumed to be run from `examples/local` directory.
 
-## Preparing Templates
-
-All yaml files in this directory are templates. Before continuing with this
-guide, all placeholders must be replaced with sensible values.
-
-- *CLUSTER_NAME* - Cluster's name.
-- *COMMON_DOMAIN* - Cluster's etcd and API common domain.
-- *COMMON_DOMAIN_INGRESS* - Ingress common domain.
-- *AZURE_INSTANCE_TYPE_MASTER* - Master machines instance type.
-- *AZURE_INSTANCE_TYPE_WORKER* - Worker machines instance type.
-- *AZURE_LOCATION* - Azure location.
-- *AZURE_CLIENT_ID* - Client ID for the Active Directory Service Principal.
-- *AZURE_CLIENT_SECRET* - Client Secret for the Active Directory Service Principal.
-- *AZURE_SUBSCRIPTION_ID* - Azure Subscription ID.
-- *AZURE_TENANT_ID* - Azure Active Directory Tenant ID.
-- *AZURE_TEMPLATE_URI_VERSION* - Deploy templates pushed to a feature branch.
-- *ID_RSA_PUB* - SSH public key to be installed on nodes. Has to be formated like "ssh-rsa AAAAB3NzaC1y user@location"
-
-This is a handy snippet that makes it painless - works in bash and zsh.
-
-```bash
-export CLUSTER_NAME="example-cluster"
-export COMMON_DOMAIN="internal.company.com"
-export COMMON_DOMAIN_INGRESS="company.com"
-export AZURE_INSTANCE_TYPE_MASTER="Standard_A1"
-export AZURE_INSTANCE_TYPE_WORKER="Standard_A1"
-export AZURE_LOCATION="westeurope"
-export AZURE_CLIENT_ID="XXXXX"
-export AZURE_CLIENT_SECRET="XXXXX"
-export AZURE_SUBSCRIPTION_ID="XXXXX"
-export AZURE_TENANT_ID="XXXXX"
-export AZURE_TEMPLATE_URI_VERSION="master"
-export ID_RSA_PUB="ssh-rsa AAAAB3NzaC1y user@location"
-
-for f in *.tmpl.yaml; do
-    sed \
-        -e 's|${CLUSTER_NAME}|'"${CLUSTER_NAME}"'|g' \
-        -e 's|${COMMON_DOMAIN}|'"${COMMON_DOMAIN}"'|g' \
-        -e 's|${COMMON_DOMAIN_INGRESS}|'"${COMMON_DOMAIN_INGRESS}"'|g' \
-        -e 's|${AZURE_INSTANCE_TYPE_MASTER}|'"${AZURE_INSTANCE_TYPE_MASTER}"'|g' \
-        -e 's|${AZURE_INSTANCE_TYPE_WORKER}|'"${AZURE_INSTANCE_TYPE_WORKER}"'|g' \
-        -e 's|${AZURE_LOCATION}|'"${AZURE_LOCATION}"'|g' \
-        -e 's|${AZURE_CLIENT_ID}|'"${AZURE_CLIENT_ID}"'|g' \
-        -e 's|${AZURE_CLIENT_SECRET}|'"${AZURE_CLIENT_SECRET}"'|g' \
-        -e 's|${AZURE_SUBSCRIPTION_ID}|'"${AZURE_SUBSCRIPTION_ID}"'|g' \
-        -e 's|${AZURE_TENANT_ID}|'"${AZURE_TENANT_ID}"'|g' \
-        -e 's|${AZURE_TEMPLATE_URI_VERSION}|'"${AZURE_TEMPLATE_URI_VERSION}"'|g' \
-        -e 's|${ID_RSA_PUB}|'"${ID_RSA_PUB}"'|g' \
-        ./$f > ./${f%.tmpl.yaml}.yaml
-done
-```
-
-- Note: `|` characters are used in `sed` substitution to avoid escaping.
-
 ## Cluster Certificates
 
 The easiest way to create certificates is to use the local [cert-operator]
-setup. See [this guide][cert-operator-local-setup] for details.
+setup. See [this guide][cert-operator-local-setup] for details. Using the [helm registry plugin]
+the cert-operator charts can be installed easily:
 
-- Note: `CLUSTER_NAME` and `COMMON_DOMAIN` values must match the values used
+```bash
+helm registry install quay.io/giantswarm/cert-operator-lab-chart -- \
+                   -n cert-operator-lab \
+                   --set imageTag=latest \
+                   --set clusterName=my-cluster \
+                   --set commonDomain=my-common-domain \
+                   --wait
+helm registry install quay.io/giantswarm/cert-resource-lab-chart -- \
+                   -n cert-resource-lab \
+                   --set clusterName=my-cluster \
+                   --set commonDomain=my-common-domain
+```
+
+- Note: `clusterName` and `commonDomain` chart values must match the values used
   during this guide.
+
+[helm registry plugin]: https://github.com/app-registry/appr-helm-plugin
 
 ## Cluster-Local Docker Image
 
@@ -94,21 +56,51 @@ docker build -t quay.io/giantswarm/azure-operator:local-dev .
 #kubectl delete pod -l app=azure-operator-local
 ```
 
-## Operator Startup
+## Deploying the lab charts
 
-Create the operator config map and deployment.
+The lab consist of two Helm charts, `azure-operator-lab-chart`, which sets up azure-operator,
+and `azure-resource-lab-chart`, which defines the cluster to be created.
+
+With a working Helm installation they can be created from the `examples/local` dir with:
 
 ```bash
-kubectl apply -f ./configmap.yaml
-kubectl apply -f ./deployment.yaml
+$ helm install -n azure-operator-lab ./azure-operator-lab-chart/ --wait
+$ helm install -n azure-resource-lab ./azure-resource-lab-chart/ --wait
 ```
 
-## Creating A New Cluster
+`azure-operator-lab-chart` accepts the following configuration parameters:
+* `azure.clientId` - Azure client ID.
+* `azure.clientSecret` - Azure client secret.
+* `azure.subscriptionId` - Azure subscription ID.
+* `azure.tenantId` - Azure tenant ID.
+* `imageTag` - Tag of the azure-operator image to be used, by default `local-lab` to use a locally created image
 
-Create a new cluster ThirdPartyObject.
+For instance, to pass your default ssh public key to the install command, along with Azure credentials from the environment, you could do:
 
 ```bash
-kubectl create -f ./cluster.yaml
+$ helm install -n azure-operator-lab --set azure.clientId=${AZURE_CLIENT_ID} \
+                                   --set azure.clientSecret=${AZURE_CLIENT_SECRET} \
+                                   --set azure.subscriptionId=${AZURE_SUBSCRIPTION_ID} \
+                                   --set azure.tenantId=${AZURE_TENANT_ID} \
+                                   ./azure-operator-lab-chart/ --wait
+```
+
+`azure-resource-lab-chart` accepts the following configuration parameters:
+* `clusterName` - Cluster's name.
+* `commonDomain` - Cluster's etcd and API common domain.
+* `sshUser` - SSH user created via cloudconfig.
+* `sshPublicKey` - SSH user created via cloudconfig.
+* `azure.location` - Azure region to launch cluster in.
+* `azure.coreOSVersion` - version of CoreOS to use for VMs.
+* `azure.vmSizeMaster` - master VM size.
+* `azure.vmSizeWorker` - worker VM size.
+
+For instance, to create a SSH user with your current user and default public key.
+
+```bash
+$ helm install -n azure-resource-lab --set sshUser="$(whoami)" \
+                                  --set sshPublicKey="$(cat ~/.ssh/id_rsa.pub)" \
+                                   ./azure-resource-lab-chart/ --wait
 ```
 
 ## Access Logs
@@ -122,17 +114,19 @@ kubectl logs -l app=azure-operator-local
 First delete the cluster TPO.
 
 ```bash
-export CLUSTER_NAME="example-cluster"
-
-kubectl delete azurecluster ${CLUSTER_NAME}
+$ helm delete azure-resource-lab --purge
 ```
 
-Wait for the operator to delete the cluster, and then remove the operator's
-deployment and configuration.
+Wait for the operator to delete the cluster, you should see a message like
+this in the logs.
+
+```{"caller":"github.com/giantswarm/azure-operator/service/resource/resourcegroup/resource.go:244","cluster":"test-cluster","debug":"deleted the resource group in the Azure API","resource":"resourcegroup","time":"17-10-23 08:23:00.396"}
+```
+
+Then remove the operator's deployment and configuration.
 
 ```bash
-kubectl delete -f ./deployment.yaml
-kubectl delete -f ./configmap.yaml
+$ helm delete azure-operator-lab --purge
 ```
 
 [cert-operator]: https://github.com/giantswarm/cert-operator
