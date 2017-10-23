@@ -18,16 +18,7 @@
       "keyVaultSKUName": {
         "type": "string",
         "defaultValue": "standard"
-      },
-      "masterNodesNames": {
-        "type": "array"
-      },
-      "workerNodesNames": {
-        "type": "array"
       }
-    },
-    "variables": {
-      "allNodesNames": "[concat(parameters('masterNodesNames'), parameters('workerNodesNames'))]"
     },
     "resources": [
       {
@@ -63,11 +54,5 @@
             "count": "[length(parameters('keyVaultSecretsObject').secrets)]"
         }
       }
-    ],
-    "outputs": {
-      "allNodesNames": {
-        "type": "array",
-        "value": "[variables('allNodesNames')]"
-      },
-    }
+    ]
   }
