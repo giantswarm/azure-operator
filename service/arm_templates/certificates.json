@@ -18,7 +18,16 @@
       "keyVaultSKUName": {
         "type": "string",
         "defaultValue": "standard"
+      },
+      "masterNodesNames": {
+        "type": "array"
+      },
+      "workerNodesNames": {
+        "type": "array"
       }
+    },
+    "variables": {
+      "allNodesNames": "[concat(parameters('masterNodesNames'), parameters('workerNodesNames'))]"
     },
     "resources": [
       {
@@ -36,7 +45,19 @@
             "name": "[parameters('keyVaultSKUName')]"
           },
           "tenantId": "[subscription().tenantId]",
-          "accessPolicies": []
+          "copy": [{
+            "name": "accessPolicies",
+            "count": "[length(variables('allNodesNames'))]",
+            "input": {
+              "tenantId": "[subscription().tenantId]",
+              "objectId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', parameters('allNodesNames')[copyIndex('accessPolicies')].name), '/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+              "permissions": {
+                "secrets": [
+                  "get"
+                ]
+              }
+            }
+          }]
         }
       },
       {
