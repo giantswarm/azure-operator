@@ -197,7 +197,25 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "keyVaultName": {"value": "[parameters('keyVaultName')]"},
-          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"}
+          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"},
+          "masterNodesNames": {
+            "copy": [{
+              "name": "value",
+              "count": "[length(parameters('mastersCustomConfig'))]",
+              "input": {
+                "name": "[concat(parameters('clusterID'), '-', variables('masterPrefix'), '-', add(copyIndex('value'), 1))]"
+              }
+            }]
+          },
+          "workerNodesNames": {
+            "copy": [{
+              "name": "value",
+              "count": "[length(parameters('workersCustomConfig'))]",
+              "input": {
+                "name": "[concat(parameters('clusterID'), '-', variables('workerPrefix'), '-', add(copyIndex('value'), 1))]"
+              }
+            }]
+          }
         }
       }
     },
