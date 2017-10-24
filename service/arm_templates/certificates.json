@@ -50,7 +50,7 @@
             "count": "[length(variables('allNodesNames'))]",
             "input": {
               "tenantId": "[subscription().tenantId]",
-              "objectId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', parameters('allNodesNames')[copyIndex('accessPolicies')].name), '/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+              "objectId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('allNodesNames')[copyIndex('accessPolicies')].name), '/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
               "permissions": {
                 "secrets": [
                   "get"
