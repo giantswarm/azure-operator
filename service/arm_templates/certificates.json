@@ -19,15 +19,15 @@
         "type": "string",
         "defaultValue": "standard"
       },
-      "masterNodesNames": {
+      "masterNodesID": {
         "type": "array"
       },
-      "workerNodesNames": {
+      "workerNodesID": {
         "type": "array"
       }
     },
     "variables": {
-      "allNodesNames": "[concat(parameters('masterNodesNames'), parameters('workerNodesNames'))]"
+      "allNodesID": "[concat(parameters('masterNodesID'), parameters('workerNodesID'))]"
     },
     "resources": [
       {
@@ -46,10 +46,10 @@
           "tenantId": "[subscription().tenantId]",
           "copy": [{
             "name": "accessPolicies",
-            "count": "[length(variables('allNodesNames'))]",
+            "count": "[length(variables('allNodesID'))]",
             "input": {
               "tenantId": "[subscription().tenantId]",
-              "objectId": "[reference(concat(resourceId(variables('allNodesNames')[copyIndex('accessPolicies')].name), '/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+              "objectId": "[reference(concat(variables('allNodesID')[copyIndex('accessPolicies')].name, '/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
               "permissions": {
                 "secrets": [
                   "get"

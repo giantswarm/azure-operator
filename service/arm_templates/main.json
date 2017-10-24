@@ -198,21 +198,21 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "keyVaultName": {"value": "[parameters('keyVaultName')]"},
           "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"},
-          "masterNodesNames": {
+          "masterNodesID": {
             "copy": [{
               "name": "value",
               "count": "[length(parameters('mastersCustomConfig'))]",
               "input": {
-                "name": "[concat('Microsoft.Compute/virtualMachines/', parameters('clusterID'), '-', variables('masterPrefix'), '-', add(copyIndex('value'), 1))]"
+                "name": "[resourceID('Microsoft.Compute/virtualMachines/', concat(parameters('clusterID'), '-', variables('masterPrefix'), '-', add(copyIndex('value'), 1)))]"
               }
             }]
           },
-          "workerNodesNames": {
+          "workerNodesID": {
             "copy": [{
               "name": "value",
               "count": "[length(parameters('workersCustomConfig'))]",
               "input": {
-                "name": "[concat('Microsoft.Compute/virtualMachines/', parameters('clusterID'), '-', variables('workerPrefix'), '-', add(copyIndex('value'), 1))]"
+                "name": "[resourceID('Microsoft.Compute/virtualMachines/', concat(parameters('clusterID'), '-', variables('workerPrefix'), '-', add(copyIndex('value'), 1)))]"
               }
             }]
           }
