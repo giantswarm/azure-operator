@@ -19,15 +19,15 @@
         "type": "string",
         "defaultValue": "standard"
       },
-      "masterNodesID": {
+      "masterNodeIDs": {
         "type": "array"
       },
-      "workerNodesID": {
+      "workerNodeIDs": {
         "type": "array"
       }
     },
     "variables": {
-      "allNodesID": "[concat(parameters('masterNodesID'), parameters('workerNodesID'))]"
+      "allNodesID": "[concat(parameters('masterNodeIDs'), parameters('workerNodeIDs'))]"
     },
     "resources": [
       {
