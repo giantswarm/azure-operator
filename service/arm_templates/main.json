@@ -188,6 +188,10 @@
       "apiVersion": "2016-09-01",
       "name": "certificates",
       "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "master_nodes_setup_copy",
+        "worker_nodes_setup_copy"
+      ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
@@ -289,7 +293,7 @@
       "name": "[concat('worker_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
-        "name": "master_nodes_setup_copy",
+        "name": "worker_nodes_setup_copy",
         "count":  "[length(parameters('workersCustomConfig'))]"
       },
       "properties": {
