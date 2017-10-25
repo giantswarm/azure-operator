@@ -207,7 +207,7 @@
               "name": "value",
               "count": "[length(parameters('mastersCustomConfig'))]",
               "input": {
-                "id": "[reference(concat('master_nodes_setup_', add(copyIndex('value'), 1))).nodePrincipalID]"
+                "id": "[reference(concat('master_nodes_setup_', add(copyIndex('value'), 1))).outputs.nodePrincipalID]"
               }
             }]
           },
@@ -216,7 +216,7 @@
               "name": "value",
               "count": "[length(parameters('workersCustomConfig'))]",
               "input": {
-                "id": "[reference(concat('worker_nodes_setup_', add(copyIndex('value'), 1))).nodePrincipalID]"
+                "id": "[reference(concat('worker_nodes_setup_', add(copyIndex('value'), 1))).outputs.nodePrincipalID]"
               }
             }]
           }
