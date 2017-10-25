@@ -49,7 +49,7 @@
             "count": "[length(variables('allNodesID'))]",
             "input": {
               "tenantId": "[subscription().tenantId]",
-              "objectId": "[reference(concat(variables('allNodesID')[copyIndex('accessPolicies')].name, '/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+              "objectId": "[reference(concat(variables('allNodesID')[copyIndex('accessPolicies')].id, '/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
               "permissions": {
                 "secrets": [
                   "get"

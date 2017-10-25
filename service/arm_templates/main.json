@@ -203,7 +203,7 @@
               "name": "value",
               "count": "[length(parameters('mastersCustomConfig'))]",
               "input": {
-                "name": "[resourceID('Microsoft.Compute/virtualMachines/', concat(parameters('clusterID'), '-', variables('masterPrefix'), '-', add(copyIndex('value'), 1)))]"
+                "id": "[resourceID('Microsoft.Compute/virtualMachines/', concat(parameters('clusterID'), '-', variables('masterPrefix'), '-', add(copyIndex('value'), 1)))]"
               }
             }]
           },
@@ -212,7 +212,7 @@
               "name": "value",
               "count": "[length(parameters('workersCustomConfig'))]",
               "input": {
-                "name": "[resourceID('Microsoft.Compute/virtualMachines/', concat(parameters('clusterID'), '-', variables('workerPrefix'), '-', add(copyIndex('value'), 1)))]"
+                "id": "[resourceID('Microsoft.Compute/virtualMachines/', concat(parameters('clusterID'), '-', variables('workerPrefix'), '-', add(copyIndex('value'), 1)))]"
               }
             }]
           }
