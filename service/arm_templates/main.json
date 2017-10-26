@@ -188,6 +188,10 @@
       "apiVersion": "2016-09-01",
       "name": "certificates",
       "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "master_nodes_setup_copy",
+        "worker_nodes_setup_copy"
+      ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
@@ -197,7 +201,25 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "keyVaultName": {"value": "[parameters('keyVaultName')]"},
-          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"}
+          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"},
+          "masterNodeIDs": {
+            "copy": [{
+              "name": "value",
+              "count": "[length(parameters('mastersCustomConfig'))]",
+              "input": {
+                "id": "[reference(concat('master_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
+              }
+            }]
+          },
+          "workerNodeIDs": {
+            "copy": [{
+              "name": "value",
+              "count": "[length(parameters('workersCustomConfig'))]",
+              "input": {
+                "id": "[reference(concat('worker_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
+              }
+            }]
+          }
         }
       }
     },
@@ -271,7 +293,7 @@
       "name": "[concat('worker_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
-        "name": "master_nodes_setup_copy",
+        "name": "worker_nodes_setup_copy",
         "count":  "[length(parameters('workersCustomConfig'))]"
       },
       "properties": {
