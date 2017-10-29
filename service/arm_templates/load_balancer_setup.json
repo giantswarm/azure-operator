@@ -178,6 +178,10 @@
     "loadBalancerBackendPoolID": {
       "type": "string",
       "value": "[variables('loadBalancerBackendPoolID')]"
-    }
+    },
+    "etcdLoadBalancerBackendPoolID": {
+      "type": "string",
+      "value": "[variables('etcdLoadBalancerBackendPoolID')]"
+    },
   }
 }
