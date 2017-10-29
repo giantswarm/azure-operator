@@ -1,0 +1,104 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "loadBalancersAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/loadBalancers resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "subnetID": {
+      "type": "string"
+    },
+    "frontendPort": {
+      "type": "int"
+    },
+    "backendPort": {
+      "type": "int"
+    }
+  },
+  "variables": {
+    "loadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-LoadBalancer')]",
+    "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
+
+    "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-LoadBalancer-BackendPool')]",
+    "loadBalancerBackendPoolID": "[concat(variables('loadBalancerID'), '/backendAddressPools/', variables('loadBalancerBackendPoolName'))]",
+
+    "loadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-LoadBalancer-Frontend')]",
+    "loadBalancerFrontendID": "[concat(variables('loadBalancerID'), '/frontendIPConfigurations/', variables('loadBalancerFrontendName'))]",
+
+    "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-LoadBalancer-Probe')]",
+    "loadBalancerProbeID": "[concat(variables('loadBalancerID'), '/probes/', variables('loadBalancerProbeName'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('loadBalancersAPIVersion')]",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('loadBalancerFrontendName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('subnetID')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('loadBalancerBackendPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "loadBalancingRules",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('loadBalancerFrontendID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('loadBalancerBackendPoolID')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": "[parameters('frontendPort')]",
+              "backendPort": "[parameters('backendPort')]",
+              "enableFloatingIP": false,
+              "probe": {
+                "id": "[variables('loadBalancerProbeID')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('loadBalancerProbeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": "[parameters('backendPort')]",
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "loadBalancerBackendPoolID": {
+      "type": "string",
+      "value": "[variables('loadBalancerBackendPoolID')]"
+    }
+  }
+}
