@@ -37,7 +37,21 @@
     "loadBalancerFrontendID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('loadBalancerFrontendName'))]",
 
     "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'LoadBalancer-Probe')]",
-    "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]"
+    "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]",
+
+
+
+    "etcdLoadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer')]",
+    "etcdLoadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('etcdLoadBalancerName'))]",
+
+    "etcdLoadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer-BackendPool')]",
+    "etcdLoadBalancerBackendPoolID": "[concat(variables('etcdLoadBalancerID'),'/backendAddressPools/',variables('etcdLoadBalancerBackendPoolName'))]",
+
+    "etcdLoadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer-Frontend')]",
+    "etcdLoadBalancerFrontendID": "[concat(variables('etcdLoadBalancerID'),'/frontendIPConfigurations/',variables('etcdLoadBalancerFrontendName'))]",
+
+    "etcdLoadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer-Probe')]",
+    "etcdLoadBalancerProbeID": "[concat(variables('etcdLoadBalancerID'),'/probes/',variables('etcdLoadBalancerProbeName'))]",
   },
   "resources": [
     {
@@ -100,6 +114,58 @@
             "properties": {
               "protocol": "Tcp",
               "port": 443,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[parameters('loadBalancersAPIVersion')]",
+      "name": "[variables('etcdLoadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('etcdloadBalancerFrontendName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('etcdLoadBalancerBackendPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "loadBalancingRules",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('etcdLoadBalancerFrontendID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('etcdLoadBalancerBackendPoolID')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 2379,
+              "enableFloatingIP": false,
+              "probe": {
+                "id": "[variables('etcdLoadBalancerProbeID')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('etcdLoadBalancerProbeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 2379,
               "intervalInSeconds": 5,
               "numberOfProbes": 2
             }
