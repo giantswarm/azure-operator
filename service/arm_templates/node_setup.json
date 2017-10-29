@@ -68,6 +68,9 @@
     },
     "osImageVersion": {
       "type": "string"
+    },
+    "loadBalancerBackendPoolID": {
+      "type": "string"
     }
   },
   "variables": {
@@ -92,7 +95,12 @@
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[parameters('subnetID')]"
-              }
+              },
+              "loadBalancerBackendAddressPools": [
+                {
+                  "id": "[parameters('loadBalancerBackendPoolID')]"
+                }
+              ]
             }
           }
         ]

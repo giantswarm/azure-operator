@@ -1,0 +1,187 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "publicIPAddressesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/publicIPAddresses resource."
+      }
+    },
+    "loadBalancersAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/loadBalancers resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "loadBalancerPublicIPName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'LoadBalancer-PublicIP')]",
+    "loadBalancerPublicIPId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('LoadBalancerPublicIPName'))]",
+
+    "loadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'LoadBalancer')]",
+    "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
+
+    "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'LoadBalancer-BackendPool')]",
+    "loadBalancerBackendPoolID": "[concat(variables('loadBalancerID'),'/backendAddressPools/',variables('loadBalancerBackendPoolName'))]",
+
+    "loadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'LoadBalancer-Frontend')]",
+    "loadBalancerFrontendID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('loadBalancerFrontendName'))]",
+
+    "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'LoadBalancer-Probe')]",
+    "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]",
+
+
+
+    "etcdLoadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer')]",
+    "etcdLoadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('etcdLoadBalancerName'))]",
+
+    "etcdLoadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer-BackendPool')]",
+    "etcdLoadBalancerBackendPoolID": "[concat(variables('etcdLoadBalancerID'),'/backendAddressPools/',variables('etcdLoadBalancerBackendPoolName'))]",
+
+    "etcdLoadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer-Frontend')]",
+    "etcdLoadBalancerFrontendID": "[concat(variables('etcdLoadBalancerID'),'/frontendIPConfigurations/',variables('etcdLoadBalancerFrontendName'))]",
+
+    "etcdLoadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-etcd-LoadBalancer-Probe')]",
+    "etcdLoadBalancerProbeID": "[concat(variables('etcdLoadBalancerID'),'/probes/',variables('etcdLoadBalancerProbeName'))]",
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "name": "[variables('loadBalancerPublicIPName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAddressVersion": "IPv4"
+      }
+    },
+    {
+      "apiVersion": "[parameters('loadBalancersAPIVersion')]",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('loadBalancerPublicIPName'))]"
+      ],
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('loadBalancerFrontendName')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('loadBalancerPublicIPId')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('loadBalancerBackendPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "loadBalancingRules",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('loadBalancerFrontendID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('loadBalancerBackendPoolID')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 443,
+              "enableFloatingIP": false,
+              "probe": {
+                "id": "[variables('loadBalancerProbeID')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('loadBalancerProbeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 443,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    },
+    {
+      "apiVersion": "[parameters('loadBalancersAPIVersion')]",
+      "name": "[variables('etcdLoadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('etcdloadBalancerFrontendName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic"
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('etcdLoadBalancerBackendPoolName')]"
+          }
+        ],
+        "loadBalancingRules": [
+          {
+            "name": "loadBalancingRules",
+            "properties": {
+              "frontendIPConfiguration": {
+                "id": "[variables('etcdLoadBalancerFrontendID')]"
+              },
+              "backendAddressPool": {
+                "id": "[variables('etcdLoadBalancerBackendPoolID')]"
+              },
+              "protocol": "Tcp",
+              "frontendPort": 443,
+              "backendPort": 2379,
+              "enableFloatingIP": false,
+              "probe": {
+                "id": "[variables('etcdLoadBalancerProbeID')]"
+              }
+            }
+          }
+        ],
+        "probes": [
+          {
+            "name": "[variables('etcdLoadBalancerProbeName')]",
+            "properties": {
+              "protocol": "Tcp",
+              "port": 2379,
+              "intervalInSeconds": 5,
+              "numberOfProbes": 2
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "loadBalancerBackendPoolID": {
+      "type": "string",
+      "value": "[variables('loadBalancerBackendPoolID')]"
+    },
+    "etcdLoadBalancerBackendPoolID": {
+      "type": "string",
+      "value": "[variables('etcdLoadBalancerBackendPoolID')]"
+    },
+  }
+}
