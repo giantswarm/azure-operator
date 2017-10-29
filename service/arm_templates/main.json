@@ -322,7 +322,7 @@
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
-          "loadBalancerBackendPoolID": {"value": "[reference('master_load_balancer_setup').outputs.loadBalancerBackendPoolID.value]"}
+          "loadBalancerBackendPoolID": {"value": "[reference('master_load_balancer_setup').outputs.etcdLoadBalancerBackendPoolID.value]"}
         }
       }
     },
