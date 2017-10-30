@@ -278,7 +278,7 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "prefix": {"value": "Etcd"},
-          "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
+          "subnetID": {"value": "[reference('virtual_network_setup').outputs.etcdLoadBalancerSubnetID.value]"},
           "frontendPort": {"value": 443},
           "backendPort": {"value": 2379}
         }
@@ -286,7 +286,7 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "master_load_balancer_setup",
+      "name": "api_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -304,7 +304,7 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "worker_load_balancer_setup",
+      "name": "ingress_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -350,7 +350,7 @@
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('etcd_load_balancer_setup').outputs.loadBalancerBackendPoolID.value, reference('master_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('etcd_load_balancer_setup').outputs.loadBalancerBackendPoolID.value, reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     },
@@ -384,7 +384,7 @@
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('worker_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     }
