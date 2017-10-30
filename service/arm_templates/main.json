@@ -317,7 +317,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Ingress"},
+          "prefix": {"value": "Ingress-HTTP"},
           "frontendPort": {"value": 80},
           "backendPort": {"value": 80}
         }
@@ -335,7 +335,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Ingress"},
+          "prefix": {"value": "Ingress-HTTPS"},
           "frontendPort": {"value": 443},
           "backendPort": {"value": 443}
         }
