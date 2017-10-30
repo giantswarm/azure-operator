@@ -299,7 +299,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Master"},
+          "prefix": {"value": "API"},
           "frontendPort": {"value": 443},
           "backendPort": {"value": 443}
         }
@@ -317,7 +317,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Worker"},
+          "prefix": {"value": "Ingress"},
           "frontendPort": {"value": 443},
           "backendPort": {"value": 443}
         }
