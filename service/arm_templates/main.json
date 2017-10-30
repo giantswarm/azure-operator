@@ -349,7 +349,8 @@
           "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
+          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('etcd_load_balancer_setup').outputs.loadBalancerBackendPoolID.value, reference('master_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     },
@@ -382,7 +383,8 @@
           "osImageOffer": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"}
+          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('master_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     }
