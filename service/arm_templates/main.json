@@ -415,7 +415,7 @@
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_http_load_balancer_setup').outputs.loadBalancerBackendPoolID.value]"}
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_http_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     }
