@@ -282,8 +282,18 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "prefix": {"value": "Etcd"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.etcdLoadBalancerSubnetID.value]"},
-          "frontendPort": {"value": 443},
-          "backendPort": {"value": 2379}
+          "ports": {"value":
+            [
+              {
+                "frontend": 443,
+                "backend": 2379,
+              },
+              {
+                "frontend": 80,
+                "backend": 80
+              }
+            ]
+          },
         }
       }
     },
