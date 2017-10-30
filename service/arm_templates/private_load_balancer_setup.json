@@ -58,39 +58,41 @@
             "name": "[variables('loadBalancerBackendPoolName')]"
           }
         ],
-        "copy": [{
-          "name": "loadBalancingRules",
-          "count": "[length(parameters('ports'))]",
-          "input": {
-            "name": "[concat('loadBalancingRule-', string(add(copyIndex('loadBalancingRules'), 1)))]",
-            "properties": {
-              "frontendIPConfiguration": {
-                "id": "[variables('loadBalancerFrontendID')]"
-              },
-              "backendAddressPool": {
-                "id": "[variables('loadBalancerBackendPoolID')]"
-              },
-              "protocol": "Tcp",
-              "frontendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].frontend]",
-              "backendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
-              "enableFloatingIP": false,
-              "probe": {
-                "id": "[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]"
+        "copy": [
+          {
+            "name": "loadBalancingRules",
+            "count": "[length(parameters('ports'))]",
+            "input": {
+              "name": "[concat('loadBalancingRule-', string(add(copyIndex('loadBalancingRules'), 1)))]",
+              "properties": {
+                "frontendIPConfiguration": {
+                  "id": "[variables('loadBalancerFrontendID')]"
+                },
+                "backendAddressPool": {
+                  "id": "[variables('loadBalancerBackendPoolID')]"
+                },
+                "protocol": "Tcp",
+                "frontendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].frontend]",
+                "backendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
+                "enableFloatingIP": false,
+                "probe": {
+                  "id": "[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]"
+                }
+              }
+            }
+          },
+          {
+            "name": "probes",
+            "count": "[length(parameters('ports'))]",
+            "input": {
+              "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
+              "properties": {
+                "protocol": "Tcp",
+                "port": "[parameters('ports')[copyIndex('probes')].frontend]"
               }
             }
           }
-        }],
-        "copy": [{
-          "name": "probes",
-          "count": "[length(parameters('ports'))]",
-          "input": {
-            "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
-            "properties": {
-              "protocol": "Tcp",
-              "port": "[parameters('ports')[copyIndex('probes')].frontend]"
-            }
-          }
-        }]
+        ]
       }
     }
   ],
