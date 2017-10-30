@@ -287,10 +287,6 @@
               {
                 "frontend": 443,
                 "backend": 2379
-              },
-              {
-                "frontend": 80,
-                "backend": 80
               }
             ]
           }
@@ -310,14 +306,20 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "prefix": {"value": "API"},
-          "frontendPort": {"value": 443},
-          "backendPort": {"value": 443}
+          "ports": {"value":
+            [
+              {
+                "frontend": 443,
+                "backend": 443
+              }
+            ]
+          }
         }
       }
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "ingress_http_load_balancer_setup",
+      "name": "ingress_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -328,26 +330,18 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "prefix": {"value": "Ingress-HTTP"},
-          "frontendPort": {"value": 80},
-          "backendPort": {"value": 80}
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "ingress_https_load_balancer_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('publicLoadBalancerTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Ingress-HTTPS"},
-          "frontendPort": {"value": 443},
-          "backendPort": {"value": 443}
+          "ports": {"value":
+            [
+              {
+                "frontend": 443,
+                "backend": 443
+              },
+              {
+                "frontend": 80,
+                "backend": 80
+              }
+            ]
+          }
         }
       }
     },
@@ -415,7 +409,7 @@
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_http_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     }
