@@ -189,6 +189,9 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
+          "apiLoadBalancerSubnetCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
+          "etcdLoadBalancerSubnetCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
+          "ingressLoadBalancerSubnetCidr": {"value": "[parameters('ingressLoadBalancerCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
         }
