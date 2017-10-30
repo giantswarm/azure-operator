@@ -22,11 +22,8 @@
     "prefix": {
       "type": "string"
     },
-    "frontendPort": {
-      "type": "int"
-    },
-    "backendPort": {
-      "type": "int"
+    "ports": {
+      "type": "array"
     }
   },
   "variables": {
