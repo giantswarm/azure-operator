@@ -277,7 +277,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "etcd"},
+          "prefix": {"value": "Etcd"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
           "frontendPort": {"value": 443},
           "backendPort": {"value": 2379}
@@ -296,7 +296,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "master"},
+          "prefix": {"value": "Master"},
           "frontendPort": {"value": 443},
           "backendPort": {"value": 443}
         }
@@ -314,7 +314,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "worker"},
+          "prefix": {"value": "Worker"},
           "frontendPort": {"value": 443},
           "backendPort": {"value": 443}
         }
