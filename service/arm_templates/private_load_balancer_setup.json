@@ -18,11 +18,8 @@
     "subnetID": {
       "type": "string"
     },
-    "frontendPort": {
-      "type": "int"
-    },
-    "backendPort": {
-      "type": "int"
+    "ports": {
+      "type": "array"
     }
   },
   "variables": {
@@ -61,9 +58,11 @@
             "name": "[variables('loadBalancerBackendPoolName')]"
           }
         ],
-        "loadBalancingRules": [
-          {
-            "name": "loadBalancingRules",
+        "copy": [{
+          "name": "loadBalancingRules",
+          "count": "[length(parameters('ports'))]",
+          "input": {
+            "name": "[concat('loadBalancingRule-', string(add(copyIndex('loadBalancingRules'), 1)))]",
             "properties": {
               "frontendIPConfiguration": {
                 "id": "[variables('loadBalancerFrontendID')]"
@@ -72,26 +71,26 @@
                 "id": "[variables('loadBalancerBackendPoolID')]"
               },
               "protocol": "Tcp",
-              "frontendPort": "[parameters('frontendPort')]",
-              "backendPort": "[parameters('backendPort')]",
+              "frontendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].frontend]",
+              "backendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
               "enableFloatingIP": false,
               "probe": {
-                "id": "[variables('loadBalancerProbeID')]"
+                "id": "[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]"
               }
             }
           }
-        ],
-        "probes": [
-          {
-            "name": "[variables('loadBalancerProbeName')]",
+        }],
+        "copy": [{
+          "name": "probes",
+          "count": "[length(parameters('ports'))]",
+          "input": {
+            "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
             "properties": {
               "protocol": "Tcp",
-              "port": "[parameters('backendPort')]",
-              "intervalInSeconds": 5,
-              "numberOfProbes": 2
+              "port": "[parameters('ports')[copyIndex('probes')].frontend]"
             }
           }
-        ]
+        }]
       }
     }
   ],
