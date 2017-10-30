@@ -116,8 +116,11 @@
   ],
   "outputs": {
     "loadBalancerBackendPoolID": {
-      "type": "string",
-      "value": "[variables('loadBalancerBackendPoolID')]"
+      "type": "object",
+      "value": {
+        "id": "[variables('loadBalancerBackendPoolID')]",
+        "name": "[variables('loadBalancerBackendPoolName')]"
+      }
     }
   }
 }
