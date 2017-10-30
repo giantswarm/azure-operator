@@ -307,7 +307,25 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "ingress_load_balancer_setup",
+      "name": "ingress_http_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('publicLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "Ingress"},
+          "frontendPort": {"value": 80},
+          "backendPort": {"value": 80}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "ingress_https_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -387,7 +405,7 @@
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_http_load_balancer_setup').outputs.loadBalancerBackendPoolID.value, reference('ingress_https_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     }
