@@ -286,6 +286,42 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "master_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('publicLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "master"},
+          "frontendPort": {"value": 443},
+          "backendPort": {"value": 443}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "worker_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('publicLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "worker"},
+          "frontendPort": {"value": 443},
+          "backendPort": {"value": 443}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "[concat('master_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
