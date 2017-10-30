@@ -88,7 +88,9 @@
               "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
               "properties": {
                 "protocol": "Tcp",
-                "port": "[parameters('ports')[copyIndex('probes')].frontend]"
+                "port": "[parameters('ports')[copyIndex('probes')].frontend]",
+                "intervalInSeconds": 5,
+                "numberOfProbes": 2
               }
             }
           }
