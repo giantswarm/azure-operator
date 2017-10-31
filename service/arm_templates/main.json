@@ -329,7 +329,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Ingress-HTTP"},
+          "prefix": {"value": "Ingress"},
           "ports": {"value":
             [
               {
