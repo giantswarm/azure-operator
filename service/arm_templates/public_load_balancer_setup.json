@@ -126,11 +126,11 @@
       }
     },
     "loadBalancerIDOutput": {
-      "type": "string",
+      "type": "object",
       "value": "[reference(variables('loadBalancerID'), parameters('loadBalancersAPIVersion'), 'Full')]"
     },
     "PublicIPIDOutput": {
-      "type": "string",
+      "type": "object",
       "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion'), 'Full')]"
     }
   }
