@@ -127,7 +127,7 @@
     },
     "loadBalancerIPAddress": {
       "type": "string",
-      "value": "[concat(reference(variables('loadBalancerID'), parameters('loadBalancersAPIVersion')).frontendIPConfigurations[0].properties.privateIPAddress, '/32')]"
+      "value": "[reference(variables('loadBalancerID'), parameters('loadBalancersAPIVersion'), 'Full')]"
     }
   }
 }
