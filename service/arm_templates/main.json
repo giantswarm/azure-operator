@@ -162,9 +162,9 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "apiLoadBalancerCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
+          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.loadBalancerIPAddress.value]"},
           "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "ingressLoadBalancerCidr": {"value": "[parameters('ingressLoadBalancerCidr')]"},
+          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.loadBalancerIPAddress.value]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},

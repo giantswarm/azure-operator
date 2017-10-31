@@ -124,6 +124,10 @@
         "id": "[variables('loadBalancerBackendPoolID')]",
         "name": "[variables('loadBalancerBackendPoolName')]"
       }
+    },
+    "loadBalancerIPAddress": {
+      "type": "string",
+      "value": "[concat(reference(variables('loadBalancerID'), parameters('loadBalancersAPIVersion')).frontendIPConfigurations[0].properties.privateIPAddress, '/32')]"
     }
   }
 }
