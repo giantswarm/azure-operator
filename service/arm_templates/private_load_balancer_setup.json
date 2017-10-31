@@ -63,7 +63,7 @@
             "name": "loadBalancingRules",
             "count": "[length(parameters('ports'))]",
             "input": {
-              "name": "[concat('loadBalancingRule-', string(add(copyIndex('loadBalancingRules'), 1)))]",
+              "name": "[concat('loadBalancingRule-', string(parameters('ports')[copyIndex('loadBalancingRules')].frontend))]",
               "properties": {
                 "frontendIPConfiguration": {
                   "id": "[variables('loadBalancerFrontendID')]"
@@ -76,7 +76,7 @@
                 "backendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
                 "enableFloatingIP": false,
                 "probe": {
-                  "id": "[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]"
+                  "id": "[concat(variables('loadBalancerProbeID'), '-', string(parameters('ports')[copyIndex('loadBalancingRules')].backend))]"
                 }
               }
             }
@@ -85,10 +85,10 @@
             "name": "probes",
             "count": "[length(parameters('ports'))]",
             "input": {
-              "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
+              "name": "[concat(variables('loadBalancerProbeName'), '-', string(parameters('ports')[copyIndex('loadBalancingRules')].backend))]",
               "properties": {
                 "protocol": "Tcp",
-                "port": "[parameters('ports')[copyIndex('probes')].frontend]",
+                "port": "[parameters('ports')[copyIndex('probes')].backend]",
                 "intervalInSeconds": 5,
                 "numberOfProbes": 2
               }
