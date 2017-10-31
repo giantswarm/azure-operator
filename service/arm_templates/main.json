@@ -162,9 +162,9 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.loadBalancerIPAddress.value]"},
+          "apiLoadBalancerCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
           "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.loadBalancerIPAddress.value]"},
+          "ingressLoadBalancerCidr": {"value": "[parameters('ingressLoadBalancerCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
@@ -319,7 +319,7 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "ingress_load_balancer_setup",
+        "name": "ingress_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
