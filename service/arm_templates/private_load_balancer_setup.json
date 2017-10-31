@@ -85,7 +85,7 @@
             "name": "probes",
             "count": "[length(parameters('ports'))]",
             "input": {
-              "name": "[concat(variables('loadBalancerProbeName'), '-', string(parameters('ports')[copyIndex('loadBalancingRules')].backend))]",
+              "name": "[concat(variables('loadBalancerProbeName'), '-', string(parameters('ports')[copyIndex('probes')].backend))]",
               "properties": {
                 "protocol": "Tcp",
                 "port": "[parameters('ports')[copyIndex('probes')].backend]",
