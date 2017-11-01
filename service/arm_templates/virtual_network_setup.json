@@ -21,13 +21,7 @@
     "workerSubnetCidr": {
       "type": "string"
     },
-    "apiLoadBalancerSubnetCidr": {
-      "type": "string"
-    },
     "etcdLoadBalancerSubnetCidr": {
-      "type": "string"
-    },
-    "ingressLoadBalancerSubnetCidr": {
       "type": "string"
     },
     "masterSecurityGroupID": {
@@ -110,10 +104,6 @@
     }
   ],
   "outputs": {
-    "virtualNetworkID": {
-      "type": "string",
-      "value": "[variables('virtualNetworkID')]"
-    },
     "masterSubnetID": {
       "type": "string",
       "value": "[variables('masterSubnetID')]"
@@ -122,17 +112,9 @@
       "type": "string",
       "value": "[variables('workerSubnetID')]"
     },
-    "apiLoadBalancerSubnetID": {
-      "type": "string",
-      "value": "[variables('apiLoadBalancerSubnetID')]"
-    },
     "etcdLoadBalancerSubnetID": {
       "type": "string",
       "value": "[variables('etcdLoadBalancerSubnetID')]"
-    },
-    "ingressLoadBalancerSubnetID": {
-      "type": "string",
-      "value": "[variables('ingressLoadBalancerSubnetID')]"
-    },
+    }
   }
 }

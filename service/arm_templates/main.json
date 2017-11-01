@@ -29,13 +29,7 @@
     "workerSubnetCidr": {
       "type": "string"
     },
-    "apiLoadBalancerCidr": {
-      "type": "string"
-    },
     "etcdLoadBalancerCidr": {
-      "type": "string"
-    },
-    "ingressLoadBalancerCidr": {
       "type": "string"
     },
     "kubernetesAPISecurePort": {
