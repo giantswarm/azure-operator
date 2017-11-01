@@ -82,23 +82,11 @@
             }
           },
           {
-            "name": "[variables('apiLoadBalancerSubnetName')]",
-            "properties": {
-              "addressPrefix": "[parameters('apiLoadBalancerSubnetCidr')]"
-            }
-          },
-          {
             "name": "[variables('etcdLoadBalancerSubnetName')]",
             "properties": {
               "addressPrefix": "[parameters('etcdLoadBalancerSubnetCidr')]"
             }
-          },
-          {
-            "name": "[variables('ingressLoadBalancerSubnetName')]",
-            "properties": {
-              "addressPrefix": "[parameters('ingressLoadBalancerSubnetCidr')]"
-            }
-          },
+          }
         ]
       }
     }
