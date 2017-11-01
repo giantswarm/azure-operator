@@ -125,13 +125,9 @@
         "name": "[variables('loadBalancerBackendPoolName')]"
       }
     },
-    "loadBalancerIDOutput": {
-      "type": "object",
-      "value": "[reference(variables('loadBalancerID'), parameters('loadBalancersAPIVersion'), 'Full')]"
-    },
-    "PublicIPIDOutput": {
+    "publicIPCidr": {
       "type": "string",
-      "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
+      "value": "[concat(reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress, '/32')]"
     }
   }
 }
