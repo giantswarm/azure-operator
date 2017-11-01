@@ -130,8 +130,8 @@
       "value": "[reference(variables('loadBalancerID'), parameters('loadBalancersAPIVersion'), 'Full')]"
     },
     "PublicIPIDOutput": {
-      "type": "object",
-      "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion'), 'Full')]"
+      "type": "string",
+      "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
     }
   }
 }
