@@ -49,7 +49,7 @@
       "name": "[variables('loadBalancerPublicIPName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "publicIPAllocationMethod": "Dynamic",
+        "publicIPAllocationMethod": "Static",
         "publicIPAddressVersion": "IPv4"
       }
     },
