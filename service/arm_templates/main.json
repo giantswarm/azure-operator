@@ -183,9 +183,7 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
-          "apiLoadBalancerSubnetCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
           "etcdLoadBalancerSubnetCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "ingressLoadBalancerSubnetCidr": {"value": "[parameters('ingressLoadBalancerCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
         }
@@ -313,7 +311,7 @@
     },
     {
       "apiVersion": "2016-09-01",
-        "name": "ingress_load_balancer_setup",
+      "name": "ingress_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
