@@ -41,14 +41,8 @@
     "workerSubnetName": "[concat(variables('virtualNetworkName'), '-WorkerSubnet')]",
     "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
 
-    "apiLoadBalancerSubnetName": "[concat(variables('virtualNetworkName'), '-APILoadBlancerSubnet')]",
-    "apiLoadBalancerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('apiLoadBalancerSubnetName'))]",
-
     "etcdLoadBalancerSubnetName": "[concat(variables('virtualNetworkName'), '-EtcdLoadBlancerSubnet')]",
-    "etcdLoadBalancerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('etcdLoadBalancerSubnetName'))]",
-
-    "ingressLoadBalancerSubnetName": "[concat(variables('virtualNetworkName'), '-IngressLoadBlancerSubnet')]",
-    "ingressLoadBalancerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('ingressLoadBalancerSubnetName'))]"
+    "etcdLoadBalancerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('etcdLoadBalancerSubnetName'))]"
   },
   "resources": [
     {
