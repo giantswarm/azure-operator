@@ -40,9 +40,7 @@
     "loadBalancerFrontendID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('loadBalancerFrontendName'))]",
 
     "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-Probe')]",
-    "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]",
-
-    "publicIPAddress": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
+    "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]"
   },
   "resources": [
     {
@@ -129,11 +127,11 @@
     },
     "publicIPAddress": {
       "type": "string",
-      "value": "[variables('publicIPAddress')]"
+      "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
     },
     "publicIPCidr": {
       "type": "string",
-      "value": "[concat(variables('publicIPAddress'), '/32')]"
+      "value": "[concat(reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress, '/32')]"
     }
   }
 }
