@@ -139,9 +139,7 @@
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "masterPrefix": "Master",
-    "workerPrefix": "Worker",
-    "etcdDomainObject": { "domain": "[parameters('etcdDomain')]", "ipAddress": "[reference('etcd_load_balancer_setup').outputs.loadBalancerIPAddress.value]" },
-    "allDomains": "[array(variables('etcdDomainObject'))]"
+    "workerPrefix": "Worker"
   },
   "resources": [
     {
@@ -364,7 +362,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "allDomains": {"value": "[variables('allDomains')]"},
+          "domain": { "value": "[parameters('etcdDomain')]" },
+          "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.loadBalancerIPAddress.value]" }
         }
       }
     },
