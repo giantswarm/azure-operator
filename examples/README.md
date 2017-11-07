@@ -6,7 +6,7 @@ A production configuration will be provided later.
 This guide explains how to get azure-operator running locally - on minikube, for
 example.
 
-All commands are assumed to be run from `examples/local` directory.
+All commands are assumed to be run from `examples` directory.
 
 ## Cluster Certificates
 
@@ -53,7 +53,7 @@ eval $(minikube docker-env)
 
 # From the root of the project, where the Dockerfile resides
 GOOS=linux go build github.com/giantswarm/azure-operator
-docker build -t quay.io/giantswarm/azure-operator:local-dev .
+docker build -t quay.io/giantswarm/azure-operator:local-lab .
 
 # Optional. Restart running operator after image update.
 # Does nothing when the operator is not deployed.
@@ -65,7 +65,7 @@ docker build -t quay.io/giantswarm/azure-operator:local-dev .
 The lab consist of two Helm charts, `azure-operator-lab-chart`, which sets up azure-operator,
 and `azure-resource-lab-chart`, which defines the cluster to be created.
 
-With a working Helm installation they can be created from the `examples/local` dir with:
+With a working Helm installation they can be created from the `examples` dir with:
 
 ```bash
 $ helm install -n azure-operator-lab ./azure-operator-lab-chart/ --wait
