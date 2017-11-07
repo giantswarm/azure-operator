@@ -1,0 +1,52 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "domain": {
+      "type": "string"
+    },
+    "ipAddress": {
+      "type": "string"
+    }
+  },
+  "variables": {
+    "zone": "[string(skip(split(parameters('domain'), '.'), 1))]",
+    "prefix": "[split(parameters('domain'), '.')[0]]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/dnszones",
+      "name": "zone1.com",
+      "apiVersion": "2016-04-01",
+      "location": "global",
+      "properties": { }
+    },
+    {
+      "type": "Microsoft.Network/dnszones/a",
+      "name": "[concat('zone1.com/', 'api')]",
+      "apiVersion": "2016-04-01",
+      "location": "global",
+      "dependsOn": [
+        "zone1.com"
+      ],
+      "properties": {
+        "TTL": 3600,
+        "ARecords": [
+          {
+            "ipv4Address": "10.0.1.5"
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "zone": {
+      "type": "string",
+      "value": "[variables('zone')]"
+    },
+    "prefix": {
+      "type": "string",
+      "value": "[variables('prefix')]"
+    }
+  }
+}
