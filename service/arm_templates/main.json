@@ -94,6 +94,10 @@
       "type": "string",
       "defaultValue": "cluster_setup.json"
     },
+    "dnsSetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "dns_setup.json"
+    },
     "nodeSetupTemplateFile": {
       "type": "string",
       "defaultValue": "node_setup.json"
@@ -113,19 +117,31 @@
     "virtualNetworkSetupTemplateFile": {
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
+    },
+    "etcdDomain": {
+      "type": "string"
+    },
+    "kubernetesAPIDomain": {
+      "type": "string"
+    },
+    "kubernetesIngressWildcardDomain": {
+      "type": "string"
     }
   },
   "variables": {
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
+    "dnsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsSetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "masterPrefix": "Master",
-    "workerPrefix": "Worker"
+    "workerPrefix": "Worker",
+    "etcdDomainObject": { "domain": "[parameters('etcdDomain')]", "ipAddress": "[reference('etcd_load_balancer_setup').outputs.loadBalancerIPAddress.value]" },
+    "allDomains": "[array(variables('etcdDomainObject'))]"
   },
   "resources": [
     {
@@ -334,6 +350,21 @@
               }
             ]
           }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "allDomains": {"value": "[variables('allDomains')]"},
         }
       }
     },
