@@ -10,47 +10,34 @@
     }
   },
   "variables": {
-    "zone": "[string(skip(split(parameters('domain'), '.'), 1))]",
-    "prefix": "[split(parameters('domain'), '.')[0]]"
+    "prefix": "[split(parameters('domain'), '.')[0]]",
+    "prefixLength": "[add(length(variables('prefix')), 1)]",
+    "zone": "[substring(parameters('domain'), variables('prefixLength'), sub(length(parameters('domain')), variables('prefixLength')))]"
   },
   "resources": [
     {
       "type": "Microsoft.Network/dnszones",
-      "name": "zone1.com",
+      "name": "[variables('zone')]",
       "apiVersion": "2016-04-01",
       "location": "global",
       "properties": { }
     },
     {
       "type": "Microsoft.Network/dnszones/a",
-      "name": "[concat('zone1.com/', 'api')]",
+      "name": "[concat(variables('zone'), '/', variables('prefix'))]",
       "apiVersion": "2016-04-01",
       "location": "global",
       "dependsOn": [
-        "zone1.com"
+        "[variables('zone')]"
       ],
       "properties": {
         "TTL": 3600,
         "ARecords": [
           {
-            "ipv4Address": "10.0.1.5"
+            "ipv4Address": "[parameters('ipAddress')]"
           }
         ]
       }
     }
-  ],
-  "outputs": {
-    "zone": {
-      "type": "string",
-      "value": "[variables('zone')]"
-    },
-    "prefix": {
-      "type": "string",
-      "value": "[variables('prefix')]"
-    },
-    "test": {
-      "type": "string",
-      "value": "[substring(parameters('domain'), length(variables('prefix')), length(parameters('domain')))]"
-    }
-  }
+  ]
 }
