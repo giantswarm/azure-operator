@@ -385,6 +385,22 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "kubernetes_ingress_dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsSetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "domain": { "value": "[parameters('kubernetesIngressWildcardDomain')]" },
+          "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.publicIPAddress.value]" }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "[concat('master_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
