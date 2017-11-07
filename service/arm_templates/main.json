@@ -353,7 +353,7 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "dns_setup",
+      "name": "etcd_dns_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -369,7 +369,7 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "dns_setup",
+      "name": "kubernetes_api_dns_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
