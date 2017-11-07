@@ -2,6 +2,7 @@ package resourcegroup
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/giantswarm/azuretpr"
@@ -9,6 +10,7 @@ import (
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
+	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
 )
@@ -115,12 +117,13 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 		}
 	}
 }
+
 func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 	testCases := []struct {
-		Obj           interface{}
-		Cur           interface{}
-		Des           interface{}
-		ExpectedGroup Group
+		Obj               interface{}
+		Cur               interface{}
+		Des               interface{}
+		ExpectedPatchFunc func(*framework.Patch)
 	}{
 		{
 			// Case 1. Current and desired states are the same. The resource
@@ -140,7 +143,7 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: Group{},
+			ExpectedPatchFunc: func(patch *framework.Patch) {},
 		},
 		{
 			// Case 2. Current state is nil. The resource group should be
@@ -158,8 +161,12 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: Group{
-				Name: "5xchu",
+			ExpectedPatchFunc: func(patch *framework.Patch) {
+				groupToCreate := Group{
+					Name: "5xchu",
+				}
+
+				patch.SetCreateChange(groupToCreate)
 			},
 		},
 	}
@@ -177,32 +184,27 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		result, err := newResource.GetCreateState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		patch, err := newResource.NewUpdatePatch(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
 
-		group, ok := result.(Group)
-		if !ok {
-			t.Fatalf("case %d expected '%T', got '%T'", i+1, Group{}, group)
-		}
+		expectedPatch := framework.NewPatch()
+		tc.ExpectedPatchFunc(expectedPatch)
 
-		if tc.ExpectedGroup.Name == "" && group.Name != "" {
-			t.Fatalf("case %d expected '%#v' got '%#v'", i+1, tc.ExpectedGroup, result)
-		} else {
-			if tc.ExpectedGroup.Name != group.Name {
-				t.Fatalf("case %d expected '%s' got '%s'", i+1, tc.ExpectedGroup.Name, group.Name)
-			}
+		if !reflect.DeepEqual(expectedPatch, patch) {
+			t.Fatalf("case %d expected %#v, got %#v", i+1, expectedPatch, patch)
+
 		}
 	}
 }
 
 func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 	testCases := []struct {
-		Obj           interface{}
-		Cur           interface{}
-		Des           interface{}
-		ExpectedGroup Group
+		Obj               interface{}
+		Cur               interface{}
+		Des               interface{}
+		ExpectedPatchFunc func(*framework.Patch)
 	}{
 		{
 			// Case 1. Current and desired states are the same. The resource
@@ -222,8 +224,12 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: Group{
-				Name: "5xchu",
+			ExpectedPatchFunc: func(patch *framework.Patch) {
+				groupToDelete := Group{
+					Name: "5xchu",
+				}
+
+				patch.SetDeleteChange(groupToDelete)
 			},
 		},
 		{
@@ -242,7 +248,7 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedGroup: Group{},
+			ExpectedPatchFunc: func(patch *framework.Patch) {},
 		},
 	}
 
@@ -259,20 +265,17 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		result, err := newResource.GetDeleteState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		patch, err := newResource.NewDeletePatch(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
-		group, ok := result.(Group)
-		if !ok {
-			t.Fatalf("case %d expected '%T', got '%T'", i+1, Group{}, group)
-		}
-		if tc.ExpectedGroup.Name == "" && group.Name != "" {
-			t.Fatalf("case %d expected '%#v' got '%#v'", i+1, tc.ExpectedGroup, result)
-		} else {
-			if tc.ExpectedGroup.Name != group.Name {
-				t.Fatalf("case %d expected '%s' got '%s'", i+1, tc.ExpectedGroup.Name, group.Name)
-			}
+
+		expectedPatch := framework.NewPatch()
+		tc.ExpectedPatchFunc(expectedPatch)
+
+		if !reflect.DeepEqual(expectedPatch, patch) {
+			t.Fatalf("case %d expected %#v, got %#v", i+1, expectedPatch, patch)
+
 		}
 	}
 }
