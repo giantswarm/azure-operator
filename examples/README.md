@@ -86,6 +86,7 @@ $ helm install -n azure-operator-lab --set azure.clientId=${AZURE_CLIENT_ID} \
                                    --set azure.clientSecret=${AZURE_CLIENT_SECRET} \
                                    --set azure.subscriptionId=${AZURE_SUBSCRIPTION_ID} \
                                    --set azure.tenantId=${AZURE_TENANT_ID} \
+                                   --set imageTag-local-lab \
                                    ./azure-operator-lab-chart/ --wait
 ```
 
