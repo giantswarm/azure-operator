@@ -1,0 +1,110 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "loadBalancersAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/loadBalancers resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "subnetID": {
+      "type": "string"
+    },
+    "ports": {
+      "type": "array"
+    }
+  },
+  "variables": {
+    "loadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PrivateLoadBalancer')]",
+    "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
+
+    "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PrivateLoadBalancer-BackendPool')]",
+    "loadBalancerBackendPoolID": "[concat(variables('loadBalancerID'), '/backendAddressPools/', variables('loadBalancerBackendPoolName'))]",
+
+    "loadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PrivateLoadBalancer-Frontend')]",
+    "loadBalancerFrontendID": "[concat(variables('loadBalancerID'), '/frontendIPConfigurations/', variables('loadBalancerFrontendName'))]",
+
+    "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PrivateLoadBalancer-Probe')]",
+    "loadBalancerProbeID": "[concat(variables('loadBalancerID'), '/probes/', variables('loadBalancerProbeName'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('loadBalancersAPIVersion')]",
+      "name": "[variables('loadBalancerName')]",
+      "type": "Microsoft.Network/loadBalancers",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "frontendIPConfigurations": [
+          {
+            "name": "[variables('loadBalancerFrontendName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('subnetID')]"
+              }
+            }
+          }
+        ],
+        "backendAddressPools": [
+          {
+            "name": "[variables('loadBalancerBackendPoolName')]"
+          }
+        ],
+        "copy": [
+          {
+            "name": "loadBalancingRules",
+            "count": "[length(parameters('ports'))]",
+            "input": {
+              "name": "[concat('loadBalancingRule-', string(parameters('ports')[copyIndex('loadBalancingRules')].frontend))]",
+              "properties": {
+                "frontendIPConfiguration": {
+                  "id": "[variables('loadBalancerFrontendID')]"
+                },
+                "backendAddressPool": {
+                  "id": "[variables('loadBalancerBackendPoolID')]"
+                },
+                "protocol": "Tcp",
+                "frontendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].frontend]",
+                "backendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
+                "enableFloatingIP": false,
+                "probe": {
+                  "id": "[concat(variables('loadBalancerProbeID'), '-', string(parameters('ports')[copyIndex('loadBalancingRules')].backend))]"
+                }
+              }
+            }
+          },
+          {
+            "name": "probes",
+            "count": "[length(parameters('ports'))]",
+            "input": {
+              "name": "[concat(variables('loadBalancerProbeName'), '-', string(parameters('ports')[copyIndex('probes')].backend))]",
+              "properties": {
+                "protocol": "Tcp",
+                "port": "[parameters('ports')[copyIndex('probes')].backend]",
+                "intervalInSeconds": 5,
+                "numberOfProbes": 2
+              }
+            }
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "loadBalancerBackendPoolID": {
+      "type": "object",
+      "value": {
+        "id": "[variables('loadBalancerBackendPoolID')]",
+        "name": "[variables('loadBalancerBackendPoolName')]"
+      }
+    }
+  }
+}

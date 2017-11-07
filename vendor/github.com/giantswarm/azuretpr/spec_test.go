@@ -162,9 +162,7 @@ func TestSpecYamlEncoding(t *testing.T) {
 				MasterSubnetCIDR: "10.0.1.0/24",
 				WorkerSubnetCIDR: "10.0.2.0/24",
 				LoadBalancer: virtualnetwork.LoadBalancer{
-					APICIDR:     "10.0.3.0/25",
-					EtcdCIDR:    "10.0.3.128/25",
-					IngressCIDR: "10.0.4.0/25",
+					EtcdCIDR: "10.0.3.128/25",
 				},
 			},
 		},

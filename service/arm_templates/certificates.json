@@ -18,14 +18,22 @@
       "keyVaultSKUName": {
         "type": "string",
         "defaultValue": "standard"
+      },
+      "masterNodeIDs": {
+        "type": "array"
+      },
+      "workerNodeIDs": {
+        "type": "array"
       }
+    },
+    "variables": {
+      "allNodesID": "[concat(parameters('masterNodeIDs'), parameters('workerNodeIDs'))]"
     },
     "resources": [
       {
         "type": "Microsoft.KeyVault/vaults",
         "name": "[parameters('keyVaultName')]",
         "apiVersion": "2016-10-01",
-        "comments": "TODO Set accessPolicies to read access for cluster nodes.",
         "location": "[resourceGroup().location]",
         "tags": {
           "clusterID": "[parameters('clusterID')]"
@@ -36,7 +44,19 @@
             "name": "[parameters('keyVaultSKUName')]"
           },
           "tenantId": "[subscription().tenantId]",
-          "accessPolicies": []
+          "copy": [{
+            "name": "accessPolicies",
+            "count": "[length(variables('allNodesID'))]",
+            "input": {
+              "tenantId": "[subscription().tenantId]",
+              "objectId": "[variables('allNodesID')[copyIndex('accessPolicies')].id]",
+              "permissions": {
+                "secrets": [
+                  "get"
+                ]
+              }
+            }
+          }]
         }
       },
       {
@@ -53,6 +73,6 @@
             "name": "keyVaultSecretsCopy",
             "count": "[length(parameters('keyVaultSecretsObject').secrets)]"
         }
-      }]
+      }
+    ]
   }
-  

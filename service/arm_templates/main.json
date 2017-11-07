@@ -29,13 +29,7 @@
     "workerSubnetCidr": {
       "type": "string"
     },
-    "apiLoadBalancerCidr": {
-      "type": "string"
-    },
     "etcdLoadBalancerCidr": {
-      "type": "string"
-    },
-    "ingressLoadBalancerCidr": {
       "type": "string"
     },
     "kubernetesAPISecurePort": {
@@ -104,6 +98,14 @@
       "type": "string",
       "defaultValue": "node_setup.json"
     },
+    "privateLoadBalancerTemplateFile": {
+      "type": "string",
+      "defaultValue": "private_load_balancer_setup.json"
+    },
+    "publicLoadBalancerTemplateFile": {
+      "type": "string",
+      "defaultValue": "public_load_balancer_setup.json"
+    },
     "securityGroupsSetupTemplateFile": {
       "type": "string",
       "defaultValue": "security_groups_setup.json"
@@ -118,6 +120,8 @@
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
+    "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
+    "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "masterPrefix": "Master",
@@ -152,9 +156,9 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "apiLoadBalancerCidr": {"value": "[parameters('apiLoadBalancerCidr')]"},
+          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.publicIPCidr.value]"},
           "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "ingressLoadBalancerCidr": {"value": "[parameters('ingressLoadBalancerCidr')]"},
+          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.publicIPCidr.value]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
@@ -179,6 +183,7 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
+          "etcdLoadBalancerSubnetCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
         }
@@ -188,6 +193,10 @@
       "apiVersion": "2016-09-01",
       "name": "certificates",
       "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+        "master_nodes_setup_copy",
+        "worker_nodes_setup_copy"
+      ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
@@ -197,7 +206,25 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "keyVaultName": {"value": "[parameters('keyVaultName')]"},
-          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"}
+          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"},
+          "masterNodeIDs": {
+            "copy": [{
+              "name": "value",
+              "count": "[length(parameters('mastersCustomConfig'))]",
+              "input": {
+                "id": "[reference(concat('master_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
+              }
+            }]
+          },
+          "workerNodeIDs": {
+            "copy": [{
+              "name": "value",
+              "count": "[length(parameters('workersCustomConfig'))]",
+              "input": {
+                "id": "[reference(concat('worker_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
+              }
+            }]
+          }
         }
       }
     },
@@ -235,6 +262,83 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "etcd_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('privateLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "Etcd"},
+          "subnetID": {"value": "[reference('virtual_network_setup').outputs.etcdLoadBalancerSubnetID.value]"},
+          "ports": {"value":
+            [
+              {
+                "frontend": 443,
+                "backend": 2379
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "api_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('publicLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "API"},
+          "ports": {"value":
+            [
+              {
+                "frontend": 443,
+                "backend": 443
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "ingress_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('publicLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "prefix": {"value": "Ingress"},
+          "ports": {"value":
+            [
+              {
+                "frontend": 443,
+                "backend": 443
+              },
+              {
+                "frontend": 80,
+                "backend": 80
+              }
+            ]
+          }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "[concat('master_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
@@ -262,7 +366,8 @@
           "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"}
+          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('etcd_load_balancer_setup').outputs.loadBalancerBackendPoolID.value, reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     },
@@ -271,7 +376,7 @@
       "name": "[concat('worker_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
       "copy": {
-        "name": "master_nodes_setup_copy",
+        "name": "worker_nodes_setup_copy",
         "count":  "[length(parameters('workersCustomConfig'))]"
       },
       "properties": {
@@ -295,7 +400,8 @@
           "osImageOffer": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"}
+          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     }

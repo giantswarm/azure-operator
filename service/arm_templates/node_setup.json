@@ -16,6 +16,13 @@
         "description": "API version used by the Microsoft.Compute/virtualMachines resource."
       }
     },
+    "virtualMachinesExtensionsAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-08-30",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/virtualMachines/extensions resource."
+      }
+    },
     "clusterID": {
       "type": "string"
     },
@@ -61,6 +68,9 @@
     },
     "osImageVersion": {
       "type": "string"
+    },
+    "loadBalancerBackendPoolIDs": {
+      "type": "array"
     }
   },
   "variables": {
@@ -85,15 +95,38 @@
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
                 "id": "[parameters('subnetID')]"
-              }
+              },
+              "loadBalancerBackendAddressPools": "[parameters('loadBalancerBackendPoolIDs')]"
             }
           }
         ]
       }
     },
     {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'/ManagedIdentityExtensionForLinux')]",
+      "apiVersion": "[parameters('virtualMachinesExtensionsAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.ManagedIdentity",
+        "type": "ManagedIdentityExtensionForLinux",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "port": 50342
+        },
+        "protectedSettings": {}
+      }
+    },
+    {
       "apiVersion": "[parameters('virtualMachinesAPIVersion')]",
       "type": "Microsoft.Compute/virtualMachines",
+      "identity": {
+        "type": "systemAssigned"
+      },
       "name": "[variables('vmName')]",
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
@@ -158,5 +191,11 @@
         }
       }
     }
-  ]
+  ],
+  "outputs": {
+    "nodePrincipalID": {
+      "type": "string",
+      "value": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('vmName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
+    }
+  }
 }
