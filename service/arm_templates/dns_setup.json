@@ -47,6 +47,10 @@
     "prefix": {
       "type": "string",
       "value": "[variables('prefix')]"
+    },
+    "test": {
+      "type": "string",
+      "value": "[substring(parameters('domain'), length(variables('prefix')), length(parameters('domain')))]"
     }
   }
 }
