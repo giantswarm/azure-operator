@@ -203,9 +203,9 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 		return microerror.Mask(err)
 	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting the resource group in the Azure API")
-
 	if resourceGroupToDelete.Name != "" {
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting the resource group in the Azure API")
+
 		groupsClient, err := r.getGroupsClient()
 		if err != nil {
 			return microerror.Mask(err)
