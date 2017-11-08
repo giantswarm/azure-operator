@@ -164,24 +164,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 // NewUpdatePatch returns the deployments that should be created for this
 // cluster.
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
-	currentDeployments, err := toDeployments(currentState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	desiredDeployments, err := toDeployments(desiredState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var deploymentsToCreate []Deployment
-
-	for _, desiredDeployment := range desiredDeployments {
-		if !existsDeploymentByName(currentDeployments, desiredDeployment.Name) {
-			deploymentsToCreate = append(deploymentsToCreate, desiredDeployment)
-		}
-	}
-
 	patch := framework.NewPatch()
+
+	deploymentsToCreate, err := r.newCreateChange(ctx, obj, currentState, desiredState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	if len(deploymentsToCreate) > 0 {
 		patch.SetCreateChange(deploymentsToCreate)
@@ -190,7 +178,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 	return patch, nil
 }
 
-// GetDeleteState returns an empty patch. Deployments are deleted together with
+// NewDeletePatch returns an empty patch. Deployments are deleted together with
 // the resource group.
 func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
 	p := framework.NewPatch()
@@ -279,6 +267,27 @@ func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, err
 	}
 
 	return azureClients.DeploymentsClient, nil
+}
+
+func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) ([]Deployment, error) {
+	currentDeployments, err := toDeployments(currentState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	desiredDeployments, err := toDeployments(desiredState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var deploymentsToCreate []Deployment
+
+	for _, desiredDeployment := range desiredDeployments {
+		if !existsDeploymentByName(currentDeployments, desiredDeployment.Name) {
+			deploymentsToCreate = append(deploymentsToCreate, desiredDeployment)
+		}
+	}
+
+	return deploymentsToCreate, nil
 }
 
 func existsDeploymentByName(list []Deployment, name string) bool {

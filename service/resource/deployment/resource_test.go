@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
-	"github.com/giantswarm/operatorkit/framework"
 	"github.com/spf13/viper"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -79,12 +78,13 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		t.Fatalf("expected deployment name '%s' got '%s'", expectedDeployments[0].ResourceGroup, deployments[0].ResourceGroup)
 	}
 }
-func Test_Resource_Deployment_NewUpdatePatch(t *testing.T) {
+
+func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 	testCases := []struct {
-		Obj               interface{}
-		Cur               interface{}
-		Des               interface{}
-		ExpectedPatchFunc func(*framework.Patch)
+		Obj                 interface{}
+		Cur                 interface{}
+		Des                 interface{}
+		ExpectedDeployments []Deployment
 	}{
 		{
 			// Case 1. Current state is empty. A deployment is created.
@@ -103,14 +103,10 @@ func Test_Resource_Deployment_NewUpdatePatch(t *testing.T) {
 					Name: "cluster-setup",
 				},
 			},
-			ExpectedPatchFunc: func(patch *framework.Patch) {
-				deploymentsToCreate := []Deployment{
-					Deployment{
-						Name: "cluster-setup",
-					},
-				}
-
-				patch.SetCreateChange(deploymentsToCreate)
+			ExpectedDeployments: []Deployment{
+				Deployment{
+					Name: "cluster-setup",
+				},
 			},
 		},
 		{
@@ -135,7 +131,7 @@ func Test_Resource_Deployment_NewUpdatePatch(t *testing.T) {
 					Name: "cluster-setup",
 				},
 			},
-			ExpectedPatchFunc: func(patch *framework.Patch) {},
+			ExpectedDeployments: nil,
 		},
 		{
 			// Case 3. Current and desired states are different.
@@ -162,14 +158,10 @@ func Test_Resource_Deployment_NewUpdatePatch(t *testing.T) {
 					Name: "network-setup",
 				},
 			},
-			ExpectedPatchFunc: func(patch *framework.Patch) {
-				deploymentsToCreate := []Deployment{
-					Deployment{
-						Name: "network-setup",
-					},
-				}
-
-				patch.SetCreateChange(deploymentsToCreate)
+			ExpectedDeployments: []Deployment{
+				Deployment{
+					Name: "network-setup",
+				},
 			},
 		},
 	}
@@ -197,16 +189,14 @@ func Test_Resource_Deployment_NewUpdatePatch(t *testing.T) {
 		}
 	}
 	for i, tc := range testCases {
-		patch, err := newResource.NewUpdatePatch(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		deployments, err := newResource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected %#v got %#v", i+1, nil, err)
 		}
 
-		expectedPatch := framework.NewPatch()
-		tc.ExpectedPatchFunc(expectedPatch)
-
-		if !reflect.DeepEqual(patch, expectedPatch) {
-			t.Fatalf("case %d expected %#v got %#v", i+1, expectedPatch, patch)
+		//if !reflect.DeepEqual(deployments, tc.ExpectedDeployments) {
+		if !reflect.DeepEqual(deployments, tc.ExpectedDeployments) {
+			t.Fatalf("case %d expected %#v got %#v", i+1, tc.ExpectedDeployments, deployments)
 		}
 	}
 }

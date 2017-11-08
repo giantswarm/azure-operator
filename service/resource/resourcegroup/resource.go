@@ -125,40 +125,32 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 // NewUpdatePatch returns the patch creating resource group for this cluster if
 // it is needed.
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
-	currentResourceGroup, err := toGroup(currentState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	desiredResourceGroup, err := toGroup(desiredState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	patch := framework.NewPatch()
 
-	if currentResourceGroup.Name == "" {
-		patch.SetCreateChange(desiredResourceGroup)
+	resourceGroupToCreate, err := r.newCreateChange(ctx, obj, currentState, desiredState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	if resourceGroupToCreate.Name != "" {
+		patch.SetCreateChange(resourceGroupToCreate)
 	}
 
 	return patch, nil
 }
 
-// GetDeleteState returns the patch deleting resource group for this cluster if
+// NewDeletePatch returns the patch deleting resource group for this cluster if
 // it is needed.
 func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
-	currentResourceGroup, err := toGroup(currentState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	desiredResourceGroup, err := toGroup(desiredState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	patch := framework.NewPatch()
 
-	if currentResourceGroup.Name != "" {
-		patch.SetDeleteChange(desiredResourceGroup)
+	resourceGroupToDelete, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	if resourceGroupToDelete.Name != "" {
+		patch.SetDeleteChange(resourceGroupToDelete)
 	}
 
 	return patch, nil
@@ -239,7 +231,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 	return nil
 }
 
-// ApplyUpdateState is a noop because resource groups are not updated.
+// ApplyUpdateChange is a noop because resource groups are not updated.
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
 	return nil
 }
@@ -256,6 +248,40 @@ func (r *Resource) getGroupsClient() (*azureresource.GroupsClient, error) {
 	}
 
 	return azureClients.GroupsClient, nil
+}
+
+func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) (Group, error) {
+	currentResourceGroup, err := toGroup(currentState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+	desiredResourceGroup, err := toGroup(desiredState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+
+	if currentResourceGroup.Name == "" {
+		return desiredResourceGroup, nil
+	}
+
+	return Group{}, nil
+}
+
+func (r *Resource) newDeleteChange(ctx context.Context, obj, currentState, desiredState interface{}) (Group, error) {
+	currentResourceGroup, err := toGroup(currentState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+	desiredResourceGroup, err := toGroup(desiredState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+
+	if currentResourceGroup.Name != "" {
+		return desiredResourceGroup, nil
+	}
+
+	return Group{}, nil
 }
 
 func toCustomObject(v interface{}) (azuretpr.CustomObject, error) {

@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
-	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
 )
@@ -118,12 +117,12 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	}
 }
 
-func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
+func Test_Resource_ResourceGroup_newCreateChange(t *testing.T) {
 	testCases := []struct {
-		Obj               interface{}
-		Cur               interface{}
-		Des               interface{}
-		ExpectedPatchFunc func(*framework.Patch)
+		Obj                   interface{}
+		Cur                   interface{}
+		Des                   interface{}
+		ExpectedResourceGroup Group
 	}{
 		{
 			// Case 1. Current and desired states are the same. The resource
@@ -143,7 +142,7 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedPatchFunc: func(patch *framework.Patch) {},
+			ExpectedResourceGroup: Group{},
 		},
 		{
 			// Case 2. Current state is nil. The resource group should be
@@ -161,12 +160,8 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedPatchFunc: func(patch *framework.Patch) {
-				groupToCreate := Group{
-					Name: "5xchu",
-				}
-
-				patch.SetCreateChange(groupToCreate)
+			ExpectedResourceGroup: Group{
+				Name: "5xchu",
 			},
 		},
 	}
@@ -184,27 +179,23 @@ func Test_Resource_ResourceGroup_GetCreateState(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		patch, err := newResource.NewUpdatePatch(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		resourceGroup, err := newResource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
 
-		expectedPatch := framework.NewPatch()
-		tc.ExpectedPatchFunc(expectedPatch)
-
-		if !reflect.DeepEqual(expectedPatch, patch) {
-			t.Fatalf("case %d expected %#v, got %#v", i+1, expectedPatch, patch)
-
+		if !reflect.DeepEqual(resourceGroup, tc.ExpectedResourceGroup) {
+			t.Fatalf("case %d expected %#v, got %#v", i+1, resourceGroup, tc.ExpectedResourceGroup)
 		}
 	}
 }
 
-func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
+func Test_Resource_ResourceGroup_newDeleteChange(t *testing.T) {
 	testCases := []struct {
-		Obj               interface{}
-		Cur               interface{}
-		Des               interface{}
-		ExpectedPatchFunc func(*framework.Patch)
+		Obj                   interface{}
+		Cur                   interface{}
+		Des                   interface{}
+		ExpectedResourceGroup Group
 	}{
 		{
 			// Case 1. Current and desired states are the same. The resource
@@ -224,12 +215,8 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedPatchFunc: func(patch *framework.Patch) {
-				groupToDelete := Group{
-					Name: "5xchu",
-				}
-
-				patch.SetDeleteChange(groupToDelete)
+			ExpectedResourceGroup: Group{
+				Name: "5xchu",
 			},
 		},
 		{
@@ -248,7 +235,7 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 			Des: Group{
 				Name: "5xchu",
 			},
-			ExpectedPatchFunc: func(patch *framework.Patch) {},
+			ExpectedResourceGroup: Group{},
 		},
 	}
 
@@ -265,17 +252,13 @@ func Test_Resource_ResourceGroup_GetDeleteState(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		patch, err := newResource.NewDeletePatch(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		resourceGroup, err := newResource.newDeleteChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
 
-		expectedPatch := framework.NewPatch()
-		tc.ExpectedPatchFunc(expectedPatch)
-
-		if !reflect.DeepEqual(expectedPatch, patch) {
-			t.Fatalf("case %d expected %#v, got %#v", i+1, expectedPatch, patch)
-
+		if !reflect.DeepEqual(resourceGroup, tc.ExpectedResourceGroup) {
+			t.Fatalf("case %d expected %#v, got %#v", i+1, resourceGroup, tc.ExpectedResourceGroup)
 		}
 	}
 }
