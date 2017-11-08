@@ -1,0 +1,11 @@
+clusterName: "test-cluster"
+commonDomain: "azure.gigantic.io"
+sshUser: "test-user"
+sshPublicKey: "ssh-rsa XXXXXXXXXXXXXXXXXXXXXXXXX"
+encryptionKey: "QitRZGlWeW5WOFo2YmdvMVRwQUQ2UWoxRHZSVEF4MmovajlFb05sT1AzOD0="
+
+azure:
+  location: "westeurope"
+  coreOSVersion: "1465.7.0"
+  vmSizeMaster: "Standard_A1"
+  vmSizeWorker: "Standard_A1"

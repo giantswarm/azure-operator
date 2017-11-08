@@ -1,0 +1,3 @@
+name: azure-resource-lab-chart
+version: 0.1.0
+description: azure cluster definition to be used in the azure-operator lab

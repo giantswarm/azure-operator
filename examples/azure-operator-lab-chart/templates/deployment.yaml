@@ -22,7 +22,7 @@ spec:
             path: config.yml
       containers:
       - name: azure-operator
-        image: quay.io/giantswarm/azure-operator:local-dev
+        image: quay.io/giantswarm/azure-operator:{{.Values.imageTag}}
         volumeMounts:
         - name: azure-operator-configmap
           mountPath: /var/run/azure-operator/configmap/

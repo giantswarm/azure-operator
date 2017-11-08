@@ -1,0 +1,7 @@
+imageTag: "local-lab"
+azure:
+  clientId: "xxxxxxxxxxxxxxxxxxxx"
+  clientSecret: "xxxxxxxxxxxxxxxxxxxx"
+  subscriptionId: "xxxxxxxxxxxxxxxxxxxx"
+  tenantId: "xxxxxxxxxxxxxxxxxxxx"
+  templateUriVersion: "master"
