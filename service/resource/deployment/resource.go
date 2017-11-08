@@ -171,10 +171,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Mask(err)
 	}
 
-	if len(deploymentsToCreate) > 0 {
-		patch.SetCreateChange(deploymentsToCreate)
-	}
-
+	patch.SetCreateChange(deploymentsToCreate)
 	return patch, nil
 }
 

@@ -132,10 +132,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Mask(err)
 	}
 
-	if resourceGroupToCreate.Name != "" {
-		patch.SetCreateChange(resourceGroupToCreate)
-	}
-
+	patch.SetCreateChange(resourceGroupToCreate)
 	return patch, nil
 }
 
@@ -149,10 +146,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Mask(err)
 	}
 
-	if resourceGroupToDelete.Name != "" {
-		patch.SetDeleteChange(resourceGroupToDelete)
-	}
-
+	patch.SetDeleteChange(resourceGroupToDelete)
 	return patch, nil
 }
 
@@ -173,25 +167,27 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Mask(err)
 	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating the resource group in the Azure API")
+	if resourceGroupToCreate.Name != "" {
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating the resource group in the Azure API")
 
-	groupClient, err := r.getGroupsClient()
-	if err != nil {
-		return microerror.Mask(err)
-	}
+		groupClient, err := r.getGroupsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	resourceGroup := azureresource.Group{
-		Name:      to.StringPtr(resourceGroupToCreate.Name),
-		Location:  to.StringPtr(resourceGroupToCreate.Location),
-		ManagedBy: to.StringPtr(managedBy),
-		Tags:      to.StringMapPtr(resourceGroupToCreate.Tags),
-	}
-	_, err = groupClient.CreateOrUpdate(resourceGroupToCreate.Name, resourceGroup)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+		resourceGroup := azureresource.Group{
+			Name:      to.StringPtr(resourceGroupToCreate.Name),
+			Location:  to.StringPtr(resourceGroupToCreate.Location),
+			ManagedBy: to.StringPtr(managedBy),
+			Tags:      to.StringMapPtr(resourceGroupToCreate.Tags),
+		}
+		_, err = groupClient.CreateOrUpdate(resourceGroupToCreate.Name, resourceGroup)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "created the resource group in the Azure API")
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "created the resource group in the Azure API")
+	}
 
 	return nil
 }
@@ -209,24 +205,26 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 
 	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting the resource group in the Azure API")
 
-	groupsClient, err := r.getGroupsClient()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// Delete the resource group which also deletes all resources it
-	// contains. We wait for the error channel while the deletion happens.
-	_, errchan := groupsClient.Delete(resourceGroupToDelete.Name, nil)
-	select {
-	case err := <-errchan:
+	if resourceGroupToDelete.Name != "" {
+		groupsClient, err := r.getGroupsClient()
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	case <-time.After(deleteTimeout):
-		return microerror.Mask(deleteTimeoutError)
-	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleted the resource group in the Azure API")
+		// Delete the resource group which also deletes all resources it
+		// contains. We wait for the error channel while the deletion happens.
+		_, errchan := groupsClient.Delete(resourceGroupToDelete.Name, nil)
+		select {
+		case err := <-errchan:
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		case <-time.After(deleteTimeout):
+			return microerror.Mask(deleteTimeoutError)
+		}
+
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleted the resource group in the Azure API")
+	}
 
 	return nil
 }
