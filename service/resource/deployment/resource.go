@@ -207,7 +207,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		resourceGroupName := key.ClusterID(customObject)
 		deploymentsClient, err := r.getDeploymentsClient()
 		if err != nil {
-			return microerror.Mask(err)
+			return microerror.Maskf(err, "creating Azure deployments")
 		}
 
 		for _, deploy := range deploymentsToCreate {
@@ -228,10 +228,10 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 			select {
 			case err := <-errchan:
 				if err != nil {
-					return microerror.Mask(err)
+					return microerror.Maskf(err, "creating Azure deployments: creating %#q", deploy.Name)
 				}
 			case <-time.After(createTimeout):
-				return microerror.Maskf(timeoutError, "creating Azure deployment=%#q", deploy.Name)
+				return microerror.Maskf(timeoutError, "creating Azure deployments: creating %#q", deploy.Name)
 			}
 
 			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))

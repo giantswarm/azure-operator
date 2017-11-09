@@ -161,12 +161,12 @@ func (r *Resource) Name() string {
 func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState interface{}) error {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
-		return microerror.Mask(err)
+		return microerror.Maskf(err, "creating Azure resource group")
 	}
 
 	resourceGroupToCreate, err := toGroup(createState)
 	if err != nil {
-		return microerror.Mask(err)
+		return microerror.Maskf(err, "creating Azure resource group")
 	}
 
 	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure resource group")
@@ -174,7 +174,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 	if resourceGroupToCreate.Name != "" {
 		groupClient, err := r.getGroupsClient()
 		if err != nil {
-			return microerror.Mask(err)
+			return microerror.Maskf(err, "creating Azure resource group")
 		}
 
 		resourceGroup := azureresource.Group{
@@ -185,7 +185,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		}
 		_, err = groupClient.CreateOrUpdate(resourceGroupToCreate.Name, resourceGroup)
 		if err != nil {
-			return microerror.Mask(err)
+			return microerror.Maskf(err, "creating Azure resource group")
 		}
 
 		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure resource group: created")
@@ -200,11 +200,11 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState interface{}) error {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
-		return microerror.Mask(err)
+		return microerror.Maskf(err, "deleting Azure resource group")
 	}
 	resourceGroupToDelete, err := toGroup(deleteState)
 	if err != nil {
-		return microerror.Mask(err)
+		return microerror.Maskf(err, "deleting Azure resource group")
 	}
 
 	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting Azure resource group")
@@ -212,7 +212,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 	if resourceGroupToDelete.Name != "" {
 		groupsClient, err := r.getGroupsClient()
 		if err != nil {
-			return microerror.Mask(err)
+			return microerror.Maskf(err, "deleting Azure resource group")
 		}
 
 		// Delete the resource group which also deletes all resources it
@@ -221,10 +221,10 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 		select {
 		case err := <-errchan:
 			if err != nil {
-				return microerror.Mask(err)
+				return microerror.Maskf(err, "deleting Azure resource group")
 			}
 		case <-time.After(deleteTimeout):
-			return microerror.Mask(deleteTimeoutError)
+			return microerror.Maskf(timeoutError, "deleting Azure resource group")
 		}
 
 		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting Azure resource group: deleted")
