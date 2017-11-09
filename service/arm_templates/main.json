@@ -117,15 +117,6 @@
     "virtualNetworkSetupTemplateFile": {
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
-    },
-    "etcdDomain": {
-      "type": "string"
-    },
-    "kubernetesAPIDomain": {
-      "type": "string"
-    },
-    "kubernetesIngressWildcardDomain": {
-      "type": "string"
     }
   },
   "variables": {
