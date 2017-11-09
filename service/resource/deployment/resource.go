@@ -199,17 +199,17 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Mask(err)
 	}
 
-	if len(deploymentsToCreate) != 0 {
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating deployments in the Azure API")
+	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure deployments")
 
+	if len(deploymentsToCreate) != 0 {
 		resourceGroupName := key.ClusterID(customObject)
 		deploymentsClient, err := r.getDeploymentsClient()
 		if err != nil {
-			return microerror.Mask(err)
+			return microerror.Maskf(err, "creating Azure deployments")
 		}
 
 		for _, deploy := range deploymentsToCreate {
-			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating deployment %s", deploy.Name))
+			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating Azure deployments: creating %#q", deploy.Name))
 
 			deployment := azureresource.Deployment{
 				Properties: &azureresource.DeploymentProperties{
@@ -226,16 +226,18 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 			select {
 			case err := <-errchan:
 				if err != nil {
-					return microerror.Mask(err)
+					return microerror.Maskf(err, "creating Azure deployments: creating %#q", deploy.Name)
 				}
 			case <-time.After(createTimeout):
-				return microerror.Maskf(timeoutError, "creating deployment=%#q", deploy.Name)
+				return microerror.Maskf(timeoutError, "creating Azure deployments: creating %#q", deploy.Name)
 			}
 
-			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("created deployment %s", deploy.Name))
+			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))
 		}
 
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "created the deployments in the Azure API")
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure deployments: created")
+	} else {
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure deployments: already created")
 	}
 
 	return nil
