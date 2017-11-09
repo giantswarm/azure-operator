@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	"github.com/giantswarm/azuretpr"
@@ -77,7 +78,8 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		t.Fatalf("expected deployment name '%s' got '%s'", expectedDeployments[0].ResourceGroup, deployments[0].ResourceGroup)
 	}
 }
-func Test_Resource_Deployment_GetCreateState(t *testing.T) {
+
+func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 	testCases := []struct {
 		Obj                 interface{}
 		Cur                 interface{}
@@ -129,7 +131,7 @@ func Test_Resource_Deployment_GetCreateState(t *testing.T) {
 					Name: "cluster-setup",
 				},
 			},
-			ExpectedDeployments: []Deployment{},
+			ExpectedDeployments: nil,
 		},
 		{
 			// Case 3. Current and desired states are different.
@@ -187,110 +189,14 @@ func Test_Resource_Deployment_GetCreateState(t *testing.T) {
 		}
 	}
 	for i, tc := range testCases {
-		result, err := newResource.GetCreateState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		deployments, err := newResource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
-			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
+			t.Fatalf("case %d expected %#v got %#v", i+1, nil, err)
 		}
 
-		deployments, ok := result.([]Deployment)
-		if !ok {
-			t.Fatalf("case %d expected '%T', got '%T'", i+1, []Deployment{}, deployments)
-		}
-
-		if len(tc.ExpectedDeployments) != len(deployments) {
-			t.Fatalf("case %d expected %d deployments got %d", i+1, len(tc.ExpectedDeployments), len(deployments))
-		}
-	}
-}
-
-func Test_Resource_Deployment_GetDeleteState(t *testing.T) {
-	testCases := []struct {
-		Obj                 interface{}
-		Cur                 interface{}
-		Des                 interface{}
-		ExpectedDeployments []Deployment
-	}{
-		{
-			// Case 1. Current and desired states are the same.
-			// No deployments are returned because deployments aren't deleted.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
-					},
-				},
-			},
-			Cur: []Deployment{
-				Deployment{
-					Name: "cluster-setup",
-				},
-			},
-			Des: []Deployment{
-				Deployment{
-					Name: "cluster-setup",
-				},
-			},
-			ExpectedDeployments: []Deployment{},
-		},
-		{
-			// Case 2. Current state is empty.
-			// No deployments are returned because deployments aren't deleted.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
-					},
-				},
-			},
-			Cur: []Deployment{},
-			Des: []Deployment{
-				Deployment{
-					Name: "cluster-setup",
-				},
-			},
-			ExpectedDeployments: []Deployment{},
-		},
-	}
-
-	var newResource *Resource
-	{
-		cloudConfigConfig := cloudconfig.DefaultConfig()
-		cloudConfigConfig.Flag = flag.New()
-		cloudConfigConfig.Logger = microloggertest.New()
-		cloudConfigConfig.Viper = viper.New()
-
-		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
-		if err != nil {
-			t.Fatalf("expected '%#v' got '%#v'", nil, err)
-		}
-
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = client.DefaultAzureConfig()
-		resourceConfig.CertWatcher = certificatetprtest.NewService()
-		resourceConfig.CloudConfig = cloudConfigService
-		resourceConfig.Logger = microloggertest.New()
-		newResource, err = New(resourceConfig)
-		if err != nil {
-			t.Fatalf("expected '%#v' got '%#v'", nil, err)
-		}
-	}
-	for i, tc := range testCases {
-		result, err := newResource.GetDeleteState(context.TODO(), tc.Obj, tc.Cur, tc.Des)
-		if err != nil {
-			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
-		}
-
-		deployments, ok := result.([]Deployment)
-		if !ok {
-			t.Fatalf("case %d expected '%T', got '%T'", i+1, []Deployment{}, deployments)
-		}
-
-		if len(deployments) != 0 {
-			t.Fatalf("case %d expected 0 deployments got %d", i+1, len(deployments))
+		//if !reflect.DeepEqual(deployments, tc.ExpectedDeployments) {
+		if !reflect.DeepEqual(deployments, tc.ExpectedDeployments) {
+			t.Fatalf("case %d expected %#v got %#v", i+1, tc.ExpectedDeployments, deployments)
 		}
 	}
 }

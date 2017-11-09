@@ -122,50 +122,32 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	return resourceGroup, nil
 }
 
-// GetCreateState returns the resource group for this cluster if it should be
-// created.
-func (r *Resource) GetCreateState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentResourceGroup, err := toGroup(currentState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	desiredResourceGroup, err := toGroup(desiredState)
+// NewUpdatePatch returns the patch creating resource group for this cluster if
+// it is needed.
+func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
+	patch := framework.NewPatch()
+
+	resourceGroupToCreate, err := r.newCreateChange(ctx, obj, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	var resourceGroupToCreate Group
-	if currentResourceGroup.Name == "" {
-		resourceGroupToCreate = desiredResourceGroup
-	}
-
-	return resourceGroupToCreate, nil
+	patch.SetCreateChange(resourceGroupToCreate)
+	return patch, nil
 }
 
-// GetDeleteState returns the resource group for this cluster if it should be
-// deleted.
-func (r *Resource) GetDeleteState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentResourceGroup, err := toGroup(currentState)
+// NewDeletePatch returns the patch deleting resource group for this cluster if
+// it is needed.
+func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
+	patch := framework.NewPatch()
+
+	resourceGroupToDelete, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	desiredResourceGroup, err := toGroup(desiredState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 
-	var resourceGroupToDelete Group
-	if currentResourceGroup.Name != "" {
-		resourceGroupToDelete = desiredResourceGroup
-	}
-
-	return resourceGroupToDelete, nil
-}
-
-// GetUpdateState returns an empty group for the create, delete and update
-// states because resource groups are not updated.
-func (r *Resource) GetUpdateState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, interface{}, interface{}, error) {
-	return Group{}, Group{}, Group{}, nil
+	patch.SetDeleteChange(resourceGroupToDelete)
+	return patch, nil
 }
 
 // Name returns the resource name.
@@ -173,8 +155,8 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-// ProcessCreateState creates the resource group via the Azure API.
-func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState interface{}) error {
+// ApplyCreateChange creates the resource group via the Azure API.
+func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState interface{}) error {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
 		return microerror.Mask(err)
@@ -210,8 +192,8 @@ func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState inte
 	return nil
 }
 
-// ProcessDeleteState deletes the resource group via the Azure API.
-func (r *Resource) ProcessDeleteState(ctx context.Context, obj, deleteState interface{}) error {
+// ApplyDeleteChange deletes the resource group via the Azure API.
+func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState interface{}) error {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
 		return microerror.Mask(err)
@@ -247,8 +229,8 @@ func (r *Resource) ProcessDeleteState(ctx context.Context, obj, deleteState inte
 	return nil
 }
 
-// ProcessUpdateState returns nil because resource groups are not updated.
-func (r *Resource) ProcessUpdateState(ctx context.Context, obj, updateState interface{}) error {
+// ApplyUpdateChange is a noop because resource groups are not updated.
+func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
 	return nil
 }
 
@@ -264,6 +246,40 @@ func (r *Resource) getGroupsClient() (*azureresource.GroupsClient, error) {
 	}
 
 	return azureClients.GroupsClient, nil
+}
+
+func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) (Group, error) {
+	currentResourceGroup, err := toGroup(currentState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+	desiredResourceGroup, err := toGroup(desiredState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+
+	if currentResourceGroup.Name == "" {
+		return desiredResourceGroup, nil
+	}
+
+	return Group{}, nil
+}
+
+func (r *Resource) newDeleteChange(ctx context.Context, obj, currentState, desiredState interface{}) (Group, error) {
+	currentResourceGroup, err := toGroup(currentState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+	desiredResourceGroup, err := toGroup(desiredState)
+	if err != nil {
+		return Group{}, microerror.Mask(err)
+	}
+
+	if currentResourceGroup.Name != "" {
+		return desiredResourceGroup, nil
+	}
+
+	return Group{}, nil
 }
 
 func toCustomObject(v interface{}) (azuretpr.CustomObject, error) {

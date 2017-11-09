@@ -161,38 +161,25 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	return deployments, nil
 }
 
-// GetCreateState returns the deployments that should be created for this
+// NewUpdatePatch returns the deployments that should be created for this
 // cluster.
-func (r *Resource) GetCreateState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentDeployments, err := toDeployments(currentState)
+func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
+	patch := framework.NewPatch()
+
+	deploymentsToCreate, err := r.newCreateChange(ctx, obj, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	desiredDeployments, err := toDeployments(desiredState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 
-	var deploymentsToCreate []Deployment
-
-	for _, desiredDeployment := range desiredDeployments {
-		if !existsDeploymentByName(currentDeployments, desiredDeployment.Name) {
-			deploymentsToCreate = append(deploymentsToCreate, desiredDeployment)
-		}
-	}
-
-	return deploymentsToCreate, nil
+	patch.SetCreateChange(deploymentsToCreate)
+	return patch, nil
 }
 
-// GetDeleteState returns an empty deployments collection. Deployments and the
-// resources they manage are deleted when the Resource Group is deleted.
-func (r *Resource) GetDeleteState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
-	return []Deployment{}, nil
-}
-
-// GetUpdateState is not yet implemented.
-func (r *Resource) GetUpdateState(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, interface{}, interface{}, error) {
-	return []Deployment{}, []Deployment{}, []Deployment{}, nil
+// NewDeletePatch returns an empty patch. Deployments are deleted together with
+// the resource group.
+func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
+	p := framework.NewPatch()
+	return p, nil
 }
 
 // Name returns the resource name.
@@ -200,8 +187,8 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-// ProcessCreateState creates the deployments via the Azure API.
-func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState interface{}) error {
+// ApplyCreateChange creates the deployments via the Azure API.
+func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState interface{}) error {
 	customObject, err := toCustomObject(obj)
 	if err != nil {
 		return microerror.Mask(err)
@@ -242,7 +229,7 @@ func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState inte
 					return microerror.Mask(err)
 				}
 			case <-time.After(createTimeout):
-				return microerror.Mask(createTimeoutError)
+				return microerror.Maskf(timeoutError, "creating deployment=%#q", deploy.Name)
 			}
 
 			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("created deployment %s", deploy.Name))
@@ -254,13 +241,14 @@ func (r *Resource) ProcessCreateState(ctx context.Context, obj, createState inte
 	return nil
 }
 
-// ProcessDeleteState returns nil because deployments are not deleted.
-func (r *Resource) ProcessDeleteState(ctx context.Context, obj, deleteState interface{}) error {
+// ApplyDeleteChange is a noop. Deployments are deleted with the resource
+// group.
+func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState interface{}) error {
 	return nil
 }
 
-// ProcessUpdateState is not yet implemented.
-func (r *Resource) ProcessUpdateState(ctx context.Context, obj, updateState interface{}) error {
+// ApplyUpdateChange is not yet implemented.
+func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
 	return nil
 }
 
@@ -276,6 +264,27 @@ func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, err
 	}
 
 	return azureClients.DeploymentsClient, nil
+}
+
+func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) ([]Deployment, error) {
+	currentDeployments, err := toDeployments(currentState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	desiredDeployments, err := toDeployments(desiredState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var deploymentsToCreate []Deployment
+
+	for _, desiredDeployment := range desiredDeployments {
+		if !existsDeploymentByName(currentDeployments, desiredDeployment.Name) {
+			deploymentsToCreate = append(deploymentsToCreate, desiredDeployment)
+		}
+	}
+
+	return deploymentsToCreate, nil
 }
 
 func existsDeploymentByName(list []Deployment, name string) bool {

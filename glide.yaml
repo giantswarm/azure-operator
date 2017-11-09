@@ -19,7 +19,5 @@ import:
   version: master
 - package: github.com/Azure/azure-sdk-for-go
   version: master
-  subpackages:
-  - arm/resources/resources
 - package: github.com/Azure/go-autorest
   version: master
