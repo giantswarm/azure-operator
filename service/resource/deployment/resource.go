@@ -25,7 +25,6 @@ const (
 	createTimeout = 5 * time.Minute
 )
 
-// Config is deployment Resource configuration.
 type Config struct {
 	// Dependencies.
 
@@ -58,7 +57,6 @@ func DefaultConfig() Config {
 	}
 }
 
-// Resource manages Azure ARM templates deployments.
 type Resource struct {
 	// Dependencies.
 
