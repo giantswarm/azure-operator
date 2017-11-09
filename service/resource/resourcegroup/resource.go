@@ -25,6 +25,7 @@ const (
 	managedBy     = "azure-operator"
 )
 
+// Config is the resource group Resource configuration.
 type Config struct {
 	// Dependencies.
 
@@ -42,6 +43,7 @@ func DefaultConfig() Config {
 	}
 }
 
+// Resource manages Azure resource groups.
 type Resource struct {
 	// Dependencies.
 
@@ -167,9 +169,9 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Mask(err)
 	}
 
-	if resourceGroupToCreate.Name != "" {
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating the resource group in the Azure API")
+	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure resource group")
 
+	if resourceGroupToCreate.Name != "" {
 		groupClient, err := r.getGroupsClient()
 		if err != nil {
 			return microerror.Mask(err)
@@ -186,7 +188,9 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 			return microerror.Mask(err)
 		}
 
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "created the resource group in the Azure API")
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure resource group: created")
+	} else {
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure resource group: already created")
 	}
 
 	return nil
@@ -203,9 +207,9 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 		return microerror.Mask(err)
 	}
 
-	if resourceGroupToDelete.Name != "" {
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting the resource group in the Azure API")
+	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting Azure resource group")
 
+	if resourceGroupToDelete.Name != "" {
 		groupsClient, err := r.getGroupsClient()
 		if err != nil {
 			return microerror.Mask(err)
@@ -223,7 +227,9 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 			return microerror.Mask(deleteTimeoutError)
 		}
 
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleted the resource group in the Azure API")
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting Azure resource group: deleted")
+	} else {
+		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "deleting Azure resource group: already deleted")
 	}
 
 	return nil
