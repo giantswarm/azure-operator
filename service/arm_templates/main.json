@@ -118,10 +118,10 @@
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
     },
-    "hostedZones": {
+    "dnsZones": {
       "type": "object",
       "metadata": {
-        "description": "The hosted zones for kubernetes api, etcd and ingress."
+        "description": "The DNS zones for kubernetes api, etcd and ingress."
       }
     }
   },
@@ -359,7 +359,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "hostedZone": { "value": "[parameters('hostedZones').etcd]" },
+          "dnsZone": { "value": "[parameters('dnsZones').etcd]" },
           "prefix": { "value": "[concat('etcd.', parameters('clusterID'))]" },
           "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.loadBalancerIPAddress.value]" }
         }
@@ -376,7 +376,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "hostedZone": { "value": "[parameters('hostedZones').api]" },
+          "dnsZone": { "value": "[parameters('dnsZones').api]" },
           "prefix": { "value": "[concat('api.', parameters('clusterID'))]" },
           "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.publicIPAddress.value]" }
         }
@@ -393,7 +393,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "hostedZone": { "value": "[parameters('hostedZones').ingress]" },
+          "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
           "prefix": { "value": "[concat('ingress.', parameters('clusterID'))]" },
           "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.publicIPAddress.value]" }
         }
