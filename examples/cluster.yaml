@@ -96,7 +96,7 @@ spec:
       workerSubnetCidr: "10.0.2.0/24"
       loadBalancer:
         etcdCidr: "10.0.3.128/25"
-    hostedZones:
+    dnsZones:
       api:     "azure.giantswarm.io"
       etcd:    "azure.giantswarm.io"
       ingress: "azure.giantswarm.io"
