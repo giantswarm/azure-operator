@@ -94,9 +94,13 @@
       "type": "string",
       "defaultValue": "cluster_setup.json"
     },
-    "dnsSetupTemplateFile": {
+    "dnsASetupTemplateFile": {
       "type": "string",
-      "defaultValue": "dns_setup.json"
+      "defaultValue": "dns_a_setup.json"
+    },
+    "dnsCNAMESetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "dns_cname_setup.json"
     },
     "nodeSetupTemplateFile": {
       "type": "string",
@@ -129,7 +133,8 @@
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
-    "dnsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsSetupTemplateFile'))]",
+    "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
+    "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
@@ -355,7 +360,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('dnsSetupTemplateURI')]",
+          "uri": "[variables('dnsASetupTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -372,7 +377,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('dnsSetupTemplateURI')]",
+          "uri": "[variables('dnsASetupTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
@@ -389,13 +394,30 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('dnsSetupTemplateURI')]",
+          "uri": "[variables('dnsASetupTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
           "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
           "prefix": { "value": "[concat('ingress.', parameters('clusterID'))]" },
           "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.publicIPAddress.value]" }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "kubernetes_ingress_wildcard_dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsCNAMESetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
+          "prefix": { "value": "[concat('*.', parameters('clusterID'))]" },
+          "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.', parameters('dnsZones').ingress)]" }
         }
       }
     },
