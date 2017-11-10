@@ -2,33 +2,31 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "domain": {
+    "hostedZone": {
+      "type": "string"
+    },
+    "prefix": {
       "type": "string"
     },
     "ipAddress": {
       "type": "string"
     }
   },
-  "variables": {
-    "prefix": "[split(parameters('domain'), '.')[0]]",
-    "prefixLength": "[add(length(variables('prefix')), 1)]",
-    "zone": "[substring(parameters('domain'), variables('prefixLength'), sub(length(parameters('domain')), variables('prefixLength')))]"
-  },
   "resources": [
     {
       "type": "Microsoft.Network/dnszones",
-      "name": "[variables('zone')]",
+      "name": "[parameters('hostedZone')]",
       "apiVersion": "2016-04-01",
       "location": "global",
       "properties": { }
     },
     {
       "type": "Microsoft.Network/dnszones/a",
-      "name": "[concat(variables('zone'), '/', variables('prefix'))]",
+      "name": "[concat(parameters('hostedZone'), '/', parameters('prefix'))]",
       "apiVersion": "2016-04-01",
       "location": "global",
       "dependsOn": [
-        "[variables('zone')]"
+        "[parameters('hostedZone')]"
       ],
       "properties": {
         "TTL": 3600,
