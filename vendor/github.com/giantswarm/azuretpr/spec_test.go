@@ -165,6 +165,11 @@ func TestSpecYamlEncoding(t *testing.T) {
 					EtcdCIDR: "10.0.3.128/25",
 				},
 			},
+			DNSZones: azure.DNSZones{
+				API:     "azure.giantswarm.io",
+				Etcd:    "azure.giantswarm.io",
+				Ingress: "azure.giantswarm.io",
+			},
 		},
 	}
 

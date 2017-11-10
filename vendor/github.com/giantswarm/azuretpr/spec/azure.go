@@ -12,4 +12,5 @@ type Azure struct {
 	VirtualNetwork azure.VirtualNetwork `json:"virtualNetwork" yaml:"virtualNetwork"`
 	Masters        []azure.Node         `json:"masters" yaml:"masters"`
 	Workers        []azure.Node         `json:"workers" yaml:"workers"`
+	DNSZones       azure.DNSZones       `json:"dnsZones" yaml:"dnsZones"`
 }
