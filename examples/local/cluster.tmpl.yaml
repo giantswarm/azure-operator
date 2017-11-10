@@ -96,3 +96,7 @@ spec:
       workerSubnetCidr: "10.0.2.0/24"
       loadBalancer:
         etcdCidr: "10.0.3.128/25"
+    hostedZones:
+      api:     "${COMMON_DOMAIN}"
+      etcd:    "${COMMON_DOMAIN}"
+      ingress: "${COMMON_DOMAIN_INGRESS}"
