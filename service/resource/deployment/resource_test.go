@@ -52,6 +52,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		resourceConfig.CertWatcher = certificatetprtest.NewService()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
+		resourceConfig.TemplateVersion = "master"
 		newResource, err = New(resourceConfig)
 		if err != nil {
 			t.Fatalf("expected '%v' got '%#v'", nil, err)
@@ -183,6 +184,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		resourceConfig.CertWatcher = certificatetprtest.NewService()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
+		resourceConfig.TemplateVersion = "master"
 		newResource, err = New(resourceConfig)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)

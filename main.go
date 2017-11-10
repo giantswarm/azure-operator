@@ -16,10 +16,14 @@ import (
 	"github.com/giantswarm/azure-operator/service"
 )
 
+const (
+	notAvailable = "n/a"
+)
+
 var (
 	description string     = "The azure-operator manages Kubernetes clusters on Azure."
 	f           *flag.Flag = flag.New()
-	gitCommit   string     = "n/a"
+	gitCommit   string     = notAvailable
 	name        string     = "azure-operator"
 	source      string     = "https://github.com/giantswarm/azure-operator"
 )
@@ -121,13 +125,20 @@ func main() {
 		}
 	}
 
+	var defaultTemplateVersion string
+	{
+		if gitCommit != notAvailable {
+			defaultTemplateVersion = gitCommit
+		}
+	}
+
 	daemonCommand := newCommand.DaemonCommand().CobraCommand()
 
 	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientID, "", "ID of the Active Directory Service Principal.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientSecret, "", "Secret of the Active Directory Service Principal.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.SubscriptionID, "", "ID of the Azure Subscription.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.TenantID, "", "ID of the Active Directory Tenant.")
-	daemonCommand.PersistentFlags().String(f.Service.Azure.Template.URI.Version, "master", "URI version for ARM template links.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.Template.URI.Version, defaultTemplateVersion, "URI version for ARM template links.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.Address, "", "Address used to connect to Kubernetes. When empty in-cluster config is created.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Kubernetes.InCluster, true, "Whether to use the in-cluster config to authenticate with Kubernetes.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.CAFile, "", "Certificate authority file path to use to authenticate with Kubernetes.")

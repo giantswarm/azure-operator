@@ -53,7 +53,7 @@ func DefaultConfig() Config {
 
 		// Settings.
 
-		TemplateVersion: templateVersionDefault,
+		TemplateVersion: "",
 	}
 }
 
