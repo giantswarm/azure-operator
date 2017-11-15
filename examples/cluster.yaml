@@ -97,6 +97,6 @@ spec:
       loadBalancer:
         etcdCidr: "10.0.3.128/25"
     dnsZones:
-      api:     "azure.giantswarm.io"
-      etcd:    "azure.giantswarm.io"
-      ingress: "azure.giantswarm.io"
+      api:     "azure.gigantic.io"
+      etcd:    "azure.gigantic.io"
+      ingress: "azure.gigantic.io"

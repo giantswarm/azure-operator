@@ -111,3 +111,7 @@ spec:
       workerSubnetCidr: "10.0.2.0/24"
       loadBalancer:
         etcdCidr: "10.0.3.128/25"
+    dnsZones:
+      api:     "{{.Values.commonDomain}}"
+      etcd:    "{{.Values.commonDomain}}"
+      ingress: "{{.Values.commonDomain}}"
