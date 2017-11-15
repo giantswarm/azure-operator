@@ -172,9 +172,9 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.publicIPCidr.value]"},
+          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.publicIPCidr.value]"},
+          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
@@ -366,7 +366,7 @@
         "parameters": {
           "dnsZone": { "value": "[parameters('dnsZones').etcd]" },
           "prefix": { "value": "[concat('etcd.', parameters('clusterID'))]" },
-          "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.loadBalancerIPAddress.value]" }
+          "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.ipAddress.value]" }
         }
       }
     },
@@ -383,7 +383,7 @@
         "parameters": {
           "dnsZone": { "value": "[parameters('dnsZones').api]" },
           "prefix": { "value": "[concat('api.', parameters('clusterID'))]" },
-          "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.publicIPAddress.value]" }
+          "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.ipAddress.value]" }
         }
       }
     },
@@ -400,7 +400,7 @@
         "parameters": {
           "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
           "prefix": { "value": "[concat('ingress.', parameters('clusterID'))]" },
-          "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.publicIPAddress.value]" }
+          "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.ipAddress.value]" }
         }
       }
     },

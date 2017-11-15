@@ -106,7 +106,7 @@
         "name": "[variables('loadBalancerBackendPoolName')]"
       }
     },
-    "loadBalancerIPAddress": {
+    "ipAddress": {
       "type": "string",
       "value": "[reference(variables('loadBalancerID'), parameters('loadBalancersAPIVersion')).frontendIPConfigurations[0].properties.privateIPAddress]"
     }
