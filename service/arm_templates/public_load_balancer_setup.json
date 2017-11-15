@@ -125,11 +125,11 @@
         "name": "[variables('loadBalancerBackendPoolName')]"
       }
     },
-    "publicIPAddress": {
+    "ipAddress": {
       "type": "string",
       "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
     },
-    "publicIPCidr": {
+    "ipAddressCidr": {
       "type": "string",
       "value": "[concat(reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress, '/32')]"
     }
