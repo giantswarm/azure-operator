@@ -272,31 +272,6 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "etcd_load_balancer_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('privateLoadBalancerTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Etcd"},
-          "subnetID": {"value": "[reference('virtual_network_setup').outputs.etcdLoadBalancerSubnetID.value]"},
-          "ports": {"value":
-            [
-              {
-                "frontend": 443,
-                "backend": 2379
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
       "name": "api_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
