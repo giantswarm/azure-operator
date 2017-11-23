@@ -43,7 +43,7 @@
     "masterSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('masterSecurityGroupName'))]",
 
     "workerSecurityGroupName": "[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
-    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
+    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]"
   },
   "resources": [
     {
