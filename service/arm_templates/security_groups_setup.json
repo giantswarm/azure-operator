@@ -15,9 +15,6 @@
     "apiLoadBalancerCidr": {
       "type": "string"
     },
-    "etcdLoadBalancerCidr": {
-      "type": "string"
-    },
     "ingressLoadBalancerCidr": {
       "type": "string"
     },
@@ -28,9 +25,6 @@
       "type": "string"
     },
     "kubernetesAPISecurePort": {
-      "type": "int"
-    },
-    "etcdPort": {
       "type": "int"
     },
     "kubernetesIngressSecurePort": {
@@ -116,20 +110,6 @@
             }
           },
           {
-            "name": "etcdLoadBalancerRule",
-            "properties": {
-              "description": "Allow the Etcd load balancer to reach etcd.",
-              "protocol": "tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[string(parameters('etcdPort'))]",
-              "sourceAddressPrefix": "[parameters('etcdLoadBalancerCidr')]",
-              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": "3800"
-            }
-          },
-          {
             "name": "workerSubnetToMasterSubnet",
             "properties": {
               "description": "Allow the worker machines to reach the master machines on any ports.",
@@ -140,7 +120,7 @@
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3700"
+              "priority": "3800"
             }
           },
           {
@@ -154,7 +134,7 @@
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3600"
+              "priority": "3700"
             }
           }
         ]
