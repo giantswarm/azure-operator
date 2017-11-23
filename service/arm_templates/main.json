@@ -32,9 +32,6 @@
     "kubernetesAPISecurePort": {
       "type": "int"
     },
-    "etcdPort": {
-      "type": "int"
-    },
     "kubernetesIngressSecurePort": {
       "type": "int"
     },
