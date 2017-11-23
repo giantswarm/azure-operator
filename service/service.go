@@ -156,6 +156,7 @@ func New(config Config) (*Service, error) {
 	{
 		frameworkConfig := framework.DefaultConfig()
 
+		frameworkConfig.BackOff = backoff.NewExponentialBackOff()
 		frameworkConfig.Logger = config.Logger
 		frameworkConfig.Resources = []framework.Resource{
 			resourceGroupResource,
