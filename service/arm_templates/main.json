@@ -173,12 +173,10 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.ipAddressCidr.value]"},
-          "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
           "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
-          "etcdPort": {"value": "[parameters('etcdPort')]"},
           "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
           "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"}
         }
