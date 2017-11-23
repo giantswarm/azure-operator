@@ -29,9 +29,6 @@
     "workerSubnetCidr": {
       "type": "string"
     },
-    "etcdLoadBalancerCidr": {
-      "type": "string"
-    },
     "kubernetesAPISecurePort": {
       "type": "int"
     },
@@ -197,7 +194,6 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
-          "etcdLoadBalancerSubnetCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
         }
