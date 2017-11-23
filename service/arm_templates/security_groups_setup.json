@@ -12,9 +12,6 @@
     "clusterID": {
       "type": "string"
     },
-    "ingressLoadBalancerCidr": {
-      "type": "string"
-    },
     "masterSubnetCidr": {
       "type": "string"
     },
@@ -193,7 +190,7 @@
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesIngressSecurePort'))]",
-              "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
@@ -207,7 +204,7 @@
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesIngressInsecurePort'))]",
-              "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
