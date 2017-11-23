@@ -86,14 +86,14 @@ $ helm install -n azure-operator-lab --set azure.clientId=${AZURE_CLIENT_ID} \
                                    --set azure.clientSecret=${AZURE_CLIENT_SECRET} \
                                    --set azure.subscriptionId=${AZURE_SUBSCRIPTION_ID} \
                                    --set azure.tenantId=${AZURE_TENANT_ID} \
-                                   --set imageTag-local-lab \
+                                   --set imageTag=local-lab \
                                    ./azure-operator-lab-chart/ --wait
 ```
 
 `azure-resource-lab-chart` accepts the following configuration parameters:
 * `clusterName` - Cluster's name.
 * `commonDomain` - Cluster's etcd and API common domain.
-* `encryptionKey` - Used for encrypting etcd storage. See https://github.com/giantswarm/k8scloudconfig/blob/30de6e46e3cd97ad7a6da9005fa00f9dc785b179/v_0_1_0/master_template.go#L2038 
+* `encryptionKey` - Used for encrypting etcd storage. See https://github.com/giantswarm/k8scloudconfig/blob/30de6e46e3cd97ad7a6da9005fa00f9dc785b179/v_0_1_0/master_template.go#L2038
 * `sshUser` - SSH user created via cloudconfig.
 * `sshPublicKey` - SSH user created via cloudconfig.
 * `azure.location` - Azure region to launch cluster in.

@@ -96,3 +96,7 @@ spec:
       workerSubnetCidr: "10.0.2.0/24"
       loadBalancer:
         etcdCidr: "10.0.3.128/25"
+    dnsZones:
+      api:     "azure.gigantic.io"
+      etcd:    "azure.gigantic.io"
+      ingress: "azure.gigantic.io"

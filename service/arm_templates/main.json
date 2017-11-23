@@ -94,6 +94,14 @@
       "type": "string",
       "defaultValue": "cluster_setup.json"
     },
+    "dnsASetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "dns_a_setup.json"
+    },
+    "dnsCNAMESetupTemplateFile": {
+      "type": "string",
+      "defaultValue": "dns_cname_setup.json"
+    },
     "nodeSetupTemplateFile": {
       "type": "string",
       "defaultValue": "node_setup.json"
@@ -113,12 +121,20 @@
     "virtualNetworkSetupTemplateFile": {
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
+    },
+    "dnsZones": {
+      "type": "object",
+      "metadata": {
+        "description": "The DNS zones for kubernetes api, etcd and ingress."
+      }
     }
   },
   "variables": {
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
+    "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
+    "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
@@ -156,9 +172,9 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.publicIPCidr.value]"},
+          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.publicIPCidr.value]"},
+          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
@@ -334,6 +350,74 @@
               }
             ]
           }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "etcd_dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsASetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dnsZone": { "value": "[parameters('dnsZones').etcd]" },
+          "prefix": { "value": "[concat('etcd.', parameters('clusterID'))]" },
+          "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.ipAddress.value]" }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "kubernetes_api_dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsASetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dnsZone": { "value": "[parameters('dnsZones').api]" },
+          "prefix": { "value": "[concat('api.', parameters('clusterID'))]" },
+          "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.ipAddress.value]" }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "kubernetes_ingress_dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsASetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
+          "prefix": { "value": "[concat('ingress.', parameters('clusterID'))]" },
+          "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.ipAddress.value]" }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "kubernetes_ingress_wildcard_dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsCNAMESetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
+          "prefix": { "value": "[concat('*.', parameters('clusterID'))]" },
+          "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.', parameters('dnsZones').ingress)]" }
         }
       }
     },
