@@ -335,7 +335,7 @@
         "parameters": {
           "dnsZone": { "value": "[parameters('dnsZones').etcd]" },
           "prefix": { "value": "[concat('etcd.', parameters('clusterID'))]" },
-          "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.ipAddress.value]" }
+          "ipAddress": { "value": "[reference('master_nodes_setup_1').outputs.ipAddress.value]" }
         }
       }
     },
