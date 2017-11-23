@@ -166,7 +166,6 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},

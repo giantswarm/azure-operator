@@ -12,9 +12,6 @@
     "clusterID": {
       "type": "string"
     },
-    "apiLoadBalancerCidr": {
-      "type": "string"
-    },
     "ingressLoadBalancerCidr": {
       "type": "string"
     },
@@ -98,11 +95,11 @@
           {
             "name": "apiLoadBalancerRule",
             "properties": {
-              "description": "Allow the API load balancer to reach the kubernetes API.",
+              "description": "Allow anyone to reach the kubernetes API.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesAPISecurePort'))]",
-              "sourceAddressPrefix": "[parameters('apiLoadBalancerCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
