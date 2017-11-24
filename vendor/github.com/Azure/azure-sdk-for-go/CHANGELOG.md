@@ -1,5 +1,15 @@
 # CHANGELOG
 
+## `v11.2.2-beta`
+
+### Bug Fixes
+ - Regenerating `latest` and `preview` profiles after deleting falsely included apimanagement.
+
+## `v11.2.1-beta`
+
+### Bug Fixes
+ - Commenting out ignore rule that false-positived on the graphrbac package.
+
 ## `v11.2.0-beta`
 
 ### Repository Structure
