@@ -26,10 +26,6 @@
     },
     "kubernetesIngressInsecurePort": {
       "type": "int"
-    },
-    "azureHealthProbeCidr": {
-      "type": "string",
-      "defaultValue": "168.63.129.16/32"
     }
   },
   "variables": {
@@ -115,20 +111,6 @@
               "access": "Allow",
               "direction": "Inbound",
               "priority": "3800"
-            }
-          },
-          {
-            "name": "azureHealthProbeRule",
-            "properties": {
-              "description": "Allow the Azure load balancers health probe to test any backends.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('azureHealthProbeCidr')]",
-              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": "3700"
             }
           }
         ]
@@ -223,20 +205,6 @@
               "access": "Allow",
               "direction": "Inbound",
               "priority": "3700"
-            }
-          },
-          {
-            "name": "azureHealthProbeRule",
-            "properties": {
-              "description": "Allow the Azure load balancers health probe to test any backends.",
-              "protocol": "*",
-              "sourcePortRange": "*",
-              "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('azureHealthProbeCidr')]",
-              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": "3600"
             }
           }
         ]
