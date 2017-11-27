@@ -161,9 +161,6 @@ func New(config Config) (*Service, error) {
 
 		frameworkConfig := framework.DefaultConfig()
 
-		frameworkConfig.BackOffFactory = func() backoff.BackOff {
-			return backoff.WithMaxTries(backoff.NewExponentialBackOff(), 3)
-		}
 		frameworkConfig.Logger = config.Logger
 		frameworkConfig.ResourceRouter = framework.DefaultResourceRouter(resources)
 

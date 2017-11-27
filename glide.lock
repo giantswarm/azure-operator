@@ -1,5 +1,5 @@
 hash: 48f37e104da00a0e87351d46dfaa01f872f7a52c05668bbc5d6597b8eab85daf
-updated: 2017-11-27T13:06:20.091091192+01:00
+updated: 2017-11-27T13:58:14.738391019+01:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 7692b0cef22674113fcf71cc17ac3ccc1a7fef48
@@ -107,7 +107,7 @@ imports:
   subpackages:
   - memory
 - name: github.com/giantswarm/operatorkit
-  version: f21e8578ed653172c0236a1ad7a516409ed125f5
+  version: d34c66fa4a7d6354b16bd9e141a342284eeb4065
   subpackages:
   - client/k8sclient
   - framework
