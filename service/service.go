@@ -3,24 +3,17 @@ package service
 import (
 	"fmt"
 	"sync"
-	"time"
 
-	"github.com/cenkalti/backoff"
-	"github.com/giantswarm/certificatetpr"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8sclient"
-	"github.com/giantswarm/operatorkit/framework"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/service/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/operator"
-	"github.com/giantswarm/azure-operator/service/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
 )
 
 // Config represents the configuration used to create a new service.
@@ -101,89 +94,13 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var certWatcher certificatetpr.Searcher
-	{
-		certConfig := certificatetpr.DefaultServiceConfig()
-		certConfig.K8sClient = k8sClient
-		certConfig.Logger = config.Logger
-		certWatcher, err = certificatetpr.NewService(certConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var cloudConfigService *cloudconfig.CloudConfig
-	{
-		cloudConfigConfig := cloudconfig.DefaultConfig()
-		cloudConfigConfig.Flag = config.Flag
-		cloudConfigConfig.Logger = config.Logger
-		cloudConfigConfig.Viper = config.Viper
-
-		cloudConfigService, err = cloudconfig.New(cloudConfigConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var resourceGroupResource framework.Resource
-	{
-		resourceGroupConfig := resourcegroup.DefaultConfig()
-		resourceGroupConfig.AzureConfig = azureConfig
-		resourceGroupConfig.Logger = config.Logger
-
-		resourceGroupResource, err = resourcegroup.New(resourceGroupConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var deploymentResource framework.Resource
-	{
-		deploymentConfig := deployment.DefaultConfig()
-		deploymentConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
-		deploymentConfig.AzureConfig = azureConfig
-		deploymentConfig.CertWatcher = certWatcher
-		deploymentConfig.CloudConfig = cloudConfigService
-		deploymentConfig.Logger = config.Logger
-
-		deploymentResource, err = deployment.New(deploymentConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var operatorFramework *framework.Framework
-	{
-		frameworkConfig := framework.DefaultConfig()
-
-		frameworkConfig.BackOff = backoff.NewExponentialBackOff()
-		frameworkConfig.Logger = config.Logger
-		frameworkConfig.Resources = []framework.Resource{
-			resourceGroupResource,
-			deploymentResource,
-		}
-
-		operatorFramework, err = framework.New(frameworkConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var operatorBackOff *backoff.ExponentialBackOff
-	{
-		operatorBackOff = backoff.NewExponentialBackOff()
-		operatorBackOff.MaxElapsedTime = 5 * time.Minute
-	}
-
 	var operatorService *operator.Service
 	{
 		operatorConfig := operator.DefaultConfig()
 		operatorConfig.AzureConfig = azureConfig
-		operatorConfig.Backoff = operatorBackOff
 		operatorConfig.Flag = config.Flag
 		operatorConfig.K8sClient = k8sClient
 		operatorConfig.Logger = config.Logger
-		operatorConfig.OperatorFramework = operatorFramework
 		operatorConfig.Viper = config.Viper
 
 		operatorService, err = operator.New(operatorConfig)

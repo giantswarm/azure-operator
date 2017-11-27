@@ -1,7 +1,7 @@
 package: github.com/giantswarm/azure-operator
 import:
 - package: github.com/giantswarm/azuretpr
-  version: master
+  version: 596d9524fd8ec872442a8d32e42baf76438d3031
 - package: github.com/giantswarm/operatorkit
   version: master
 - package: github.com/giantswarm/microerror
@@ -12,9 +12,8 @@ import:
   version: master
 - package: github.com/giantswarm/microendpoint
   version: master
-# k8scloudconfig is pinned as versioning is not yet implemented.
 - package: github.com/giantswarm/k8scloudconfig
-  version: 05b5ac2a4ed0d145efb1ce8002f26b228ae3cc1b
+  version: master
 - package: github.com/giantswarm/certificatetpr
   version: master
 - package: github.com/Azure/azure-sdk-for-go

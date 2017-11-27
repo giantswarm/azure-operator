@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	"github.com/giantswarm/certificatetpr"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/key"
