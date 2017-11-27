@@ -30,7 +30,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cenk/backoff"
+	"github.com/cenkalti/backoff"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -144,7 +144,6 @@ func init() {
 func testNewInformer(t *testing.T, rateWait, resyncPeriod time.Duration) *Informer {
 	c := DefaultConfig()
 
-	c.BackOff = backoff.NewExponentialBackOff()
 	c.WatcherFactory = newWatcherFactory
 
 	c.RateWait = rateWait

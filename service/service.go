@@ -154,14 +154,18 @@ func New(config Config) (*Service, error) {
 
 	var operatorFramework *framework.Framework
 	{
-		frameworkConfig := framework.DefaultConfig()
-
-		frameworkConfig.BackOff = backoff.NewExponentialBackOff()
-		frameworkConfig.Logger = config.Logger
-		frameworkConfig.Resources = []framework.Resource{
+		resources := []framework.Resource{
 			resourceGroupResource,
 			deploymentResource,
 		}
+
+		frameworkConfig := framework.DefaultConfig()
+
+		frameworkConfig.BackOffFactory = func() backoff.BackOff {
+			return backoff.WithMaxTries(backoff.NewExponentialBackOff(), 3)
+		}
+		frameworkConfig.Logger = config.Logger
+		frameworkConfig.ResourceRouter = framework.DefaultResourceRouter(resources)
 
 		operatorFramework, err = framework.New(frameworkConfig)
 		if err != nil {

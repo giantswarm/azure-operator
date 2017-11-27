@@ -4,7 +4,7 @@ import (
 	"encoding/base64"
 
 	"github.com/giantswarm/azuretpr"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/viper"

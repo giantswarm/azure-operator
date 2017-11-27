@@ -1,5 +1,23 @@
 # CHANGELOG
 
+## v9.4.1
+
+### Bug Fixes
+
+- Update the AccessTokensPath() to read access tokens path through AZURE_ACCESS_TOKEN_FILE. If this
+  environment variable is not set, it will fall back to use default path set by Azure CLI.
+- Use case-insensitive string comparison for polling states.
+
+## v9.4.0
+
+### New Features
+
+- Added WaitForCompletion() to Future as a default polling implementation.
+
+### Bug Fixes
+
+- Method Future.Done() shouldn't update polling status for unexpected HTTP status codes.
+
 ## v9.3.1
 
 ### Bug Fixes
