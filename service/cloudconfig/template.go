@@ -22,7 +22,7 @@ mkdir -p /etc/kubernetes/ssl/etcd
 printf 'Waiting for secret {{ $secret.SecretName }}'
 until $(curl --fail --output /dev/null https://$KEY_VAULT_HOST/secrets/{{ $secret.SecretName }}?api-version=$API_VERSION -H "Authorization: Bearer $AUTH_TOKEN"); do
 	printf '.'
-  sleep 5
+	sleep 5
 done
 curl https://$KEY_VAULT_HOST/secrets/{{ $secret.SecretName }}?api-version=$API_VERSION -H "Authorization: Bearer $AUTH_TOKEN" | jq -r .value > {{ $secret.FileName }}
 {{ end }}
