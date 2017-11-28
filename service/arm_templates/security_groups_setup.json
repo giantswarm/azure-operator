@@ -168,7 +168,7 @@
           {
             "name": "ingressSecurePortRule",
             "properties": {
-              "description": "Allow the ingress load balancer to reach the ingress controller secure port.",
+              "description": "Allow anyone to reach the ingress controller secure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesIngressSecurePort'))]",
@@ -182,7 +182,7 @@
           {
             "name": "ingressInsecurePortRule",
             "properties": {
-              "description": "Allow the ingress load balancer to reach the ingress controller insecure port.",
+              "description": "Allow anyone to reach the ingress controller insecure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesIngressInsecurePort'))]",
