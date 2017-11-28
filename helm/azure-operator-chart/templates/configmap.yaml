@@ -8,10 +8,5 @@ data:
     server:
       listen:
         address: 'http://0.0.0.0:8000'
-    service:
-      azure:
-        template:
-          uri:
-            version: "master"
       kubernetes:
         incluster: true
