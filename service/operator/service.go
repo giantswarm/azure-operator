@@ -16,11 +16,12 @@ type Config struct {
 	// Dependencies.
 
 	AzureConfig *client.AzureConfig
-	Logger      micrologger.Logger
 	K8sClient   kubernetes.Interface
 	Resources   []framework.Resource
 
 	// Settings.
+
+	LoggerConfig micrologger.Config
 
 	TemplateVersion string
 }
@@ -32,18 +33,18 @@ func DefaultConfig() Config {
 		// Dependencies.
 		AzureConfig: nil,
 		K8sClient:   nil,
-		Logger:      nil,
+
+		// Settings.
+
+		LoggerConfig: micrologger.DefaultConfig(),
 	}
 }
 
 // Service implements the Operator service interface.
 type Service struct {
-	// Dependencies.
-
-	logger micrologger.Logger
-
 	// Internals.
 
+	logger    micrologger.Logger
 	framework *framework.Framework
 	bootOnce  sync.Once
 }
@@ -57,13 +58,15 @@ func New(config Config) (*Service, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
 	}
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
-	}
 
 	// Settings.
 	if config.TemplateVersion == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
+	}
+
+	logger, err := micrologger.New(config.LoggerConfig)
+	if err != nil {
+		return nil, microerror.Maskf(err, "creating logger")
 	}
 
 	operatorFramework, err := newFramework(config)
@@ -73,7 +76,7 @@ func New(config Config) (*Service, error) {
 
 	newService := &Service{
 		// Dependencies.
-		logger: config.Logger,
+		logger: logger,
 
 		// Internals.
 		framework: operatorFramework,
