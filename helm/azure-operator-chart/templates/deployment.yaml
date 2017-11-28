@@ -1,0 +1,63 @@
+apiVersion: extensions/v1beta1
+kind: Deployment
+metadata:
+  name: azure-operator
+  namespace: giantswarm
+  labels:
+    app: azure-operator
+spec:
+  replicas: 1
+  revisionHistoryLimit: 3
+  strategy:
+    type: RollingUpdate
+  template:
+    metadata:
+      labels:
+        app: azure-operator
+    spec:
+      volumes:
+      - name: azure-operator-configmap
+        configMap:
+          name: azure-operator-configmap
+          items:
+          - key: config.yaml
+            path: config.yaml
+      - name: azure-operator-secret
+        secret:
+          secretName: azure-operator-secret
+          items:
+          - key: secret.yaml
+            path: secret.yaml
+      - name: certs
+        hostPath:
+          path: /etc/ssl/certs/ca-certificates.crt
+      containers:
+      - name: azure-operator
+        image: quay.io/giantswarm/azure-operator:[[ .SHA ]]
+        volumeMounts:
+        - name: azure-operator-configmap
+          mountPath: /var/run/azure-operator/configmap/
+        - name: azure-operator-secret
+          mountPath: /var/run/azure-operator/secret/
+          readOnly: true
+        - name: certs
+          mountPath: /etc/ssl/certs/ca-certificates.crt
+          readOnly: true
+        ports:
+        - name: http
+          containerPort: 8000
+        args:
+        - daemon
+        - --config.dirs=/var/run/azure-operator/configmap/
+        - --config.dirs=/var/run/azure-operator/secret/
+        - --config.files=config
+        - --config.files=secret
+        resources:
+          requests:
+            cpu: 250m
+            memory: 250Mi
+          limits:
+            cpu: 250m
+            memory: 250Mi
+      imagePullSecrets:
+      - name: azure-operator-pull-secret

@@ -1,0 +1,12 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: azure-operator-configmap
+  namespace: giantswarm
+data:
+  config.yaml: |
+    server:
+      listen:
+        address: 'http://0.0.0.0:8000'
+      kubernetes:
+        incluster: true
