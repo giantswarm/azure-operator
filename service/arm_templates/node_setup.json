@@ -196,6 +196,10 @@
     "nodePrincipalID": {
       "type": "string",
       "value": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('vmName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
+    },
+    "ipAddress": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Network/networkInterfaces/', variables('nicName')), parameters('networkInterfacesAPIVersion')).ipConfigurations[0].properties.privateIPAddress]"
     }
   }
 }

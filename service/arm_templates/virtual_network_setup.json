@@ -21,9 +21,6 @@
     "workerSubnetCidr": {
       "type": "string"
     },
-    "etcdLoadBalancerSubnetCidr": {
-      "type": "string"
-    },
     "masterSecurityGroupID": {
       "type": "string"
     },
@@ -39,10 +36,7 @@
     "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
 
     "workerSubnetName": "[concat(variables('virtualNetworkName'), '-WorkerSubnet')]",
-    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
-
-    "etcdLoadBalancerSubnetName": "[concat(variables('virtualNetworkName'), '-EtcdLoadBlancerSubnet')]",
-    "etcdLoadBalancerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('etcdLoadBalancerSubnetName'))]"
+    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
   },
   "resources": [
     {
@@ -74,12 +68,6 @@
                 "id": "[parameters('workerSecurityGroupID')]"
               }
             }
-          },
-          {
-            "name": "[variables('etcdLoadBalancerSubnetName')]",
-            "properties": {
-              "addressPrefix": "[parameters('etcdLoadBalancerSubnetCidr')]"
-            }
           }
         ]
       }
@@ -93,10 +81,6 @@
     "workerSubnetID": {
       "type": "string",
       "value": "[variables('workerSubnetID')]"
-    },
-    "etcdLoadBalancerSubnetID": {
-      "type": "string",
-      "value": "[variables('etcdLoadBalancerSubnetID')]"
     }
   }
 }

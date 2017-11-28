@@ -12,15 +12,6 @@
     "clusterID": {
       "type": "string"
     },
-    "apiLoadBalancerCidr": {
-      "type": "string"
-    },
-    "etcdLoadBalancerCidr": {
-      "type": "string"
-    },
-    "ingressLoadBalancerCidr": {
-      "type": "string"
-    },
     "masterSubnetCidr": {
       "type": "string"
     },
@@ -28,9 +19,6 @@
       "type": "string"
     },
     "kubernetesAPISecurePort": {
-      "type": "int"
-    },
-    "etcdPort": {
       "type": "int"
     },
     "kubernetesIngressSecurePort": {
@@ -45,7 +33,7 @@
     "masterSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('masterSecurityGroupName'))]",
 
     "workerSecurityGroupName": "[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
-    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
+    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]"
   },
   "resources": [
     {
@@ -100,29 +88,15 @@
           {
             "name": "apiLoadBalancerRule",
             "properties": {
-              "description": "Allow the API load balancer to reach the kubernetes API.",
+              "description": "Allow anyone to reach the kubernetes API.",
               "protocol": "tcp",
-              "sourcePortRange": "*",
+              "sourcePortRange": "[string(parameters('kubernetesAPISecurePort'))]",
               "destinationPortRange": "[string(parameters('kubernetesAPISecurePort'))]",
-              "sourceAddressPrefix": "[parameters('apiLoadBalancerCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
               "priority": "3900"
-            }
-          },
-          {
-            "name": "etcdLoadBalancerRule",
-            "properties": {
-              "description": "Allow the Etcd load balancer to reach etcd.",
-              "protocol": "tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[string(parameters('etcdPort'))]",
-              "sourceAddressPrefix": "[parameters('etcdLoadBalancerCidr')]",
-              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": "3800"
             }
           },
           {
@@ -136,7 +110,7 @@
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3700"
+              "priority": "3800"
             }
           }
         ]
@@ -194,11 +168,11 @@
           {
             "name": "ingressSecurePortRule",
             "properties": {
-              "description": "Allow the ingress load balancer to reach the ingress controller secure port.",
+              "description": "Allow anyone to reach the ingress controller secure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesIngressSecurePort'))]",
-              "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
@@ -208,11 +182,11 @@
           {
             "name": "ingressInsecurePortRule",
             "properties": {
-              "description": "Allow the ingress load balancer to reach the ingress controller insecure port.",
+              "description": "Allow anyone to reach the ingress controller insecure port.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesIngressInsecurePort'))]",
-              "sourceAddressPrefix": "[parameters('ingressLoadBalancerCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
@@ -230,7 +204,7 @@
               "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3600"
+              "priority": "3700"
             }
           }
         ]

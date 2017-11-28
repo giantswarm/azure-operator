@@ -29,13 +29,7 @@
     "workerSubnetCidr": {
       "type": "string"
     },
-    "etcdLoadBalancerCidr": {
-      "type": "string"
-    },
     "kubernetesAPISecurePort": {
-      "type": "int"
-    },
-    "etcdPort": {
       "type": "int"
     },
     "kubernetesIngressSecurePort": {
@@ -106,10 +100,6 @@
       "type": "string",
       "defaultValue": "node_setup.json"
     },
-    "privateLoadBalancerTemplateFile": {
-      "type": "string",
-      "defaultValue": "private_load_balancer_setup.json"
-    },
     "publicLoadBalancerTemplateFile": {
       "type": "string",
       "defaultValue": "public_load_balancer_setup.json"
@@ -136,7 +126,6 @@
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
-    "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
@@ -172,13 +161,9 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "apiLoadBalancerCidr": {"value": "[reference('api_load_balancer_setup').outputs.ipAddressCidr.value]"},
-          "etcdLoadBalancerCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
-          "ingressLoadBalancerCidr": {"value": "[reference('ingress_load_balancer_setup').outputs.ipAddressCidr.value]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
-          "etcdPort": {"value": "[parameters('etcdPort')]"},
           "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
           "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"}
         }
@@ -199,7 +184,6 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
-          "etcdLoadBalancerSubnetCidr": {"value": "[parameters('etcdLoadBalancerCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
         }
@@ -278,31 +262,6 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "etcd_load_balancer_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('privateLoadBalancerTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "prefix": {"value": "Etcd"},
-          "subnetID": {"value": "[reference('virtual_network_setup').outputs.etcdLoadBalancerSubnetID.value]"},
-          "ports": {"value":
-            [
-              {
-                "frontend": 443,
-                "backend": 2379
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
       "name": "api_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
@@ -366,7 +325,7 @@
         "parameters": {
           "dnsZone": { "value": "[parameters('dnsZones').etcd]" },
           "prefix": { "value": "[concat('etcd.', parameters('clusterID'))]" },
-          "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.ipAddress.value]" }
+          "ipAddress": { "value": "[reference('master_nodes_setup_1').outputs.ipAddress.value]" }
         }
       }
     },
@@ -451,7 +410,7 @@
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('etcd_load_balancer_setup').outputs.loadBalancerBackendPoolID.value, reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
+          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
       }
     },
