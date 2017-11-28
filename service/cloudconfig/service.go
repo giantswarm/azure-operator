@@ -1,7 +1,11 @@
 package cloudconfig
 
 import (
+	"bytes"
+	"compress/gzip"
 	"encoding/base64"
+	"fmt"
+	"io"
 
 	"github.com/giantswarm/azuretpr"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
@@ -78,7 +82,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject azuretpr.CustomObject) (s
 		},
 	}
 
-	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
+	return c.newCloudConfig(k8scloudconfig.MasterTemplate, params)
 }
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
@@ -93,10 +97,10 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject azuretpr.CustomObject) (s
 		},
 	}
 
-	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
+	return c.newCloudConfig(k8scloudconfig.WorkerTemplate, params)
 }
 
-func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
+func (c CloudConfig) newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
 	cloudConfig, err := k8scloudconfig.NewCloudConfig(template, params)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -106,5 +110,39 @@ func newCloudConfig(template string, params k8scloudconfig.Params) (string, erro
 		return "", microerror.Mask(err)
 	}
 
-	return base64.StdEncoding.EncodeToString([]byte(cloudConfig.String())), nil
+	compressed, err := gzipBase64(cloudConfig.String())
+	if err != nil {
+		return "", microerror.Maskf(err, "compressing cloud-config")
+	}
+
+	// cloud-config is compressed so we fit the tight 65.5kB limit of ARM
+	// template parameter size.
+	customData := fmt.Sprintf(`#!/bin/bash
+D="/root/cloudinit"
+mkdir -m 700 -p ${D}
+echo -n "%s" | base64 -d | gzip -d -c > ${D}/cc
+coreos-cloudinit --from-file=${D}/cc`, compressed)
+
+	// TODO use base64() in ARM template
+	customData = base64.StdEncoding.EncodeToString([]byte(customData))
+	return customData, nil
+}
+
+func gzipBase64(s string) (string, error) {
+	buf := new(bytes.Buffer)
+
+	w, err := gzip.NewWriterLevel(buf, gzip.BestCompression)
+	if err != nil {
+		return "", microerror.Maskf(err, "creating gzip stream")
+	}
+	_, err = io.WriteString(w, s)
+	if err != nil {
+		return "", microerror.Maskf(err, "writing to gzip stream")
+	}
+	err = w.Close()
+	if err != nil {
+		return "", microerror.Maskf(err, "closing gzip stream")
+	}
+
+	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
 }
