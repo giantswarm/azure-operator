@@ -7,9 +7,6 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/viper"
-
-	"github.com/giantswarm/azure-operator/flag"
 )
 
 // Config represents the configuration used to create a cloudconfig service.
@@ -17,11 +14,6 @@ type Config struct {
 	// Dependencies.
 
 	Logger micrologger.Logger
-
-	// Settings.
-
-	Flag  *flag.Flag
-	Viper *viper.Viper
 }
 
 // DefaultConfig provides a default configuration to create a new cloudconfig service
@@ -30,10 +22,6 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 		Logger: nil,
-
-		// Settings.
-		Flag:  nil,
-		Viper: nil,
 	}
 }
 
@@ -48,14 +36,6 @@ func New(config Config) (*CloudConfig, error) {
 	// Dependencies.
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "logger must not be empty")
-	}
-
-	// Settings.
-	if config.Flag == nil {
-		return nil, microerror.Maskf(invalidConfigError, "flag must not be empty")
-	}
-	if config.Viper == nil {
-		return nil, microerror.Maskf(invalidConfigError, "viper must not be empty")
 	}
 
 	newService := &CloudConfig{

@@ -98,10 +98,8 @@ func New(config Config) (*Service, error) {
 	{
 		operatorConfig := operator.DefaultConfig()
 		operatorConfig.AzureConfig = azureConfig
-		operatorConfig.Flag = config.Flag
 		operatorConfig.K8sClient = k8sClient
-		operatorConfig.Logger = config.Logger
-		operatorConfig.Viper = config.Viper
+		operatorConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 
 		operatorService, err = operator.New(operatorConfig)
 		if err != nil {

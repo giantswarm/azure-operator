@@ -30,9 +30,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 	var cloudConfigService *cloudconfig.CloudConfig
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
-		cloudConfigConfig.Flag = config.Flag
 		cloudConfigConfig.Logger = config.Logger
-		cloudConfigConfig.Viper = config.Viper
 
 		cloudConfigService, err = cloudconfig.New(cloudConfigConfig)
 		if err != nil {
@@ -55,7 +53,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 	var deploymentResource framework.Resource
 	{
 		deploymentConfig := deployment.DefaultConfig()
-		deploymentConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
+		deploymentConfig.TemplateVersion = config.TemplateVersion
 		deploymentConfig.AzureConfig = config.AzureConfig
 		deploymentConfig.CertWatcher = certWatcher
 		deploymentConfig.CloudConfig = cloudConfigService
