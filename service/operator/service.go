@@ -6,11 +6,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
-	"github.com/spf13/viper"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/flag"
 )
 
 // Config represents the configuration used to create an Operator service.
@@ -24,8 +22,7 @@ type Config struct {
 
 	// Settings.
 
-	Flag  *flag.Flag
-	Viper *viper.Viper
+	TemplateVersion string
 }
 
 // DefaultConfig provides a default configuration to create a new operator
@@ -36,10 +33,6 @@ func DefaultConfig() Config {
 		AzureConfig: nil,
 		K8sClient:   nil,
 		Logger:      nil,
-
-		// Settings.
-		Flag:  nil,
-		Viper: nil,
 	}
 }
 
@@ -69,11 +62,8 @@ func New(config Config) (*Service, error) {
 	}
 
 	// Settings.
-	if config.Flag == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag must not be empty")
-	}
-	if config.Viper == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Viper must not be empty")
+	if config.TemplateVersion == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
 	}
 
 	operatorFramework, err := newFramework(config)

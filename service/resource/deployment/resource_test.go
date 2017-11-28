@@ -10,10 +10,8 @@ import (
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
-	"github.com/spf13/viper"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/cloudconfig"
 )
 
@@ -38,9 +36,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	var newResource *Resource
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
-		cloudConfigConfig.Flag = flag.New()
 		cloudConfigConfig.Logger = microloggertest.New()
-		cloudConfigConfig.Viper = viper.New()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
 		if err != nil {
@@ -170,9 +166,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 	var newResource *Resource
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
-		cloudConfigConfig.Flag = flag.New()
 		cloudConfigConfig.Logger = microloggertest.New()
-		cloudConfigConfig.Viper = viper.New()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
 		if err != nil {
