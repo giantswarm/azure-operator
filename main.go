@@ -70,7 +70,7 @@ func mainWithError() error {
 
 			newService, err = service.New(serviceConfig)
 			if err != nil {
-				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "service.New")))
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "service.New")))
 			}
 			go newService.Boot()
 		}
@@ -79,7 +79,7 @@ func mainWithError() error {
 		{
 			storage, err = memory.New(memory.DefaultConfig())
 			if err != nil {
-				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "memory.New")))
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "memory.New")))
 			}
 		}
 
@@ -91,7 +91,7 @@ func mainWithError() error {
 
 			transactionResponder, err = transaction.NewResponder(c)
 			if err != nil {
-				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "transaction.NewResponder")))
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "transaction.NewResponder")))
 			}
 		}
 
@@ -108,7 +108,7 @@ func mainWithError() error {
 
 			newServer, err = server.New(serverConfig)
 			if err != nil {
-				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "server.New")))
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "server.New")))
 			}
 		}
 
