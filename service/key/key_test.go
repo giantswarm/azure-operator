@@ -1,6 +1,7 @@
 package key
 
 import (
+	"fmt"
 	"testing"
 
 	"github.com/giantswarm/certificatetpr"
@@ -11,6 +12,19 @@ import (
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 )
+
+func Test_AzureCloudType(t *testing.T) {
+	customObject := azuretpr.CustomObject{
+		Spec: azuretpr.Spec{
+			Cluster: clustertpr.Spec{},
+		},
+	}
+
+	actualRes := AzureCloudType(customObject)
+	if actualRes != defaultAzureCloudType {
+		t.Fatalf("Expected cloud type %s but was %s", defaultAzureCloudType, actualRes)
+	}
+}
 
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
@@ -96,6 +110,63 @@ func Test_Location(t *testing.T) {
 
 	if Location(customObject) != expectedLocation {
 		t.Fatalf("Expected location %s but was %s", expectedLocation, Location(customObject))
+	}
+}
+
+func Test_Functions_for_AzureResourceKeys(t *testing.T) {
+	clusterID := "test-cluster"
+
+	testCases := []struct {
+		Func           func(azuretpr.CustomObject) string
+		ExpectedResult string
+	}{
+		{
+			Func:           MasterSecurityGroupName,
+			ExpectedResult: fmt.Sprintf("%s-%s", clusterID, masterSecurityGroupSuffix),
+		},
+		{
+			Func:           WorkerSecurityGroupName,
+			ExpectedResult: fmt.Sprintf("%s-%s", clusterID, workerSecurityGroupSuffix),
+		},
+		{
+			Func:           MasterSubnetName,
+			ExpectedResult: fmt.Sprintf("%s-%s-%s", clusterID, virtualNetworkSuffix, masterSubnetSuffix),
+		},
+		{
+			Func:           WorkerSubnetName,
+			ExpectedResult: fmt.Sprintf("%s-%s-%s", clusterID, virtualNetworkSuffix, workerSubnetSuffix),
+		},
+		{
+			Func:           RouteTableName,
+			ExpectedResult: fmt.Sprintf("%s-%s", clusterID, routeTableSuffix),
+		},
+		{
+			Func:           ResourceGroupName,
+			ExpectedResult: clusterID,
+		},
+		{
+			Func:           VnetName,
+			ExpectedResult: fmt.Sprintf("%s-%s", clusterID, virtualNetworkSuffix),
+		},
+	}
+
+	cluster := clustertpr.Spec{
+		Cluster: spec.Cluster{
+			ID: clusterID,
+		},
+	}
+
+	customObject := azuretpr.CustomObject{
+		Spec: azuretpr.Spec{
+			Cluster: cluster,
+		},
+	}
+
+	for _, tc := range testCases {
+		actualRes := tc.Func(customObject)
+		if actualRes != tc.ExpectedResult {
+			t.Fatalf("Expected %s but was %s", tc.ExpectedResult, actualRes)
+		}
 	}
 }
 

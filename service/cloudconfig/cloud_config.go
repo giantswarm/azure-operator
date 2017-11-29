@@ -17,8 +17,14 @@ func (me *MasterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	cloudProviderConf, err := me.masterCloudProviderConf()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	newFiles = []k8scloudconfig.FileAsset{
 		getSecretsScript,
+		cloudProviderConf,
 	}
 
 	return newFiles, nil
@@ -46,6 +52,53 @@ func (me *MasterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 // VerbatimSections allows sections to be embedded in the master cloudconfig.
 func (me *MasterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
+}
+
+// masterCloudProviderConf returns Kubernetes cloud provider config for Azure.
+func (me *MasterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, error) {
+	// Prepare template parameters.
+	params := struct {
+		AzureCloudType    string
+		Location          string
+		ResourceGroup     string
+		RouteTableName    string
+		SecurityGroupName string
+		SubnetName        string
+		SubscriptionID    string
+		TenantID          string
+		VnetName          string
+	}{
+		AzureCloudType:    key.AzureCloudType(me.CustomObject),
+		Location:          key.Location(me.CustomObject),
+		ResourceGroup:     key.ResourceGroupName(me.CustomObject),
+		RouteTableName:    key.RouteTableName(me.CustomObject),
+		SecurityGroupName: key.MasterSecurityGroupName(me.CustomObject),
+		SubnetName:        key.MasterSubnetName(me.CustomObject),
+		SubscriptionID:    "",
+		TenantID:          "",
+		VnetName:          key.VnetName(me.CustomObject),
+	}
+
+	// Prepare file metadata.
+	meta := k8scloudconfig.FileMetadata{
+		AssetContent: cloudProviderConfTemplate,
+		Path:         cloudProviderConfFileName,
+		Owner:        cloudProviderConfFileOwner,
+		Permissions:  cloudProviderConfFilePermission,
+	}
+
+	// Generate template.
+	content, err := k8scloudconfig.RenderAssetContent(meta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.FileAsset{
+		Metadata: meta,
+		Content:  content,
+	}
+
+	return asset, nil
 }
 
 // getMasterSecretsScript returns the script for downloading the master TLS
@@ -139,8 +192,14 @@ func (we *WorkerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	cloudProviderConf, err := we.workerCloudProviderConf()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	newFiles = []k8scloudconfig.FileAsset{
 		getSecretsScript,
+		cloudProviderConf,
 	}
 
 	return newFiles, nil
@@ -225,12 +284,59 @@ func (we *WorkerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, e
 	return getSecretsScript, nil
 }
 
+// workerCloudProviderConf returns Kubernetes cloud provider config for Azure.
+func (we *WorkerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, error) {
+	// Prepare template parameters.
+	params := struct {
+		AzureCloudType    string
+		Location          string
+		ResourceGroup     string
+		RouteTableName    string
+		SecurityGroupName string
+		SubnetName        string
+		SubscriptionID    string
+		TenantID          string
+		VnetName          string
+	}{
+		AzureCloudType:    key.AzureCloudType(we.CustomObject),
+		Location:          key.Location(we.CustomObject),
+		ResourceGroup:     key.ResourceGroupName(we.CustomObject),
+		RouteTableName:    key.RouteTableName(we.CustomObject),
+		SecurityGroupName: key.WorkerSecurityGroupName(we.CustomObject),
+		SubnetName:        key.WorkerSubnetName(we.CustomObject),
+		SubscriptionID:    "",
+		TenantID:          "",
+		VnetName:          key.VnetName(we.CustomObject),
+	}
+
+	// Prepare file metadata.
+	meta := k8scloudconfig.FileMetadata{
+		AssetContent: cloudProviderConfTemplate,
+		Path:         cloudProviderConfFileName,
+		Owner:        cloudProviderConfFileOwner,
+		Permissions:  cloudProviderConfFilePermission,
+	}
+
+	// Generate template.
+	content, err := k8scloudconfig.RenderAssetContent(meta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.FileAsset{
+		Metadata: meta,
+		Content:  content,
+	}
+
+	return asset, nil
+}
+
 func (c *CloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
 	secretsMeta := k8scloudconfig.FileMetadata{
 		AssetContent: getKeyVaultSecretsTemplate,
 		Path:         getKeyVaultSecretsFileName,
-		Owner:        fileOwner,
-		Permissions:  filePermission,
+		Owner:        keyVaultSecretsFileOwner,
+		Permissions:  keyVaultSecretsFilePermission,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(secretsMeta.AssetContent, secrets)
