@@ -199,7 +199,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Mask(err)
 	}
 
-	r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure deployments")
+	r.logger.LogCtx(ctx, "debug", "creating Azure deployments")
 
 	if len(deploymentsToCreate) != 0 {
 		resourceGroupName := key.ClusterID(customObject)
@@ -209,7 +209,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		}
 
 		for _, deploy := range deploymentsToCreate {
-			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating Azure deployments: creating %#q", deploy.Name))
+			r.logger.LogCtx(ctx, "debug", fmt.Sprintf("creating Azure deployments: creating %#q", deploy.Name))
 
 			deployment := azureresource.Deployment{
 				Properties: &azureresource.DeploymentProperties{
@@ -232,12 +232,12 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 				return microerror.Maskf(timeoutError, "creating Azure deployments: creating %#q", deploy.Name)
 			}
 
-			r.logger.Log("cluster", key.ClusterID(customObject), "debug", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))
+			r.logger.LogCtx(ctx, "debug", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))
 		}
 
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure deployments: created")
+		r.logger.LogCtx(ctx, "debug", "creating Azure deployments: created")
 	} else {
-		r.logger.Log("cluster", key.ClusterID(customObject), "debug", "creating Azure deployments: already created")
+		r.logger.LogCtx(ctx, "debug", "creating Azure deployments: already created")
 	}
 
 	return nil
