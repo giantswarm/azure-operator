@@ -23,18 +23,19 @@ func newFramework(config Config) (*framework.Framework, error) {
 		certConfig.Logger = config.Logger
 		certWatcher, err = certificatetpr.NewService(certConfig)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "certificatetpr.NewService")
 		}
 	}
 
-	var cloudConfigService *cloudconfig.CloudConfig
+	var cloudConfig *cloudconfig.CloudConfig
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.AzureConfig = config.AzureConfig
 		cloudConfigConfig.Logger = config.Logger
 
-		cloudConfigService, err = cloudconfig.New(cloudConfigConfig)
+		cloudConfig, err = cloudconfig.New(cloudConfigConfig)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "cloudconfig.New")
 		}
 	}
 
@@ -46,7 +47,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 
 		resourceGroupResource, err = resourcegroup.New(resourceGroupConfig)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "resourcegroup.New")
 		}
 	}
 
@@ -56,12 +57,12 @@ func newFramework(config Config) (*framework.Framework, error) {
 		deploymentConfig.TemplateVersion = config.TemplateVersion
 		deploymentConfig.AzureConfig = config.AzureConfig
 		deploymentConfig.CertWatcher = certWatcher
-		deploymentConfig.CloudConfig = cloudConfigService
+		deploymentConfig.CloudConfig = cloudConfig
 		deploymentConfig.Logger = config.Logger
 
 		deploymentResource, err = deployment.New(deploymentConfig)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "deployment.New")
 		}
 	}
 
@@ -78,7 +79,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 
 		newTPR, err = tpr.New(c)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "tpr.New")
 		}
 	}
 

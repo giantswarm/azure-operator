@@ -15,13 +15,13 @@ import (
 type Config struct {
 	// Dependencies.
 
-	AzureConfig *client.AzureConfig
-	Logger      micrologger.Logger
-	K8sClient   kubernetes.Interface
-	Resources   []framework.Resource
+	Logger    micrologger.Logger
+	K8sClient kubernetes.Interface
+	Resources []framework.Resource
 
 	// Settings.
 
+	AzureConfig     client.AzureConfig
 	TemplateVersion string
 }
 
@@ -30,9 +30,10 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		AzureConfig: nil,
-		K8sClient:   nil,
-		Logger:      nil,
+		K8sClient: nil,
+		Logger:    nil,
+		// Settings.
+		AzureConfig: client.DefaultAzureConfig(),
 	}
 }
 
@@ -51,8 +52,8 @@ type Service struct {
 // New creates a new configured Operator service.
 func New(config Config) (*Service, error) {
 	// Dependencies.
-	if config.AzureConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty")
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
@@ -68,7 +69,7 @@ func New(config Config) (*Service, error) {
 
 	operatorFramework, err := newFramework(config)
 	if err != nil {
-		return nil, microerror.Maskf(err, "creating operatorkit framework")
+		return nil, microerror.Maskf(err, "newFramework")
 	}
 
 	newService := &Service{

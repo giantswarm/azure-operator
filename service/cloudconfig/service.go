@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azuretpr"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
 	"github.com/giantswarm/microerror"
@@ -18,6 +19,11 @@ type Config struct {
 	// Dependencies.
 
 	Logger micrologger.Logger
+
+	// Settings.
+
+	// TODO(pk) remove as soon as we sort calico in Azure provider.
+	AzureConfig client.AzureConfig
 }
 
 // DefaultConfig provides a default configuration to create a new cloudconfig service
@@ -26,6 +32,9 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 		Logger: nil,
+
+		// Settings.
+		AzureConfig: client.DefaultAzureConfig(),
 	}
 }
 
@@ -33,18 +42,29 @@ func DefaultConfig() Config {
 type CloudConfig struct {
 	// Dependencies.
 	logger micrologger.Logger
+
+	// Settings.
+	azureConfig client.AzureConfig
 }
 
 // New creates a new configured cloudconfig service.
 func New(config Config) (*CloudConfig, error) {
 	// Dependencies.
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+	}
+
+	// Settings.
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
 
 	newService := &CloudConfig{
 		// Dependencies.
 		logger: config.Logger,
+
+		// Settings.
+		azureConfig: config.AzureConfig,
 	}
 
 	return newService, nil

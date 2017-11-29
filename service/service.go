@@ -69,9 +69,10 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
-	var azureConfig *client.AzureConfig
+	var azureConfig client.AzureConfig
 	{
 		azureConfig = client.DefaultAzureConfig()
+		azureConfig.Logger = config.Logger
 		azureConfig.ClientID = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
 		azureConfig.ClientSecret = config.Viper.GetString(config.Flag.Service.Azure.ClientSecret)
 		azureConfig.SubscriptionID = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
@@ -90,20 +91,21 @@ func New(config Config) (*Service, error) {
 
 		k8sClient, err = k8sclient.New(k8sConfig)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "k8sclient.New")
 		}
 	}
 
 	var operatorService *operator.Service
 	{
 		operatorConfig := operator.DefaultConfig()
+		operatorConfig.Logger = config.Logger
 		operatorConfig.AzureConfig = azureConfig
 		operatorConfig.K8sClient = k8sClient
 		operatorConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 
 		operatorService, err = operator.New(operatorConfig)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "operator.New")
 		}
 	}
 
@@ -117,7 +119,7 @@ func New(config Config) (*Service, error) {
 
 		versionService, err = version.New(versionConfig)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return nil, microerror.Maskf(err, "version.New")
 		}
 	}
 

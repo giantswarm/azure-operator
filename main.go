@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/microkit/command"
 	microserver "github.com/giantswarm/microkit/server"
 	"github.com/giantswarm/microkit/transaction"
@@ -38,7 +40,7 @@ func main() {
 		loggerConfig.IOWriter = os.Stdout
 		newLogger, err = micrologger.New(loggerConfig)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("%#v", microerror.Maskf(err, "micrologger.New")))
 		}
 	}
 
@@ -61,7 +63,7 @@ func main() {
 
 			newService, err = service.New(serviceConfig)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "service.New")))
 			}
 			go newService.Boot()
 		}
@@ -70,7 +72,7 @@ func main() {
 		{
 			storage, err = memory.New(memory.DefaultConfig())
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "memory.New")))
 			}
 		}
 
@@ -82,7 +84,7 @@ func main() {
 
 			transactionResponder, err = transaction.NewResponder(c)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "transaction.NewResponder")))
 			}
 		}
 
@@ -99,7 +101,7 @@ func main() {
 
 			newServer, err = server.New(serverConfig)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v", microerror.Maskf(err, "server.New")))
 			}
 		}
 
@@ -121,7 +123,7 @@ func main() {
 
 		newCommand, err = command.New(commandConfig)
 		if err != nil {
-			panic(err)
+			panic(fmt.Sprintf("%#v", microerror.Maskf(err, "command.New")))
 		}
 	}
 
