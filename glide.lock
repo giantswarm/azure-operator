@@ -1,12 +1,12 @@
-hash: 48f37e104da00a0e87351d46dfaa01f872f7a52c05668bbc5d6597b8eab85daf
-updated: 2017-11-27T13:58:14.738391019+01:00
+hash: 6a219820e4c55f5568ed2bebce6964fbc36005c71313692294fd3d5ce98fa8ca
+updated: 2017-11-29T11:59:36.269648+01:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 7692b0cef22674113fcf71cc17ac3ccc1a7fef48
   subpackages:
   - arm/resources/resources
 - name: github.com/Azure/go-autorest
-  version: c67b24a8e30d876542a85022ebbdecf0e5a935e8
+  version: cab8279ba5cd5e165c58201f798712f2ec0f49d6
   subpackages:
   - autorest
   - autorest/adal
@@ -19,7 +19,7 @@ imports:
   subpackages:
   - quantile
 - name: github.com/cenkalti/backoff
-  version: 61153c768f31ee5f130071d08fc82b85208528de
+  version: 309aa717adbf351e92864cbedf9cca0b769a4b5a
 - name: github.com/coreos/go-semver
   version: 8ab6407b697782a06568d4b7f1db25550ec2e4c6
   subpackages:
@@ -51,7 +51,6 @@ imports:
   - spec
   - spec/azure
   - spec/azure/node
-  - spec/azure/virtualnetwork
 - name: github.com/giantswarm/certificatetpr
   version: 9a7c674d13714bc7a5258453570bc8163a47b2cc
   subpackages:
@@ -69,7 +68,7 @@ imports:
   - spec/kubernetes/networksetup
   - spec/kubernetes/ssh
 - name: github.com/giantswarm/k8scloudconfig
-  version: 2bb8e6c55338a2cec47782e547f2710f63cd130a
+  version: 6321a5bb6e91675ac820f57f0508fd25f9d6f6bf
   subpackages:
   - v_0_1_0
 - name: github.com/giantswarm/microendpoint
@@ -107,9 +106,10 @@ imports:
   subpackages:
   - memory
 - name: github.com/giantswarm/operatorkit
-  version: d34c66fa4a7d6354b16bd9e141a342284eeb4065
+  version: a3a11e7cd38b119e98d4db12036cb210f363a130
   subpackages:
   - client/k8sclient
+  - client/k8scrdclient
   - framework
   - framework/context/canceledcontext
   - informer
@@ -280,6 +280,14 @@ imports:
   version: 3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4
 - name: gopkg.in/yaml.v2
   version: 53feefa2559fb8dfa8d81baad31be332c97d6c77
+- name: k8s.io/apiextensions-apiserver
+  version: fcd622fe88a4a6efcb5aea9e94ee87324ac1b036
+  subpackages:
+  - pkg/apis/apiextensions
+  - pkg/apis/apiextensions/v1beta1
+  - pkg/client/clientset/clientset
+  - pkg/client/clientset/clientset/scheme
+  - pkg/client/clientset/clientset/typed/apiextensions/v1beta1
 - name: k8s.io/apimachinery
   version: 8ab5f3d8a330c2e9baaf84e39042db8d49034ae2
   subpackages:
