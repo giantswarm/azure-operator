@@ -31,6 +31,13 @@ var (
 )
 
 func main() {
+	err := mainWithError()
+	if err != nil {
+		panic(fmt.Sprintf("%#v\n", err))
+	}
+}
+
+func mainWithError() error {
 	var err error
 
 	// Create a new logger which is used by all packages.
@@ -40,7 +47,7 @@ func main() {
 		loggerConfig.IOWriter = os.Stdout
 		newLogger, err = micrologger.New(loggerConfig)
 		if err != nil {
-			panic(fmt.Sprintf("%#v", microerror.Maskf(err, "micrologger.New")))
+			return microerror.Maskf(err, "micrologger.New")
 		}
 	}
 
@@ -123,7 +130,7 @@ func main() {
 
 		newCommand, err = command.New(commandConfig)
 		if err != nil {
-			panic(fmt.Sprintf("%#v", microerror.Maskf(err, "command.New")))
+			return microerror.Maskf(err, "command.New")
 		}
 	}
 
@@ -148,4 +155,6 @@ func main() {
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.KeyFile, "", "Key file path to use to authenticate with Kubernetes.")
 
 	newCommand.CobraCommand().Execute()
+
+	return nil
 }
