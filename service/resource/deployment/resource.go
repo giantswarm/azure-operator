@@ -28,13 +28,13 @@ const (
 type Config struct {
 	// Dependencies.
 
-	AzureConfig *client.AzureConfig
 	CertWatcher certificatetpr.Searcher
 	CloudConfig *cloudconfig.CloudConfig
 	Logger      micrologger.Logger
 
 	// Settings.
 
+	AzureConfig client.AzureConfig
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
 	TemplateVersion string
@@ -46,13 +46,12 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 
-		AzureConfig: nil,
 		CertWatcher: nil,
-		CloudConfig: nil,
 		Logger:      nil,
 
 		// Settings.
 
+		AzureConfig:     client.DefaultAzureConfig(),
 		TemplateVersion: "",
 	}
 }
@@ -60,21 +59,21 @@ func DefaultConfig() Config {
 type Resource struct {
 	// Dependencies.
 
-	azureConfig *client.AzureConfig
 	certWatcher certificatetpr.Searcher
 	cloudConfig *cloudconfig.CloudConfig
 	logger      micrologger.Logger
 
 	// Settings.
 
+	azureConfig     client.AzureConfig
 	templateVersion string
 }
 
 // New creates a new configured deploy resource.
 func New(config Config) (*Resource, error) {
 	// Dependencies.
-	if config.AzureConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty")
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
 	if config.CertWatcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.CertWatcher must not be empty")
@@ -90,17 +89,18 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
 	}
 
-	newService := &Resource{
-		azureConfig: config.AzureConfig,
+	r := &Resource{
+		// Dependencies.
 		certWatcher: config.CertWatcher,
 		cloudConfig: config.CloudConfig,
-		logger: config.Logger.With(
-			"resource", Name,
-		),
+		logger:      config.Logger.With("resource", Name),
+
+		// Settings.
+		azureConfig:     config.AzureConfig,
 		templateVersion: config.TemplateVersion,
 	}
 
-	return newService, nil
+	return r, nil
 }
 
 // GetCurrentState gets the current deployments for this cluster via the

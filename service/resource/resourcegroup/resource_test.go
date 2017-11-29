@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
 
-	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/client/fakeclient"
 )
 
 func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
@@ -75,7 +75,7 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	var newResource *Resource
 	{
 		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
 		if err != nil {
@@ -170,7 +170,7 @@ func Test_Resource_ResourceGroup_newCreateChange(t *testing.T) {
 	var newResource *Resource
 	{
 		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
 		if err != nil {
@@ -243,7 +243,7 @@ func Test_Resource_ResourceGroup_newDeleteChange(t *testing.T) {
 	var newResource *Resource
 	{
 		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
 		resourceConfig.Logger = microloggertest.New()
 		newResource, err = New(resourceConfig)
 		if err != nil {

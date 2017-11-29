@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
 
-	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/client/fakeclient"
 	"github.com/giantswarm/azure-operator/service/cloudconfig"
 )
 
@@ -36,6 +36,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	var newResource *Resource
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
 		cloudConfigConfig.Logger = microloggertest.New()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
@@ -44,7 +45,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		}
 
 		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
 		resourceConfig.CertWatcher = certificatetprtest.NewService()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
@@ -166,6 +167,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 	var newResource *Resource
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
 		cloudConfigConfig.Logger = microloggertest.New()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
@@ -174,7 +176,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		}
 
 		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = client.DefaultAzureConfig()
+		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
 		resourceConfig.CertWatcher = certificatetprtest.NewService()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()

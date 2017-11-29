@@ -1,8 +1,10 @@
 package main
 
 import (
+	"fmt"
 	"os"
 
+	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/microkit/command"
 	microserver "github.com/giantswarm/microkit/server"
 	"github.com/giantswarm/microkit/transaction"
@@ -29,6 +31,13 @@ var (
 )
 
 func main() {
+	err := mainWithError()
+	if err != nil {
+		panic(fmt.Sprintf("%#v\n", err))
+	}
+}
+
+func mainWithError() error {
 	var err error
 
 	// Create a new logger which is used by all packages.
@@ -38,7 +47,7 @@ func main() {
 		loggerConfig.IOWriter = os.Stdout
 		newLogger, err = micrologger.New(loggerConfig)
 		if err != nil {
-			panic(err)
+			return microerror.Maskf(err, "micrologger.New")
 		}
 	}
 
@@ -61,7 +70,7 @@ func main() {
 
 			newService, err = service.New(serviceConfig)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "service.New")))
 			}
 			go newService.Boot()
 		}
@@ -70,7 +79,7 @@ func main() {
 		{
 			storage, err = memory.New(memory.DefaultConfig())
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "memory.New")))
 			}
 		}
 
@@ -82,7 +91,7 @@ func main() {
 
 			transactionResponder, err = transaction.NewResponder(c)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "transaction.NewResponder")))
 			}
 		}
 
@@ -99,7 +108,7 @@ func main() {
 
 			newServer, err = server.New(serverConfig)
 			if err != nil {
-				panic(err)
+				panic(fmt.Sprintf("%#v\n", microerror.Maskf(err, "server.New")))
 			}
 		}
 
@@ -121,7 +130,7 @@ func main() {
 
 		newCommand, err = command.New(commandConfig)
 		if err != nil {
-			panic(err)
+			return microerror.Maskf(err, "command.New")
 		}
 	}
 
@@ -146,4 +155,6 @@ func main() {
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.KeyFile, "", "Key file path to use to authenticate with Kubernetes.")
 
 	newCommand.CobraCommand().Execute()
+
+	return nil
 }

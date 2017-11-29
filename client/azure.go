@@ -1,6 +1,7 @@
 package client
 
 import (
+	"errors"
 	"net/http"
 
 	"github.com/giantswarm/microerror"
@@ -30,21 +31,10 @@ type AzureConfig struct {
 
 // DefaultAzureConfig provides a default configuration to create an Azure client
 // by best effort.
-func DefaultAzureConfig() *AzureConfig {
-	var err error
-
-	var newLogger micrologger.Logger
-	{
-		config := micrologger.DefaultConfig()
-		newLogger, err = micrologger.New(config)
-		if err != nil {
-			panic(err)
-		}
-	}
-
-	return &AzureConfig{
+func DefaultAzureConfig() AzureConfig {
+	return AzureConfig{
 		// Dependencies.
-		Logger: newLogger,
+		Logger: nil,
 
 		// Settings.
 		ClientID:       "",
@@ -52,6 +42,29 @@ func DefaultAzureConfig() *AzureConfig {
 		SubscriptionID: "",
 		TenantID:       "",
 	}
+}
+
+func (c AzureConfig) Validate() error {
+	// Dependencies.
+	if c.Logger == nil {
+		return errors.New("Logger must not be empty")
+	}
+
+	// Settings.
+	if c.ClientID == "" {
+		return errors.New("ClientID must not be empty")
+	}
+	if c.ClientSecret == "" {
+		return errors.New("ClientSecret must not be empty")
+	}
+	if c.SubscriptionID == "" {
+		return errors.New("SubscriptionID must not be empty")
+	}
+	if c.TenantID == "" {
+		return errors.New("TenantID must not be empty")
+	}
+
+	return nil
 }
 
 // AzureClientSet is the collection of Azure API clients.
@@ -63,24 +76,9 @@ type AzureClientSet struct {
 }
 
 // NewAzureClientSet returns the Azure API clients.
-func NewAzureClientSet(config *AzureConfig) (*AzureClientSet, error) {
-	// Dependencies.
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
-	}
-
-	// Settings.
-	if config.ClientID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.ClientID must not be empty")
-	}
-	if config.ClientSecret == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.ClientSecret must not be empty")
-	}
-	if config.SubscriptionID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.SubscriptionID must not be empty")
-	}
-	if config.TenantID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.TenantID must not be empty")
+func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
+	if err := config.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.%s", err)
 	}
 
 	deploymentsClient, err := newDeploymentsClient(config)
@@ -111,7 +109,7 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 	return false
 }
 
-func newDeploymentsClient(config *AzureConfig) (*resources.DeploymentsClient, error) {
+func newDeploymentsClient(config AzureConfig) (*resources.DeploymentsClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -123,7 +121,7 @@ func newDeploymentsClient(config *AzureConfig) (*resources.DeploymentsClient, er
 	return &client, nil
 }
 
-func newGroupsClient(config *AzureConfig) (*resources.GroupsClient, error) {
+func newGroupsClient(config AzureConfig) (*resources.GroupsClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -135,7 +133,7 @@ func newGroupsClient(config *AzureConfig) (*resources.GroupsClient, error) {
 	return &client, nil
 }
 
-func newServicePrincipalToken(config *AzureConfig, scope string) (*adal.ServicePrincipalToken, error) {
+func newServicePrincipalToken(config AzureConfig, scope string) (*adal.ServicePrincipalToken, error) {
 	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
 		return nil, microerror.Mask(err)

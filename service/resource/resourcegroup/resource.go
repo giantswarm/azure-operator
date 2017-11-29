@@ -29,7 +29,7 @@ const (
 type Config struct {
 	// Dependencies.
 
-	AzureConfig *client.AzureConfig
+	AzureConfig client.AzureConfig
 	Logger      micrologger.Logger
 }
 
@@ -38,7 +38,7 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		AzureConfig: nil,
+		AzureConfig: client.DefaultAzureConfig(),
 		Logger:      nil,
 	}
 }
@@ -47,18 +47,18 @@ func DefaultConfig() Config {
 type Resource struct {
 	// Dependencies.
 
-	azureConfig *client.AzureConfig
+	azureConfig client.AzureConfig
 	logger      micrologger.Logger
 }
 
 // New creates a new configured resource group resource.
 func New(config Config) (*Resource, error) {
 	// Dependencies.
-	if config.AzureConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig must not be empty.")
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty.")
+		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 
 	newService := &Resource{
