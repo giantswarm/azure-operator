@@ -36,6 +36,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	var newResource *Resource
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
 		cloudConfigConfig.Logger = microloggertest.New()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
@@ -166,6 +167,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 	var newResource *Resource
 	{
 		cloudConfigConfig := cloudconfig.DefaultConfig()
+		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
 		cloudConfigConfig.Logger = microloggertest.New()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)

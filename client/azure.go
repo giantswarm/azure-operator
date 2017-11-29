@@ -78,7 +78,7 @@ type AzureClientSet struct {
 // NewAzureClientSet returns the Azure API clients.
 func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 	if err := config.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+		return nil, microerror.Maskf(invalidConfigError, "config.%s", err)
 	}
 
 	deploymentsClient, err := newDeploymentsClient(config)
