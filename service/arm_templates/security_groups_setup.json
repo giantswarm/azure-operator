@@ -90,7 +90,7 @@
             "properties": {
               "description": "Allow anyone to reach the kubernetes API.",
               "protocol": "tcp",
-              "sourcePortRange": "[string(parameters('kubernetesAPISecurePort'))]",
+              "sourcePortRange": "*",
               "destinationPortRange": "[string(parameters('kubernetesAPISecurePort'))]",
               "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
