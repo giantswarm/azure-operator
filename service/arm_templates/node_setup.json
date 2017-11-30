@@ -193,7 +193,7 @@
     },
     {
       "apiVersion": "2014-10-01-preview",
-      "name": "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'), '-Identity')]",
+      "name": "[concat(variables('vmName'), '-RoleAssignment')]",
       "type": "Microsoft.Authorization/roleAssignments",
       "properties": {
         "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
