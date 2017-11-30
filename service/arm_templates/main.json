@@ -104,6 +104,10 @@
       "type": "string",
       "defaultValue": "public_load_balancer_setup.json"
     },
+    "routeTableTemplateFile": {
+      "type": "string",
+      "defaultValue": "route_table_setup.json"
+    },
     "securityGroupsSetupTemplateFile": {
       "type": "string",
       "defaultValue": "security_groups_setup.json"
@@ -127,6 +131,7 @@
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
+    "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "masterPrefix": "Master",
@@ -171,8 +176,26 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "route_table_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('routeTableTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "virtual_network_setup",
       "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+          "route_table_setup"
+      ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
@@ -185,7 +208,8 @@
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
-          "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"}
+          "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
+          "routeTableID": {"value": "[reference('route_table_setup').outputs.id.value]"}
         }
       }
     },

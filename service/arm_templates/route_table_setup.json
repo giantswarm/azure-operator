@@ -1,0 +1,40 @@
+{
+  "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "clusterID": {
+      "type": "string"
+    },
+    "routeTablesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/routeTables resource."
+      }
+    }
+  },
+  "variables": {
+    "name": "[concat(parameters('clusterID'), '-RouteTable')]",
+    "id": "[resourceId('Microsoft.Network/routeTables', variables('name'))]"
+  },
+  "resources": [
+    {
+      "type": "Microsoft.Network/routeTables",
+      "name": "[variables('name')]",
+      "apiVersion": "[parameters('routeTablesAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "properties": {},
+      "dependsOn": []
+    }
+  ],
+  "outputs": {
+    "name": {
+      "type": "string",
+      "value": "[variables('name')]"
+    },
+    "id": {
+      "type": "string",
+      "value": "[variables('id')]"
+    }
+  }
+}

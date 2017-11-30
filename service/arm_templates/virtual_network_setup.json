@@ -26,6 +26,9 @@
     },
     "workerSecurityGroupID": {
       "type": "string"
+    },
+    "routeTableID": {
+      "type": "string"
     }
   },
   "variables": {
@@ -57,6 +60,9 @@
               "addressPrefix": "[parameters('masterSubnetCidr')]",
               "networkSecurityGroup": {
                 "id": "[parameters('masterSecurityGroupID')]"
+              },
+              "routeTable": {
+                "id": "[parameters('routeTableID')]"
               }
             }
           },
@@ -66,6 +72,9 @@
               "addressPrefix": "[parameters('workerSubnetCidr')]",
               "networkSecurityGroup": {
                 "id": "[parameters('workerSecurityGroupID')]"
+              },
+              "routeTable": {
+                "id": "[parameters('routeTableID')]"
               }
             }
           }
