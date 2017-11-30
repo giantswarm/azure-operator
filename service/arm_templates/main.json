@@ -176,8 +176,26 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "route_table_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('routeTableTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "virtual_network_setup",
       "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+          "route_table_setup"
+      ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
@@ -192,21 +210,6 @@
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
           "routeTableID": {"value": "[reference('route_table_setup').outputs.id.value]"}
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "route_table_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('routeTableTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"}
         }
       }
     },

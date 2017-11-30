@@ -28,6 +28,10 @@
     }
   ],
   "outputs": {
+    "name": {
+      "type": "string",
+      "value": "[variables('name')]"
+    },
     "id": {
       "type": "string",
       "value": "[variables('id')]"

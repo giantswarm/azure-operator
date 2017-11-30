@@ -47,9 +47,6 @@
       "name": "[variables('virtualNetworkName')]",
       "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
       "location": "[resourceGroup().location]",
-      "dependsOn": [
-        "[parameters('routeTableID')]"
-      ],
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
