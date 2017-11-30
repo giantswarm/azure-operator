@@ -74,8 +74,8 @@ func (me *MasterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, 
 		RouteTableName:    key.RouteTableName(me.CustomObject),
 		SecurityGroupName: key.MasterSecurityGroupName(me.CustomObject),
 		SubnetName:        key.MasterSubnetName(me.CustomObject),
-		SubscriptionID:    "",
-		TenantID:          "",
+		SubscriptionID:    me.AzureConfig.SubscriptionID,
+		TenantID:          me.AzureConfig.TenantID,
 		VnetName:          key.VnetName(me.CustomObject),
 	}
 
@@ -304,8 +304,8 @@ func (we *WorkerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, 
 		RouteTableName:    key.RouteTableName(we.CustomObject),
 		SecurityGroupName: key.WorkerSecurityGroupName(we.CustomObject),
 		SubnetName:        key.WorkerSubnetName(we.CustomObject),
-		SubscriptionID:    "",
-		TenantID:          "",
+		SubscriptionID:    we.AzureConfig.SubscriptionID,
+		TenantID:          we.AzureConfig.TenantID,
 		VnetName:          key.VnetName(we.CustomObject),
 	}
 
@@ -331,7 +331,7 @@ func (we *WorkerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, 
 	return asset, nil
 }
 
-func (c *CloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
+func (c *cloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
 	secretsMeta := k8scloudconfig.FileMetadata{
 		AssetContent: getKeyVaultSecretsTemplate,
 		Path:         getKeyVaultSecretsFileName,
@@ -352,7 +352,7 @@ func (c *CloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (
 	return downloadSecrets, nil
 }
 
-func (c *CloudConfigExtension) renderUnits(unitsMeta []k8scloudconfig.UnitMetadata) ([]k8scloudconfig.UnitAsset, error) {
+func (c *cloudConfigExtension) renderUnits(unitsMeta []k8scloudconfig.UnitMetadata) ([]k8scloudconfig.UnitAsset, error) {
 	units := make([]k8scloudconfig.UnitAsset, 0, len(unitsMeta))
 
 	for _, unitMeta := range unitsMeta {

@@ -1,6 +1,9 @@
 package cloudconfig
 
-import "github.com/giantswarm/azuretpr"
+import (
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azuretpr"
+)
 
 type keyVaultSecrets struct {
 	VaultName string
@@ -12,14 +15,15 @@ type keyVaultSecret struct {
 	FileName   string
 }
 
-type CloudConfigExtension struct {
+type cloudConfigExtension struct {
+	AzureConfig  client.AzureConfig
 	CustomObject azuretpr.CustomObject
 }
 
 type MasterExtension struct {
-	CloudConfigExtension
+	cloudConfigExtension
 }
 
 type WorkerExtension struct {
-	CloudConfigExtension
+	cloudConfigExtension
 }

@@ -76,7 +76,8 @@ func (c CloudConfig) NewMasterCloudConfig(customObject azuretpr.CustomObject) (s
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
 		Extension: &MasterExtension{
-			CloudConfigExtension{
+			cloudConfigExtension{
+				AzureConfig:  c.azureConfig,
 				CustomObject: customObject,
 			},
 		},
@@ -91,7 +92,8 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject azuretpr.CustomObject) (s
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
 		Extension: &WorkerExtension{
-			CloudConfigExtension{
+			cloudConfigExtension{
+				AzureConfig:  c.azureConfig,
 				CustomObject: customObject,
 			},
 		},
