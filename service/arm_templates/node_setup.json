@@ -23,6 +23,13 @@
         "description": "API version used by the Microsoft.Compute/virtualMachines/extensions resource."
       }
     },
+    "roleAssignmentsAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Authorization/roleAssignments resource."
+      }
+    },
     "clusterID": {
       "type": "string"
     },
@@ -71,6 +78,13 @@
     },
     "loadBalancerBackendPoolIDs": {
       "type": "array"
+    },
+    "contributorRoleDefinitionId": {
+      "type": "string",
+      "defaultValue": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "metadata": {
+        "description": "The ID of the contributor role."
+      }
     }
   },
   "variables": {
@@ -79,7 +93,8 @@
     "nicName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-NIC')]",
     "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
     "osDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk')]",
-    "dataDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-DataDisk')]"
+    "dataDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-DataDisk')]",
+    "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('contributorRoleDefinitionId'))]"
   },
   "resources": [
     {
@@ -192,12 +207,12 @@
       }
     },
     {
+      "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2014-10-01-preview",
       "name": "[concat(variables('vmName'), '-RoleAssignment')]",
-      "type": "Microsoft.Authorization/roleAssignments",
       "properties": {
-        "roleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', 'b24988ac-6180-42a0-ab88-20f7382dd24c')]",
-        "principalId": "[reference(concat('Microsoft.Compute/virtualMachines/', variables('vmName')), '2017-03-30', 'Full').identity.principalId]"
+        "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+        "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('vmName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
       }
     }
   ],
