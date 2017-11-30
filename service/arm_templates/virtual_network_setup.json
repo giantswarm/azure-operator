@@ -26,6 +26,9 @@
     },
     "workerSecurityGroupID": {
       "type": "string"
+    },
+    "routeTableID": {
+      "type": "string"
     }
   },
   "variables": {
@@ -44,6 +47,9 @@
       "name": "[variables('virtualNetworkName')]",
       "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
       "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[variables('routeTableID')]"
+      ],
       "properties": {
         "addressSpace": {
           "addressPrefixes": [
@@ -58,6 +64,9 @@
               "networkSecurityGroup": {
                 "id": "[parameters('masterSecurityGroupID')]"
               }
+            },
+            "routeTable": {
+              "id": "[parameters('routeTableID')]"
             }
           },
           {
@@ -67,6 +76,9 @@
               "networkSecurityGroup": {
                 "id": "[parameters('workerSecurityGroupID')]"
               }
+            },
+            "routeTable": {
+              "id": "[parameters('routeTableID')]"
             }
           }
         ]

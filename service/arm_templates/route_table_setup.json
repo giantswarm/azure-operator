@@ -14,7 +14,8 @@
     }
   },
   "variables": {
-    "name": "[concat(parameters('clusterID'), '-RouteTable')]"
+    "name": "[concat(parameters('clusterID'), '-RouteTable')]",
+    "id": "[resourceId('Microsoft.Network/routeTables', variables('name'))]"
   },
   "resources": [
     {
@@ -25,5 +26,11 @@
       "properties": {},
       "dependsOn": []
     }
-  ]
+  ],
+  "outputs": {
+    "id": {
+      "type": "string",
+      "value": "[variables('id')]"
+    }
+  }
 }
