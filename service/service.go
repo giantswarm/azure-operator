@@ -57,7 +57,7 @@ func New(config Config) (*Service, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
-	config.Logger.Log("debug", fmt.Sprintf("creating azure-operator with config: %#v", config))
+	config.Logger.Log("debug", fmt.Sprintf("creating azure-operator gitCommit:%s", config.GitCommit))
 
 	// Settings.
 	if config.Flag == nil {
