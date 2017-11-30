@@ -1,10 +1,28 @@
 package cloudconfig
 
 const (
-	fileOwner                  = "root:root"
-	filePermission             = 0700
-	getKeyVaultSecretsFileName = "/opt/bin/get-keyvault-secrets"
-	getKeyVaultSecretsTemplate = `#!/bin/bash -e
+	// Cloud provider config contants
+	cloudProviderConfFileOwner      = "root:root"
+	cloudProviderConfFilePermission = 0600
+	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
+	cloudProviderConfTemplate       = `
+cloud: {{ .AzureCloudType }}
+tenantId: {{ .TenantID }}
+subscriptionId: {{ .SubscriptionID }}
+resourceGroup: {{ .ResourceGroup }}
+location: {{ .Location }}
+subnetName: {{ .SubnetName }}
+securityGroupName: {{ .SecurityGroupName }}
+vnetName: {{ .VnetName }}
+routeTableName: {{ .RouteTableName }}
+useManagedIdentityExtension: true
+`
+
+	// Key Vault secrets constants
+	keyVaultSecretsFileOwner      = "root:root"
+	keyVaultSecretsFilePermission = 0700
+	getKeyVaultSecretsFileName    = "/opt/bin/get-keyvault-secrets"
+	getKeyVaultSecretsTemplate    = `#!/bin/bash -e
 
 until $(curl --fail --output /dev/null http://localhost:50342/oauth2/token --data "resource=https://vault.azure.net" -H Metadata:true); do
 	printf 'Waiting auth backend'
