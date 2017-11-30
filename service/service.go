@@ -51,18 +51,13 @@ func DefaultConfig() Config {
 	}
 }
 
-func (c Config) GoString() string {
-	return fmt.Sprintf("service.Config{Description:%q, GiCommit:%q, Name:%q, Source:%q, Viper:%v}",
-		c.Description, c.GitCommit, c.Name, c.Source, c.Viper.AllSettings())
-}
-
 // New creates a new configured service object.
 func New(config Config) (*Service, error) {
 	// Dependencies.
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
-	config.Logger.Log("debug", fmt.Sprintf("creating azure-operator with config: %#v", config))
+	config.Logger.Log("debug", fmt.Sprintf("creating azure-operator gitCommit:%s", config.GitCommit))
 
 	// Settings.
 	if config.Flag == nil {
