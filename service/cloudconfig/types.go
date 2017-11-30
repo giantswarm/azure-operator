@@ -20,10 +20,10 @@ type cloudConfigExtension struct {
 	CustomObject azuretpr.CustomObject
 }
 
-type MasterExtension struct {
+type masterExtension struct {
 	cloudConfigExtension
 }
 
-type WorkerExtension struct {
+type workerExtension struct {
 	cloudConfigExtension
 }
