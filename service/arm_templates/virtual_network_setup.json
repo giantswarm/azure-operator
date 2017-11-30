@@ -48,7 +48,7 @@
       "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
       "location": "[resourceGroup().location]",
       "dependsOn": [
-        "[variables('routeTableID')]"
+        "[parameters('routeTableID')]"
       ],
       "properties": {
         "addressSpace": {
