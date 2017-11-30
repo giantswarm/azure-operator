@@ -9,7 +9,7 @@ import (
 )
 
 // Files allows files to be injected into the master cloudconfig.
-func (me *MasterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
+func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	var newFiles []k8scloudconfig.FileAsset
 
 	getSecretsScript, err := me.getMasterSecretsScript()
@@ -31,7 +31,7 @@ func (me *MasterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 }
 
 // Units allows systemd units to be injected into the master cloudconfig.
-func (me *MasterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
+func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	unitsMeta := []k8scloudconfig.UnitMetadata{
 		{
 			AssetContent: getKeyVaultSecretsUnit,
@@ -50,12 +50,12 @@ func (me *MasterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 }
 
 // VerbatimSections allows sections to be embedded in the master cloudconfig.
-func (me *MasterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
+func (me *masterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
 }
 
 // masterCloudProviderConf returns Kubernetes cloud provider config for Azure.
-func (me *MasterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, error) {
+func (me *masterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, error) {
 	// Prepare template parameters.
 	params := struct {
 		AzureCloudType    string
@@ -74,8 +74,8 @@ func (me *MasterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, 
 		RouteTableName:    key.RouteTableName(me.CustomObject),
 		SecurityGroupName: key.MasterSecurityGroupName(me.CustomObject),
 		SubnetName:        key.MasterSubnetName(me.CustomObject),
-		SubscriptionID:    "",
-		TenantID:          "",
+		SubscriptionID:    me.AzureConfig.SubscriptionID,
+		TenantID:          me.AzureConfig.TenantID,
 		VnetName:          key.VnetName(me.CustomObject),
 	}
 
@@ -103,7 +103,7 @@ func (me *MasterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, 
 
 // getMasterSecretsScript returns the script for downloading the master TLS
 // certificates from Key Vault on startup.
-func (me *MasterExtension) getMasterSecretsScript() (k8scloudconfig.FileAsset, error) {
+func (me *masterExtension) getMasterSecretsScript() (k8scloudconfig.FileAsset, error) {
 	secrets := keyVaultSecrets{
 		VaultName: key.KeyVaultName(me.CustomObject),
 		Secrets: []keyVaultSecret{
@@ -184,7 +184,7 @@ func (me *MasterExtension) getMasterSecretsScript() (k8scloudconfig.FileAsset, e
 }
 
 // Files allows files to be injected into the worker cloudconfig.
-func (we *WorkerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
+func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	var newFiles []k8scloudconfig.FileAsset
 
 	getSecretsScript, err := we.getWorkerSecretsScript()
@@ -206,7 +206,7 @@ func (we *WorkerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 }
 
 // Units allows systemd units to be injected into the worker cloudconfig.
-func (we *WorkerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
+func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	unitsMeta := []k8scloudconfig.UnitMetadata{
 		{
 			AssetContent: getKeyVaultSecretsUnit,
@@ -225,13 +225,13 @@ func (we *WorkerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 }
 
 // VerbatimSections allows sections to be embedded in the worker cloudconfig.
-func (we *WorkerExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
+func (we *workerExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
 }
 
 // getWorkerSecretsScript returns the script for downloading the worker TLS
 // certificates from Key Vault on startup.
-func (we *WorkerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, error) {
+func (we *workerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, error) {
 	secrets := keyVaultSecrets{
 		VaultName: key.KeyVaultName(we.CustomObject),
 		Secrets: []keyVaultSecret{
@@ -285,7 +285,7 @@ func (we *WorkerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, e
 }
 
 // workerCloudProviderConf returns Kubernetes cloud provider config for Azure.
-func (we *WorkerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, error) {
+func (we *workerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, error) {
 	// Prepare template parameters.
 	params := struct {
 		AzureCloudType    string
@@ -304,8 +304,8 @@ func (we *WorkerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, 
 		RouteTableName:    key.RouteTableName(we.CustomObject),
 		SecurityGroupName: key.WorkerSecurityGroupName(we.CustomObject),
 		SubnetName:        key.WorkerSubnetName(we.CustomObject),
-		SubscriptionID:    "",
-		TenantID:          "",
+		SubscriptionID:    we.AzureConfig.SubscriptionID,
+		TenantID:          we.AzureConfig.TenantID,
 		VnetName:          key.VnetName(we.CustomObject),
 	}
 
@@ -331,7 +331,7 @@ func (we *WorkerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, 
 	return asset, nil
 }
 
-func (c *CloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
+func (c *cloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
 	secretsMeta := k8scloudconfig.FileMetadata{
 		AssetContent: getKeyVaultSecretsTemplate,
 		Path:         getKeyVaultSecretsFileName,
@@ -352,7 +352,7 @@ func (c *CloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (
 	return downloadSecrets, nil
 }
 
-func (c *CloudConfigExtension) renderUnits(unitsMeta []k8scloudconfig.UnitMetadata) ([]k8scloudconfig.UnitAsset, error) {
+func (c *cloudConfigExtension) renderUnits(unitsMeta []k8scloudconfig.UnitMetadata) ([]k8scloudconfig.UnitAsset, error) {
 	units := make([]k8scloudconfig.UnitAsset, 0, len(unitsMeta))
 
 	for _, unitMeta := range unitsMeta {

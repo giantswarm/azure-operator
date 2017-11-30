@@ -5,8 +5,7 @@ const (
 	cloudProviderConfFileOwner      = "root:root"
 	cloudProviderConfFilePermission = 0600
 	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
-	cloudProviderConfTemplate       = `
-cloud: {{ .AzureCloudType }}
+	cloudProviderConfTemplate       = `cloud: {{ .AzureCloudType }}
 tenantId: {{ .TenantID }}
 subscriptionId: {{ .SubscriptionID }}
 resourceGroup: {{ .ResourceGroup }}
