@@ -79,6 +79,9 @@
     "loadBalancerBackendPoolIDs": {
       "type": "array"
     },
+    "assignContributorRole": {
+      "type": "bool"
+    },
     "contributorRoleDefinitionId": {
       "type": "string",
       "defaultValue": "b24988ac-6180-42a0-ab88-20f7382dd24c",
@@ -210,6 +213,10 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2014-10-01-preview",
       "name": "[concat(variables('vmName'), '-RoleAssignment')]",
+      "condition": "[and(parameters('assignContributorRole'), bool('true'))]",
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+      ],
       "properties": {
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
         "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('vmName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
