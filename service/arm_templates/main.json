@@ -175,7 +175,6 @@
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
           "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
           "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"}
-
         }
       }
     },
