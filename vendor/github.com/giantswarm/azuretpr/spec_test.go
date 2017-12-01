@@ -161,6 +161,9 @@ func TestSpecYamlEncoding(t *testing.T) {
 				MasterSubnetCIDR: "10.0.1.0/24",
 				WorkerSubnetCIDR: "10.0.2.0/24",
 			},
+			HostCluster: azure.HostCluster{
+				CIDR: "10.1.0.0/16",
+			},
 			DNSZones: azure.DNSZones{
 				API:     "azure.giantswarm.io",
 				Etcd:    "azure.giantswarm.io",
