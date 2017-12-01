@@ -29,6 +29,9 @@
     "workerSubnetCidr": {
       "type": "string"
     },
+    "hostClusterCidr": {
+      "type": "string"
+    },
     "kubernetesAPISecurePort": {
       "type": "int"
     },
@@ -168,9 +171,11 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
+          "hostClusterCidr": {"value": "[parameters('hostClusterCidr')]"},
           "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
           "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
           "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"}
+
         }
       }
     },
