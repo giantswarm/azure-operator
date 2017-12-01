@@ -97,6 +97,7 @@
     "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
     "osDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk')]",
     "dataDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-DataDisk')]",
+    "roleAssignmentName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-RoleAssignment')]",
     "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('contributorRoleDefinitionId'))]"
   },
   "resources": [
@@ -212,7 +213,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2014-10-01-preview",
-      "name": "[concat(variables('vmName'), '-RoleAssignment')]",
+      "name": "[variables('roleAssignmentName')]",
       "condition": "[and(parameters('assignContributorRole'), bool('true'))]",
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
