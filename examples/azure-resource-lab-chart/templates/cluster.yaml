@@ -109,6 +109,8 @@ spec:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
       workerSubnetCidr: "10.0.2.0/24"
+    hostCluster:
+      cidr: "10.1.0.0/16"
     dnsZones:
       api:     "{{.Values.commonDomain}}"
       etcd:    "{{.Values.commonDomain}}"
