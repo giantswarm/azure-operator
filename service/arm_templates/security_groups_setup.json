@@ -18,6 +18,9 @@
     "workerSubnetCidr": {
       "type": "string"
     },
+    "hostClusterCidr": {
+      "type": "string"
+    },
     "kubernetesAPISecurePort": {
       "type": "int"
     },
@@ -83,6 +86,20 @@
               "access": "Allow",
               "direction": "Inbound",
               "priority": "4094"
+            }
+          },
+          {
+            "name": "sshHostClusterToMasterSubnetRule",
+            "properties": {
+              "description": "Allow the host cluster machines to reach this guest cluster master subnet.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "[parameters('hostClusterCidr')]",
+              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "4093"
             }
           },
           {
@@ -163,6 +180,20 @@
               "access": "Allow",
               "direction": "Inbound",
               "priority": "4094"
+            }
+          },
+          {
+            "name": "sshHostClusterToWorkerSubnetRule",
+            "properties": {
+              "description": "Allow the host cluster machines to reach this guest cluster worker subnet.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "22",
+              "sourceAddressPrefix": "[parameters('hostClusterCidr')]",
+              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "4093"
             }
           },
           {
