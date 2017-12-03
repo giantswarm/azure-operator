@@ -351,8 +351,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[parameters('dnsZones').etcd]" },
-          "prefix": { "value": "[concat('etcd.', parameters('clusterID'))]" },
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').etcd)]" },
+          "prefix": { "value": "etcd" },
           "ipAddress": { "value": "[reference('master_nodes_setup_1').outputs.ipAddress.value]" }
         }
       }
@@ -368,8 +368,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[parameters('dnsZones').api]" },
-          "prefix": { "value": "[concat('api.', parameters('clusterID'))]" },
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').api)]" },
+          "prefix": { "value": "api" },
           "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.ipAddress.value]" }
         }
       }
@@ -385,8 +385,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
-          "prefix": { "value": "[concat('ingress.', parameters('clusterID'))]" },
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress)]" },
+          "prefix": { "value": "ingress" },
           "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.ipAddress.value]" }
         }
       }
@@ -402,9 +402,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[parameters('dnsZones').ingress]" },
-          "prefix": { "value": "[concat('*.', parameters('clusterID'))]" },
-          "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.', parameters('dnsZones').ingress)]" }
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress)]" },
+          "prefix": { "value": "*" },
+          "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress)]" }
         }
       }
     },
