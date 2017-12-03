@@ -13,7 +13,7 @@ import:
 - package: github.com/giantswarm/microendpoint
   version: master
 - package: github.com/giantswarm/k8scloudconfig
-  version: master
+  version: azure-operator
 - package: github.com/giantswarm/certificatetpr
   version: master
 - package: github.com/Azure/azure-sdk-for-go

@@ -10,10 +10,8 @@ cluster:
     id: BooYa
   docker:
     daemon:
+      cidr: "1.2.3.4/32"
       extraArgs: --log-opt max-file=1
-    imageNamespace: giantswarm
-    registry:
-      endpoint: http://giantswarm.io
   etcd:
     altNames: ""
     domain: etcd.giantswarm.io
@@ -53,8 +51,9 @@ cluster:
       docker:
         image: quay.io/giantswarm/k8s-setup-network-environment
     ssh:
-      publicKeys:
-      - ssh-rsa AAAAB3NzaC1yc
+      userList:
+      - name: "george"
+        publicKey: "ssh-rsa AAAAB3"
   masters:
   - id: fyz88
   vault:
@@ -63,6 +62,7 @@ cluster:
   workers:
   - id: axx99
   - id: cdd88
+  version: v1.0.0
 azure:
   keyVault:
     name: abc12-vault
@@ -96,6 +96,12 @@ azure:
   hostCluster:
     cidr: "10.1.0.0/16"
   dnsZones:
-    api:     "azure.giantswarm.io"
-    etcd:    "azure.giantswarm.io"
-    ingress: "azure.giantswarm.io"
+    api:
+      resourceGroup: "ukulele"
+      name: "azure.giantswarm.io"
+    etcd:
+      resourceGroup: "ukulele"
+      name: "azure.giantswarm.io"
+    ingress:
+      resourceGroup: "ukulele"
+      name: "azure.giantswarm.io"
