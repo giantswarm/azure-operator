@@ -210,7 +210,7 @@
     {
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2014-10-01-preview",
-      "name": "[variables('roleAssignmentName')]",
+      "name": "[guid(variables('roleAssignmentName'))]",
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
       ],
