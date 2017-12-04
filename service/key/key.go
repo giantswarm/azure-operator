@@ -33,6 +33,11 @@ func ClusterID(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Cluster.Cluster.ID
 }
 
+// HostClusterResourceGroupName returns name of the resource group for the host cluster.
+func HostClusterResourceGroupName(customObject azuretpr.CustomObject) string {
+	return customObject.Spec.Azure.HostCluster.ResourceGroup
+}
+
 // KeyVaultName returns the Azure Key Vault name for this cluster.
 func KeyVaultName(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Azure.KeyVault.Name
@@ -61,6 +66,22 @@ func WorkerSubnetName(customObject azuretpr.CustomObject) string {
 // Location returns the physical location where the Resource Group is deployed.
 func Location(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Azure.Location
+}
+
+func RelativeDNSAPIRecord(customObject azuretpr.CustomObject) string {
+	return fmt.Sprintf("api.%s.k8s", ClusterID(customObject))
+}
+
+func RelativeDNSEtcdRecord(customObject azuretpr.CustomObject) string {
+	return fmt.Sprintf("etcd.%s.k8s", ClusterID(customObject))
+}
+
+func RelativeDNSIngressRecord(customObject azuretpr.CustomObject) string {
+	return fmt.Sprintf("ingress.%s.k8s", ClusterID(customObject))
+}
+
+func RelativeDNSIngressWildcardRecord(customObject azuretpr.CustomObject) string {
+	return fmt.Sprintf("*.%s.k8s", ClusterID(customObject))
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.

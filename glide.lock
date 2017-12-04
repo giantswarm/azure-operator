@@ -1,12 +1,13 @@
-hash: f7d483b4727b64b43ecd59c99024490bddf06fa689b9a1414af23353165bb2cd
-updated: 2017-12-03T19:39:29.565689336+01:00
+hash: 1fd397de1cef3b69e8a22b258c1e2559163d013a957a388e167938243c727246
+updated: 2017-12-05T14:56:27.25329+01:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 7692b0cef22674113fcf71cc17ac3ccc1a7fef48
   subpackages:
+  - arm/dns
   - arm/resources/resources
 - name: github.com/Azure/go-autorest
-  version: a91c94d19d5efcb398b3aab64b8766e724aa7442
+  version: 56ebe15856e16ff09b1fde4e8336dee659327f60
   subpackages:
   - autorest
   - autorest/adal
@@ -46,13 +47,13 @@ imports:
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/giantswarm/azuretpr
-  version: e91526dd467f3f897476bc0cf73dd064ecc11f7c
+  version: 14e8f8ee6e0e260bf9b8ce36994a848d7c4392eb
   subpackages:
   - spec
   - spec/azure
   - spec/azure/node
 - name: github.com/giantswarm/certificatetpr
-  version: 9a7c674d13714bc7a5258453570bc8163a47b2cc
+  version: 04eb2f7e6433cb9d706eb5fbd2de4f0f986e57f5
   subpackages:
   - certificatetprtest
   - spec
@@ -226,7 +227,7 @@ imports:
 - name: github.com/spf13/cast
   version: acbeb36b902d72a7a4c18e8f3241075e7ab763e4
 - name: github.com/spf13/cobra
-  version: 86783686cade7a5ea7f5306d461d91841c7a6b3d
+  version: de2d9c4eca8f3c1de17d48b096b6504e0296f003
 - name: github.com/spf13/jwalterweatherman
   version: 12bd96e66386c1960ab0f74ced1362f66f552f7b
 - name: github.com/spf13/pflag
@@ -260,7 +261,7 @@ imports:
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 75cc3cad82b5f47d3fb229ddda8c5167da14f294
+  version: 57961680700a5336d15015c8c50686ca5ba362a4
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:

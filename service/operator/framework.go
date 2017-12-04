@@ -3,6 +3,7 @@ package operator
 import (
 	"github.com/giantswarm/azure-operator/service/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/resource/deployment"
+	"github.com/giantswarm/azure-operator/service/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/certificatetpr"
@@ -39,30 +40,42 @@ func newFramework(config Config) (*framework.Framework, error) {
 		}
 	}
 
-	var resourceGroupResource framework.Resource
+	var resourceGroupResource *resourcegroup.Resource
 	{
-		resourceGroupConfig := resourcegroup.DefaultConfig()
-		resourceGroupConfig.AzureConfig = config.AzureConfig
-		resourceGroupConfig.Logger = config.Logger
+		c := resourcegroup.DefaultConfig()
+		c.AzureConfig = config.AzureConfig
+		c.Logger = config.Logger
 
-		resourceGroupResource, err = resourcegroup.New(resourceGroupConfig)
+		resourceGroupResource, err = resourcegroup.New(c)
 		if err != nil {
 			return nil, microerror.Maskf(err, "resourcegroup.New")
 		}
 	}
 
-	var deploymentResource framework.Resource
+	var deploymentResource *deployment.Resource
 	{
-		deploymentConfig := deployment.DefaultConfig()
-		deploymentConfig.TemplateVersion = config.TemplateVersion
-		deploymentConfig.AzureConfig = config.AzureConfig
-		deploymentConfig.CertWatcher = certWatcher
-		deploymentConfig.CloudConfig = cloudConfig
-		deploymentConfig.Logger = config.Logger
+		c := deployment.DefaultConfig()
+		c.TemplateVersion = config.TemplateVersion
+		c.AzureConfig = config.AzureConfig
+		c.CertWatcher = certWatcher
+		c.CloudConfig = cloudConfig
+		c.Logger = config.Logger
 
-		deploymentResource, err = deployment.New(deploymentConfig)
+		deploymentResource, err = deployment.New(c)
 		if err != nil {
 			return nil, microerror.Maskf(err, "deployment.New")
+		}
+	}
+
+	var dnsrecordResource *dnsrecord.Resource
+	{
+		c := dnsrecord.DefaultConfig()
+		c.AzureConfig = config.AzureConfig
+		c.Logger = config.Logger
+
+		dnsrecordResource, err = dnsrecord.New(c)
+		if err != nil {
+			return nil, microerror.Maskf(err, "dnsrecord.New")
 		}
 	}
 
@@ -111,6 +124,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 		resources := []framework.Resource{
 			resourceGroupResource,
 			deploymentResource,
+			dnsrecordResource,
 		}
 
 		c := framework.DefaultConfig()
