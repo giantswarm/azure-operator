@@ -237,7 +237,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.1_coreos.0"
+      Environment="IMAGE=gcr.io/google-containers/hyperkube:v1.9.0-beta.0"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
@@ -266,6 +266,8 @@ coreos:
       -v /usr/sbin/mkfs.xfs:/usr/sbin/mkfs.xfs \
       -v /usr/lib64/libxfs.so.0:/usr/lib/libxfs.so.0 \
       -v /usr/lib64/libxcmd.so.0:/usr/lib/libxcmd.so.0 \
+      {{- if eq .Cluster.Kubernetes.CloudProvider "azure" }}
+      -v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro \{{ end }}
       -e ETCD_CA_CERT_FILE=/etc/kubernetes/ssl/etcd/client-ca.pem \
       -e ETCD_CERT_FILE=/etc/kubernetes/ssl/etcd/client-crt.pem \
       -e ETCD_KEY_FILE=/etc/kubernetes/ssl/etcd/client-key.pem \
@@ -281,6 +283,8 @@ coreos:
       --machine-id-file=/rootfs/etc/machine-id \
       --cadvisor-port=4194 \
       --cloud-provider={{.Cluster.Kubernetes.CloudProvider}} \
+      {{- if eq .Cluster.Kubernetes.CloudProvider "azure" }}
+      --cloud-config=/etc/kubernetes/config/azure.yaml \{{ end }}
       --healthz-bind-address=${DEFAULT_IPV4} \
       --healthz-port=10248 \
       --cluster-dns={{.Cluster.Kubernetes.DNS.IP}} \

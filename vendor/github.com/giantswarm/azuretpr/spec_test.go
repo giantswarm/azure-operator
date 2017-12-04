@@ -13,6 +13,7 @@ import (
 	clustertprkubernetesingress "github.com/giantswarm/clustertpr/spec/kubernetes/ingress"
 	clustertprkuberneteskubectl "github.com/giantswarm/clustertpr/spec/kubernetes/kubectl"
 	clustertprkubernetesnetworksetup "github.com/giantswarm/clustertpr/spec/kubernetes/networksetup"
+	clustertprkubernetesssh "github.com/giantswarm/clustertpr/spec/kubernetes/ssh"
 	"github.com/kylelemons/godebug/pretty"
 	"github.com/stretchr/testify/require"
 	yaml "gopkg.in/yaml.v2"
@@ -39,11 +40,8 @@ func TestSpecYamlEncoding(t *testing.T) {
 			},
 			Docker: clustertprspec.Docker{
 				Daemon: clustertprdocker.Daemon{
+					CIDR:      "1.2.3.4/32",
 					ExtraArgs: "--log-opt max-file=1",
-				},
-				ImageNamespace: "giantswarm",
-				Registry: clustertprdocker.Registry{
-					Endpoint: "http://giantswarm.io",
 				},
 			},
 			Etcd: clustertprspec.Etcd{
@@ -97,8 +95,11 @@ func TestSpecYamlEncoding(t *testing.T) {
 					},
 				},
 				SSH: clustertprkubernetes.SSH{
-					PublicKeys: []string{
-						"ssh-rsa AAAAB3NzaC1yc",
+					UserList: []clustertprkubernetesssh.User{
+						{
+							Name:      "george",
+							PublicKey: "ssh-rsa AAAAB3",
+						},
 					},
 				},
 			},
@@ -119,6 +120,7 @@ func TestSpecYamlEncoding(t *testing.T) {
 					ID: "cdd88",
 				},
 			},
+			Version: "v1.0.0",
 		},
 		Azure: spec.Azure{
 			KeyVault: azure.KeyVault{
@@ -165,9 +167,18 @@ func TestSpecYamlEncoding(t *testing.T) {
 				CIDR: "10.1.0.0/16",
 			},
 			DNSZones: azure.DNSZones{
-				API:     "azure.giantswarm.io",
-				Etcd:    "azure.giantswarm.io",
-				Ingress: "azure.giantswarm.io",
+				API: azure.DNSZone{
+					ResourceGroup: "ukulele",
+					Name:          "azure.giantswarm.io",
+				},
+				Etcd: azure.DNSZone{
+					ResourceGroup: "ukulele",
+					Name:          "azure.giantswarm.io",
+				},
+				Ingress: azure.DNSZone{
+					ResourceGroup: "ukulele",
+					Name:          "azure.giantswarm.io",
+				},
 			},
 		},
 	}
