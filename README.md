@@ -33,10 +33,11 @@ If you have a service proivder you want to reuse add the azure-operator role:
 az role assignment create --assignee 4f4e6e7b-9d1f-4754-8b86-03cd7a59d873 --role azure-operator
 ```
 
-Otherwise create a service provider (replace SUBSCRIPTION_ID):
+Otherwise create a service provider with the azure-operator role (replace
+ROLE_NAME and SUBSCRIPTION_ID):
 
 ```bash
-az ad sp create-for-rbac -n pawel-sp --role="azure-operator" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
+az ad sp create-for-rbac -n ${ROLE_NAME} --role="azure-operator" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
 ```
 
 Follow [this guide][examples-local].
