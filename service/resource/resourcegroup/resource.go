@@ -21,7 +21,7 @@ const (
 
 	clusterIDTag  = "ClusterID"
 	customerIDTag = "CustomerID"
-	deleteTimeout = 5 * time.Minute
+	deleteTimeout = 30 * time.Minute
 	managedBy     = "azure-operator"
 )
 
