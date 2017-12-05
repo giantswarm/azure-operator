@@ -3,7 +3,6 @@ package dnsrecord
 import (
 	"context"
 	"fmt"
-	"time"
 
 	"github.com/Azure/azure-sdk-for-go/arm/dns"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -19,11 +18,6 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "resourcegroup"
-
-	clusterIDTag  = "ClusterID"
-	customerIDTag = "CustomerID"
-	deleteTimeout = 5 * time.Minute
-	managedBy     = "azure-operator"
 )
 
 // Config is the resource group Resource configuration.
