@@ -22,7 +22,7 @@ const (
 	// Name is the identifier of the resource.
 	Name = "deployment"
 
-	createTimeout = 5 * time.Minute
+	createTimeout = 30 * time.Minute
 )
 
 type Config struct {
