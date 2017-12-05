@@ -245,14 +245,17 @@ func (r *Resource) applyDeleteChange(ctx context.Context, obj azuretpr.CustomObj
 	}
 
 	for _, record := range change {
+		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting host cluster DNS record=%#v", record))
+
 		_, err := recordSetsClient.Delete(key.HostClusterResourceGroupName(obj), record.Zone, record.RelativeName, dns.NS, "")
 		if err != nil {
 			return microerror.Maskf(err, fmt.Sprintf("deleting host cluster DNS record=%#v", record))
 		}
 
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting host cluster DNS record=%#v", record))
+		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting host cluster DNS record=%#v: deleted", record))
 	}
 
+	r.logger.LogCtx(ctx, "debug", "deleting host cluster DNS records: deleted")
 	return nil
 }
 
