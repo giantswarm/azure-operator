@@ -33,6 +33,76 @@ func ClusterID(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Cluster.Cluster.ID
 }
 
+// DNSRecordPrefixAPI returns DNS A record relative name for API.
+func DNSRecordPrefixAPI(customObject azuretpr.CustomObject) string {
+	return "api"
+}
+
+// DNSRecordPrefixEtcd returns DNS A record relative name for etcd.
+func DNSRecordPrefixEtcd(customObject azuretpr.CustomObject) string {
+	return "etcd"
+}
+
+// DNSRecordPrefixIngress returns DNS A record relative name for ingress.
+func DNSRecordPrefixIngress(customObject azuretpr.CustomObject) string {
+	return "ingress"
+}
+
+// DNSRecordPrefixIngressWildcard returns DNS CNAME record relative name for
+// ingress wildcard domain.
+func DNSRecordPrefixIngressWildcard(customObject azuretpr.CustomObject) string {
+	return "*"
+}
+
+// DNSZoneAPI returns api parent DNS zone domain name.
+func DNSZoneAPI(customObject azuretpr.CustomObject) string {
+	return customObject.Spec.Azure.DNSZones.API
+}
+
+// DNSZoneEtcd returns etcd parent DNS zone domain name.
+// zone should be created in.
+func DNSZoneEtcd(customObject azuretpr.CustomObject) string {
+	return customObject.Spec.Azure.DNSZones.Etcd
+}
+
+// DNSZoneIngress returns ingress parent DNS zone domain name.
+func DNSZoneIngress(customObject azuretpr.CustomObject) string {
+	return customObject.Spec.Azure.DNSZones.Ingress
+}
+
+// DNSZonePrefixAPI returns relative name of the api DNS zone.
+func DNSZonePrefixAPI(customObject azuretpr.CustomObject) string {
+	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
+}
+
+// DNSZonePrefixEtcd returns relative name of the etcd DNS zone.
+func DNSZonePrefixEtcd(customObject azuretpr.CustomObject) string {
+	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
+}
+
+// DNSZonePrefixIngress returns relative name of the ingress DNS zone.
+func DNSZonePrefixIngress(customObject azuretpr.CustomObject) string {
+	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
+}
+
+// DNSZoneResourceGroupAPI returns resource group name of the API
+// parent DNS zone.
+func DNSZoneResourceGroupAPI(customObject azuretpr.CustomObject) string {
+	return HostClusterResourceGroupName(customObject)
+}
+
+// DNSZoneResourceGroupEtcd returns resource group name of the etcd
+// parent DNS zone.
+func DNSZoneResourceGroupEtcd(customObject azuretpr.CustomObject) string {
+	return HostClusterResourceGroupName(customObject)
+}
+
+// DNSZoneResourceGroupIngress returns resource group name of the ingress
+// parent DNS zone.
+func DNSZoneResourceGroupIngress(customObject azuretpr.CustomObject) string {
+	return HostClusterResourceGroupName(customObject)
+}
+
 // HostClusterResourceGroupName returns name of the resource group for the host cluster.
 func HostClusterResourceGroupName(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Azure.HostCluster.ResourceGroup
@@ -66,22 +136,6 @@ func WorkerSubnetName(customObject azuretpr.CustomObject) string {
 // Location returns the physical location where the Resource Group is deployed.
 func Location(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Azure.Location
-}
-
-func RelativeDNSAPIRecord(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("api.%s.k8s", ClusterID(customObject))
-}
-
-func RelativeDNSEtcdRecord(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("etcd.%s.k8s", ClusterID(customObject))
-}
-
-func RelativeDNSIngressRecord(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("ingress.%s.k8s", ClusterID(customObject))
-}
-
-func RelativeDNSIngressWildcardRecord(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("*.%s.k8s", ClusterID(customObject))
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.

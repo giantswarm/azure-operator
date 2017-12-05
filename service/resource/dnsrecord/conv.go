@@ -19,14 +19,14 @@ func toCustomObject(v interface{}) (azuretpr.CustomObject, error) {
 	return customObject, nil
 }
 
-func toDNSRecords(v interface{}) (DNSRecords, error) {
+func toDNSRecords(v interface{}) (dnsRecords, error) {
 	if v == nil {
-		return DNSRecords{}, nil
+		return dnsRecords{}, nil
 	}
 
-	r, ok := v.(DNSRecords)
+	r, ok := v.(dnsRecords)
 	if !ok {
-		return DNSRecords{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", r, v)
+		return dnsRecords{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", r, v)
 	}
 
 	return r, nil

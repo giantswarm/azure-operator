@@ -7,17 +7,22 @@ import (
 	"github.com/giantswarm/azuretpr"
 )
 
-// TODO unexport
-type NSRecord struct {
+type nsRecord struct {
+	// RelativeName is the newly created DNS zone name relative to the
+	// parent zone.
 	RelativeName string
-	Zone         string
-	NameServers  []string
+	// Zone is a parent DNS zone name in which NS record is created.
+	Zone string
+	// ZoneRG is the parent DNS zone resource group name.
+	ZoneRG string
+	// NameServers are entires for the NS record to be created in the
+	// parent DNS zone.
+	NameServers []string
 }
 
-// TODO unexport
-type DNSRecords []NSRecord
+type dnsRecords []nsRecord
 
-func (rs DNSRecords) Contains(r NSRecord) bool {
+func (rs dnsRecords) Contains(r nsRecord) bool {
 	for _, e := range rs {
 		if reflect.DeepEqual(r, e) {
 			return true
@@ -27,26 +32,29 @@ func (rs DNSRecords) Contains(r NSRecord) bool {
 }
 
 // newPartialDNSRecords creates DNSRecords without NameServers filled.
-func newPartialDNSRecords(obj azuretpr.CustomObject) DNSRecords {
-	all := DNSRecords{
+func newPartialDNSRecords(obj azuretpr.CustomObject) dnsRecords {
+	all := dnsRecords{
 		// api.
 		{
-			RelativeName: key.RelativeDNSAPIRecord(obj),
-			Zone:         obj.Spec.Azure.DNSZones.API,
+			RelativeName: key.DNSZonePrefixAPI(obj),
+			Zone:         key.DNSZoneAPI(obj),
+			ZoneRG:       key.DNSZoneResourceGroupAPI(obj),
 		},
 		// etcd.
 		{
-			RelativeName: key.RelativeDNSEtcdRecord(obj),
-			Zone:         obj.Spec.Azure.DNSZones.Etcd,
+			RelativeName: key.DNSZonePrefixEtcd(obj),
+			Zone:         key.DNSZoneEtcd(obj),
+			ZoneRG:       key.DNSZoneResourceGroupEtcd(obj),
 		},
 		// ingress.
 		{
-			RelativeName: key.RelativeDNSIngressRecord(obj),
-			Zone:         obj.Spec.Azure.DNSZones.Ingress,
+			RelativeName: key.DNSZonePrefixIngress(obj),
+			Zone:         key.DNSZoneIngress(obj),
+			ZoneRG:       key.DNSZoneResourceGroupIngress(obj),
 		},
 	}
 
-	var unique DNSRecords
+	var unique dnsRecords
 	for _, r := range all {
 		if !unique.Contains(r) {
 			unique = append(unique, r)

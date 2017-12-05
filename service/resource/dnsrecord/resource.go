@@ -80,7 +80,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	return r.getCurrentState(ctx, o)
 }
 
-func (r *Resource) getCurrentState(ctx context.Context, obj azuretpr.CustomObject) (DNSRecords, error) {
+func (r *Resource) getCurrentState(ctx context.Context, obj azuretpr.CustomObject) (dnsRecords, error) {
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
 		return nil, microerror.Maskf(err, "retrieving current state")
@@ -88,12 +88,12 @@ func (r *Resource) getCurrentState(ctx context.Context, obj azuretpr.CustomObjec
 
 	current := newPartialDNSRecords(obj)
 
-	for i, _ := range current {
-		resp, err := recordSetsClient.Get(key.ResourceGroupName(obj), current[i].Zone, current[i].RelativeName, dns.NS)
+	for i, record := range current {
+		resp, err := recordSetsClient.Get(record.ZoneRG, record.Zone, record.RelativeName, dns.NS)
 		if client.ResponseWasNotFound(resp.Response) {
 			continue
 		} else if err != nil {
-			return nil, microerror.Maskf(err, "getting record sets of zone %#v", current[i])
+			return nil, microerror.Maskf(err, "retrieving current state: getting record=%#v", record)
 		}
 
 		var nameServers []string
@@ -111,27 +111,27 @@ func (r *Resource) getCurrentState(ctx context.Context, obj azuretpr.CustomObjec
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
 	o, err := toCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "computing desired state")
 	}
 
 	return r.getDesiredState(ctx, o)
 }
 
-func (r *Resource) getDesiredState(ctx context.Context, obj azuretpr.CustomObject) (DNSRecords, error) {
+func (r *Resource) getDesiredState(ctx context.Context, obj azuretpr.CustomObject) (dnsRecords, error) {
 	zonesClient, err := r.getDNSZonesClient()
 	if err != nil {
-		return nil, microerror.Maskf(err, "computing desired state")
+		return nil, microerror.Maskf(err, "GetDesiredState")
 	}
 
 	desired := newPartialDNSRecords(obj)
 
-	for i, _ := range desired {
-		zone := desired[i].RelativeName + "." + desired[i].Zone
+	for i, record := range desired {
+		zone := record.RelativeName + "." + record.Zone
 		resp, err := zonesClient.Get(key.ResourceGroupName(obj), zone)
 		if client.ResponseWasNotFound(resp.Response) {
-			return nil, microerror.Maskf(err, "computing desired state: expected to find zone: %q", zone)
+			return nil, microerror.Maskf(err, "GetDesiredState: expected to find zone=%q", zone)
 		} else if err != nil {
-			return nil, microerror.Maskf(err, "computing desired state: getting zone %q", zone)
+			return nil, microerror.Maskf(err, "GetDesiredState: getting zone=%q", zone)
 		}
 
 		var nameServers []string
@@ -168,7 +168,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Maskf(err, "NewUpdatePatch")
 	}
 
-	patch.SetCreateChange(updateChange)
+	patch.SetUpdateChange(updateChange)
 	return patch, nil
 }
 
@@ -219,7 +219,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, change interface{
 	return r.applyCreateChange(ctx, o, c)
 }
 
-func (r *Resource) applyCreateChange(ctx context.Context, obj azuretpr.CustomObject, change DNSRecords) error {
+func (r *Resource) applyCreateChange(ctx context.Context, obj azuretpr.CustomObject, change dnsRecords) error {
 	return nil
 }
 
@@ -237,26 +237,26 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 	return r.ApplyDeleteChange(ctx, o, c)
 }
 
-func (r *Resource) applyDeleteChange(ctx context.Context, obj azuretpr.CustomObject, change DNSRecords) error {
-	r.logger.LogCtx(ctx, "debug", "deleting DNS records in host cluster")
+func (r *Resource) applyDeleteChange(ctx context.Context, obj azuretpr.CustomObject, change dnsRecords) error {
+	r.logger.LogCtx(ctx, "debug", "deleting host cluster DNS records")
 
 	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "debug", "deleting Azure resource group: already deleted")
+		r.logger.LogCtx(ctx, "debug", "deleting host cluster DNS records: already deleted")
 		return nil
 	}
 
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
-		return microerror.Maskf(err, "deleting DNS records in host clusters")
+		return microerror.Maskf(err, "deleting host cluster DNS records")
 	}
 
 	for _, record := range change {
 		_, err := recordSetsClient.Delete(key.HostClusterResourceGroupName(obj), record.Zone, record.RelativeName, dns.NS, "")
 		if err != nil {
-			return microerror.Maskf(err, fmt.Sprintf("deleting DNS NS record=%#v", record))
+			return microerror.Maskf(err, fmt.Sprintf("deleting host cluster DNS record=%#v", record))
 		}
 
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting DNS NS record=%#v", record))
+		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting host cluster DNS record=%#v", record))
 	}
 
 	return nil
@@ -276,16 +276,16 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 	return r.applyUpdateChange(ctx, o, c)
 }
 
-func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObject, change DNSRecords) error {
-	r.logger.LogCtx(ctx, "debug", "ensuring DNS NS records for zones")
+func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObject, change dnsRecords) error {
+	r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records")
 
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
-		return microerror.Maskf(err, "deleting DNS NS records")
+		return microerror.Maskf(err, "ensuring host cluster DNS records")
 	}
 
 	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "debug", "deleting DNS NS records: already deleted")
+		r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records: already ensured")
 	}
 
 	for _, record := range change {
@@ -295,15 +295,18 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObj
 			for _, ns := range record.NameServers {
 				nameServers = append(nameServers, dns.NsRecord{Nsdname: to.StringPtr(ns)})
 			}
-			params.NsRecords = &nameServers
+			params.RecordSetProperties = &dns.RecordSetProperties{
+				TTL:       to.Int64Ptr(300),
+				NsRecords: &nameServers,
+			}
 		}
 
 		_, err := recordSetsClient.CreateOrUpdate(key.HostClusterResourceGroupName(obj), record.Zone, record.RelativeName, dns.NS, params, "", "")
 		if err != nil {
-			return microerror.Maskf(err, fmt.Sprintf("deleting DNS NS record=%#v", record))
+			return microerror.Maskf(err, fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
 		}
 
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting DNS NS record=%#v: updated", record))
+		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("ensuring host cluster DNS records=%#v: ensured", record))
 	}
 
 	return nil
@@ -332,8 +335,8 @@ func (r *Resource) getDNSZonesClient() (*dns.ZonesClient, error) {
 	return azureClients.DNSZonesClient, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState DNSRecords) (DNSRecords, error) {
-	var change DNSRecords
+func (r *Resource) newUpdateChange(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (dnsRecords, error) {
+	var change dnsRecords
 	for _, d := range desiredState {
 		if !currentState.Contains(d) {
 			change = append(change, d)
@@ -343,6 +346,6 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj azuretpr.CustomObjec
 	return change, nil
 }
 
-func (r *Resource) newDeleteChange(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState DNSRecords) (DNSRecords, error) {
+func (r *Resource) newDeleteChange(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (dnsRecords, error) {
 	return currentState, nil
 }
