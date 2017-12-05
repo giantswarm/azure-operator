@@ -262,12 +262,12 @@ func (r *Resource) applyDeleteChange(ctx context.Context, obj azuretpr.CustomObj
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{}) error {
 	o, err := toCustomObject(obj)
 	if err != nil {
-		return microerror.Maskf(err, "ensuring DNS NS records for zones")
+		return microerror.Maskf(err, "ensuring host cluster DNS records")
 	}
 
 	c, err := toDNSRecords(change)
 	if err != nil {
-		return microerror.Maskf(err, "ensuring DNS NS records for zones")
+		return microerror.Maskf(err, "ensuring host cluster DNS records")
 	}
 
 	return r.applyUpdateChange(ctx, o, c)
@@ -283,6 +283,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObj
 
 	if len(change) == 0 {
 		r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records: already ensured")
+		return nil
 	}
 
 	for _, record := range change {

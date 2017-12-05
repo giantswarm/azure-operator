@@ -33,27 +33,6 @@ func ClusterID(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Cluster.Cluster.ID
 }
 
-// DNSRecordPrefixAPI returns DNS A record relative name for API.
-func DNSRecordPrefixAPI(customObject azuretpr.CustomObject) string {
-	return "api"
-}
-
-// DNSRecordPrefixEtcd returns DNS A record relative name for etcd.
-func DNSRecordPrefixEtcd(customObject azuretpr.CustomObject) string {
-	return "etcd"
-}
-
-// DNSRecordPrefixIngress returns DNS A record relative name for ingress.
-func DNSRecordPrefixIngress(customObject azuretpr.CustomObject) string {
-	return "ingress"
-}
-
-// DNSRecordPrefixIngressWildcard returns DNS CNAME record relative name for
-// ingress wildcard domain.
-func DNSRecordPrefixIngressWildcard(customObject azuretpr.CustomObject) string {
-	return "*"
-}
-
 // DNSZoneAPI returns api parent DNS zone domain name.
 func DNSZoneAPI(customObject azuretpr.CustomObject) string {
 	return customObject.Spec.Azure.DNSZones.API
