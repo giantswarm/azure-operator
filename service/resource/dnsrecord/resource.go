@@ -129,7 +129,7 @@ func (r *Resource) getDesiredState(ctx context.Context, obj azuretpr.CustomObjec
 		zone := record.RelativeName + "." + record.Zone
 		resp, err := zonesClient.Get(key.ResourceGroupName(obj), zone)
 		if client.ResponseWasNotFound(resp.Response) {
-			return nil, microerror.Maskf(err, "GetDesiredState: expected to find zone=%q", zone)
+			return dnsRecords{}, nil
 		} else if err != nil {
 			return nil, microerror.Maskf(err, "GetDesiredState: getting zone=%q", zone)
 		}
@@ -234,7 +234,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 		return microerror.Maskf(err, "creating DNS records in host cluster")
 	}
 
-	return r.ApplyDeleteChange(ctx, o, c)
+	return r.applyDeleteChange(ctx, o, c)
 }
 
 func (r *Resource) applyDeleteChange(ctx context.Context, obj azuretpr.CustomObject, change dnsRecords) error {
@@ -289,6 +289,8 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObj
 	}
 
 	for _, record := range change {
+		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
+
 		var params dns.RecordSet
 		{
 			var nameServers []dns.NsRecord
@@ -306,9 +308,10 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObj
 			return microerror.Maskf(err, fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
 		}
 
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("ensuring host cluster DNS records=%#v: ensured", record))
+		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record))
 	}
 
+	r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records: ensured")
 	return nil
 }
 
