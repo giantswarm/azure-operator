@@ -11,7 +11,7 @@ import (
 
 // GetDesiredState returns the desired resource group for this cluster.
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	o, err := toCustomObject(obj)
+	o, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Maskf(err, "GetDesiredState")
 	}

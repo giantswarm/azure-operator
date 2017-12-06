@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/certificatetpr"
+	"github.com/giantswarm/microerror"
 )
 
 const (
@@ -131,6 +132,20 @@ func RouteTableName(customObject azuretpr.CustomObject) string {
 // asset.
 func SecretName(clusterComponent certificatetpr.ClusterComponent, assetType certificatetpr.TLSAssetType) string {
 	return fmt.Sprintf("%s-%s", clusterComponent, assetType)
+}
+
+func ToCustomObject(v interface{}) (azuretpr.CustomObject, error) {
+	if v == nil {
+		return azuretpr.CustomObject{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &azuretpr.CustomObject{}, v)
+	}
+
+	customObjectPointer, ok := v.(*azuretpr.CustomObject)
+	if !ok {
+		return azuretpr.CustomObject{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &azuretpr.CustomObject{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
 }
 
 // VnetName returns name of the virtual network.

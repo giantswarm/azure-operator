@@ -13,7 +13,7 @@ import (
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{}) error {
-	o, err := toCustomObject(obj)
+	o, err := key.ToCustomObject(obj)
 	if err != nil {
 		return microerror.Maskf(err, "ensuring host cluster DNS records")
 	}
@@ -69,7 +69,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObj
 // NewUpdatePatch returns the patch creating resource group for this cluster if
 // it is needed.
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
-	o, err := toCustomObject(obj)
+	o, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Maskf(err, "NewUpdatePatch")
 	}
