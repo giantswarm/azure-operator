@@ -64,13 +64,6 @@ cluster:
   - id: cdd88
   version: v1.0.0
 azure:
-  hostCluster:
-    cidr: "10.1.0.0/16"
-    resourceGroup: "ukulele"
-  dnsZones:
-    api: "azure.giantswarm.io"
-    etcd: "azure.giantswarm.io"
-    ingress: "azure.giantswarm.io"
   keyVault:
     name: abc12-vault
   location: westeurope
@@ -100,3 +93,15 @@ azure:
     cidr: "10.0.0.0/16"
     masterSubnetCidr: "10.0.1.0/24"
     workerSubnetCidr: "10.0.2.0/24"
+  hostCluster:
+    cidr: "10.1.0.0/16"
+  dnsZones:
+    api:
+      resourceGroup: "ukulele"
+      name: "azure.giantswarm.io"
+    etcd:
+      resourceGroup: "ukulele"
+      name: "azure.giantswarm.io"
+    ingress:
+      resourceGroup: "ukulele"
+      name: "azure.giantswarm.io"

@@ -1,7 +1,7 @@
 package: github.com/giantswarm/azure-operator
 import:
 - package: github.com/giantswarm/azuretpr
-  version: resource-group
+  version: master
 - package: github.com/giantswarm/operatorkit
   version: master
 - package: github.com/giantswarm/microerror

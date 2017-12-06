@@ -54,7 +54,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObj
 			}
 		}
 
-		_, err := recordSetsClient.CreateOrUpdate(key.HostClusterResourceGroupName(obj), record.Zone, record.RelativeName, dns.NS, params, "", "")
+		_, err := recordSetsClient.CreateOrUpdate(record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
 		if err != nil {
 			return microerror.Maskf(err, fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
 		}

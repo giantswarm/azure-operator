@@ -36,18 +36,18 @@ func ClusterID(customObject azuretpr.CustomObject) string {
 
 // DNSZoneAPI returns api parent DNS zone domain name.
 func DNSZoneAPI(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Azure.DNSZones.API
+	return customObject.Spec.Azure.DNSZones.API.Name
 }
 
 // DNSZoneEtcd returns etcd parent DNS zone domain name.
 // zone should be created in.
 func DNSZoneEtcd(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Azure.DNSZones.Etcd
+	return customObject.Spec.Azure.DNSZones.Etcd.Name
 }
 
 // DNSZoneIngress returns ingress parent DNS zone domain name.
 func DNSZoneIngress(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Azure.DNSZones.Ingress
+	return customObject.Spec.Azure.DNSZones.Ingress.Name
 }
 
 // DNSZonePrefixAPI returns relative name of the api DNS zone.
@@ -68,24 +68,19 @@ func DNSZonePrefixIngress(customObject azuretpr.CustomObject) string {
 // DNSZoneResourceGroupAPI returns resource group name of the API
 // parent DNS zone.
 func DNSZoneResourceGroupAPI(customObject azuretpr.CustomObject) string {
-	return HostClusterResourceGroupName(customObject)
+	return customObject.Spec.Azure.DNSZones.API.ResourceGroup
 }
 
 // DNSZoneResourceGroupEtcd returns resource group name of the etcd
 // parent DNS zone.
 func DNSZoneResourceGroupEtcd(customObject azuretpr.CustomObject) string {
-	return HostClusterResourceGroupName(customObject)
+	return customObject.Spec.Azure.DNSZones.Etcd.ResourceGroup
 }
 
 // DNSZoneResourceGroupIngress returns resource group name of the ingress
 // parent DNS zone.
 func DNSZoneResourceGroupIngress(customObject azuretpr.CustomObject) string {
-	return HostClusterResourceGroupName(customObject)
-}
-
-// HostClusterResourceGroupName returns name of the resource group for the host cluster.
-func HostClusterResourceGroupName(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Azure.HostCluster.ResourceGroup
+	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
 }
 
 // KeyVaultName returns the Azure Key Vault name for this cluster.

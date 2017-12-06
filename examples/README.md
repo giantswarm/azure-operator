@@ -30,6 +30,7 @@ helm \
 helm install -n cert-resource-lab ./cert-operator/examples/cert-resource-lab-chart/ \
   --set clusterName=my-cluster \
   --set commonDomain=my-common-domain
+  --set commaonDomainResourceGroup=resource-group-name
 ```
 
 - Note: `clusterName` and `commonDomain` chart values must match the values used

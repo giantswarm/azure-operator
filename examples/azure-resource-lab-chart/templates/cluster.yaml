@@ -112,6 +112,12 @@ spec:
     hostCluster:
       cidr: "10.1.0.0/16"
     dnsZones:
-      api:     "{{.Values.commonDomain}}"
-      etcd:    "{{.Values.commonDomain}}"
-      ingress: "{{.Values.commonDomain}}"
+      api:
+        name: "{{.Values.commonDomain}}"
+        resourceGroup: "{{.Values.commonDomainResourceGroup}}"
+      etcd:
+        name: "{{.Values.commonDomain}}"
+        resourceGroup: "{{.Values.commonDomainResourceGroup}}"
+      ingress:
+        name: "{{.Values.commonDomain}}"
+        resourceGroup: "{{.Values.commonDomainResourceGroup}}"
