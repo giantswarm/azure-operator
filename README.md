@@ -21,7 +21,27 @@ go build github.com/giantswarm/azure-operator
 
 ## Running azure-operator
 
-See [this guide][examples-local].
+Create an azure-operator role (replace SUBSCRIPTION_ID):
+
+```bash
+az role definition create --role-definition '{"Name":"azure-operator","Description":"Role for github.com/giantswarm/azure-operator","Actions":["*"],"NotActions":["Microsoft.Authorization/elevateAccess/Action"],"AssignableScopes":["/subscriptions/${SUBSCRIPTION_ID}"]}'
+```
+
+If you have a service proivder you want to reuse add the azure-operator role
+(replace CLIENT_ID):
+
+```bash
+az role assignment create --assignee ${CLIENT_ID} --role azure-operator
+```
+
+Otherwise create a service provider with the azure-operator role (replace
+SUBSCRIPTION_ID):
+
+```bash
+az ad sp create-for-rbac -n azure-operator-sp --role="azure-operator" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
+```
+
+Follow [this guide][examples-local].
 
 [examples-local]: https://github.com/giantswarm/azure-operator/blob/master/examples/local
 
