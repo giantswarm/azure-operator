@@ -82,9 +82,13 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Maskf(err, "NewUpdatePatch")
 	}
 
+	return r.newUpdatePatch(ctx, o, c, d)
+}
+
+func (r *Resource) newUpdatePatch(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (*framework.Patch, error) {
 	patch := framework.NewPatch()
 
-	updateChange, err := r.newUpdateChange(ctx, o, c, d)
+	updateChange, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Maskf(err, "NewUpdatePatch")
 	}

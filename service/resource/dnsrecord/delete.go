@@ -69,9 +69,13 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Maskf(err, "NewDeletePatch")
 	}
 
+	return r.newDeletePatch(ctx, o, c, d)
+}
+
+func (r *Resource) newDeletePatch(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (*framework.Patch, error) {
 	patch := framework.NewPatch()
 
-	deleteChange, err := r.newDeleteChange(ctx, o, c, d)
+	deleteChange, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Maskf(err, "NewDeletePatch")
 	}
