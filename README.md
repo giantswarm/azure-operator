@@ -27,17 +27,18 @@ Create an azure-operator role (replace SUBSCRIPTION_ID):
 az role definition create --role-definition '{"Name":"azure-operator","Description":"Role for github.com/giantswarm/azure-operator","Actions":["*"],"NotActions":["Microsoft.Authorization/elevateAccess/Action"],"AssignableScopes":["/subscriptions/${SUBSCRIPTION_ID}"]}'
 ```
 
-If you have a service proivder you want to reuse add the azure-operator role:
+If you have a service proivder you want to reuse add the azure-operator role
+(replace CLIENT_ID):
 
 ```bash
-az role assignment create --assignee 4f4e6e7b-9d1f-4754-8b86-03cd7a59d873 --role azure-operator
+az role assignment create --assignee ${CLIENT_ID} --role azure-operator
 ```
 
 Otherwise create a service provider with the azure-operator role (replace
-ROLE_NAME and SUBSCRIPTION_ID):
+SUBSCRIPTION_ID):
 
 ```bash
-az ad sp create-for-rbac -n ${ROLE_NAME} --role="azure-operator" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
+az ad sp create-for-rbac -n azure-operator-sp --role="azure-operator" --scopes="/subscriptions/${SUBSCRIPTION_ID}"
 ```
 
 Follow [this guide][examples-local].
