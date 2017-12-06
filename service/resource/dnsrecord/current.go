@@ -12,7 +12,7 @@ import (
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
 	o, err := toCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Mask(err, "GetCurrentState")
 	}
 
 	return r.getCurrentState(ctx, o)
@@ -21,7 +21,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 func (r *Resource) getCurrentState(ctx context.Context, obj azuretpr.CustomObject) (dnsRecords, error) {
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
-		return nil, microerror.Maskf(err, "retrieving current state")
+		return nil, microerror.Maskf(err, "GetCurrentState")
 	}
 
 	current := newPartialDNSRecords(obj)
@@ -31,7 +31,7 @@ func (r *Resource) getCurrentState(ctx context.Context, obj azuretpr.CustomObjec
 		if client.ResponseWasNotFound(resp.Response) {
 			continue
 		} else if err != nil {
-			return nil, microerror.Maskf(err, "retrieving current state: getting record=%#v", record)
+			return nil, microerror.Maskf(err, "GetCurrentState: getting record=%#v", record)
 		}
 
 		var nameServers []string

@@ -13,7 +13,7 @@ import (
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
 	o, err := toCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Maskf(err, "computing desired state")
+		return nil, microerror.Maskf(err, "GetDesiredState")
 	}
 
 	return r.getDesiredState(ctx, o)
