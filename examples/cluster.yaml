@@ -97,6 +97,12 @@ spec:
     hostCluster:
       cidr: "10.1.0.0/16"
     dnsZones:
-      api:     "azure.gigantic.io"
-      etcd:    "azure.gigantic.io"
-      ingress: "azure.gigantic.io"
+      api:
+        name: "gollum.azure.gigantic.io"
+        resourceGroup: "gollum" 
+      etcd:
+        name: "azure.gigantic.io"
+        resourceGroup: "gollum" 
+      ingress:
+        name: "azure.gigantic.io"
+        resourceGroup: "gollum" 

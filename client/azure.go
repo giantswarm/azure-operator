@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
+	"github.com/Azure/azure-sdk-for-go/arm/dns"
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
@@ -73,6 +74,10 @@ type AzureClientSet struct {
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
 	GroupsClient *resources.GroupsClient
+	// DNSRecordSetsClient manages DNS zones' records.
+	DNSRecordSetsClient *dns.RecordSetsClient
+	// DNSRecordSetsClient manages DNS zones.
+	DNSZonesClient *dns.ZonesClient
 }
 
 // NewAzureClientSet returns the Azure API clients.
@@ -91,9 +96,21 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	dnsRecordSetsClient, err := newDNSRecordSetsClient(config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	dnsZonesClient, err := newDNSZonesClient(config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	clientset := &AzureClientSet{
-		DeploymentsClient: deploymentsClient,
-		GroupsClient:      groupsClient,
+		DeploymentsClient:   deploymentsClient,
+		GroupsClient:        groupsClient,
+		DNSRecordSetsClient: dnsRecordSetsClient,
+		DNSZonesClient:      dnsZonesClient,
 	}
 
 	return clientset, nil
@@ -112,7 +129,7 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 func newDeploymentsClient(config AzureConfig) (*resources.DeploymentsClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "creating service principal token")
 	}
 
 	client := resources.NewDeploymentsClient(config.SubscriptionID)
@@ -124,7 +141,7 @@ func newDeploymentsClient(config AzureConfig) (*resources.DeploymentsClient, err
 func newGroupsClient(config AzureConfig) (*resources.GroupsClient, error) {
 	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "creating service principal token")
 	}
 
 	client := resources.NewGroupsClient(config.SubscriptionID)
@@ -133,10 +150,34 @@ func newGroupsClient(config AzureConfig) (*resources.GroupsClient, error) {
 	return &client, nil
 }
 
+func newDNSRecordSetsClient(config AzureConfig) (*dns.RecordSetsClient, error) {
+	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
+	if err != nil {
+		return nil, microerror.Maskf(err, "creating service principal token")
+	}
+
+	client := dns.NewRecordSetsClient(config.SubscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+
+	return &client, nil
+}
+
+func newDNSZonesClient(config AzureConfig) (*dns.ZonesClient, error) {
+	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
+	if err != nil {
+		return nil, microerror.Maskf(err, "creating service principal token")
+	}
+
+	client := dns.NewZonesClient(config.SubscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+
+	return &client, nil
+}
+
 func newServicePrincipalToken(config AzureConfig, scope string) (*adal.ServicePrincipalToken, error) {
 	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "creating OAuth config")
 	}
 
 	return adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, scope)

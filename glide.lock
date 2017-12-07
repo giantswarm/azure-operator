@@ -1,12 +1,13 @@
 hash: f7d483b4727b64b43ecd59c99024490bddf06fa689b9a1414af23353165bb2cd
-updated: 2017-12-03T19:39:29.565689336+01:00
+updated: 2017-12-06T19:39:05.744692+01:00
 imports:
 - name: github.com/Azure/azure-sdk-for-go
   version: 7692b0cef22674113fcf71cc17ac3ccc1a7fef48
   subpackages:
+  - arm/dns
   - arm/resources/resources
 - name: github.com/Azure/go-autorest
-  version: a91c94d19d5efcb398b3aab64b8766e724aa7442
+  version: 2f0344f07c87fc5987885bc0213ae3091c321c05
   subpackages:
   - autorest
   - autorest/adal
@@ -52,7 +53,7 @@ imports:
   - spec/azure
   - spec/azure/node
 - name: github.com/giantswarm/certificatetpr
-  version: 9a7c674d13714bc7a5258453570bc8163a47b2cc
+  version: 04eb2f7e6433cb9d706eb5fbd2de4f0f986e57f5
   subpackages:
   - certificatetprtest
   - spec
@@ -226,7 +227,7 @@ imports:
 - name: github.com/spf13/cast
   version: acbeb36b902d72a7a4c18e8f3241075e7ab763e4
 - name: github.com/spf13/cobra
-  version: 86783686cade7a5ea7f5306d461d91841c7a6b3d
+  version: c156af39849842c87f2ce59882c5f4bd98977c43
 - name: github.com/spf13/jwalterweatherman
   version: 12bd96e66386c1960ab0f74ced1362f66f552f7b
 - name: github.com/spf13/pflag
@@ -260,7 +261,7 @@ imports:
   subpackages:
   - unix
 - name: golang.org/x/text
-  version: 75cc3cad82b5f47d3fb229ddda8c5167da14f294
+  version: 57961680700a5336d15015c8c50686ca5ba362a4
   repo: https://github.com/golang/text.git
   vcs: git
   subpackages:
