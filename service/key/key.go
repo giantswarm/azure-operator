@@ -85,7 +85,7 @@ func DNSZoneResourceGroupIngress(customObject azuretpr.CustomObject) string {
 
 // KeyVaultName returns the Azure Key Vault name for this cluster.
 func KeyVaultName(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Azure.KeyVault.Name
+	return ClusterID(customObject) + "-vault"
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.

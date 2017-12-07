@@ -8,7 +8,6 @@ import (
 
 	"github.com/giantswarm/azuretpr"
 	azurespec "github.com/giantswarm/azuretpr/spec"
-	"github.com/giantswarm/azuretpr/spec/azure"
 	"github.com/giantswarm/clustertpr"
 	"github.com/giantswarm/clustertpr/spec"
 )
@@ -77,9 +76,9 @@ func Test_KeyVaultName(t *testing.T) {
 
 	customObject := azuretpr.CustomObject{
 		Spec: azuretpr.Spec{
-			Azure: azurespec.Azure{
-				KeyVault: azure.KeyVault{
-					Name: "test-cluster-vault",
+			Cluster: clustertpr.Spec{
+				Cluster: spec.Cluster{
+					ID: "test-cluster",
 				},
 			},
 		},
