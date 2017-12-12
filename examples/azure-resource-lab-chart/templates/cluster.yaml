@@ -92,11 +92,11 @@ spec:
       - name: "EtcdDisk"
         caching: "ReadWrite"
         sizeGB: 10
-        storageAccountType: "Premium_LRS"
+        storageAccountType: "Standard_LRS"
       - name: "DockerDisk"
         caching: "ReadWrite"
         sizeGB: 30
-        storageAccountType: "Premium_LRS"
+        storageAccountType: "Standard_LRS"
     workers:
     - vmSize: "{{.Values.azure.vmSizeWorker}}"
       adminUsername: "core"
@@ -115,7 +115,7 @@ spec:
       - name: "DockerDisk"
         caching: "ReadWrite"
         sizeGB: 50
-        storageAccountType: "Premium_LRS"
+        storageAccountType: "Standard_LRS"
     - vmSize: "{{.Values.azure.vmSizeWorker}}"
       adminUsername: "core"
       adminSSHKeyData: "{{.Values.sshPublicKey}}"
@@ -133,7 +133,7 @@ spec:
       - name: "DockerDisk"
         caching: "ReadWrite"
         sizeGB: 50
-        storageAccountType: "Premium_LRS"
+        storageAccountType: "Standard_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
