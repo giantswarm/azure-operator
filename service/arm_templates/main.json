@@ -406,7 +406,7 @@
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
           "osDisk": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osDisk]"},
-          "dataDisks": {"value": "[parameters('mastersCustomConfig')[copyIndex().dataDisks]]"},
+          "dataDisks": {"value": "[parameters('mastersCustomConfig')[copyIndex()].dataDisks]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
@@ -440,7 +440,7 @@
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
           "osDisk": {"value": "[parameters('workersCustomConfig')[copyIndex()].osDisk]"},
-          "dataDisks": {"value": "[parameters('workersCustomConfig')[copyIndex().dataDisks]]"},
+          "dataDisks": {"value": "[parameters('workersCustomConfig')[copyIndex()].dataDisks]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
