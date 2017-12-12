@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/azure-operator/service/key"
-	"github.com/giantswarm/azuretpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 )
 
@@ -23,6 +23,6 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, change interface{
 	return r.applyCreateChange(ctx, o, c)
 }
 
-func (r *Resource) applyCreateChange(ctx context.Context, obj azuretpr.CustomObject, change dnsRecords) error {
+func (r *Resource) applyCreateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
 	return nil
 }

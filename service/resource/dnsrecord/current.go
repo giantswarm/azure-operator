@@ -6,7 +6,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/dns"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/key"
-	"github.com/giantswarm/azuretpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 )
 
@@ -19,7 +19,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	return r.getCurrentState(ctx, o)
 }
 
-func (r *Resource) getCurrentState(ctx context.Context, obj azuretpr.CustomObject) (dnsRecords, error) {
+func (r *Resource) getCurrentState(ctx context.Context, obj providerv1alpha1.AzureConfig) (dnsRecords, error) {
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
 		return nil, microerror.Maskf(err, "GetCurrentState")

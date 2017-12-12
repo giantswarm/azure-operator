@@ -6,16 +6,13 @@ import (
 
 	"github.com/giantswarm/certificatetpr"
 
-	"github.com/giantswarm/azuretpr"
-	azurespec "github.com/giantswarm/azuretpr/spec"
-	"github.com/giantswarm/clustertpr"
-	"github.com/giantswarm/clustertpr/spec"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
 func Test_AzureCloudType(t *testing.T) {
-	customObject := azuretpr.CustomObject{
-		Spec: azuretpr.Spec{
-			Cluster: clustertpr.Spec{},
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{},
 		},
 	}
 
@@ -28,18 +25,14 @@ func Test_AzureCloudType(t *testing.T) {
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
 
-	cluster := clustertpr.Spec{
-		Cluster: spec.Cluster{
-			ID: expectedID,
-		},
-		Customer: spec.Customer{
-			ID: "test-customer",
-		},
-	}
-
-	customObject := azuretpr.CustomObject{
-		Spec: azuretpr.Spec{
-			Cluster: cluster,
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: expectedID,
+				Customer: providerv1alpha1.ClusterCustomer{
+					ID: "test-customer",
+				},
+			},
 		},
 	}
 
@@ -51,18 +44,14 @@ func Test_ClusterID(t *testing.T) {
 func Test_ClusterCustomer(t *testing.T) {
 	expectedID := "test-customer"
 
-	cluster := clustertpr.Spec{
-		Cluster: spec.Cluster{
-			ID: "test-cluster",
-		},
-		Customer: spec.Customer{
-			ID: expectedID,
-		},
-	}
-
-	customObject := azuretpr.CustomObject{
-		Spec: azuretpr.Spec{
-			Cluster: cluster,
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "test-cluster",
+				Customer: providerv1alpha1.ClusterCustomer{
+					ID: expectedID,
+				},
+			},
 		},
 	}
 
@@ -74,12 +63,10 @@ func Test_ClusterCustomer(t *testing.T) {
 func Test_KeyVaultName(t *testing.T) {
 	expectedVaultName := "test-cluster-vault"
 
-	customObject := azuretpr.CustomObject{
-		Spec: azuretpr.Spec{
-			Cluster: clustertpr.Spec{
-				Cluster: spec.Cluster{
-					ID: "test-cluster",
-				},
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "test-cluster",
 			},
 		},
 	}
@@ -92,18 +79,14 @@ func Test_KeyVaultName(t *testing.T) {
 func Test_Location(t *testing.T) {
 	expectedLocation := "West Europe"
 
-	cluster := clustertpr.Spec{
-		Cluster: spec.Cluster{
-			ID: "test-cluster",
-		},
-	}
-
-	customObject := azuretpr.CustomObject{
-		Spec: azuretpr.Spec{
-			Azure: azurespec.Azure{
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Azure: providerv1alpha1.AzureConfigSpecAzure{
 				Location: expectedLocation,
 			},
-			Cluster: cluster,
+			Cluster: providerv1alpha1.Cluster{
+				ID: "test-cluster",
+			},
 		},
 	}
 
@@ -116,7 +99,7 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 	clusterID := "test-cluster"
 
 	testCases := []struct {
-		Func           func(azuretpr.CustomObject) string
+		Func           func(providerv1alpha1.AzureConfig) string
 		ExpectedResult string
 	}{
 		{
@@ -149,15 +132,11 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 		},
 	}
 
-	cluster := clustertpr.Spec{
-		Cluster: spec.Cluster{
-			ID: clusterID,
-		},
-	}
-
-	customObject := azuretpr.CustomObject{
-		Spec: azuretpr.Spec{
-			Cluster: cluster,
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "test-cluster",
+			},
 		},
 	}
 

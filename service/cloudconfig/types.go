@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azuretpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
 type keyVaultSecrets struct {
@@ -17,7 +17,7 @@ type keyVaultSecret struct {
 
 type cloudConfigExtension struct {
 	AzureConfig  client.AzureConfig
-	CustomObject azuretpr.CustomObject
+	CustomObject providerv1alpha1.AzureConfig
 }
 
 type masterExtension struct {

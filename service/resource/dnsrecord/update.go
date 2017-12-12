@@ -7,7 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/arm/dns"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/azure-operator/service/key"
-	"github.com/giantswarm/azuretpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/framework"
 )
@@ -26,7 +26,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 	return r.applyUpdateChange(ctx, o, c)
 }
 
-func (r *Resource) applyUpdateChange(ctx context.Context, obj azuretpr.CustomObject, change dnsRecords) error {
+func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
 	r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records")
 
 	recordSetsClient, err := r.getDNSRecordSetsClient()
@@ -85,7 +85,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 	return r.newUpdatePatch(ctx, o, c, d)
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (*framework.Patch, error) {
+func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*framework.Patch, error) {
 	patch := framework.NewPatch()
 
 	updateChange, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
@@ -97,7 +97,7 @@ func (r *Resource) newUpdatePatch(ctx context.Context, obj azuretpr.CustomObject
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (dnsRecords, error) {
+func (r *Resource) newUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (dnsRecords, error) {
 	var change dnsRecords
 	for _, d := range desiredState {
 		if !currentState.Contains(d) {

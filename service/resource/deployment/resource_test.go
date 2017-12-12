@@ -5,10 +5,8 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/giantswarm/azuretpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certificatetpr/certificatetprtest"
-	"github.com/giantswarm/clustertpr"
-	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
@@ -16,12 +14,10 @@ import (
 )
 
 func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
-	customObject := &azuretpr.CustomObject{
-		Spec: azuretpr.Spec{
-			Cluster: clustertpr.Spec{
-				Cluster: spec.Cluster{
-					ID: "5xchu",
-				},
+	customObject := &providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "5xchu",
 			},
 		},
 	}
@@ -86,12 +82,10 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 	}{
 		{
 			// Case 1. Current state is empty. A deployment is created.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
 					},
 				},
 			},
@@ -110,12 +104,10 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		{
 			// Case 2. Current and desired states are the same.
 			// No deployments are created.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
 					},
 				},
 			},
@@ -134,12 +126,10 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		{
 			// Case 3. Current and desired states are different.
 			// A new deployment is created.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
 					},
 				},
 			},

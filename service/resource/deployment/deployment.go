@@ -3,7 +3,7 @@ package deployment
 import (
 	"github.com/giantswarm/certificatetpr"
 
-	"github.com/giantswarm/azuretpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/key"
@@ -20,7 +20,7 @@ func getDeploymentNames() []string {
 	}
 }
 
-func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, error) {
+func (r Resource) newMainDeployment(cluster providerv1alpha1.AzureConfig) (Deployment, error) {
 	certs, err := r.certWatcher.SearchCerts(key.ClusterID(cluster))
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
