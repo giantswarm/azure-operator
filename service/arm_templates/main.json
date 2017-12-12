@@ -8,15 +8,6 @@
         "description": "Unique ID of this guest cluster."
       }
     },
-    "storageAccountType": {
-      "type": "string",
-      "allowedValues": [
-        "Standard_LRS",
-        "Standard_GRS",
-        "Standard_ZRS",
-        "Premium_LRS"
-      ]
-    },
     "virtualNetworkCidr": {
       "type": "string",
       "metadata": {
@@ -87,10 +78,6 @@
       "type": "string",
       "defaultValue": "certificates.json"
     },
-    "clusterSetupTemplateFile": {
-      "type": "string",
-      "defaultValue": "cluster_setup.json"
-    },
     "dnsASetupTemplateFile": {
       "type": "string",
       "defaultValue": "dns_a_setup.json"
@@ -129,7 +116,6 @@
   "variables": {
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
-    "clusterSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('clusterSetupTemplateFile'))]",
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
@@ -141,22 +127,6 @@
     "workerPrefix": "Worker"
   },
   "resources": [
-    {
-      "apiVersion": "2016-09-01",
-      "name": "cluster_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('clusterSetupTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "storageAccountType": {"value": "[parameters('storageAccountType')]"}
-        }
-      }
-    },
     {
       "apiVersion": "2016-09-01",
       "name": "security_groups_setup",
@@ -424,7 +394,6 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
           "prefix": {"value": "[concat(variables('masterPrefix'), '-', copyIndex(1))]"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
@@ -459,7 +428,6 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "storageAccountName": {"value": "[reference('cluster_setup').outputs.storageAccountName.value]"},
           "prefix": {"value": "[concat(variables('workerPrefix'), '-', copyIndex(1))]"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('worker_availability_sets_setup').outputs.availabilitySetID.value]"},
