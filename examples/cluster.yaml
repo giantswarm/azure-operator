@@ -61,7 +61,6 @@ spec:
     location: "westeurope"
     masters:
     - vmSize: "Standard_A1"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
       osImage:
@@ -69,9 +68,22 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
+      osDisk:
+        name: OSDisk
+        caching: ReadWrite
+        sizeGB: 30
+        storageAccountType: Standard_LRS
+      dataDisks:
+      - name: EtcdDisk
+        caching: ReadWrite
+        sizeGB: 10
+        storageAccountType: Premium_LRS
+      - name: DockerDisk
+        caching: ReadWrite
+        sizeGB: 30
+        storageAccountType: Premium_LRS
     workers:
     - vmSize: "Standard_A1"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
       osImage:
@@ -79,8 +91,17 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
+      osDisk:
+        name: OSDisk
+        caching: ReadWrite
+        sizeGB: 30
+        storageAccountType: Standard_LRS
+      dataDisks:
+      - name: DockerDisk
+        caching: ReadWrite
+        sizeGB: 50
+        storageAccountType: Premium_LRS
     - vmSize: "Standard_A1"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
       osImage:
@@ -88,6 +109,16 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
+      osDisk:
+        name: OSDisk
+        caching: ReadWrite
+        sizeGB: 30
+        storageAccountType: Standard_LRS
+      dataDisks:
+      - name: DockerDisk
+        caching: ReadWrite
+        sizeGB: 50
+        storageAccountType: Premium_LRS
     storage:
       accountType: "Standard_LRS"
     virtualNetwork:
@@ -99,10 +130,10 @@ spec:
     dnsZones:
       api:
         name: "gollum.azure.gigantic.io"
-        resourceGroup: "gollum" 
+        resourceGroup: "gollum"
       etcd:
         name: "azure.gigantic.io"
-        resourceGroup: "gollum" 
+        resourceGroup: "gollum"
       ingress:
         name: "azure.gigantic.io"
-        resourceGroup: "gollum" 
+        resourceGroup: "gollum"
