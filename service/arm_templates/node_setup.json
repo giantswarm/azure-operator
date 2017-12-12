@@ -11,7 +11,7 @@
     },
     "virtualMachinesAPIVersion": {
       "type": "string",
-      "defaultValue": "2016-08-30",
+      "defaultValue": "2017-03-30",
       "metadata": {
         "description": "API version used by the Microsoft.Compute/virtualMachines resource."
       }
