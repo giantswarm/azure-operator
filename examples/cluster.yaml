@@ -119,8 +119,6 @@ spec:
         caching: ReadWrite
         sizeGB: 50
         storageAccountType: Premium_LRS
-    storage:
-      accountType: "Standard_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
