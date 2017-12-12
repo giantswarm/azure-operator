@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/giantswarm/certificatetpr"
+	certslegacy "github.com/giantswarm/certs/legacy"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
@@ -151,7 +151,7 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 func Test_SecretName(t *testing.T) {
 	expectedSecretName := "api-crt"
 
-	assetKey := certificatetpr.AssetsBundleKey{
+	assetKey := certslegacy.AssetsBundleKey{
 		Component: "api",
 		Type:      "crt",
 	}

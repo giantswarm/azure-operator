@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
-	"github.com/giantswarm/certificatetpr"
+	certslegacy "github.com/giantswarm/certs/legacy"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"
 	"github.com/giantswarm/operatorkit/framework"
@@ -29,16 +29,16 @@ func newFramework(config Config) (*framework.Framework, error) {
 		}
 	}
 
-	var certWatcher certificatetpr.Searcher
+	var certWatcher certslegacy.Searcher
 	{
-		c := certificatetpr.DefaultServiceConfig()
+		c := certslegacy.DefaultServiceConfig()
 
 		c.K8sClient = config.K8sClient
 		c.Logger = config.Logger
 
-		certWatcher, err = certificatetpr.NewService(c)
+		certWatcher, err = certslegacy.NewService(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "certificatetpr.NewService")
+			return nil, microerror.Maskf(err, "certslegacy.NewService")
 		}
 	}
 

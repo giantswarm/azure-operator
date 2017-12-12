@@ -8,7 +8,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certificatetpr"
+	certslegacy "github.com/giantswarm/certs/legacy"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
@@ -28,7 +28,7 @@ const (
 type Config struct {
 	// Dependencies.
 
-	CertWatcher certificatetpr.Searcher
+	CertWatcher certslegacy.Searcher
 	CloudConfig *cloudconfig.CloudConfig
 	Logger      micrologger.Logger
 
@@ -59,7 +59,7 @@ func DefaultConfig() Config {
 type Resource struct {
 	// Dependencies.
 
-	certWatcher certificatetpr.Searcher
+	certWatcher certslegacy.Searcher
 	cloudConfig *cloudconfig.CloudConfig
 	logger      micrologger.Logger
 

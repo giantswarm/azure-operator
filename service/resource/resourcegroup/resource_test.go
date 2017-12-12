@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/clustertpr/spec"
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
@@ -48,11 +47,9 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 					Azure: providerv1alpha1.AzureConfigSpecAzure{
 						Location: "East Asia",
 					},
-					Cluster: providerv1alpha1.Spec{
-						Cluster: spec.Cluster{
-							ID: "test-cluster",
-						},
-						Customer: spec.Customer{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "test-cluster",
+						Customer: providerv1alpha1.ClusterCustomer{
 							ID: "acme",
 						},
 					},

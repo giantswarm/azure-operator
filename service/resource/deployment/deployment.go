@@ -1,7 +1,7 @@
 package deployment
 
 import (
-	"github.com/giantswarm/certificatetpr"
+	certslegacy "github.com/giantswarm/certs/legacy"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -85,7 +85,7 @@ func convertParameters(inputs map[string]interface{}) map[string]interface{} {
 
 // convertCertsToSecrets converts the certificate assets to a keyVaultSecrets
 // collection so it can be passed as a secure object template parameter.
-func convertCertsToSecrets(certs certificatetpr.AssetsBundle) keyVaultSecrets {
+func convertCertsToSecrets(certs certslegacy.AssetsBundle) keyVaultSecrets {
 	var secretsList []keyVaultSecret
 
 	for asset, value := range certs {

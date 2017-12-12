@@ -1,7 +1,7 @@
 package cloudconfig
 
 import (
-	"github.com/giantswarm/certificatetpr"
+	certslegacy "github.com/giantswarm/certs/legacy"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
 	"github.com/giantswarm/microerror"
 
@@ -109,67 +109,67 @@ func (me *masterExtension) getMasterSecretsScript() (k8scloudconfig.FileAsset, e
 		Secrets: []keyVaultSecret{
 			// Kubernetes API server.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.APIComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.APIComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/apiserver-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.APIComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.APIComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/apiserver-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.APIComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.APIComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/apiserver-key.pem",
 			},
 			// Calico client.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.CalicoComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.CalicoComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/calico/client-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.CalicoComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.CalicoComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/calico/client-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.CalicoComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.CalicoComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/calico/client-key.pem",
 			},
 			// Etcd client.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/etcd/client-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/etcd/client-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/etcd/client-key.pem",
 			},
 			// Etcd server.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/etcd/server-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/etcd/server-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/etcd/server-key.pem",
 			},
 			// Service account.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.ServiceAccountComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.ServiceAccountComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/service-account-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.ServiceAccountComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.ServiceAccountComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/service-account-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.ServiceAccountComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.ServiceAccountComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/service-account-key.pem",
 			},
 		},
@@ -237,41 +237,41 @@ func (we *workerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, e
 		Secrets: []keyVaultSecret{
 			// Calico client.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.CalicoComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.CalicoComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/calico/client-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.CalicoComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.CalicoComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/calico/client-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.CalicoComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.CalicoComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/calico/client-key.pem",
 			},
 			// Etcd client.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/etcd/client-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/etcd/client-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.EtcdComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.EtcdComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/etcd/client-key.pem",
 			},
 			// Kubernetes worker.
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.WorkerComponent, certificatetpr.CA),
+				SecretName: key.SecretName(certslegacy.WorkerComponent, certslegacy.CA),
 				FileName:   "/etc/kubernetes/ssl/worker-ca.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.WorkerComponent, certificatetpr.Crt),
+				SecretName: key.SecretName(certslegacy.WorkerComponent, certslegacy.Crt),
 				FileName:   "/etc/kubernetes/ssl/worker-crt.pem",
 			},
 			keyVaultSecret{
-				SecretName: key.SecretName(certificatetpr.WorkerComponent, certificatetpr.Key),
+				SecretName: key.SecretName(certslegacy.WorkerComponent, certslegacy.Key),
 				FileName:   "/etc/kubernetes/ssl/worker-key.pem",
 			},
 		},

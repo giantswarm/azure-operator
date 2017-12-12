@@ -4,7 +4,7 @@ import (
 	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certificatetpr"
+	certslegacy "github.com/giantswarm/certs/legacy"
 	"github.com/giantswarm/microerror"
 )
 
@@ -125,7 +125,7 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 
 // SecretName returns the name of the Key Vault secret for this certificate
 // asset.
-func SecretName(clusterComponent certificatetpr.ClusterComponent, assetType certificatetpr.TLSAssetType) string {
+func SecretName(clusterComponent certslegacy.ClusterComponent, assetType certslegacy.TLSAssetType) string {
 	return fmt.Sprintf("%s-%s", clusterComponent, assetType)
 }
 
