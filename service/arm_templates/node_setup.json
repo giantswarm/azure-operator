@@ -33,9 +33,6 @@
     "clusterID": {
       "type": "string"
     },
-    "storageAccountName": {
-      "type": "string"
-    },
     "prefix": {
       "type": "string"
     },
@@ -61,9 +58,6 @@
     "adminSSHKeyData": {
       "type": "string"
     },
-    "dataDiskSizeGB": {
-      "type": "int"
-    },
     "osImagePublisher": {
       "type": "string"
     },
@@ -75,6 +69,12 @@
     },
     "osImageVersion": {
       "type": "string"
+    },
+    "osDisk": {
+      "type": "object"
+    },
+    "dataDisks": {
+      "type": "array"
     },
     "loadBalancerBackendPoolIDs": {
       "type": "array"
@@ -92,8 +92,6 @@
     "ipName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
     "nicName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-NIC')]",
     "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
-    "osDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk')]",
-    "dataDiskName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-DataDisk')]",
     "roleAssignmentName": "[concat(parameters('clusterID'), '-', parameters('prefix') ,'-RoleAssignment')]",
     "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('contributorRoleDefinitionId'))]"
   },
@@ -179,22 +177,29 @@
             "version": "[parameters('osImageVersion')]"
           },
           "osDisk": {
-            "name": "[variables('osDiskName')]",
-            "vhd": {
-              "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('osDiskName'), '.vhd')]"
+            "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', parameters('osDisk').name)]",
+            "caching": "[parameters('osDisk').caching]",
+            "diskSizeGB": "[parameters('osDisk').sizeGB]",
+            "managedDisk": {
+              "storageAccountType": "[parameters('osDisk').storageAccountType]"
             },
-            "caching": "ReadWrite",
-            "createOption": "FromImage"
+            "createOption": "FromImage",
+            "lun": 0
           },
-          "dataDisks": [
+          "copy": [
             {
-              "name": "[variables('dataDiskName')]",
-              "diskSizeGB": "[parameters('dataDiskSizeGB')]",
-              "lun": 0,
-              "vhd": {
-                "uri": "[concat('http://', parameters('storageAccountName'), '.blob.core.windows.net/vhds/', variables('dataDiskName'), '.vhd')]"
-              },
-              "createOption": "Empty"
+              "name": "dataDisks",
+              "count": "[length(parameters('dataDisks'))]",
+              "input": {
+                "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', parameters('dataDisks')[copyIndex('dataDisks')].name)]",
+                "caching": "[parameters('dataDisks')[copyIndex('dataDisks')].caching]",
+                "diskSizeGB": "[parameters('dataDisks')[copyIndex('dataDisks')].sizeGB]",
+                "managedDisk": {
+                  "storageAccountType": "[parameters('dataDisks')[copyIndex('dataDisks')].storageAccountType]"
+                },
+                "createOption": "Empty",
+                "lun": "[add(copyIndex('dataDisks'), 1)]"
+              }
             }
           ]
         },
