@@ -35,8 +35,11 @@
       "name": "[variables('availabilitySetName')]",
       "location": "[resourceGroup().location]",
       "properties": {
-        "PlatformFaultDomainCount": "[parameters('faultDomainCount')]",
-        "PlatformUpdateDomainCount": "[parameters('updateDomainCount')]"
+        "platformFaultDomainCount": "[parameters('faultDomainCount')]",
+        "platformUpdateDomainCount": "[parameters('updateDomainCount')]"
+      },
+      "sku": {
+        "name": "aligned"
       }
     }
   ],
