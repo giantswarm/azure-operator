@@ -432,11 +432,12 @@
           "vmSize": {"value": "[parameters('mastersCustomConfig')[copyIndex()].vmSize]"},
           "adminUsername": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminUsername]"},
           "adminSSHKeyData": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminSSHKeyData]"},
-          "dataDiskSizeGB": {"value": "[parameters('mastersCustomConfig')[copyIndex()].dataDiskSizeGB]"},
           "osImagePublisher": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.publisher]"},
           "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
+          "osDisk": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osDisk]"},
+          "dataDisks": {"value": "[parameters('mastersCustomConfig')[copyIndex().dataDisks]]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
@@ -466,11 +467,12 @@
           "vmSize": {"value": "[parameters('workersCustomConfig')[copyIndex()].vmSize]"},
           "adminUsername": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminUsername]"},
           "adminSSHKeyData": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminSSHKeyData]"},
-          "dataDiskSizeGB": {"value": "[parameters('workersCustomConfig')[copyIndex()].dataDiskSizeGB]"},
           "osImagePublisher": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.publisher]"},
           "osImageOffer": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
+          "osDisk": {"value": "[parameters('workersCustomConfig')[copyIndex()].osDisk]"},
+          "dataDisks": {"value": "[parameters('workersCustomConfig')[copyIndex().dataDisks]]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
