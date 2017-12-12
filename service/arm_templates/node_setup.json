@@ -183,8 +183,7 @@
             "managedDisk": {
               "storageAccountType": "[parameters('osDisk').storageAccountType]"
             },
-            "createOption": "FromImage",
-            "lun": 0
+            "createOption": "FromImage"
           },
           "copy": [
             {
