@@ -84,19 +84,19 @@ spec:
         sku: "Stable"
         version: "{{.Values.azure.coreOSVersion}}"
       osDisk:
-        name: OSDisk
-        caching: ReadWrite
+        name: "OSDisk"
+        caching: "ReadWrite"
         sizeGB: 30
-        storageAccountType: Standard_LRS
+        storageAccountType: "Standard_LRS"
       dataDisks:
-      - name: EtcdDisk
-        caching: ReadWrite
+      - name: "EtcdDisk"
+        caching: "ReadWrite"
         sizeGB: 10
-        storageAccountType: Premium_LRS
-      - name: DockerDisk
-        caching: ReadWrite
+        storageAccountType: "Premium_LRS"
+      - name: "DockerDisk"
+        caching: "ReadWrite"
         sizeGB: 30
-        storageAccountType: Premium_LRS
+        storageAccountType: "Premium_LRS"
     workers:
     - vmSize: "{{.Values.azure.vmSizeWorker}}"
       adminUsername: "core"
@@ -107,15 +107,15 @@ spec:
         sku: "Stable"
         version: "{{.Values.azure.coreOSVersion}}"
       osDisk:
-        name: OSDisk
-        caching: ReadWrite
+        name: "OSDisk"
+        caching: "ReadWrite"
         sizeGB: 30
-        storageAccountType: Standard_LRS
+        storageAccountType: "Standard_LRS"
       dataDisks:
-      - name: DockerDisk
-        caching: ReadWrite
+      - name: "DockerDisk"
+        caching: "ReadWrite"
         sizeGB: 50
-        storageAccountType: Premium_LRS
+        storageAccountType: "Premium_LRS"
     - vmSize: "{{.Values.azure.vmSizeWorker}}"
       adminUsername: "core"
       adminSSHKeyData: "{{.Values.sshPublicKey}}"
@@ -125,15 +125,15 @@ spec:
         sku: "Stable"
         version: "{{.Values.azure.coreOSVersion}}"
       osDisk:
-        name: OSDisk
-        caching: ReadWrite
+        name: "OSDisk"
+        caching: "ReadWrite"
         sizeGB: 30
-        storageAccountType: Standard_LRS
+        storageAccountType: "Standard_LRS"
       dataDisks:
-      - name: DockerDisk
-        caching: ReadWrite
+      - name: "DockerDisk"
+        caching: "ReadWrite"
         sizeGB: 50
-        storageAccountType: Premium_LRS
+        storageAccountType: "Premium_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
