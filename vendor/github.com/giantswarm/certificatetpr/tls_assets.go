@@ -33,20 +33,14 @@ const (
 const (
 	// APIComponent is the API server component.
 	APIComponent ClusterComponent = "api"
-	// CalicoComponent is the calico component.
-	CalicoComponent ClusterComponent = "calico"
-	// EtcdComponent is the etcd cluster component.
-	EtcdComponent ClusterComponent = "etcd"
-	// FlanneldComponent is the flanneld cluster component.
-	FlanneldComponent ClusterComponent = "flanneld"
-	// KubeStateMetricsComponent is the kube-state-metrics component.
-	KubeStateMetricsComponent ClusterComponent = "kube-state-metrics"
-	// PrometheusComponent is the prometheus component.
-	PrometheusComponent ClusterComponent = "prometheus"
-	// ServiceAccountComponent is the service-account component.
-	ServiceAccountComponent ClusterComponent = "service-account"
 	// WorkerComponent is a worker component.
 	WorkerComponent ClusterComponent = "worker"
+	// EtcdComponent is the etcd cluster component.
+	EtcdComponent ClusterComponent = "etcd"
+	// CalicoComponent is the calico component.
+	CalicoComponent ClusterComponent = "calico"
+	// ServiceAccountComponent is the service-account component.
+	ServiceAccountComponent ClusterComponent = "service-account"
 )
 
 // These constants are used when filtering the secrets, to only retrieve the
@@ -72,22 +66,12 @@ type AssetsBundle map[AssetsBundleKey][]byte
 
 // ClusterComponents is a slice enumerating all the components that make up the
 // cluster.
-//
-// TODO add FlanneldComponent as soon as all guest clusters have Flanneld
-// certificates.
 var ClusterComponents = []ClusterComponent{
 	APIComponent,
-	CalicoComponent,
-	EtcdComponent,
-	ServiceAccountComponent,
 	WorkerComponent,
-}
-
-// MonitoringComponents is a slice enumerating all the components that make up
-// monitoring.
-var MonitoringComponents = []ClusterComponent{
-	PrometheusComponent,
-	KubeStateMetricsComponent,
+	EtcdComponent,
+	CalicoComponent,
+	ServiceAccountComponent,
 }
 
 // TLSAssetTypes is a slice enumerating all the TLS assets we need to boot the

@@ -30,16 +30,12 @@
   branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/azuretpr"
+  name = "github.com/giantswarm/apiextensions"
   branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/certificatetpr"
-  branch = "master"
-
-[[constraint]]
-  name = "github.com/giantswarm/clustertpr"
-  branch = "master"
+  name = "github.com/giantswarm/certs"
+  branch = "legacy"
 
 [[constraint]]
   name = "github.com/giantswarm/k8scloudconfig"
@@ -63,4 +59,4 @@
 
 [[constraint]]
   name = "github.com/giantswarm/operatorkit"
-  branch = "kubernetes-1.7"
+  branch = "master"

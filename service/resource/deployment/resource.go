@@ -28,7 +28,7 @@ const (
 type Config struct {
 	// Dependencies.
 
-	CertWatcher certslegacy.Searcher
+	CertWatcher certslegacy.Service
 	CloudConfig *cloudconfig.CloudConfig
 	Logger      micrologger.Logger
 

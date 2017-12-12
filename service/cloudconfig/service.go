@@ -7,8 +7,8 @@ import (
 	"fmt"
 	"io"
 
-	"github.com/giantswarm/azure-operator/client"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/client"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"

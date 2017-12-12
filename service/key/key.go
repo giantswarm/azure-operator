@@ -31,7 +31,7 @@ func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 
 // ClusterID returns the unique ID for this cluster.
 func ClusterID(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Cluster.Cluster.ID
+	return customObject.Spec.Cluster.ID
 }
 
 // DNSZoneAPI returns api parent DNS zone domain name.
@@ -90,22 +90,22 @@ func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, masterSecurityGroupSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
 }
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.
 func WorkerSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, workerSecurityGroupSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), workerSecurityGroupSuffix)
 }
 
 // MasterSubnetName returns name of the master subnet.
 func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s-%s", customObject.Spec.Cluster.Cluster.ID, virtualNetworkSuffix, masterSubnetSuffix)
+	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, masterSubnetSuffix)
 }
 
 // WorkerSubnetName returns name of the worker subnet.
 func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s-%s", customObject.Spec.Cluster.Cluster.ID, virtualNetworkSuffix, workerSubnetSuffix)
+	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
 // Location returns the physical location where the Resource Group is deployed.
@@ -115,12 +115,12 @@ func Location(customObject providerv1alpha1.AzureConfig) string {
 
 // ResourceGroupName returns name of the resource group for this cluster.
 func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Cluster.Cluster.ID
+	return ClusterID(customObject)
 }
 
 // RouteTableName returns name of the route table for this cluster.
 func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, routeTableSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
 // SecretName returns the name of the Key Vault secret for this certificate
@@ -145,5 +145,5 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 
 // VnetName returns name of the virtual network.
 func VnetName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, virtualNetworkSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), virtualNetworkSuffix)
 }
