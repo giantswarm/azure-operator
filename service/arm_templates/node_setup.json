@@ -179,7 +179,6 @@
           "osDisk": {
             "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', parameters('osDisk').name)]",
             "caching": "[parameters('osDisk').caching]",
-            "diskSizeGB": "[parameters('osDisk').sizeGB]",
             "managedDisk": {
               "storageAccountType": "[parameters('osDisk').storageAccountType]"
             },
