@@ -351,7 +351,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').etcd)]" },
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').etcd.name)]" },
           "prefix": { "value": "etcd" },
           "ipAddress": { "value": "[reference('master_nodes_setup_1').outputs.ipAddress.value]" }
         }
@@ -368,7 +368,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').api)]" },
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').api.name)]" },
           "prefix": { "value": "api" },
           "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.ipAddress.value]" }
         }
@@ -385,7 +385,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress)]" },
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" },
           "prefix": { "value": "ingress" },
           "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.ipAddress.value]" }
         }
@@ -402,9 +402,9 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress)]" },
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" },
           "prefix": { "value": "*" },
-          "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress)]" }
+          "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" }
         }
       }
     },
