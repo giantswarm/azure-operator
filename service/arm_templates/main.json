@@ -405,8 +405,7 @@
           "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
-          "osDisk": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osDisk]"},
-          "dataDisks": {"value": "[parameters('mastersCustomConfig')[copyIndex()].dataDisks]"},
+          "dataDisks": {"value": [{"name": "EtcdDisk", "size": 10}, {"name": "DockerDisk", "size": 50}]},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
@@ -439,8 +438,7 @@
           "osImageOffer": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.offer]"},
           "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
           "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
-          "osDisk": {"value": "[parameters('workersCustomConfig')[copyIndex()].osDisk]"},
-          "dataDisks": {"value": "[parameters('workersCustomConfig')[copyIndex()].dataDisks]"},
+          "dataDisks": {"value": [{"name": "EtcdDisk", "size": 10}, {"name": "DockerDisk", "size": 50}]},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
