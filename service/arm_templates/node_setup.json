@@ -80,6 +80,9 @@
         "description": "The ID of the contributor role."
       }
     },
+    "dataDisks": {
+      "type": "array"
+    },
     "standardLRSSize": {
       "type": "array",
       "defaultValue": [
@@ -355,10 +358,10 @@
             "version": "[parameters('osImageVersion')]"
           },
           "osDisk": {
-            "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', parameters('osDisk').name)]",
-            "caching": "[parameters('osDisk').caching]",
+            "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk')]",
+            "caching": "ReadWrite",
             "managedDisk": {
-              "storageAccountType": "[parameters('osDisk').storageAccountType]"
+              "storageAccountType": "[variables('storageAccountType')]"
             },
             "createOption": "FromImage"
           },
@@ -368,10 +371,10 @@
               "count": "[length(parameters('dataDisks'))]",
               "input": {
                 "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', parameters('dataDisks')[copyIndex('dataDisks')].name)]",
-                "caching": "[parameters('dataDisks')[copyIndex('dataDisks')].caching]",
+                "caching": "ReadWrite",
                 "diskSizeGB": "[parameters('dataDisks')[copyIndex('dataDisks')].sizeGB]",
                 "managedDisk": {
-                  "storageAccountType": "[parameters('dataDisks')[copyIndex('dataDisks')].storageAccountType]"
+                  "storageAccountType": "[variables('storageAccountType')]"
                 },
                 "createOption": "Empty",
                 "lun": "[add(copyIndex('dataDisks'), 1)]"
