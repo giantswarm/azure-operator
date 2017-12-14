@@ -377,7 +377,7 @@
                   "storageAccountType": "[variables('storageAccountType')]"
                 },
                 "createOption": "Empty",
-                "lun": "[add(copyIndex('dataDisks'), 1)]"
+                "lun": "[copyIndex('dataDisks')]"
               }
             }
           ]
