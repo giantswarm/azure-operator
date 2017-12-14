@@ -432,7 +432,7 @@
           "availabilitySetID": {"value": "[reference('worker_availability_sets_setup').outputs.availabilitySetID.value]"},
           "disablePasswordAuth": {"value": "[parameters('workerDisablePasswordAuth')]"},
           "vmSize": {"value": "[parameters('workersCustomConfig')[copyIndex()].vmSize]"},
-          "dataDisks": {"value": [{"name": "EtcdDisk", "size": 10}, {"name": "DockerDisk", "size": 50}]},
+          "dataDisks": {"value": [{"name": "DockerDisk", "size": 50}]},
           "adminUsername": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminUsername]"},
           "adminSSHKeyData": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminSSHKeyData]"},
           "osImagePublisher": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.publisher]"},
