@@ -68,19 +68,6 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
-      osDisk:
-        name: "OSDisk"
-        caching: "ReadWrite"
-        storageAccountType: "Standard_LRS"
-      dataDisks:
-      - name: "EtcdDisk"
-        caching: "ReadWrite"
-        sizeGB: 10
-        storageAccountType: "Standard_LRS"
-      - name: "DockerDisk"
-        caching: "ReadWrite"
-        sizeGB: 30
-        storageAccountType: "Standard_LRS"
     workers:
     - vmSize: "Standard_A1"
       adminUsername: "core"
@@ -90,15 +77,6 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
-      osDisk:
-        name: "OSDisk"
-        caching: "ReadWrite"
-        storageAccountType: "Standard_LRS"
-      dataDisks:
-      - name: "DockerDisk"
-        caching: "ReadWrite"
-        sizeGB: 50
-        storageAccountType: "Standard_LRS"
     - vmSize: "Standard_A1"
       adminUsername: "core"
       adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
@@ -107,15 +85,6 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
-      osDisk:
-        name: "OSDisk"
-        caching: "ReadWrite"
-        storageAccountType: "Standard_LRS"
-      dataDisks:
-      - name: "DockerDisk"
-        caching: "ReadWrite"
-        sizeGB: 50
-        storageAccountType: "Standard_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
