@@ -4,14 +4,14 @@
 [[projects]]
   name = "github.com/Azure/azure-sdk-for-go"
   packages = ["arm/dns","arm/resources/resources"]
-  revision = "7692b0cef22674113fcf71cc17ac3ccc1a7fef48"
-  version = "v11.2.2-beta"
+  revision = "2d1d76c9013c4feb6695a2346f0e66ea0ef77aa6"
+  version = "v11.3.0-beta"
 
 [[projects]]
   name = "github.com/Azure/go-autorest"
   packages = ["autorest","autorest/adal","autorest/azure","autorest/date","autorest/to","autorest/validation"]
-  revision = "4f2543ee0bc9b28d71bf1be8b9318a1c1904b83a"
-  version = "v9.5.1"
+  revision = "3b13154dcaec43ea581ea56cbf6645e5bcbe8be0"
+  version = "v9.5.3"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -86,28 +86,16 @@
   revision = "c54a40801bc2c1d1e343791a777b67fa6fbd7e87"
 
 [[projects]]
-  branch = "clientgo-v3"
-  name = "github.com/giantswarm/certificatetpr"
-  packages = ["."]
-  revision = "57a4fcbb8839e8da7940bf4e27e52396a4ead7c5"
-
-[[projects]]
   branch = "legacy"
   name = "github.com/giantswarm/certs"
   packages = ["legacy","legacy/legacytest"]
-  revision = "74fbbf601db7cb4a86d1b3bc4ea37b9eb181b140"
+  revision = "bb0c3fdfdfa0baa2f6aeeb3f0fc09cfa516deb1d"
 
 [[projects]]
   branch = "master"
-  name = "github.com/giantswarm/clustertpr"
-  packages = [".","spec","spec/docker","spec/kubernetes","spec/kubernetes/hyperkube","spec/kubernetes/ingress","spec/kubernetes/kubectl","spec/kubernetes/networksetup","spec/kubernetes/ssh"]
-  revision = "6b89a787f157c5531d1c955c32b3c621f0d64c3a"
-
-[[projects]]
-  branch = "azure-operator"
   name = "github.com/giantswarm/k8scloudconfig"
-  packages = ["v_0_1_0"]
-  revision = "dbd8fda155202c75ac36a0115614d1cc3e90942d"
+  packages = ["v_2_0_0"]
+  revision = "c90ac68cd33ce88fd925a062626dfd14ebe7cc37"
 
 [[projects]]
   branch = "master"
@@ -472,6 +460,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d2d90ab4eaf7b71a53795537c70af9169fb549c6613a213c8f52e01f52bcffa8"
+  inputs-digest = "a5a4585532ec88823196b365c69d9014f857c053d163bcbe4fa95725be847d71"
   solver-name = "gps-cdcl"
   solver-version = 1

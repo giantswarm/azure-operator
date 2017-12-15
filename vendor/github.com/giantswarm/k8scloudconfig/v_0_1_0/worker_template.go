@@ -237,7 +237,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=gcr.io/google-containers/hyperkube:v1.9.0-beta.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.4_coreos.0"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
@@ -266,8 +266,6 @@ coreos:
       -v /usr/sbin/mkfs.xfs:/usr/sbin/mkfs.xfs \
       -v /usr/lib64/libxfs.so.0:/usr/lib/libxfs.so.0 \
       -v /usr/lib64/libxcmd.so.0:/usr/lib/libxcmd.so.0 \
-      {{- if eq .Cluster.Kubernetes.CloudProvider "azure" }}
-      -v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro \{{ end }}
       -e ETCD_CA_CERT_FILE=/etc/kubernetes/ssl/etcd/client-ca.pem \
       -e ETCD_CERT_FILE=/etc/kubernetes/ssl/etcd/client-crt.pem \
       -e ETCD_KEY_FILE=/etc/kubernetes/ssl/etcd/client-key.pem \
@@ -283,8 +281,6 @@ coreos:
       --machine-id-file=/rootfs/etc/machine-id \
       --cadvisor-port=4194 \
       --cloud-provider={{.Cluster.Kubernetes.CloudProvider}} \
-      {{- if eq .Cluster.Kubernetes.CloudProvider "azure" }}
-      --cloud-config=/etc/kubernetes/config/azure.yaml \{{ end }}
       --healthz-bind-address=${DEFAULT_IPV4} \
       --healthz-port=10248 \
       --cluster-dns={{.Cluster.Kubernetes.DNS.IP}} \
@@ -299,7 +295,57 @@ coreos:
       --v=2"
       ExecStop=-/usr/bin/docker stop -t 10 $NAME
       ExecStopPost=-/usr/bin/docker rm -f $NAME
+  - name: k8s-proxy.service
+    enable: false
+    command: stop
+    content: |
+      [Unit]
+      Description=k8s-proxy
+      StartLimitIntervalSec=0
 
+      [Service]
+      Restart=always
+      RestartSec=0
+      TimeoutStopSec=10
+      EnvironmentFile=/etc/network-environment
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.1_coreos.0"
+      Environment="NAME=%p.service"
+      Environment="NETWORK_CONFIG_CONTAINER="
+      ExecStartPre=/usr/bin/docker pull $IMAGE
+      ExecStartPre=-/usr/bin/docker stop -t 10 $NAME
+      ExecStartPre=-/usr/bin/docker rm -f $NAME      
+      ExecStart=/bin/sh -c "/usr/bin/docker run --rm --net=host --privileged=true \
+      --name $NAME \
+      -v /usr/share/ca-certificates:/etc/ssl/certs \
+      -v /etc/kubernetes/ssl/:/etc/kubernetes/ssl/ \
+      -v /etc/kubernetes/config/:/etc/kubernetes/config/ \
+      $IMAGE \
+      /hyperkube proxy \
+      --proxy-mode=iptables \
+      --logtostderr=true \
+      --kubeconfig=/etc/kubernetes/config/proxy-kubeconfig.yml \
+      --conntrack-max-per-core 131072 \
+      --v=2"
+      ExecStop=-/usr/bin/docker stop -t 10 $NAME
+      ExecStopPost=-/usr/bin/docker rm -f $NAME
+  - name: k8s-proxy-watcher.service
+    enable: true
+    command: start
+    content: |
+      [Unit]
+      Description=k8s-proxy-watcher
+      Wants=k8s-kubelet.service
+      After=k8s-kubelet.service
+      
+      [Service]
+      Environment="KUBECONFIG=/etc/kubernetes/config/kubelet-kubeconfig.yml"
+      Environment="KUBECTL=quay.io/giantswarm/docker-kubectl:1dc536ec6dc4597ba46769b3d5d6ce53a7e62038"
+      Type=oneshot
+      ExecStartPre=/bin/sh -c "while ! /usr/bin/docker run -e KUBECONFIG=${KUBECONFIG} --net=host --rm -v /etc/kubernetes:/etc/kubernetes $KUBECTL get no 2>/dev/null 1>/dev/null; do sleep 1 && echo 'Waiting for healthy k8s'; done"
+      ExecStartPre=/bin/sh -c "sleep 2m"
+      ExecStart=/bin/sh -c "proxyCount=$(docker ps | grep 'kube-proxy' | wc -l);if [ "$proxyCount" == "0" ]; then systemctl start k8s-proxy; fi;"
+      ExecStartPost=/bin/sh -c "echo Done."
+      RemainAfterExit=yes
   update:
     reboot-strategy: off
 

@@ -103,7 +103,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 	{
 		c := informer.DefaultConfig()
 
-		c.Watcher = config.GSClient.ProviderV1().AzureConfigs()
+		c.Watcher = config.G8sClient.ProviderV1alpha1().AzureConfigs("")
 
 		newInformer, err = informer.New(c)
 		if err != nil {

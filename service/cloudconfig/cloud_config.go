@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	certslegacy "github.com/giantswarm/certs/legacy"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_2_0_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/key"

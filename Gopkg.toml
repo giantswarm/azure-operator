@@ -39,7 +39,7 @@
 
 [[constraint]]
   name = "github.com/giantswarm/k8scloudconfig"
-  branch = "azure-operator"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/microendpoint"

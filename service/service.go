@@ -15,8 +15,6 @@ import (
 	"k8s.io/client-go/rest"
 
 	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
-	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/client/k8srestconfig"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
@@ -100,23 +98,23 @@ func New(config Config) (*Service, error) {
 
 		restConfig, err = k8srestconfig.New(c)
 		if err != nil {
-			return microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
+	}
+
+	g8sClient, err := gsclient.NewForConfig(restConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	k8sClient, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
-		return micorerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
 	k8sExtClient, err := apiextensionsclient.NewForConfig(restConfig)
 	if err != nil {
-		return micorerror.Mask(err)
-	}
-
-	gsClient, err := gsclient.NewForConfig(restConfig)
-	if err != nil {
-		return microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
 	var operatorService *operator.Service
@@ -124,7 +122,9 @@ func New(config Config) (*Service, error) {
 		operatorConfig := operator.DefaultConfig()
 		operatorConfig.Logger = config.Logger
 		operatorConfig.AzureConfig = azureConfig
+		operatorConfig.G8sClient = g8sClient
 		operatorConfig.K8sClient = k8sClient
+		operatorConfig.K8sExtClient = k8sExtClient
 		operatorConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 
 		operatorService, err = operator.New(operatorConfig)

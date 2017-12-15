@@ -18,7 +18,7 @@ type Config struct {
 	// Dependencies.
 
 	Logger       micrologger.Logger
-	GSClient     gsclient.Interface
+	G8sClient    gsclient.Interface
 	K8sClient    kubernetes.Interface
 	K8sExtClient apiextensionsclient.Interface
 	Resources    []framework.Resource
@@ -34,7 +34,7 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		GSClient:     nil,
+		G8sClient:    nil,
 		K8sClient:    nil,
 		K8sExtClient: nil,
 		Logger:       nil,
@@ -61,8 +61,8 @@ func New(config Config) (*Service, error) {
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
-	if config.GSClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.GSClient must not be empty")
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.G8sClient must not be empty")
 	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
