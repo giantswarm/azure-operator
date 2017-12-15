@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/arm/dns"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/key"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 )
 

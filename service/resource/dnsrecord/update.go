@@ -6,8 +6,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/arm/dns"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/azure-operator/service/key"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/service/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/framework"
 )

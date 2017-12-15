@@ -3,8 +3,8 @@ package dnsrecord
 import (
 	"reflect"
 
-	"github.com/giantswarm/azure-operator/service/key"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/service/key"
 )
 
 type nsRecord struct {
