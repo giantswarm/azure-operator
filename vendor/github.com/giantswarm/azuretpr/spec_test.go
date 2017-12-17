@@ -130,7 +130,6 @@ func TestSpecYamlEncoding(t *testing.T) {
 			Masters: []azure.Node{
 				{
 					VMSize:          "Standard_A1",
-					DataDiskSizeGB:  50,
 					AdminUsername:   "core",
 					AdminSSHKeyData: "ssh-rsa AAAAB3NzaC1y",
 					OSImage: node.OSImage{
@@ -144,7 +143,6 @@ func TestSpecYamlEncoding(t *testing.T) {
 			Workers: []azure.Node{
 				{
 					VMSize:          "Standard_A1",
-					DataDiskSizeGB:  50,
 					AdminUsername:   "core",
 					AdminSSHKeyData: "ssh-rsa AAAAB3NzaC1y",
 					OSImage: node.OSImage{
@@ -154,9 +152,6 @@ func TestSpecYamlEncoding(t *testing.T) {
 						Version:   "1465.7.0",
 					},
 				},
-			},
-			Storage: azure.Storage{
-				AccountType: "Standard_LRS",
 			},
 			VirtualNetwork: azure.VirtualNetwork{
 				CIDR:             "10.0.0.0/16",

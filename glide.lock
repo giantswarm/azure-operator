@@ -47,7 +47,7 @@ imports:
 - name: github.com/ghodss/yaml
   version: 73d445a93680fa1a78ae23a5839bad48f32ba1ee
 - name: github.com/giantswarm/azuretpr
-  version: e91526dd467f3f897476bc0cf73dd064ecc11f7c
+  version: dbc76d469018be7f31cd554d04d68e4a3d2888d6
   subpackages:
   - spec
   - spec/azure
