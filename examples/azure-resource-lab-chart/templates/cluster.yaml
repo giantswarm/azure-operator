@@ -76,7 +76,6 @@ spec:
     location: "{{.Values.azure.location}}"
     masters:
     - vmSize: "{{.Values.azure.vmSizeMaster}}"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "{{.Values.sshPublicKey}}"
       osImage:
@@ -86,7 +85,6 @@ spec:
         version: "{{.Values.azure.coreOSVersion}}"
     workers:
     - vmSize: "{{.Values.azure.vmSizeWorker}}"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "{{.Values.sshPublicKey}}"
       osImage:
@@ -95,7 +93,6 @@ spec:
         sku: "Stable"
         version: "{{.Values.azure.coreOSVersion}}"
     - vmSize: "{{.Values.azure.vmSizeWorker}}"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "{{.Values.sshPublicKey}}"
       osImage:
@@ -103,8 +100,6 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "{{.Values.azure.coreOSVersion}}"
-    storage:
-      accountType: "Standard_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"

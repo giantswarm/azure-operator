@@ -41,7 +41,6 @@ func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, 
 
 	params := map[string]interface{}{
 		"clusterID":                     key.ClusterID(cluster),
-		"storageAccountType":            cluster.Spec.Azure.Storage.AccountType,
 		"virtualNetworkCidr":            cluster.Spec.Azure.VirtualNetwork.CIDR,
 		"masterSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.MasterSubnetCIDR,
 		"workerSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR,

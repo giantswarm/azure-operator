@@ -61,7 +61,6 @@ spec:
     location: "westeurope"
     masters:
     - vmSize: "Standard_A1"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
       osImage:
@@ -71,7 +70,6 @@ spec:
         version: "1465.7.0"
     workers:
     - vmSize: "Standard_A1"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
       osImage:
@@ -80,7 +78,6 @@ spec:
         sku: "Stable"
         version: "1465.7.0"
     - vmSize: "Standard_A1"
-      dataDiskSizeGB: 50
       adminUsername: "core"
       adminSSHKeyData: "ssh-rsa AAAAB3NzaC1y user@location"
       osImage:
@@ -88,8 +85,6 @@ spec:
         offer: "CoreOS"
         sku: "Stable"
         version: "1465.7.0"
-    storage:
-      accountType: "Standard_LRS"
     virtualNetwork:
       cidr: "10.0.0.0/16"
       masterSubnetCidr: "10.0.1.0/24"
@@ -99,10 +94,10 @@ spec:
     dnsZones:
       api:
         name: "gollum.azure.gigantic.io"
-        resourceGroup: "gollum" 
+        resourceGroup: "gollum"
       etcd:
         name: "azure.gigantic.io"
-        resourceGroup: "gollum" 
+        resourceGroup: "gollum"
       ingress:
         name: "azure.gigantic.io"
-        resourceGroup: "gollum" 
+        resourceGroup: "gollum"
