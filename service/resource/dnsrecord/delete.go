@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/arm/dns"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/key"
-	"github.com/giantswarm/azuretpr"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/framework"
 )
@@ -25,7 +25,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 	return r.applyDeleteChange(ctx, o, c)
 }
 
-func (r *Resource) applyDeleteChange(ctx context.Context, obj azuretpr.CustomObject, change dnsRecords) error {
+func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
 	r.logger.LogCtx(ctx, "debug", "deleting host cluster DNS records")
 
 	if len(change) == 0 {
@@ -72,7 +72,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 	return r.newDeletePatch(ctx, o, c, d)
 }
 
-func (r *Resource) newDeletePatch(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (*framework.Patch, error) {
+func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*framework.Patch, error) {
 	patch := framework.NewPatch()
 
 	deleteChange, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
@@ -84,6 +84,6 @@ func (r *Resource) newDeletePatch(ctx context.Context, obj azuretpr.CustomObject
 	return patch, nil
 }
 
-func (r *Resource) newDeleteChange(ctx context.Context, obj azuretpr.CustomObject, currentState, desiredState dnsRecords) (dnsRecords, error) {
+func (r *Resource) newDeleteChange(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (dnsRecords, error) {
 	return currentState, nil
 }

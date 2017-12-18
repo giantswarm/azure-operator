@@ -304,6 +304,24 @@ func TestServicePrincipalTokenUsernamePasswordRefreshSetsBody(t *testing.T) {
 		}
 	})
 }
+
+func TestServicePrincipalTokenAuthorizationCodeRefreshSetsBody(t *testing.T) {
+	spt := newServicePrincipalTokenAuthorizationCode(t)
+	testServicePrincipalTokenRefreshSetsBody(t, spt, func(t *testing.T, b []byte) {
+		body := string(b)
+
+		values, _ := url.ParseQuery(body)
+		if values["client_id"][0] != "id" ||
+			values["grant_type"][0] != OAuthGrantTypeAuthorizationCode ||
+			values["code"][0] != "code" ||
+			values["client_secret"][0] != "clientSecret" ||
+			values["redirect_uri"][0] != "http://redirectUri/getToken" ||
+			values["resource"][0] != "resource" {
+			t.Fatalf("adal: ServicePrincipalTokenAuthorizationCode#Refresh did not correctly set the HTTP Request Body.")
+		}
+	})
+}
+
 func TestServicePrincipalTokenSecretRefreshSetsBody(t *testing.T) {
 	spt := newServicePrincipalToken()
 	testServicePrincipalTokenRefreshSetsBody(t, spt, func(t *testing.T, b []byte) {
@@ -565,6 +583,34 @@ func TestNewServicePrincipalTokenFromMSI(t *testing.T) {
 	}
 }
 
+func TestNewServicePrincipalTokenFromMSIWithUserAssignedID(t *testing.T) {
+	resource := "https://resource"
+	userID := "abc123"
+	cb := func(token Token) error { return nil }
+
+	spt, err := NewServicePrincipalTokenFromMSIWithUserAssignedID("http://msiendpoint/", resource, userID, cb)
+	if err != nil {
+		t.Fatalf("Failed to get MSI SPT: %v", err)
+	}
+
+	// check some of the SPT fields
+	if _, ok := spt.secret.(*ServicePrincipalMSISecret); !ok {
+		t.Fatal("SPT secret was not of MSI type")
+	}
+
+	if spt.resource != resource {
+		t.Fatal("SPT came back with incorrect resource")
+	}
+
+	if len(spt.refreshCallbacks) != 1 {
+		t.Fatal("SPT had incorrect refresh callbacks.")
+	}
+
+	if spt.clientID != userID {
+		t.Fatal("SPT had incorrect client ID")
+	}
+}
+
 func TestGetVMEndpoint(t *testing.T) {
 	tempSettingsFile, err := ioutil.TempFile("", "ManagedIdentity-Settings")
 	if err != nil {
@@ -670,5 +716,10 @@ func newServicePrincipalTokenCertificate(t *testing.T) *ServicePrincipalToken {
 
 func newServicePrincipalTokenUsernamePassword(t *testing.T) *ServicePrincipalToken {
 	spt, _ := NewServicePrincipalTokenFromUsernamePassword(TestOAuthConfig, "id", "username", "password", "resource")
+	return spt
+}
+
+func newServicePrincipalTokenAuthorizationCode(t *testing.T) *ServicePrincipalToken {
+	spt, _ := NewServicePrincipalTokenFromAuthorizationCode(TestOAuthConfig, "id", "clientSecret", "code", "http://redirectUri/getToken", "resource")
 	return spt
 }

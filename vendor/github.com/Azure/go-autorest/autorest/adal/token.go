@@ -48,6 +48,9 @@ const (
 	// OAuthGrantTypeRefreshToken is the "grant_type" identifier used in refresh token flows
 	OAuthGrantTypeRefreshToken = "refresh_token"
 
+	// OAuthGrantTypeAuthorizationCode is the "grant_type" identifier used in authorization code flows
+	OAuthGrantTypeAuthorizationCode = "authorization_code"
+
 	// metadataHeader is the header required by MSI extension
 	metadataHeader = "Metadata"
 )
@@ -159,10 +162,25 @@ type ServicePrincipalCertificateSecret struct {
 type ServicePrincipalMSISecret struct {
 }
 
-// ServicePrincipalUsernamePasswordSecret implements ServicePrincipalSecret for username and password auth
+// ServicePrincipalUsernamePasswordSecret implements ServicePrincipalSecret for username and password auth.
 type ServicePrincipalUsernamePasswordSecret struct {
 	Username string
 	Password string
+}
+
+// ServicePrincipalAuthorizationCodeSecret implements ServicePrincipalSecret for authorization code auth.
+type ServicePrincipalAuthorizationCodeSecret struct {
+	ClientSecret      string
+	AuthorizationCode string
+	RedirectURI       string
+}
+
+// SetAuthenticationValues is a method of the interface ServicePrincipalSecret.
+func (secret *ServicePrincipalAuthorizationCodeSecret) SetAuthenticationValues(spt *ServicePrincipalToken, v *url.Values) error {
+	v.Set("code", secret.AuthorizationCode)
+	v.Set("client_secret", secret.ClientSecret)
+	v.Set("redirect_uri", secret.RedirectURI)
+	return nil
 }
 
 // SetAuthenticationValues is a method of the interface ServicePrincipalSecret.
@@ -326,7 +344,7 @@ func NewServicePrincipalToken(oauthConfig OAuthConfig, clientID string, secret s
 	)
 }
 
-// NewServicePrincipalTokenFromCertificate create a ServicePrincipalToken from the supplied pkcs12 bytes.
+// NewServicePrincipalTokenFromCertificate creates a ServicePrincipalToken from the supplied pkcs12 bytes.
 func NewServicePrincipalTokenFromCertificate(oauthConfig OAuthConfig, clientID string, certificate *x509.Certificate, privateKey *rsa.PrivateKey, resource string, callbacks ...TokenRefreshCallback) (*ServicePrincipalToken, error) {
 	if err := validateOAuthConfig(oauthConfig); err != nil {
 		return nil, err
@@ -355,7 +373,7 @@ func NewServicePrincipalTokenFromCertificate(oauthConfig OAuthConfig, clientID s
 	)
 }
 
-// NewServicePrincipalTokenFromUsernamePassword create a ServicePrincipalToken from the username and password
+// NewServicePrincipalTokenFromUsernamePassword creates a ServicePrincipalToken from the username and password.
 func NewServicePrincipalTokenFromUsernamePassword(oauthConfig OAuthConfig, clientID string, username string, password string, resource string, callbacks ...TokenRefreshCallback) (*ServicePrincipalToken, error) {
 	if err := validateOAuthConfig(oauthConfig); err != nil {
 		return nil, err
@@ -384,6 +402,41 @@ func NewServicePrincipalTokenFromUsernamePassword(oauthConfig OAuthConfig, clien
 	)
 }
 
+// NewServicePrincipalTokenFromAuthorizationCode creates a ServicePrincipalToken from the
+func NewServicePrincipalTokenFromAuthorizationCode(oauthConfig OAuthConfig, clientID string, clientSecret string, authorizationCode string, redirectURI string, resource string, callbacks ...TokenRefreshCallback) (*ServicePrincipalToken, error) {
+
+	if err := validateOAuthConfig(oauthConfig); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(clientID, "clientID"); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(clientSecret, "clientSecret"); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(authorizationCode, "authorizationCode"); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(redirectURI, "redirectURI"); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(resource, "resource"); err != nil {
+		return nil, err
+	}
+
+	return NewServicePrincipalTokenWithSecret(
+		oauthConfig,
+		clientID,
+		resource,
+		&ServicePrincipalAuthorizationCodeSecret{
+			ClientSecret:      clientSecret,
+			AuthorizationCode: authorizationCode,
+			RedirectURI:       redirectURI,
+		},
+		callbacks...,
+	)
+}
+
 // GetMSIVMEndpoint gets the MSI endpoint on Virtual Machines.
 func GetMSIVMEndpoint() (string, error) {
 	return getMSIVMEndpoint(msiPath)
@@ -407,7 +460,29 @@ func getMSIVMEndpoint(path string) (string, error) {
 }
 
 // NewServicePrincipalTokenFromMSI creates a ServicePrincipalToken via the MSI VM Extension.
+// It will use the system assigned identity when creating the token.
 func NewServicePrincipalTokenFromMSI(msiEndpoint, resource string, callbacks ...TokenRefreshCallback) (*ServicePrincipalToken, error) {
+	return newServicePrincipalTokenFromMSI(msiEndpoint, resource, nil, callbacks...)
+}
+
+// NewServicePrincipalTokenFromMSIWithUserAssignedID creates a ServicePrincipalToken via the MSI VM Extension.
+// It will use the specified user assigned identity when creating the token.
+func NewServicePrincipalTokenFromMSIWithUserAssignedID(msiEndpoint, resource string, userAssignedID string, callbacks ...TokenRefreshCallback) (*ServicePrincipalToken, error) {
+	return newServicePrincipalTokenFromMSI(msiEndpoint, resource, &userAssignedID, callbacks...)
+}
+
+func newServicePrincipalTokenFromMSI(msiEndpoint, resource string, userAssignedID *string, callbacks ...TokenRefreshCallback) (*ServicePrincipalToken, error) {
+	if err := validateStringParam(msiEndpoint, "msiEndpoint"); err != nil {
+		return nil, err
+	}
+	if err := validateStringParam(resource, "resource"); err != nil {
+		return nil, err
+	}
+	if userAssignedID != nil {
+		if err := validateStringParam(*userAssignedID, "userAssignedID"); err != nil {
+			return nil, err
+		}
+	}
 	// We set the oauth config token endpoint to be MSI's endpoint
 	msiEndpointURL, err := url.Parse(msiEndpoint)
 	if err != nil {
@@ -427,6 +502,10 @@ func NewServicePrincipalTokenFromMSI(msiEndpoint, resource string, callbacks ...
 		refreshWithin:    defaultRefresh,
 		sender:           &http.Client{},
 		refreshCallbacks: callbacks,
+	}
+
+	if userAssignedID != nil {
+		spt.clientID = *userAssignedID
 	}
 
 	return spt, nil
@@ -488,6 +567,8 @@ func (spt *ServicePrincipalToken) getGrantType() string {
 	switch spt.secret.(type) {
 	case *ServicePrincipalUsernamePasswordSecret:
 		return OAuthGrantTypeUserPass
+	case *ServicePrincipalAuthorizationCodeSecret:
+		return OAuthGrantTypeAuthorizationCode
 	default:
 		return OAuthGrantTypeClientCredentials
 	}

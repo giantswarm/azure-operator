@@ -7,9 +7,9 @@ import (
 	"fmt"
 	"io"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azuretpr"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_0_1_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_2_0_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
@@ -72,7 +72,7 @@ func New(config Config) (*CloudConfig, error) {
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewMasterCloudConfig(customObject azuretpr.CustomObject) (string, error) {
+func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
 		Extension: &masterExtension{
@@ -88,7 +88,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject azuretpr.CustomObject) (s
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewWorkerCloudConfig(customObject azuretpr.CustomObject) (string, error) {
+func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
 		Extension: &workerExtension{

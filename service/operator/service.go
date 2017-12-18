@@ -3,9 +3,11 @@ package operator
 import (
 	"sync"
 
+	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -15,9 +17,11 @@ import (
 type Config struct {
 	// Dependencies.
 
-	Logger    micrologger.Logger
-	K8sClient kubernetes.Interface
-	Resources []framework.Resource
+	G8sClient    gsclient.Interface
+	K8sClient    kubernetes.Interface
+	K8sExtClient apiextensionsclient.Interface
+	Logger       micrologger.Logger
+	Resources    []framework.Resource
 
 	// Settings.
 
@@ -30,8 +34,11 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		K8sClient: nil,
-		Logger:    nil,
+		G8sClient:    nil,
+		K8sClient:    nil,
+		K8sExtClient: nil,
+		Logger:       nil,
+		Resources:    []framework.Resource{},
 		// Settings.
 		AzureConfig: client.DefaultAzureConfig(),
 	}
@@ -55,11 +62,20 @@ func New(config Config) (*Service, error) {
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.G8sClient must not be empty")
+	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
 	}
+	if config.K8sExtClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.K8sExtClient must not be empty")
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+	}
+	if len(config.Resources) == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "config.Resources must not be empty")
 	}
 
 	// Settings.
@@ -84,7 +100,6 @@ func New(config Config) (*Service, error) {
 	return newService, nil
 }
 
-// Boot starts the service and implements the watch for azuretpr.
 func (s *Service) Boot() {
 	s.bootOnce.Do(func() {
 		go s.framework.Boot()

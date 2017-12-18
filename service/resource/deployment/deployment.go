@@ -1,9 +1,9 @@
 package deployment
 
 import (
-	"github.com/giantswarm/certificatetpr"
+	certslegacy "github.com/giantswarm/certs/legacy"
 
-	"github.com/giantswarm/azuretpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/key"
@@ -20,7 +20,7 @@ func getDeploymentNames() []string {
 	}
 }
 
-func (r Resource) newMainDeployment(cluster azuretpr.CustomObject) (Deployment, error) {
+func (r Resource) newMainDeployment(cluster providerv1alpha1.AzureConfig) (Deployment, error) {
 	certs, err := r.certWatcher.SearchCerts(key.ClusterID(cluster))
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
@@ -85,7 +85,7 @@ func convertParameters(inputs map[string]interface{}) map[string]interface{} {
 
 // convertCertsToSecrets converts the certificate assets to a keyVaultSecrets
 // collection so it can be passed as a secure object template parameter.
-func convertCertsToSecrets(certs certificatetpr.AssetsBundle) keyVaultSecrets {
+func convertCertsToSecrets(certs certslegacy.AssetsBundle) keyVaultSecrets {
 	var secretsList []keyVaultSecret
 
 	for asset, value := range certs {

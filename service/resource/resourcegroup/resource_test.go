@@ -5,10 +5,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/giantswarm/azuretpr"
-	azuretprspec "github.com/giantswarm/azuretpr/spec"
-	"github.com/giantswarm/clustertpr"
-	"github.com/giantswarm/clustertpr/spec"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
@@ -23,16 +20,14 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	}{
 		{
 			// Case 1. Standard cluster ID format.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Azure: azuretprspec.Azure{
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Azure: providerv1alpha1.AzureConfigSpecAzure{
 						Location: "West Europe",
 					},
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
-						Customer: spec.Customer{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
+						Customer: providerv1alpha1.ClusterCustomer{
 							ID: "giantswarm",
 						},
 					},
@@ -47,16 +42,14 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 		},
 		{
 			// Case 2. Custom cluster ID format.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Azure: azuretprspec.Azure{
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Azure: providerv1alpha1.AzureConfigSpecAzure{
 						Location: "East Asia",
 					},
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "test-cluster",
-						},
-						Customer: spec.Customer{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "test-cluster",
+						Customer: providerv1alpha1.ClusterCustomer{
 							ID: "acme",
 						},
 					},
@@ -127,12 +120,10 @@ func Test_Resource_ResourceGroup_newCreateChange(t *testing.T) {
 		{
 			// Case 1. Current and desired states are the same. The resource
 			// group should not be created.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
 					},
 				},
 			},
@@ -147,12 +138,10 @@ func Test_Resource_ResourceGroup_newCreateChange(t *testing.T) {
 		{
 			// Case 2. Current state is nil. The resource group should be
 			// created.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
 					},
 				},
 			},
@@ -200,12 +189,10 @@ func Test_Resource_ResourceGroup_newDeleteChange(t *testing.T) {
 		{
 			// Case 1. Current and desired states are the same. The resource
 			// group should be deleted.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
 					},
 				},
 			},
@@ -222,12 +209,10 @@ func Test_Resource_ResourceGroup_newDeleteChange(t *testing.T) {
 		{
 			// Case 2. Current state is nil. The resource group should not be
 			// deleted.
-			Obj: &azuretpr.CustomObject{
-				Spec: azuretpr.Spec{
-					Cluster: clustertpr.Spec{
-						Cluster: spec.Cluster{
-							ID: "5xchu",
-						},
+			Obj: &providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "5xchu",
 					},
 				},
 			},

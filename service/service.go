@@ -7,9 +7,14 @@ import (
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/client/k8sclient"
+	"github.com/giantswarm/operatorkit/client/k8srestconfig"
 	"github.com/spf13/viper"
+
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
+
+	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
@@ -79,20 +84,37 @@ func New(config Config) (*Service, error) {
 		azureConfig.TenantID = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
 	}
 
-	var k8sClient kubernetes.Interface
+	var restConfig *rest.Config
 	{
-		k8sConfig := k8sclient.DefaultConfig()
-		k8sConfig.Address = config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
-		k8sConfig.Logger = config.Logger
-		k8sConfig.InCluster = config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
-		k8sConfig.TLS.CAFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile)
-		k8sConfig.TLS.CrtFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile)
-		k8sConfig.TLS.KeyFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile)
+		c := k8srestconfig.DefaultConfig()
 
-		k8sClient, err = k8sclient.New(k8sConfig)
+		c.Logger = config.Logger
+
+		c.Address = config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
+		c.InCluster = config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
+		c.TLS.CAFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile)
+		c.TLS.CrtFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile)
+		c.TLS.KeyFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile)
+
+		restConfig, err = k8srestconfig.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "k8sclient.New")
+			return nil, microerror.Mask(err)
 		}
+	}
+
+	g8sClient, err := gsclient.NewForConfig(restConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	k8sClient, err := kubernetes.NewForConfig(restConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	k8sExtClient, err := apiextensionsclient.NewForConfig(restConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	var operatorService *operator.Service
@@ -100,7 +122,9 @@ func New(config Config) (*Service, error) {
 		operatorConfig := operator.DefaultConfig()
 		operatorConfig.Logger = config.Logger
 		operatorConfig.AzureConfig = azureConfig
+		operatorConfig.G8sClient = g8sClient
 		operatorConfig.K8sClient = k8sClient
+		operatorConfig.K8sExtClient = k8sExtClient
 		operatorConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 
 		operatorService, err = operator.New(operatorConfig)

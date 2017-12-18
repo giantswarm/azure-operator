@@ -1,5 +1,42 @@
 # CHANGELOG
 
+## v9.6.0
+
+### New Features
+
+- Added support for acquiring tokens via MSI with a user assigned identity.
+
+## v9.5.3
+
+### Bug Fixes
+- Don't remove encoding of existing URL Query parameters when calling autorest.WithQueryParameters.
+- Set correct Content Type when using autorest.WithFormData.
+
+## v9.5.2
+
+### Bug Fixes
+
+- Check for nil *http.Response before dereferencing it.
+
+## v9.5.1
+
+### Bug Fixes
+
+- Don't count http.StatusTooManyRequests (429) against the retry cap.
+- Use retry logic when SkipResourceProviderRegistration is set to true.
+
+## v9.5.0
+
+### New Features
+
+- Added support for username + password, API key, authoriazation code and cognitive services authentication.
+- Added field SkipResourceProviderRegistration to clients to provide a way to skip auto-registration of RPs.
+- Added utility function AsStringSlice() to convert its parameters to a string slice.
+
+### Bug Fixes
+
+- When checking for authentication failures look at the error type not the status code as it could vary.
+
 ## v9.4.2
 
 ### Bug Fixes
@@ -121,7 +158,7 @@ Support for UNIX time.
 - Added telemetry.
 
 ## v7.2.3
-- Fixing bug in calls to `DelayForBackoff` that caused doubling of delay 
+- Fixing bug in calls to `DelayForBackoff` that caused doubling of delay
   duration.
 
 ## v7.2.2

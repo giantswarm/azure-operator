@@ -3,8 +3,8 @@ package dnsrecord
 import (
 	"reflect"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/key"
-	"github.com/giantswarm/azuretpr"
 )
 
 type nsRecord struct {
@@ -32,7 +32,7 @@ func (rs dnsRecords) Contains(r nsRecord) bool {
 }
 
 // newPartialDNSRecords creates DNSRecords without NameServers filled.
-func newPartialDNSRecords(obj azuretpr.CustomObject) dnsRecords {
+func newPartialDNSRecords(obj providerv1alpha1.AzureConfig) dnsRecords {
 	all := dnsRecords{
 		// api.
 		{

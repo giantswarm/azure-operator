@@ -3,8 +3,8 @@ package key
 import (
 	"fmt"
 
-	"github.com/giantswarm/azuretpr"
-	"github.com/giantswarm/certificatetpr"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	certslegacy "github.com/giantswarm/certs/legacy"
 	"github.com/giantswarm/microerror"
 )
 
@@ -19,124 +19,124 @@ const (
 )
 
 // AzureCloudType returns cloud type.
-func AzureCloudType(customObject azuretpr.CustomObject) string {
+func AzureCloudType(customObject providerv1alpha1.AzureConfig) string {
 	// TODO: For now only public cloud supported.
 	return defaultAzureCloudType
 }
 
 // ClusterCustomer returns the customer ID for this cluster.
-func ClusterCustomer(customObject azuretpr.CustomObject) string {
+func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Customer.ID
 }
 
 // ClusterID returns the unique ID for this cluster.
-func ClusterID(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Cluster.Cluster.ID
+func ClusterID(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.ID
 }
 
 // DNSZoneAPI returns api parent DNS zone domain name.
-func DNSZoneAPI(customObject azuretpr.CustomObject) string {
+func DNSZoneAPI(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.API.Name
 }
 
 // DNSZoneEtcd returns etcd parent DNS zone domain name.
 // zone should be created in.
-func DNSZoneEtcd(customObject azuretpr.CustomObject) string {
+func DNSZoneEtcd(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.Etcd.Name
 }
 
 // DNSZoneIngress returns ingress parent DNS zone domain name.
-func DNSZoneIngress(customObject azuretpr.CustomObject) string {
+func DNSZoneIngress(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.Ingress.Name
 }
 
 // DNSZonePrefixAPI returns relative name of the api DNS zone.
-func DNSZonePrefixAPI(customObject azuretpr.CustomObject) string {
+func DNSZonePrefixAPI(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
 }
 
 // DNSZonePrefixEtcd returns relative name of the etcd DNS zone.
-func DNSZonePrefixEtcd(customObject azuretpr.CustomObject) string {
+func DNSZonePrefixEtcd(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
 }
 
 // DNSZonePrefixIngress returns relative name of the ingress DNS zone.
-func DNSZonePrefixIngress(customObject azuretpr.CustomObject) string {
+func DNSZonePrefixIngress(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
 }
 
 // DNSZoneResourceGroupAPI returns resource group name of the API
 // parent DNS zone.
-func DNSZoneResourceGroupAPI(customObject azuretpr.CustomObject) string {
+func DNSZoneResourceGroupAPI(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.API.ResourceGroup
 }
 
 // DNSZoneResourceGroupEtcd returns resource group name of the etcd
 // parent DNS zone.
-func DNSZoneResourceGroupEtcd(customObject azuretpr.CustomObject) string {
+func DNSZoneResourceGroupEtcd(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.Etcd.ResourceGroup
 }
 
 // DNSZoneResourceGroupIngress returns resource group name of the ingress
 // parent DNS zone.
-func DNSZoneResourceGroupIngress(customObject azuretpr.CustomObject) string {
+func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
 }
 
 // KeyVaultName returns the Azure Key Vault name for this cluster.
-func KeyVaultName(customObject azuretpr.CustomObject) string {
+func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
 	return ClusterID(customObject) + "-vault"
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
-func MasterSecurityGroupName(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, masterSecurityGroupSuffix)
+func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
 }
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.
-func WorkerSecurityGroupName(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, workerSecurityGroupSuffix)
+func WorkerSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), workerSecurityGroupSuffix)
 }
 
 // MasterSubnetName returns name of the master subnet.
-func MasterSubnetName(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("%s-%s-%s", customObject.Spec.Cluster.Cluster.ID, virtualNetworkSuffix, masterSubnetSuffix)
+func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, masterSubnetSuffix)
 }
 
 // WorkerSubnetName returns name of the worker subnet.
-func WorkerSubnetName(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("%s-%s-%s", customObject.Spec.Cluster.Cluster.ID, virtualNetworkSuffix, workerSubnetSuffix)
+func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
 // Location returns the physical location where the Resource Group is deployed.
-func Location(customObject azuretpr.CustomObject) string {
+func Location(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.Location
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.
-func ResourceGroupName(customObject azuretpr.CustomObject) string {
-	return customObject.Spec.Cluster.Cluster.ID
+func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
+	return ClusterID(customObject)
 }
 
 // RouteTableName returns name of the route table for this cluster.
-func RouteTableName(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, routeTableSuffix)
+func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
 // SecretName returns the name of the Key Vault secret for this certificate
 // asset.
-func SecretName(clusterComponent certificatetpr.ClusterComponent, assetType certificatetpr.TLSAssetType) string {
+func SecretName(clusterComponent certslegacy.ClusterComponent, assetType certslegacy.TLSAssetType) string {
 	return fmt.Sprintf("%s-%s", clusterComponent, assetType)
 }
 
-func ToCustomObject(v interface{}) (azuretpr.CustomObject, error) {
+func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	if v == nil {
-		return azuretpr.CustomObject{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &azuretpr.CustomObject{}, v)
+		return providerv1alpha1.AzureConfig{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
 	}
 
-	customObjectPointer, ok := v.(*azuretpr.CustomObject)
+	customObjectPointer, ok := v.(*providerv1alpha1.AzureConfig)
 	if !ok {
-		return azuretpr.CustomObject{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &azuretpr.CustomObject{}, v)
+		return providerv1alpha1.AzureConfig{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
 	}
 	customObject := *customObjectPointer
 
@@ -144,6 +144,6 @@ func ToCustomObject(v interface{}) (azuretpr.CustomObject, error) {
 }
 
 // VnetName returns name of the virtual network.
-func VnetName(customObject azuretpr.CustomObject) string {
-	return fmt.Sprintf("%s-%s", customObject.Spec.Cluster.Cluster.ID, virtualNetworkSuffix)
+func VnetName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), virtualNetworkSuffix)
 }
