@@ -26,6 +26,7 @@ import (
 type CoreV1alpha1Interface interface {
 	RESTClient() rest.Interface
 	CertConfigsGetter
+	DraughtsmanConfigsGetter
 	FlannelConfigsGetter
 	IngressConfigsGetter
 	StorageConfigsGetter
@@ -38,6 +39,10 @@ type CoreV1alpha1Client struct {
 
 func (c *CoreV1alpha1Client) CertConfigs(namespace string) CertConfigInterface {
 	return newCertConfigs(c, namespace)
+}
+
+func (c *CoreV1alpha1Client) DraughtsmanConfigs(namespace string) DraughtsmanConfigInterface {
+	return newDraughtsmanConfigs(c, namespace)
 }
 
 func (c *CoreV1alpha1Client) FlannelConfigs(namespace string) FlannelConfigInterface {

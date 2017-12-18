@@ -10,8 +10,8 @@
 [[projects]]
   name = "github.com/Azure/go-autorest"
   packages = ["autorest","autorest/adal","autorest/azure","autorest/date","autorest/to","autorest/validation"]
-  revision = "3b13154dcaec43ea581ea56cbf6645e5bcbe8be0"
-  version = "v9.5.3"
+  revision = "809ed2ef5c4c9a60c3c2f3aa9cc11f3a7c2ce59d"
+  version = "v9.6.0"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -83,7 +83,7 @@
   branch = "master"
   name = "github.com/giantswarm/apiextensions"
   packages = ["pkg/apis/core/v1alpha1","pkg/apis/provider/v1alpha1","pkg/clientset/versioned","pkg/clientset/versioned/scheme","pkg/clientset/versioned/typed/core/v1alpha1","pkg/clientset/versioned/typed/provider/v1alpha1"]
-  revision = "c54a40801bc2c1d1e343791a777b67fa6fbd7e87"
+  revision = "a5f74b98c057386d05485914faca1283d0bff4b1"
 
 [[projects]]
   branch = "legacy"
