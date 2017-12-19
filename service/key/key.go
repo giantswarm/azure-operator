@@ -91,7 +91,9 @@ func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
 // KeyVaultKey takes a certificate file path and returns KeyVault key under
 // which the certificate will be stored.
 func KeyVaultKey(certPath string) string {
-	return strings.TrimPrefix(certPath, "/")
+	k := strings.TrimPrefix(certPath, "/")
+	k = strings.Replace(k, "/", "-", -1)
+	return k
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.

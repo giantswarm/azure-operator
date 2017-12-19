@@ -77,7 +77,7 @@ func Test_KeyVaultName(t *testing.T) {
 func Test_KeyVaultKey(t *testing.T) {
 	var (
 		path        = "/etc/kubernetes/ssl/calico/client-ca.pem"
-		expectedKey = "etc/kubernetes/ssl/calico/client-ca.pem"
+		expectedKey = "etc-kubernetes-ssl-calico-client-ca.pem"
 	)
 
 	key := KeyVaultKey(path)
