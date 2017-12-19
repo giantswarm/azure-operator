@@ -21,7 +21,6 @@ type Config struct {
 	K8sClient    kubernetes.Interface
 	K8sExtClient apiextensionsclient.Interface
 	Logger       micrologger.Logger
-	Resources    []framework.Resource
 
 	// Settings.
 
@@ -38,7 +37,6 @@ func DefaultConfig() Config {
 		K8sClient:    nil,
 		K8sExtClient: nil,
 		Logger:       nil,
-		Resources:    []framework.Resource{},
 		// Settings.
 		AzureConfig: client.DefaultAzureConfig(),
 	}
@@ -73,9 +71,6 @@ func New(config Config) (*Service, error) {
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
-	}
-	if len(config.Resources) == 0 {
-		return nil, microerror.Maskf(invalidConfigError, "config.Resources must not be empty")
 	}
 
 	// Settings.
