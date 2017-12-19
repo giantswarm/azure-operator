@@ -23,11 +23,11 @@
 
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
-  branch = "master"
+  version = "v11.3.0-beta"
 
 [[constraint]]
   name = "github.com/Azure/go-autorest"
-  branch = "master"
+  version = "v9.6.0"
 
 [[constraint]]
   name = "github.com/giantswarm/apiextensions"
