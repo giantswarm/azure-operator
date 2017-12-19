@@ -6,7 +6,7 @@ import (
 	"testing"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	certslegacytest "github.com/giantswarm/certs/legacy/legacytest"
+	"github.com/giantswarm/certs/certstest"
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
@@ -42,7 +42,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.CertWatcher = certslegacytest.NewService()
+		resourceConfig.CertsSearcher = certstest.NewSearcher()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		resourceConfig.TemplateVersion = "master"
@@ -167,7 +167,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 
 		resourceConfig := DefaultConfig()
 		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.CertWatcher = certslegacytest.NewService()
+		resourceConfig.CertsSearcher = certstest.NewSearcher()
 		resourceConfig.CloudConfig = cloudConfigService
 		resourceConfig.Logger = microloggertest.New()
 		resourceConfig.TemplateVersion = "master"

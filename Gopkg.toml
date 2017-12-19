@@ -35,7 +35,7 @@
 
 [[constraint]]
   name = "github.com/giantswarm/certs"
-  branch = "legacy"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/k8scloudconfig"

@@ -86,10 +86,10 @@
   revision = "a5f74b98c057386d05485914faca1283d0bff4b1"
 
 [[projects]]
-  branch = "legacy"
+  branch = "master"
   name = "github.com/giantswarm/certs"
-  packages = ["legacy","legacy/legacytest"]
-  revision = "bb0c3fdfdfa0baa2f6aeeb3f0fc09cfa516deb1d"
+  packages = [".","certstest"]
+  revision = "ef74f15a18c84b47f0167be54f2a93e187a4a6ae"
 
 [[projects]]
   branch = "master"
@@ -460,6 +460,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6f8fbafd6aac61396e122411efe964f561ab0f6bc71c75f91a28c871259b6954"
+  inputs-digest = "f97c815e9d615b94cb210e9696b2ee836d11e85c95b00a44339796c794ecef07"
   solver-name = "gps-cdcl"
   solver-version = 1

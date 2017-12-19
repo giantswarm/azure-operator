@@ -4,8 +4,6 @@ import (
 	"fmt"
 	"testing"
 
-	certslegacy "github.com/giantswarm/certs/legacy"
-
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
@@ -73,6 +71,19 @@ func Test_KeyVaultName(t *testing.T) {
 
 	if KeyVaultName(customObject) != expectedVaultName {
 		t.Fatalf("Expected key vault name %s but was %s", expectedVaultName, KeyVaultName(customObject))
+	}
+}
+
+func Test_KeyVaultKey(t *testing.T) {
+	var (
+		path        = "/etc/kubernetes/ssl/calico/client-ca.pem"
+		expectedKey = "etc/kubernetes/ssl/calico/client-ca.pem"
+	)
+
+	key := KeyVaultKey(path)
+
+	if key != expectedKey {
+		t.Errorf("expected key = %q, got %q", expectedKey, key)
 	}
 }
 
@@ -145,18 +156,5 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 		if actualRes != tc.ExpectedResult {
 			t.Fatalf("Expected %s but was %s", tc.ExpectedResult, actualRes)
 		}
-	}
-}
-
-func Test_SecretName(t *testing.T) {
-	expectedSecretName := "api-crt"
-
-	assetKey := certslegacy.AssetsBundleKey{
-		Component: "api",
-		Type:      "crt",
-	}
-
-	if SecretName(assetKey.Component, assetKey.Type) != expectedSecretName {
-		t.Fatalf("Expected secret name %s but was %s", expectedSecretName, SecretName(assetKey.Component, assetKey.Type))
 	}
 }

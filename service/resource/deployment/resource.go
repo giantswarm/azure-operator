@@ -8,7 +8,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	certslegacy "github.com/giantswarm/certs/legacy"
+	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
@@ -28,9 +28,9 @@ const (
 type Config struct {
 	// Dependencies.
 
-	CertWatcher certslegacy.Searcher
-	CloudConfig *cloudconfig.CloudConfig
-	Logger      micrologger.Logger
+	CertsSearcher certs.Interface
+	CloudConfig   *cloudconfig.CloudConfig
+	Logger        micrologger.Logger
 
 	// Settings.
 
@@ -46,8 +46,8 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 
-		CertWatcher: nil,
-		Logger:      nil,
+		CertsSearcher: nil,
+		Logger:        nil,
 
 		// Settings.
 
@@ -59,9 +59,9 @@ func DefaultConfig() Config {
 type Resource struct {
 	// Dependencies.
 
-	certWatcher certslegacy.Searcher
-	cloudConfig *cloudconfig.CloudConfig
-	logger      micrologger.Logger
+	certsSearcher certs.Interface
+	cloudConfig   *cloudconfig.CloudConfig
+	logger        micrologger.Logger
 
 	// Settings.
 
@@ -75,8 +75,8 @@ func New(config Config) (*Resource, error) {
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
-	if config.CertWatcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CertWatcher must not be empty")
+	if config.CertsSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.CertsSearcher must not be empty")
 	}
 	if config.CloudConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty")
@@ -91,9 +91,9 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		// Dependencies.
-		certWatcher: config.CertWatcher,
-		cloudConfig: config.CloudConfig,
-		logger:      config.Logger.With("resource", Name),
+		certsSearcher: config.CertsSearcher,
+		cloudConfig:   config.CloudConfig,
+		logger:        config.Logger.With("resource", Name),
 
 		// Settings.
 		azureConfig:     config.AzureConfig,
