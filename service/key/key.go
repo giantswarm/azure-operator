@@ -2,9 +2,9 @@ package key
 
 import (
 	"fmt"
+	"strings"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	certslegacy "github.com/giantswarm/certs/legacy"
 	"github.com/giantswarm/microerror"
 )
 
@@ -88,6 +88,14 @@ func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
 	return ClusterID(customObject) + "-vault"
 }
 
+// KeyVaultKey takes a certificate file path and returns KeyVault key under
+// which the certificate will be stored.
+func KeyVaultKey(certPath string) string {
+	k := strings.TrimPrefix(certPath, "/")
+	k = strings.Replace(k, "/", "-", -1)
+	return k
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
@@ -121,12 +129,6 @@ func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
 // RouteTableName returns name of the route table for this cluster.
 func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
-}
-
-// SecretName returns the name of the Key Vault secret for this certificate
-// asset.
-func SecretName(clusterComponent certslegacy.ClusterComponent, assetType certslegacy.TLSAssetType) string {
-	return fmt.Sprintf("%s-%s", clusterComponent, assetType)
 }
 
 func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {

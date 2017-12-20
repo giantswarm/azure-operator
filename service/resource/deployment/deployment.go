@@ -1,9 +1,8 @@
 package deployment
 
 import (
-	certslegacy "github.com/giantswarm/certs/legacy"
-
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/key"
@@ -21,7 +20,7 @@ func getDeploymentNames() []string {
 }
 
 func (r Resource) newMainDeployment(cluster providerv1alpha1.AzureConfig) (Deployment, error) {
-	certs, err := r.certWatcher.SearchCerts(key.ClusterID(cluster))
+	certs, err := r.certsSearcher.SearchCluster(key.ClusterID(cluster))
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
@@ -85,19 +84,18 @@ func convertParameters(inputs map[string]interface{}) map[string]interface{} {
 
 // convertCertsToSecrets converts the certificate assets to a keyVaultSecrets
 // collection so it can be passed as a secure object template parameter.
-func convertCertsToSecrets(certs certslegacy.AssetsBundle) keyVaultSecrets {
-	var secretsList []keyVaultSecret
+func convertCertsToSecrets(certificates certs.Cluster) keyVaultSecrets {
+	var secrets []keyVaultSecret
 
-	for asset, value := range certs {
-		secret := keyVaultSecret{
-			SecretName:  key.SecretName(asset.Component, asset.Type),
-			SecretValue: string(value),
+	for _, f := range certs.NewFilesCluster(certificates) {
+		s := keyVaultSecret{
+			SecretName:  key.KeyVaultKey(f.AbsolutePath),
+			SecretValue: string(f.Data),
 		}
-
-		secretsList = append(secretsList, secret)
+		secrets = append(secrets, s)
 	}
 
 	return keyVaultSecrets{
-		Secrets: secretsList,
+		Secrets: secrets,
 	}
 }
