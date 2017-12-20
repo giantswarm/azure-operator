@@ -34,7 +34,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	unitsMeta := []k8scloudconfig.UnitMetadata{
 		{
-			AssetContent: getKeyVaultSecretsUnit,
+			AssetContent: getKeyVaultSecretsUnitTemplate,
 			Name:         "get-keyvault-secrets.service",
 			Enable:       true,
 			Command:      "start",
@@ -81,7 +81,7 @@ func (me *masterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, 
 
 	// Prepare file metadata.
 	meta := k8scloudconfig.FileMetadata{
-		AssetContent: cloudProviderConfTemplate,
+		AssetContent: cloudProviderConfFileTemplate,
 		Path:         cloudProviderConfFileName,
 		Owner:        cloudProviderConfFileOwner,
 		Permissions:  cloudProviderConfFilePermission,
@@ -153,7 +153,7 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	unitsMeta := []k8scloudconfig.UnitMetadata{
 		{
-			AssetContent: getKeyVaultSecretsUnit,
+			AssetContent: getKeyVaultSecretsUnitTemplate,
 			Name:         getKeyVaultSecretsUnitName,
 			Enable:       true,
 			Command:      "start",
@@ -226,7 +226,7 @@ func (we *workerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, 
 
 	// Prepare file metadata.
 	meta := k8scloudconfig.FileMetadata{
-		AssetContent: cloudProviderConfTemplate,
+		AssetContent: cloudProviderConfFileTemplate,
 		Path:         cloudProviderConfFileName,
 		Owner:        cloudProviderConfFileOwner,
 		Permissions:  cloudProviderConfFilePermission,
@@ -248,10 +248,10 @@ func (we *workerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, 
 
 func (c *cloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
 	secretsMeta := k8scloudconfig.FileMetadata{
-		AssetContent: getKeyVaultSecretsTemplate,
+		AssetContent: getKeyVaultSecretsFileTemplate,
 		Path:         getKeyVaultSecretsFileName,
-		Owner:        keyVaultSecretsFileOwner,
-		Permissions:  keyVaultSecretsFilePermission,
+		Owner:        getKeyVaultSecretsFileOwner,
+		Permissions:  getKeyVaultSecretsFilePermission,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(secretsMeta.AssetContent, secrets)

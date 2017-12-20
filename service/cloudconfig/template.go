@@ -1,11 +1,10 @@
 package cloudconfig
 
 const (
-	// Cloud provider config contants
+	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
 	cloudProviderConfFileOwner      = "root:root"
 	cloudProviderConfFilePermission = 0600
-	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
-	cloudProviderConfTemplate       = `cloud: {{ .AzureCloudType }}
+	cloudProviderConfFileTemplate   = `cloud: {{ .AzureCloudType }}
 tenantId: {{ .TenantID }}
 subscriptionId: {{ .SubscriptionID }}
 resourceGroup: {{ .ResourceGroup }}
@@ -16,12 +15,13 @@ vnetName: {{ .VnetName }}
 routeTableName: {{ .RouteTableName }}
 useManagedIdentityExtension: true
 `
+)
 
-	// Key Vault secrets constants
-	keyVaultSecretsFileOwner      = "root:root"
-	keyVaultSecretsFilePermission = 0700
-	getKeyVaultSecretsFileName    = "/opt/bin/get-keyvault-secrets"
-	getKeyVaultSecretsTemplate    = `#!/bin/bash -e
+const (
+	getKeyVaultSecretsFileName       = "/opt/bin/get-keyvault-secrets"
+	getKeyVaultSecretsFileOwner      = "root:root"
+	getKeyVaultSecretsFilePermission = 0700
+	getKeyVaultSecretsFileTemplate   = `#!/bin/bash -e
 
 until $(curl --fail --output /dev/null http://localhost:50342/oauth2/token --data "resource=https://vault.azure.net" -H Metadata:true); do
 	printf 'Waiting auth backend'
@@ -47,9 +47,11 @@ curl https://$KEY_VAULT_HOST/secrets/{{ $secret.SecretName }}?api-version=$API_V
 chmod 0600 -R /etc/kubernetes/ssl/
 chown -R etcd:etcd /etc/kubernetes/ssl/etcd/
 `
+)
 
-	getKeyVaultSecretsUnitName = "get-keyvault-secrets.service"
-	getKeyVaultSecretsUnit     = `
+const (
+	getKeyVaultSecretsUnitName     = "get-keyvault-secrets.service"
+	getKeyVaultSecretsUnitTemplate = `
 [Unit]
 Description=Download certificates from Key Vault
 
