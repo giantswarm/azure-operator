@@ -34,23 +34,10 @@ func newCloudProviderConfFileParams(azureConfig client.AzureConfig, obj provider
 
 type getKeyVaultSecretsFileParams struct {
 	VaultName string
-	Secrets   []keyVaultSecret
+	Secrets   []getKeyVaultSecretsFileParamsSecret
 }
 
-type keyVaultSecret struct {
+type getKeyVaultSecretsFileParamsSecret struct {
 	SecretName string
 	FileName   string
-}
-
-type cloudConfigExtension struct {
-	AzureConfig  client.AzureConfig
-	CustomObject providerv1alpha1.AzureConfig
-}
-
-type masterExtension struct {
-	cloudConfigExtension
-}
-
-type workerExtension struct {
-	cloudConfigExtension
 }
