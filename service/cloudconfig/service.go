@@ -75,10 +75,43 @@ func New(config Config) (*CloudConfig, error) {
 func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
+		Hyperkube: k8scloudconfig.Hyperkube{
+			Apiserver: k8scloudconfig.HyperkubeApiserver{
+				BindAddress: "0.0.0.0",
+				HyperkubeDocker: k8scloudconfig.HyperkubeDocker{
+					RunExtraArgs: []string{
+						"-v /etc/kubernetes/config:/etc/kubernetes/config",
+						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+					},
+					CommandExtraArgs: []string{
+						"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					},
+				},
+			},
+			ControllerManager: k8scloudconfig.HyperkubeDocker{
+				RunExtraArgs: []string{
+					"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+				},
+				CommandExtraArgs: []string{
+					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					"--allocate-node-cidrs=true",
+					fmt.Sprintf("--cluster-cidr %s/%d", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR),
+				},
+			},
+			Kubelet: k8scloudconfig.HyperkubeDocker{
+				RunExtraArgs: []string{
+					"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+				},
+				CommandExtraArgs: []string{
+					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+				},
+			},
+		},
 		Extension: &masterExtension{
 			AzureConfig:  c.azureConfig,
 			CustomObject: customObject,
 		},
+		MasterAPIDomain: "127.0.0.1",
 	}
 
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
@@ -89,10 +122,21 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
+		Hyperkube: k8scloudconfig.Hyperkube{
+			Kubelet: k8scloudconfig.HyperkubeDocker{
+				RunExtraArgs: []string{
+					"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+				},
+				CommandExtraArgs: []string{
+					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+				},
+			},
+		},
 		Extension: &workerExtension{
 			AzureConfig:  c.azureConfig,
 			CustomObject: customObject,
 		},
+		MasterAPIDomain: "127.0.0.1",
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
