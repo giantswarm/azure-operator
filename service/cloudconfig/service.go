@@ -9,7 +9,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/client"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_2_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_0_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
@@ -81,7 +81,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		},
 	}
 
-	return c.newCloudConfig(k8scloudconfig.MasterTemplate, params)
+	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
 }
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
@@ -95,11 +95,15 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 		},
 	}
 
-	return c.newCloudConfig(k8scloudconfig.WorkerTemplate, params)
+	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
 }
 
-func (c CloudConfig) newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
-	cloudConfig, err := k8scloudconfig.NewCloudConfig(template, params)
+func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
+	c := k8scloudconfig.DefaultCloudConfigConfig()
+	c.Params = params
+	c.Template = template
+
+	cloudConfig, err := k8scloudconfig.NewCloudConfig(c)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
