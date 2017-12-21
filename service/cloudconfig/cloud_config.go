@@ -1,6 +1,7 @@
 package cloudconfig
 
 import (
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_2_0_0"
 	"github.com/giantswarm/microerror"
@@ -10,40 +11,33 @@ import (
 
 // Files allows files to be injected into the master cloudconfig.
 func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
-	var newFiles []k8scloudconfig.FileAsset
-
-	getSecretsScript, err := me.getMasterSecretsScript()
+	cloudProviderConfFile, err := me.renderCloudProviderConfFile()
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
 	}
 
-	cloudProviderConf, err := me.masterCloudProviderConf()
+	getKeyVaultSecretsFile, err := me.renderGetKeyVaultSecretsFile()
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsFile")
 	}
 
-	newFiles = []k8scloudconfig.FileAsset{
-		getSecretsScript,
-		cloudProviderConf,
+	files := []k8scloudconfig.FileAsset{
+		cloudProviderConfFile,
+		getKeyVaultSecretsFile,
 	}
 
-	return newFiles, nil
+	return files, nil
 }
 
 // Units allows systemd units to be injected into the master cloudconfig.
 func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
-	unitsMeta := []k8scloudconfig.UnitMetadata{
-		{
-			AssetContent: getKeyVaultSecretsUnitTemplate,
-			Name:         "get-keyvault-secrets.service",
-			Enable:       true,
-			Command:      "start",
-		},
+	getKeyVaultSecretsUnit, err := me.renderGetKeyVaultSecretsUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsUnit")
 	}
 
-	units, err := me.renderUnits(unitsMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	units := []k8scloudconfig.UnitAsset{
+		getKeyVaultSecretsUnit,
 	}
 
 	return units, nil
@@ -54,57 +48,19 @@ func (me *masterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
 }
 
-// masterCloudProviderConf returns Kubernetes cloud provider config for Azure.
-func (me *masterExtension) masterCloudProviderConf() (k8scloudconfig.FileAsset, error) {
-	// Prepare template parameters.
-	params := struct {
-		AzureCloudType    string
-		Location          string
-		ResourceGroup     string
-		RouteTableName    string
-		SecurityGroupName string
-		SubnetName        string
-		SubscriptionID    string
-		TenantID          string
-		VnetName          string
-	}{
-		AzureCloudType:    key.AzureCloudType(me.CustomObject),
-		Location:          key.Location(me.CustomObject),
-		ResourceGroup:     key.ResourceGroupName(me.CustomObject),
-		RouteTableName:    key.RouteTableName(me.CustomObject),
-		SecurityGroupName: key.MasterSecurityGroupName(me.CustomObject),
-		SubnetName:        key.MasterSubnetName(me.CustomObject),
-		SubscriptionID:    me.AzureConfig.SubscriptionID,
-		TenantID:          me.AzureConfig.TenantID,
-		VnetName:          key.VnetName(me.CustomObject),
-	}
+func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
+	params := newCloudProviderConfFileParams(me.AzureConfig, me.CustomObject)
 
-	// Prepare file metadata.
-	meta := k8scloudconfig.FileMetadata{
-		AssetContent: cloudProviderConfFileTemplate,
-		Path:         cloudProviderConfFileName,
-		Owner:        cloudProviderConfFileOwner,
-		Permissions:  cloudProviderConfFilePermission,
-	}
-
-	// Generate template.
-	content, err := k8scloudconfig.RenderAssetContent(meta.AssetContent, params)
+	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	asset := k8scloudconfig.FileAsset{
-		Metadata: meta,
-		Content:  content,
 	}
 
 	return asset, nil
 }
 
-// getMasterSecretsScript returns the script for downloading the master TLS
-// certificates from Key Vault on startup.
-func (me *masterExtension) getMasterSecretsScript() (k8scloudconfig.FileAsset, error) {
-	secrets := keyVaultSecrets{
+func (me *masterExtension) renderGetKeyVaultSecretsFile() (k8scloudconfig.FileAsset, error) {
+	params := getKeyVaultSecretsFileParams{
 		VaultName: key.KeyVaultName(me.CustomObject),
 		Secrets:   []keyVaultSecret{},
 	}
@@ -116,53 +72,57 @@ func (me *masterExtension) getMasterSecretsScript() (k8scloudconfig.FileAsset, e
 			SecretName: key.KeyVaultKey(f.AbsolutePath),
 			FileName:   f.AbsolutePath,
 		}
-		secrets.Secrets = append(secrets.Secrets, s)
+		params.Secrets = append(params.Secrets, s)
 	}
 
-	getSecretsScript, err := me.renderGetSecretsScript(secrets)
+	asset, err := renderGetKeyVaultSecretsFile(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
 
-	return getSecretsScript, nil
+	return asset, nil
 }
 
-// Files allows files to be injected into the worker cloudconfig.
+func (me *masterExtension) renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
+	params := me.CustomObject
+
+	asset, err := renderGetKeyVaultSecretsUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+// Files allows files to be injected into the master cloudconfig.
 func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
-	var newFiles []k8scloudconfig.FileAsset
-
-	getSecretsScript, err := we.getWorkerSecretsScript()
+	cloudProviderConfFile, err := we.renderCloudProviderConfFile()
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
 	}
 
-	cloudProviderConf, err := we.workerCloudProviderConf()
+	getKeyVaultSecretsFile, err := we.renderGetKeyVaultSecretsFile()
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsFile")
 	}
 
-	newFiles = []k8scloudconfig.FileAsset{
-		getSecretsScript,
-		cloudProviderConf,
+	files := []k8scloudconfig.FileAsset{
+		cloudProviderConfFile,
+		getKeyVaultSecretsFile,
 	}
 
-	return newFiles, nil
+	return files, nil
 }
 
-// Units allows systemd units to be injected into the worker cloudconfig.
+// Units allows systemd units to be injected into the master cloudconfig.
 func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
-	unitsMeta := []k8scloudconfig.UnitMetadata{
-		{
-			AssetContent: getKeyVaultSecretsUnitTemplate,
-			Name:         getKeyVaultSecretsUnitName,
-			Enable:       true,
-			Command:      "start",
-		},
+	getKeyVaultSecretsUnit, err := we.renderGetKeyVaultSecretsUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsUnit")
 	}
 
-	units, err := we.renderUnits(unitsMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	units := []k8scloudconfig.UnitAsset{
+		getKeyVaultSecretsUnit,
 	}
 
 	return units, nil
@@ -173,10 +133,19 @@ func (we *workerExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
 }
 
-// getWorkerSecretsScript returns the script for downloading the worker TLS
-// certificates from Key Vault on startup.
-func (we *workerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, error) {
-	secrets := keyVaultSecrets{
+func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
+	params := newCloudProviderConfFileParams(we.AzureConfig, we.CustomObject)
+
+	asset, err := renderCloudProviderConfFile(params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (we *workerExtension) renderGetKeyVaultSecretsFile() (k8scloudconfig.FileAsset, error) {
+	params := getKeyVaultSecretsFileParams{
 		VaultName: key.KeyVaultName(we.CustomObject),
 		Secrets:   []keyVaultSecret{},
 	}
@@ -188,101 +157,88 @@ func (we *workerExtension) getWorkerSecretsScript() (k8scloudconfig.FileAsset, e
 			SecretName: key.KeyVaultKey(f.AbsolutePath),
 			FileName:   f.AbsolutePath,
 		}
-		secrets.Secrets = append(secrets.Secrets, s)
+		params.Secrets = append(params.Secrets, s)
 	}
 
-	getSecretsScript, err := we.renderGetSecretsScript(secrets)
+	asset, err := renderGetKeyVaultSecretsFile(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
 
-	return getSecretsScript, nil
+	return asset, nil
 }
 
-// workerCloudProviderConf returns Kubernetes cloud provider config for Azure.
-func (we *workerExtension) workerCloudProviderConf() (k8scloudconfig.FileAsset, error) {
-	// Prepare template parameters.
-	params := struct {
-		AzureCloudType    string
-		Location          string
-		ResourceGroup     string
-		RouteTableName    string
-		SecurityGroupName string
-		SubnetName        string
-		SubscriptionID    string
-		TenantID          string
-		VnetName          string
-	}{
-		AzureCloudType:    key.AzureCloudType(we.CustomObject),
-		Location:          key.Location(we.CustomObject),
-		ResourceGroup:     key.ResourceGroupName(we.CustomObject),
-		RouteTableName:    key.RouteTableName(we.CustomObject),
-		SecurityGroupName: key.WorkerSecurityGroupName(we.CustomObject),
-		SubnetName:        key.WorkerSubnetName(we.CustomObject),
-		SubscriptionID:    we.AzureConfig.SubscriptionID,
-		TenantID:          we.AzureConfig.TenantID,
-		VnetName:          key.VnetName(we.CustomObject),
+func (we *workerExtension) renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
+	params := we.CustomObject
+
+	asset, err := renderGetKeyVaultSecretsUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
-	// Prepare file metadata.
-	meta := k8scloudconfig.FileMetadata{
+	return asset, nil
+}
+
+func renderCloudProviderConfFile(params cloudProviderConfFileParams) (k8scloudconfig.FileAsset, error) {
+	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: cloudProviderConfFileTemplate,
 		Path:         cloudProviderConfFileName,
 		Owner:        cloudProviderConfFileOwner,
 		Permissions:  cloudProviderConfFilePermission,
 	}
 
-	// Generate template.
-	content, err := k8scloudconfig.RenderAssetContent(meta.AssetContent, params)
+	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
 
-	asset := k8scloudconfig.FileAsset{
-		Metadata: meta,
+	file := k8scloudconfig.FileAsset{
+		Metadata: fileMeta,
 		Content:  content,
 	}
 
-	return asset, nil
+	return file, nil
 }
 
-func (c *cloudConfigExtension) renderGetSecretsScript(secrets keyVaultSecrets) (k8scloudconfig.FileAsset, error) {
-	secretsMeta := k8scloudconfig.FileMetadata{
+func renderGetKeyVaultSecretsFile(params getKeyVaultSecretsFileParams) (k8scloudconfig.FileAsset, error) {
+	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: getKeyVaultSecretsFileTemplate,
 		Path:         getKeyVaultSecretsFileName,
 		Owner:        getKeyVaultSecretsFileOwner,
 		Permissions:  getKeyVaultSecretsFilePermission,
 	}
 
-	content, err := k8scloudconfig.RenderAssetContent(secretsMeta.AssetContent, secrets)
+	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
 
-	downloadSecrets := k8scloudconfig.FileAsset{
-		Metadata: secretsMeta,
+	file := k8scloudconfig.FileAsset{
+		Metadata: fileMeta,
 		Content:  content,
 	}
 
-	return downloadSecrets, nil
+	return file, nil
 }
 
-func (c *cloudConfigExtension) renderUnits(unitsMeta []k8scloudconfig.UnitMetadata) ([]k8scloudconfig.UnitAsset, error) {
-	units := make([]k8scloudconfig.UnitAsset, 0, len(unitsMeta))
-
-	for _, unitMeta := range unitsMeta {
-		content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, c.CustomObject)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		unitAsset := k8scloudconfig.UnitAsset{
-			Metadata: unitMeta,
-			Content:  content,
-		}
-
-		units = append(units, unitAsset)
+// TODO remove obj from parameters. This doesn't need params to render.
+func renderGetKeyVaultSecretsUnit(obj providerv1alpha1.AzureConfig) (k8scloudconfig.UnitAsset, error) {
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: getKeyVaultSecretsUnitTemplate,
+		Name:         getKeyVaultSecretsUnitName,
+		Enable:       true,
+		Command:      "start",
 	}
 
-	return units, nil
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, obj)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
 }
