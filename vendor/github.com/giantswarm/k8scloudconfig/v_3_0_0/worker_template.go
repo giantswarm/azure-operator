@@ -237,14 +237,14 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.4_coreos.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.0"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
       ExecStartPre=-/usr/bin/docker stop -t 10 $NAME
       ExecStartPre=-/usr/bin/docker rm -f $NAME
       ExecStart=/bin/sh -c "/usr/bin/docker run --rm --pid=host --net=host --privileged=true \
-      {{ range .Hyperkube.Kubelet.RunExtraArgs -}}
+      {{ range .Hyperkube.Kubelet.Docker.RunExtraArgs -}}
       {{ . }} \
       {{ end -}}
       -v /:/rootfs:ro,shared \
@@ -275,7 +275,7 @@ coreos:
       --name $NAME \
       $IMAGE \
       /hyperkube kubelet \
-      {{ range .Hyperkube.Kubelet.CommandExtraArgs -}}
+      {{ range .Hyperkube.Kubelet.Docker.CommandExtraArgs -}}
       {{ . }} \
       {{ end -}}
       --address=${DEFAULT_IPV4} \

@@ -8,6 +8,9 @@ const (
 
 type Params struct {
 	Cluster v1alpha1.Cluster
+	// DisableCalico flag when set removes all calico related Kubernetes
+	// manifests from the cloud config together with their initialization.
+	DisableCalico bool
 	// Hyperkube allows to pass extra `docker run` and `command` arguments
 	// to hyperkube image commands. This allows to e.g. add cloud provider
 	// extensions.
@@ -34,13 +37,11 @@ type Params struct {
 
 type Hyperkube struct {
 	Apiserver         HyperkubeApiserver
-	ControllerManager HyperkubeDocker
-	Kubelet           HyperkubeDocker
+	ControllerManager HyperkubeControllerManager
+	Kubelet           HyperkubeKubelet
 }
 
 type HyperkubeApiserver struct {
-	HyperkubeDocker
-
 	// BindAddress is a value of the --bind-address flag passed to the
 	// hyperkube apiserver. When BindAddress is empty value of
 	// `${DEFAULT_IPV4}` will be passed.
@@ -50,6 +51,15 @@ type HyperkubeApiserver struct {
 	//
 	// azure-operator sets that to 0.0.0.0. Other operators leave it empty.
 	BindAddress string
+	Docker      HyperkubeDocker
+}
+
+type HyperkubeControllerManager struct {
+	Docker HyperkubeDocker
+}
+
+type HyperkubeKubelet struct {
+	Docker HyperkubeDocker
 }
 
 type HyperkubeDocker struct {
