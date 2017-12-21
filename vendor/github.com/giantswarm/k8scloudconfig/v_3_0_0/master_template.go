@@ -10,6 +10,7 @@ users:
        - "{{ $user.PublicKey }}"
 {{end}}
 write_files:
+{{ if not .DisableCalico -}}
 - path: /srv/calico-ipip-pinger-sa.yaml
   owner: root
   permissions: 644
@@ -520,6 +521,7 @@ write_files:
             - name: etcd-certs
               hostPath:
                 path: /etc/kubernetes/ssl/etcd
+{{ end -}}
 - path: /srv/kubedns-cm.yaml
   owner: root
   permissions: 0644
@@ -978,7 +980,7 @@ write_files:
           serviceAccountName: kube-proxy
           containers:
             - name: kube-proxy
-              image: quay.io/giantswarm/hyperkube:v1.8.4_coreos.0
+              image: quay.io/giantswarm/hyperkube:v1.9.0
               command:
               - /hyperkube
               - proxy
@@ -1508,6 +1510,8 @@ write_files:
           done
       done
 
+      {{ if not .DisableCalico -}}
+
       # apply calico CNI
       CALICO_FILES=""
       CALICO_FILES="${CALICO_FILES} calico-configmap.yaml"
@@ -1543,6 +1547,8 @@ write_files:
           echo "Waiting for calico to be ready . . "
           sleep 3s
       done
+
+      {{ end -}}
 
       # apply default storage class
       if [ -f /srv/default-storage-class.yaml ]; then
@@ -1955,7 +1961,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.4_coreos.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.0"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
@@ -2056,7 +2062,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.4_coreos.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.0"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/mkdir -p /etc/kubernetes/manifests
@@ -2122,7 +2128,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.4_coreos.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.0"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
@@ -2164,7 +2170,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.8.4_coreos.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.0"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE

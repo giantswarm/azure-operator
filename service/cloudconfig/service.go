@@ -78,7 +78,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				BindAddress: "0.0.0.0",
-				HyperkubeDocker: k8scloudconfig.HyperkubeDocker{
+				Docker: k8scloudconfig.HyperkubeDocker{
 					RunExtraArgs: []string{
 						"-v /etc/kubernetes/config:/etc/kubernetes/config",
 						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
@@ -88,22 +88,26 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 					},
 				},
 			},
-			ControllerManager: k8scloudconfig.HyperkubeDocker{
-				RunExtraArgs: []string{
-					"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
-				},
-				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
-					"--allocate-node-cidrs=true",
-					fmt.Sprintf("--cluster-cidr %s/%d", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR),
+			ControllerManager: k8scloudconfig.HyperkubeControllerManager{
+				Docker: k8scloudconfig.HyperkubeDocker{
+					RunExtraArgs: []string{
+						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+					},
+					CommandExtraArgs: []string{
+						"--cloud-config=/etc/kubernetes/config/azure.yaml",
+						"--allocate-node-cidrs=true",
+						fmt.Sprintf("--cluster-cidr %s/%d", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR),
+					},
 				},
 			},
-			Kubelet: k8scloudconfig.HyperkubeDocker{
-				RunExtraArgs: []string{
-					"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
-				},
-				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+			Kubelet: k8scloudconfig.HyperkubeKubelet{
+				Docker: k8scloudconfig.HyperkubeDocker{
+					RunExtraArgs: []string{
+						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+					},
+					CommandExtraArgs: []string{
+						"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					},
 				},
 			},
 		},
@@ -123,12 +127,14 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
 		Hyperkube: k8scloudconfig.Hyperkube{
-			Kubelet: k8scloudconfig.HyperkubeDocker{
-				RunExtraArgs: []string{
-					"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
-				},
-				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+			Kubelet: k8scloudconfig.HyperkubeKubelet{
+				Docker: k8scloudconfig.HyperkubeDocker{
+					RunExtraArgs: []string{
+						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+					},
+					CommandExtraArgs: []string{
+						"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					},
 				},
 			},
 		},
