@@ -5,7 +5,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/key"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_2_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_0_0"
 	"github.com/giantswarm/microerror"
 )
 
