@@ -6,6 +6,16 @@ import (
 	"github.com/giantswarm/azure-operator/service/key"
 )
 
+type calicoAzureFileParams struct {
+	Cluster providerv1alpha1.Cluster
+}
+
+func newCalicoAzureFileParams(obj providerv1alpha1.AzureConfig) calicoAzureFileParams {
+	return calicoAzureFileParams{
+		Cluster: obj.Spec.Cluster,
+	}
+}
+
 type cloudProviderConfFileParams struct {
 	AzureCloudType    string
 	Location          string

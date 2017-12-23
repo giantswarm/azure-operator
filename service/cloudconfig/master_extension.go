@@ -16,6 +16,11 @@ type masterExtension struct {
 
 // Files allows files to be injected into the master cloudconfig.
 func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
+	calicoAzureFile, err := me.renderCalicoAzureFile()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderCalicoAzureFile")
+	}
+
 	cloudProviderConfFile, err := me.renderCloudProviderConfFile()
 	if err != nil {
 		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
@@ -27,6 +32,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	}
 
 	files := []k8scloudconfig.FileAsset{
+		calicoAzureFile,
 		cloudProviderConfFile,
 		getKeyVaultSecretsFile,
 	}
@@ -51,6 +57,17 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 // VerbatimSections allows sections to be embedded in the master cloudconfig.
 func (me *masterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
+}
+
+func (me *masterExtension) renderCalicoAzureFile() (k8scloudconfig.FileAsset, error) {
+	params := newCalicoAzureFileParams(me.CustomObject)
+
+	asset, err := renderCalicoAzureFile(params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
 }
 
 func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {

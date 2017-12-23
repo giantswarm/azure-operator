@@ -6,6 +6,27 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAsset, error) {
+	fileMeta := k8scloudconfig.FileMetadata{
+		AssetContent: calicoAzureFileTemplate,
+		Path:         calicoAzureFileName,
+		Owner:        calicoAzureFileOwner,
+		Permissions:  calicoAzureFilePermission,
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	file := k8scloudconfig.FileAsset{
+		Metadata: fileMeta,
+		Content:  content,
+	}
+
+	return file, nil
+}
+
 func renderCloudProviderConfFile(params cloudProviderConfFileParams) (k8scloudconfig.FileAsset, error) {
 	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: cloudProviderConfFileTemplate,
