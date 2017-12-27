@@ -74,7 +74,8 @@ func New(config Config) (*CloudConfig, error) {
 // base64 encoded string.
 func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
-		Cluster: customObject.Spec.Cluster,
+		Cluster:       customObject.Spec.Cluster,
+		DisableCalico: true,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				BindAddress: "0.0.0.0",
@@ -114,6 +115,9 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		Extension: &masterExtension{
 			AzureConfig:  c.azureConfig,
 			CustomObject: customObject,
+		},
+		ExtraManifests: []string{
+			"calico-azure.yaml",
 		},
 		MasterAPIDomain: "127.0.0.1",
 	}
