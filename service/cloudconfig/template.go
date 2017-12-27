@@ -372,6 +372,9 @@ const (
       labels:
         kubernetes.io/cluster-service: "true"
     provisioner: kubernetes.io/azure-disk
+    parameters:
+      kind: Managed
+      storageaccounttype: Premium_LRS
     ---
     apiVersion: storage.k8s.io/v1beta1
     kind: StorageClass
