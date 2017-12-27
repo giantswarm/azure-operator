@@ -48,6 +48,29 @@ func renderCloudProviderConfFile(params cloudProviderConfFileParams) (k8scloudco
 	return file, nil
 }
 
+func renderDefaultStorageClassFile() (k8scloudconfig.FileAsset, error) {
+	params := struct{}{}
+
+	fileMeta := k8scloudconfig.FileMetadata{
+		AssetContent: defaultStorageClassFileTemplate,
+		Path:         defaultStorageClassFileName,
+		Owner:        defaultStorageClassFileOwner,
+		Permissions:  defaultStorageClassFilePermission,
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	file := k8scloudconfig.FileAsset{
+		Metadata: fileMeta,
+		Content:  content,
+	}
+
+	return file, nil
+}
+
 func renderGetKeyVaultSecretsFile(params getKeyVaultSecretsFileParams) (k8scloudconfig.FileAsset, error) {
 	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: getKeyVaultSecretsFileTemplate,

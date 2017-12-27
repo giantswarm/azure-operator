@@ -26,6 +26,11 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
 	}
 
+	defaultStorageClassFile, err := me.renderDefaultStorageClassFile()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderDefaultStorageClassFile")
+	}
+
 	getKeyVaultSecretsFile, err := me.renderGetKeyVaultSecretsFile()
 	if err != nil {
 		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsFile")
@@ -34,6 +39,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	files := []k8scloudconfig.FileAsset{
 		calicoAzureFile,
 		cloudProviderConfFile,
+		defaultStorageClassFile,
 		getKeyVaultSecretsFile,
 	}
 
@@ -74,6 +80,15 @@ func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 	params := newCloudProviderConfFileParams(me.AzureConfig, me.CustomObject)
 
 	asset, err := renderCloudProviderConfFile(params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderDefaultStorageClassFile() (k8scloudconfig.FileAsset, error) {
+	asset, err := renderDefaultStorageClassFile()
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
