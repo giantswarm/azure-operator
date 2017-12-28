@@ -4,7 +4,6 @@ import (
 	"bytes"
 	"compress/gzip"
 	"encoding/base64"
-	"reflect"
 	"text/template"
 
 	"github.com/giantswarm/microerror"
@@ -29,8 +28,8 @@ type CloudConfig struct {
 }
 
 func NewCloudConfig(config CloudConfigConfig) (*CloudConfig, error) {
-	if reflect.DeepEqual(config.Params, Params{}) {
-		return nil, microerror.Maskf(invalidConfigError, "config.Params must not be empty")
+	if err := config.Params.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.Params.%s", err)
 	}
 	if config.Template == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.Template must not be empty")
@@ -42,6 +41,10 @@ func NewCloudConfig(config CloudConfigConfig) (*CloudConfig, error) {
 	}
 	if config.Params.Hyperkube.Apiserver.BindAddress == "" {
 		config.Params.Hyperkube.Apiserver.BindAddress = defaultHyperkubeApiserverBindAddress
+	}
+	// Default to 443 for non AWS providers.
+	if config.Params.EtcdPort == 0 {
+		config.Params.EtcdPort = 443
 	}
 
 	c := &CloudConfig{
