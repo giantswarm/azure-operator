@@ -93,6 +93,7 @@ func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
 func KeyVaultKey(certPath string) string {
 	k := strings.TrimPrefix(certPath, "/")
 	k = strings.Replace(k, "/", "-", -1)
+	k = strings.Replace(k, ".", "-", -1)
 	return k
 }
 
