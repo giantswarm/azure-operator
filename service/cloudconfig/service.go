@@ -14,11 +14,13 @@ import (
 	"github.com/giantswarm/micrologger"
 )
 
-// apiserverEncryptionKey is **insecure** encryption key just to satisfy newest
-// master of k8scloudconfigs.
-//
-// TODO: use randomkeys to fill the value properly.
-const apiserverEncryptionKey = "UShZb2zOWvY5Svkf8+oSSa0dEZxprPWz0xYYsAsFuP0="
+const (
+	// apiserverEncryptionKey is **insecure** encryption key just to satisfy newest
+	// master of k8scloudconfigs.
+	//
+	// TODO: use randomkeys to fill the value properly.
+	apiserverEncryptionKey = "UShZb2zOWvY5Svkf8+oSSa0dEZxprPWz0xYYsAsFuP0="
+)
 
 // Config represents the configuration used to create a cloudconfig service.
 type Config struct {
