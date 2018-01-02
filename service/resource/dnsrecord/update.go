@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/arm/dns"
+	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/key"
@@ -54,7 +54,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 			}
 		}
 
-		_, err := recordSetsClient.CreateOrUpdate(record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
+		_, err := recordSetsClient.CreateOrUpdate(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
 		if err != nil {
 			return microerror.Maskf(err, fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
 		}
