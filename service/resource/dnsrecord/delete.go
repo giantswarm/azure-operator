@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/arm/dns"
+	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/key"
 	"github.com/giantswarm/microerror"
@@ -41,7 +41,7 @@ func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.A
 	for _, record := range change {
 		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting host cluster DNS record=%#v", record))
 
-		_, err := recordSetsClient.Delete(record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
+		_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
 		if err != nil {
 			return microerror.Maskf(err, fmt.Sprintf("deleting host cluster DNS record=%#v", record))
 		}

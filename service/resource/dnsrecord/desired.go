@@ -29,7 +29,7 @@ func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.Azu
 
 	for i, record := range desired {
 		zone := record.RelativeName + "." + record.Zone
-		resp, err := zonesClient.Get(key.ResourceGroupName(obj), zone)
+		resp, err := zonesClient.Get(ctx, key.ResourceGroupName(obj), zone)
 		if client.ResponseWasNotFound(resp.Response) {
 			return dnsRecords{}, nil
 		} else if err != nil {
