@@ -359,46 +359,42 @@ const (
 	defaultStorageClassFileName       = "/srv/default-storage-class.yaml"
 	defaultStorageClassFileOwner      = "root:root"
 	defaultStorageClassFilePermission = 0600
-	defaultStorageClassFileTemplate   = `- path: /srv/default-storage-class.yaml
-  owner: root
-  permissions: 644
-  content: |
-    apiVersion: storage.k8s.io/v1beta1
-    kind: StorageClass
-    metadata:
-      name: default
-      annotations:
-        storageclass.beta.kubernetes.io/is-default-class: "true"
-      labels:
-        kubernetes.io/cluster-service: "true"
-    provisioner: kubernetes.io/azure-disk
-    parameters:
-      kind: Managed
-      storageaccounttype: Premium_LRS
-    ---
-    apiVersion: storage.k8s.io/v1beta1
-    kind: StorageClass
-    metadata:
-      name: managed-premium
-      annotations:
-      labels:
-        kubernetes.io/cluster-service: "true"
-    provisioner: kubernetes.io/azure-disk
-    parameters:
-      kind: Managed
-      storageaccounttype: Premium_LRS
-    ---
-    apiVersion: storage.k8s.io/v1beta1
-    kind: StorageClass
-    metadata:
-      name: managed-standard
-      annotations:
-      labels:
-        kubernetes.io/cluster-service: "true"
-    provisioner: kubernetes.io/azure-disk
-    parameters:
-      kind: Managed
-      storageaccounttype: Standard_LRS
+	defaultStorageClassFileTemplate   = `apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: default
+  annotations:
+    storageclass.beta.kubernetes.io/is-default-class: "true"
+  labels:
+    kubernetes.io/cluster-service: "true"
+provisioner: kubernetes.io/azure-disk
+parameters:
+  kind: Managed
+  storageaccounttype: Premium_LRS
+---
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: managed-premium
+  annotations:
+  labels:
+    kubernetes.io/cluster-service: "true"
+provisioner: kubernetes.io/azure-disk
+parameters:
+  kind: Managed
+  storageaccounttype: Premium_LRS
+---
+apiVersion: storage.k8s.io/v1beta1
+kind: StorageClass
+metadata:
+  name: managed-standard
+  annotations:
+  labels:
+    kubernetes.io/cluster-service: "true"
+provisioner: kubernetes.io/azure-disk
+parameters:
+  kind: Managed
+  storageaccounttype: Standard_LRS
 `
 )
 
