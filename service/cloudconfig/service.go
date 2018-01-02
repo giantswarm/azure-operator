@@ -15,11 +15,15 @@ import (
 )
 
 const (
-	// apiserverEncryptionKey is **insecure** encryption key just to satisfy newest
-	// master of k8scloudconfigs.
+	// apiserverEncryptionKey is **insecure** encryption key just to
+	// satisfy newest master of k8scloudconfigs.
 	//
 	// TODO: use randomkeys to fill the value properly.
 	apiserverEncryptionKey = "UShZb2zOWvY5Svkf8+oSSa0dEZxprPWz0xYYsAsFuP0="
+
+	// loopbackAddr is used to set various cloud config template
+	// parameters to work around Azure load balancers limitation.
+	loopbackAddr = "127.0.0.1"
 )
 
 // Config represents the configuration used to create a cloudconfig service.
@@ -128,7 +132,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		ExtraManifests: []string{
 			"calico-azure.yaml",
 		},
-		MasterAPIDomain: "127.0.0.1",
+		MasterAPIDomain: loopbackAddr,
 	}
 
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
@@ -156,7 +160,7 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			AzureConfig:  c.azureConfig,
 			CustomObject: customObject,
 		},
-		MasterAPIDomain: "127.0.0.1",
+		MasterAPIDomain: loopbackAddr,
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
