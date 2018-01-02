@@ -21,7 +21,7 @@ const (
 	// TODO: use randomkeys to fill the value properly.
 	apiserverEncryptionKey = "UShZb2zOWvY5Svkf8+oSSa0dEZxprPWz0xYYsAsFuP0="
 
-	// loopbackAddr is used to set varioius cloud config template
+	// loopbackAddr is used to set various cloud config template
 	// parameters to work around Azure load balancers limitation.
 	loopbackAddr = "127.0.0.1"
 )
