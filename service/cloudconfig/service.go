@@ -14,6 +14,14 @@ import (
 	"github.com/giantswarm/micrologger"
 )
 
+const (
+	// apiserverEncryptionKey is **insecure** encryption key just to satisfy newest
+	// master of k8scloudconfigs.
+	//
+	// TODO: use randomkeys to fill the value properly.
+	apiserverEncryptionKey = "UShZb2zOWvY5Svkf8+oSSa0dEZxprPWz0xYYsAsFuP0="
+)
+
 // Config represents the configuration used to create a cloudconfig service.
 type Config struct {
 	// Dependencies.
@@ -74,8 +82,9 @@ func New(config Config) (*CloudConfig, error) {
 // base64 encoded string.
 func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
-		Cluster:       customObject.Spec.Cluster,
-		DisableCalico: true,
+		ApiserverEncryptionKey: apiserverEncryptionKey,
+		Cluster:                customObject.Spec.Cluster,
+		DisableCalico:          true,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				BindAddress: "0.0.0.0",
@@ -129,7 +138,8 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 // base64 encoded string.
 func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
-		Cluster: customObject.Spec.Cluster,
+		ApiserverEncryptionKey: apiserverEncryptionKey,
+		Cluster:                customObject.Spec.Cluster,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Kubelet: k8scloudconfig.HyperkubeKubelet{
 				Docker: k8scloudconfig.HyperkubeDocker{
