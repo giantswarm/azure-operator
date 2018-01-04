@@ -12,6 +12,9 @@
     "clusterID": {
       "type": "string"
     },
+    "calicoSubnetCidr": {
+      "type": "string"
+    },
     "masterSubnetCidr": {
       "type": "string"
     },
@@ -54,7 +57,7 @@
               "sourcePortRange": "*",
               "destinationPortRange": "*",
               "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "destinationAddressPrefix": "*",
               "access": "Deny",
               "direction": "Inbound",
               "priority": "4096"
@@ -67,7 +70,7 @@
               "protocol": "*",
               "sourcePortRange": "*",
               "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "direction": "Outbound",
@@ -82,7 +85,7 @@
               "sourcePortRange": "*",
               "destinationPortRange": "*",
               "sourceAddressPrefix": "[parameters('masterSubnetCidr')]",
-              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "destinationAddressPrefix": "[parameters('virtualNetworkCidr')]",
               "access": "Allow",
               "direction": "Inbound",
               "priority": "4094"
@@ -117,17 +120,31 @@
             }
           },
           {
-            "name": "workerSubnetToMasterSubnet",
+            "name": "allowWorkerSubnet",
             "properties": {
               "description": "Allow the worker machines to reach the master machines on any ports.",
               "protocol": "*",
               "sourcePortRange": "*",
               "destinationPortRange": "*",
               "sourceAddressPrefix": "[parameters('workerSubnetCidr')]",
-              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "destinationAddressPrefix": "[parameters('virtualNetworkCidr')]",
               "access": "Allow",
               "direction": "Inbound",
               "priority": "3800"
+            }
+          },
+          {
+            "name": "allowCalicoSubnet",
+            "properties": {
+              "description": "Allow pods to reach the master machines on any ports.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('calicoSubnetCidr')]",
+              "destinationAddressPrefix": "[parameters('virtualNetworkCidr')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3700"
             }
           }
         ]
@@ -148,7 +165,7 @@
               "sourcePortRange": "*",
               "destinationPortRange": "*",
               "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
+              "destinationAddressPrefix": "*",
               "access": "Deny",
               "direction": "Inbound",
               "priority": "4096"
@@ -161,7 +178,7 @@
               "protocol": "*",
               "sourcePortRange": "*",
               "destinationPortRange": "*",
-              "sourceAddressPrefix": "[parameters('workerSubnetCidr')]",
+              "sourceAddressPrefix": "*",
               "destinationAddressPrefix": "*",
               "access": "Allow",
               "direction": "Outbound",
@@ -176,7 +193,7 @@
               "sourcePortRange": "*",
               "destinationPortRange": "*",
               "sourceAddressPrefix": "[parameters('workerSubnetCidr')]",
-              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
+              "destinationAddressPrefix": "[parameters('virtualNetworkCidr')]",
               "access": "Allow",
               "direction": "Inbound",
               "priority": "4094"
@@ -225,17 +242,31 @@
             }
           },
           {
-            "name": "masterSubnetToWorkerSubnet",
+            "name": "allowMasterSubnet",
             "properties": {
               "description": "Allow the master machines to reach the worker machines on any ports.",
               "protocol": "*",
               "sourcePortRange": "*",
               "destinationPortRange": "*",
               "sourceAddressPrefix": "[parameters('masterSubnetCidr')]",
-              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
+              "destinationAddressPrefix": "[parameters('virtualNetworkCidr')]",
               "access": "Allow",
               "direction": "Inbound",
               "priority": "3700"
+            }
+          },
+          {
+            "name": "allowCalicoSubnet",
+            "properties": {
+              "description": "Allow pods to reach the worker machines on any ports.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "[parameters('calicoSubnetCidr')]",
+              "destinationAddressPrefix": "[parameters('virtualNetworkCidr')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3600"
             }
           }
         ]

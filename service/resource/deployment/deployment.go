@@ -41,6 +41,7 @@ func (r Resource) newMainDeployment(cluster providerv1alpha1.AzureConfig) (Deplo
 	params := map[string]interface{}{
 		"clusterID":                     key.ClusterID(cluster),
 		"virtualNetworkCidr":            cluster.Spec.Azure.VirtualNetwork.CIDR,
+		"calicoSubnetCidr":              key.CalicoSubnetCidr(cluster),
 		"masterSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.MasterSubnetCIDR,
 		"workerSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR,
 		"mastersCustomConfig":           cluster.Spec.Azure.Masters,

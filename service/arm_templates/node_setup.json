@@ -182,6 +182,7 @@
       "name": "[variables('nicName')]",
       "location": "[resourceGroup().location]",
       "properties": {
+        "enableIPForwarding": true,
         "ipConfigurations": [
           {
             "name": "[variables('ipName')]",
