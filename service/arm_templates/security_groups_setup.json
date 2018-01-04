@@ -12,6 +12,9 @@
     "clusterID": {
       "type": "string"
     },
+    "virtualNetworkCidr": {
+      "type": "string"
+    },
     "calicoSubnetCidr": {
       "type": "string"
     },
