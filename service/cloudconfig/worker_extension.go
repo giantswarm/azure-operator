@@ -89,9 +89,7 @@ func (we *workerExtension) renderGetKeyVaultSecretsFile() (k8scloudconfig.FileAs
 }
 
 func (we *workerExtension) renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
-	params := we.CustomObject
-
-	asset, err := renderGetKeyVaultSecretsUnit(params)
+	asset, err := renderGetKeyVaultSecretsUnit()
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}

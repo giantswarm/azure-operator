@@ -1,7 +1,6 @@
 package cloudconfig
 
 import (
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_0_0"
 	"github.com/giantswarm/microerror"
 )
@@ -92,8 +91,9 @@ func renderGetKeyVaultSecretsFile(params getKeyVaultSecretsFileParams) (k8scloud
 	return file, nil
 }
 
-// TODO remove obj from parameters. This doesn't need params to render.
-func renderGetKeyVaultSecretsUnit(obj providerv1alpha1.AzureConfig) (k8scloudconfig.UnitAsset, error) {
+func renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
+	params := struct{}{}
+
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: getKeyVaultSecretsUnitTemplate,
 		Name:         getKeyVaultSecretsUnitName,
@@ -101,7 +101,7 @@ func renderGetKeyVaultSecretsUnit(obj providerv1alpha1.AzureConfig) (k8scloudcon
 		Command:      "start",
 	}
 
-	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, obj)
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
