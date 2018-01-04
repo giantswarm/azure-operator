@@ -303,12 +303,12 @@
           "ports": {"value":
             [
               {
-                "frontend": 443,
-                "backend": 443
+                "frontend": 80,
+                "backend": 30010
               },
               {
-                "frontend": 80,
-                "backend": 80
+                "frontend": 443,
+                "backend": 30011
               }
             ]
           }
