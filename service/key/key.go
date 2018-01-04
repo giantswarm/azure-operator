@@ -26,7 +26,7 @@ func AzureCloudType(customObject providerv1alpha1.AzureConfig) string {
 
 // CalicoSubnetCidr returns subnet for Calico in CIDR notation format.
 func CalicoSubnetCidr(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s/%s", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR)
+	return fmt.Sprintf("%s/%d", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR)
 }
 
 // ClusterCustomer returns the customer ID for this cluster.
