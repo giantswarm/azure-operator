@@ -2,8 +2,6 @@ package cloudconfig
 
 import (
 	"testing"
-
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
 func Test_render(t *testing.T) {
@@ -29,7 +27,7 @@ func Test_render(t *testing.T) {
 		},
 		{
 			Name: "renderGetKeyVaultSecretsUnit",
-			Fn:   func() error { _, err := renderGetKeyVaultSecretsUnit(providerv1alpha1.AzureConfig{}); return err },
+			Fn:   func() error { _, err := renderGetKeyVaultSecretsUnit(); return err },
 		},
 	}
 
