@@ -143,7 +143,6 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
-          "calicoSubnetCidr": {"value": "[parameters('calicoSubnetCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "hostClusterCidr": {"value": "[parameters('hostClusterCidr')]"},
