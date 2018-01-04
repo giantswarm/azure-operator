@@ -143,6 +143,7 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
+          "calicoSubnetCidr": {"value": "[parameters('calicoSubnetCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "hostClusterCidr": {"value": "[parameters('hostClusterCidr')]"},
@@ -183,7 +184,6 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
-          "calicoSubnetCidr": {"value": "[parameters('calicoSubnetCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
