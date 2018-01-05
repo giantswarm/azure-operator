@@ -304,7 +304,7 @@ spec:
             # Cluster type to identify the deployment type
             - name: CLUSTER_TYPE
               value: "k8s"
-            # Disable file logging so `kubectl logs` works.
+            # Disable file logging so kubectl logs works.
             - name: CALICO_DISABLE_FILE_LOGGING
               value: "true"
             # Set Felix endpoint to host default action to ACCEPT.
@@ -316,7 +316,7 @@ spec:
             # Wait for the datastore.
             - name: WAIT_FOR_DATASTORE
               value: "true"
-            # The Calico IPv4 pool to use.  This should match `--cluster-cidr`
+            # The Calico IPv4 pool to use.  This should match --cluster-cidr
             - name: CALICO_IPV4POOL_CIDR
               value: "{{.Cluster.Calico.Subnet}}/{{.Cluster.Calico.CIDR}}"
             # Enable IPIP
