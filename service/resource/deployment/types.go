@@ -24,6 +24,9 @@ func newNode(azureNode providerv1alpha1.AzureConfigSpecAzureNode) node {
 	}
 }
 
+// nodeOSImage provides OS information for Microsoft.Compute/virtualMachines
+// templates. Official documentation for can be found here
+// https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines#ImageReference.
 type nodeOSImage struct {
 	// Offer is the image offered by the publisher (e.g. CoreOS).
 	Offer string `json:"offer" yaml:"offer"`
@@ -35,6 +38,8 @@ type nodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
+// newNodeOSImage provides OS information for the version bundle using this
+// resource.
 func newNodeOSImage() nodeOSImage {
 	return nodeOSImage{
 		Offer:     "CoreOS",
