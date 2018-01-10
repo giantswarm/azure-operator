@@ -140,6 +140,7 @@ func New(config Config) (*Service, error) {
 		versionConfig.GitCommit = config.GitCommit
 		versionConfig.Name = config.Name
 		versionConfig.Source = config.Source
+		versionConfig.VersionBundles = newVersionBundles()
 
 		versionService, err = version.New(versionConfig)
 		if err != nil {
