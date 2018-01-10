@@ -12,32 +12,32 @@ func newVersionBundles() []versionbundle.Bundle {
 			Changelogs: []versionbundle.Changelog{
 				{
 					Component:   "kubernetes",
-					Description: "Enable encryption at rest.",
+					Description: "Enabled encryption at rest.",
 					Kind:        versionbundle.KindAdded,
 				},
 				{
 					Component:   "kubernetes",
-					Description: "Update to version 1.9.0.",
+					Description: "Updated to version 1.9.0.",
 					Kind:        versionbundle.KindChanged,
 				},
 				{
 					Component:   "kubernetes",
-					Description: "Use vanilla (previously coreos) hyperkube image.",
+					Description: "Used vanilla (previously coreos) hyperkube image.",
 					Kind:        versionbundle.KindChanged,
 				},
 				{
 					Component:   "calico",
-					Description: "Update to version 3.0.1.",
+					Description: "Updated to version 3.0.1.",
 					Kind:        versionbundle.KindChanged,
 				},
 				{
 					Component:   "calico",
-					Description: "Remove calico-ipip-pinger.",
+					Description: "Removed calico-ipip-pinger.",
 					Kind:        versionbundle.KindRemoved,
 				},
 				{
 					Component:   "calico",
-					Description: "Remove calico-node-controller.",
+					Description: "Removed calico-node-controller.",
 					Kind:        versionbundle.KindRemoved,
 				},
 			},
