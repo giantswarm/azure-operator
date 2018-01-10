@@ -22,7 +22,7 @@ func newVersionBundles() []versionbundle.Bundle {
 				},
 				{
 					Component:   "kubernetes",
-					Description: "Used vanilla (previously coreos) hyperkube image.",
+					Description: "Switched vanilla (previously coreos) hyperkube image.",
 					Kind:        versionbundle.KindChanged,
 				},
 				{
