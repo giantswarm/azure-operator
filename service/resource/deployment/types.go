@@ -38,8 +38,7 @@ type nodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
-// newNodeOSImage provides OS information for the version bundle using this
-// resource.
+// newNodeOSImage provides OS information CoreOS 1465.7.0.
 func newNodeOSImage() nodeOSImage {
 	return nodeOSImage{
 		Offer:     "CoreOS",
