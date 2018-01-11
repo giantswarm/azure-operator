@@ -1,27 +1,14 @@
 package deployment
 
-import providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-
-func newNodes(azureNodes []providerv1alpha1.AzureConfigSpecAzureNode) []node {
-	var ns []node
-	for _, n := range azureNodes {
-		ns = append(ns, newNode(n))
-	}
-	return ns
-}
-
 type node struct {
-	providerv1alpha1.AzureConfigSpecAzureNode
-
+	// AdminUsername is the vm administrator username
+	AdminUsername string `json:"adminUsername" yaml:"adminUsername"`
+	//  AdminSSHKeyData is the vm administrator ssh public key
+	AdminSSHKeyData string `json:"adminSSHKeyData" yaml:"adminSSHKeyData"`
 	// OSImage is the vm OS image object.
 	OSImage nodeOSImage `json:"osImage" yaml:"osImage"`
-}
-
-func newNode(azureNode providerv1alpha1.AzureConfigSpecAzureNode) node {
-	return node{
-		AzureConfigSpecAzureNode: azureNode,
-		OSImage:                  newNodeOSImage(),
-	}
+	// VMSize is the master vm size (e.g. Standard_A1)
+	VMSize string `json:"vmSize" yaml:"vmSize"`
 }
 
 // nodeOSImage provides OS information for Microsoft.Compute/virtualMachines
@@ -39,7 +26,7 @@ type nodeOSImage struct {
 }
 
 // newNodeOSImage provides OS information CoreOS 1465.7.0.
-func newNodeOSImage() nodeOSImage {
+func newNodeOSImageCoreOS_1465_7_0() nodeOSImage {
 	return nodeOSImage{
 		Offer:     "CoreOS",
 		Publisher: "CoreOS",

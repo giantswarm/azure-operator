@@ -19,8 +19,8 @@ func getDeploymentNames() []string {
 	}
 }
 
-func (r Resource) newMainDeployment(cluster providerv1alpha1.AzureConfig) (Deployment, error) {
-	certs, err := r.certsSearcher.SearchCluster(key.ClusterID(cluster))
+func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (Deployment, error) {
+	certs, err := r.certsSearcher.SearchCluster(key.ClusterID(obj))
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
@@ -28,32 +28,54 @@ func (r Resource) newMainDeployment(cluster providerv1alpha1.AzureConfig) (Deplo
 	// Convert certs files into a collection of key vault secrets.
 	certSecrets := convertCertsToSecrets(certs)
 
-	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(cluster)
+	var masterNodes []node
+	for _, m := range obj.Spec.Azure.Masters {
+		n := node{
+			AdminUsername:   key.AdminUsername(obj),
+			AdminSSHKeyData: key.AdminSSHKeyData(obj),
+			OSImage:         newNodeOSImageCoreOS_1465_7_0(),
+			VMSize:          m.VMSize,
+		}
+		masterNodes = append(masterNodes, n)
+	}
+
+	var workerNodes []node
+	for _, w := range obj.Spec.Azure.Workers {
+		n := node{
+			AdminUsername:   key.AdminUsername(obj),
+			AdminSSHKeyData: key.AdminSSHKeyData(obj),
+			OSImage:         newNodeOSImageCoreOS_1465_7_0(),
+			VMSize:          w.VMSize,
+		}
+		workerNodes = append(workerNodes, n)
+	}
+
+	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
 
-	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(cluster)
+	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
 	if err != nil {
 		return Deployment{}, microerror.Mask(err)
 	}
 
 	params := map[string]interface{}{
-		"clusterID":                     key.ClusterID(cluster),
-		"virtualNetworkCidr":            cluster.Spec.Azure.VirtualNetwork.CIDR,
-		"calicoSubnetCidr":              key.CalicoSubnetCidr(cluster),
-		"masterSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.MasterSubnetCIDR,
-		"workerSubnetCidr":              cluster.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR,
-		"mastersCustomConfig":           newNodes(cluster.Spec.Azure.Masters),
-		"workersCustomConfig":           newNodes(cluster.Spec.Azure.Workers),
-		"dnsZones":                      cluster.Spec.Azure.DNSZones,
-		"hostClusterCidr":               cluster.Spec.Azure.HostCluster.CIDR,
-		"kubernetesAPISecurePort":       cluster.Spec.Cluster.Kubernetes.API.SecurePort,
-		"kubernetesIngressSecurePort":   cluster.Spec.Cluster.Kubernetes.IngressController.SecurePort,
-		"kubernetesIngressInsecurePort": cluster.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
+		"clusterID":                     key.ClusterID(obj),
+		"virtualNetworkCidr":            obj.Spec.Azure.VirtualNetwork.CIDR,
+		"calicoSubnetCidr":              key.CalicoSubnetCidr(obj),
+		"masterSubnetCidr":              obj.Spec.Azure.VirtualNetwork.MasterSubnetCIDR,
+		"workerSubnetCidr":              obj.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR,
+		"mastersCustomConfig":           masterNodes,
+		"workersCustomConfig":           workerNodes,
+		"dnsZones":                      obj.Spec.Azure.DNSZones,
+		"hostClusterCidr":               obj.Spec.Azure.HostCluster.CIDR,
+		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
+		"kubernetesIngressSecurePort":   obj.Spec.Cluster.Kubernetes.IngressController.SecurePort,
+		"kubernetesIngressInsecurePort": obj.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
 		"masterCloudConfigData":         masterCloudConfig,
 		"workerCloudConfigData":         workerCloudConfig,
-		"keyVaultName":                  key.KeyVaultName(cluster),
+		"keyVaultName":                  key.KeyVaultName(obj),
 		"keyVaultSecretsObject":         certSecrets,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
 	}
@@ -61,7 +83,7 @@ func (r Resource) newMainDeployment(cluster providerv1alpha1.AzureConfig) (Deplo
 	deployment := Deployment{
 		Name:                   mainDeploymentName,
 		Parameters:             convertParameters(params),
-		ResourceGroup:          key.ClusterID(cluster),
+		ResourceGroup:          key.ClusterID(obj),
 		TemplateURI:            templateURI(r.templateVersion, mainTemplate),
 		TemplateContentVersion: templateContentVersion,
 	}
