@@ -26,7 +26,7 @@ type nodeOSImage struct {
 }
 
 // newNodeOSImage provides OS information CoreOS 1576.5.0.
-func newNodeOSImageCoreOS_1576_0_0() nodeOSImage {
+func newNodeOSImageCoreOS_1576_5_0() nodeOSImage {
 	return nodeOSImage{
 		Offer:     "CoreOS",
 		Publisher: "CoreOS",
