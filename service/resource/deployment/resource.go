@@ -117,7 +117,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	var deployments []Deployment
+	var deployments []deployment
 	{
 		for _, deploymentName := range getDeploymentNames() {
 			deploymentExtended, err := deploymentClient.Get(resourceGroupName, deploymentName)
@@ -130,14 +130,14 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 				return nil, microerror.Mask(err)
 			}
 
-			deployment := Deployment{
+			d := deployment{
 				Name:                   *deploymentExtended.Name,
 				Parameters:             *deploymentExtended.Properties.Parameters,
 				ResourceGroup:          resourceGroupName,
 				TemplateURI:            *deploymentExtended.Properties.TemplateLink.URI,
 				TemplateContentVersion: *deploymentExtended.Properties.TemplateLink.ContentVersion,
 			}
-			deployments = append(deployments, deployment)
+			deployments = append(deployments, d)
 		}
 	}
 
@@ -155,7 +155,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	deployments := []Deployment{
+	deployments := []deployment{
 		mainDeployment,
 	}
 	return deployments, nil
@@ -211,7 +211,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		for _, deploy := range deploymentsToCreate {
 			r.logger.LogCtx(ctx, "debug", fmt.Sprintf("creating Azure deployments: creating %#q", deploy.Name))
 
-			deployment := azureresource.Deployment{
+			d := azureresource.Deployment{
 				Properties: &azureresource.DeploymentProperties{
 					Mode:       azureresource.Complete,
 					Parameters: &deploy.Parameters,
@@ -222,7 +222,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 				},
 			}
 
-			_, errchan := deploymentsClient.CreateOrUpdate(resourceGroupName, deploy.Name, deployment, nil)
+			_, errchan := deploymentsClient.CreateOrUpdate(resourceGroupName, deploy.Name, d, nil)
 			select {
 			case err := <-errchan:
 				if err != nil {
@@ -268,7 +268,7 @@ func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, err
 	return azureClients.DeploymentsClient, nil
 }
 
-func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) ([]Deployment, error) {
+func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) ([]deployment, error) {
 	currentDeployments, err := toDeployments(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -278,7 +278,7 @@ func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desir
 		return nil, microerror.Mask(err)
 	}
 
-	var deploymentsToCreate []Deployment
+	var deploymentsToCreate []deployment
 
 	for _, desiredDeployment := range desiredDeployments {
 		if !existsDeploymentByName(currentDeployments, desiredDeployment.Name) {
@@ -289,7 +289,7 @@ func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desir
 	return deploymentsToCreate, nil
 }
 
-func existsDeploymentByName(list []Deployment, name string) bool {
+func existsDeploymentByName(list []deployment, name string) bool {
 	for _, d := range list {
 		if d.Name == name {
 			return true
@@ -299,14 +299,14 @@ func existsDeploymentByName(list []Deployment, name string) bool {
 	return false
 }
 
-func getDeploymentByName(list []Deployment, name string) (Deployment, error) {
+func getDeploymentByName(list []deployment, name string) (deployment, error) {
 	for _, d := range list {
 		if d.Name == name {
 			return d, nil
 		}
 	}
 
-	return Deployment{}, microerror.Maskf(notFoundError, name)
+	return deployment{}, microerror.Maskf(notFoundError, name)
 }
 
 func toCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
@@ -323,14 +323,14 @@ func toCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
-func toDeployments(v interface{}) ([]Deployment, error) {
+func toDeployments(v interface{}) ([]deployment, error) {
 	if v == nil {
-		return []Deployment{}, nil
+		return []deployment{}, nil
 	}
 
-	deployments, ok := v.([]Deployment)
+	deployments, ok := v.([]deployment)
 	if !ok {
-		return []Deployment{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", []Deployment{}, v)
+		return []deployment{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", []deployment{}, v)
 	}
 
 	return deployments, nil
