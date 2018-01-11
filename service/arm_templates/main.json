@@ -35,10 +35,10 @@
     "kubernetesIngressInsecurePort": {
       "type": "int"
     },
-    "mastersCustomConfig": {
+    "masterNodes": {
       "type": "array"
     },
-    "workersCustomConfig": {
+    "workerNodes": {
       "type": "array"
     },
     "masterDisablePasswordAuth": {
@@ -213,7 +213,7 @@
           "masterNodeIDs": {
             "copy": [{
               "name": "value",
-              "count": "[length(parameters('mastersCustomConfig'))]",
+              "count": "[length(parameters('masterNodes'))]",
               "input": {
                 "id": "[reference(concat('master_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
               }
@@ -222,7 +222,7 @@
           "workerNodeIDs": {
             "copy": [{
               "name": "value",
-              "count": "[length(parameters('workersCustomConfig'))]",
+              "count": "[length(parameters('workerNodes'))]",
               "input": {
                 "id": "[reference(concat('worker_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
               }
@@ -389,7 +389,7 @@
       "type": "Microsoft.Resources/deployments",
       "copy": {
         "name": "master_nodes_setup_copy",
-        "count":  "[length(parameters('mastersCustomConfig'))]"
+        "count":  "[length(parameters('masterNodes'))]"
       },
       "properties": {
         "mode": "incremental",
@@ -403,14 +403,14 @@
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
           "disablePasswordAuth": {"value": "[parameters('masterDisablePasswordAuth')]"},
-          "vmSize": {"value": "[parameters('mastersCustomConfig')[copyIndex()].vmSize]"},
+          "vmSize": {"value": "[parameters('masterNodes')[copyIndex()].vmSize]"},
           "dataDisks": {"value": [{"name": "EtcdDisk", "sizeGB": 10}, {"name": "DockerDisk", "sizeGB": 50}]},
-          "adminUsername": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminUsername]"},
-          "adminSSHKeyData": {"value": "[parameters('mastersCustomConfig')[copyIndex()].adminSSHKeyData]"},
-          "osImagePublisher": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.publisher]"},
-          "osImageOffer": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.offer]"},
-          "osImageSKU": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.sku]"},
-          "osImageVersion": {"value": "[parameters('mastersCustomConfig')[copyIndex()].osImage.version]"},
+          "adminUsername": {"value": "[parameters('masterNodes')[copyIndex()].adminUsername]"},
+          "adminSSHKeyData": {"value": "[parameters('masterNodes')[copyIndex()].adminSSHKeyData]"},
+          "osImagePublisher": {"value": "[parameters('masterNodes')[copyIndex()].osImage.publisher]"},
+          "osImageOffer": {"value": "[parameters('masterNodes')[copyIndex()].osImage.offer]"},
+          "osImageSKU": {"value": "[parameters('masterNodes')[copyIndex()].osImage.sku]"},
+          "osImageVersion": {"value": "[parameters('masterNodes')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
@@ -422,7 +422,7 @@
       "type": "Microsoft.Resources/deployments",
       "copy": {
         "name": "worker_nodes_setup_copy",
-        "count":  "[length(parameters('workersCustomConfig'))]"
+        "count":  "[length(parameters('workerNodes'))]"
       },
       "properties": {
         "mode": "incremental",
@@ -436,14 +436,14 @@
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('worker_availability_sets_setup').outputs.availabilitySetID.value]"},
           "disablePasswordAuth": {"value": "[parameters('workerDisablePasswordAuth')]"},
-          "vmSize": {"value": "[parameters('workersCustomConfig')[copyIndex()].vmSize]"},
+          "vmSize": {"value": "[parameters('workerNodes')[copyIndex()].vmSize]"},
           "dataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
-          "adminUsername": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminUsername]"},
-          "adminSSHKeyData": {"value": "[parameters('workersCustomConfig')[copyIndex()].adminSSHKeyData]"},
-          "osImagePublisher": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.publisher]"},
-          "osImageOffer": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.offer]"},
-          "osImageSKU": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.sku]"},
-          "osImageVersion": {"value": "[parameters('workersCustomConfig')[copyIndex()].osImage.version]"},
+          "adminUsername": {"value": "[parameters('workerNodes')[copyIndex()].adminUsername]"},
+          "adminSSHKeyData": {"value": "[parameters('workerNodes')[copyIndex()].adminSSHKeyData]"},
+          "osImagePublisher": {"value": "[parameters('workerNodes')[copyIndex()].osImage.publisher]"},
+          "osImageOffer": {"value": "[parameters('workerNodes')[copyIndex()].osImage.offer]"},
+          "osImageSKU": {"value": "[parameters('workerNodes')[copyIndex()].osImage.sku]"},
+          "osImageVersion": {"value": "[parameters('workerNodes')[copyIndex()].osImage.version]"},
           "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
           "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
         }
