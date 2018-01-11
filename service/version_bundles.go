@@ -53,10 +53,6 @@ func newVersionBundles() []versionbundle.Bundle {
 			},
 			Components: []versionbundle.Component{
 				{
-					Name:    "containerlinux",
-					Version: "1576.5.0",
-				},
-				{
 					Name:    "calico",
 					Version: "3.0.1",
 				},
