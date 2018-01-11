@@ -24,6 +24,24 @@ func AzureCloudType(customObject providerv1alpha1.AzureConfig) string {
 	return defaultAzureCloudType
 }
 
+func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
+	users := customObject.Spec.Cluster.Kubernetes.SSH.UserList
+	// We don't want panics when someone is doing something nasty.
+	if len(users) == 0 {
+		return ""
+	}
+	return users[0].Name
+}
+
+func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
+	users := customObject.Spec.Cluster.Kubernetes.SSH.UserList
+	// We don't want panics when someone is doing something nasty.
+	if len(users) == 0 {
+		return ""
+	}
+	return users[0].PublicKey
+}
+
 // CalicoSubnetCidr returns subnet for Calico in CIDR notation format.
 func CalicoSubnetCidr(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s/%d", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR)
