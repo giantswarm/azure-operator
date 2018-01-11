@@ -31,6 +31,16 @@ func newVersionBundles() []versionbundle.Bundle {
 					Kind:        versionbundle.KindChanged,
 				},
 				{
+					Component:   "containerlinux",
+					Description: "Updated to version 1576.5.0.",
+					Kind:        versionbundle.KindChanged,
+				},
+				{
+					Component:   "docker",
+					Description: "Updated to version 17.09.0.",
+					Kind:        versionbundle.KindChanged,
+				},
+				{
 					Component:   "calico",
 					Description: "Removed calico-ipip-pinger.",
 					Kind:        versionbundle.KindRemoved,
@@ -43,12 +53,20 @@ func newVersionBundles() []versionbundle.Bundle {
 			},
 			Components: []versionbundle.Component{
 				{
+					Name:    "containerlinux",
+					Version: "1576.5.0",
+				},
+				{
 					Name:    "calico",
 					Version: "3.0.1",
 				},
 				{
+					Name:    "containerlinux",
+					Version: "1576.5.0",
+				},
+				{
 					Name:    "docker",
-					Version: "1.12.6",
+					Version: "17.09.0",
 				},
 				{
 					Name:    "etcd",
