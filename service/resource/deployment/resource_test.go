@@ -21,8 +21,8 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 			},
 		},
 	}
-	expectedDeployments := []Deployment{
-		Deployment{
+	expectedDeployments := []deployment{
+		deployment{
 			Name:          "cluster-main-template",
 			ResourceGroup: "5xchu",
 		},
@@ -57,9 +57,9 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		t.Fatalf("expected '%v' got '%#v'", nil, err)
 	}
 
-	deployments, ok := result.([]Deployment)
+	deployments, ok := result.([]deployment)
 	if !ok {
-		t.Fatalf("case expected '%T', got '%T'", []Deployment{}, deployments)
+		t.Fatalf("case expected '%T', got '%T'", []deployment{}, deployments)
 	}
 
 	if len(expectedDeployments) != len(deployments) {
@@ -78,7 +78,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		Obj                 interface{}
 		Cur                 interface{}
 		Des                 interface{}
-		ExpectedDeployments []Deployment
+		ExpectedDeployments []deployment
 	}{
 		{
 			// Case 1. Current state is empty. A deployment is created.
@@ -89,14 +89,14 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			Cur: []Deployment{},
-			Des: []Deployment{
-				Deployment{
+			Cur: []deployment{},
+			Des: []deployment{
+				deployment{
 					Name: "cluster-setup",
 				},
 			},
-			ExpectedDeployments: []Deployment{
-				Deployment{
+			ExpectedDeployments: []deployment{
+				deployment{
 					Name: "cluster-setup",
 				},
 			},
@@ -111,13 +111,13 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			Cur: []Deployment{
-				Deployment{
+			Cur: []deployment{
+				deployment{
 					Name: "cluster-setup",
 				},
 			},
-			Des: []Deployment{
-				Deployment{
+			Des: []deployment{
+				deployment{
 					Name: "cluster-setup",
 				},
 			},
@@ -133,21 +133,21 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			Cur: []Deployment{
-				Deployment{
+			Cur: []deployment{
+				deployment{
 					Name: "cluster-setup",
 				},
 			},
-			Des: []Deployment{
-				Deployment{
+			Des: []deployment{
+				deployment{
 					Name: "cluster-setup",
 				},
-				Deployment{
+				deployment{
 					Name: "network-setup",
 				},
 			},
-			ExpectedDeployments: []Deployment{
-				Deployment{
+			ExpectedDeployments: []deployment{
+				deployment{
 					Name: "network-setup",
 				},
 			},

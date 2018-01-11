@@ -19,10 +19,10 @@ func getDeploymentNames() []string {
 	}
 }
 
-func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (Deployment, error) {
+func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deployment, error) {
 	certs, err := r.certsSearcher.SearchCluster(key.ClusterID(obj))
 	if err != nil {
-		return Deployment{}, microerror.Mask(err)
+		return deployment{}, microerror.Mask(err)
 	}
 
 	// Convert certs files into a collection of key vault secrets.
@@ -52,12 +52,12 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (Deploymen
 
 	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
 	if err != nil {
-		return Deployment{}, microerror.Mask(err)
+		return deployment{}, microerror.Mask(err)
 	}
 
 	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
 	if err != nil {
-		return Deployment{}, microerror.Mask(err)
+		return deployment{}, microerror.Mask(err)
 	}
 
 	params := map[string]interface{}{
@@ -80,7 +80,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (Deploymen
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
 	}
 
-	deployment := Deployment{
+	d := deployment{
 		Name:                   mainDeploymentName,
 		Parameters:             convertParameters(params),
 		ResourceGroup:          key.ClusterID(obj),
@@ -88,7 +88,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (Deploymen
 		TemplateContentVersion: templateContentVersion,
 	}
 
-	return deployment, nil
+	return d, nil
 }
 
 // convertParameters converts the map into the structure used by the Azure API.
@@ -107,7 +107,7 @@ func convertParameters(inputs map[string]interface{}) map[string]interface{} {
 
 // convertCertsToSecrets converts the certificate assets to a keyVaultSecrets
 // collection so it can be passed as a secure object template parameter.
-func convertCertsToSecrets(certificates certs.Cluster) keyVaultSecrets {
+func convertCertsToSecrets(certificates certs.Cluster) keyVault {
 	var secrets []keyVaultSecret
 
 	for _, f := range certs.NewFilesCluster(certificates) {
@@ -118,7 +118,7 @@ func convertCertsToSecrets(certificates certs.Cluster) keyVaultSecrets {
 		secrets = append(secrets, s)
 	}
 
-	return keyVaultSecrets{
+	return keyVault{
 		Secrets: secrets,
 	}
 }
