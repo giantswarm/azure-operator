@@ -53,8 +53,36 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsUnit")
 	}
 
+	// Unit to format etcd disk.
+	formatEtcdUnit, err := me.renderEtcdDiskFormatUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderEtcdDiskFormatUnit")
+	}
+
+	// Unit to mount etcd disk.
+	mountEtcdUnit, err := me.renderEtcdMountUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderEtcdMountUnit")
+	}
+
+	// Unit to format docker disk.
+	formatDockerUnit, err := me.renderDockerDiskFormatUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderDockerDiskFormatUnit")
+	}
+
+	// Unit to mount docker disk.
+	mountDockerUnit, err := me.renderDockerMountUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderDockerMountUnit")
+	}
+
 	units := []k8scloudconfig.UnitAsset{
 		getKeyVaultSecretsUnit,
+		formatEtcdUnit,
+		mountEtcdUnit,
+		formatDockerUnit,
+		mountDockerUnit,
 	}
 
 	return units, nil
@@ -122,6 +150,58 @@ func (me *masterExtension) renderGetKeyVaultSecretsFile() (k8scloudconfig.FileAs
 
 func (me *masterExtension) renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
 	asset, err := renderGetKeyVaultSecretsUnit()
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
+	params := diskParams{
+		DiskName: "sdc",
+	}
+
+	asset, err := renderEtcdMountUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderEtcdDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
+	params := diskParams{
+		DiskName: "sdc",
+	}
+
+	asset, err := renderEtcdDiskFormatUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
+	params := diskParams{
+		DiskName: "sdd",
+	}
+
+	asset, err := renderDockerMountUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
+	params := diskParams{
+		DiskName: "sdd",
+	}
+
+	asset, err := renderDockerDiskFormatUnit(params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}

@@ -41,8 +41,22 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsUnit")
 	}
 
+	// Unit to format docker disk.
+	formatDockerUnit, err := we.renderDockerDiskFormatUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderDockerDiskFormatUnit")
+	}
+
+	// Unit to mount docker disk.
+	mountDockerUnit, err := we.renderDockerMountUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderDockerMountUnit")
+	}
+
 	units := []k8scloudconfig.UnitAsset{
 		getKeyVaultSecretsUnit,
+		formatDockerUnit,
+		mountDockerUnit,
 	}
 
 	return units, nil
@@ -90,6 +104,32 @@ func (we *workerExtension) renderGetKeyVaultSecretsFile() (k8scloudconfig.FileAs
 
 func (we *workerExtension) renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
 	asset, err := renderGetKeyVaultSecretsUnit()
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (we *workerExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
+	params := diskParams{
+		DiskName: "sdc",
+	}
+
+	asset, err := renderDockerMountUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (we *workerExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
+	params := diskParams{
+		DiskName: "sdc",
+	}
+
+	asset, err := renderDockerDiskFormatUnit(params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}

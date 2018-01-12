@@ -29,6 +29,22 @@ func Test_render(t *testing.T) {
 			Name: "renderGetKeyVaultSecretsUnit",
 			Fn:   func() error { _, err := renderGetKeyVaultSecretsUnit(); return err },
 		},
+		{
+			Name: "renderEtcdMountUnit",
+			Fn:   func() error { _, err := renderEtcdMountUnit(diskParams{}); return err },
+		},
+		{
+			Name: "renderEtcdDiskFormatUnit",
+			Fn:   func() error { _, err := renderEtcdDiskFormatUnit(diskParams{}); return err },
+		},
+		{
+			Name: "renderDockerMountUnit",
+			Fn:   func() error { _, err := renderDockerMountUnit(diskParams{}); return err },
+		},
+		{
+			Name: "renderDockerDiskFormatUnit",
+			Fn:   func() error { _, err := renderDockerDiskFormatUnit(diskParams{}); return err },
+		},
 	}
 
 	for i, tc := range testCases {

@@ -113,3 +113,87 @@ func renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
 
 	return asset, nil
 }
+
+func renderEtcdMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: etcdMountUnitTemplate,
+		Name:         etcdMountUnitName,
+		Enable:       true,
+		Command:      "start",
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
+}
+
+func renderEtcdDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: etcdDiskFormatUnitTemplate,
+		Name:         etcdDiskFormatUnitName,
+		Enable:       true,
+		Command:      "start",
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
+}
+
+func renderDockerMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: dockerMountUnitTemplate,
+		Name:         dockerMountUnitName,
+		Enable:       true,
+		Command:      "start",
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
+}
+
+func renderDockerDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: dockerDiskFormatUnitTemplate,
+		Name:         dockerDiskFormatUnitName,
+		Enable:       true,
+		Command:      "start",
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
+}
