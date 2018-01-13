@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -40,6 +40,10 @@ func (c *FakeCoreV1alpha1) FlannelConfigs(namespace string) v1alpha1.FlannelConf
 
 func (c *FakeCoreV1alpha1) IngressConfigs(namespace string) v1alpha1.IngressConfigInterface {
 	return &FakeIngressConfigs{c, namespace}
+}
+
+func (c *FakeCoreV1alpha1) NodeConfigs(namespace string) v1alpha1.NodeConfigInterface {
+	return &FakeNodeConfigs{c, namespace}
 }
 
 func (c *FakeCoreV1alpha1) StorageConfigs(namespace string) v1alpha1.StorageConfigInterface {

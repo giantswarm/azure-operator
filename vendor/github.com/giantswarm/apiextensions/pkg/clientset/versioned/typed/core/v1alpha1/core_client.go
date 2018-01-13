@@ -1,5 +1,5 @@
 /*
-Copyright 2017 The Kubernetes Authors.
+Copyright 2018 The Kubernetes Authors.
 
 Licensed under the Apache License, Version 2.0 (the "License");
 you may not use this file except in compliance with the License.
@@ -29,6 +29,7 @@ type CoreV1alpha1Interface interface {
 	DraughtsmanConfigsGetter
 	FlannelConfigsGetter
 	IngressConfigsGetter
+	NodeConfigsGetter
 	StorageConfigsGetter
 }
 
@@ -51,6 +52,10 @@ func (c *CoreV1alpha1Client) FlannelConfigs(namespace string) FlannelConfigInter
 
 func (c *CoreV1alpha1Client) IngressConfigs(namespace string) IngressConfigInterface {
 	return newIngressConfigs(c, namespace)
+}
+
+func (c *CoreV1alpha1Client) NodeConfigs(namespace string) NodeConfigInterface {
+	return newNodeConfigs(c, namespace)
 }
 
 func (c *CoreV1alpha1Client) StorageConfigs(namespace string) StorageConfigInterface {
