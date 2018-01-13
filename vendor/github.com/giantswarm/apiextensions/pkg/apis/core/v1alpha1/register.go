@@ -23,6 +23,10 @@ var knownTypes = []runtime.Object{
 	&FlannelConfigList{},
 	&IngressConfig{},
 	&IngressConfigList{},
+	&NodeConfig{},
+	&NodeConfigList{},
+	&StorageConfig{},
+	&StorageConfigList{},
 }
 
 // SchemeGroupVersion is group version used to register these objects

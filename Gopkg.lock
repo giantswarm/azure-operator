@@ -83,13 +83,19 @@
   branch = "master"
   name = "github.com/giantswarm/apiextensions"
   packages = ["pkg/apis/core/v1alpha1","pkg/apis/provider/v1alpha1","pkg/clientset/versioned","pkg/clientset/versioned/scheme","pkg/clientset/versioned/typed/core/v1alpha1","pkg/clientset/versioned/typed/provider/v1alpha1"]
-  revision = "a5f74b98c057386d05485914faca1283d0bff4b1"
+  revision = "f0b8bcd6122deaf8be38b9705ac528cf4b749e3a"
 
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/certs"
   packages = [".","certstest"]
   revision = "ef74f15a18c84b47f0167be54f2a93e187a4a6ae"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/giantswarm/ipam"
+  packages = ["."]
+  revision = "6f173ae0711b5080c78813025e718f33f2f1306f"
 
 [[projects]]
   branch = "master"
@@ -460,6 +466,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3710bc1b75ecbf7bd04eac13aeab88afa54256b2709865d1964f318f3429c322"
+  inputs-digest = "a6ecfcfdc3d58f04554f0957e97517ca3a28f13237575fe306192193a61e06f8"
   solver-name = "gps-cdcl"
   solver-version = 1
