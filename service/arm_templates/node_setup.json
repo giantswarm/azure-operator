@@ -33,6 +33,12 @@
     "clusterID": {
       "type": "string"
     },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
     "prefix": {
       "type": "string"
     },
@@ -181,6 +187,9 @@
       "type": "Microsoft.Network/networkInterfaces",
       "name": "[variables('nicName')]",
       "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "properties": {
         "enableIPForwarding": true,
         "ipConfigurations": [
@@ -202,6 +211,9 @@
       "name": "[concat(variables('vmName'),'/ManagedIdentityExtensionForLinux')]",
       "apiVersion": "[parameters('virtualMachinesExtensionsAPIVersion')]",
       "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
       ],
@@ -223,6 +235,9 @@
         "type": "systemAssigned"
       },
       "name": "[variables('vmName')]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "dependsOn": [
         "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
       ],
@@ -295,6 +310,9 @@
       "type": "Microsoft.Authorization/roleAssignments",
       "apiVersion": "2014-10-01-preview",
       "name": "[guid(variables('roleAssignmentName'))]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "dependsOn": [
         "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
       ],

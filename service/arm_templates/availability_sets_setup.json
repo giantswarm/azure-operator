@@ -12,6 +12,12 @@
     "clusterID": {
       "type": "string"
     },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
     "prefix": {
       "type": "string"
     },
@@ -40,6 +46,9 @@
       },
       "sku": {
         "name": "aligned"
+      },
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
       }
     }
   ],

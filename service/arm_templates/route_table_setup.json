@@ -5,6 +5,12 @@
     "clusterID": {
       "type": "string"
     },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
     "routeTablesAPIVersion": {
       "type": "string",
       "defaultValue": "2016-09-01",
@@ -23,6 +29,9 @@
       "name": "[variables('name')]",
       "apiVersion": "[parameters('routeTablesAPIVersion')]",
       "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "properties": {},
       "dependsOn": []
     }
