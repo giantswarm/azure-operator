@@ -62,10 +62,10 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 
 	params := map[string]interface{}{
 		"clusterID":                     key.ClusterID(obj),
-		"virtualNetworkCidr":            obj.Spec.Azure.VirtualNetwork.CIDR,
-		"calicoSubnetCidr":              key.CalicoSubnetCidr(obj),
-		"masterSubnetCidr":              obj.Spec.Azure.VirtualNetwork.MasterSubnetCIDR,
-		"workerSubnetCidr":              obj.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR,
+		"virtualNetworkCidr":            key.VnetCIDR(obj),
+		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
+		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
+		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
 		"masterNodes":                   masterNodes,
 		"workerNodes":                   workerNodes,
 		"dnsZones":                      obj.Spec.Azure.DNSZones,

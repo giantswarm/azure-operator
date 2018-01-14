@@ -42,11 +42,6 @@ func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
 	return users[0].PublicKey
 }
 
-// CalicoSubnetCidr returns subnet for Calico in CIDR notation format.
-func CalicoSubnetCidr(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s/%d", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR)
-}
-
 // ClusterCustomer returns the customer ID for this cluster.
 func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Customer.ID
@@ -172,4 +167,20 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 // VnetName returns name of the virtual network.
 func VnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), virtualNetworkSuffix)
+}
+
+func VnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.CIDR
+}
+
+func VnetCalicoSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR
+}
+
+func VnetMasterSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
+}
+
+func VnetWorkerSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
 }
