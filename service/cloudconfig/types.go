@@ -51,3 +51,7 @@ type getKeyVaultSecretsFileParamsSecret struct {
 	SecretName string
 	FileName   string
 }
+
+type diskParams struct {
+	DiskName string
+}
