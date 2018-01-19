@@ -8,6 +8,12 @@
         "description": "Unique ID of this guest cluster."
       }
     },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
     "virtualNetworkCidr": {
       "type": "string",
       "metadata": {
@@ -142,6 +148,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "calicoSubnetCidr": {"value": "[parameters('calicoSubnetCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
@@ -164,7 +171,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"}
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"}
         }
       }
     },
@@ -183,6 +191,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
@@ -208,6 +217,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "keyVaultName": {"value": "[parameters('keyVaultName')]"},
           "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"},
           "masterNodeIDs": {
@@ -243,6 +253,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": {"value": "[variables('masterPrefix')]"}
         }
       }
@@ -259,6 +270,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": {"value": "[variables('workerPrefix')]"}
         }
       }
@@ -275,6 +287,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": {"value": "API"},
           "ports": {"value":
             [
@@ -299,6 +312,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": {"value": "Ingress"},
           "ports": {"value":
             [
@@ -327,6 +341,7 @@
         },
         "parameters": {
           "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').etcd.name)]" },
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": { "value": "etcd" },
           "ipAddress": { "value": "[reference('master_nodes_setup_1').outputs.ipAddress.value]" }
         }
@@ -344,6 +359,7 @@
         },
         "parameters": {
           "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').api.name)]" },
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": { "value": "api" },
           "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.ipAddress.value]" }
         }
@@ -361,6 +377,7 @@
         },
         "parameters": {
           "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" },
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": { "value": "ingress" },
           "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.ipAddress.value]" }
         }
@@ -378,6 +395,7 @@
         },
         "parameters": {
           "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" },
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": { "value": "*" },
           "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" }
         }
@@ -399,6 +417,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": {"value": "[concat(variables('masterPrefix'), '-', copyIndex(1))]"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
@@ -432,6 +451,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": {"value": "[concat(variables('workerPrefix'), '-', copyIndex(1))]"},
           "subnetID": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
           "availabilitySetID": {"value": "[reference('worker_availability_sets_setup').outputs.availabilitySetID.value]"},

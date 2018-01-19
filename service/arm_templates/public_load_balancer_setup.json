@@ -19,6 +19,12 @@
     "clusterID": {
       "type": "string"
     },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
     "prefix": {
       "type": "string"
     },
@@ -48,6 +54,9 @@
       "type": "Microsoft.Network/publicIPAddresses",
       "name": "[variables('loadBalancerPublicIPName')]",
       "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "properties": {
         "publicIPAllocationMethod": "Static",
         "publicIPAddressVersion": "IPv4"
@@ -58,6 +67,9 @@
       "name": "[variables('loadBalancerName')]",
       "type": "Microsoft.Network/loadBalancers",
       "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "dependsOn": [
         "[concat('Microsoft.Network/publicIPAddresses/', variables('loadBalancerPublicIPName'))]"
       ],

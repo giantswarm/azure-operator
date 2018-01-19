@@ -5,6 +5,12 @@
       "clusterID": {
         "type": "string"
       },
+      "GiantSwarmTags": {
+        "type": "object",
+        "defaultValue": {
+          "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+        }
+      },
       "keyVaultName": {
         "type": "string"
       },
@@ -36,7 +42,8 @@
         "apiVersion": "2016-10-01",
         "location": "[resourceGroup().location]",
         "tags": {
-          "clusterID": "[parameters('clusterID')]"
+          "clusterID": "[parameters('clusterID')]",
+          "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
         },
         "properties": {
           "sku": {
@@ -72,6 +79,9 @@
         "copy": {
             "name": "keyVaultSecretsCopy",
             "count": "[length(parameters('keyVaultSecretsObject').secrets)]"
+        },
+        "tags": {
+           "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
         }
       }
     ]

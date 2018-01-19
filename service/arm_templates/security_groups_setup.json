@@ -12,6 +12,12 @@
     "clusterID": {
       "type": "string"
     },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
     "virtualNetworkCidr": {
       "type": "string"
     },
@@ -50,6 +56,9 @@
       "name": "[variables('masterSecurityGroupName')]",
       "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
       "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "properties": {
         "securityRules": [
           {
@@ -158,6 +167,9 @@
       "name": "[variables('workerSecurityGroupName')]",
       "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
       "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "properties": {
         "securityRules": [
           {

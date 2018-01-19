@@ -5,6 +5,12 @@
     "dnsZone": {
       "type": "string"
     },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
     "prefix": {
       "type": "string"
     },
@@ -18,13 +24,19 @@
       "name": "[parameters('dnsZone')]",
       "apiVersion": "2016-04-01",
       "location": "global",
-      "properties": { }
+      "properties": { },
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      }
     },
     {
       "type": "Microsoft.Network/dnszones/cname",
       "name": "[concat(parameters('dnsZone'), '/', parameters('prefix'))]",
       "apiVersion": "2016-04-01",
       "location": "global",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "dependsOn": [
         "[parameters('dnsZone')]"
       ],
