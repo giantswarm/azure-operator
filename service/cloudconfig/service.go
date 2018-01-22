@@ -9,6 +9,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/key"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_0_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -110,7 +111,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
 						"--allocate-node-cidrs=true",
-						fmt.Sprintf("--cluster-cidr %s/%d", customObject.Spec.Cluster.Calico.Subnet, customObject.Spec.Cluster.Calico.CIDR),
+						"--cluster-cidr=" + key.HostClusterCIDR(customObject),
 					},
 				},
 			},

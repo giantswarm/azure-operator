@@ -101,6 +101,10 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
 }
 
+func HostClusterCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.HostCluster.CIDR
+}
+
 // KeyVaultName returns the Azure Key Vault name for this cluster.
 func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
 	return ClusterID(customObject) + "-vault"
