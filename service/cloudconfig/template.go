@@ -627,16 +627,21 @@ Description=Mounts disk to /etc/kubernetes/data/etcd
 Requires=format-etcd-disk.service
 After=format-etcd-disk.service
 Before=etcd3.service
+
 [Mount]
 What=/dev/{{ .DiskName }}
 Where=/etc/kubernetes/data/etcd
 Type=ext4
+
+[Install]
+WantedBy=multi-user.target
 `
 	etcdDiskFormatUnitName     = "format-etcd-disk.service"
 	etcdDiskFormatUnitTemplate = `[Unit]
 Description=Formats the disk drive
 Requires=dev-{{ .DiskName }}.device
 After=dev-{{ .DiskName }}.device
+
 [Service]
 Type=oneshot
 RemainAfterExit=yes
@@ -644,6 +649,9 @@ Environment="LABEL=etcd"
 Environment="DEV=/dev/{{ .DiskName }}"
 # Do not wipe the disk if it's already being used, so the etcd data is persistent across reboot.
 ExecStart=-/bin/bash -c "if ! findfs LABEL=$LABEL > /tmp/label.$LABEL; then wipefs -a -f $DEV && mkfs.ext4 -T news -F -L $LABEL $DEV && echo wiped; fi"
+
+[Install]
+WantedBy=multi-user.target
 `
 	dockerMountUnitName     = "var-lib-docker.mount"
 	dockerMountUnitTemplate = `[Unit]
@@ -651,16 +659,21 @@ Description=Mounts disk to /var/lib/docker
 Requires=format-docker-disk.service
 After=format-docker-disk.service
 Before=docker.service
+
 [Mount]
 What=/dev/{{ .DiskName }}
 Where=/var/lib/docker
 Type=xfs
+
+[Install]
+WantedBy=multi-user.target
 `
 	dockerDiskFormatUnitName     = "format-docker-disk.service"
 	dockerDiskFormatUnitTemplate = `[Unit]
 Description=Formats the disk drive
 Requires=dev-{{ .DiskName }}.device
 After=dev-{{ .DiskName }}.device
+
 [Service]
 Type=oneshot
 RemainAfterExit=yes
@@ -668,5 +681,8 @@ Environment="LABEL=docker"
 Environment="DEV=/dev/{{ .DiskName }}"
 # Do not wipe the disk if it's already being used.
 ExecStart=-/bin/bash -c "if ! findfs LABEL=$LABEL > /tmp/label.$LABEL; then wipefs -a -f $DEV && mkfs.xfs -L $LABEL $DEV && echo formatted; fi"
+
+[Install]
+WantedBy=multi-user.target
 `
 )
