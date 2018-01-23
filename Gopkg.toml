@@ -39,7 +39,7 @@
 
 [[constraint]]
   name = "github.com/giantswarm/k8scloudconfig"
-  branch = "master"
+  branch = "v3.0.0-hyperkube-1.9.2"
 
 [[constraint]]
   name = "github.com/giantswarm/microendpoint"
