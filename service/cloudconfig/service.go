@@ -6,6 +6,8 @@ import (
 	"encoding/base64"
 	"fmt"
 	"io"
+	"strconv"
+	"strings"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/client"
@@ -86,6 +88,24 @@ func New(config Config) (*CloudConfig, error) {
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+	// TODO this should be sorted in https://github.com/giantswarm/giantswarm/issues/2383
+	{
+		split := strings.Split(customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR, "/")
+		if len(split) != 2 {
+			return "", microerror.Maskf(invalidCustomObjectError, "Spec.Azure.VirtualNetwork.CalicoSubnetCIDR has invalid fromat %q: it must contain /", customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR)
+		}
+
+		network := split[0]
+
+		mask, err := strconv.Atoi(split[1])
+		if err != nil {
+			return "", microerror.Maskf(invalidCustomObjectError, "Spec.Azure.VirtualNetwork.CalicoSubnetCIDR has invalid fromat %q: mask must be an integer", customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR)
+		}
+
+		customObject.Spec.Cluster.Calico.Subnet = network
+		customObject.Spec.Cluster.Calico.CIDR = mask
+	}
+
 	params := k8scloudconfig.Params{
 		ApiserverEncryptionKey: apiserverEncryptionKey,
 		Cluster:                customObject.Spec.Cluster,
