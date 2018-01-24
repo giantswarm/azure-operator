@@ -318,7 +318,7 @@ spec:
               value: "true"
             # The Calico IPv4 pool to use.  This should match --cluster-cidr
             - name: CALICO_IPV4POOL_CIDR
-              value: "{{.Cluster.Calico.Subnet}}/{{.Cluster.Calico.CIDR}}"
+              value: "{{ .CalicoCIDR }}"
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
               value: "off"
