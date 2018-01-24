@@ -111,7 +111,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
 						"--allocate-node-cidrs=true",
-						"--cluster-cidr=" + key.HostClusterCIDR(customObject),
+						"--cluster-cidr=" + key.VnetCalicoSubnetCIDR(customObject),
 					},
 				},
 			},
