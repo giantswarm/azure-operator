@@ -19,6 +19,11 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 			Cluster: providerv1alpha1.Cluster{
 				ID: "5xchu",
 			},
+			Azure: providerv1alpha1.AzureConfigSpecAzure{
+				VirtualNetwork: providerv1alpha1.AzureConfigSpecAzureVirtualNetwork{
+					CalicoSubnetCIDR: "10.1.128/17",
+				},
+			},
 		},
 	}
 	expectedDeployments := []deployment{
