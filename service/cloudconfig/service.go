@@ -92,14 +92,14 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 	{
 		split := strings.Split(customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR, "/")
 		if len(split) != 2 {
-			return "", microerror.Maskf(invalidCustomObjectError, "Spec.Azure.VirtualNetwork.CalicoSubnetCIDR has invalid fromat %q: it must contain /", customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR)
+			return "", microerror.Maskf(invalidCustomObjectError, "Spec.Azure.VirtualNetwork.CalicoSubnetCIDR has invalid format %q: it must contain /", customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR)
 		}
 
 		network := split[0]
 
 		mask, err := strconv.Atoi(split[1])
 		if err != nil {
-			return "", microerror.Maskf(invalidCustomObjectError, "Spec.Azure.VirtualNetwork.CalicoSubnetCIDR has invalid fromat %q: mask must be an integer", customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR)
+			return "", microerror.Maskf(invalidCustomObjectError, "Spec.Azure.VirtualNetwork.CalicoSubnetCIDR has invalid format %q: mask must be an integer", customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR)
 		}
 
 		customObject.Spec.Cluster.Calico.Subnet = network
