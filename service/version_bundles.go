@@ -72,7 +72,7 @@ func newVersionBundles() []versionbundle.Bundle {
 			Name:         "azure-operator",
 			Time:         time.Date(2018, time.January, 7, 8, 35, 0, 0, time.UTC),
 			Version:      "0.1.0",
-			WIP:          true,
+			WIP:          false,
 		},
 	}
 }
