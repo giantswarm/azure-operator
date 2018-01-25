@@ -229,6 +229,20 @@
             }
           },
           {
+            "name": "azureLoadBalancerHealthChecks",
+            "properties": {
+              "description": "Allow Azure Load Balancer health checks.",
+              "protocol": "*",
+              "sourcePortRange": "*",
+              "destinationPortRange": "*",
+              "sourceAddressPrefix": "AzureLoadBalancer",
+              "destinationAddressPrefix": "*",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "4000"
+            }
+          },
+          {
             "name": "ingressSecurePortRule",
             "properties": {
               "description": "Allow anyone to reach the ingress controller secure port.",
