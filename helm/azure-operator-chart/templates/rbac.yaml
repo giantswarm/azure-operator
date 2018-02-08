@@ -66,6 +66,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: azure-operator
+    namespace: giantswarm
 roleRef:
   kind: ClusterRole
   name: azure-operator
