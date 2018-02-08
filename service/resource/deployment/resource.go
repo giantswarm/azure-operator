@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
+	"github.com/giantswarm/randomkeys"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/cloudconfig"
@@ -28,9 +29,10 @@ const (
 type Config struct {
 	// Dependencies.
 
-	CertsSearcher certs.Interface
-	CloudConfig   *cloudconfig.CloudConfig
-	Logger        micrologger.Logger
+	CertsSearcher      certs.Interface
+	RandomkeysSearcher randomkeys.Interface
+	CloudConfig        *cloudconfig.CloudConfig
+	Logger             micrologger.Logger
 
 	// Settings.
 
@@ -46,8 +48,9 @@ func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
 
-		CertsSearcher: nil,
-		Logger:        nil,
+		CertsSearcher:      nil,
+		RandomkeysSearcher: nil,
+		Logger:             nil,
 
 		// Settings.
 
@@ -59,9 +62,10 @@ func DefaultConfig() Config {
 type Resource struct {
 	// Dependencies.
 
-	certsSearcher certs.Interface
-	cloudConfig   *cloudconfig.CloudConfig
-	logger        micrologger.Logger
+	certsSearcher      certs.Interface
+	randomkeysSearcher randomkeys.Interface
+	cloudConfig        *cloudconfig.CloudConfig
+	logger             micrologger.Logger
 
 	// Settings.
 
@@ -78,6 +82,9 @@ func New(config Config) (*Resource, error) {
 	if config.CertsSearcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.CertsSearcher must not be empty")
 	}
+	if config.RandomkeysSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.RandomkeysSearcher must not be empty")
+	}
 	if config.CloudConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty")
 	}
@@ -91,9 +98,10 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		// Dependencies.
-		certsSearcher: config.CertsSearcher,
-		cloudConfig:   config.CloudConfig,
-		logger:        config.Logger.With("resource", Name),
+		certsSearcher:      config.CertsSearcher,
+		randomkeysSearcher: config.RandomkeysSearcher,
+		cloudConfig:        config.CloudConfig,
+		logger:             config.Logger.With("resource", Name),
 
 		// Settings.
 		azureConfig:     config.AzureConfig,

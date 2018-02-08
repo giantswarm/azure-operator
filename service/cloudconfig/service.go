@@ -16,12 +16,6 @@ import (
 )
 
 const (
-	// apiserverEncryptionKey is **insecure** encryption key just to
-	// satisfy newest master of k8scloudconfigs.
-	//
-	// TODO: use randomkeys to fill the value properly.
-	apiserverEncryptionKey = "UShZb2zOWvY5Svkf8+oSSa0dEZxprPWz0xYYsAsFuP0="
-
 	// loopbackAddr is used to set various cloud config template
 	// parameters to work around Azure load balancers limitation.
 	loopbackAddr = "127.0.0.1"
@@ -85,7 +79,7 @@ func New(config Config) (*CloudConfig, error) {
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, apiserverEncryptionKey string) (string, error) {
 	params := k8scloudconfig.Params{
 		ApiserverEncryptionKey: apiserverEncryptionKey,
 		Cluster:                customObject.Spec.Cluster,
@@ -141,7 +135,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, apiserverEncryptionKey string) (string, error) {
 	params := k8scloudconfig.Params{
 		ApiserverEncryptionKey: apiserverEncryptionKey,
 		Cluster:                customObject.Spec.Cluster,

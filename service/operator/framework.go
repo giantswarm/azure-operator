@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"
 	"github.com/giantswarm/operatorkit/framework"
 	"github.com/giantswarm/operatorkit/informer"
+	"github.com/giantswarm/randomkeys"
 )
 
 func newFramework(config Config) (*framework.Framework, error) {
@@ -39,6 +40,18 @@ func newFramework(config Config) (*framework.Framework, error) {
 		certsSearcher, err = certs.NewSearcher(c)
 		if err != nil {
 			return nil, microerror.Maskf(err, "certs.NewSearcher")
+		}
+	}
+
+	var randomkeysSearcher *randomkeys.Searcher
+	{
+		c := randomkeys.DefaultConfig()
+		c.K8sClient = config.K8sClient
+		c.Logger = config.Logger
+
+		randomkeysSearcher, err = randomkeys.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Maskf(err, "randomkeys.NewSearcher")
 		}
 	}
 
@@ -73,6 +86,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 		c := deployment.DefaultConfig()
 
 		c.CertsSearcher = certsSearcher
+		c.RandomkeysSearcher = randomkeysSearcher
 		c.Logger = config.Logger
 
 		c.AzureConfig = config.AzureConfig

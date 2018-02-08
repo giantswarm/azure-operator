@@ -50,12 +50,17 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		workerNodes = append(workerNodes, n)
 	}
 
-	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
+	cluster, err := r.randomkeysSearcher.SearchCluster(key.ClusterID(obj))
 	if err != nil {
 		return deployment{}, microerror.Mask(err)
 	}
 
-	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
+	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj, string(cluster.APIServerEncryptionKey))
+	if err != nil {
+		return deployment{}, microerror.Mask(err)
+	}
+
+	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj, string(cluster.APIServerEncryptionKey))
 	if err != nil {
 		return deployment{}, microerror.Mask(err)
 	}
