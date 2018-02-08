@@ -1,5 +1,5 @@
-apiVersion: "giantswarm.io/v1"
-kind: AzureCluster
+apiVersion: "provider.giantswarm.io/v1alpha1"
+kind: AzureConfig
 metadata:
   name: {{.Values.clusterName}}
 spec:
