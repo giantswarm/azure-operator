@@ -61,6 +61,7 @@ func newFramework(config Config) (*framework.Framework, error) {
 
 		c.AzureConfig = config.AzureConfig
 		c.Logger = config.Logger
+		c.RandomkeysSearcher = randomkeysSearcher
 
 		cloudConfig, err = cloudconfig.New(c)
 		if err != nil {
@@ -86,7 +87,6 @@ func newFramework(config Config) (*framework.Framework, error) {
 		c := deployment.DefaultConfig()
 
 		c.CertsSearcher = certsSearcher
-		c.RandomkeysSearcher = randomkeysSearcher
 		c.Logger = config.Logger
 
 		c.AzureConfig = config.AzureConfig

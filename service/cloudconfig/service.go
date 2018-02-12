@@ -13,6 +13,7 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_0_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/randomkeys"
 )
 
 const (
@@ -25,7 +26,8 @@ const (
 type Config struct {
 	// Dependencies.
 
-	Logger micrologger.Logger
+	Logger             micrologger.Logger
+	RandomkeysSearcher randomkeys.Interface
 
 	// Settings.
 
@@ -38,7 +40,8 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		Logger: nil,
+		Logger:             nil,
+		RandomkeysSearcher: nil,
 
 		// Settings.
 		AzureConfig: client.DefaultAzureConfig(),
@@ -48,7 +51,8 @@ func DefaultConfig() Config {
 // CloudConfig implements the cloudconfig service interface.
 type CloudConfig struct {
 	// Dependencies.
-	logger micrologger.Logger
+	logger             micrologger.Logger
+	randomkeysSearcher randomkeys.Interface
 
 	// Settings.
 	azureConfig client.AzureConfig
@@ -60,6 +64,9 @@ func New(config Config) (*CloudConfig, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
+	if config.RandomkeysSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.RandomkeysSearcher must not be empty")
+	}
 
 	// Settings.
 	if err := config.AzureConfig.Validate(); err != nil {
@@ -68,7 +75,8 @@ func New(config Config) (*CloudConfig, error) {
 
 	newService := &CloudConfig{
 		// Dependencies.
-		logger: config.Logger,
+		logger:             config.Logger,
+		randomkeysSearcher: config.RandomkeysSearcher,
 
 		// Settings.
 		azureConfig: config.AzureConfig,
@@ -79,7 +87,12 @@ func New(config Config) (*CloudConfig, error) {
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, apiserverEncryptionKey string) (string, error) {
+func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+	apiserverEncryptionKey, err := c.getEncryptionkey(customObject)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
 	params := k8scloudconfig.Params{
 		ApiserverEncryptionKey: apiserverEncryptionKey,
 		Cluster:                customObject.Spec.Cluster,
@@ -158,6 +171,14 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
+}
+
+func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
+	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(customObject))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	return string(cluster.APIServerEncryptionKey), nil
 }
 
 func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
