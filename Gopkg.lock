@@ -142,7 +142,10 @@
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/randomkeys"
-  packages = ["."]
+  packages = [
+    ".",
+    "randomkeystest"
+  ]
   revision = "156c1ca72c8b9a1db95bcfa32922debdb5761238"
 
 [[projects]]
@@ -472,6 +475,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "e8a6c8d685fed8044cd32336e93e31d233562d0a99049f8dad09974bd37f2cf0"
+  inputs-digest = "f795ab0cb7ba708da2064c5363ed12ada785e3bc395001158d641815d5e20d13"
   solver-name = "gps-cdcl"
   solver-version = 1
