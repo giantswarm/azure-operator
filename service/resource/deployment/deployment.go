@@ -60,7 +60,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		return deployment{}, microerror.Mask(err)
 	}
 
-	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj, string(cluster.APIServerEncryptionKey))
+	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
 	if err != nil {
 		return deployment{}, microerror.Mask(err)
 	}

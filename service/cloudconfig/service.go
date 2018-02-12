@@ -135,10 +135,9 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, apiserverEncryptionKey string) (string, error) {
+func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
 	params := k8scloudconfig.Params{
-		ApiserverEncryptionKey: apiserverEncryptionKey,
-		Cluster:                customObject.Spec.Cluster,
+		Cluster: customObject.Spec.Cluster,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Kubelet: k8scloudconfig.HyperkubeKubelet{
 				Docker: k8scloudconfig.HyperkubeDocker{
