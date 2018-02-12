@@ -31,6 +31,7 @@ spec:
       - name: certs
         hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
+      serviceAccountName: azure-operator
       containers:
       - name: azure-operator
         image: quay.io/giantswarm/azure-operator:[[ .SHA ]]
