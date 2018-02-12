@@ -8,6 +8,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/certstest"
 	"github.com/giantswarm/micrologger/microloggertest"
+	"github.com/giantswarm/randomkeys/randomkeystest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
 	"github.com/giantswarm/azure-operator/service/cloudconfig"
@@ -34,6 +35,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		cloudConfigConfig := cloudconfig.DefaultConfig()
 		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
 		cloudConfigConfig.Logger = microloggertest.New()
+		cloudConfigConfig.RandomkeysSearcher = randomkeystest.NewSearcher()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
 		if err != nil {
@@ -159,6 +161,7 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		cloudConfigConfig := cloudconfig.DefaultConfig()
 		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
 		cloudConfigConfig.Logger = microloggertest.New()
+		cloudConfigConfig.RandomkeysSearcher = randomkeystest.NewSearcher()
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
 		if err != nil {
