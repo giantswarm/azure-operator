@@ -7,12 +7,14 @@ import (
 )
 
 type calicoAzureFileParams struct {
-	Cluster providerv1alpha1.Cluster
+	Cluster    providerv1alpha1.Cluster
+	CalicoCIDR string
 }
 
 func newCalicoAzureFileParams(obj providerv1alpha1.AzureConfig) calicoAzureFileParams {
 	return calicoAzureFileParams{
-		Cluster: obj.Spec.Cluster,
+		Cluster:    obj.Spec.Cluster,
+		CalicoCIDR: key.VnetCalicoSubnetCIDR(obj),
 	}
 }
 
