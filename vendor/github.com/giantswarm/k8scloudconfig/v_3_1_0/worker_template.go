@@ -1,4 +1,4 @@
-package v_3_0_0
+package v_3_1_0
 
 const WorkerTemplate = `#cloud-config
 users:
@@ -128,6 +128,16 @@ write_files:
     {{range .Content}}{{.}}
     {{end}}{{end}}
 
+- path: /etc/modules-load.d/ip_vs.conf
+  owner: root
+  permissions: 644
+  content: |
+    ip_vs
+    ip_vs_rr
+    ip_vs_wrr
+    ip_vs_sh
+    nf_conntrack_ipv4
+
 coreos:
   units:
   {{range .Extension.Units}}
@@ -237,7 +247,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.2"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
