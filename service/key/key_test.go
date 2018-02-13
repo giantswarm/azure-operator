@@ -58,22 +58,6 @@ func Test_ClusterCustomer(t *testing.T) {
 	}
 }
 
-func Test_KeyVaultName(t *testing.T) {
-	expectedVaultName := "test-cluster-vault"
-
-	customObject := providerv1alpha1.AzureConfig{
-		Spec: providerv1alpha1.AzureConfigSpec{
-			Cluster: providerv1alpha1.Cluster{
-				ID: "test-cluster",
-			},
-		},
-	}
-
-	if KeyVaultName(customObject) != expectedVaultName {
-		t.Fatalf("Expected key vault name %s but was %s", expectedVaultName, KeyVaultName(customObject))
-	}
-}
-
 func Test_KeyVaultKey(t *testing.T) {
 	var (
 		path        = "/etc/kubernetes/ssl/calico/client-ca.pem"
@@ -107,12 +91,16 @@ func Test_Location(t *testing.T) {
 }
 
 func Test_Functions_for_AzureResourceKeys(t *testing.T) {
-	clusterID := "test-cluster"
+	clusterID := "eggs2"
 
 	testCases := []struct {
 		Func           func(providerv1alpha1.AzureConfig) string
 		ExpectedResult string
 	}{
+		{
+			Func:           KeyVaultName,
+			ExpectedResult: "gs-eggs2-keyvault",
+		},
 		{
 			Func:           MasterSecurityGroupName,
 			ExpectedResult: fmt.Sprintf("%s-%s", clusterID, masterSecurityGroupSuffix),
@@ -146,7 +134,7 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 	customObject := providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
-				ID: "test-cluster",
+				ID: clusterID,
 			},
 		},
 	}

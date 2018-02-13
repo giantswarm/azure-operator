@@ -9,7 +9,14 @@ import (
 )
 
 const (
-	defaultAzureCloudType     = "AZUREPUBLICCLOUD"
+	defaultAzureCloudType = "AZUREPUBLICCLOUD"
+
+	// globalPrefix is added to all resources created by azure-operator.
+	// This is to avoid problems witch resources which names has to start
+	// with a letter, as sometimes guest cluster IDs start with number.
+	globalPrefix = "gs"
+
+	keyVaultSuffix            = "keyvault"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
@@ -107,7 +114,7 @@ func HostClusterCIDR(customObject providerv1alpha1.AzureConfig) string {
 
 // KeyVaultName returns the Azure Key Vault name for this cluster.
 func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
-	return ClusterID(customObject) + "-vault"
+	return fmt.Sprintf("%s-%s-%s", globalPrefix, ClusterID(customObject), keyVaultSuffix)
 }
 
 // KeyVaultKey takes a certificate file path and returns KeyVault key under
