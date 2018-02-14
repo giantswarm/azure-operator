@@ -12,7 +12,7 @@ const (
 	defaultAzureCloudType = "AZUREPUBLICCLOUD"
 
 	// globalPrefix is added to all resources created by azure-operator.
-	// This is to avoid problems witch resources which names has to start
+	// This is to avoid problems with resources which names has to start
 	// with a letter, as sometimes guest cluster IDs start with number.
 	globalPrefix = "gs"
 
