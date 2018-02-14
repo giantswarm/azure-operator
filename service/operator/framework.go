@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"
 	"github.com/giantswarm/operatorkit/framework"
 	"github.com/giantswarm/operatorkit/informer"
+	"github.com/giantswarm/randomkeys"
 )
 
 func newFramework(config Config) (*framework.Framework, error) {
@@ -42,12 +43,25 @@ func newFramework(config Config) (*framework.Framework, error) {
 		}
 	}
 
+	var randomkeysSearcher *randomkeys.Searcher
+	{
+		c := randomkeys.DefaultConfig()
+		c.K8sClient = config.K8sClient
+		c.Logger = config.Logger
+
+		randomkeysSearcher, err = randomkeys.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Maskf(err, "randomkeys.NewSearcher")
+		}
+	}
+
 	var cloudConfig *cloudconfig.CloudConfig
 	{
 		c := cloudconfig.DefaultConfig()
 
 		c.AzureConfig = config.AzureConfig
 		c.Logger = config.Logger
+		c.RandomkeysSearcher = randomkeysSearcher
 
 		cloudConfig, err = cloudconfig.New(c)
 		if err != nil {
