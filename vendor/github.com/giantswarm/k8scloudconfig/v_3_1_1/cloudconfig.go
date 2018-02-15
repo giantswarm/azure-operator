@@ -35,6 +35,16 @@ func NewCloudConfig(config CloudConfigConfig) (*CloudConfig, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.Template must not be empty")
 	}
 
+<<<<<<< HEAD
+=======
+	// Set default params.
+	if config.Params.MasterAPIDomain == "" {
+		config.Params.MasterAPIDomain = config.Params.Cluster.Kubernetes.API.Domain
+	}
+	if config.Params.Hyperkube.Apiserver.BindAddress == "" {
+		config.Params.Hyperkube.Apiserver.BindAddress = defaultHyperkubeApiserverBindAddress
+	}
+>>>>>>> Change default etcd data dir to /var/lib/etcd
 	// Default to 443 for non AWS providers.
 	if config.Params.EtcdPort == 0 {
 		config.Params.EtcdPort = 443
