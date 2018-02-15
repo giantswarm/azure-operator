@@ -93,10 +93,19 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		DisableCalico:          true,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
-				Docker: k8scloudconfig.HyperkubeDocker{
-					RunExtraArgs: []string{
-						"-v /etc/kubernetes/config:/etc/kubernetes/config",
-						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+				BindAddress: "0.0.0.0",
+				Pod: k8scloudconfig.HyperkubePod{
+					HostExtraMounts: []k8scloudconfig.HostMount{
+						k8scloudconfig.HostMount{
+							Name:     "k8s-config",
+							Path:     "/etc/kubernetes/config/",
+							ReadOnly: true,
+						},
+						k8scloudconfig.HostMount{
+							Name:     "identity-settings",
+							Path:     "/var/lib/waagent/",
+							ReadOnly: true,
+						},
 					},
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
@@ -104,9 +113,18 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 				},
 			},
 			ControllerManager: k8scloudconfig.HyperkubeControllerManager{
-				Docker: k8scloudconfig.HyperkubeDocker{
-					RunExtraArgs: []string{
-						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+				Pod: k8scloudconfig.HyperkubePod{
+					HostExtraMounts: []k8scloudconfig.HostMount{
+						k8scloudconfig.HostMount{
+							Name:     "k8s-config",
+							Path:     "/etc/kubernetes/config/",
+							ReadOnly: true,
+						},
+						k8scloudconfig.HostMount{
+							Name:     "identity-settings",
+							Path:     "/var/lib/waagent/",
+							ReadOnly: true,
+						},
 					},
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
