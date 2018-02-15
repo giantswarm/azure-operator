@@ -5,7 +5,9 @@ import (
 )
 
 const (
-	defaultHyperkubeApiserverBindAddress = "${DEFAULT_IPV4}"
+	// Default value references environment variable,
+	// defined inside api-server pod definition.
+	defaultHyperkubeApiserverBindAddress = "$(HOST_IP)"
 )
 
 type Params struct {
@@ -64,11 +66,11 @@ type HyperkubeApiserver struct {
 	//
 	// azure-operator sets that to 0.0.0.0. Other operators leave it empty.
 	BindAddress string
-	Docker      HyperkubeDocker
+	Pod         HyperkubePod
 }
 
 type HyperkubeControllerManager struct {
-	Docker HyperkubeDocker
+	Pod HyperkubePod
 }
 
 type HyperkubeKubelet struct {
@@ -78,6 +80,17 @@ type HyperkubeKubelet struct {
 type HyperkubeDocker struct {
 	RunExtraArgs     []string
 	CommandExtraArgs []string
+}
+
+type HyperkubePod struct {
+	HostExtraMounts  []HostMount
+	CommandExtraArgs []string
+}
+
+type HostMount struct {
+	Name     string
+	Path     string
+	ReadOnly bool
 }
 
 type FileMetadata struct {

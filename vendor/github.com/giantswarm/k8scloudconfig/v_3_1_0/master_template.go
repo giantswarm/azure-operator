@@ -1796,7 +1796,7 @@ write_files:
         command:
         - /hyperkube
         - apiserver
-        {{ range .Hyperkube.Apiserver.Docker.CommandExtraArgs -}}
+        {{ range .Hyperkube.Apiserver.Pod.CommandExtraArgs -}}
         - {{ . }}
         {{ end -}}
         - --allow_privileged=true
@@ -1806,7 +1806,7 @@ write_files:
         - --kubelet_https=true
         - --kubelet-preferred-address-types=InternalIP
         - --secure_port={{.Cluster.Kubernetes.API.SecurePort}}
-        - --bind-address=$(HOST_IP)
+        - --bind-address={{.Hyperkube.Apiserver.BindAddress}}
         - --etcd-prefix={{.Cluster.Etcd.Prefix}}
         - --profiling=false
         - --repair-malformed-updates=false
@@ -1819,7 +1819,7 @@ write_files:
         - --etcd-cafile=/etc/kubernetes/ssl/etcd/server-ca.pem
         - --etcd-certfile=/etc/kubernetes/ssl/etcd/server-crt.pem
         - --etcd-keyfile=/etc/kubernetes/ssl/etcd/server-key.pem
-        - --advertise-address=$(HOST_IP)
+        - --advertise-address={{.Hyperkube.Apiserver.BindAddress}}
         - --runtime-config=api/all=true
         - --logtostderr=true
         - --tls-cert-file=/etc/kubernetes/ssl/apiserver-crt.pem
@@ -1845,6 +1845,11 @@ write_files:
           hostPort: {{.Cluster.Kubernetes.API.SecurePort}}
           name: https
         volumeMounts:
+        {{ range .Hyperkube.Apiserver.Pod.HostExtraMounts -}}
+        - mountPath: {{ .Path }}
+          name: {{ .Name }}
+          readOnly: {{ .ReadOnly }}
+        {{ end -}}
         - mountPath: /var/log/apiserver/
           name: apiserver-log
         - mountPath: /etc/kubernetes/encryption/
@@ -1860,6 +1865,11 @@ write_files:
           name: ssl-certs-kubernetes
           readOnly: true
       volumes:
+      {{ range .Hyperkube.Apiserver.Pod.HostExtraMounts -}}
+      - hostPath: 
+          path: {{ .Path }}
+        name: {{ .Name }}
+      {{ end -}}
       - hostPath:
           path: /var/log/apiserver/
         name: apiserver-log
@@ -1913,6 +1923,11 @@ write_files:
           initialDelaySeconds: 15
           timeoutSeconds: 15
         volumeMounts:
+        {{ range .Hyperkube.ControllerManager.Pod.HostExtraMounts -}}
+        - mountPath: {{ .Path }}
+          name: {{ .Name }}
+          readOnly: {{ .ReadOnly }}
+        {{ end -}}
         - mountPath: /etc/kubernetes/config/
           name: k8s-config
           readOnly: true
@@ -1923,6 +1938,11 @@ write_files:
           name: ssl-certs-kubernetes
           readOnly: true
       volumes:
+      {{ range .Hyperkube.ControllerManager.Pod.HostExtraMounts -}}
+      - hostPath: 
+          path: {{ .Path }}
+        name: {{ .Name }}
+      {{ end -}}
       - hostPath:
           path: /etc/kubernetes/config
         name: k8s-config
@@ -2145,9 +2165,9 @@ coreos:
       Requires=k8s-setup-network-env.service
       After=k8s-setup-network-env.service
       Conflicts=etcd.service etcd2.service
+      StartLimitIntervalSec=0
 
       [Service]
-      StartLimitIntervalSec=0
       Restart=always
       RestartSec=0
       TimeoutStopSec=10
