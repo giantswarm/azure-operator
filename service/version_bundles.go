@@ -50,11 +50,6 @@ func newVersionBundles() []versionbundle.Bundle {
 					Description: "Removed calico-node-controller.",
 					Kind:        versionbundle.KindRemoved,
 				},
-				{
-					Component:   "azure-operator",
-					Description: "Change default etcd data dir to /var/lib/etcd.",
-					Kind:        versionbundle.KindChanged,
-				},
 			},
 			Components: []versionbundle.Component{
 				{

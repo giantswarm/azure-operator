@@ -621,16 +621,16 @@ WantedBy=multi-user.target
 )
 
 const (
-	etcdMountUnitName     = "var-lib-etcd.mount"
+	etcdMountUnitName     = "etc-kubernetes-data-etcd.mount"
 	etcdMountUnitTemplate = `[Unit]
-Description=Mounts disk to /var/lib/etcd
+Description=Mounts disk to /etc/kubernetes/data/etcd
 Requires=format-etcd-disk.service
 After=format-etcd-disk.service
 Before=etcd3.service
 
 [Mount]
 What=/dev/{{ .DiskName }}
-Where=/var/lib/etcd
+Where=/etc/kubernetes/data/etcd
 Type=ext4
 
 [Install]
