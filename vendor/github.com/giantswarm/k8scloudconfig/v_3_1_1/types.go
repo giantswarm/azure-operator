@@ -4,13 +4,6 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
-<<<<<<< HEAD
-=======
-const (
-	defaultHyperkubeApiserverBindAddress = "${DEFAULT_IPV4}"
-)
-
->>>>>>> Change default etcd data dir to /var/lib/etcd
 type Params struct {
 	// ApiserverEncryptionKey is AES-CBC with PKCS#7 padding key to encrypt
 	// API etcd data.
@@ -35,20 +28,7 @@ type Params struct {
 	// The general use-case is to create a manifest file with Extension and
 	// then apply the manifest by adding it to ExtraManifests.
 	ExtraManifests []string
-<<<<<<< HEAD
 	Node           v1alpha1.ClusterNode
-=======
-	// MasterAPIDomain is a value of domain passed to various Kubernetes
-	// services. When MasterAPIDomain is empty value of
-	// Cluster.Kubernetes.API.Domain is passed.
-	//
-	// NOTE This is a work around limitation of Azure load balancers.
-	// Hopefully Load Balancer Standard SKU will allow to get rid of that.
-	//
-	// azure-operator sets that to 127.0.0.1. Other operators leave it empty.
-	MasterAPIDomain string
-	Node            v1alpha1.ClusterNode
->>>>>>> Change default etcd data dir to /var/lib/etcd
 }
 
 func (p *Params) Validate() error {
@@ -62,28 +42,11 @@ type Hyperkube struct {
 }
 
 type HyperkubeApiserver struct {
-<<<<<<< HEAD
 	Pod HyperkubePod
 }
 
 type HyperkubeControllerManager struct {
 	Pod HyperkubePod
-=======
-	// BindAddress is a value of the --bind-address flag passed to the
-	// hyperkube apiserver. When BindAddress is empty value of
-	// `${DEFAULT_IPV4}` will be passed.
-	//
-	// NOTE This is a work around limitation of Azure load balancers.
-	// Hopefully Load Balancer Standard SKU will allow to get rid of that.
-	//
-	// azure-operator sets that to 0.0.0.0. Other operators leave it empty.
-	BindAddress string
-	Docker      HyperkubeDocker
-}
-
-type HyperkubeControllerManager struct {
-	Docker HyperkubeDocker
->>>>>>> Change default etcd data dir to /var/lib/etcd
 }
 
 type HyperkubeKubelet struct {
@@ -95,7 +58,6 @@ type HyperkubeDocker struct {
 	CommandExtraArgs []string
 }
 
-<<<<<<< HEAD
 type HyperkubePod struct {
 	HyperkubePodHostExtraMounts []HyperkubePodHostMount
 	CommandExtraArgs            []string
@@ -107,8 +69,6 @@ type HyperkubePodHostMount struct {
 	ReadOnly bool
 }
 
-=======
->>>>>>> Change default etcd data dir to /var/lib/etcd
 type FileMetadata struct {
 	AssetContent string
 	Path         string
