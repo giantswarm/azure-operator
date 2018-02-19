@@ -50,6 +50,11 @@ func newVersionBundles() []versionbundle.Bundle {
 					Description: "Removed calico-node-controller.",
 					Kind:        versionbundle.KindRemoved,
 				},
+				{
+					Component:   "cloudconfig",
+					Description: "Replace systemd units for Kubernetes components with self-hosted pods.",
+					Kind:        versionbundle.KindChanged,
+				},
 			},
 			Components: []versionbundle.Component{
 				{
