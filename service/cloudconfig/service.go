@@ -16,12 +16,6 @@ import (
 	"github.com/giantswarm/randomkeys"
 )
 
-const (
-	// loopbackAddr is used to set various cloud config template
-	// parameters to work around Azure load balancers limitation.
-	loopbackAddr = "127.0.0.1"
-)
-
 // Config represents the configuration used to create a cloudconfig service.
 type Config struct {
 	// Dependencies.
@@ -140,7 +134,6 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		ExtraManifests: []string{
 			"calico-azure.yaml",
 		},
-		MasterAPIDomain: loopbackAddr,
 	}
 
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
@@ -167,7 +160,6 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			AzureConfig:  c.azureConfig,
 			CustomObject: customObject,
 		},
-		MasterAPIDomain: loopbackAddr,
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
