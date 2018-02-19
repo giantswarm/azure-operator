@@ -10,7 +10,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/key"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_1_1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -93,10 +93,18 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		DisableCalico:          true,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
-				Docker: k8scloudconfig.HyperkubeDocker{
-					RunExtraArgs: []string{
-						"-v /etc/kubernetes/config:/etc/kubernetes/config",
-						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+				Pod: k8scloudconfig.HyperkubePod{
+					HyperkubePodHostExtraMounts: []k8scloudconfig.HyperkubePodHostMount{
+						k8scloudconfig.HyperkubePodHostMount{
+							Name:     "k8s-config",
+							Path:     "/etc/kubernetes/config/",
+							ReadOnly: true,
+						},
+						k8scloudconfig.HyperkubePodHostMount{
+							Name:     "identity-settings",
+							Path:     "/var/lib/waagent/",
+							ReadOnly: true,
+						},
 					},
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
@@ -104,9 +112,13 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 				},
 			},
 			ControllerManager: k8scloudconfig.HyperkubeControllerManager{
-				Docker: k8scloudconfig.HyperkubeDocker{
-					RunExtraArgs: []string{
-						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+				Pod: k8scloudconfig.HyperkubePod{
+					HyperkubePodHostExtraMounts: []k8scloudconfig.HyperkubePodHostMount{
+						k8scloudconfig.HyperkubePodHostMount{
+							Name:     "identity-settings",
+							Path:     "/var/lib/waagent/",
+							ReadOnly: true,
+						},
 					},
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
