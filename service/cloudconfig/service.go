@@ -93,7 +93,6 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		DisableCalico:          true,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
-				BindAddress: "0.0.0.0",
 				Docker: k8scloudconfig.HyperkubeDocker{
 					RunExtraArgs: []string{
 						"-v /etc/kubernetes/config:/etc/kubernetes/config",
