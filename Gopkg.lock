@@ -101,7 +101,7 @@
   branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = ["v_3_0_0"]
-  revision = "70227ffce23947d9a836578718154d3bc5c89617"
+  revision = "f4c63a2fdfa26a77246c443ffeb76e3946509a9d"
 
 [[projects]]
   branch = "master"
@@ -142,10 +142,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/randomkeys"
-  packages = [
-    ".",
-    "randomkeystest"
-  ]
+  packages = [".","randomkeystest"]
   revision = "156c1ca72c8b9a1db95bcfa32922debdb5761238"
 
 [[projects]]
