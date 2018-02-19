@@ -39,7 +39,7 @@
 
 [[constraint]]
   name = "github.com/giantswarm/k8scloudconfig"
-  branch = "mount_extension"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/microendpoint"
