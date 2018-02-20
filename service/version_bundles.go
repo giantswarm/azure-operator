@@ -55,6 +55,11 @@ func newVersionBundles() []versionbundle.Bundle {
 					Description: "Replace systemd units for Kubernetes components with self-hosted pods.",
 					Kind:        versionbundle.KindChanged,
 				},
+				{
+					Component:   "azure-operator",
+					Description: "Change default etcd data dir to /var/lib/etcd.",
+					Kind:        versionbundle.KindChanged,
+				},
 			},
 			Components: []versionbundle.Component{
 				{
