@@ -27,14 +27,8 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
 	}
 
-	getKeyVaultSecretsFile, err := we.renderGetKeyVaultSecretsFile()
-	if err != nil {
-		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsFile")
-	}
-
 	files := []k8scloudconfig.FileAsset{
 		cloudProviderConfFile,
-		getKeyVaultSecretsFile,
 	}
 	files = append(files, certificateFiles...)
 
@@ -88,39 +82,6 @@ func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (we *workerExtension) renderGetKeyVaultSecretsFile() (k8scloudconfig.FileAsset, error) {
-	params := getKeyVaultSecretsFileParams{
-		VaultName: key.KeyVaultName(we.CustomObject),
-		Secrets:   []getKeyVaultSecretsFileParamsSecret{},
-	}
-
-	// Only file paths are needed here, so we don't care if certs.Cluster
-	// is empty.
-	for _, f := range certs.NewFilesClusterWorker(certs.Cluster{}) {
-		s := getKeyVaultSecretsFileParamsSecret{
-			SecretName: key.KeyVaultKey(f.AbsolutePath),
-			FileName:   f.AbsolutePath,
-		}
-		params.Secrets = append(params.Secrets, s)
-	}
-
-	asset, err := renderGetKeyVaultSecretsFile(params)
-	if err != nil {
-		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (we *workerExtension) renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
-	asset, err := renderGetKeyVaultSecretsUnit()
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
 	return asset, nil

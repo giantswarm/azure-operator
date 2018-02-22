@@ -19,7 +19,7 @@ func getDeploymentNames() []string {
 }
 
 func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deployment, error) {
-	certs, err := r.certsSearcher.SearchCluster(key.ClusterID(obj))
+	_, err := r.certsSearcher.SearchCluster(key.ClusterID(obj))
 	if err != nil {
 		return deployment{}, microerror.Mask(err)
 	}
