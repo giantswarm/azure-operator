@@ -67,12 +67,6 @@
         "description": "Base64-encoded cloud-config data."
       }
     },
-    "keyVaultName": {
-      "type": "string"
-    },
-    "keyVaultSecretsObject": {
-      "type": "secureObject"
-    },
     "templatesBaseURI" : {
       "type": "string",
       "metadata": {
@@ -82,10 +76,6 @@
     "availabilitySetsTemplateFile": {
       "type": "string",
       "defaultValue": "availability_sets_setup.json"
-    },
-    "certificatesTemplateFile": {
-      "type": "string",
-      "defaultValue": "certificates.json"
     },
     "dnsASetupTemplateFile": {
       "type": "string",
@@ -124,7 +114,6 @@
   },
   "variables": {
     "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
-    "certificatesTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('certificatesTemplateFile'))]",
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
@@ -198,46 +187,6 @@
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
           "routeTableID": {"value": "[reference('route_table_setup').outputs.id.value]"}
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "certificates",
-      "type": "Microsoft.Resources/deployments",
-      "dependsOn": [
-        "master_nodes_setup_copy",
-        "worker_nodes_setup_copy"
-      ],
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('certificatesTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "keyVaultName": {"value": "[parameters('keyVaultName')]"},
-          "keyVaultSecretsObject": {"value": "[parameters('keyVaultSecretsObject')]"},
-          "masterNodeIDs": {
-            "copy": [{
-              "name": "value",
-              "count": "[length(parameters('masterNodes'))]",
-              "input": {
-                "id": "[reference(concat('master_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
-              }
-            }]
-          },
-          "workerNodeIDs": {
-            "copy": [{
-              "name": "value",
-              "count": "[length(parameters('workerNodes'))]",
-              "input": {
-                "id": "[reference(concat('worker_nodes_setup_', string(add(copyIndex('value'), 1)))).outputs.nodePrincipalID.value]"
-              }
-            }]
-          }
         }
       }
     },

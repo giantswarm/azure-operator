@@ -2,7 +2,6 @@ package deployment
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/key"
@@ -24,9 +23,6 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 	if err != nil {
 		return deployment{}, microerror.Mask(err)
 	}
-
-	// Convert certs files into a collection of key vault secrets.
-	certSecrets := convertCertsToSecrets(certs)
 
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
@@ -75,8 +71,6 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		"kubernetesIngressInsecurePort": obj.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
 		"masterCloudConfigData":         masterCloudConfig,
 		"workerCloudConfigData":         workerCloudConfig,
-		"keyVaultName":                  key.KeyVaultName(obj),
-		"keyVaultSecretsObject":         certSecrets,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
 	}
 
@@ -103,22 +97,4 @@ func convertParameters(inputs map[string]interface{}) map[string]interface{} {
 	}
 
 	return params
-}
-
-// convertCertsToSecrets converts the certificate assets to a keyVaultSecrets
-// collection so it can be passed as a secure object template parameter.
-func convertCertsToSecrets(certificates certs.Cluster) keyVault {
-	var secrets []keyVaultSecret
-
-	for _, f := range certs.NewFilesCluster(certificates) {
-		s := keyVaultSecret{
-			SecretName:  key.KeyVaultKey(f.AbsolutePath),
-			SecretValue: string(f.Data),
-		}
-		secrets = append(secrets, s)
-	}
-
-	return keyVault{
-		Secrets: secrets,
-	}
 }
