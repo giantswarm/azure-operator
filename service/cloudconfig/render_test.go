@@ -2,6 +2,8 @@ package cloudconfig
 
 import (
 	"testing"
+
+	"github.com/giantswarm/certs"
 )
 
 func Test_render(t *testing.T) {
@@ -12,6 +14,16 @@ func Test_render(t *testing.T) {
 		{
 			Name: "renderCalicoAzureFile",
 			Fn:   func() error { _, err := renderCalicoAzureFile(calicoAzureFileParams{}); return err },
+		},
+		{
+			Name: "renderCalicoAzureFile",
+			Fn: func() error {
+				_, err := renderCertificatesFiles([]certs.File{
+					{AbsolutePath: "/a/b/c.crt", Data: []byte("test cert data c")},
+					{AbsolutePath: "/c/b/a.crt", Data: []byte("test cert data a")},
+				})
+				return err
+			},
 		},
 		{
 			Name: "renderCloudProviderConfFile",

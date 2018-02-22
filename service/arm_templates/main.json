@@ -56,13 +56,13 @@
       "defaultValue": true
     },
     "masterCloudConfigData": {
-      "type": "string",
+      "type": "secureString",
       "metadata": {
         "description": "Base64-encoded cloud-config data."
       }
     },
     "workerCloudConfigData": {
-      "type": "string",
+      "type": "secureString",
       "metadata": {
         "description": "Base64-encoded cloud-config data."
       }

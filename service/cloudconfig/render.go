@@ -1,6 +1,7 @@
 package cloudconfig
 
 import (
+	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_1_1"
 	"github.com/giantswarm/microerror"
 )
@@ -24,6 +25,37 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 	}
 
 	return file, nil
+}
+
+func renderCertificatesFiles(certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
+	params := struct{}{}
+
+	var fileMetas []k8scloudconfig.FileMetadata
+	for _, f := range certFiles {
+		m := k8scloudconfig.FileMetadata{
+			AssetContent: string(f.Data),
+			Path:         f.AbsolutePath,
+			Owner:        certFileOwner,
+			Permissions:  certFilePermission,
+		}
+		fileMetas = append(fileMetas, m)
+	}
+
+	var files []k8scloudconfig.FileAsset
+	for _, m := range fileMetas {
+		content, err := k8scloudconfig.RenderAssetContent(m.AssetContent, params)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		f := k8scloudconfig.FileAsset{
+			Metadata: m,
+			Content:  content,
+		}
+		files = append(files, f)
+	}
+
+	return files, nil
 }
 
 func renderCloudProviderConfFile(params cloudProviderConfFileParams) (k8scloudconfig.FileAsset, error) {

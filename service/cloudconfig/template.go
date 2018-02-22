@@ -512,6 +512,11 @@ metadata:
 )
 
 const (
+	certFileOwner      = "root:root"
+	certFilePermission = 0600
+)
+
+const (
 	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
 	cloudProviderConfFileOwner      = "root:root"
 	cloudProviderConfFilePermission = 0600

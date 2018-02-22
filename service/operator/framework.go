@@ -57,11 +57,13 @@ func newFramework(config Config) (*framework.Framework, error) {
 
 	var cloudConfig *cloudconfig.CloudConfig
 	{
-		c := cloudconfig.DefaultConfig()
+		c := cloudconfig.Config{
+			CertsSearcher:      certsSearcher,
+			Logger:             config.Logger,
+			RandomkeysSearcher: randomkeysSearcher,
 
-		c.AzureConfig = config.AzureConfig
-		c.Logger = config.Logger
-		c.RandomkeysSearcher = randomkeysSearcher
+			AzureConfig: config.AzureConfig,
+		}
 
 		cloudConfig, err = cloudconfig.New(c)
 		if err != nil {

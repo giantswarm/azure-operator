@@ -32,10 +32,13 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	var err error
 	var newResource *Resource
 	{
-		cloudConfigConfig := cloudconfig.DefaultConfig()
-		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
-		cloudConfigConfig.Logger = microloggertest.New()
-		cloudConfigConfig.RandomkeysSearcher = randomkeystest.NewSearcher()
+		cloudConfigConfig := cloudconfig.Config{
+			CertsSearcher:      certstest.NewSearcher(),
+			Logger:             microloggertest.New(),
+			RandomkeysSearcher: randomkeystest.NewSearcher(),
+
+			AzureConfig: fakeclient.NewAzureConfig(),
+		}
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
 		if err != nil {
@@ -158,10 +161,13 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 
 	var newResource *Resource
 	{
-		cloudConfigConfig := cloudconfig.DefaultConfig()
-		cloudConfigConfig.AzureConfig = fakeclient.NewAzureConfig()
-		cloudConfigConfig.Logger = microloggertest.New()
-		cloudConfigConfig.RandomkeysSearcher = randomkeystest.NewSearcher()
+		cloudConfigConfig := cloudconfig.Config{
+			CertsSearcher:      certstest.NewSearcher(),
+			Logger:             microloggertest.New(),
+			RandomkeysSearcher: randomkeystest.NewSearcher(),
+
+			AzureConfig: fakeclient.NewAzureConfig(),
+		}
 
 		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
 		if err != nil {
