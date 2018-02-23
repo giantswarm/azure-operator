@@ -130,7 +130,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			Kubelet: k8scloudconfig.HyperkubeKubelet{
 				Docker: k8scloudconfig.HyperkubeDocker{
 					RunExtraArgs: []string{
-						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+						"-v /var/lib/waagent:/var/lib/waagent:ro",
 					},
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
@@ -159,7 +159,7 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			Kubelet: k8scloudconfig.HyperkubeKubelet{
 				Docker: k8scloudconfig.HyperkubeDocker{
 					RunExtraArgs: []string{
-						"-v /var/lib/waagent/ManagedIdentity-Settings:/var/lib/waagent/ManagedIdentity-Settings:ro",
+						"-v /var/lib/waagent:/var/lib/waagent:ro",
 					},
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
