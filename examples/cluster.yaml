@@ -56,8 +56,6 @@ spec:
     - hostname: "worker-1"
 
   azure:
-    keyVault:
-      name: "example-cluster-vault"
     location: "westeurope"
     masters:
     - vmSize: "Standard_A1"

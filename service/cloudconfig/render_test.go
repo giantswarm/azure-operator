@@ -34,14 +34,6 @@ func Test_render(t *testing.T) {
 			Fn:   func() error { _, err := renderDefaultStorageClassFile(); return err },
 		},
 		{
-			Name: "renderGetKeyVaultSecretsFile",
-			Fn:   func() error { _, err := renderGetKeyVaultSecretsFile(getKeyVaultSecretsFileParams{}); return err },
-		},
-		{
-			Name: "renderGetKeyVaultSecretsUnit",
-			Fn:   func() error { _, err := renderGetKeyVaultSecretsUnit(); return err },
-		},
-		{
 			Name: "renderEtcdMountUnit",
 			Fn:   func() error { _, err := renderEtcdMountUnit(diskParams{}); return err },
 		},
