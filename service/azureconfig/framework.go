@@ -1,28 +1,89 @@
 package azureconfig
 
 import (
+	"sync"
+
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/resourcegroup"
-	"github.com/giantswarm/certs"
+	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"
 	"github.com/giantswarm/operatorkit/framework"
 	"github.com/giantswarm/operatorkit/informer"
-	"github.com/giantswarm/randomkeys"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/client-go/kubernetes"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1"
 )
 
-func newFramework(config Config) (*framework.Framework, error) {
+type FrameworkConfig struct {
+	G8sClient    gsclient.Interface
+	K8sClient    kubernetes.Interface
+	K8sExtClient apiextensionsclient.Interface
+	Logger       micrologger.Logger
+
+	AzureConfig     client.AzureConfig
+	ProjectName     string
+	TemplateVersion string
+}
+
+type Framework struct {
+	logger micrologger.Logger
+
+	framework *framework.Framework
+	bootOnce  sync.Once
+}
+
+func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 	var err error
+
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.G8sClient must not be empty")
+	}
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
+	}
+	if config.K8sExtClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.K8sExtClient must not be empty")
+	}
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+	}
+
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+	}
+	if config.ProjectName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.ProjectName must not be empty")
+	}
+	if config.TemplateVersion == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
+	}
+
+	var v1ResourceSet []framework.Resource
+	{
+		c := v1.ResourceSetConfig{
+			K8sClient:       config.K8sClient,
+			K8sExtClient:    config.K8sExtClient,
+			Logger:          config.Logger,
+			AzureConfig:     config.AzureConfig,
+			ProjectName:     config.ProjectName,
+			TemplateVersion: config.TemplateVersion,
+		}
+
+		v1ResourceSet, err = v1.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var crdClient *k8scrdclient.CRDClient
 	{
-		c := k8scrdclient.DefaultConfig()
-
-		c.K8sExtClient = config.K8sExtClient
-		c.Logger = config.Logger
+		c := k8scrdclient.Config{
+			K8sExtClient: config.K8sExtClient,
+			Logger:       config.Logger,
+		}
 
 		crdClient, err = k8scrdclient.New(c)
 		if err != nil {
@@ -30,96 +91,12 @@ func newFramework(config Config) (*framework.Framework, error) {
 		}
 	}
 
-	var certsSearcher *certs.Searcher
-	{
-		c := certs.DefaultConfig()
-
-		c.K8sClient = config.K8sClient
-		c.Logger = config.Logger
-
-		certsSearcher, err = certs.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Maskf(err, "certs.NewSearcher")
-		}
-	}
-
-	var randomkeysSearcher *randomkeys.Searcher
-	{
-		c := randomkeys.DefaultConfig()
-		c.K8sClient = config.K8sClient
-		c.Logger = config.Logger
-
-		randomkeysSearcher, err = randomkeys.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Maskf(err, "randomkeys.NewSearcher")
-		}
-	}
-
-	var cloudConfig *cloudconfig.CloudConfig
-	{
-		c := cloudconfig.Config{
-			CertsSearcher:      certsSearcher,
-			Logger:             config.Logger,
-			RandomkeysSearcher: randomkeysSearcher,
-
-			AzureConfig: config.AzureConfig,
-		}
-
-		cloudConfig, err = cloudconfig.New(c)
-		if err != nil {
-			return nil, microerror.Maskf(err, "cloudconfig.New")
-		}
-	}
-
-	var resourceGroupResource *resourcegroup.Resource
-	{
-		c := resourcegroup.DefaultConfig()
-
-		c.AzureConfig = config.AzureConfig
-		c.Logger = config.Logger
-
-		resourceGroupResource, err = resourcegroup.New(c)
-		if err != nil {
-			return nil, microerror.Maskf(err, "resourcegroup.New")
-		}
-	}
-
-	var deploymentResource *deployment.Resource
-	{
-		c := deployment.DefaultConfig()
-
-		c.CertsSearcher = certsSearcher
-		c.Logger = config.Logger
-
-		c.AzureConfig = config.AzureConfig
-		c.CloudConfig = cloudConfig
-		c.TemplateVersion = config.TemplateVersion
-
-		deploymentResource, err = deployment.New(c)
-		if err != nil {
-			return nil, microerror.Maskf(err, "deployment.New")
-		}
-	}
-
-	var dnsrecordResource *dnsrecord.Resource
-	{
-		c := dnsrecord.DefaultConfig()
-
-		c.Logger = config.Logger
-
-		c.AzureConfig = config.AzureConfig
-
-		dnsrecordResource, err = dnsrecord.New(c)
-		if err != nil {
-			return nil, microerror.Maskf(err, "dnsrecord.New")
-		}
-	}
-
 	var newInformer *informer.Informer
 	{
-		c := informer.DefaultConfig()
-
-		c.Watcher = config.G8sClient.ProviderV1alpha1().AzureConfigs("")
+		c := informer.Config{
+			ResyncPeriod: informer.DefaultResyncPeriod,
+			Watcher:      config.G8sClient.ProviderV1alpha1().AzureConfigs(""),
+		}
 
 		newInformer, err = informer.New(c)
 		if err != nil {
@@ -129,19 +106,16 @@ func newFramework(config Config) (*framework.Framework, error) {
 
 	var f *framework.Framework
 	{
-		resources := []framework.Resource{
-			resourceGroupResource,
-			deploymentResource,
-			dnsrecordResource,
+		c := framework.Config{
+			CRD:            v1alpha1.NewAzureConfigCRD(),
+			CRDClient:      crdClient,
+			Informer:       newInformer,
+			Logger:         config.Logger,
+			ResourceRouter: framework.DefaultResourceRouter(v1ResourceSet),
+
+			BackOffFactory: framework.DefaultConfig().BackOffFactory,
+			InitCtxFunc:    framework.DefaultConfig().InitCtxFunc,
 		}
-
-		c := framework.DefaultConfig()
-
-		c.CRD = v1alpha1.NewAzureConfigCRD()
-		c.CRDClient = crdClient
-		c.Logger = config.Logger
-		c.ResourceRouter = framework.DefaultResourceRouter(resources)
-		c.Informer = newInformer
 
 		f, err = framework.New(c)
 		if err != nil {
