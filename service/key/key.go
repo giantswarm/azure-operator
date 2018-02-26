@@ -2,7 +2,6 @@ package key
 
 import (
 	"fmt"
-	"strings"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -11,12 +10,6 @@ import (
 const (
 	defaultAzureCloudType = "AZUREPUBLICCLOUD"
 
-	// globalPrefix is added to all resources created by azure-operator.
-	// This is to avoid problems with resources which names has to start
-	// with a letter, as sometimes guest cluster IDs start with number.
-	globalPrefix = "gs"
-
-	keyVaultSuffix            = "keyvault"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
@@ -110,20 +103,6 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 
 func HostClusterCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.HostCluster.CIDR
-}
-
-// KeyVaultName returns the Azure Key Vault name for this cluster.
-func KeyVaultName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s-%s", globalPrefix, ClusterID(customObject), keyVaultSuffix)
-}
-
-// KeyVaultKey takes a certificate file path and returns KeyVault key under
-// which the certificate will be stored.
-func KeyVaultKey(certPath string) string {
-	k := strings.TrimPrefix(certPath, "/")
-	k = strings.Replace(k, "/", "-", -1)
-	k = strings.Replace(k, ".", "-", -1)
-	return k
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.

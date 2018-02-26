@@ -44,16 +44,6 @@ func newCloudProviderConfFileParams(azureConfig client.AzureConfig, obj provider
 	}
 }
 
-type getKeyVaultSecretsFileParams struct {
-	VaultName string
-	Secrets   []getKeyVaultSecretsFileParamsSecret
-}
-
-type getKeyVaultSecretsFileParamsSecret struct {
-	SecretName string
-	FileName   string
-}
-
 type diskParams struct {
 	DiskName string
 }

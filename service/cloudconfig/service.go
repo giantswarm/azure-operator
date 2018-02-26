@@ -10,51 +10,34 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/key"
+	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_1_1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
 )
 
-// Config represents the configuration used to create a cloudconfig service.
 type Config struct {
-	// Dependencies.
-
+	CertsSearcher      certs.Interface
 	Logger             micrologger.Logger
 	RandomkeysSearcher randomkeys.Interface
-
-	// Settings.
 
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig client.AzureConfig
 }
 
-// DefaultConfig provides a default configuration to create a new cloudconfig service
-// by best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-		Logger:             nil,
-		RandomkeysSearcher: nil,
-
-		// Settings.
-		AzureConfig: client.DefaultAzureConfig(),
-	}
-}
-
-// CloudConfig implements the cloudconfig service interface.
 type CloudConfig struct {
-	// Dependencies.
+	certsSearcher      certs.Interface
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
-	// Settings.
 	azureConfig client.AzureConfig
 }
 
-// New creates a new configured cloudconfig service.
 func New(config Config) (*CloudConfig, error) {
-	// Dependencies.
+	if config.CertsSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.CertsSearcher must not be empty")
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
@@ -62,21 +45,19 @@ func New(config Config) (*CloudConfig, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.RandomkeysSearcher must not be empty")
 	}
 
-	// Settings.
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
 
-	newService := &CloudConfig{
-		// Dependencies.
+	c := &CloudConfig{
+		certsSearcher:      config.CertsSearcher,
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
 
-		// Settings.
 		azureConfig: config.AzureConfig,
 	}
 
-	return newService, nil
+	return c, nil
 }
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
@@ -139,8 +120,9 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			},
 		},
 		Extension: &masterExtension{
-			AzureConfig:  c.azureConfig,
-			CustomObject: customObject,
+			AzureConfig:   c.azureConfig,
+			CertsSearcher: c.certsSearcher,
+			CustomObject:  customObject,
 		},
 		ExtraManifests: []string{
 			"calico-azure.yaml",
@@ -168,8 +150,9 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			},
 		},
 		Extension: &workerExtension{
-			AzureConfig:  c.azureConfig,
-			CustomObject: customObject,
+			AzureConfig:   c.azureConfig,
+			CertsSearcher: c.certsSearcher,
+			CustomObject:  customObject,
 		},
 	}
 

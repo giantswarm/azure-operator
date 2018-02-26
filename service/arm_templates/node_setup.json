@@ -53,7 +53,7 @@
       "defaultValue": true
     },
     "cloudConfigData": {
-      "type": "string"
+      "type": "secureString"
     },
     "vmSize": {
       "type": "string"

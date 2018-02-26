@@ -1,6 +1,7 @@
 package cloudconfig
 
 import (
+	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_1_1"
 	"github.com/giantswarm/microerror"
 )
@@ -24,6 +25,37 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 	}
 
 	return file, nil
+}
+
+func renderCertificatesFiles(certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
+	params := struct{}{}
+
+	var fileMetas []k8scloudconfig.FileMetadata
+	for _, f := range certFiles {
+		m := k8scloudconfig.FileMetadata{
+			AssetContent: string(f.Data),
+			Path:         f.AbsolutePath,
+			Owner:        certFileOwner,
+			Permissions:  certFilePermission,
+		}
+		fileMetas = append(fileMetas, m)
+	}
+
+	var files []k8scloudconfig.FileAsset
+	for _, m := range fileMetas {
+		content, err := k8scloudconfig.RenderAssetContent(m.AssetContent, params)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		f := k8scloudconfig.FileAsset{
+			Metadata: m,
+			Content:  content,
+		}
+		files = append(files, f)
+	}
+
+	return files, nil
 }
 
 func renderCloudProviderConfFile(params cloudProviderConfFileParams) (k8scloudconfig.FileAsset, error) {
@@ -68,50 +100,6 @@ func renderDefaultStorageClassFile() (k8scloudconfig.FileAsset, error) {
 	}
 
 	return file, nil
-}
-
-func renderGetKeyVaultSecretsFile(params getKeyVaultSecretsFileParams) (k8scloudconfig.FileAsset, error) {
-	fileMeta := k8scloudconfig.FileMetadata{
-		AssetContent: getKeyVaultSecretsFileTemplate,
-		Path:         getKeyVaultSecretsFileName,
-		Owner:        getKeyVaultSecretsFileOwner,
-		Permissions:  getKeyVaultSecretsFilePermission,
-	}
-
-	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
-	if err != nil {
-		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	file := k8scloudconfig.FileAsset{
-		Metadata: fileMeta,
-		Content:  content,
-	}
-
-	return file, nil
-}
-
-func renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
-	params := struct{}{}
-
-	unitMeta := k8scloudconfig.UnitMetadata{
-		AssetContent: getKeyVaultSecretsUnitTemplate,
-		Name:         getKeyVaultSecretsUnitName,
-		Enable:       true,
-		Command:      "start",
-	}
-
-	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	asset := k8scloudconfig.UnitAsset{
-		Metadata: unitMeta,
-		Content:  content,
-	}
-
-	return asset, nil
 }
 
 func renderEtcdMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {

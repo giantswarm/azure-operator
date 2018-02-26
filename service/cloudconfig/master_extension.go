@@ -10,8 +10,9 @@ import (
 )
 
 type masterExtension struct {
-	AzureConfig  client.AzureConfig
-	CustomObject providerv1alpha1.AzureConfig
+	AzureConfig   client.AzureConfig
+	CertsSearcher certs.Interface
+	CustomObject  providerv1alpha1.AzureConfig
 }
 
 // Files allows files to be injected into the master cloudconfig.
@@ -19,6 +20,11 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	calicoAzureFile, err := me.renderCalicoAzureFile()
 	if err != nil {
 		return nil, microerror.Maskf(err, "renderCalicoAzureFile")
+	}
+
+	certificateFiles, err := me.renderCertificatesFiles()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderCertificatesFiles")
 	}
 
 	cloudProviderConfFile, err := me.renderCloudProviderConfFile()
@@ -31,28 +37,18 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Maskf(err, "renderDefaultStorageClassFile")
 	}
 
-	getKeyVaultSecretsFile, err := me.renderGetKeyVaultSecretsFile()
-	if err != nil {
-		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsFile")
-	}
-
 	files := []k8scloudconfig.FileAsset{
 		calicoAzureFile,
 		cloudProviderConfFile,
 		defaultStorageClassFile,
-		getKeyVaultSecretsFile,
 	}
+	files = append(files, certificateFiles...)
 
 	return files, nil
 }
 
 // Units allows systemd units to be injected into the master cloudconfig.
 func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
-	getKeyVaultSecretsUnit, err := me.renderGetKeyVaultSecretsUnit()
-	if err != nil {
-		return nil, microerror.Maskf(err, "renderGetKeyVaultSecretsUnit")
-	}
-
 	// Unit to format etcd disk.
 	formatEtcdUnit, err := me.renderEtcdDiskFormatUnit()
 	if err != nil {
@@ -78,7 +74,6 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	}
 
 	units := []k8scloudconfig.UnitAsset{
-		getKeyVaultSecretsUnit,
 		formatEtcdUnit,
 		mountEtcdUnit,
 		formatDockerUnit,
@@ -104,6 +99,20 @@ func (me *masterExtension) renderCalicoAzureFile() (k8scloudconfig.FileAsset, er
 	return asset, nil
 }
 
+func (me *masterExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset, error) {
+	clusterCerts, err := me.CertsSearcher.SearchCluster(key.ClusterID(me.CustomObject))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	assets, err := renderCertificatesFiles(certs.NewFilesClusterMaster(clusterCerts))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return assets, nil
+}
+
 func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
 	params := newCloudProviderConfFileParams(me.AzureConfig, me.CustomObject)
 
@@ -119,39 +128,6 @@ func (me *masterExtension) renderDefaultStorageClassFile() (k8scloudconfig.FileA
 	asset, err := renderDefaultStorageClassFile()
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (me *masterExtension) renderGetKeyVaultSecretsFile() (k8scloudconfig.FileAsset, error) {
-	params := getKeyVaultSecretsFileParams{
-		VaultName: key.KeyVaultName(me.CustomObject),
-		Secrets:   []getKeyVaultSecretsFileParamsSecret{},
-	}
-
-	// Only file paths are needed here, so we don't care if certs.Cluster
-	// is empty.
-	for _, f := range certs.NewFilesClusterMaster(certs.Cluster{}) {
-		s := getKeyVaultSecretsFileParamsSecret{
-			SecretName: key.KeyVaultKey(f.AbsolutePath),
-			FileName:   f.AbsolutePath,
-		}
-		params.Secrets = append(params.Secrets, s)
-	}
-
-	asset, err := renderGetKeyVaultSecretsFile(params)
-	if err != nil {
-		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (me *masterExtension) renderGetKeyVaultSecretsUnit() (k8scloudconfig.UnitAsset, error) {
-	asset, err := renderGetKeyVaultSecretsUnit()
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
 	return asset, nil

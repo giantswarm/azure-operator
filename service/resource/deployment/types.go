@@ -48,14 +48,3 @@ func newNodeOSImageCoreOS_1576_5_0() nodeOSImage {
 		Version:   "1576.5.0",
 	}
 }
-
-// keyVault is used to pass secrets to Key Vault as a secure object.
-type keyVault struct {
-	Secrets []keyVaultSecret `json:"secrets"`
-}
-
-// keyVaultSecret is a secret stored in Key Vault.
-type keyVaultSecret struct {
-	SecretName  string `json:"secretName"`
-	SecretValue string `json:"secretValue"`
-}

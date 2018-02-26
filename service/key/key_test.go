@@ -58,19 +58,6 @@ func Test_ClusterCustomer(t *testing.T) {
 	}
 }
 
-func Test_KeyVaultKey(t *testing.T) {
-	var (
-		path        = "/etc/kubernetes/ssl/calico/client-ca.pem"
-		expectedKey = "etc-kubernetes-ssl-calico-client-ca-pem"
-	)
-
-	key := KeyVaultKey(path)
-
-	if key != expectedKey {
-		t.Errorf("expected key = %q, got %q", expectedKey, key)
-	}
-}
-
 func Test_Location(t *testing.T) {
 	expectedLocation := "West Europe"
 
@@ -97,10 +84,6 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 		Func           func(providerv1alpha1.AzureConfig) string
 		ExpectedResult string
 	}{
-		{
-			Func:           KeyVaultName,
-			ExpectedResult: "gs-eggs2-keyvault",
-		},
 		{
 			Func:           MasterSecurityGroupName,
 			ExpectedResult: fmt.Sprintf("%s-%s", clusterID, masterSecurityGroupSuffix),

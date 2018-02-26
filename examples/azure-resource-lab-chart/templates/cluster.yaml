@@ -71,8 +71,6 @@ spec:
     - hostname: "worker-2"
 
   azure:
-    keyVault:
-      name: "{{.Values.clusterName}}-vault"
     location: "{{.Values.azure.location}}"
     masters:
     - vmSize: "{{.Values.azure.vmSizeMaster}}"
