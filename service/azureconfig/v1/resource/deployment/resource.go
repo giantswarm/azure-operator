@@ -14,13 +14,13 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/key"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "deployment"
+	Name = "deploymentv1"
 
 	createTimeout = 30 * time.Minute
 )

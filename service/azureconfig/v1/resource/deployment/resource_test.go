@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/randomkeys/randomkeystest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
-	"github.com/giantswarm/azure-operator/service/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 )
 
 func Test_Resource_Deployment_GetDesiredState(t *testing.T) {

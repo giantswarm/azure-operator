@@ -6,8 +6,8 @@ import (
 )
 
 func Test_TemplateURI(t *testing.T) {
-	uri := templateURI("v1.0.0-rc1", "worker.json")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/v1.0.0-rc1/service/arm_templates/worker.json"
+	uri := templateURI("dev", "worker.json")
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/azureconfig/v1/arm_templates/worker.json"
 
 	if uri != euri {
 		t.Errorf("expected '%s' got '%s'", euri, uri)
@@ -15,8 +15,8 @@ func Test_TemplateURI(t *testing.T) {
 }
 
 func Test_BaseTemplateURI(t *testing.T) {
-	uri := baseTemplateURI("v2.0.0")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/v2.0.0/service/arm_templates/"
+	uri := baseTemplateURI("master")
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/azureconfig/v1/arm_templates/"
 
 	if uri != euri {
 		t.Errorf("expected '%s', got '%s'", euri, uri)

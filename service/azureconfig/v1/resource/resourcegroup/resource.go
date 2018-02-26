@@ -12,12 +12,12 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/key"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "resourcegroup"
+	Name = "resourcegroupv1"
 
 	clusterIDTag  = "ClusterID"
 	customerIDTag = "CustomerID"

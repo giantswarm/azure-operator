@@ -11,7 +11,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "dnsrecord"
+	Name = "dnsrecordv1"
 )
 
 // Config is the resource group Resource configuration.

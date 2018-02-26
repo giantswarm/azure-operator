@@ -1,11 +1,11 @@
-package operator
+package azureconfig
 
 import (
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/service/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/resourcegroup"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"

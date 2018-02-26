@@ -1,4 +1,4 @@
-package operator
+package azureconfig
 
 import (
 	"github.com/giantswarm/microerror"
