@@ -20,7 +20,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "deployment"
+	Name = "deploymentv1"
 
 	createTimeout = 30 * time.Minute
 )
