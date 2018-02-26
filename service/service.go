@@ -18,7 +18,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/service/operator"
+	"github.com/giantswarm/azure-operator/service/azureconfig"
 )
 
 // Config represents the configuration used to create a new service.
@@ -117,9 +117,9 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	var operatorService *operator.Service
+	var operatorService *azureconfig.Service
 	{
-		operatorConfig := operator.DefaultConfig()
+		operatorConfig := azureconfig.DefaultConfig()
 		operatorConfig.Logger = config.Logger
 		operatorConfig.AzureConfig = azureConfig
 		operatorConfig.G8sClient = g8sClient
@@ -127,9 +127,9 @@ func New(config Config) (*Service, error) {
 		operatorConfig.K8sExtClient = k8sExtClient
 		operatorConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
 
-		operatorService, err = operator.New(operatorConfig)
+		operatorService, err = azureconfig.New(operatorConfig)
 		if err != nil {
-			return nil, microerror.Maskf(err, "operator.New")
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -149,11 +149,9 @@ func New(config Config) (*Service, error) {
 	}
 
 	newService := &Service{
-		// Dependencies.
-		Operator: operatorService,
-		Version:  versionService,
+		AzureConfigFramework: operatorService,
+		Version:              versionService,
 
-		// Internals
 		bootOnce: sync.Once{},
 	}
 
@@ -162,8 +160,8 @@ func New(config Config) (*Service, error) {
 
 type Service struct {
 	// Dependencies.
-	Operator *operator.Service
-	Version  *version.Service
+	AzureConfigFramework *azureconfig.Service
+	Version              *version.Service
 
 	// Internals.
 	bootOnce sync.Once
@@ -171,6 +169,6 @@ type Service struct {
 
 func (s *Service) Boot() {
 	s.bootOnce.Do(func() {
-		s.Operator.Boot()
+		s.AzureConfigFramework.Boot()
 	})
 }

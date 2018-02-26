@@ -7,7 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/key"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/framework"
 )

@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/key"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 const (

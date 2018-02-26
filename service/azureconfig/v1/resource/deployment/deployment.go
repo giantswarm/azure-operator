@@ -4,7 +4,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/key"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 const (
