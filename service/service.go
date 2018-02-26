@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8srestconfig"
+	"github.com/giantswarm/operatorkit/framework"
 	"github.com/spf13/viper"
 
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -23,11 +24,7 @@ import (
 
 // Config represents the configuration used to create a new service.
 type Config struct {
-	// Dependencies.
-
 	Logger micrologger.Logger
-
-	// Settings.
 
 	Flag  *flag.Flag
 	Viper *viper.Viper
@@ -42,10 +39,8 @@ type Config struct {
 // best effort.
 func DefaultConfig() Config {
 	return Config{
-		// Dependencies.
 		Logger: nil,
 
-		// Settings.
 		Flag:  nil,
 		Viper: nil,
 
@@ -54,6 +49,13 @@ func DefaultConfig() Config {
 		Name:        "",
 		Source:      "",
 	}
+}
+
+type Service struct {
+	AzureConfigFramework *framework.Framework
+	Version              *version.Service
+
+	bootOnce sync.Once
 }
 
 // New creates a new configured service object.
@@ -117,17 +119,19 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	var operatorService *azureconfig.Service
+	var azureConfigFramework *framework.Framework
 	{
-		operatorConfig := azureconfig.DefaultConfig()
-		operatorConfig.Logger = config.Logger
-		operatorConfig.AzureConfig = azureConfig
-		operatorConfig.G8sClient = g8sClient
-		operatorConfig.K8sClient = k8sClient
-		operatorConfig.K8sExtClient = k8sExtClient
-		operatorConfig.TemplateVersion = config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version)
+		c := azureconfig.FrameworkConfig{
+			G8sClient:       g8sClient,
+			K8sClient:       k8sClient,
+			K8sExtClient:    k8sExtClient,
+			Logger:          config.Logger,
+			AzureConfig:     azureConfig,
+			ProjectName:     "azure-operator",
+			TemplateVersion: config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
+		}
 
-		operatorService, err = azureconfig.New(operatorConfig)
+		azureConfigFramework, err = azureconfig.NewFramework(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -149,22 +153,13 @@ func New(config Config) (*Service, error) {
 	}
 
 	newService := &Service{
-		AzureConfigFramework: operatorService,
+		AzureConfigFramework: azureConfigFramework,
 		Version:              versionService,
 
 		bootOnce: sync.Once{},
 	}
 
 	return newService, nil
-}
-
-type Service struct {
-	// Dependencies.
-	AzureConfigFramework *azureconfig.Service
-	Version              *version.Service
-
-	// Internals.
-	bootOnce sync.Once
 }
 
 func (s *Service) Boot() {
