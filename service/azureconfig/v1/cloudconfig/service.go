@@ -69,6 +69,9 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		return "", microerror.Mask(err)
 	}
 
+	// On Azure only master nodes access etcd, so it is locked down.
+	customObject.Spec.Cluster.Etcd.Domain = "127.0.0.1"
+
 	params := k8scloudconfig.Params{
 		ApiserverEncryptionKey: apiserverEncryptionKey,
 		Cluster:                customObject.Spec.Cluster,

@@ -108,7 +108,7 @@
     "dnsZones": {
       "type": "object",
       "metadata": {
-        "description": "The DNS zones for kubernetes api, etcd and ingress."
+        "description": "The DNS zones for kubernetes api and ingress."
       }
     }
   },
@@ -275,24 +275,6 @@
               }
             ]
           }
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "etcd_dns_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('dnsASetupTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').etcd.name)]" },
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": { "value": "etcd" },
-          "ipAddress": { "value": "[reference('master_nodes_setup_1').outputs.ipAddress.value]" }
         }
       }
     },
