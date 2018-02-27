@@ -154,6 +154,10 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
+func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.VersionBundle.Version
+}
+
 // VnetName returns name of the virtual network.
 func VnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), virtualNetworkSuffix)

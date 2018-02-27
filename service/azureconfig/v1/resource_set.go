@@ -1,6 +1,8 @@
 package v1
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
@@ -11,6 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/resourcegroup"
@@ -32,7 +35,7 @@ type ResourceSetConfig struct {
 	TemplateVersion string
 }
 
-func NewResourceSet(config ResourceSetConfig) ([]framework.Resource, error) {
+func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	var err error
 
 	if config.K8sClient == nil {
@@ -140,10 +143,38 @@ func NewResourceSet(config ResourceSetConfig) ([]framework.Resource, error) {
 		}
 	}
 
-	resourceSet := []framework.Resource{
+	resources := []framework.Resource{
 		resourceGroupResource,
 		deploymentResource,
 		dnsrecordResource,
+	}
+
+	handlesFunc := func(obj interface{}) bool {
+		customObject, err := key.ToCustomObject(obj)
+		if err != nil {
+			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err))
+			return false
+		}
+
+		if key.VersionBundleVersion(customObject) == VersionBundle().Version {
+			return true
+		}
+
+		return false
+	}
+
+	var resourceSet *framework.ResourceSet
+	{
+		c := framework.ResourceSetConfig{
+			Handles:   handlesFunc,
+			Logger:    config.Logger,
+			Resources: resources,
+		}
+
+		resourceSet, err = framework.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	return resourceSet, nil
