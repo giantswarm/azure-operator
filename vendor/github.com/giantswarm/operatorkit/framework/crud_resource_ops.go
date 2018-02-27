@@ -2,14 +2,11 @@ package framework
 
 import "context"
 
-// Resource implements the building blocks of any resource business logic being
-// reconciled when observing custom resources. This interface provides
+// CRUDResourceOps provides set of building blocks of a CRUDResource business
+// logic being reconciled when observing custom objects. The interface provides
 // a guideline for an easier way to follow the rather complex intentions of
 // operators in general.
-type Resource interface {
-	// Name returns the resource's name used for identification.
-	Name() string
-
+type CRUDResourceOps interface {
 	// GetCurrentState receives the custom object observed during custom
 	// resource watches. Its purpose is to return the current state of the
 	// resources being managed by the operator. This can e.g. be some

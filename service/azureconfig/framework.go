@@ -61,7 +61,7 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
 	}
 
-	var v1ResourceSet []framework.Resource
+	var v1ResourceSet *framework.ResourceSet
 	{
 		c := v1.ResourceSetConfig{
 			K8sClient:       config.K8sClient,
@@ -73,6 +73,20 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 		}
 
 		v1ResourceSet, err = v1.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var resourceRouter *framework.ResourceRouter
+	{
+		c := framework.ResourceRouterConfig{
+			ResourceSets: []*framework.ResourceSet{
+				v1ResourceSet,
+			},
+		}
+
+		resourceRouter, err = framework.NewResourceRouter(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -111,10 +125,7 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 			CRDClient:      crdClient,
 			Informer:       newInformer,
 			Logger:         config.Logger,
-			ResourceRouter: framework.DefaultResourceRouter(v1ResourceSet),
-
-			BackOffFactory: framework.DefaultConfig().BackOffFactory,
-			InitCtxFunc:    framework.DefaultConfig().InitCtxFunc,
+			ResourceRouter: resourceRouter,
 		}
 
 		f, err = framework.New(c)
