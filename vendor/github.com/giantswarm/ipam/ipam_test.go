@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"bytes"
+	"fmt"
 	"net"
 	"reflect"
 	"testing"
@@ -736,6 +737,23 @@ func TestFree(t *testing.T) {
 	}
 }
 
+func ExampleFree() {
+	_, network, _ := net.ParseCIDR("10.4.0.0/16")
+
+	firstSubnet, _ := Free(*network, net.CIDRMask(24, 32), []net.IPNet{})
+	fmt.Println(firstSubnet.String())
+
+	secondSubnet, _ := Free(*network, net.CIDRMask(28, 32), []net.IPNet{firstSubnet})
+	fmt.Println(secondSubnet.String())
+
+	thirdSubnet, _ := Free(*network, net.CIDRMask(24, 32), []net.IPNet{firstSubnet, secondSubnet})
+	fmt.Println(thirdSubnet.String())
+	// Output:
+	// 10.4.0.0/24
+	// 10.4.1.0/28
+	// 10.4.1.16/24
+}
+
 func TestHalf(t *testing.T) {
 	tests := []struct {
 		Network              string
@@ -785,4 +803,17 @@ func TestHalf(t *testing.T) {
 			t.Errorf("test %d: expected second = %q, got %q", i, second.String(), tc.ExpectedSecond)
 		}
 	}
+}
+
+func ExampleHalf() {
+	_, network, _ := net.ParseCIDR("10.4.0.0/16")
+
+	firstNetwork, secondNetwork, _ := Half(*network)
+
+	fmt.Println(firstNetwork.String())
+	fmt.Println(secondNetwork.String())
+	// Output:
+	// 10.4.0.0/17
+	// 10.4.128.0/17
+
 }
