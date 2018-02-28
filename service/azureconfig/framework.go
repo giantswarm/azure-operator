@@ -61,37 +61,6 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
 	}
 
-	var v1ResourceSet *framework.ResourceSet
-	{
-		c := v1.ResourceSetConfig{
-			K8sClient:       config.K8sClient,
-			K8sExtClient:    config.K8sExtClient,
-			Logger:          config.Logger,
-			AzureConfig:     config.AzureConfig,
-			ProjectName:     config.ProjectName,
-			TemplateVersion: config.TemplateVersion,
-		}
-
-		v1ResourceSet, err = v1.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var resourceRouter *framework.ResourceRouter
-	{
-		c := framework.ResourceRouterConfig{
-			ResourceSets: []*framework.ResourceSet{
-				v1ResourceSet,
-			},
-		}
-
-		resourceRouter, err = framework.NewResourceRouter(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var crdClient *k8scrdclient.CRDClient
 	{
 		c := k8scrdclient.Config{
@@ -113,6 +82,39 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 		}
 
 		newInformer, err = informer.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var v1ResourceSet *framework.ResourceSet
+	{
+		c := v1.ResourceSetConfig{
+			K8sClient:       config.K8sClient,
+			K8sExtClient:    config.K8sExtClient,
+			Logger:          config.Logger,
+			AzureConfig:     config.AzureConfig,
+			ProjectName:     config.ProjectName,
+			TemplateVersion: config.TemplateVersion,
+		}
+
+		v1ResourceSet, err = v1.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var resourceRouter *framework.ResourceRouter
+	{
+		c := framework.ResourceRouterConfig{
+			Logger: config.Logger,
+
+			ResourceSets: []*framework.ResourceSet{
+				v1ResourceSet,
+			},
+		}
+
+		resourceRouter, err = framework.NewResourceRouter(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
