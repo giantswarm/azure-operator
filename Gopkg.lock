@@ -195,7 +195,7 @@
     "framework/context/updatenecessarycontext",
     "informer"
   ]
-  revision = "b0c981ff26e655ec56761f4aa22bb1f759230b47"
+  revision = "0d6b9f658e2f25a9e319626d6d6329fbe4365a0a"
 
 [[projects]]
   branch = "master"
