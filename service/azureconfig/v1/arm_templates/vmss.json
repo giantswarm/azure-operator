@@ -43,6 +43,9 @@
         "vmssOsImageVersion": {
             "type": "string"
         },
+        "vmssVmCustomData": {
+            "type": "secureString"
+        },
         "vmssLbBackendPoolId": {
             "type": "string"
         },
@@ -169,8 +172,9 @@
                 "singlePlacementGroup": "[variables('vmssSinglePlacementGroup')]",
                 "virtualMachineProfile": {
                     "osProfile": {
-                        "computerNamePrefix": "[variables('vmssVmNamePrefix')]",
                         "adminUsername": "[parameters('vmssSshUser')]",
+                        "computerNamePrefix": "[variables('vmssVmNamePrefix')]",
+                        "customData": "[parameters('vmssVmCustomData')]",
                         "linuxConfiguration": {
                             "disablePasswordAuthentication": "true",
                             "ssh": {
