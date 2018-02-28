@@ -190,15 +190,19 @@ func newCloudConfig(template string, params k8scloudconfig.Params) (string, erro
 		return "", microerror.Maskf(err, "compressing cloud-config")
 	}
 
-	// cloud-config is compressed so we fit the tight 65.5kB limit of ARM
-	// template parameter size.
+	// cloud-config is compressed so we fit the tight 85kB limit of
+	// customData parameter.
+	//
+	// "Custom data in OSProfile must be in Base64 encoding and with
+	// a maximum length of 87380 characters."
+	//
+	//  87380 / 1024 = 85
 	customData := fmt.Sprintf(`#!/bin/bash
 D="/root/cloudinit"
 mkdir -m 700 -p ${D}
 echo -n "%s" | base64 -d | gzip -d -c > ${D}/cc
 coreos-cloudinit --from-file=${D}/cc`, compressed)
 
-	// TODO use base64() in ARM template
 	customData = base64.StdEncoding.EncodeToString([]byte(customData))
 	return customData, nil
 }

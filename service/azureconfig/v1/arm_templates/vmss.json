@@ -44,7 +44,7 @@
             "type": "string"
         },
         "vmssVmCustomData": {
-            "type": "string"
+            "type": "secureString"
         },
         "vmssLbBackendPoolId": {
             "type": "string"
