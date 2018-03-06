@@ -59,7 +59,7 @@
 
 [[constraint]]
   name = "github.com/giantswarm/operatorkit"
-  branch = "log-resource"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/versionbundle"

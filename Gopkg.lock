@@ -183,7 +183,7 @@
   revision = "4411a6307c6b844b7f9e68aaba37407b41b1c4d7"
 
 [[projects]]
-  branch = "log-resource"
+  branch = "master"
   name = "github.com/giantswarm/operatorkit"
   packages = [
     "client/k8scrdclient",
@@ -195,7 +195,7 @@
     "framework/context/updatenecessarycontext",
     "informer"
   ]
-  revision = "95db12521b8c47d762abaa8f8e2545590cc9d319"
+  revision = "d25dc303a8e87710af04f2c7ec79b966ea8f4431"
 
 [[projects]]
   branch = "master"
@@ -732,6 +732,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "418a3a3d70015b79a6f6e5cffc62a30cb5524ff52d9b15e8548fd011567e0bc1"
+  inputs-digest = "d7cfe313fa2367106e9b292c2c8ef4322ccb67f8d36b5713d88815b3050f6df6"
   solver-name = "gps-cdcl"
   solver-version = 1
