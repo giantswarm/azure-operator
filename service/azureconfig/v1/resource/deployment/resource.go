@@ -26,13 +26,9 @@ const (
 )
 
 type Config struct {
-	// Dependencies.
-
 	CertsSearcher certs.Interface
 	CloudConfig   *cloudconfig.CloudConfig
 	Logger        micrologger.Logger
-
-	// Settings.
 
 	AzureConfig client.AzureConfig
 	// TemplateVersion is the ARM template version. Currently is the name
@@ -40,38 +36,16 @@ type Config struct {
 	TemplateVersion string
 }
 
-// DefaultConfig provides a default configuration to create a new resource by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-
-		CertsSearcher: nil,
-		Logger:        nil,
-
-		// Settings.
-
-		AzureConfig:     client.DefaultAzureConfig(),
-		TemplateVersion: "",
-	}
-}
-
 type Resource struct {
-	// Dependencies.
-
 	certsSearcher certs.Interface
 	cloudConfig   *cloudconfig.CloudConfig
 	logger        micrologger.Logger
-
-	// Settings.
 
 	azureConfig     client.AzureConfig
 	templateVersion string
 }
 
-// New creates a new configured deploy resource.
 func New(config Config) (*Resource, error) {
-	// Dependencies.
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
@@ -84,18 +58,16 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
-	// Settings.
+
 	if config.TemplateVersion == "" {
 		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
 	}
 
 	r := &Resource{
-		// Dependencies.
 		certsSearcher: config.CertsSearcher,
 		cloudConfig:   config.CloudConfig,
 		logger:        config.Logger.With("resource", Name),
 
-		// Settings.
 		azureConfig:     config.AzureConfig,
 		templateVersion: config.TemplateVersion,
 	}
