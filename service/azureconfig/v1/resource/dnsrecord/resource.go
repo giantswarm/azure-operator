@@ -4,7 +4,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
 )
@@ -35,9 +34,7 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		azureConfig: config.AzureConfig,
-		logger: config.Logger.With(
-			"resource", Name,
-		),
+		logger:      config.Logger,
 	}
 
 	return r, nil
@@ -46,11 +43,6 @@ func New(config Config) (*Resource, error) {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-// Underlying returns the underlying resource.
-func (r *Resource) Underlying() framework.Resource {
-	return r
 }
 
 func (r *Resource) getDNSRecordSetsClient() (*dns.RecordSetsClient, error) {

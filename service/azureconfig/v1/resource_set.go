@@ -100,20 +100,25 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 		}
 	}
 
-	var resourceGroupResource *resourcegroup.Resource
+	var resourceGroupResource framework.Resource
 	{
 		c := resourcegroup.Config{
 			AzureConfig: config.AzureConfig,
 			Logger:      config.Logger,
 		}
 
-		resourceGroupResource, err = resourcegroup.New(c)
+		ops, err := resourcegroup.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "resourcegroup.New")
+			return nil, microerror.Mask(err)
+		}
+
+		resourceGroupResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
 	}
 
-	var deploymentResource *deployment.Resource
+	var deploymentResource framework.Resource
 	{
 		c := deployment.Config{
 			CertsSearcher: certsSearcher,
@@ -124,13 +129,18 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 			TemplateVersion: config.TemplateVersion,
 		}
 
-		deploymentResource, err = deployment.New(c)
+		ops, err := deployment.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "deployment.New")
+			return nil, microerror.Mask(err)
+		}
+
+		deploymentResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
 	}
 
-	var dnsrecordResource *dnsrecord.Resource
+	var dnsrecordResource framework.Resource
 	{
 		c := dnsrecord.Config{
 			Logger: config.Logger,
@@ -138,9 +148,14 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 			AzureConfig: config.AzureConfig,
 		}
 
-		dnsrecordResource, err = dnsrecord.New(c)
+		ops, err := dnsrecord.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "dnsrecord.New")
+			return nil, microerror.Mask(err)
+		}
+
+		dnsrecordResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -179,4 +194,18 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	}
 
 	return resourceSet, nil
+}
+
+func toCRUDResource(logger micrologger.Logger, ops framework.CRUDResourceOps) (*framework.CRUDResource, error) {
+	c := framework.CRUDResourceConfig{
+		Logger: logger,
+		Ops:    ops,
+	}
+
+	r, err := framework.NewCRUDResource(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return r, nil
 }
