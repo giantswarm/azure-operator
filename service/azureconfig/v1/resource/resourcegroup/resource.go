@@ -46,9 +46,7 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		azureConfig: config.AzureConfig,
-		logger: config.Logger.With(
-			"resource", Name,
-		),
+		logger:      config.Logger,
 	}
 
 	return r, nil
@@ -221,11 +219,6 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 // ApplyUpdateChange is a noop because resource groups are not updated.
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
 	return nil
-}
-
-// Underlying returns the underlying resource.
-func (r *Resource) Underlying() framework.Resource {
-	return r
 }
 
 func (r *Resource) getGroupsClient() (*azureresource.GroupsClient, error) {

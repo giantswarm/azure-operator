@@ -66,7 +66,7 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		certsSearcher: config.CertsSearcher,
 		cloudConfig:   config.CloudConfig,
-		logger:        config.Logger.With("resource", Name),
+		logger:        config.Logger,
 
 		azureConfig:     config.AzureConfig,
 		templateVersion: config.TemplateVersion,
@@ -224,11 +224,6 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 // ApplyUpdateChange is not yet implemented.
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
 	return nil
-}
-
-// Underlying returns the underlying resource.
-func (r *Resource) Underlying() framework.Resource {
-	return r
 }
 
 func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {
