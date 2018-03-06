@@ -14,25 +14,18 @@ const (
 	Name = "dnsrecordv1"
 )
 
-// Config is the resource group Resource configuration.
 type Config struct {
-	// Dependencies.
-
 	AzureConfig client.AzureConfig
 	Logger      micrologger.Logger
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	// Dependencies.
-
 	azureConfig client.AzureConfig
 	logger      micrologger.Logger
 }
 
-// New creates a new configured resource group resource.
 func New(config Config) (*Resource, error) {
-	// Dependencies.
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
@@ -40,14 +33,14 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 
-	newService := &Resource{
+	r := &Resource{
 		azureConfig: config.AzureConfig,
 		logger: config.Logger.With(
 			"resource", Name,
 		),
 	}
 
-	return newService, nil
+	return r, nil
 }
 
 // Name returns the resource name.
