@@ -45,12 +45,13 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 			t.Fatalf("expected '%v' got '%#v'", nil, err)
 		}
 
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.CertsSearcher = certstest.NewSearcher()
-		resourceConfig.CloudConfig = cloudConfigService
-		resourceConfig.Logger = microloggertest.New()
-		resourceConfig.TemplateVersion = "master"
+		resourceConfig := Config{
+			AzureConfig:     fakeclient.NewAzureConfig(),
+			CertsSearcher:   certstest.NewSearcher(),
+			CloudConfig:     cloudConfigService,
+			Logger:          microloggertest.New(),
+			TemplateVersion: "master",
+		}
 		newResource, err = New(resourceConfig)
 		if err != nil {
 			t.Fatalf("expected '%v' got '%#v'", nil, err)
@@ -174,12 +175,13 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)
 		}
 
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.CertsSearcher = certstest.NewSearcher()
-		resourceConfig.CloudConfig = cloudConfigService
-		resourceConfig.Logger = microloggertest.New()
-		resourceConfig.TemplateVersion = "master"
+		resourceConfig := Config{
+			AzureConfig:     fakeclient.NewAzureConfig(),
+			CertsSearcher:   certstest.NewSearcher(),
+			CloudConfig:     cloudConfigService,
+			Logger:          microloggertest.New(),
+			TemplateVersion: "master",
+		}
 		newResource, err = New(resourceConfig)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)

@@ -67,9 +67,10 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	var err error
 	var newResource *Resource
 	{
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.Logger = microloggertest.New()
+		resourceConfig := Config{
+			AzureConfig: fakeclient.NewAzureConfig(),
+			Logger:      microloggertest.New(),
+		}
 		newResource, err = New(resourceConfig)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)
@@ -158,9 +159,10 @@ func Test_Resource_ResourceGroup_newCreateChange(t *testing.T) {
 	var err error
 	var newResource *Resource
 	{
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.Logger = microloggertest.New()
+		resourceConfig := Config{
+			AzureConfig: fakeclient.NewAzureConfig(),
+			Logger:      microloggertest.New(),
+		}
 		newResource, err = New(resourceConfig)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)
@@ -227,9 +229,10 @@ func Test_Resource_ResourceGroup_newDeleteChange(t *testing.T) {
 	var err error
 	var newResource *Resource
 	{
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.Logger = microloggertest.New()
+		resourceConfig := Config{
+			AzureConfig: fakeclient.NewAzureConfig(),
+			Logger:      microloggertest.New(),
+		}
 		newResource, err = New(resourceConfig)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)

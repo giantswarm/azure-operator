@@ -40,22 +40,6 @@ type Config struct {
 	TemplateVersion string
 }
 
-// DefaultConfig provides a default configuration to create a new resource by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-
-		CertsSearcher: nil,
-		Logger:        nil,
-
-		// Settings.
-
-		AzureConfig:     client.DefaultAzureConfig(),
-		TemplateVersion: "",
-	}
-}
-
 type Resource struct {
 	// Dependencies.
 

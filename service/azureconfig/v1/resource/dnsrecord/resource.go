@@ -22,16 +22,6 @@ type Config struct {
 	Logger      micrologger.Logger
 }
 
-// DefaultConfig provides a default configuration to create a new resource by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-		AzureConfig: client.DefaultAzureConfig(),
-		Logger:      nil,
-	}
-}
-
 // Resource manages Azure resource groups.
 type Resource struct {
 	// Dependencies.

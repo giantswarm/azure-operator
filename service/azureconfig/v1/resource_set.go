@@ -60,10 +60,10 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 
 	var certsSearcher *certs.Searcher
 	{
-		c := certs.DefaultConfig()
-
-		c.K8sClient = config.K8sClient
-		c.Logger = config.Logger
+		c := certs.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
 
 		certsSearcher, err = certs.NewSearcher(c)
 		if err != nil {
@@ -73,9 +73,10 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 
 	var randomkeysSearcher *randomkeys.Searcher
 	{
-		c := randomkeys.DefaultConfig()
-		c.K8sClient = config.K8sClient
-		c.Logger = config.Logger
+		c := randomkeys.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
 
 		randomkeysSearcher, err = randomkeys.NewSearcher(c)
 		if err != nil {
@@ -101,10 +102,10 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 
 	var resourceGroupResource *resourcegroup.Resource
 	{
-		c := resourcegroup.DefaultConfig()
-
-		c.AzureConfig = config.AzureConfig
-		c.Logger = config.Logger
+		c := resourcegroup.Config{
+			AzureConfig: config.AzureConfig,
+			Logger:      config.Logger,
+		}
 
 		resourceGroupResource, err = resourcegroup.New(c)
 		if err != nil {
@@ -114,14 +115,14 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 
 	var deploymentResource *deployment.Resource
 	{
-		c := deployment.DefaultConfig()
+		c := deployment.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
 
-		c.CertsSearcher = certsSearcher
-		c.Logger = config.Logger
-
-		c.AzureConfig = config.AzureConfig
-		c.CloudConfig = cloudConfig
-		c.TemplateVersion = config.TemplateVersion
+			AzureConfig:     config.AzureConfig,
+			CloudConfig:     cloudConfig,
+			TemplateVersion: config.TemplateVersion,
+		}
 
 		deploymentResource, err = deployment.New(c)
 		if err != nil {
@@ -131,11 +132,11 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 
 	var dnsrecordResource *dnsrecord.Resource
 	{
-		c := dnsrecord.DefaultConfig()
+		c := dnsrecord.Config{
+			Logger: config.Logger,
 
-		c.Logger = config.Logger
-
-		c.AzureConfig = config.AzureConfig
+			AzureConfig: config.AzureConfig,
+		}
 
 		dnsrecordResource, err = dnsrecord.New(c)
 		if err != nil {
