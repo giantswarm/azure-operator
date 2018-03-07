@@ -8,6 +8,12 @@
         "description": "Unique ID of this guest cluster."
       }
     },
+    "hostClusterResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Host cluster resource group."
+      }
+    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
@@ -180,6 +186,7 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "hostClusterResourceGroup": {"value": "[parameters('hostClusterResourceGroup')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},

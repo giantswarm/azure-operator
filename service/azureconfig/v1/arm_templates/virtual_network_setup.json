@@ -5,6 +5,12 @@
     "clusterID": {
       "type": "string"
     },
+    "hostClusterResourceGroup": {
+      "type": "string",
+      "metadata": {
+        "description": "Host cluster resource group."
+      }
+    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
@@ -85,6 +91,20 @@
               "routeTable": {
                 "id": "[parameters('routeTableID')]"
               }
+            }
+          }
+        ],
+        "virtualNetworkPeerings": [
+          {
+            "name": "toHost",
+            "properties": {
+              "remoteVirtualNetwork": {
+                "id": "[resourceId(parameters('hostClusterResourceGroup'), 'Microsoft.Network/virtualNetworks', 'gollum')]"
+              },
+              "allowVirtualNetworkAccess": true,
+              "allowForwardedTraffic": true,
+              "allowGatewayTransit": false,
+              "useRemoteGateways": false
             }
           }
         ]
