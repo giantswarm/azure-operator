@@ -66,6 +66,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		"workerNodes":                   workerNodes,
 		"dnsZones":                      obj.Spec.Azure.DNSZones,
 		"hostClusterCidr":               obj.Spec.Azure.HostCluster.CIDR,
+		"hostClusterResourceGroup":      obj.Spec.Azure.HostCluster.ResourceGroup,
 		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
 		"kubernetesIngressSecurePort":   obj.Spec.Cluster.Kubernetes.IngressController.SecurePort,
 		"kubernetesIngressInsecurePort": obj.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
