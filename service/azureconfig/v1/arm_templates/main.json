@@ -111,6 +111,10 @@
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
     },
+    "networkPeeringTemplateFile": {
+      "type": "string",
+      "defaultValue": "peering.json"
+    },
     "dnsZones": {
       "type": "object",
       "metadata": {
@@ -127,6 +131,7 @@
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
+    "networkPeeringTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('networkPeeringTemplateFile'))]",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
   },
@@ -186,7 +191,6 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "hostClusterResourceGroup": {"value": "[parameters('hostClusterResourceGroup')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
@@ -194,6 +198,24 @@
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
           "routeTableID": {"value": "[reference('route_table_setup').outputs.id.value]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "peering",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('networkPeeringTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "name": {"value": "toHost"},
+          "resourceGroup": {"value": "[parameters('hostClusterResourceGroup')]"},
+          "sourceNetwork": {"value": "[reference('virtual_network_setup').outputs.virtualNetworkName.value]"},
+          "targetNetwork": {"value": "[parameters('hostClusterResourceGroup')]"}
         }
       }
     },
