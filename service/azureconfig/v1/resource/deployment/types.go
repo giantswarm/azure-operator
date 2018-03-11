@@ -39,12 +39,12 @@ type nodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
-// newNodeOSImage provides OS information CoreOS 1576.5.0.
-func newNodeOSImageCoreOS_1576_5_0() nodeOSImage {
+// newNodeOSImage provides OS information CoreOS 1632.3.0.
+func newNodeOSImageCoreOS_1632_3_0() nodeOSImage {
 	return nodeOSImage{
 		Offer:     "CoreOS",
 		Publisher: "CoreOS",
 		SKU:       "Stable",
-		Version:   "1576.5.0",
+		Version:   "1632.3.0",
 	}
 }
