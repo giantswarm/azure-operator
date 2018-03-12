@@ -193,6 +193,9 @@
     "framework/context/resourcecanceledcontext",
     "framework/context/updateallowedcontext",
     "framework/context/updatenecessarycontext",
+    "framework/resource/internal",
+    "framework/resource/metricsresource",
+    "framework/resource/retryresource",
     "informer"
   ]
   revision = "d25dc303a8e87710af04f2c7ec79b966ea8f4431"
