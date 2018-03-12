@@ -123,10 +123,7 @@
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
-  packages = [
-    "v_3_1_1",
-    "v_3_2_1"
-  ]
+  packages = ["v_3_1_1"]
   revision = "6366f54ff778a87fc3318fdb0df5218763d8df95"
 
 [[projects]]
@@ -196,6 +193,9 @@
     "framework/context/resourcecanceledcontext",
     "framework/context/updateallowedcontext",
     "framework/context/updatenecessarycontext",
+    "framework/resource/internal",
+    "framework/resource/metricsresource",
+    "framework/resource/retryresource",
     "informer"
   ]
   revision = "d25dc303a8e87710af04f2c7ec79b966ea8f4431"
@@ -735,6 +735,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "caf0dc704227333243469bcfed8972567a4e72a85e52b0a65ef9389f02fb8573"
+  inputs-digest = "34c485327feac3e00dd0f736e85f0acad5010b10733dd707bd185b728ee19db0"
   solver-name = "gps-cdcl"
   solver-version = 1
