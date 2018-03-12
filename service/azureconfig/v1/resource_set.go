@@ -3,14 +3,18 @@ package v1
 import (
 	"fmt"
 
+	"github.com/cenkalti/backoff"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
+	"github.com/giantswarm/operatorkit/framework/resource/metricsresource"
+	"github.com/giantswarm/operatorkit/framework/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
@@ -163,6 +167,29 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 		resourceGroupResource,
 		deploymentResource,
 		dnsrecordResource,
+	}
+
+	{
+		c := retryresource.WrapConfig{
+			BackOffFactory: func() backoff.BackOff { return backoff.WithMaxTries(backoff.NewExponentialBackOff(), ResourceRetries) },
+			Logger:         config.Logger,
+		}
+
+		resources, err = retryresource.Wrap(resources, c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	{
+		c := metricsresource.WrapConfig{
+			Name: config.ProjectName,
+		}
+
+		resources, err = metricsresource.Wrap(resources, c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	handlesFunc := func(obj interface{}) bool {
