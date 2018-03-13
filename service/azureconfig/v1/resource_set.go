@@ -21,6 +21,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/vnetpeering"
 )
 
 const (
@@ -165,10 +166,30 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 		}
 	}
 
+	var vnetPeeringResource framework.Resource
+	{
+		ops, err := vnetpeering.New(
+			vnetpeering.Config{
+				Logger: config.Logger,
+
+				AzureConfig: config.AzureConfig,
+			},
+		)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		vnetPeeringResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []framework.Resource{
 		resourceGroupResource,
 		deploymentResource,
 		dnsrecordResource,
+		vnetPeeringResource,
 	}
 
 	{
