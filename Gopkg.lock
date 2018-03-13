@@ -5,7 +5,8 @@
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "arm/resources/resources",
-    "services/dns/mgmt/2017-09-01/dns"
+    "services/dns/mgmt/2017-09-01/dns",
+    "services/network/mgmt/2017-09-01/network"
   ]
   revision = "934e2462aeb6e0c14186dcfeedd73a026d1b8eeb"
   version = "v12.1.0-beta"
