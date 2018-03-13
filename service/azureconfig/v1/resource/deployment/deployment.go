@@ -58,6 +58,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 
 	params := map[string]interface{}{
 		"clusterID":                     key.ClusterID(obj),
+		"virtualNetworkName":            key.VnetName(obj),
 		"virtualNetworkCidr":            key.VnetCIDR(obj),
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
 		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),

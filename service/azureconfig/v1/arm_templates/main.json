@@ -20,6 +20,9 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "virtualNetworkName": {
+      "type": "string"
+    },
     "virtualNetworkCidr": {
       "type": "string",
       "metadata": {
@@ -190,8 +193,8 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
