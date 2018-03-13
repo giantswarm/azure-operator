@@ -131,6 +131,11 @@ func HostClusterResourceGroup(customObject providerv1alpha1.AzureConfig) string 
 	return customObject.Spec.Azure.HostCluster.ResourceGroup
 }
 
+// HostClusterVirtualNetwork returns virtual network name of the host cluster.
+func HostClusterVirtualNetwork(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.HostCluster.VirtualNetwork
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)

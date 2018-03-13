@@ -82,8 +82,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 		return microerror.Maskf(err, "ensure host vnet peering")
 	}
 
-	// TODO: use host virtual network name instead of host resource group
-	_, err = vnetPeeringClient.CreateOrUpdate(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), key.ResourceGroupName(azureConfig), change)
+	_, err = vnetPeeringClient.CreateOrUpdate(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterVirtualNetwork(azureConfig), key.ResourceGroupName(azureConfig), change)
 	if err != nil {
 		return microerror.Maskf(err, "ensure host vnet peering %#v", change)
 	}
