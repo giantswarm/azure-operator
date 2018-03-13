@@ -94,7 +94,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "azure-cluster-peering"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -104,7 +104,7 @@
     "pkg/clientset/versioned/typed/core/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "a39b01f775eb52297c43472514948b55223f50d1"
+  revision = "ca1c3f4c422e903467a182f89c6d6014d8e6ac2a"
 
 [[projects]]
   branch = "master"
@@ -738,6 +738,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1d7cdc2e21d2f0a60f26338c13bcae17d9ae6a57e625f4f973ea6e835c9d467d"
+  inputs-digest = "8b97a0067b86a5c9bb47e2a0c1b5c5fdf255a21418224976908af2cef354b52d"
   solver-name = "gps-cdcl"
   solver-version = 1
