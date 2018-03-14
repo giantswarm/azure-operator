@@ -36,11 +36,19 @@ func (r Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desi
 func (r Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*framework.Patch, error) {
 	patch := framework.NewPatch()
 
-	if needUpdate(current, desired) {
-		patch.SetUpdateChange(desired)
-	}
+	patch.SetUpdateChange(r.newUpdateChange(ctx, azureConfig, current, desired))
 
 	return patch, nil
+}
+
+func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) network.VirtualNetworkPeering {
+	var change network.VirtualNetworkPeering
+
+	if needUpdate(current, desired) {
+		change = desired
+	}
+
+	return change
 }
 
 func needUpdate(current, desired network.VirtualNetworkPeering) bool {
@@ -91,6 +99,11 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
 		return microerror.Maskf(err, "ensure host vnet peering")
+	}
+
+	if isVNetPeeringEmpty(change) {
+		r.logger.LogCtx(ctx, "debug", "ensure host vnet peering: already ensured")
+		return nil
 	}
 
 	_, err = vnetPeeringClient.CreateOrUpdate(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterVirtualNetwork(azureConfig), key.ResourceGroupName(azureConfig), change)
