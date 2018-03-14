@@ -36,8 +36,8 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 			ExpectedName:     "5xchu",
 			ExpectedLocation: "West Europe",
 			ExpectedTags: map[string]string{
-				"ClusterID":  "5xchu",
-				"CustomerID": "giantswarm",
+				"giantswarm.io/cluster":      "5xchu",
+				"giantswarm.io/organization": "giantswarm",
 			},
 		},
 		{
@@ -58,8 +58,8 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 			ExpectedName:     "test-cluster",
 			ExpectedLocation: "East Asia",
 			ExpectedTags: map[string]string{
-				"ClusterID":  "test-cluster",
-				"CustomerID": "acme",
+				"giantswarm.io/cluster":      "test-cluster",
+				"giantswarm.io/organization": "acme",
 			},
 		},
 	}

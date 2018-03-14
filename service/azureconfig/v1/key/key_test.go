@@ -2,6 +2,7 @@ package key
 
 import (
 	"fmt"
+	"reflect"
 	"testing"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -55,6 +56,49 @@ func Test_ClusterCustomer(t *testing.T) {
 
 	if ClusterCustomer(customObject) != expectedID {
 		t.Fatalf("Expected customer ID %s but was %s", expectedID, ClusterCustomer(customObject))
+	}
+}
+
+func Test_ClusterOrganization(t *testing.T) {
+	expectedID := "test-org"
+
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "test-org",
+				// Organization uses Customer until its renamed in the CRD.
+				Customer: providerv1alpha1.ClusterCustomer{
+					ID: expectedID,
+				},
+			},
+		},
+	}
+
+	if ClusterOrganization(customObject) != expectedID {
+		t.Fatalf("Expected organization %s but was %s", expectedID, ClusterOrganization(customObject))
+	}
+}
+
+func Test_ClusterTags(t *testing.T) {
+	expectedTags := map[string]string{
+		"giantswarm.io/cluster":      "test-cluster",
+		"giantswarm.io/organization": "test-org",
+	}
+
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "test-cluster",
+				// Organization uses Customer until its renamed in the CRD.
+				Customer: providerv1alpha1.ClusterCustomer{
+					ID: "test-org",
+				},
+			},
+		},
+	}
+
+	if !reflect.DeepEqual(expectedTags, ClusterTags(customObject)) {
+		t.Fatalf("Expected cluster tags %v but was %v", expectedTags, ClusterTags(customObject))
 	}
 }
 
