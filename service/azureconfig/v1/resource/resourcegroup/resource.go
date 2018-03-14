@@ -19,8 +19,6 @@ const (
 	// Name is the identifier of the resource.
 	Name = "resourcegroupv1"
 
-	clusterIDTag  = "ClusterID"
-	customerIDTag = "CustomerID"
 	deleteTimeout = 30 * time.Minute
 	managedBy     = "azure-operator"
 )
@@ -92,14 +90,10 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	tags := map[string]string{
-		clusterIDTag:  key.ClusterID(customObject),
-		customerIDTag: key.ClusterCustomer(customObject),
-	}
 	resourceGroup := Group{
 		Name:     key.ClusterID(customObject),
 		Location: key.Location(customObject),
-		Tags:     tags,
+		Tags:     key.ClusterTags(customObject),
 	}
 
 	return resourceGroup, nil

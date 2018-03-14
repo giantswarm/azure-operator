@@ -10,6 +10,9 @@ import (
 const (
 	defaultAzureCloudType = "AZUREPUBLICCLOUD"
 
+	clusterTagName      = "giantswarm.io/cluster"
+	organizationTagName = "giantswarm.io/organization"
+
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
@@ -50,6 +53,22 @@ func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 // ClusterID returns the unique ID for this cluster.
 func ClusterID(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.ID
+}
+
+// ClusterOrganization returns the org name from the custom object.
+// It uses ClusterCustomer until this field is renamed in the custom object.
+func ClusterOrganization(customObject providerv1alpha1.AzureConfig) string {
+	return ClusterCustomer(customObject)
+}
+
+// ClusterTags returns a map with the resource tags for this cluster.
+func ClusterTags(customObject providerv1alpha1.AzureConfig) map[string]string {
+	tags := map[string]string{
+		clusterTagName:      ClusterID(customObject),
+		organizationTagName: ClusterOrganization(customObject),
+	}
+
+	return tags
 }
 
 // DNSZoneAPI returns api parent DNS zone domain name.
