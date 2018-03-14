@@ -81,8 +81,8 @@ func Test_ClusterOrganization(t *testing.T) {
 
 func Test_ClusterTags(t *testing.T) {
 	expectedTags := map[string]string{
-		"giantswarm.io/cluster":      "test-cluster",
-		"giantswarm.io/organization": "test-org",
+		"GiantSwarmCluster":      "test-cluster",
+		"GiantSwarmOrganization": "test-org",
 	}
 
 	customObject := providerv1alpha1.AzureConfig{

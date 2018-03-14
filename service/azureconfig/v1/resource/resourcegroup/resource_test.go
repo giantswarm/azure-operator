@@ -36,8 +36,8 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 			ExpectedName:     "5xchu",
 			ExpectedLocation: "West Europe",
 			ExpectedTags: map[string]string{
-				"giantswarm.io/cluster":      "5xchu",
-				"giantswarm.io/organization": "giantswarm",
+				"GiantSwarmCluster":      "5xchu",
+				"GiantSwarmOrganization": "giantswarm",
 			},
 		},
 		{
@@ -58,8 +58,8 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 			ExpectedName:     "test-cluster",
 			ExpectedLocation: "East Asia",
 			ExpectedTags: map[string]string{
-				"giantswarm.io/cluster":      "test-cluster",
-				"giantswarm.io/organization": "acme",
+				"GiantSwarmCluster":      "test-cluster",
+				"GiantSwarmOrganization": "acme",
 			},
 		},
 	}

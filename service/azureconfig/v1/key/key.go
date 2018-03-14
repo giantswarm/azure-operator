@@ -10,8 +10,8 @@ import (
 const (
 	defaultAzureCloudType = "AZUREPUBLICCLOUD"
 
-	clusterTagName      = "giantswarm.io/cluster"
-	organizationTagName = "giantswarm.io/organization"
+	clusterTagName      = "GiantSwarmCluster"
+	organizationTagName = "GiantSwarmOrganization"
 
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
