@@ -14,19 +14,11 @@
     "resourceGroup": {
       "type": "string"
     },
-    "apiVerison": {
-      "type": "string",
-      "defaultValue": "2017-10-01",
-      "metadata": {
-        "description": "API version used by the Microsoft.Network/virtualNetworks resource."
-      }
-    },
   },
   "resources": [
     {
       "type": "Microsoft.Network/virtualNetworks/virtualNetworkPeerings",
       "name": "[concat(parameters('sourceNetwork'), '/', parameters('name'))]",
-      "apiVersion": "[parameters('apiVerison')]",
       "properties": {
         "remoteVirtualNetwork": {
           "id": "[resourceId(parameters('resourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('resourceGroup'))]"
