@@ -80,8 +80,11 @@ func Test_ClusterOrganization(t *testing.T) {
 }
 
 func Test_ClusterTags(t *testing.T) {
+	installName := "test-install"
+
 	expectedTags := map[string]string{
 		"GiantSwarmCluster":      "test-cluster",
+		"GiantSwarmInstallation": "test-install",
 		"GiantSwarmOrganization": "test-org",
 	}
 
@@ -97,8 +100,8 @@ func Test_ClusterTags(t *testing.T) {
 		},
 	}
 
-	if !reflect.DeepEqual(expectedTags, ClusterTags(customObject)) {
-		t.Fatalf("Expected cluster tags %v but was %v", expectedTags, ClusterTags(customObject))
+	if !reflect.DeepEqual(expectedTags, ClusterTags(customObject, installName)) {
+		t.Fatalf("Expected cluster tags %v but was %v", expectedTags, ClusterTags(customObject, installName))
 	}
 }
 

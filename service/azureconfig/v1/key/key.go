@@ -11,6 +11,7 @@ const (
 	defaultAzureCloudType = "AZUREPUBLICCLOUD"
 
 	clusterTagName      = "GiantSwarmCluster"
+	installationTagName = "GiantSwarmInstallation"
 	organizationTagName = "GiantSwarmOrganization"
 
 	routeTableSuffix          = "RouteTable"
@@ -62,9 +63,10 @@ func ClusterOrganization(customObject providerv1alpha1.AzureConfig) string {
 }
 
 // ClusterTags returns a map with the resource tags for this cluster.
-func ClusterTags(customObject providerv1alpha1.AzureConfig) map[string]string {
+func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName string) map[string]string {
 	tags := map[string]string{
 		clusterTagName:      ClusterID(customObject),
+		installationTagName: installationName,
 		organizationTagName: ClusterOrganization(customObject),
 	}
 

@@ -18,10 +18,11 @@ import (
 )
 
 type FrameworkConfig struct {
-	G8sClient    gsclient.Interface
-	K8sClient    kubernetes.Interface
-	K8sExtClient apiextensionsclient.Interface
-	Logger       micrologger.Logger
+	G8sClient        gsclient.Interface
+	InstallationName string
+	K8sClient        kubernetes.Interface
+	K8sExtClient     apiextensionsclient.Interface
+	Logger           micrologger.Logger
 
 	AzureConfig     client.AzureConfig
 	ProjectName     string
@@ -90,12 +91,13 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 	var v1ResourceSet *framework.ResourceSet
 	{
 		c := v1.ResourceSetConfig{
-			K8sClient:       config.K8sClient,
-			K8sExtClient:    config.K8sExtClient,
-			Logger:          config.Logger,
-			AzureConfig:     config.AzureConfig,
-			ProjectName:     config.ProjectName,
-			TemplateVersion: config.TemplateVersion,
+			K8sClient:        config.K8sClient,
+			K8sExtClient:     config.K8sExtClient,
+			Logger:           config.Logger,
+			AzureConfig:      config.AzureConfig,
+			InstallationName: config.InstallationName,
+			ProjectName:      config.ProjectName,
+			TemplateVersion:  config.TemplateVersion,
 		}
 
 		v1ResourceSet, err = v1.NewResourceSet(c)

@@ -24,27 +24,33 @@ const (
 )
 
 type Config struct {
-	AzureConfig client.AzureConfig
-	Logger      micrologger.Logger
+	AzureConfig      client.AzureConfig
+	InstallationName string
+	Logger           micrologger.Logger
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	azureConfig client.AzureConfig
-	logger      micrologger.Logger
+	azureConfig      client.AzureConfig
+	installationName string
+	logger           micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.InstallationName must not be empty")
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 
 	r := &Resource{
-		azureConfig: config.AzureConfig,
-		logger:      config.Logger,
+		azureConfig:      config.AzureConfig,
+		installationName: config.InstallationName,
+		logger:           config.Logger,
 	}
 
 	return r, nil
@@ -93,7 +99,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	resourceGroup := Group{
 		Name:     key.ClusterID(customObject),
 		Location: key.Location(customObject),
-		Tags:     key.ClusterTags(customObject),
+		Tags:     key.ClusterTags(customObject, r.installationName),
 	}
 
 	return resourceGroup, nil
