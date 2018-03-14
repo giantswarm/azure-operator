@@ -79,7 +79,7 @@ type AzureClientSet struct {
 	DNSRecordSetsClient *dns.RecordSetsClient
 	// DNSRecordSetsClient manages DNS zones.
 	DNSZonesClient *dns.ZonesClient
-	// VirtualNetworkPeeringsClient manages virtual network peerings.
+	// VnetPeeringClient manages virtual network peerings.
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
 
