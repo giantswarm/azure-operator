@@ -25,7 +25,12 @@ func (r Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desi
 		return nil, microerror.Maskf(err, "NewUpdatePatch")
 	}
 
-	return r.newUpdatePatch(ctx, a, c, d)
+	patch, err := r.newUpdatePatch(ctx, a, c, d)
+	if err != nil {
+		return nil, microerror.Maskf(err, "NewUpdatePatch")
+	}
+
+	return patch, nil
 }
 
 func (r Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*framework.Patch, error) {
@@ -72,7 +77,12 @@ func (r Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change int
 		return microerror.Maskf(err, "ApplyUpdateChange")
 	}
 
-	return r.applyUpdateChange(ctx, a, c)
+	err = r.applyUpdateChange(ctx, a, c)
+	if err != nil {
+		return microerror.Maskf(err, "ApplyUpdateChange")
+	}
+
+	return nil
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change network.VirtualNetworkPeering) error {

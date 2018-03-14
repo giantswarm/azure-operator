@@ -20,7 +20,12 @@ func (r Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) 
 		return nil, microerror.Maskf(err, "GetDesiredState")
 	}
 
-	return r.getDesiredState(ctx, a)
+	vnetPeering, err := r.getDesiredState(ctx, a)
+	if err != nil {
+		return nil, microerror.Maskf(err, "GetDesiredState")
+	}
+
+	return vnetPeering, nil
 }
 
 func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (network.VirtualNetworkPeering, error) {

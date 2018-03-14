@@ -25,7 +25,12 @@ func (r Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desi
 		return nil, microerror.Maskf(err, "NewDeletePatch")
 	}
 
-	return r.newDeletePatch(ctx, a, c, d)
+	patch, err := r.newDeletePatch(ctx, a, c, d)
+	if err != nil {
+		return nil, microerror.Maskf(err, "NewDeletePatch")
+	}
+
+	return patch, nil
 }
 
 func (r Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*framework.Patch, error) {
@@ -45,7 +50,12 @@ func (r Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change int
 		return microerror.Maskf(err, "ApplyDeleteChange")
 	}
 
-	return r.applyDeleteChange(ctx, a, c)
+	err = r.applyDeleteChange(ctx, a, c)
+	if err != nil {
+		return microerror.Maskf(err, "ApplyDeleteChange")
+	}
+
+	return nil
 }
 
 func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change network.VirtualNetworkPeering) error {

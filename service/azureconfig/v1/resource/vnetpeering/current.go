@@ -18,7 +18,12 @@ func (r Resource) GetCurrentState(ctx context.Context, azureConfig interface{}) 
 		return nil, microerror.Maskf(err, "GetCurrentState")
 	}
 
-	return r.getCurrentState(ctx, a)
+	vnetPeering, err := r.getCurrentState(ctx, a)
+	if err != nil {
+		return nil, microerror.Maskf(err, "GetCurrentState")
+	}
+
+	return vnetPeering, nil
 }
 
 func (r Resource) getCurrentState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (interface{}, error) {
