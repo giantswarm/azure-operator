@@ -21,7 +21,7 @@
       "name": "[concat(parameters('sourceNetwork'), '/', parameters('name'))]",
       "properties": {
         "remoteVirtualNetwork": {
-          "id": "[resourceId(parameters('resourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('resourceGroup'))]"
+          "id": "[resourceId(parameters('resourceGroup'), 'Microsoft.Network/virtualNetworks', parameters('targetNetwork'))]"
         },
         "allowVirtualNetworkAccess": true,
         "allowForwardedTraffic": true,
