@@ -8,12 +8,6 @@
         "description": "Unique ID of this guest cluster."
       }
     },
-    "hostClusterResourceGroupName": {
-      "type": "string",
-      "metadata": {
-        "description": "Host cluster resource group."
-      }
-    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
@@ -39,6 +33,12 @@
       "type": "string"
     },
     "hostClusterCidr": {
+      "type": "string"
+    },
+    "hostClusterResourceGroupName": {
+      "type": "string"
+    },
+    "hostClusterVirtualNetworkName": {
       "type": "string"
     },
     "kubernetesAPISecurePort": {
@@ -218,7 +218,7 @@
           "name": {"value": "toHost"},
           "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
           "sourceNetwork": {"value": "[reference('virtual_network_setup').outputs.virtualNetworkName.value]"},
-          "targetNetwork": {"value": "[parameters('hostClusterResourceGroupName')]"}
+          "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
         }
       }
     },
