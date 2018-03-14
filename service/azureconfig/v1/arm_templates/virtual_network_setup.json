@@ -38,19 +38,18 @@
     }
   },
   "variables": {
-    "virtualNetworkName": "[parameters('virtualNetworkName')]",
-    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
 
-    "masterSubnetName": "[concat(variables('virtualNetworkName'), '-MasterSubnet')]",
+    "masterSubnetName": "[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
     "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
 
-    "workerSubnetName": "[concat(variables('virtualNetworkName'), '-WorkerSubnet')]",
+    "workerSubnetName": "[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
     "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('virtualNetworkName')]",
+      "name": "[parameters('virtualNetworkName')]",
       "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {
@@ -94,7 +93,7 @@
   "outputs": {
     "virtualNetworkName": {
       "type": "string",
-      "value": "[variables('virtualNetworkName')]"
+      "value": "[parameters('virtualNetworkName')]"
     },
     "masterSubnetID": {
       "type": "string",
