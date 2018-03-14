@@ -168,13 +168,13 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 
 	var vnetPeeringResource framework.Resource
 	{
-		ops, err := vnetpeering.New(
-			vnetpeering.Config{
-				Logger: config.Logger,
+		c := vnetpeering.Config{
+			Logger: config.Logger,
 
-				AzureConfig: config.AzureConfig,
-			},
-		)
+			AzureConfig: config.AzureConfig,
+		}
+
+		ops, err := vnetpeering.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
