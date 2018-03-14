@@ -26,10 +26,10 @@ func (r Resource) GetCurrentState(ctx context.Context, azureConfig interface{}) 
 	return vnetPeering, nil
 }
 
-func (r Resource) getCurrentState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (interface{}, error) {
+func (r Resource) getCurrentState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (network.VirtualNetworkPeering, error) {
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
-		return nil, microerror.Maskf(err, "getCurrentState")
+		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "getCurrentState")
 	}
 
 	vnetPeering, err := vnetPeeringClient.Get(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), key.ResourceGroupName(azureConfig))
