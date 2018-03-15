@@ -25,26 +25,26 @@ const (
 
 type Config struct {
 	AzureConfig      client.AzureConfig
-	InstallationName string
 	Logger           micrologger.Logger
+	InstallationName string
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
 	azureConfig      client.AzureConfig
-	installationName string
 	logger           micrologger.Logger
+	installationName string
 }
 
 func New(config Config) (*Resource, error) {
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
 	}
-	if config.InstallationName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.InstallationName must not be empty")
-	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.InstallationName must not be empty")
 	}
 
 	r := &Resource{
