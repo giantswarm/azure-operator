@@ -107,10 +107,3 @@ func (s *Service) GetHealthz(ctx context.Context) (healthzservice.Response, erro
 
 	return response, nil
 }
-
-// Check implements the health check which lists the first Resource Group
-// in the subscription to check we can authenticate.
-func (s *Service) Check(ctx context.Context, request Request) (*Response, error) {
-
-	return DefaultResponse(), nil
-}
