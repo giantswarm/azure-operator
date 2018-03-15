@@ -2,7 +2,6 @@ package vnetpeering
 
 import (
 	"context"
-	"reflect"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
@@ -37,23 +36,64 @@ func (r Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desi
 func (r Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*framework.Patch, error) {
 	patch := framework.NewPatch()
 
-	patch.SetUpdateChange(r.newUpdateChange(ctx, azureConfig, current, desired))
+	change, err := r.newUpdateChange(ctx, azureConfig, current, desired)
+	if err != nil {
+		return nil, microerror.Maskf(err, "newUpdatePatch")
+	}
+
+	patch.SetUpdateChange(change)
 
 	return patch, nil
 }
 
-func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) network.VirtualNetworkPeering {
+func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (network.VirtualNetworkPeering, error) {
 	var change network.VirtualNetworkPeering
 
-	if needUpdate(current, desired) {
+	ok, err := needUpdate(current, desired)
+	if err != nil {
+		return change, microerror.Maskf(err, "newUpdateChange")
+	}
+	if ok {
 		change = desired
 	}
 
-	return change
+	return change, nil
 }
 
-func needUpdate(current, desired network.VirtualNetworkPeering) bool {
-	return !reflect.DeepEqual(current, desired)
+// needUpdate determine if current needs to be updated in order to comply with desired.
+// Following properties are compared (and must be present in desired)
+//     Name
+//     VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess
+//     VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID
+func needUpdate(current, desired network.VirtualNetworkPeering) (bool, error) {
+	if desired.Name == nil ||
+		desired.VirtualNetworkPeeringPropertiesFormat == nil ||
+		desired.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess == nil ||
+		desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork == nil ||
+		desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID == nil {
+		return false, microerror.Newf("desired vnet peering is invalid %+#v", desired)
+	}
+
+	if current.Name == nil || *current.Name != *desired.Name {
+		return true, nil
+	}
+
+	if current.VirtualNetworkPeeringPropertiesFormat == nil {
+		return true, nil
+	}
+
+	if current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess == nil ||
+		*current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess != *desired.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess {
+		return true, nil
+	}
+
+	if current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork == nil ||
+		current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID == nil ||
+		*current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID != *desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID {
+		return true, nil
+	}
+
+	return false, nil
 }
 
 // ApplyUpdateChange perform the host cluster virtual network peering update against azure.
