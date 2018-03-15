@@ -1,4 +1,4 @@
-package middleware
+package healthz
 
 import (
 	"github.com/giantswarm/microerror"

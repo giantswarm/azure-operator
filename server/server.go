@@ -13,7 +13,6 @@ import (
 	kithttp "github.com/go-kit/kit/transport/http"
 
 	"github.com/giantswarm/azure-operator/server/endpoint"
-	"github.com/giantswarm/azure-operator/server/middleware"
 	"github.com/giantswarm/azure-operator/service"
 )
 
@@ -42,22 +41,10 @@ func DefaultConfig() Config {
 func New(config Config) (microserver.Server, error) {
 	var err error
 
-	var middlewareCollection *middleware.Middleware
-	{
-		middlewareConfig := middleware.DefaultConfig()
-		middlewareConfig.Logger = config.MicroServerConfig.Logger
-		middlewareConfig.Service = config.Service
-		middlewareCollection, err = middleware.New(middlewareConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var endpointCollection *endpoint.Endpoint
 	{
 		endpointConfig := endpoint.DefaultConfig()
 		endpointConfig.Logger = config.MicroServerConfig.Logger
-		endpointConfig.Middleware = middlewareCollection
 		endpointConfig.Service = config.Service
 		endpointCollection, err = endpoint.New(endpointConfig)
 		if err != nil {
@@ -78,6 +65,7 @@ func New(config Config) (microserver.Server, error) {
 
 	// Apply internals to the micro server config.
 	newServer.config.Endpoints = []microserver.Endpoint{
+		endpointCollection.Healthz,
 		endpointCollection.Version,
 	}
 	newServer.config.ErrorEncoder = newServer.newErrorEncoder()
