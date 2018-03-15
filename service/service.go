@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/azureconfig"
+	"github.com/giantswarm/azure-operator/service/healthz"
 )
 
 // Config represents the configuration used to create a new service.
@@ -53,6 +54,7 @@ func DefaultConfig() Config {
 
 type Service struct {
 	AzureConfigFramework *framework.Framework
+	Healthz              *healthz.Service
 	Version              *version.Service
 
 	bootOnce sync.Once
@@ -137,6 +139,18 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var healthzService *healthz.Service
+	{
+		c := healthz.Config{
+			AzureConfig: azureConfig,
+			Logger:      config.Logger,
+		}
+		healthzService, err = healthz.New(c)
+		if err != nil {
+			return nil, microerror.Maskf(err, "healthz.New")
+		}
+	}
+
 	var versionService *version.Service
 	{
 		versionConfig := version.DefaultConfig()
@@ -154,6 +168,7 @@ func New(config Config) (*Service, error) {
 
 	newService := &Service{
 		AzureConfigFramework: azureConfigFramework,
+		Healthz:              healthzService,
 		Version:              versionService,
 
 		bootOnce: sync.Once{},
