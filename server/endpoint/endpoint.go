@@ -7,16 +7,14 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/server/middleware"
 	"github.com/giantswarm/azure-operator/service"
 )
 
 // Config represents the configuration used to create a endpoint.
 type Config struct {
 	// Dependencies.
-	Logger     micrologger.Logger
-	Middleware *middleware.Middleware
-	Service    *service.Service
+	Logger  micrologger.Logger
+	Service *service.Service
 }
 
 // DefaultConfig provides a default configuration to create a new endpoint by
@@ -24,9 +22,8 @@ type Config struct {
 func DefaultConfig() Config {
 	return Config{
 		// Dependencies.
-		Logger:     nil,
-		Middleware: nil,
-		Service:    nil,
+		Logger:  nil,
+		Service: nil,
 	}
 }
 
