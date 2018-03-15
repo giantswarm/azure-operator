@@ -4,6 +4,7 @@ import (
 	"context"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/framework"
@@ -66,8 +67,13 @@ func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1a
 		return microerror.Maskf(err, "deleting host vnet peering")
 	}
 
-	res, err = vnetPeeringClient.Delete(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), key.ResourceGroupName(azureConfig))
-	if client.ResponseWasNotFound(res.Response) {
+	respFuture, err := vnetPeeringClient.Delete(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), key.ResourceGroupName(azureConfig))
+	if err != nil {
+		return microerror.Maskf(err, "deleting host vnet peering")
+	}
+
+	res, err := vnetPeeringClient.DeleteResponder(respFuture.Response())
+	if client.ResponseWasNotFound(res) {
 		r.logger.LogCtx(ctx, "debug", "deleting host vnet peering: already deleted")
 		return nil
 	}
