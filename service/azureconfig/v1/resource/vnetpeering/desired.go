@@ -2,7 +2,6 @@ package vnetpeering
 
 import (
 	"context"
-	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
@@ -34,12 +33,8 @@ func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1al
 		VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
 			AllowVirtualNetworkAccess: to.BoolPtr(true),
 			RemoteVirtualNetwork: &network.SubResource{
-				ID: to.StringPtr(r.getVirtualNetworkID(key.ResourceGroupName(azureConfig), key.VnetName(azureConfig))),
+				ID: to.StringPtr(key.VNetID(azureConfig, r.azureConfig.SubscriptionID)),
 			},
 		},
 	}, nil
-}
-
-func (r Resource) getVirtualNetworkID(resourceGroupName, vnetName string) string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", r.azureConfig.SubscriptionID, resourceGroupName, vnetName)
 }
