@@ -5,6 +5,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
+	"github.com/giantswarm/azure-operator/server/endpoint/healthz"
 	"github.com/giantswarm/azure-operator/server/middleware"
 	"github.com/giantswarm/azure-operator/service"
 )
@@ -43,7 +44,21 @@ func New(config Config) (*Endpoint, error) {
 		}
 	}
 
+	var healthzEndpoint *healthz.Endpoint
+	{
+		c := healthz.Config{
+			Logger:     config.Logger,
+			Middleware: config.Middleware,
+			Service:    config.Service,
+		}
+		healthzEndpoint, err = healthz.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	newEndpoint := &Endpoint{
+		Healthz: healthzEndpoint,
 		Version: versionEndpoint,
 	}
 	return newEndpoint, nil
@@ -51,5 +66,6 @@ func New(config Config) (*Endpoint, error) {
 
 // Endpoint is the endpoint collection.
 type Endpoint struct {
+	Healthz *healthz.Endpoint
 	Version *versionendpoint.Endpoint
 }
