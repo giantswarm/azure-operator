@@ -2,6 +2,7 @@ package vnetpeering
 
 import (
 	"context"
+	"reflect"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
@@ -52,26 +53,7 @@ func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alp
 }
 
 func needUpdate(current, desired network.VirtualNetworkPeering) bool {
-	if current.Name == nil || *current.Name != *desired.Name {
-		return true
-	}
-
-	if current.VirtualNetworkPeeringPropertiesFormat == nil {
-		return true
-	}
-
-	if current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess == nil ||
-		*current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess != *desired.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess {
-		return true
-	}
-
-	if current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork == nil ||
-		current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID == nil ||
-		*current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID != *desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID {
-		return true
-	}
-
-	return false
+	return !reflect.DeepEqual(current, desired)
 }
 
 // ApplyUpdateChange perform the host cluster virtual network peering update against azure.
