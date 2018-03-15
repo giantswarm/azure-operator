@@ -32,8 +32,9 @@ type ResourceSetConfig struct {
 	K8sExtClient apiextensionsclient.Interface
 	Logger       micrologger.Logger
 
-	AzureConfig client.AzureConfig
-	ProjectName string
+	AzureConfig      client.AzureConfig
+	InstallationName string
+	ProjectName      string
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
 	TemplateVersion string
@@ -107,8 +108,9 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	var resourceGroupResource framework.Resource
 	{
 		c := resourcegroup.Config{
-			AzureConfig: config.AzureConfig,
-			Logger:      config.Logger,
+			AzureConfig:      config.AzureConfig,
+			InstallationName: config.InstallationName,
+			Logger:           config.Logger,
 		}
 
 		ops, err := resourcegroup.New(c)

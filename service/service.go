@@ -122,13 +122,14 @@ func New(config Config) (*Service, error) {
 	var azureConfigFramework *framework.Framework
 	{
 		c := azureconfig.FrameworkConfig{
-			G8sClient:       g8sClient,
-			K8sClient:       k8sClient,
-			K8sExtClient:    k8sExtClient,
-			Logger:          config.Logger,
-			AzureConfig:     azureConfig,
-			ProjectName:     "azure-operator",
-			TemplateVersion: config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
+			G8sClient:        g8sClient,
+			K8sClient:        k8sClient,
+			K8sExtClient:     k8sExtClient,
+			Logger:           config.Logger,
+			AzureConfig:      azureConfig,
+			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:      "azure-operator",
+			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 		}
 
 		azureConfigFramework, err = azureconfig.NewFramework(c)

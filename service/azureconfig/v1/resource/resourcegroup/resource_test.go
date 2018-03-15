@@ -14,6 +14,7 @@ import (
 func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	testCases := []struct {
 		Obj              interface{}
+		InstallationName string
 		ExpectedName     string
 		ExpectedLocation string
 		ExpectedTags     map[string]string
@@ -33,11 +34,13 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 					},
 				},
 			},
+			InstallationName: "gollum",
 			ExpectedName:     "5xchu",
 			ExpectedLocation: "West Europe",
 			ExpectedTags: map[string]string{
-				"ClusterID":  "5xchu",
-				"CustomerID": "giantswarm",
+				"GiantSwarmCluster":      "5xchu",
+				"GiantSwarmInstallation": "gollum",
+				"GiantSwarmOrganization": "giantswarm",
 			},
 		},
 		{
@@ -55,11 +58,13 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 					},
 				},
 			},
+			InstallationName: "coyote",
 			ExpectedName:     "test-cluster",
 			ExpectedLocation: "East Asia",
 			ExpectedTags: map[string]string{
-				"ClusterID":  "test-cluster",
-				"CustomerID": "acme",
+				"GiantSwarmCluster":      "test-cluster",
+				"GiantSwarmInstallation": "coyote",
+				"GiantSwarmOrganization": "acme",
 			},
 		},
 	}
@@ -67,16 +72,17 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	var err error
 	var newResource *Resource
 	{
-		resourceConfig := Config{
-			AzureConfig: fakeclient.NewAzureConfig(),
-			Logger:      microloggertest.New(),
-		}
-		newResource, err = New(resourceConfig)
-		if err != nil {
-			t.Fatalf("expected '%#v' got '%#v'", nil, err)
-		}
-
 		for i, tc := range testCases {
+			resourceConfig := Config{
+				AzureConfig:      fakeclient.NewAzureConfig(),
+				InstallationName: tc.InstallationName,
+				Logger:           microloggertest.New(),
+			}
+			newResource, err = New(resourceConfig)
+			if err != nil {
+				t.Fatalf("expected '%#v' got '%#v'", nil, err)
+			}
+
 			result, err := newResource.GetDesiredState(context.TODO(), tc.Obj)
 			if err != nil {
 				t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
@@ -160,8 +166,9 @@ func Test_Resource_ResourceGroup_newCreateChange(t *testing.T) {
 	var newResource *Resource
 	{
 		resourceConfig := Config{
-			AzureConfig: fakeclient.NewAzureConfig(),
-			Logger:      microloggertest.New(),
+			AzureConfig:      fakeclient.NewAzureConfig(),
+			InstallationName: "test-install",
+			Logger:           microloggertest.New(),
 		}
 		newResource, err = New(resourceConfig)
 		if err != nil {
@@ -230,8 +237,9 @@ func Test_Resource_ResourceGroup_newDeleteChange(t *testing.T) {
 	var newResource *Resource
 	{
 		resourceConfig := Config{
-			AzureConfig: fakeclient.NewAzureConfig(),
-			Logger:      microloggertest.New(),
+			AzureConfig:      fakeclient.NewAzureConfig(),
+			InstallationName: "test-install",
+			Logger:           microloggertest.New(),
 		}
 		newResource, err = New(resourceConfig)
 		if err != nil {
