@@ -217,6 +217,9 @@
       "apiVersion": "2016-09-01",
       "name": "peering",
       "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+          "virtual_network_setup"
+      ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
@@ -226,7 +229,7 @@
         "parameters": {
           "name": {"value": "toHost"},
           "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
-          "sourceNetwork": {"value": "[reference('virtual_network_setup').outputs.virtualNetworkName.value]"},
+          "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
           "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
         }
       }

@@ -91,10 +91,6 @@
     }
   ],
   "outputs": {
-    "virtualNetworkName": {
-      "type": "string",
-      "value": "[parameters('virtualNetworkName')]"
-    },
     "masterSubnetID": {
       "type": "string",
       "value": "[variables('masterSubnetID')]"
