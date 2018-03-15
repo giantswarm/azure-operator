@@ -19,21 +19,21 @@ const (
 	// Name is the identifier of the resource.
 	Name = "resourcegroupv1"
 
-	clusterIDTag  = "ClusterID"
-	customerIDTag = "CustomerID"
 	deleteTimeout = 30 * time.Minute
 	managedBy     = "azure-operator"
 )
 
 type Config struct {
-	AzureConfig client.AzureConfig
-	Logger      micrologger.Logger
+	AzureConfig      client.AzureConfig
+	Logger           micrologger.Logger
+	InstallationName string
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	azureConfig client.AzureConfig
-	logger      micrologger.Logger
+	azureConfig      client.AzureConfig
+	logger           micrologger.Logger
+	installationName string
 }
 
 func New(config Config) (*Resource, error) {
@@ -43,10 +43,14 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "config.InstallationName must not be empty")
+	}
 
 	r := &Resource{
-		azureConfig: config.AzureConfig,
-		logger:      config.Logger,
+		azureConfig:      config.AzureConfig,
+		installationName: config.InstallationName,
+		logger:           config.Logger,
 	}
 
 	return r, nil
@@ -92,14 +96,10 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	tags := map[string]string{
-		clusterIDTag:  key.ClusterID(customObject),
-		customerIDTag: key.ClusterCustomer(customObject),
-	}
 	resourceGroup := Group{
 		Name:     key.ClusterID(customObject),
 		Location: key.Location(customObject),
-		Tags:     tags,
+		Tags:     key.ClusterTags(customObject, r.installationName),
 	}
 
 	return resourceGroup, nil
