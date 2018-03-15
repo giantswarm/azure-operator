@@ -35,7 +35,7 @@ func (r Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desi
 
 func (r Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*framework.Patch, error) {
 	patch := framework.NewPatch()
-	patch.SetDeleteChange(current)
+	patch.SetDeleteChange(desired)
 	return patch, nil
 }
 
@@ -66,7 +66,11 @@ func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1a
 		return microerror.Maskf(err, "deleting host vnet peering")
 	}
 
-	_, err = vnetPeeringClient.Delete(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), key.ResourceGroupName(azureConfig))
+	res, err = vnetPeeringClient.Delete(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), key.ResourceGroupName(azureConfig))
+	if client.ResponseWasNotFound(res.Response) {
+		r.logger.LogCtx(ctx, "debug", "deleting host vnet peering: already deleted")
+		return nil
+	}
 	if err != nil {
 		return microerror.Maskf(err, "deleting host vnet peering")
 	}

@@ -15,7 +15,10 @@
       }
     },
     "virtualNetworkName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network's name of the guest cluster"
+      }
     },
     "virtualNetworkCidr": {
       "type": "string",
@@ -36,10 +39,16 @@
       "type": "string"
     },
     "hostClusterResourceGroupName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Resource group's name of the host cluster."
+      }
     },
     "hostClusterVirtualNetworkName": {
-      "type": "string"
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network's of the host cluster."
+      }
     },
     "kubernetesAPISecurePort": {
       "type": "int"
