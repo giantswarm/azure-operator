@@ -15,12 +15,12 @@ import (
 func (r Resource) GetCurrentState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return nil, microerror.Maskf(err, "GetCurrentState")
+		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "GetCurrentState")
 	}
 
 	vnetPeering, err := r.getCurrentState(ctx, a)
 	if err != nil {
-		return nil, microerror.Maskf(err, "GetCurrentState")
+		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "GetCurrentState")
 	}
 
 	return vnetPeering, nil
