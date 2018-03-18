@@ -17,3 +17,10 @@ var wrongTypeError = microerror.New("wrong type")
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
 }
+
+var invalidDesiredState = microerror.New("invalid desired state")
+
+// IsInvalidDesiredState asserts invalidDesiredState.
+func IsInvalidDesiredState(err error) bool {
+	return microerror.Cause(err) == invalidDesiredState
+}
