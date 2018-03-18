@@ -124,6 +124,30 @@ func TestNeedUpdate(t *testing.T) {
 			true,
 			nil,
 		},
+		{
+			"case 5: need an update when PeeringState is disconnected",
+			network.VirtualNetworkPeering{
+				Name: to.StringPtr("some Name"),
+				VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
+					AllowVirtualNetworkAccess: to.BoolPtr(true),
+					RemoteVirtualNetwork: &network.SubResource{
+						ID: to.StringPtr("some ID"),
+					},
+					PeeringState: network.Disconnected,
+				},
+			},
+			network.VirtualNetworkPeering{
+				Name: to.StringPtr("some Name"),
+				VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
+					AllowVirtualNetworkAccess: to.BoolPtr(true),
+					RemoteVirtualNetwork: &network.SubResource{
+						ID: to.StringPtr("some ID"),
+					},
+				},
+			},
+			true,
+			nil,
+		},
 	}
 
 	for _, tc := range testCases {
