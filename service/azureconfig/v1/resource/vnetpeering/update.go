@@ -71,7 +71,7 @@ func needUpdate(current, desired network.VirtualNetworkPeering) (bool, error) {
 		desired.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess == nil ||
 		desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork == nil ||
 		desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID == nil {
-		return false, microerror.Newf("desired vnet peering is invalid %+#v", desired)
+		return false, microerror.Maskf(invalidDesiredState, "got %+#v", desired)
 	}
 
 	if current.Name == nil || *current.Name != *desired.Name {
