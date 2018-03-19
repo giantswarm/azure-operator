@@ -50,11 +50,7 @@ func (r Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alph
 func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (network.VirtualNetworkPeering, error) {
 	var change network.VirtualNetworkPeering
 
-	ok, err := needUpdate(current, desired)
-	if err != nil {
-		return change, microerror.Maskf(err, "newUpdateChange")
-	}
-	if ok {
+	if needUpdate(current, desired) {
 		change = desired
 	}
 
@@ -66,39 +62,31 @@ func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alp
 //     Name
 //     VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess
 //     VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID
-func needUpdate(current, desired network.VirtualNetworkPeering) (bool, error) {
-	if desired.Name == nil ||
-		desired.VirtualNetworkPeeringPropertiesFormat == nil ||
-		desired.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess == nil ||
-		desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork == nil ||
-		desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID == nil {
-		return false, microerror.Maskf(invalidDesiredState, "got %+#v", desired)
-	}
-
+func needUpdate(current, desired network.VirtualNetworkPeering) bool {
 	if current.Name == nil || *current.Name != *desired.Name {
-		return true, nil
+		return true
 	}
 
 	if current.VirtualNetworkPeeringPropertiesFormat == nil {
-		return true, nil
+		return true
 	}
 
 	if current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess == nil ||
 		*current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess != *desired.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess {
-		return true, nil
+		return true
 	}
 
 	if current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork == nil ||
 		current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID == nil ||
 		*current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID != *desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID {
-		return true, nil
+		return true
 	}
 
 	if current.VirtualNetworkPeeringPropertiesFormat.PeeringState == network.Disconnected {
-		return true, nil
+		return true
 	}
 
-	return false, nil
+	return false
 }
 
 // ApplyUpdateChange perform the host cluster virtual network peering update against azure.

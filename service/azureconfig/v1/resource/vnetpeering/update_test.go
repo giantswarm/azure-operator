@@ -9,18 +9,24 @@ import (
 
 func TestNeedUpdate(t *testing.T) {
 	testCases := []struct {
-		name         string
-		current      network.VirtualNetworkPeering
-		desired      network.VirtualNetworkPeering
-		expected     bool
-		errorMatcher func(err error) bool
+		name     string
+		current  network.VirtualNetworkPeering
+		desired  network.VirtualNetworkPeering
+		expected bool
 	}{
 		{
-			"case 0: empty desired state returns invalidDesired error",
+			"case 0: need an update when current state is empty",
 			network.VirtualNetworkPeering{},
-			network.VirtualNetworkPeering{},
-			false,
-			IsInvalidDesiredState,
+			network.VirtualNetworkPeering{
+				Name: to.StringPtr("some Name"),
+				VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
+					AllowVirtualNetworkAccess: to.BoolPtr(true),
+					RemoteVirtualNetwork: &network.SubResource{
+						ID: to.StringPtr("some ID"),
+					},
+				},
+			},
+			true,
 		},
 		{
 			"case 1: current state with additional values does not need update",
@@ -53,7 +59,6 @@ func TestNeedUpdate(t *testing.T) {
 				},
 			},
 			false,
-			nil,
 		},
 		{
 			"case 2: need an update when RemoteVirtualNetwork.ID property change",
@@ -76,7 +81,6 @@ func TestNeedUpdate(t *testing.T) {
 				},
 			},
 			true,
-			nil,
 		},
 		{
 			"case 3: need an update when AllowVirtualNetworkAccess property change",
@@ -99,7 +103,6 @@ func TestNeedUpdate(t *testing.T) {
 				},
 			},
 			true,
-			nil,
 		},
 		{
 			"case 4: need an update when Name property change",
@@ -122,7 +125,6 @@ func TestNeedUpdate(t *testing.T) {
 				},
 			},
 			true,
-			nil,
 		},
 		{
 			"case 5: need an update when PeeringState is disconnected",
@@ -146,24 +148,12 @@ func TestNeedUpdate(t *testing.T) {
 				},
 			},
 			true,
-			nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.name, func(t *testing.T) {
-			ok, err := needUpdate(tc.current, tc.desired)
-
-			switch {
-			case err == nil && tc.errorMatcher == nil:
-				// correct; carry on
-			case err != nil && tc.errorMatcher == nil:
-				t.Fatalf("error == %#v, want nil", err)
-			case err == nil && tc.errorMatcher != nil:
-				t.Fatalf("error == nil, want non-nil")
-			case !tc.errorMatcher(err):
-				t.Fatalf("error == %#v, want matching", err)
-			}
+			ok := needUpdate(tc.current, tc.desired)
 
 			if ok != tc.expected {
 				t.Fatalf("ok == %v, want %v", ok, tc.expected)
