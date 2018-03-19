@@ -126,6 +126,16 @@ func HostClusterCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.HostCluster.CIDR
 }
 
+// HostClusterResourceGroup returns resource group name of the host cluster.
+func HostClusterResourceGroup(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.HostCluster.ResourceGroup
+}
+
+// HostClusterVirtualNetwork returns virtual network name of the host cluster.
+func HostClusterVirtualNetwork(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.HostCluster.VirtualNetwork
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
@@ -198,4 +208,8 @@ func VnetMasterSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 
 func VnetWorkerSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
+}
+
+func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
 }

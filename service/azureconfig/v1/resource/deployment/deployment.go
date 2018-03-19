@@ -58,6 +58,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 
 	params := map[string]interface{}{
 		"clusterID":                     key.ClusterID(obj),
+		"virtualNetworkName":            key.VnetName(obj),
 		"virtualNetworkCidr":            key.VnetCIDR(obj),
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
 		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
@@ -66,6 +67,8 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		"workerNodes":                   workerNodes,
 		"dnsZones":                      obj.Spec.Azure.DNSZones,
 		"hostClusterCidr":               obj.Spec.Azure.HostCluster.CIDR,
+		"hostClusterResourceGroupName":  key.HostClusterResourceGroup(obj),
+		"hostClusterVirtualNetworkName": key.HostClusterVirtualNetwork(obj),
 		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
 		"kubernetesIngressSecurePort":   obj.Spec.Cluster.Kubernetes.IngressController.SecurePort,
 		"kubernetesIngressInsecurePort": obj.Spec.Cluster.Kubernetes.IngressController.InsecurePort,

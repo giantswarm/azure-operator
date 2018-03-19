@@ -2,9 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "clusterID": {
-      "type": "string"
-    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
@@ -17,6 +14,9 @@
       "metadata": {
         "description": "API version used by the Microsoft.Network/virtualNetworks resource."
       }
+    },
+    "virtualNetworkName": {
+      "type": "string"
     },
     "virtualNetworkCidr": {
       "type": "string"
@@ -38,19 +38,18 @@
     }
   },
   "variables": {
-    "virtualNetworkName": "[concat(parameters('clusterID'), '-VirtualNetwork')]",
-    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', variables('virtualNetworkName'))]",
+    "virtualNetworkID": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
 
-    "masterSubnetName": "[concat(variables('virtualNetworkName'), '-MasterSubnet')]",
+    "masterSubnetName": "[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
     "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
 
-    "workerSubnetName": "[concat(variables('virtualNetworkName'), '-WorkerSubnet')]",
+    "workerSubnetName": "[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
     "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
   },
   "resources": [
     {
       "type": "Microsoft.Network/virtualNetworks",
-      "name": "[variables('virtualNetworkName')]",
+      "name": "[parameters('virtualNetworkName')]",
       "apiVersion": "[parameters('virtualNetworksAPIVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {

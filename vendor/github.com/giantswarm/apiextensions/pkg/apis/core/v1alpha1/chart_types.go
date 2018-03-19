@@ -50,7 +50,7 @@ func NewChartConfigCRD() *apiextensionsv1beta1.CustomResourceDefinition {
 type ChartConfig struct {
 	metav1.TypeMeta   `json:",inline"`
 	metav1.ObjectMeta `json:"metadata"`
-	Spec              CertConfigSpec `json:"spec"`
+	Spec              ChartConfigSpec `json:"spec"`
 }
 
 type ChartConfigSpec struct {
@@ -65,6 +65,9 @@ type ChartConfigSpecChart struct {
 	// Name is the fully qualified name of the Helm chart to deploy.
 	// e.g. quay.io/giantswarm/chart-operator-chart
 	Name string `json:"name" yaml:"name"`
+	// Release is the name of the Helm release when the chart is deployed.
+	// e.g. chart-operator
+	Release string `json:"release" yaml:"release"`
 }
 
 type ChartConfigSpecVersionBundle struct {

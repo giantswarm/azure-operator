@@ -5,7 +5,8 @@
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "arm/resources/resources",
-    "services/dns/mgmt/2017-09-01/dns"
+    "services/dns/mgmt/2017-09-01/dns",
+    "services/network/mgmt/2017-09-01/network"
   ]
   revision = "934e2462aeb6e0c14186dcfeedd73a026d1b8eeb"
   version = "v12.1.0-beta"
@@ -103,7 +104,7 @@
     "pkg/clientset/versioned/typed/core/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "a39b01f775eb52297c43472514948b55223f50d1"
+  revision = "6379f6848b80a4cdf0b5071a6bba51bed1d53c91"
 
 [[projects]]
   branch = "master"
@@ -737,6 +738,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1d7cdc2e21d2f0a60f26338c13bcae17d9ae6a57e625f4f973ea6e835c9d467d"
+  inputs-digest = "0c4e227dfec4384c3feedf3e1618ee3ce6fe1c2cc8f490aa11f57e179d21e140"
   solver-name = "gps-cdcl"
   solver-version = 1
