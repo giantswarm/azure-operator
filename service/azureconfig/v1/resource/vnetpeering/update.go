@@ -11,6 +11,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 )
 
+// NewUpdatePatch provide a framework.Patch holding the needed network.VirtualNetworkPeering update to have current comply with desired.
 func (r Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*framework.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {

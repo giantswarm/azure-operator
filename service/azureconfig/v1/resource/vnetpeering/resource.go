@@ -12,13 +12,13 @@ const (
 	Name = "vnetpeeringv1"
 )
 
-// Config is the configuration required by Resource
+// Config is the configuration required by Resource.
 type Config struct {
 	AzureConfig client.AzureConfig
 	Logger      micrologger.Logger
 }
 
-// Resource manages Azure virtual network peering
+// Resource manages Azure virtual network peering.
 type Resource struct {
 	azureConfig client.AzureConfig
 	logger      micrologger.Logger
@@ -45,7 +45,7 @@ func (r Resource) Name() string {
 	return Name
 }
 
-// getVnetPeeringClient return an azure client to interact with VirtualNetworkPeering resource
+// getVnetPeeringClient return an azure client to interact with VirtualNetworkPeering resource.
 func (r Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
@@ -53,19 +53,4 @@ func (r Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient,
 	}
 
 	return azureClients.VnetPeeringClient, nil
-}
-
-// toVnePeering convert v to network.VirtualNetworkPeering
-// If v is nil and empty network.VirtualNetworkPeering is returned
-func toVnetPeering(v interface{}) (network.VirtualNetworkPeering, error) {
-	if v == nil {
-		return network.VirtualNetworkPeering{}, nil
-	}
-
-	vnetPeering, ok := v.(network.VirtualNetworkPeering)
-	if !ok {
-		return network.VirtualNetworkPeering{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", network.VirtualNetworkPeering{}, v)
-	}
-
-	return vnetPeering, nil
 }

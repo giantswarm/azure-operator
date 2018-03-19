@@ -12,6 +12,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 )
 
+// NewDeletePatch provide a framework.Patch holding the network.VirtualNetworkPeering to be deleted.
 func (r Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*framework.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
@@ -34,13 +35,14 @@ func (r Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desi
 	return patch, nil
 }
 
+// newDeletePatch use desired as delete patch since it is mostly static and more likely to be present than current.
 func (r Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*framework.Patch, error) {
 	patch := framework.NewPatch()
 	patch.SetDeleteChange(desired)
 	return patch, nil
 }
 
-// ApplyDeleteChange perform the host cluster virtual network peering deletion against azure.
+// ApplyDeleteChange perform deletion of the change virtual network peering against azure.
 func (r Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change interface{}) error {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
