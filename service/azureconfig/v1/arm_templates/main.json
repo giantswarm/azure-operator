@@ -227,7 +227,7 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "name": {"value": "toHost"},
+          "name": {"value": "[parameters('hostClusterResourceGroupName')]"},
           "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
           "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
           "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
