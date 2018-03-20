@@ -109,7 +109,7 @@ func (r Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change int
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change network.VirtualNetworkPeering) error {
-	r.logger.LogCtx(ctx, "debug", "ensure host vnet peering")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering")
 
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
@@ -117,7 +117,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 	}
 
 	if isVNetPeeringEmpty(change) {
-		r.logger.LogCtx(ctx, "debug", "ensure host vnet peering: already ensured")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering: already ensured")
 		return nil
 	}
 
@@ -126,6 +126,6 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 		return microerror.Maskf(err, "ensure host vnet peering %#v", change)
 	}
 
-	r.logger.LogCtx(ctx, "debug", "ensure host vnet peering: created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering: created")
 	return nil
 }

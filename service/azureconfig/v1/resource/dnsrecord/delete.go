@@ -26,10 +26,10 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 }
 
 func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
-	r.logger.LogCtx(ctx, "debug", "deleting host cluster DNS records")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host cluster DNS records")
 
 	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "debug", "deleting host cluster DNS records: already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host cluster DNS records: already deleted")
 		return nil
 	}
 
@@ -39,17 +39,17 @@ func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.A
 	}
 
 	for _, record := range change {
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting host cluster DNS record=%#v", record))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record=%#v", record))
 
 		_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
 		if err != nil {
 			return microerror.Maskf(err, fmt.Sprintf("deleting host cluster DNS record=%#v", record))
 		}
 
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("deleting host cluster DNS record=%#v: deleted", record))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record=%#v: deleted", record))
 	}
 
-	r.logger.LogCtx(ctx, "debug", "deleting host cluster DNS records: deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host cluster DNS records: deleted")
 	return nil
 }
 

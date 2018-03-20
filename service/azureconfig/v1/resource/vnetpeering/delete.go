@@ -62,7 +62,7 @@ func (r Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change int
 }
 
 func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change network.VirtualNetworkPeering) error {
-	r.logger.LogCtx(ctx, "debug", "deleting host vnet peering")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vnet peering")
 
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
@@ -76,13 +76,13 @@ func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1a
 
 	res, err := vnetPeeringClient.DeleteResponder(respFuture.Response())
 	if client.ResponseWasNotFound(res) {
-		r.logger.LogCtx(ctx, "debug", "deleting host vnet peering: already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vnet peering: already deleted")
 		return nil
 	}
 	if err != nil {
 		return microerror.Maskf(err, "deleting host vnet peering")
 	}
 
-	r.logger.LogCtx(ctx, "debug", "deleting host vnet peering: deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vnet peering: deleted")
 	return nil
 }
