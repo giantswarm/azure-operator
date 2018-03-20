@@ -1,7 +1,7 @@
 package service
 
 import (
-	"fmt"
+	"context"
 	"sync"
 
 	"github.com/giantswarm/microendpoint/service/version"
@@ -32,24 +32,8 @@ type Config struct {
 
 	Description string
 	GitCommit   string
-	Name        string
+	ProjectName string
 	Source      string
-}
-
-// DefaultConfig provides a default configuration to create a new service by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		Logger: nil,
-
-		Flag:  nil,
-		Viper: nil,
-
-		Description: "",
-		GitCommit:   "",
-		Name:        "",
-		Source:      "",
-	}
 }
 
 type Service struct {
@@ -62,18 +46,27 @@ type Service struct {
 
 // New creates a new configured service object.
 func New(config Config) (*Service, error) {
-	// Dependencies.
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	config.Logger.Log("level", "debug", "message", fmt.Sprintf("creating azure-operator gitCommit:%s", config.GitCommit))
 
-	// Settings.
 	if config.Flag == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Flag must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Flag must not be empty", config)
 	}
 	if config.Viper == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Viper must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Viper must not be empty", config)
+	}
+	if config.Description == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Description must not be empty", config)
+	}
+	if config.GitCommit == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.GitCommit must not be empty", config)
+	}
+	if config.ProjectName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectName must not be empty", config)
+	}
+	if config.Source == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Source must not be empty", config)
 	}
 
 	var err error
@@ -90,15 +83,17 @@ func New(config Config) (*Service, error) {
 
 	var restConfig *rest.Config
 	{
-		c := k8srestconfig.DefaultConfig()
+		c := k8srestconfig.Config{
+			Logger: config.Logger,
 
-		c.Logger = config.Logger
-
-		c.Address = config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
-		c.InCluster = config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
-		c.TLS.CAFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile)
-		c.TLS.CrtFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile)
-		c.TLS.KeyFile = config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile)
+			Address:   config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
+			InCluster: config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
+			TLS: k8srestconfig.TLSClientConfig{
+				CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
+				CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
+				KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
+			},
+		}
 
 		restConfig, err = k8srestconfig.New(c)
 		if err != nil {
@@ -130,7 +125,7 @@ func New(config Config) (*Service, error) {
 			Logger:           config.Logger,
 			AzureConfig:      azureConfig,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			ProjectName:      "azure-operator",
+			ProjectName:      config.ProjectName,
 			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 		}
 
@@ -157,7 +152,7 @@ func New(config Config) (*Service, error) {
 		versionConfig := version.DefaultConfig()
 		versionConfig.Description = config.Description
 		versionConfig.GitCommit = config.GitCommit
-		versionConfig.Name = config.Name
+		versionConfig.Name = config.ProjectName
 		versionConfig.Source = config.Source
 		versionConfig.VersionBundles = newVersionBundles()
 
@@ -178,7 +173,7 @@ func New(config Config) (*Service, error) {
 	return newService, nil
 }
 
-func (s *Service) Boot() {
+func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		s.AzureConfigFramework.Boot()
 	})

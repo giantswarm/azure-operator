@@ -10,33 +10,22 @@ import (
 	"github.com/giantswarm/azure-operator/service"
 )
 
-// Config represents the configuration used to create a endpoint.
 type Config struct {
-	// Dependencies.
 	Logger  micrologger.Logger
 	Service *service.Service
 }
 
-// DefaultConfig provides a default configuration to create a new endpoint by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-		Logger:  nil,
-		Service: nil,
-	}
-}
-
-// New creates a new configured endpoint.
 func New(config Config) (*Endpoint, error) {
 	var err error
 
 	var versionEndpoint *versionendpoint.Endpoint
 	{
-		versionConfig := versionendpoint.DefaultConfig()
-		versionConfig.Logger = config.Logger
-		versionConfig.Service = config.Service.Version
-		versionEndpoint, err = versionendpoint.New(versionConfig)
+		c := versionendpoint.Config{
+			Logger:  config.Logger,
+			Service: config.Service.Version,
+		}
+
+		versionEndpoint, err = versionendpoint.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

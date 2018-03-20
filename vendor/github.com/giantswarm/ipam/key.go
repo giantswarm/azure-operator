@@ -10,7 +10,8 @@ import (
 // e.g: 10.4.0.0/16 -> /ipam/subnet/10.4.0.0-16
 func encodeKey(network net.IPNet) string {
 	return fmt.Sprintf(
-		IPAMSubnetStorageKeyFormat,
+		"%s/%s",
+		ipamSubnetStorageKey,
 		strings.Replace(network.String(), "/", "-", -1),
 	)
 }
