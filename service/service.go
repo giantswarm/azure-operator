@@ -141,9 +141,10 @@ func New(config Config) (*Service, error) {
 			AzureConfig: azureConfig,
 			Logger:      config.Logger,
 		}
+
 		healthzService, err = healthz.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "healthz.New")
+			return nil, microerror.Mask(err)
 		}
 	}
 
