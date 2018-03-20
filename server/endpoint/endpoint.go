@@ -39,6 +39,7 @@ func New(config Config) (*Endpoint, error) {
 				config.Service.Healthz,
 			},
 		}
+
 		healthzEndpoint, err = healthz.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
