@@ -11,8 +11,7 @@ import (
 )
 
 const (
-	IPAMSubnetStorageKey       = "/ipam/subnet"
-	IPAMSubnetStorageKeyFormat = "/ipam/subnet/%s"
+	ipamSubnetStorageKey = "/ipam/subnet"
 )
 
 // Config represents the configuration used to create a new ipam service.
@@ -26,18 +25,6 @@ type Config struct {
 	// that have already been allocated outside of IPAM control.
 	// Any subnets created by the IPAM service will not overlap with these subnets.
 	AllocatedSubnets []net.IPNet
-}
-
-// DefaultConfig provides a default configuration to create a new ipam service
-// by best effort.
-func DefaultConfig() Config {
-	return Config{
-		Logger:  nil,
-		Storage: nil,
-
-		Network:          nil,
-		AllocatedSubnets: nil,
-	}
 }
 
 // New creates a new configured ipam service.
@@ -87,7 +74,7 @@ type Service struct {
 func (s *Service) listSubnets(ctx context.Context) ([]net.IPNet, error) {
 	s.logger.Log("info", "listing subnets")
 
-	k, err := microstorage.NewK(IPAMSubnetStorageKey)
+	k, err := microstorage.NewK(ipamSubnetStorageKey)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
