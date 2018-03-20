@@ -150,7 +150,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Maskf(err, "creating Azure resource group")
 	}
 
-	r.logger.LogCtx(ctx, "debug", "creating Azure resource group")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group")
 
 	if resourceGroupToCreate.Name != "" {
 		groupClient, err := r.getGroupsClient()
@@ -169,9 +169,9 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 			return microerror.Maskf(err, "creating Azure resource group")
 		}
 
-		r.logger.LogCtx(ctx, "debug", "creating Azure resource group: created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group: created")
 	} else {
-		r.logger.LogCtx(ctx, "debug", "creating Azure resource group: already created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group: already created")
 	}
 
 	return nil
@@ -188,7 +188,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 		return microerror.Maskf(err, "deleting Azure resource group")
 	}
 
-	r.logger.LogCtx(ctx, "debug", "deleting Azure resource group")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Azure resource group")
 
 	if resourceGroupToDelete.Name != "" {
 		groupsClient, err := r.getGroupsClient()
@@ -208,9 +208,9 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 			return microerror.Maskf(timeoutError, "deleting Azure resource group")
 		}
 
-		r.logger.LogCtx(ctx, "debug", "deleting Azure resource group: deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Azure resource group: deleted")
 	} else {
-		r.logger.LogCtx(ctx, "debug", "deleting Azure resource group: already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Azure resource group: already deleted")
 	}
 
 	return nil
