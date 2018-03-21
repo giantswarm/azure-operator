@@ -39,6 +39,9 @@ func mainError() error {
 
 	ctx := context.Background()
 	logger, err := micrologger.New(micrologger.Config{})
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	// We define a server factory to create the custom server once all command
 	// line flags are parsed and all microservice configuration is storted out.
