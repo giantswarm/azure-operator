@@ -1,4 +1,4 @@
-package v_3_2_2
+package v_3_2_3
 
 const MasterTemplate = `#cloud-config
 users:
@@ -276,9 +276,6 @@ write_files:
                 requests:
                   cpu: 250m
                   memory: 100Mi
-                limits:
-                  cpu: 250m
-                  memory: 100Mi
               livenessProbe:
                 httpGet:
                   path: /liveness
@@ -415,9 +412,6 @@ write_files:
                   value: policy,profile,workloadendpoint,node
               resources:
                 requests:
-                  cpu: 30m
-                  memory: 90Mi
-                limits:
                   cpu: 30m
                   memory: 90Mi
               volumeMounts:
@@ -634,9 +628,6 @@ write_files:
             ports:
             - containerPort: 8080
             resources:
-              limits:
-                cpu: 10m
-                memory: 20Mi
               requests:
                 cpu: 10m
                 memory: 20Mi
@@ -724,7 +715,7 @@ write_files:
               privileged: true
           containers:
           - name: nginx-ingress-controller
-            image: quay.io/giantswarm/nginx-ingress-controller:0.11.0
+            image: quay.io/giantswarm/nginx-ingress-controller:0.12.0
             args:
             - /nginx-ingress-controller
             - --default-backend-service=$(POD_NAMESPACE)/default-http-backend
@@ -839,7 +830,7 @@ write_files:
           serviceAccountName: kube-proxy
           containers:
             - name: kube-proxy
-              image: quay.io/giantswarm/hyperkube:v1.9.2
+              image: quay.io/giantswarm/hyperkube:v1.9.5
               command:
               - /hyperkube
               - proxy
@@ -856,9 +847,6 @@ write_files:
                 periodSeconds: 3
               resources:
                 requests:
-                  memory: "80Mi"
-                  cpu: "75m"
-                limits:
                   memory: "80Mi"
                   cpu: "75m"
               securityContext:
@@ -994,9 +982,6 @@ write_files:
               requests:
                 cpu: 55m
                 memory: 75Mi
-              limits:
-                cpu: 55m
-                memory: 75Mi
             volumeMounts:
             - mountPath: /var/run/dbus/
               name: systemd-volume
@@ -1074,9 +1059,6 @@ write_files:
               timeoutSeconds: 5
             resources:
               requests:
-                cpu: 50m
-                memory: 75Mi
-              limits:
                 cpu: 50m
                 memory: 75Mi
           serviceAccountName: kube-state-metrics
@@ -1900,7 +1882,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-api-server
-        image: quay.io/giantswarm/hyperkube:v1.9.2
+        image: quay.io/giantswarm/hyperkube:v1.9.5
         env:
         - name: HOST_IP
           valueFrom:
@@ -1955,9 +1937,6 @@ write_files:
         - --proxy-client-key-file=/etc/kubernetes/ssl/apiserver-key.pem
         resources:
           requests:
-            cpu: 300m
-            memory: 300Mi
-          limits:
             cpu: 300m
             memory: 300Mi
         livenessProbe:
@@ -2025,7 +2004,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-controller-manager
-        image: quay.io/giantswarm/hyperkube:v1.9.2
+        image: quay.io/giantswarm/hyperkube:v1.9.5
         command:
         - /hyperkube
         - controller-manager
@@ -2043,9 +2022,6 @@ write_files:
         - --service-account-private-key-file=/etc/kubernetes/ssl/service-account-key.pem
         resources:
           requests:
-            cpu: 200m
-            memory: 200Mi
-          limits:
             cpu: 200m
             memory: 200Mi
         livenessProbe:
@@ -2100,7 +2076,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-scheduler
-        image: quay.io/giantswarm/hyperkube:v1.9.2
+        image: quay.io/giantswarm/hyperkube:v1.9.5
         command:
         - /hyperkube
         - scheduler
@@ -2111,9 +2087,6 @@ write_files:
         - --kubeconfig=/etc/kubernetes/config/scheduler-kubeconfig.yml
         resources:
           requests:
-            cpu: 100m
-            memory: 100Mi
-          limits:
             cpu: 100m
             memory: 100Mi
         livenessProbe:
@@ -2392,7 +2365,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.2"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.5"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
