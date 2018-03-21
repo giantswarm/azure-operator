@@ -92,10 +92,11 @@ func mainError() error {
 			Logger:        logger,
 			ServerFactory: serverFactory,
 
-			Description: description,
-			GitCommit:   gitCommit,
-			Name:        name,
-			Source:      source,
+			Description:    description,
+			GitCommit:      gitCommit,
+			Name:           name,
+			Source:         source,
+			VersionBundles: service.NewVersionBundles(),
 		}
 
 		newCommand, err = command.New(c)

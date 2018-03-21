@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1"
 )
 
-func newVersionBundles() []versionbundle.Bundle {
+func NewVersionBundles() []versionbundle.Bundle {
 	var versionBundles []versionbundle.Bundle
 
 	versionBundles = append(versionBundles, v1.VersionBundle())
