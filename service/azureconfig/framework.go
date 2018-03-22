@@ -14,7 +14,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1"
 )
 
@@ -25,7 +25,7 @@ type FrameworkConfig struct {
 	K8sExtClient     apiextensionsclient.Interface
 	Logger           micrologger.Logger
 
-	Azure           config.Azure
+	Azure           setting.Azure
 	AzureConfig     client.AzureConfig
 	ProjectName     string
 	TemplateVersion string

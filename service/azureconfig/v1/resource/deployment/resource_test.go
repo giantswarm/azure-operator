@@ -11,12 +11,12 @@ import (
 	"github.com/giantswarm/randomkeys/randomkeystest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 )
 
-var testAzure = config.Azure{
-	HostCluster: config.AzureHostCluster{
+var testAzure = setting.Azure{
+	HostCluster: setting.AzureHostCluster{
 		CIDR:           "10.0.0.0/8",
 		ResourceGroup:  "test-group",
 		VirtualNetwork: "test-vnet",

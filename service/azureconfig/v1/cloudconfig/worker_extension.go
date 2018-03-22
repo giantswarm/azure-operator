@@ -7,12 +7,12 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 type workerExtension struct {
-	Azure         config.Azure
+	Azure         setting.Azure
 	AzureConfig   client.AzureConfig
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig

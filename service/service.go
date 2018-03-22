@@ -20,7 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/azureconfig"
-	azureconfigconfig "github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/healthz"
 )
 
@@ -72,8 +72,8 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
-	azure := azureconfigconfig.Azure{
-		HostCluster: azureconfigconfig.AzureHostCluster{
+	azure := setting.Azure{
+		HostCluster: setting.AzureHostCluster{
 			CIDR:           config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
 			ResourceGroup:  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
 			VirtualNetwork: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),

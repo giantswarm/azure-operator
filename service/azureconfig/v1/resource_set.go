@@ -16,7 +16,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
 
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
@@ -34,7 +34,7 @@ type ResourceSetConfig struct {
 	K8sExtClient apiextensionsclient.Interface
 	Logger       micrologger.Logger
 
-	Azure            config.Azure
+	Azure            setting.Azure
 	AzureConfig      client.AzureConfig
 	InstallationName string
 	ProjectName      string

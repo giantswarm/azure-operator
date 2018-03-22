@@ -9,11 +9,11 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 )
 
-var testAzure = config.Azure{
-	HostCluster: config.AzureHostCluster{
+var testAzure = setting.Azure{
+	HostCluster: setting.AzureHostCluster{
 		CIDR:           "10.0.0.0/8",
 		ResourceGroup:  "test-group",
 		VirtualNetwork: "test-vnet",

@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
@@ -28,7 +28,7 @@ type Config struct {
 	Logger micrologger.Logger
 
 	AzureConfig      client.AzureConfig
-	Azure            config.Azure
+	Azure            setting.Azure
 	InstallationName string
 }
 
@@ -36,7 +36,7 @@ type Config struct {
 type Resource struct {
 	logger micrologger.Logger
 
-	azure            config.Azure
+	azure            setting.Azure
 	azureConfig      client.AzureConfig
 	installationName string
 }

@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
@@ -31,7 +31,7 @@ type Config struct {
 	CloudConfig   *cloudconfig.CloudConfig
 	Logger        micrologger.Logger
 
-	Azure       config.Azure
+	Azure       setting.Azure
 	AzureConfig client.AzureConfig
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
@@ -43,7 +43,7 @@ type Resource struct {
 	cloudConfig   *cloudconfig.CloudConfig
 	logger        micrologger.Logger
 
-	azure           config.Azure
+	azure           setting.Azure
 	azureConfig     client.AzureConfig
 	templateVersion string
 }

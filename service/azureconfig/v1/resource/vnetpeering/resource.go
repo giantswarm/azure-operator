@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 type Config struct {
 	Logger micrologger.Logger
 
-	Azure       config.Azure
+	Azure       setting.Azure
 	AzureConfig client.AzureConfig
 }
 
@@ -25,7 +25,7 @@ type Config struct {
 type Resource struct {
 	logger micrologger.Logger
 
-	azure       config.Azure
+	azure       setting.Azure
 	azureConfig client.AzureConfig
 }
 
