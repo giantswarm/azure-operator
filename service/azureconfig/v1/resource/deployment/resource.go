@@ -74,6 +74,7 @@ func New(config Config) (*Resource, error) {
 		cloudConfig:   config.CloudConfig,
 		logger:        config.Logger,
 
+		azure:           config.Azure,
 		azureConfig:     config.AzureConfig,
 		templateVersion: config.TemplateVersion,
 	}
