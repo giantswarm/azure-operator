@@ -16,7 +16,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "kubernetes",
-				Description: "Updated to version 1.9.2.",
+				Description: "Updated to version 1.9.5.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -79,15 +79,15 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "coredns",
-				Version: "1.0.5",
+				Version: "1.0.6",
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.9.2",
+				Version: "1.9.5",
 			},
 			{
 				Name:    "nginx-ingress-controller",
-				Version: "0.10.2",
+				Version: "0.12.0",
 			},
 		},
 		Dependencies: []versionbundle.Dependency{},
