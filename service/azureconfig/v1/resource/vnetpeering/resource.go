@@ -1,12 +1,12 @@
 package vnetpeering
 
 import (
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/config"
 )
 
 const (
@@ -17,7 +17,7 @@ const (
 type Config struct {
 	Logger micrologger.Logger
 
-	Azure       key.Azure
+	Azure       config.Azure
 	AzureConfig client.AzureConfig
 }
 
@@ -25,7 +25,7 @@ type Config struct {
 type Resource struct {
 	logger micrologger.Logger
 
-	azure       key.Azure
+	azure       config.Azure
 	azureConfig client.AzureConfig
 }
 

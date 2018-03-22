@@ -2,15 +2,17 @@ package cloudconfig
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_3"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/config"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 type masterExtension struct {
-	Azure         key.Azure
+	Azure         config.Azure
 	AzureConfig   client.AzureConfig
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig

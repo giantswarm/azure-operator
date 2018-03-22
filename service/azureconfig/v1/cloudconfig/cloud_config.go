@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/randomkeys"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/config"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
@@ -23,7 +24,7 @@ type Config struct {
 	Logger             micrologger.Logger
 	RandomkeysSearcher randomkeys.Interface
 
-	Azure key.Azure
+	Azure config.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig client.AzureConfig
 }
@@ -33,7 +34,7 @@ type CloudConfig struct {
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
-	azure       key.Azure
+	azure       config.Azure
 	azureConfig client.AzureConfig
 }
 
