@@ -94,7 +94,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "azureconfig-rm-host"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -104,7 +104,7 @@
     "pkg/clientset/versioned/typed/core/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "6379f6848b80a4cdf0b5071a6bba51bed1d53c91"
+  revision = "0956926f0c2dea880e6551b7c7103efd8f26746f"
 
 [[projects]]
   branch = "master"
@@ -733,10 +733,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-<<<<<<< HEAD
-  inputs-digest = "6292ced48c4663c58c6f3ec05d0dbc89119b3f4eaffea2e891dab2185bf74991"
-=======
-  inputs-digest = "adf87ea4fe76f1c5796ebc7f2f4f2c4fd1f6c3f4fdea18d11a7a5704f654e666"
->>>>>>> b637de7b... Vendor cloudconfig 3.2.3
+  inputs-digest = "ea7bcf0b13ff34f02119b8154cb3a388a44d426b4187a89f76f32367ed704bba"
   solver-name = "gps-cdcl"
   solver-version = 1

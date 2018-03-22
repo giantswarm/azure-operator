@@ -15,10 +15,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
-// AzureConfig contains the common attributes to create an Azure client.
 type AzureConfig struct {
-	// Dependencies.
-
 	Logger micrologger.Logger
 
 	// ClientID is the ID of the Active Directory Service Principal.
@@ -31,28 +28,11 @@ type AzureConfig struct {
 	TenantID string
 }
 
-// DefaultAzureConfig provides a default configuration to create an Azure client
-// by best effort.
-func DefaultAzureConfig() AzureConfig {
-	return AzureConfig{
-		// Dependencies.
-		Logger: nil,
-
-		// Settings.
-		ClientID:       "",
-		ClientSecret:   "",
-		SubscriptionID: "",
-		TenantID:       "",
-	}
-}
-
 func (c AzureConfig) Validate() error {
-	// Dependencies.
 	if c.Logger == nil {
 		return errors.New("Logger must not be empty")
 	}
 
-	// Settings.
 	if c.ClientID == "" {
 		return errors.New("ClientID must not be empty")
 	}

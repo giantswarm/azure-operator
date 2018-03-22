@@ -10,6 +10,7 @@ import (
 )
 
 type workerExtension struct {
+	Azure         key.Azure
 	AzureConfig   client.AzureConfig
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig
@@ -77,7 +78,7 @@ func (we *workerExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 }
 
 func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
-	params := newCloudProviderConfFileParams(we.AzureConfig, we.CustomObject)
+	params := newCloudProviderConfFileParams(we.Azure, we.AzureConfig, we.CustomObject)
 
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {

@@ -121,7 +121,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 		return nil
 	}
 
-	_, err = vnetPeeringClient.CreateOrUpdate(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterVirtualNetwork(azureConfig), *change.Name, change)
+	_, err = vnetPeeringClient.CreateOrUpdate(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.VirtualNetwork, *change.Name, change)
 	if err != nil {
 		return microerror.Maskf(err, "ensure host vnet peering %#v", change)
 	}

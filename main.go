@@ -119,6 +119,10 @@ func mainError() error {
 
 	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientID, "", "ID of the Active Directory Service Principal.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientSecret, "", "Secret of the Active Directory Service Principal.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.CIDR, "", "CIDR of the host cluster virtual network used to create a peering.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.ResourceGroup, "", "Host cluster resource group name.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetwork, "", "Host cluster virtual network name.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.Location, "", "Location of the host and guset clusters.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.SubscriptionID, "", "ID of the Azure Subscription.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.TenantID, "", "ID of the Active Directory Tenant.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.Template.URI.Version, defaultTemplateVersion, "URI version for ARM template links.")

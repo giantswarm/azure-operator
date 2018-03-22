@@ -105,25 +105,6 @@ func Test_ClusterTags(t *testing.T) {
 	}
 }
 
-func Test_Location(t *testing.T) {
-	expectedLocation := "West Europe"
-
-	customObject := providerv1alpha1.AzureConfig{
-		Spec: providerv1alpha1.AzureConfigSpec{
-			Azure: providerv1alpha1.AzureConfigSpecAzure{
-				Location: expectedLocation,
-			},
-			Cluster: providerv1alpha1.Cluster{
-				ID: "test-cluster",
-			},
-		},
-	}
-
-	if Location(customObject) != expectedLocation {
-		t.Fatalf("Expected location %s but was %s", expectedLocation, Location(customObject))
-	}
-}
-
 func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 	clusterID := "eggs2"
 

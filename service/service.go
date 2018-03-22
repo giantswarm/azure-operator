@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/service/azureconfig"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/azure-operator/service/healthz"
 )
 
@@ -71,14 +72,22 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
-	var azureConfig client.AzureConfig
-	{
-		azureConfig = client.DefaultAzureConfig()
-		azureConfig.Logger = config.Logger
-		azureConfig.ClientID = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
-		azureConfig.ClientSecret = config.Viper.GetString(config.Flag.Service.Azure.ClientSecret)
-		azureConfig.SubscriptionID = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
-		azureConfig.TenantID = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
+	azure := key.Azure{
+		HostCluster: key.AzureHostCluster{
+			CIDR:           config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
+			ResourceGroup:  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
+			VirtualNetwork: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),
+		},
+		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
+	}
+
+	azureConfig := client.AzureConfig{
+		Logger: config.Logger,
+
+		ClientID:       config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		ClientSecret:   config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		SubscriptionID: config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
+		TenantID:       config.Viper.GetString(config.Flag.Service.Azure.TenantID),
 	}
 
 	var restConfig *rest.Config
@@ -119,10 +128,12 @@ func New(config Config) (*Service, error) {
 	var azureConfigFramework *framework.Framework
 	{
 		c := azureconfig.FrameworkConfig{
-			G8sClient:        g8sClient,
-			K8sClient:        k8sClient,
-			K8sExtClient:     k8sExtClient,
-			Logger:           config.Logger,
+			G8sClient:    g8sClient,
+			K8sClient:    k8sClient,
+			K8sExtClient: k8sExtClient,
+			Logger:       config.Logger,
+
+			Azure:            azure,
 			AzureConfig:      azureConfig,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,

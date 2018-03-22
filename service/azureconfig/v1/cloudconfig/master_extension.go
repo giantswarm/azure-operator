@@ -10,6 +10,7 @@ import (
 )
 
 type masterExtension struct {
+	Azure         key.Azure
 	AzureConfig   client.AzureConfig
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig
@@ -114,7 +115,7 @@ func (me *masterExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 }
 
 func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
-	params := newCloudProviderConfFileParams(me.AzureConfig, me.CustomObject)
+	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject)
 
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {

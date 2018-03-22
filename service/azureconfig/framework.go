@@ -15,6 +15,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 type FrameworkConfig struct {
@@ -24,6 +25,7 @@ type FrameworkConfig struct {
 	K8sExtClient     apiextensionsclient.Interface
 	Logger           micrologger.Logger
 
+	Azure           key.Azure
 	AzureConfig     client.AzureConfig
 	ProjectName     string
 	TemplateVersion string
@@ -40,26 +42,29 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 	var err error
 
 	if config.G8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.G8sClient must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
 	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 	if config.K8sExtClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.K8sExtClient must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sExtClient must not be empty", config)
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", err, config)
+	}
 	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", err, config)
 	}
 	if config.ProjectName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.ProjectName must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectName must not be empty", config)
 	}
 	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
 	}
 
 	var crdClient *k8scrdclient.CRDClient
@@ -91,9 +96,11 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 	var v1ResourceSet *framework.ResourceSet
 	{
 		c := v1.ResourceSetConfig{
-			K8sClient:        config.K8sClient,
-			K8sExtClient:     config.K8sExtClient,
-			Logger:           config.Logger,
+			K8sClient:    config.K8sClient,
+			K8sExtClient: config.K8sExtClient,
+			Logger:       config.Logger,
+
+			Azure:            config.Azure,
 			AzureConfig:      config.AzureConfig,
 			InstallationName: config.InstallationName,
 			ProjectName:      config.ProjectName,

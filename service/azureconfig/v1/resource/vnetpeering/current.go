@@ -32,7 +32,7 @@ func (r Resource) getCurrentState(ctx context.Context, azureConfig providerv1alp
 		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "getCurrentState")
 	}
 
-	vnetPeering, err := vnetPeeringClient.Get(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), key.ResourceGroupName(azureConfig))
+	vnetPeering, err := vnetPeeringClient.Get(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.ResourceGroup, key.ResourceGroupName(azureConfig))
 	if client.ResponseWasNotFound(vnetPeering.Response) {
 		return network.VirtualNetworkPeering{}, nil
 	}

@@ -30,10 +30,10 @@ type cloudProviderConfFileParams struct {
 	VnetName          string
 }
 
-func newCloudProviderConfFileParams(azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
+func newCloudProviderConfFileParams(azure key.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
 	return cloudProviderConfFileParams{
 		AzureCloudType:    key.AzureCloudType(obj),
-		Location:          key.Location(obj),
+		Location:          azure.Location,
 		ResourceGroup:     key.ResourceGroupName(obj),
 		RouteTableName:    key.RouteTableName(obj),
 		SecurityGroupName: key.WorkerSecurityGroupName(obj),

@@ -2,6 +2,7 @@ package vnetpeering
 
 import (
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -14,28 +15,37 @@ const (
 
 // Config is the configuration required by Resource.
 type Config struct {
+	Logger micrologger.Logger
+
+	Azure       key.Azure
 	AzureConfig client.AzureConfig
-	Logger      micrologger.Logger
 }
 
 // Resource manages Azure virtual network peering.
 type Resource struct {
+	logger micrologger.Logger
+
+	azure       key.Azure
 	azureConfig client.AzureConfig
-	logger      micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
+	}
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
 
 	r := &Resource{
+		logger: config.Logger,
+
+		azure:       config.Azure,
 		azureConfig: config.AzureConfig,
-		logger:      config.Logger,
 	}
 
 	return r, nil

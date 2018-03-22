@@ -122,20 +122,6 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
 }
 
-func HostClusterCIDR(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.HostCluster.CIDR
-}
-
-// HostClusterResourceGroup returns resource group name of the host cluster.
-func HostClusterResourceGroup(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.HostCluster.ResourceGroup
-}
-
-// HostClusterVirtualNetwork returns virtual network name of the host cluster.
-func HostClusterVirtualNetwork(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.HostCluster.VirtualNetwork
-}
-
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
@@ -154,11 +140,6 @@ func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 // WorkerSubnetName returns name of the worker subnet.
 func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
-}
-
-// Location returns the physical location where the Resource Group is deployed.
-func Location(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.Location
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.
