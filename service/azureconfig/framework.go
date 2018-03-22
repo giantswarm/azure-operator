@@ -55,10 +55,10 @@ func NewFramework(config FrameworkConfig) (*framework.Framework, error) {
 	}
 
 	if err := config.Azure.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", err, config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
 	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", err, config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 	if config.ProjectName == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectName must not be empty", config)
