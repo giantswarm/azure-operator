@@ -1,4 +1,4 @@
-package v_3_2_3
+package v_3_2_4
 
 const MasterTemplate = `#cloud-config
 users:
@@ -1838,6 +1838,7 @@ write_files:
       name: service-account-context
     current-context: service-account-context
 
+{{ if not .DisableEncryptionAtREST -}}
 - path: /etc/kubernetes/encryption/k8s-encryption-config.yaml
   owner: root
   permissions: 600
@@ -1851,8 +1852,10 @@ write_files:
         - aescbc:
             keys:
             - name: key1
-              secret: {{ .ApiserverEncryptionKey }}
+              secret: {{ .APIServerEncryptionKey }}
         - identity: {}
+{{ end -}}
+
 - path: /etc/kubernetes/manifests/audit-policy.yml
   owner: root
   permissions: 0644
@@ -1908,7 +1911,7 @@ write_files:
         - --service-account-lookup=true
         - --authorization-mode=RBAC
         - --feature-gates=ExpandPersistentVolumes=true,PodPriority=true
-        - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,DefaultStorageClass,PodSecurityPolicy,Priority
+        - --admission-control=NamespaceLifecycle,LimitRanger,ServiceAccount,ResourceQuota,DefaultStorageClass,PersistentVolumeClaimResize,PodSecurityPolicy,Priority
         - --cloud-provider={{.Cluster.Kubernetes.CloudProvider}}
         - --service-cluster-ip-range={{.Cluster.Kubernetes.API.ClusterIPRange}}
         - --etcd-servers=https://127.0.0.1:2379
@@ -1970,7 +1973,7 @@ write_files:
           readOnly: true
       volumes:
       {{ range .Hyperkube.Apiserver.Pod.HyperkubePodHostExtraMounts -}}
-      - hostPath: 
+      - hostPath:
           path: {{ .Path }}
         name: {{ .Name }}
       {{ end -}}
@@ -2018,6 +2021,7 @@ write_files:
         - --terminated-pod-gc-threshold=10
         - --use-service-account-credentials=true
         - --kubeconfig=/etc/kubernetes/config/controller-manager-kubeconfig.yml
+        - --feature-gates=ExpandPersistentVolumes=true,PodPriority=true
         - --root-ca-file=/etc/kubernetes/ssl/apiserver-ca.pem
         - --service-account-private-key-file=/etc/kubernetes/ssl/service-account-key.pem
         resources:
@@ -2048,7 +2052,7 @@ write_files:
           readOnly: true
       volumes:
       {{ range .Hyperkube.ControllerManager.Pod.HyperkubePodHostExtraMounts -}}
-      - hostPath: 
+      - hostPath:
           path: {{ .Path }}
         name: {{ .Name }}
       {{ end -}}
@@ -2083,7 +2087,7 @@ write_files:
         - --logtostderr=true
         - --v=2
         - --profiling=false
-        - --feature-gates=PodPriority=true
+        - --feature-gates=ExpandPersistentVolumes=true,PodPriority=true
         - --kubeconfig=/etc/kubernetes/config/scheduler-kubeconfig.yml
         resources:
           requests:
@@ -2233,8 +2237,8 @@ coreos:
     content: |
       [Unit]
       Description=k8s-setup-network-env Service
-      Wants=network-online.target docker.service
-      After=network-online.target docker.service
+      Wants=network.target docker.service
+      After=network.target docker.service
 
       [Service]
       Type=oneshot
@@ -2424,7 +2428,7 @@ coreos:
       --register-node=true \
       --register-with-taints=node-role.kubernetes.io/master=:NoSchedule \
       --allow-privileged=true \
-      --feature-gates=PodPriority=true \
+      --feature-gates=ExpandPersistentVolumes=true,PodPriority=true \
       --pod-manifest-path=/etc/kubernetes/manifests \
       --kubeconfig=/etc/kubernetes/config/kubelet-kubeconfig.yml \
       --node-labels="node-role.kubernetes.io/master,role=master,kubernetes.io/hostname=${HOSTNAME},ip=${DEFAULT_IPV4},{{.Cluster.Kubernetes.Kubelet.Labels}}" \
@@ -2455,8 +2459,7 @@ coreos:
     command: stop
     mask: true
   - name: systemd-networkd-wait-online.service
-    enable: true
-    command: start
+    mask: true
   - name: k8s-addons.service
     enable: true
     command: start
