@@ -21,6 +21,7 @@
 #  version = "2.4.0"
 
 
+
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
   version = "v12.1.0-beta"
@@ -38,8 +39,8 @@
   branch = "master"
 
 [[constraint]]
+  branch = "xh3b4sd-3-2-4-fix-encryption-key"
   name = "github.com/giantswarm/k8scloudconfig"
-  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/microendpoint"
@@ -64,6 +65,8 @@
 [[constraint]]
   name = "github.com/giantswarm/versionbundle"
   branch = "master"
+
+
 
 [prune]
   unused-packages = true

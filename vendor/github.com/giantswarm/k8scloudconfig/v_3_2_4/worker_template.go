@@ -1,4 +1,4 @@
-package v_3_2_3
+package v_3_2_4
 
 const WorkerTemplate = `#cloud-config
 users:
@@ -200,8 +200,7 @@ coreos:
     command: stop
     mask: true
   - name: systemd-networkd-wait-online.service
-    enable: true
-    command: start
+    mask: true
   - name: docker.service
     enable: true
     command: start
@@ -218,8 +217,8 @@ coreos:
     content: |
       [Unit]
       Description=k8s-setup-network-env Service
-      Wants=network-online.target docker.service
-      After=network-online.target docker.service
+      Wants=network.target docker.service
+      After=network.target docker.service
 
       [Service]
       Type=oneshot
@@ -304,7 +303,7 @@ coreos:
       --network-plugin=cni \
       --register-node=true \
       --allow-privileged=true \
-      --feature-gates=PodPriority=true \
+      --feature-gates=ExpandPersistentVolumes=true,PodPriority=true \
       --kubeconfig=/etc/kubernetes/config/kubelet-kubeconfig.yml \
       --node-labels="kubernetes.io/hostname=${HOSTNAME},ip=${DEFAULT_IPV4},{{.Cluster.Kubernetes.Kubelet.Labels}}" \
       --kube-reserved="cpu=200m,memory=250Mi" \
