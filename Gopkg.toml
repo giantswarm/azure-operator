@@ -31,11 +31,11 @@
   version = "v9.6.0"
 
 [[constraint]]
-  branch = "bump-k8s-libs"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
-  branch = "bump-k8s-libs"
+  branch = "master"
   name = "github.com/giantswarm/certs"
 
 [[constraint]]
@@ -59,7 +59,7 @@
   branch = "master"
 
 [[constraint]]
-  branch = "bump-k8s-libs"
+  branch = "master"
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
