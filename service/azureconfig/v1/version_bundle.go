@@ -59,6 +59,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Change default etcd data dir to /var/lib/etcd.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "cloudconfig",
+				Description: "Improved encryption key injection.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
