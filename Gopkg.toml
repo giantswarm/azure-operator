@@ -39,7 +39,7 @@
   branch = "master"
 
 [[constraint]]
-  branch = "xh3b4sd-3-2-4-fix-encryption-key"
+  branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]

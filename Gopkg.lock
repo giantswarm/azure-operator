@@ -122,10 +122,10 @@
   revision = "442e28b638045e8dcbe75dd596241590ded3b0f7"
 
 [[projects]]
-  branch = "xh3b4sd-3-2-4-fix-encryption-key"
+  branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = ["v_3_2_4"]
-  revision = "76c6284de17d58b66ee5a131cf4093fbaf354506"
+  revision = "a6b64cf872dbacff3dd96d0a743d2920a6aad0c0"
 
 [[projects]]
   branch = "master"
@@ -733,6 +733,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "766318ebd59cc574e33bc644baf57f98fa941ca09bb4599f424a25c5cd0f82f5"
+  inputs-digest = "f86224bb03148dc3c7865f6444398c06e3439123640b2038ae1f151f117e4cd5"
   solver-name = "gps-cdcl"
   solver-version = 1
