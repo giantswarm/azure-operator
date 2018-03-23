@@ -31,7 +31,7 @@
 
 [[constraint]]
   name = "github.com/giantswarm/apiextensions"
-  branch = "azureconfig-rm-host"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/certs"
