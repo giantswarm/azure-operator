@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
@@ -30,6 +31,7 @@ type Config struct {
 	CloudConfig   *cloudconfig.CloudConfig
 	Logger        micrologger.Logger
 
+	Azure       setting.Azure
 	AzureConfig client.AzureConfig
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
@@ -41,26 +43,30 @@ type Resource struct {
 	cloudConfig   *cloudconfig.CloudConfig
 	logger        micrologger.Logger
 
+	azure           setting.Azure
 	azureConfig     client.AzureConfig
 	templateVersion string
 }
 
 func New(config Config) (*Resource, error) {
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
-	}
 	if config.CertsSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CertsSearcher must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
 	}
 	if config.CloudConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.CloudConfig must not be empty", config)
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
+	}
 	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateURIVersion must not be empty", config)
 	}
 
 	r := &Resource{
@@ -68,6 +74,7 @@ func New(config Config) (*Resource, error) {
 		cloudConfig:   config.CloudConfig,
 		logger:        config.Logger,
 
+		azure:           config.Azure,
 		azureConfig:     config.AzureConfig,
 		templateVersion: config.TemplateVersion,
 	}

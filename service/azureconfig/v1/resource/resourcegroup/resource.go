@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
@@ -24,33 +25,43 @@ const (
 )
 
 type Config struct {
+	Logger micrologger.Logger
+
 	AzureConfig      client.AzureConfig
-	Logger           micrologger.Logger
+	Azure            setting.Azure
 	InstallationName string
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
+	logger micrologger.Logger
+
+	azure            setting.Azure
 	azureConfig      client.AzureConfig
-	logger           micrologger.Logger
 	installationName string
 }
 
 func New(config Config) (*Resource, error) {
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
-	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 	if config.InstallationName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.InstallationName must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
 	}
 
 	r := &Resource{
-		azureConfig:      config.AzureConfig,
 		installationName: config.InstallationName,
-		logger:           config.Logger,
+
+		azure:       config.Azure,
+		azureConfig: config.AzureConfig,
+		logger:      config.Logger,
 	}
 
 	return r, nil
@@ -98,7 +109,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	resourceGroup := Group{
 		Name:     key.ClusterID(customObject),
-		Location: key.Location(customObject),
+		Location: r.azure.Location,
 		Tags:     key.ClusterTags(customObject, r.installationName),
 	}
 

@@ -9,23 +9,29 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 )
+
+var testAzure = setting.Azure{
+	HostCluster: setting.AzureHostCluster{
+		CIDR:           "10.0.0.0/8",
+		ResourceGroup:  "test-group",
+		VirtualNetwork: "test-vnet",
+	},
+	Location: "westeurope",
+}
 
 func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	testCases := []struct {
 		Obj              interface{}
 		InstallationName string
 		ExpectedName     string
-		ExpectedLocation string
 		ExpectedTags     map[string]string
 	}{
 		{
 			// Case 1. Standard cluster ID format.
 			Obj: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
-					Azure: providerv1alpha1.AzureConfigSpecAzure{
-						Location: "West Europe",
-					},
 					Cluster: providerv1alpha1.Cluster{
 						ID: "5xchu",
 						Customer: providerv1alpha1.ClusterCustomer{
@@ -36,7 +42,6 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 			},
 			InstallationName: "gollum",
 			ExpectedName:     "5xchu",
-			ExpectedLocation: "West Europe",
 			ExpectedTags: map[string]string{
 				"GiantSwarmCluster":      "5xchu",
 				"GiantSwarmInstallation": "gollum",
@@ -47,9 +52,6 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 			// Case 2. Custom cluster ID format.
 			Obj: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
-					Azure: providerv1alpha1.AzureConfigSpecAzure{
-						Location: "East Asia",
-					},
 					Cluster: providerv1alpha1.Cluster{
 						ID: "test-cluster",
 						Customer: providerv1alpha1.ClusterCustomer{
@@ -60,7 +62,6 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 			},
 			InstallationName: "coyote",
 			ExpectedName:     "test-cluster",
-			ExpectedLocation: "East Asia",
 			ExpectedTags: map[string]string{
 				"GiantSwarmCluster":      "test-cluster",
 				"GiantSwarmInstallation": "coyote",
@@ -70,48 +71,50 @@ func Test_Resource_ResourceGroup_GetDesiredState(t *testing.T) {
 	}
 
 	var err error
-	var newResource *Resource
-	{
-		for i, tc := range testCases {
-			resourceConfig := Config{
+
+	for i, tc := range testCases {
+		var resource *Resource
+		{
+
+			c := Config{
+				Logger: microloggertest.New(),
+
+				Azure:            testAzure,
 				AzureConfig:      fakeclient.NewAzureConfig(),
 				InstallationName: tc.InstallationName,
-				Logger:           microloggertest.New(),
 			}
-			newResource, err = New(resourceConfig)
+
+			resource, err = New(c)
 			if err != nil {
 				t.Fatalf("expected '%#v' got '%#v'", nil, err)
 			}
+		}
 
-			result, err := newResource.GetDesiredState(context.TODO(), tc.Obj)
-			if err != nil {
-				t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
-			}
+		result, err := resource.GetDesiredState(context.TODO(), tc.Obj)
+		if err != nil {
+			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
+		}
 
-			group, ok := result.(Group)
+		group, ok := result.(Group)
+		if !ok {
+			t.Fatalf("case %d expected '%T', got '%T'", i+1, Group{}, group)
+		}
+		if tc.ExpectedName != group.Name {
+			t.Fatalf("case %d expected name '%s' got '%s'", i+1, tc.ExpectedName, group.Name)
+		}
+
+		if len(tc.ExpectedTags) != len(group.Tags) {
+			t.Fatalf("case %d expected %d tags got %d", i+1, len(tc.ExpectedTags), len(group.Tags))
+		}
+
+		for tag, val := range group.Tags {
+			expectedVal, ok := tc.ExpectedTags[tag]
 			if !ok {
-				t.Fatalf("case %d expected '%T', got '%T'", i+1, Group{}, group)
-			}
-			if tc.ExpectedName != group.Name {
-				t.Fatalf("case %d expected name '%s' got '%s'", i+1, tc.ExpectedName, group.Name)
-			}
-			if tc.ExpectedLocation != group.Location {
-				t.Fatalf("case %d expected location '%s' got '%s'", i+1, tc.ExpectedLocation, group.Location)
+				t.Fatalf("case %d tag '%s' was not expected", i+1, tag)
 			}
 
-			if len(tc.ExpectedTags) != len(group.Tags) {
-				t.Fatalf("case %d expected %d tags got %d", i+1, len(tc.ExpectedTags), len(group.Tags))
-			}
-
-			for tag, val := range group.Tags {
-				expectedVal, ok := tc.ExpectedTags[tag]
-				if !ok {
-					t.Fatalf("case %d tag '%s' was not expected", i+1, tag)
-				}
-
-				if val != expectedVal {
-					t.Fatalf("case %d expected value '%s' for tag '%s' got '%s'", i+1, expectedVal, tag, val)
-				}
+			if val != expectedVal {
+				t.Fatalf("case %d expected value '%s' for tag '%s' got '%s'", i+1, expectedVal, tag, val)
 			}
 		}
 	}
@@ -163,21 +166,25 @@ func Test_Resource_ResourceGroup_newCreateChange(t *testing.T) {
 	}
 
 	var err error
-	var newResource *Resource
+
+	var resource *Resource
 	{
-		resourceConfig := Config{
+		c := Config{
+			Logger: microloggertest.New(),
+
+			Azure:            testAzure,
 			AzureConfig:      fakeclient.NewAzureConfig(),
-			InstallationName: "test-install",
-			Logger:           microloggertest.New(),
+			InstallationName: "test-installation",
 		}
-		newResource, err = New(resourceConfig)
+
+		resource, err = New(c)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)
 		}
 	}
 
 	for i, tc := range testCases {
-		resourceGroup, err := newResource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		resourceGroup, err := resource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}
@@ -234,21 +241,25 @@ func Test_Resource_ResourceGroup_newDeleteChange(t *testing.T) {
 	}
 
 	var err error
-	var newResource *Resource
+
+	var resource *Resource
 	{
-		resourceConfig := Config{
+		c := Config{
+			Logger: microloggertest.New(),
+
+			Azure:            testAzure,
 			AzureConfig:      fakeclient.NewAzureConfig(),
-			InstallationName: "test-install",
-			Logger:           microloggertest.New(),
+			InstallationName: "test-installation",
 		}
-		newResource, err = New(resourceConfig)
+
+		resource, err = New(c)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)
 		}
 	}
 
 	for i, tc := range testCases {
-		resourceGroup, err := newResource.newDeleteChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		resourceGroup, err := resource.newDeleteChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected '%v' got '%#v'", i+1, nil, err)
 		}

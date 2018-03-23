@@ -69,7 +69,7 @@ func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1a
 		return microerror.Maskf(err, "deleting host vnet peering")
 	}
 
-	respFuture, err := vnetPeeringClient.Delete(ctx, key.HostClusterResourceGroup(azureConfig), key.HostClusterResourceGroup(azureConfig), *change.Name)
+	respFuture, err := vnetPeeringClient.Delete(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.ResourceGroup, *change.Name)
 	if err != nil {
 		return microerror.Maskf(err, "deleting host vnet peering")
 	}

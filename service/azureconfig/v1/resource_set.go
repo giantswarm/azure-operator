@@ -16,6 +16,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
 
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
@@ -33,6 +34,7 @@ type ResourceSetConfig struct {
 	K8sExtClient apiextensionsclient.Interface
 	Logger       micrologger.Logger
 
+	Azure            setting.Azure
 	AzureConfig      client.AzureConfig
 	InstallationName string
 	ProjectName      string
@@ -45,23 +47,26 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	var err error
 
 	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 	if config.K8sExtClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.K8sExtClient must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sExtClient must not be empty", config)
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
 	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 	if config.ProjectName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.ProjectName must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectName must not be empty", config)
 	}
 	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
 	}
 
 	var certsSearcher *certs.Searcher
@@ -97,6 +102,7 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 			Logger:             config.Logger,
 			RandomkeysSearcher: randomkeysSearcher,
 
+			Azure:       config.Azure,
 			AzureConfig: config.AzureConfig,
 		}
 
@@ -109,9 +115,11 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	var resourceGroupResource framework.Resource
 	{
 		c := resourcegroup.Config{
+			Logger: config.Logger,
+
+			Azure:            config.Azure,
 			AzureConfig:      config.AzureConfig,
 			InstallationName: config.InstallationName,
-			Logger:           config.Logger,
 		}
 
 		ops, err := resourcegroup.New(c)
@@ -131,6 +139,7 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 			CertsSearcher: certsSearcher,
 			Logger:        config.Logger,
 
+			Azure:           config.Azure,
 			AzureConfig:     config.AzureConfig,
 			CloudConfig:     cloudConfig,
 			TemplateVersion: config.TemplateVersion,
@@ -171,6 +180,7 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 		c := vnetpeering.Config{
 			Logger: config.Logger,
 
+			Azure:       config.Azure,
 			AzureConfig: config.AzureConfig,
 		}
 

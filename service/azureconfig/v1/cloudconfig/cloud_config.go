@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/randomkeys"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
@@ -23,6 +24,7 @@ type Config struct {
 	Logger             micrologger.Logger
 	RandomkeysSearcher randomkeys.Interface
 
+	Azure setting.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig client.AzureConfig
 }
@@ -32,22 +34,26 @@ type CloudConfig struct {
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
+	azure       setting.Azure
 	azureConfig client.AzureConfig
 }
 
 func New(config Config) (*CloudConfig, error) {
 	if config.CertsSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CertsSearcher must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 	if config.RandomkeysSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.RandomkeysSearcher must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.RandomkeysSearcher must not be empty", config)
 	}
 
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
 	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 
 	c := &CloudConfig{
@@ -55,6 +61,7 @@ func New(config Config) (*CloudConfig, error) {
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
 
+		azure:       config.Azure,
 		azureConfig: config.AzureConfig,
 	}
 
@@ -124,6 +131,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			},
 		},
 		Extension: &masterExtension{
+			Azure:         c.azure,
 			AzureConfig:   c.azureConfig,
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
@@ -154,6 +162,7 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			},
 		},
 		Extension: &workerExtension{
+			Azure:         c.azure,
 			AzureConfig:   c.azureConfig,
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
