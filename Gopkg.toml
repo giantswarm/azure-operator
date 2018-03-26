@@ -31,12 +31,12 @@
   version = "v9.6.0"
 
 [[constraint]]
-  name = "github.com/giantswarm/apiextensions"
   branch = "master"
+  name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
-  name = "github.com/giantswarm/certs"
   branch = "master"
+  name = "github.com/giantswarm/certs"
 
 [[constraint]]
   branch = "master"
@@ -59,8 +59,8 @@
   branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/operatorkit"
   branch = "master"
+  name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
   name = "github.com/giantswarm/versionbundle"
