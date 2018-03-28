@@ -14,10 +14,6 @@ spec:
       ingress:
         name: "{{.Values.commonDomain}}"
         resourceGroup: "{{.Values.commonDomainResourceGroup}}"
-    hostCluster:
-      cidr: "{{.Values.hostClusterCIDR}}"
-      resourceGroup: "{{.Values.hostClusterResourceGroup}}"
-      virtualNetwork: "{{.Values.hostClusterVirtualNetwork}}"
     location: "{{.Values.azure.location}}"
     masters:
     - vmSize: "{{.Values.azure.vmSizeMaster}}"
