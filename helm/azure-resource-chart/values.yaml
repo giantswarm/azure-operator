@@ -1,0 +1,14 @@
+clusterName: "test-cluster"
+commonDomain: "godsmack.westeurope.azure.gigantic.io"
+commonDomainResourceGroup: "godsmack"
+hostClusterCIDR: "10.0.0.0/16"
+hostClusterResourceGroup: "godsmack"
+hostClusterVirtualNetwork: "godsmack"
+sshUser: "test-user"
+sshPublicKey: "ssh-rsa XXXXXXXXXXXXXXXXXXXXXXXXX"
+encryptionKey: "QitRZGlWeW5WOFo2YmdvMVRwQUQ2UWoxRHZSVEF4MmovajlFb05sT1AzOD0="
+versionBundleVersion: 0.1.0
+azure:
+  location: "westeurope"
+  vmSizeMaster: "Standard_A1"
+  vmSizeWorker: "Standard_A1"
