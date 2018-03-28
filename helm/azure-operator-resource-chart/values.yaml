@@ -1,6 +1,6 @@
 clusterName: "test-cluster"
-commonDomain: "godsmack.westeurope.azure.gigantic.io"
-commonDomainResourceGroup: "godsmack"
+commonDomain: ""
+commonDomainResourceGroup: ""
 sshUser: "test-user"
 sshPublicKey: "ssh-rsa XXXXXXXXXXXXXXXXXXXXXXXXX"
 encryptionKey: "QitRZGlWeW5WOFo2YmdvMVRwQUQ2UWoxRHZSVEF4MmovajlFb05sT1AzOD0="
