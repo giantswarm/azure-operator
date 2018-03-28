@@ -1,4 +1,4 @@
-// Copyright (c) 2015-2017 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
+// Copyright (c) 2015-2018 Jeevanandam M (jeeva@myjeeva.com), All rights reserved.
 // resty source code and usage is governed by a MIT style
 // license that can be found in the LICENSE file.
 
@@ -8,11 +8,14 @@ import (
 	"bytes"
 	"encoding/json"
 	"encoding/xml"
+	"fmt"
 	"io"
 	"log"
 	"mime/multipart"
 	"net/http"
+	"net/textproto"
 	"os"
+	"path"
 	"path/filepath"
 	"reflect"
 	"runtime"
@@ -25,7 +28,7 @@ import (
 
 // IsStringEmpty method tells whether given string is empty or not
 func IsStringEmpty(str string) bool {
-	return (len(strings.TrimSpace(str)) == 0)
+	return len(strings.TrimSpace(str)) == 0
 }
 
 // DetectContentType method is used to figure out `Request.Body` content type for request header
@@ -98,6 +101,51 @@ func getLogger(w io.Writer) *log.Logger {
 	return log.New(w, "RESTY ", log.LstdFlags)
 }
 
+var quoteEscaper = strings.NewReplacer("\\", "\\\\", `"`, "\\\"")
+
+func escapeQuotes(s string) string {
+	return quoteEscaper.Replace(s)
+}
+
+func createMultipartHeader(param, fileName, contentType string) textproto.MIMEHeader {
+	hdr := make(textproto.MIMEHeader)
+	hdr.Set("Content-Disposition", fmt.Sprintf(`form-data; name="%s"; filename="%s"`,
+		escapeQuotes(param), escapeQuotes(fileName)))
+	hdr.Set("Content-Type", contentType)
+	return hdr
+}
+
+func addMultipartFormField(w *multipart.Writer, mf *multipartField) error {
+	partWriter, err := w.CreatePart(createMultipartHeader(mf.Param, mf.FileName, mf.ContentType))
+	if err != nil {
+		return err
+	}
+
+	_, err = io.Copy(partWriter, mf.Reader)
+	return err
+}
+
+func writeMultipartFormFile(w *multipart.Writer, fieldName, fileName string, r io.Reader) error {
+	// Auto detect actual multipart content type
+	cbuf := make([]byte, 512)
+	size, err := r.Read(cbuf)
+	if err != nil {
+		return err
+	}
+
+	partWriter, err := w.CreatePart(createMultipartHeader(fieldName, fileName, http.DetectContentType(cbuf)))
+	if err != nil {
+		return err
+	}
+
+	if _, err = partWriter.Write(cbuf[:size]); err != nil {
+		return err
+	}
+
+	_, err = io.Copy(partWriter, r)
+	return err
+}
+
 func addFile(w *multipart.Writer, fieldName, path string) error {
 	file, err := os.Open(path)
 	if err != nil {
@@ -107,23 +155,11 @@ func addFile(w *multipart.Writer, fieldName, path string) error {
 		_ = file.Close()
 	}()
 
-	part, err := w.CreateFormFile(fieldName, filepath.Base(path))
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(part, file)
-
-	return err
+	return writeMultipartFormFile(w, fieldName, filepath.Base(path), file)
 }
 
 func addFileReader(w *multipart.Writer, f *File) error {
-	part, err := w.CreateFormFile(f.ParamName, f.Name)
-	if err != nil {
-		return err
-	}
-	_, err = io.Copy(part, f.Reader)
-
-	return err
+	return writeMultipartFormFile(w, f.ParamName, f.Name, f.Reader)
 }
 
 func getPointer(v interface{}) interface{} {
@@ -135,7 +171,7 @@ func getPointer(v interface{}) interface{} {
 }
 
 func isPayloadSupported(m string, allowMethodGet bool) bool {
-	return (m == MethodPost || m == MethodPut || m == MethodDelete || m == MethodPatch || (allowMethodGet && m == MethodGet))
+	return !(m == MethodHead || m == MethodOptions || (m == MethodGet && !allowMethodGet))
 }
 
 func typeOf(i interface{}) reflect.Type {
@@ -182,4 +218,39 @@ func releaseBuffer(buf *bytes.Buffer) {
 		buf.Reset()
 		bufPool.Put(buf)
 	}
+}
+
+func composeRequestURL(pathURL string, c *Client, r *Request) string {
+	if !strings.HasPrefix(pathURL, "/") {
+		pathURL = "/" + pathURL
+	}
+
+	hasTrailingSlash := false
+	if strings.HasSuffix(pathURL, "/") && len(pathURL) > 1 {
+		hasTrailingSlash = true
+	}
+
+	reqURL := "/"
+	for _, segment := range strings.Split(pathURL, "/") {
+		if strings.HasPrefix(segment, "{") && strings.HasSuffix(segment, "}") {
+			key := segment[1 : len(segment)-1]
+			if val, found := r.pathParams[key]; found {
+				reqURL = path.Join(reqURL, val)
+				continue
+			}
+
+			if val, found := c.pathParams[key]; found {
+				reqURL = path.Join(reqURL, val)
+				continue
+			}
+		}
+
+		reqURL = path.Join(reqURL, segment)
+	}
+
+	if hasTrailingSlash {
+		reqURL = reqURL + "/"
+	}
+
+	return reqURL
 }

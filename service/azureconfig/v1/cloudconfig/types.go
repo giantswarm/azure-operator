@@ -2,7 +2,9 @@ package cloudconfig
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
@@ -30,10 +32,10 @@ type cloudProviderConfFileParams struct {
 	VnetName          string
 }
 
-func newCloudProviderConfFileParams(azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
+func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
 	return cloudProviderConfFileParams{
 		AzureCloudType:    key.AzureCloudType(obj),
-		Location:          key.Location(obj),
+		Location:          azure.Location,
 		ResourceGroup:     key.ResourceGroupName(obj),
 		RouteTableName:    key.RouteTableName(obj),
 		SecurityGroupName: key.WorkerSecurityGroupName(obj),

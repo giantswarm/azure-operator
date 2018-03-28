@@ -11,8 +11,18 @@ import (
 	"github.com/giantswarm/randomkeys/randomkeystest"
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 )
+
+var testAzure = setting.Azure{
+	HostCluster: setting.AzureHostCluster{
+		CIDR:           "10.0.0.0/8",
+		ResourceGroup:  "test-group",
+		VirtualNetwork: "test-vnet",
+	},
+	Location: "westeurope",
+}
 
 func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	customObject := &providerv1alpha1.AzureConfig{
@@ -30,34 +40,43 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 	}
 
 	var err error
-	var newResource *Resource
+
+	var resource *Resource
 	{
-		cloudConfigConfig := cloudconfig.Config{
-			CertsSearcher:      certstest.NewSearcher(),
-			Logger:             microloggertest.New(),
-			RandomkeysSearcher: randomkeystest.NewSearcher(),
+		var cloudConfig *cloudconfig.CloudConfig
+		{
+			c := cloudconfig.Config{
+				CertsSearcher:      certstest.NewSearcher(),
+				Logger:             microloggertest.New(),
+				RandomkeysSearcher: randomkeystest.NewSearcher(),
 
-			AzureConfig: fakeclient.NewAzureConfig(),
+				Azure:       testAzure,
+				AzureConfig: fakeclient.NewAzureConfig(),
+			}
+
+			cloudConfig, err = cloudconfig.New(c)
+			if err != nil {
+				t.Fatalf("expected '%#v' got '%#v'", nil, err)
+			}
 		}
 
-		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
-		if err != nil {
-			t.Fatalf("expected '%v' got '%#v'", nil, err)
+		c := Config{
+			CertsSearcher: certstest.NewSearcher(),
+			CloudConfig:   cloudConfig,
+			Logger:        microloggertest.New(),
+
+			Azure:           testAzure,
+			AzureConfig:     fakeclient.NewAzureConfig(),
+			TemplateVersion: "master",
 		}
 
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.CertsSearcher = certstest.NewSearcher()
-		resourceConfig.CloudConfig = cloudConfigService
-		resourceConfig.Logger = microloggertest.New()
-		resourceConfig.TemplateVersion = "master"
-		newResource, err = New(resourceConfig)
+		resource, err = New(c)
 		if err != nil {
-			t.Fatalf("expected '%v' got '%#v'", nil, err)
+			t.Fatalf("expected '%#v' got '%#v'", nil, err)
 		}
 	}
 
-	result, err := newResource.GetDesiredState(context.TODO(), customObject)
+	result, err := resource.GetDesiredState(context.TODO(), customObject)
 	if err != nil {
 		t.Fatalf("expected '%v' got '%#v'", nil, err)
 	}
@@ -159,34 +178,45 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		},
 	}
 
-	var newResource *Resource
+	var err error
+
+	var resource *Resource
 	{
-		cloudConfigConfig := cloudconfig.Config{
-			CertsSearcher:      certstest.NewSearcher(),
-			Logger:             microloggertest.New(),
-			RandomkeysSearcher: randomkeystest.NewSearcher(),
+		var cloudConfig *cloudconfig.CloudConfig
+		{
+			c := cloudconfig.Config{
+				CertsSearcher:      certstest.NewSearcher(),
+				Logger:             microloggertest.New(),
+				RandomkeysSearcher: randomkeystest.NewSearcher(),
 
-			AzureConfig: fakeclient.NewAzureConfig(),
+				Azure:       testAzure,
+				AzureConfig: fakeclient.NewAzureConfig(),
+			}
+
+			cloudConfig, err = cloudconfig.New(c)
+			if err != nil {
+				t.Fatalf("expected '%#v' got '%#v'", nil, err)
+			}
 		}
 
-		cloudConfigService, err := cloudconfig.New(cloudConfigConfig)
-		if err != nil {
-			t.Fatalf("expected '%#v' got '%#v'", nil, err)
+		c := Config{
+			CertsSearcher: certstest.NewSearcher(),
+			CloudConfig:   cloudConfig,
+			Logger:        microloggertest.New(),
+
+			Azure:           testAzure,
+			AzureConfig:     fakeclient.NewAzureConfig(),
+			TemplateVersion: "master",
 		}
 
-		resourceConfig := DefaultConfig()
-		resourceConfig.AzureConfig = fakeclient.NewAzureConfig()
-		resourceConfig.CertsSearcher = certstest.NewSearcher()
-		resourceConfig.CloudConfig = cloudConfigService
-		resourceConfig.Logger = microloggertest.New()
-		resourceConfig.TemplateVersion = "master"
-		newResource, err = New(resourceConfig)
+		resource, err = New(c)
 		if err != nil {
 			t.Fatalf("expected '%#v' got '%#v'", nil, err)
 		}
 	}
+
 	for i, tc := range testCases {
-		deployments, err := newResource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		deployments, err := resource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatalf("case %d expected %#v got %#v", i+1, nil, err)
 		}

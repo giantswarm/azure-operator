@@ -27,7 +27,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
-	r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records")
 
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
@@ -35,12 +35,12 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 	}
 
 	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records: already ensured")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: already ensured")
 		return nil
 	}
 
 	for _, record := range change {
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
 
 		var params dns.RecordSet
 		{
@@ -59,10 +59,10 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 			return microerror.Maskf(err, fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
 		}
 
-		r.logger.LogCtx(ctx, "debug", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record))
 	}
 
-	r.logger.LogCtx(ctx, "debug", "ensuring host cluster DNS records: ensured")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: ensured")
 	return nil
 }
 

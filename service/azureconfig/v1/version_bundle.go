@@ -16,7 +16,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "kubernetes",
-				Description: "Updated to version 1.9.2.",
+				Description: "Updated to version 1.9.5.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -31,7 +31,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "containerlinux",
-				Description: "Updated to version 1576.5.0.",
+				Description: "Updated to version 1632.3.0.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -59,6 +59,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Change default etcd data dir to /var/lib/etcd.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "cloudconfig",
+				Description: "Improved encryption key injection.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -67,7 +72,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "1576.5.0",
+				Version: "1632.3.0",
 			},
 			{
 				Name:    "docker",
@@ -79,15 +84,15 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "coredns",
-				Version: "1.0.5",
+				Version: "1.0.6",
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.9.2",
+				Version: "1.9.5",
 			},
 			{
 				Name:    "nginx-ingress-controller",
-				Version: "0.10.2",
+				Version: "0.12.0",
 			},
 		},
 		Dependencies: []versionbundle.Dependency{},

@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
@@ -26,76 +27,54 @@ const (
 )
 
 type Config struct {
-	// Dependencies.
-
 	CertsSearcher certs.Interface
 	CloudConfig   *cloudconfig.CloudConfig
 	Logger        micrologger.Logger
 
-	// Settings.
-
+	Azure       setting.Azure
 	AzureConfig client.AzureConfig
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
 	TemplateVersion string
 }
 
-// DefaultConfig provides a default configuration to create a new resource by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-
-		CertsSearcher: nil,
-		Logger:        nil,
-
-		// Settings.
-
-		AzureConfig:     client.DefaultAzureConfig(),
-		TemplateVersion: "",
-	}
-}
-
 type Resource struct {
-	// Dependencies.
-
 	certsSearcher certs.Interface
 	cloudConfig   *cloudconfig.CloudConfig
 	logger        micrologger.Logger
 
-	// Settings.
-
+	azure           setting.Azure
 	azureConfig     client.AzureConfig
 	templateVersion string
 }
 
-// New creates a new configured deploy resource.
 func New(config Config) (*Resource, error) {
-	// Dependencies.
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
-	}
 	if config.CertsSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CertsSearcher must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
 	}
 	if config.CloudConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.CloudConfig must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.CloudConfig must not be empty", config)
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	// Settings.
+
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
+	}
 	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.TemplateURIVersion must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateURIVersion must not be empty", config)
 	}
 
 	r := &Resource{
-		// Dependencies.
 		certsSearcher: config.CertsSearcher,
 		cloudConfig:   config.CloudConfig,
-		logger:        config.Logger.With("resource", Name),
+		logger:        config.Logger,
 
-		// Settings.
+		azure:           config.Azure,
 		azureConfig:     config.AzureConfig,
 		templateVersion: config.TemplateVersion,
 	}
@@ -199,7 +178,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "debug", "creating Azure deployments")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure deployments")
 
 	if len(deploymentsToCreate) != 0 {
 		resourceGroupName := key.ClusterID(customObject)
@@ -209,7 +188,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		}
 
 		for _, deploy := range deploymentsToCreate {
-			r.logger.LogCtx(ctx, "debug", fmt.Sprintf("creating Azure deployments: creating %#q", deploy.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating Azure deployments: creating %#q", deploy.Name))
 
 			d := azureresource.Deployment{
 				Properties: &azureresource.DeploymentProperties{
@@ -232,12 +211,12 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 				return microerror.Maskf(timeoutError, "creating Azure deployments: creating %#q", deploy.Name)
 			}
 
-			r.logger.LogCtx(ctx, "debug", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))
 		}
 
-		r.logger.LogCtx(ctx, "debug", "creating Azure deployments: created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure deployments: created")
 	} else {
-		r.logger.LogCtx(ctx, "debug", "creating Azure deployments: already created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure deployments: already created")
 	}
 
 	return nil
@@ -252,11 +231,6 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 // ApplyUpdateChange is not yet implemented.
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
 	return nil
-}
-
-// Underlying returns the underlying resource.
-func (r *Resource) Underlying() framework.Resource {
-	return r
 }
 
 func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {

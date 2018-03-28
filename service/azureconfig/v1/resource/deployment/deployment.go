@@ -29,7 +29,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		n := node{
 			AdminUsername:   key.AdminUsername(obj),
 			AdminSSHKeyData: key.AdminSSHKeyData(obj),
-			OSImage:         newNodeOSImageCoreOS_1576_5_0(),
+			OSImage:         newNodeOSImageCoreOS_1632_3_0(),
 			VMSize:          m.VMSize,
 		}
 		masterNodes = append(masterNodes, n)
@@ -40,7 +40,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		n := node{
 			AdminUsername:   key.AdminUsername(obj),
 			AdminSSHKeyData: key.AdminSSHKeyData(obj),
-			OSImage:         newNodeOSImageCoreOS_1576_5_0(),
+			OSImage:         newNodeOSImageCoreOS_1632_3_0(),
 			VMSize:          w.VMSize,
 		}
 		workerNodes = append(workerNodes, n)
@@ -58,6 +58,7 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 
 	params := map[string]interface{}{
 		"clusterID":                     key.ClusterID(obj),
+		"virtualNetworkName":            key.VnetName(obj),
 		"virtualNetworkCidr":            key.VnetCIDR(obj),
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
 		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
@@ -65,7 +66,9 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		"masterNodes":                   masterNodes,
 		"workerNodes":                   workerNodes,
 		"dnsZones":                      obj.Spec.Azure.DNSZones,
-		"hostClusterCidr":               obj.Spec.Azure.HostCluster.CIDR,
+		"hostClusterCidr":               r.azure.HostCluster.CIDR,
+		"hostClusterResourceGroupName":  r.azure.HostCluster.ResourceGroup,
+		"hostClusterVirtualNetworkName": r.azure.HostCluster.VirtualNetwork,
 		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
 		"kubernetesIngressSecurePort":   obj.Spec.Cluster.Kubernetes.IngressController.SecurePort,
 		"kubernetesIngressInsecurePort": obj.Spec.Cluster.Kubernetes.IngressController.InsecurePort,

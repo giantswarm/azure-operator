@@ -10,6 +10,10 @@ import (
 const (
 	defaultAzureCloudType = "AZUREPUBLICCLOUD"
 
+	clusterTagName      = "GiantSwarmCluster"
+	installationTagName = "GiantSwarmInstallation"
+	organizationTagName = "GiantSwarmOrganization"
+
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
@@ -50,6 +54,23 @@ func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 // ClusterID returns the unique ID for this cluster.
 func ClusterID(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.ID
+}
+
+// ClusterOrganization returns the org name from the custom object.
+// It uses ClusterCustomer until this field is renamed in the custom object.
+func ClusterOrganization(customObject providerv1alpha1.AzureConfig) string {
+	return ClusterCustomer(customObject)
+}
+
+// ClusterTags returns a map with the resource tags for this cluster.
+func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName string) map[string]string {
+	tags := map[string]string{
+		clusterTagName:      ClusterID(customObject),
+		installationTagName: installationName,
+		organizationTagName: ClusterOrganization(customObject),
+	}
+
+	return tags
 }
 
 // DNSZoneAPI returns api parent DNS zone domain name.
@@ -101,10 +122,6 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
 }
 
-func HostClusterCIDR(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.HostCluster.CIDR
-}
-
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
@@ -123,11 +140,6 @@ func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 // WorkerSubnetName returns name of the worker subnet.
 func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
-}
-
-// Location returns the physical location where the Resource Group is deployed.
-func Location(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.Location
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.
@@ -177,4 +189,8 @@ func VnetMasterSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 
 func VnetWorkerSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
+}
+
+func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
 }

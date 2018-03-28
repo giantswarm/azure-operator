@@ -3,20 +3,26 @@ package v1
 import (
 	"fmt"
 
+	"github.com/cenkalti/backoff"
+	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/client-go/kubernetes"
+
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/framework"
+	"github.com/giantswarm/operatorkit/framework/resource/metricsresource"
+	"github.com/giantswarm/operatorkit/framework/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/client-go/kubernetes"
 
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/vnetpeering"
 )
 
 const (
@@ -28,8 +34,10 @@ type ResourceSetConfig struct {
 	K8sExtClient apiextensionsclient.Interface
 	Logger       micrologger.Logger
 
-	AzureConfig client.AzureConfig
-	ProjectName string
+	Azure            setting.Azure
+	AzureConfig      client.AzureConfig
+	InstallationName string
+	ProjectName      string
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
 	TemplateVersion string
@@ -39,31 +47,34 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	var err error
 
 	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.K8sClient must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 	if config.K8sExtClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.K8sExtClient must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sExtClient must not be empty", config)
 	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
 	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 	if config.ProjectName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.ProjectName must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectName must not be empty", config)
 	}
 	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "config.TemplateVersion must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
 	}
 
 	var certsSearcher *certs.Searcher
 	{
-		c := certs.DefaultConfig()
-
-		c.K8sClient = config.K8sClient
-		c.Logger = config.Logger
+		c := certs.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
 
 		certsSearcher, err = certs.NewSearcher(c)
 		if err != nil {
@@ -73,9 +84,10 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 
 	var randomkeysSearcher *randomkeys.Searcher
 	{
-		c := randomkeys.DefaultConfig()
-		c.K8sClient = config.K8sClient
-		c.Logger = config.Logger
+		c := randomkeys.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
 
 		randomkeysSearcher, err = randomkeys.NewSearcher(c)
 		if err != nil {
@@ -90,6 +102,7 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 			Logger:             config.Logger,
 			RandomkeysSearcher: randomkeysSearcher,
 
+			Azure:       config.Azure,
 			AzureConfig: config.AzureConfig,
 		}
 
@@ -99,47 +112,86 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 		}
 	}
 
-	var resourceGroupResource *resourcegroup.Resource
+	var resourceGroupResource framework.Resource
 	{
-		c := resourcegroup.DefaultConfig()
+		c := resourcegroup.Config{
+			Logger: config.Logger,
 
-		c.AzureConfig = config.AzureConfig
-		c.Logger = config.Logger
+			Azure:            config.Azure,
+			AzureConfig:      config.AzureConfig,
+			InstallationName: config.InstallationName,
+		}
 
-		resourceGroupResource, err = resourcegroup.New(c)
+		ops, err := resourcegroup.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "resourcegroup.New")
+			return nil, microerror.Mask(err)
+		}
+
+		resourceGroupResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
 	}
 
-	var deploymentResource *deployment.Resource
+	var deploymentResource framework.Resource
 	{
-		c := deployment.DefaultConfig()
+		c := deployment.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
 
-		c.CertsSearcher = certsSearcher
-		c.Logger = config.Logger
+			Azure:           config.Azure,
+			AzureConfig:     config.AzureConfig,
+			CloudConfig:     cloudConfig,
+			TemplateVersion: config.TemplateVersion,
+		}
 
-		c.AzureConfig = config.AzureConfig
-		c.CloudConfig = cloudConfig
-		c.TemplateVersion = config.TemplateVersion
-
-		deploymentResource, err = deployment.New(c)
+		ops, err := deployment.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "deployment.New")
+			return nil, microerror.Mask(err)
+		}
+
+		deploymentResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
 	}
 
-	var dnsrecordResource *dnsrecord.Resource
+	var dnsrecordResource framework.Resource
 	{
-		c := dnsrecord.DefaultConfig()
+		c := dnsrecord.Config{
+			Logger: config.Logger,
 
-		c.Logger = config.Logger
+			AzureConfig: config.AzureConfig,
+		}
 
-		c.AzureConfig = config.AzureConfig
-
-		dnsrecordResource, err = dnsrecord.New(c)
+		ops, err := dnsrecord.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "dnsrecord.New")
+			return nil, microerror.Mask(err)
+		}
+
+		dnsrecordResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var vnetPeeringResource framework.Resource
+	{
+		c := vnetpeering.Config{
+			Logger: config.Logger,
+
+			Azure:       config.Azure,
+			AzureConfig: config.AzureConfig,
+		}
+
+		ops, err := vnetpeering.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		vnetPeeringResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -147,6 +199,30 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 		resourceGroupResource,
 		deploymentResource,
 		dnsrecordResource,
+		vnetPeeringResource,
+	}
+
+	{
+		c := retryresource.WrapConfig{
+			BackOffFactory: func() backoff.BackOff { return backoff.WithMaxTries(backoff.NewExponentialBackOff(), ResourceRetries) },
+			Logger:         config.Logger,
+		}
+
+		resources, err = retryresource.Wrap(resources, c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	{
+		c := metricsresource.WrapConfig{
+			Name: config.ProjectName,
+		}
+
+		resources, err = metricsresource.Wrap(resources, c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	handlesFunc := func(obj interface{}) bool {
@@ -178,4 +254,18 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	}
 
 	return resourceSet, nil
+}
+
+func toCRUDResource(logger micrologger.Logger, ops framework.CRUDResourceOps) (*framework.CRUDResource, error) {
+	c := framework.CRUDResourceConfig{
+		Logger: logger,
+		Ops:    ops,
+	}
+
+	r, err := framework.NewCRUDResource(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return r, nil
 }

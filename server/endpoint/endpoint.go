@@ -1,49 +1,53 @@
 package endpoint
 
 import (
+	"github.com/giantswarm/microendpoint/endpoint/healthz"
 	versionendpoint "github.com/giantswarm/microendpoint/endpoint/version"
+	healthzservice "github.com/giantswarm/microendpoint/service/healthz"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/server/middleware"
 	"github.com/giantswarm/azure-operator/service"
 )
 
-// Config represents the configuration used to create a endpoint.
 type Config struct {
-	// Dependencies.
-	Logger     micrologger.Logger
-	Middleware *middleware.Middleware
-	Service    *service.Service
+	Logger  micrologger.Logger
+	Service *service.Service
 }
 
-// DefaultConfig provides a default configuration to create a new endpoint by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-		Logger:     nil,
-		Middleware: nil,
-		Service:    nil,
-	}
-}
-
-// New creates a new configured endpoint.
 func New(config Config) (*Endpoint, error) {
 	var err error
 
 	var versionEndpoint *versionendpoint.Endpoint
 	{
-		versionConfig := versionendpoint.DefaultConfig()
-		versionConfig.Logger = config.Logger
-		versionConfig.Service = config.Service.Version
-		versionEndpoint, err = versionendpoint.New(versionConfig)
+		c := versionendpoint.Config{
+			Logger:  config.Logger,
+			Service: config.Service.Version,
+		}
+
+		versionEndpoint, err = versionendpoint.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var healthzEndpoint *healthz.Endpoint
+	{
+		c := healthz.Config{
+			Logger: config.Logger,
+			Services: []healthzservice.Service{
+				config.Service.Healthz,
+			},
+		}
+
+		healthzEndpoint, err = healthz.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	newEndpoint := &Endpoint{
+		Healthz: healthzEndpoint,
 		Version: versionEndpoint,
 	}
 	return newEndpoint, nil
@@ -51,5 +55,6 @@ func New(config Config) (*Endpoint, error) {
 
 // Endpoint is the endpoint collection.
 type Endpoint struct {
+	Healthz *healthz.Endpoint
 	Version *versionendpoint.Endpoint
 }

@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/framework"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
@@ -19,56 +20,51 @@ const (
 	// Name is the identifier of the resource.
 	Name = "resourcegroupv1"
 
-	clusterIDTag  = "ClusterID"
-	customerIDTag = "CustomerID"
 	deleteTimeout = 30 * time.Minute
 	managedBy     = "azure-operator"
 )
 
-// Config is the resource group Resource configuration.
 type Config struct {
-	// Dependencies.
+	Logger micrologger.Logger
 
-	AzureConfig client.AzureConfig
-	Logger      micrologger.Logger
-}
-
-// DefaultConfig provides a default configuration to create a new resource by
-// best effort.
-func DefaultConfig() Config {
-	return Config{
-		// Dependencies.
-		AzureConfig: client.DefaultAzureConfig(),
-		Logger:      nil,
-	}
+	AzureConfig      client.AzureConfig
+	Azure            setting.Azure
+	InstallationName string
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	// Dependencies.
+	logger micrologger.Logger
 
-	azureConfig client.AzureConfig
-	logger      micrologger.Logger
+	azure            setting.Azure
+	azureConfig      client.AzureConfig
+	installationName string
 }
 
-// New creates a new configured resource group resource.
 func New(config Config) (*Resource, error) {
-	// Dependencies.
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
-	}
 	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	newService := &Resource{
+	if err := config.Azure.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
+	if err := config.AzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
+	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
+	}
+
+	r := &Resource{
+		installationName: config.InstallationName,
+
+		azure:       config.Azure,
 		azureConfig: config.AzureConfig,
-		logger: config.Logger.With(
-			"resource", Name,
-		),
+		logger:      config.Logger,
 	}
 
-	return newService, nil
+	return r, nil
 }
 
 // GetCurrentState gets the resource group for this cluster from the Azure API.
@@ -111,14 +107,10 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	tags := map[string]string{
-		clusterIDTag:  key.ClusterID(customObject),
-		customerIDTag: key.ClusterCustomer(customObject),
-	}
 	resourceGroup := Group{
 		Name:     key.ClusterID(customObject),
-		Location: key.Location(customObject),
-		Tags:     tags,
+		Location: r.azure.Location,
+		Tags:     key.ClusterTags(customObject, r.installationName),
 	}
 
 	return resourceGroup, nil
@@ -169,7 +161,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Maskf(err, "creating Azure resource group")
 	}
 
-	r.logger.LogCtx(ctx, "debug", "creating Azure resource group")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group")
 
 	if resourceGroupToCreate.Name != "" {
 		groupClient, err := r.getGroupsClient()
@@ -188,9 +180,9 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 			return microerror.Maskf(err, "creating Azure resource group")
 		}
 
-		r.logger.LogCtx(ctx, "debug", "creating Azure resource group: created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group: created")
 	} else {
-		r.logger.LogCtx(ctx, "debug", "creating Azure resource group: already created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group: already created")
 	}
 
 	return nil
@@ -207,7 +199,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 		return microerror.Maskf(err, "deleting Azure resource group")
 	}
 
-	r.logger.LogCtx(ctx, "debug", "deleting Azure resource group")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Azure resource group")
 
 	if resourceGroupToDelete.Name != "" {
 		groupsClient, err := r.getGroupsClient()
@@ -227,9 +219,9 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 			return microerror.Maskf(timeoutError, "deleting Azure resource group")
 		}
 
-		r.logger.LogCtx(ctx, "debug", "deleting Azure resource group: deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Azure resource group: deleted")
 	} else {
-		r.logger.LogCtx(ctx, "debug", "deleting Azure resource group: already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Azure resource group: already deleted")
 	}
 
 	return nil
@@ -238,11 +230,6 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 // ApplyUpdateChange is a noop because resource groups are not updated.
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
 	return nil
-}
-
-// Underlying returns the underlying resource.
-func (r *Resource) Underlying() framework.Resource {
-	return r
 }
 
 func (r *Resource) getGroupsClient() (*azureresource.GroupsClient, error) {

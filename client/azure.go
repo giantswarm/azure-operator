@@ -9,15 +9,13 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 )
 
-// AzureConfig contains the common attributes to create an Azure client.
 type AzureConfig struct {
-	// Dependencies.
-
 	Logger micrologger.Logger
 
 	// ClientID is the ID of the Active Directory Service Principal.
@@ -30,28 +28,11 @@ type AzureConfig struct {
 	TenantID string
 }
 
-// DefaultAzureConfig provides a default configuration to create an Azure client
-// by best effort.
-func DefaultAzureConfig() AzureConfig {
-	return AzureConfig{
-		// Dependencies.
-		Logger: nil,
-
-		// Settings.
-		ClientID:       "",
-		ClientSecret:   "",
-		SubscriptionID: "",
-		TenantID:       "",
-	}
-}
-
 func (c AzureConfig) Validate() error {
-	// Dependencies.
 	if c.Logger == nil {
 		return errors.New("Logger must not be empty")
 	}
 
-	// Settings.
 	if c.ClientID == "" {
 		return errors.New("ClientID must not be empty")
 	}
@@ -78,6 +59,8 @@ type AzureClientSet struct {
 	DNSRecordSetsClient *dns.RecordSetsClient
 	// DNSRecordSetsClient manages DNS zones.
 	DNSZonesClient *dns.ZonesClient
+	// VnetPeeringClient manages virtual network peerings.
+	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
 
 // NewAzureClientSet returns the Azure API clients.
@@ -106,11 +89,17 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	vnetPeeringClient, err := newVnetPeeringClient(config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	clientset := &AzureClientSet{
 		DeploymentsClient:   deploymentsClient,
 		GroupsClient:        groupsClient,
 		DNSRecordSetsClient: dnsRecordSetsClient,
 		DNSZonesClient:      dnsZonesClient,
+		VnetPeeringClient:   vnetPeeringClient,
 	}
 
 	return clientset, nil
@@ -169,6 +158,18 @@ func newDNSZonesClient(config AzureConfig) (*dns.ZonesClient, error) {
 	}
 
 	client := dns.NewZonesClient(config.SubscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+
+	return &client, nil
+}
+
+func newVnetPeeringClient(config AzureConfig) (*network.VirtualNetworkPeeringsClient, error) {
+	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
+	if err != nil {
+		return nil, microerror.Maskf(err, "creating service principal token")
+	}
+
+	client := network.NewVirtualNetworkPeeringsClient(config.SubscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(spt)
 
 	return &client, nil

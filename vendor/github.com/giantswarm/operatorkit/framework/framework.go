@@ -17,8 +17,11 @@ import (
 
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"
 	"github.com/giantswarm/operatorkit/framework/context/reconciliationcanceledcontext"
-	"github.com/giantswarm/operatorkit/framework/context/resourcecanceledcontext"
 	"github.com/giantswarm/operatorkit/informer"
+)
+
+const (
+	loggerResourceKey = "resource"
 )
 
 // Config represents the configuration used to create a new operator framework.
@@ -127,7 +130,11 @@ func (f *Framework) DeleteFunc(obj interface{}) {
 	defer f.mutex.Unlock()
 
 	resourceSet, err := f.resourceRouter.ResourceSet(obj)
-	if err != nil {
+	if IsNoResourceSet(err) {
+		// In case the resource router is not able to find any resource set to
+		// handle the reconciled runtime object, we stop here.
+		return
+	} else if err != nil {
 		f.logger.Log("event", "delete", "function", "DeleteFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
 		return
 	}
@@ -143,203 +150,6 @@ func (f *Framework) DeleteFunc(obj interface{}) {
 		f.logger.LogCtx(ctx, "event", "delete", "function", "DeleteFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
 		return
 	}
-}
-
-// UpdateFunc executes the framework's ProcessUpdate function.
-func (f *Framework) UpdateFunc(oldObj, newObj interface{}) {
-	obj := newObj
-
-	// DeleteFunc/UpdateFunc is synchronized to make sure only one of them is
-	// executed at a time. DeleteFunc/UpdateFunc is not thread safe. This is
-	// important because the source of truth for an operator are the reconciled
-	// resources. In case we would run the operator logic in parallel, we would
-	// run into race conditions.
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-
-	resourceSet, err := f.resourceRouter.ResourceSet(obj)
-	if err != nil {
-		f.logger.Log("event", "update", "function", "UpdateFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
-		return
-	}
-
-	ctx, err := resourceSet.InitCtx(context.Background(), obj)
-	if err != nil {
-		f.logger.LogCtx(ctx, "event", "update", "function", "UpdateFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
-		return
-	}
-
-	err = ProcessUpdate(ctx, obj, resourceSet.Resources())
-	if err != nil {
-		f.logger.LogCtx(ctx, "event", "update", "function", "UpdateFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
-		return
-	}
-}
-
-// ProcessDelete is a drop-in for an informer's DeleteFunc. It receives the
-// custom object observed during custom resource watches and anything that
-// implements Resource. ProcessDelete takes care about all necessary
-// reconciliation logic for delete events.
-//
-//     func deleteFunc(obj interface{}) {
-//         err := f.ProcessDelete(obj, resources)
-//         if err != nil {
-//             // error handling here
-//         }
-//     }
-//
-//     newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
-//         DeleteFunc:    deleteFunc,
-//     }
-//
-func ProcessDelete(ctx context.Context, obj interface{}, resources []Resource) error {
-	if len(resources) == 0 {
-		return microerror.Maskf(executionFailedError, "resources must not be empty")
-	}
-
-	for _, r := range resources {
-		var err error
-
-		var currentState interface{}
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			meta, ok := loggermeta.FromContext(ctx)
-			if ok {
-				meta.KeyVals["function"] = "GetCurrentState"
-				defer delete(meta.KeyVals, "function")
-			}
-			currentState, err = r.GetCurrentState(ctx, obj)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var desiredState interface{}
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			meta, ok := loggermeta.FromContext(ctx)
-			if ok {
-				meta.KeyVals["function"] = "GetDesiredState"
-				defer delete(meta.KeyVals, "function")
-			}
-			desiredState, err = r.GetDesiredState(ctx, obj)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var patch *Patch
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			meta, ok := loggermeta.FromContext(ctx)
-			if ok {
-				meta.KeyVals["function"] = "NewDeletePatch"
-				defer delete(meta.KeyVals, "function")
-			}
-			patch, err = r.NewDeletePatch(ctx, obj, currentState, desiredState)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			if patch != nil {
-				createChange, ok := patch.getCreateChange()
-				if ok {
-					meta, ok := loggermeta.FromContext(ctx)
-					if ok {
-						meta.KeyVals["function"] = "ApplyCreateChange"
-						defer delete(meta.KeyVals, "function")
-					}
-					err := r.ApplyCreateChange(ctx, obj, createChange)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-				}
-			}
-		}
-
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			if patch != nil {
-				deleteChange, ok := patch.getDeleteChange()
-				if ok {
-					meta, ok := loggermeta.FromContext(ctx)
-					if ok {
-						meta.KeyVals["function"] = "ApplyDeleteChange"
-						defer delete(meta.KeyVals, "function")
-					}
-					err := r.ApplyDeleteChange(ctx, obj, deleteChange)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-				}
-			}
-		}
-
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			if patch != nil {
-				updateChange, ok := patch.getUpdateChange()
-				if ok {
-					meta, ok := loggermeta.FromContext(ctx)
-					if ok {
-						meta.KeyVals["function"] = "ApplyUpdateChange"
-						defer delete(meta.KeyVals, "function")
-					}
-					err := r.ApplyUpdateChange(ctx, obj, updateChange)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-				}
-			}
-		}
-	}
-
-	return nil
 }
 
 // ProcessEvents takes the event channels created by the operatorkit informer
@@ -375,171 +185,39 @@ func (f *Framework) ProcessEvents(ctx context.Context, deleteChan chan watch.Eve
 	}
 }
 
-// ProcessUpdate is a drop-in for an informer's UpdateFunc. It receives the new
-// custom object observed during custom resource watches and anything that
-// implements Resource. ProcessUpdate takes care about all necessary
-// reconciliation logic for update events. For complex resources this means
-// state has to be created, deleted and updated eventually, in this order.
-//
-//     func updateFunc(oldObj, newObj interface{}) {
-//         err := f.ProcessUpdate(newObj, resources)
-//         if err != nil {
-//             // error handling here
-//         }
-//     }
-//
-//     newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
-//         UpdateFunc:    updateFunc,
-//     }
-//
-func ProcessUpdate(ctx context.Context, obj interface{}, resources []Resource) error {
-	if len(resources) == 0 {
-		return microerror.Maskf(executionFailedError, "resources must not be empty")
+// UpdateFunc executes the framework's ProcessUpdate function.
+func (f *Framework) UpdateFunc(oldObj, newObj interface{}) {
+	obj := newObj
+
+	// DeleteFunc/UpdateFunc is synchronized to make sure only one of them is
+	// executed at a time. DeleteFunc/UpdateFunc is not thread safe. This is
+	// important because the source of truth for an operator are the reconciled
+	// resources. In case we would run the operator logic in parallel, we would
+	// run into race conditions.
+	f.mutex.Lock()
+	defer f.mutex.Unlock()
+
+	resourceSet, err := f.resourceRouter.ResourceSet(obj)
+	if IsNoResourceSet(err) {
+		// In case the resource router is not able to find any resource set to
+		// handle the reconciled runtime object, we stop here.
+		return
+	} else if err != nil {
+		f.logger.Log("event", "update", "function", "UpdateFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
+		return
 	}
 
-	for _, r := range resources {
-		var err error
-
-		var currentState interface{}
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			meta, ok := loggermeta.FromContext(ctx)
-			if ok {
-				meta.KeyVals["function"] = "GetCurrentState"
-				defer delete(meta.KeyVals, "function")
-			}
-			currentState, err = r.GetCurrentState(ctx, obj)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var desiredState interface{}
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			meta, ok := loggermeta.FromContext(ctx)
-			if ok {
-				meta.KeyVals["function"] = "GetDesiredState"
-				defer delete(meta.KeyVals, "function")
-			}
-			desiredState, err = r.GetDesiredState(ctx, obj)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		var patch *Patch
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			meta, ok := loggermeta.FromContext(ctx)
-			if ok {
-				meta.KeyVals["function"] = "NewUpdatePatch"
-				defer delete(meta.KeyVals, "function")
-			}
-			patch, err = r.NewUpdatePatch(ctx, obj, currentState, desiredState)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			if patch != nil {
-				createState, ok := patch.getCreateChange()
-				if ok {
-					meta, ok := loggermeta.FromContext(ctx)
-					if ok {
-						meta.KeyVals["function"] = "ApplyCreateChange"
-						defer delete(meta.KeyVals, "function")
-					}
-					err := r.ApplyCreateChange(ctx, obj, createState)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-				}
-			}
-		}
-
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			if patch != nil {
-				deleteState, ok := patch.getDeleteChange()
-				if ok {
-					meta, ok := loggermeta.FromContext(ctx)
-					if ok {
-						meta.KeyVals["function"] = "ApplyDeleteChange"
-						defer delete(meta.KeyVals, "function")
-					}
-					err := r.ApplyDeleteChange(ctx, obj, deleteState)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-				}
-			}
-		}
-
-		{
-			if reconciliationcanceledcontext.IsCanceled(ctx) {
-				return nil
-			}
-			if resourcecanceledcontext.IsCanceled(ctx) {
-				ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
-				continue
-			}
-
-			if patch != nil {
-				updateState, ok := patch.getUpdateChange()
-				if ok {
-					meta, ok := loggermeta.FromContext(ctx)
-					if ok {
-						meta.KeyVals["function"] = "ApplyUpdateChange"
-						defer delete(meta.KeyVals, "function")
-					}
-					err := r.ApplyUpdateChange(ctx, obj, updateState)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-				}
-			}
-		}
+	ctx, err := resourceSet.InitCtx(context.Background(), obj)
+	if err != nil {
+		f.logger.LogCtx(ctx, "event", "update", "function", "UpdateFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
+		return
 	}
 
-	return nil
+	err = ProcessUpdate(ctx, obj, resourceSet.Resources())
+	if err != nil {
+		f.logger.LogCtx(ctx, "event", "update", "function", "UpdateFunc", "level", "error", "message", "stop framework reconciliation due to error", "stack", fmt.Sprintf("%#v", err))
+		return
+	}
 }
 
 func (f *Framework) bootWithError(ctx context.Context) error {
@@ -562,4 +240,103 @@ func (f *Framework) bootWithError(ctx context.Context) error {
 	f.ProcessEvents(ctx, deleteChan, updateChan, errChan)
 
 	return nil
+}
+
+// ProcessDelete is a drop-in for an informer's DeleteFunc. It receives the
+// custom object observed during custom resource watches and anything that
+// implements Resource. ProcessDelete takes care about all necessary
+// reconciliation logic for delete events.
+//
+//     func deleteFunc(obj interface{}) {
+//         err := f.ProcessDelete(obj, resources)
+//         if err != nil {
+//             // error handling here
+//         }
+//     }
+//
+//     newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
+//         DeleteFunc:    deleteFunc,
+//     }
+//
+func ProcessDelete(ctx context.Context, obj interface{}, resources []Resource) error {
+	if len(resources) == 0 {
+		return microerror.Maskf(executionFailedError, "resources must not be empty")
+	}
+
+	defer unsetLoggerCtxValue(ctx, loggerResourceKey)
+
+	for _, r := range resources {
+		ctx = setLoggerCtxValue(ctx, loggerResourceKey, r.Name())
+
+		err := r.EnsureDeleted(ctx, obj)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if reconciliationcanceledcontext.IsCanceled(ctx) {
+			return nil
+		}
+	}
+
+	return nil
+}
+
+// ProcessUpdate is a drop-in for an informer's UpdateFunc. It receives the new
+// custom object observed during custom resource watches and anything that
+// implements Resource. ProcessUpdate takes care about all necessary
+// reconciliation logic for update events. For complex resources this means
+// state has to be created, deleted and updated eventually, in this order.
+//
+//     func updateFunc(oldObj, newObj interface{}) {
+//         err := f.ProcessUpdate(newObj, resources)
+//         if err != nil {
+//             // error handling here
+//         }
+//     }
+//
+//     newResourceEventHandler := &cache.ResourceEventHandlerFuncs{
+//         UpdateFunc:    updateFunc,
+//     }
+//
+func ProcessUpdate(ctx context.Context, obj interface{}, resources []Resource) error {
+	if len(resources) == 0 {
+		return microerror.Maskf(executionFailedError, "resources must not be empty")
+	}
+
+	defer unsetLoggerCtxValue(ctx, loggerResourceKey)
+
+	for _, r := range resources {
+		ctx = setLoggerCtxValue(ctx, loggerResourceKey, r.Name())
+
+		err := r.EnsureCreated(ctx, obj)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if reconciliationcanceledcontext.IsCanceled(ctx) {
+			return nil
+		}
+	}
+
+	return nil
+}
+
+func setLoggerCtxValue(ctx context.Context, key, value string) context.Context {
+	m, ok := loggermeta.FromContext(ctx)
+	if !ok {
+		m = loggermeta.New()
+	}
+	m.KeyVals[key] = value
+
+	return loggermeta.NewContext(ctx, m)
+}
+
+func unsetLoggerCtxValue(ctx context.Context, key string) context.Context {
+	m, ok := loggermeta.FromContext(ctx)
+	if !ok {
+		m = loggermeta.New()
+	}
+	delete(m.KeyVals, key)
+
+	return loggermeta.NewContext(ctx, m)
 }

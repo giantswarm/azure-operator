@@ -2,14 +2,17 @@ package cloudconfig
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_1_1"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_4"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 )
 
 type workerExtension struct {
+	Azure         setting.Azure
 	AzureConfig   client.AzureConfig
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig
@@ -77,7 +80,7 @@ func (we *workerExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 }
 
 func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
-	params := newCloudProviderConfFileParams(we.AzureConfig, we.CustomObject)
+	params := newCloudProviderConfFileParams(we.Azure, we.AzureConfig, we.CustomObject)
 
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {

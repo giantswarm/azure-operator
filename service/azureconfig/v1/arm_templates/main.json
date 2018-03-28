@@ -14,6 +14,12 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network's name of the guest cluster"
+      }
+    },
     "virtualNetworkCidr": {
       "type": "string",
       "metadata": {
@@ -31,6 +37,18 @@
     },
     "hostClusterCidr": {
       "type": "string"
+    },
+    "hostClusterResourceGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Resource group's name of the host cluster."
+      }
+    },
+    "hostClusterVirtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network's of the host cluster."
+      }
     },
     "kubernetesAPISecurePort": {
       "type": "int"
@@ -105,6 +123,10 @@
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
     },
+    "networkPeeringTemplateFile": {
+      "type": "string",
+      "defaultValue": "peering.json"
+    },
     "vmssTemplateFile": {
       "type": "string",
       "defaultValue": "vmss.json"
@@ -125,6 +147,7 @@
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
+    "networkPeeringTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('networkPeeringTemplateFile'))]",
     "vmssTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('vmssTemplateFile'))]",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
@@ -184,14 +207,35 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
           "routeTableID": {"value": "[reference('route_table_setup').outputs.id.value]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "peering",
+      "type": "Microsoft.Resources/deployments",
+      "dependsOn": [
+          "virtual_network_setup"
+      ],
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('networkPeeringTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "name": {"value": "[parameters('hostClusterResourceGroupName')]"},
+          "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
+          "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
+          "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
         }
       }
     },

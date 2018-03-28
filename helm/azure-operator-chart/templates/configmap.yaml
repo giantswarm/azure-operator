@@ -8,5 +8,14 @@ data:
     server:
       listen:
         address: 'http://0.0.0.0:8000'
+    service:
+      azure:
+        hostCluster:
+          cidr: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.CIDR }}'
+          resourceGroup: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.ResourceGroup }}'
+          virtualNetwork: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.VirtualNetwork }}'
+        location: '{{ .Values.Installation.V1.Provider.Azure.Location }}'
+      installation:
+        name: '{{ .Values.Installation.V1.Name }}'
       kubernetes:
         incluster: true
