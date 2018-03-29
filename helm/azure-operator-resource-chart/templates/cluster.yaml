@@ -20,6 +20,11 @@ spec:
     workers:
     - vmSize: "{{ .Values.azure.vmSizeWorker }}"
     - vmSize: "{{ .Values.azure.vmSizeWorker }}"
+    virtualNetwork:
+      calicoSubnetCIDR: "{{ .Values.azure.calicoSubnetCIDR }}"
+      cidr: "{{ .Values.azure.cidr }}"
+      masterSubnetCIDR: "{{ .Values.azure.masterSubnetCIDR }}"
+      workerSubnetCIDR: "{{ .Values.azure.workerSubnetCIDR }}"
   cluster:
     calico:
       cidr: 16
