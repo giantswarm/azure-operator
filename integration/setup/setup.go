@@ -64,7 +64,6 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 	}
 
 	{
-		log.Println("h.InstallAzureOperator")
 		err = h.InstallAzureOperator(template.AzureOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
