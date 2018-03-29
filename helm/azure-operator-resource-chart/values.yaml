@@ -9,8 +9,7 @@ azure:
   location: "westeurope"
   vmSizeMaster: "Standard_A1"
   vmSizeWorker: "Standard_A1"
-  virtualNetwork:
-    calicoSubnetCIDR: 10.42.128.0/17
-    cidr: 10.42.0.0/16
-    masterSubnetCIDR: 10.42.0.0/24
-    workerSubnetCIDR: 10.42.1.0/24
+  calicoSubnetCIDR: "10.42.128.0/17"
+  cidr: "10.42.0.0/16"
+  masterSubnetCIDR: "10.42.0.0/24"
+  workerSubnetCIDR: "10.42.1.0/24"
