@@ -53,12 +53,7 @@ spec:
       dns:
         ip: "172.31.0.10"
       domain: "cluster.local"
-      hyperkube:
-        docker:
-          image: "quay.io/giantswarm/hyperkube:v1.8.4_coreos.0"
       ingressController:
-        docker:
-          image: "quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.11"
         insecurePort: 30010
         securePort: 30011
         domain: "ingress.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
