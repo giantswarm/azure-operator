@@ -33,6 +33,9 @@ var AzureOperatorChartValues = `Installation:
               clientsecret: ${AZURE_CLIENTSECRET}
               subscriptionid: ${AZURE_SUBSCRIPTIONID}
               tenantid: ${AZURE_TENANTID}
+              template:
+                uri:
+                  version: ${TEMPLATE_URI_VERSION}
       Registry:
         PullSecret:
           DockerConfigJSON: "{\"auths\":{\"quay.io\":{\"auth\":\"${REGISTRY_PULL_SECRET}\"}}}"
