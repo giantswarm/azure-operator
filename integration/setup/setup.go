@@ -61,10 +61,11 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 			return microerror.Mask(err)
 		}
 
-		err = installAzureResource()
+		/*err = installAzureResource()
 		if err != nil {
 			return microerror.Mask(err)
-		}
+		}*/
+		//
 	}
 
 	return nil
