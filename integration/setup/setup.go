@@ -20,20 +20,15 @@ const (
 )
 
 func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *testing.M) {
-	var err error
-
-	err = h.Setup()
-	if err != nil {
+	if err := h.Setup(); err != nil {
 		log.Fatalf("%#v\n", err)
 	}
 
-	err = Resources(c, g, h)
-	if err != nil {
+	if err := Resources(c, g, h); err != nil {
 		log.Fatalf("%#v\n", err)
 	}
 
-	err = g.Setup()
-	if err != nil {
+	if err := g.Setup(); err != nil {
 		log.Fatalf("%#v\n", err)
 	}
 
@@ -41,31 +36,24 @@ func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Hos
 }
 
 func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
-	var err error
-
 	{
-		err = h.InstallCertOperator()
-		if err != nil {
+		if err := h.InstallCertOperator(); err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallCertResource()
-		if err != nil {
+		if err := h.InstallCertResource(); err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		err = h.InstallAzureOperator(template.AzureOperatorChartValues)
-		if err != nil {
+		if err := h.InstallAzureOperator(template.AzureOperatorChartValues); err != nil {
 			return microerror.Mask(err)
 		}
 
-		/*err = installAzureResource()
-		if err != nil {
+		if err := installAzureResource(); err != nil {
 			return microerror.Mask(err)
-		}*/
-		//
+		}
 	}
 
 	return nil
