@@ -12,7 +12,7 @@ func (a Azure) Validate() error {
 		return fmt.Errorf("HostCluster.%s", err)
 	}
 	if a.Location == "" {
-		return fmt.Errorf("CIDR must not be empty")
+		return fmt.Errorf("Location must not be empty")
 	}
 
 	return nil
