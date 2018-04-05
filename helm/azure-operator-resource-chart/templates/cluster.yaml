@@ -37,7 +37,7 @@ spec:
         cidr: "172.17.0.1/16"
         extraArgs: "--log-opt max-size=25m --log-opt max-file=2 --log-opt labels=io.kubernetes.container.hash,io.kubernetes.container.name,io.kubernetes.pod.name,io.kubernetes.pod.namespace,io.kubernetes.pod.uid"
     etcd:
-      domain: "etcd.{{ .Values.clusterName }}.{{ .Values.commonDomain }}"
+      domain: "etcd.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
       prefix: "giantswarm.io"
       port: 2379
     id: "{{ .Values.clusterName }}"
@@ -45,7 +45,7 @@ spec:
       api:
         altNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local"
         clusterIPRange: "172.31.0.0/16"
-        domain: "api.{{ .Values.clusterName }}.{{ .Values.commonDomain }}"
+        domain: "api.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
         insecurePort: 8080
         ip: "172.31.0.1"
         securePort: 443
@@ -61,8 +61,8 @@ spec:
           image: "quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.11"
         insecurePort: 30010
         securePort: 30011
-        domain: "ingress.{{ .Values.clusterName }}.{{ .Values.commonDomain }}"
-        wildcardDomain: "*.{{ .Values.clusterName }}.{{ .Values.commonDomain }}"
+        domain: "ingress.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
+        wildcardDomain: "*.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
       kubelet:
         altNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local"
         domain: "worker.{{ .Values.clusterName }}.{{ .Values.commonDomain }}"
