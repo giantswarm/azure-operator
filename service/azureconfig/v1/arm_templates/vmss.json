@@ -164,6 +164,9 @@
                 "tier": "Standard",
                 "capacity": "[int(parameters('vmssVmCount'))]"
             },
+            "identity": {
+                "type": "systemAssigned"
+            },
             "properties": {
                 "overprovision": "true",
                 "upgradePolicy": {
@@ -239,23 +242,6 @@
                                             }
                                         }
                                     ]
-                                }
-                            }
-                        ]
-                    },
-                    "extensionProfile": {
-                        "extensions": [
-                            {
-                                "name": "msiext",
-                                "properties": {
-                                    "publisher": "Microsoft.ManagedIdentity",
-                                    "type": "ManagedIdentityExtensionForLinux",
-                                    "typeHandlerVersion": "1.0",
-                                    "autoUpgradeMinorVersion": true,
-                                    "settings": {
-                                        "port": 50342
-                                    },
-                                    "protectedSettings": {}
                                 }
                             }
                         ]
