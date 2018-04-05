@@ -20,32 +20,24 @@ const (
 )
 
 func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *testing.M) {
-	var v int
 	var err error
 
 	err = h.Setup()
 	if err != nil {
-		log.Printf("%#v\n", err)
-		v = 1
+		log.Fatalf("%#v\n", err)
 	}
 
 	err = Resources(c, g, h)
 	if err != nil {
-		log.Printf("%#v\n", err)
-		v = 1
+		log.Fatalf("%#v\n", err)
 	}
 
 	err = g.Setup()
 	if err != nil {
-		log.Printf("%#v\n", err)
-		v = 1
+		log.Fatalf("%#v\n", err)
 	}
 
-	if v == 0 {
-		v = m.Run()
-	}
-
-	os.Exit(v)
+	os.Exit(m.Run())
 }
 
 func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
