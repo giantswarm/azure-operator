@@ -111,6 +111,15 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/giantswarm/e2e-harness"
+  packages = [
+    "pkg/framework",
+    "pkg/harness"
+  ]
+  revision = "f49a251a515c668390ae944a7945f386a89a354b"
+
+[[projects]]
+  branch = "master"
   name = "github.com/giantswarm/ipam"
   packages = ["."]
   revision = "442e28b638045e8dcbe75dd596241590ded3b0f7"
@@ -355,6 +364,18 @@
   revision = "f40e974e75af4e271d97ce0fc917af5898ae7bda"
 
 [[projects]]
+  branch = "master"
+  name = "github.com/howeyc/gopass"
+  packages = ["."]
+  revision = "bf9dde6d0d2c004a008c27aaee91170c786f6db8"
+
+[[projects]]
+  name = "github.com/imdario/mergo"
+  packages = ["."]
+  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
+  version = "v0.3.4"
+
+[[projects]]
   name = "github.com/inconshreveable/mousetrap"
   packages = ["."]
   revision = "76626ae9c91c4f2a10f34cad8ce83ea42c93bb75"
@@ -484,8 +505,8 @@
     ".",
     "mem"
   ]
-  revision = "bb8f1927f2a9d3ab41c9340aa034f6b803f4359c"
-  version = "v1.0.2"
+  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
+  version = "v1.1.0"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -525,6 +546,12 @@
 
 [[projects]]
   branch = "master"
+  name = "golang.org/x/crypto"
+  packages = ["ssh/terminal"]
+  revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
+
+[[projects]]
+  branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -545,7 +572,10 @@
 [[projects]]
   branch = "master"
   name = "golang.org/x/sys"
-  packages = ["unix"]
+  packages = [
+    "unix",
+    "windows"
+  ]
   revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
 
 [[projects]]
@@ -742,8 +772,12 @@
     "rest",
     "rest/watch",
     "testing",
+    "tools/auth",
     "tools/cache",
+    "tools/clientcmd",
     "tools/clientcmd/api",
+    "tools/clientcmd/api/latest",
+    "tools/clientcmd/api/v1",
     "tools/metrics",
     "tools/pager",
     "tools/reference",
@@ -751,6 +785,7 @@
     "util/buffer",
     "util/cert",
     "util/flowcontrol",
+    "util/homedir",
     "util/integer"
   ]
   revision = "9389c055a838d4f208b699b3c7c51b70f2368861"
@@ -765,6 +800,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "46460114fd842819e0b90cfadb4ccc0f367084c282e54f9f151d8a72835552ba"
+  inputs-digest = "ed44dd6be14b205d3b1f2e5b333a3c2387068551093b7070f15f8fec67f6af11"
   solver-name = "gps-cdcl"
   solver-version = 1
