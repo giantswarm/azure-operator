@@ -1,3 +1,9 @@
+# Requirements
+
+```
+go get -u github.com/giantswarm/e2e-harness
+```
+
 # How to run integration test
 
 ```
