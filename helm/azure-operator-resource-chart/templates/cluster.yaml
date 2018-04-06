@@ -28,7 +28,7 @@ spec:
   cluster:
     calico:
       cidr: 16
-      domain: "calico.{{ .Values.clusterName }}.{{ .Values.commonDomain }}"
+      domain: "calico.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
       mtu: 1500
     customer:
       id: "example-customer"
@@ -60,7 +60,7 @@ spec:
         wildcardDomain: "*.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
       kubelet:
         altNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local"
-        domain: "worker.{{ .Values.clusterName }}.{{ .Values.commonDomain }}"
+        domain: "worker.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
         port: 10250
       networkSetup:
         docker:
