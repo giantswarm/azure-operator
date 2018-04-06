@@ -47,7 +47,7 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 	}
 
 	{
-		if err := h.InstallAzureOperator(template.AzureOperatorChartValues); err != nil {
+		if err := h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues); err != nil {
 			return microerror.Mask(err)
 		}
 
