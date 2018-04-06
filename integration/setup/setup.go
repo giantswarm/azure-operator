@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/integration/teardown"
 	"github.com/giantswarm/azure-operator/integration/template"
 )
 
@@ -43,6 +44,20 @@ func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Hos
 
 	if v == 0 {
 		v = m.Run()
+	}
+
+	if os.Getenv("KEEP_RESOURCES") != "true" {
+		h.DeleteGuestCluster("azureconfig", "azure-operator", "deleting host vnet peering: deleted")
+
+		// only do full teardown when not on CI
+		if os.Getenv("CIRCLECI") != "true" {
+			err := teardown.Teardown(c, g, h)
+			if err != nil {
+				log.Printf("%#v\n", err)
+				v = 1
+			}
+			h.Teardown()
+		}
 	}
 
 	os.Exit(v)
