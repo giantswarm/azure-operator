@@ -9,8 +9,8 @@ azure:
   location: ${AZURE_LOCATION}
   vmSizeMaster: "Standard_D2s_v3"
   vmSizeWorker: "Standard_D2s_v3"
-  calicoSubnetCIDR: "10.25.128.0/17"
-  cidr: "10.25.0.0/16"
-  masterSubnetCIDR: "10.25.0.0/24"
-  workerSubnetCIDR: "10.25.1.0/24"
+  calicoSubnetCIDR: ${AZURE_CALICO_SUBNET_CIDR}
+  cidr: ${AZURE_CIDR}
+  masterSubnetCIDR: ${AZURE_MASTER_SUBNET_CIDR}
+  workerSubnetCIDR: ${AZURE_WORKER_SUBNET_CIDR}
 `
