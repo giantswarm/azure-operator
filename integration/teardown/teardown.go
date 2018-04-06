@@ -14,7 +14,7 @@ func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) e
 	var err error
 
 	{
-		h.DeleteGuestCluster("azureconfig", "azure-operator", "deleting host vnet peering: deleted")
+		h.DeleteGuestCluster("azure-operator", "azureconfig", "deleting host vnet peering: deleted")
 
 		// only do full teardown when not on CI
 		if os.Getenv("CIRCLECI") == "true" {
