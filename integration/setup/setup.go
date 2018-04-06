@@ -20,6 +20,7 @@ const (
 	azureResourceValuesFile = "/tmp/azure-operator-values.yaml"
 )
 
+// WrapTestMain setup and teardown e2e testing environment.
 func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *testing.M) {
 	var v int
 	var err error
@@ -63,6 +64,7 @@ func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Hos
 	os.Exit(v)
 }
 
+// Resources install required charts.
 func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
 	{
 		if err := h.InstallStableOperator("cert-operator", "certconfig", template.CertOperatorChartValues); err != nil {

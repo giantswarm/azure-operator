@@ -33,7 +33,6 @@ func TestMain(m *testing.M) {
 		panic(err.Error())
 	}
 
-	// Create a new logger which is used by all packages.
 	var newLogger micrologger.Logger
 	{
 		loggerConfig := micrologger.Config{
