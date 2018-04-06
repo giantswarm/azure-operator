@@ -64,22 +64,28 @@ func Setup(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *t
 
 // Resources install required charts.
 func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
+	var err error
+
 	{
-		if err := h.InstallStableOperator("cert-operator", "certconfig", template.CertOperatorChartValues); err != nil {
+		err = h.InstallStableOperator("cert-operator", "certconfig", template.CertOperatorChartValues)
+		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		if err := h.InstallCertResource(); err != nil {
+		err = h.InstallCertResource()
+		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		if err := h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues); err != nil {
+		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
+		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		if err := installAzureResource(); err != nil {
+		err = installAzureResource()
+		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
