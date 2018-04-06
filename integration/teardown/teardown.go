@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 )
 
+// Teardown e2e testing environment.
 func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
 	var err error
 
