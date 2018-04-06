@@ -22,46 +22,44 @@ const (
 
 // WrapTestMain setup and teardown e2e testing environment.
 func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *testing.M) {
+	var r int
+
+	err := Setup(c, g, h)
+	if err != nil {
+		log.Printf("%#v\n", err)
+		r = 1
+	} else {
+		r = m.Run()
+	}
+
+	if os.Getenv("KEEP_RESOURCES") != "true" {
+		teardown.Teardown(c, g, h)
+	}
+
+	os.Exit(r)
+}
+
+// Setup e2e testing environment.
+func Setup(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *testing.M) error {
 	var v int
 	var err error
 
 	err = h.Setup()
 	if err != nil {
-		log.Printf("%#v\n", err)
-		v = 1
+		return microerror.Mask(err)
 	}
 
 	err = Resources(c, g, h)
 	if err != nil {
-		log.Printf("%#v\n", err)
-		v = 1
+		return microerror.Mask(err)
 	}
 
 	err = g.Setup()
 	if err != nil {
-		log.Printf("%#v\n", err)
-		v = 1
+		return microerror.Mask(err)
 	}
 
-	if v == 0 {
-		v = m.Run()
-	}
-
-	if os.Getenv("KEEP_RESOURCES") != "true" {
-		h.DeleteGuestCluster("azureconfig", "azure-operator", "deleting host vnet peering: deleted")
-
-		// only do full teardown when not on CI
-		if os.Getenv("CIRCLECI") != "true" {
-			err := teardown.Teardown(c, g, h)
-			if err != nil {
-				log.Printf("%#v\n", err)
-				v = 1
-			}
-			h.Teardown()
-		}
-	}
-
-	os.Exit(v)
+	return nil
 }
 
 // Resources install required charts.
