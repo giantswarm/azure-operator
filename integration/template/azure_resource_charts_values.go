@@ -1,7 +1,7 @@
 package template
 
 var AzureResourceChartValues = `clusterName: ${CLUSTER_NAME}
-commonDomain: ${COMMON_DOMAIN_GUEST}
+commonDomain: ${COMMON_DOMAIN_GUEST_NO_K8S}
 commonDomainResourceGroup: ${COMMON_DOMAIN_RESOURCE_GROUP}
 sshUser: "test-user"
 sshPublicKey: ${IDRSA_PUB}
