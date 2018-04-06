@@ -14,8 +14,6 @@ var AzureOperatorChartValues = `Installation:
                 IssueURL: ""
                 UsernameClaim: ""
                 GroupsClaim: ""
-      Update:
-        Enabled: ${GUEST_UPDATE_ENABLED}
     Name: ci-azure-operator
     Provider:
       Azure:
