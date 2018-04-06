@@ -37,7 +37,7 @@ func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Hos
 
 func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
 	{
-		if err := h.InstallCertOperator(); err != nil {
+		if err := h.InstallStableOperator("cert-operator", "certconfig", template.CertOperatorChartValues); err != nil {
 			return microerror.Mask(err)
 		}
 

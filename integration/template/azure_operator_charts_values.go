@@ -1,6 +1,6 @@
 package template
 
-// AWSOperatorChartValues values required by aws-operator-chart, the environment
+// AzureOperatorChartValues values required by aws-operator-chart, the environment
 // variables will be expanded before writing the contents to a file.
 var AzureOperatorChartValues = `Installation:
   V1:
