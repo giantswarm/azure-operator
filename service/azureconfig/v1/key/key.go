@@ -56,6 +56,11 @@ func ClusterID(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.ID
 }
 
+// ClusterNamespace returns the cluster Namespace for this cluster.
+func ClusterNamespace(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.ID
+}
+
 // ClusterOrganization returns the org name from the custom object.
 // It uses ClusterCustomer until this field is renamed in the custom object.
 func ClusterOrganization(customObject providerv1alpha1.AzureConfig) string {
