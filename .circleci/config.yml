@@ -30,7 +30,7 @@ jobs:
             ./architect deploy
           fi
 
-  testHello:
+  e2eTestHello:
     environment:
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/hello"
@@ -41,4 +41,4 @@ workflows:
   build_and_e2e:
     jobs:
       - build
-      - testHello
+      - e2eTestHello
