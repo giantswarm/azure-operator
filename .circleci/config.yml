@@ -35,3 +35,10 @@ jobs:
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/hello"
     <<: *e2eTest
+
+workflows:
+  version: 2
+  build_and_e2e:
+    jobs:
+      - build
+      - testHello
