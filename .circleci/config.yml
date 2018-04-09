@@ -1,4 +1,5 @@
 e2eTest: &e2eTest
+  machine: true
   steps:
   - run: |
       curl -sSO $(curl -sS https://api.github.com/repos/giantswarm/e2e-harness/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
