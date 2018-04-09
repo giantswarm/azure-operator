@@ -40,7 +40,7 @@ func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Hos
 }
 
 // Setup e2e testing environment.
-func Setup(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *testing.M) error {
+func Setup(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
 	var v int
 	var err error
 
