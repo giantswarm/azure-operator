@@ -3,6 +3,8 @@
 package teardown
 
 import (
+	"os"
+
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 
