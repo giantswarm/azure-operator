@@ -1,6 +1,7 @@
 e2eTest: &e2eTest
   machine: true
   steps:
+  - checkout
   - run: |
       wget -q $(curl -sS https://api.github.com/repos/giantswarm/e2e-harness/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
       chmod +x ./e2e-harness
@@ -18,7 +19,6 @@ jobs:
     machine: true
     steps:
     - checkout
-
     - run: |
         wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
         chmod +x ./architect
