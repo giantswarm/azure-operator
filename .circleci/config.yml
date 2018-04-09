@@ -1,3 +1,16 @@
+e2eTest: &e2eTest
+  steps:
+  - run: |
+      curl -sSO $(curl -sS https://api.github.com/repos/giantswarm/e2e-harness/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+      chmod +x ./e2e-harness
+  - run: ./e2e-harness localkube
+  - run: ./e2e-harness setup --remote=false
+  - run: ./e2e-harness test --test-dir=${TEST_DIR}
+  - run:
+      command: ./e2e-harness teardown
+      when: always
+
+
 version: 2
 jobs:
   build:
@@ -15,3 +28,9 @@ jobs:
           if [ "${CIRCLE_BRANCH}" == "master" ]; then
             ./architect deploy
           fi
+
+  testHello:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/hello"
+    <<: *e2eTest
