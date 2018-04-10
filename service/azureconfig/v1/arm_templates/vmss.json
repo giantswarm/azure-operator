@@ -58,7 +58,7 @@
         "computeApiVersion": "2017-12-01",
 
         "contributorRoleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c",
-        "roleAssignmentName": "[concat(parameters('vmssName'), '-', 'roleassignment')]",
+        "roleAssignmentName": "[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
         "vmssResourceId": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
         "___vmssPipName": "___[concat(parameters('vmssName'), '-pip')]",
         "___vmssPipResourceId": "___[resourceId('Microsoft.Network/publicIpAddresses', variables('vmssPipName'))]",
