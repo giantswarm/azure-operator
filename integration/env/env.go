@@ -39,7 +39,7 @@ func ClusterName() string {
 	parts = append(parts, CircleJobID()[0:5])
 	parts = append(parts, CircleSHA()[0:5])
 
-	return strings.Join(parts, "-")
+	return strings.ToLower(strings.Join(parts, "-"))
 }
 
 func CircleJobName() string {
