@@ -23,13 +23,6 @@
         "description": "API version used by the Microsoft.Compute/virtualMachines/extensions resource."
       }
     },
-    "roleAssignmentsAPIVersion": {
-      "type": "string",
-      "defaultValue": "2016-09-01",
-      "metadata": {
-        "description": "API version used by the Microsoft.Authorization/roleAssignments resource."
-      }
-    },
     "clusterID": {
       "type": "string"
     },

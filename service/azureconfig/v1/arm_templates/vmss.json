@@ -57,6 +57,8 @@
         "networkApiVersion": "2017-06-01",
         "computeApiVersion": "2017-12-01",
 
+
+        "contributorRoleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c",
         "vmssResourceId": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
         "___vmssPipName": "___[concat(parameters('vmssName'), '-pip')]",
         "___vmssPipResourceId": "___[resourceId('Microsoft.Network/publicIpAddresses', variables('vmssPipName'))]",
@@ -264,6 +266,18 @@
                         ]
                     }
                 }
+            }
+        },
+        {
+            "type": "Microsoft.Authorization/roleAssignments",
+            "apiVersion": "2014-10-01-preview",
+            "name": "[guid(variables('roleAssignmentName'))]",
+            "tags": {
+                "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+            },
+            "properties": {
+                "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+                "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]"
             }
         }
     ]

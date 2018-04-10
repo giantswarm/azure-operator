@@ -117,7 +117,18 @@ func (me *masterExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 }
 
 func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
-	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject)
+	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject, vmTypeVMSS)
+
+	asset, err := renderCloudProviderConfFile(params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderCloudProviderConfFileMasterKubelet() (k8scloudconfig.FileAsset, error) {
+	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject, vmTypeStandard)
 
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {

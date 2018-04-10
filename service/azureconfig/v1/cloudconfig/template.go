@@ -517,17 +517,23 @@ const (
 )
 
 const (
-	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
-	cloudProviderConfFileOwner      = "root:root"
-	cloudProviderConfFilePermission = 0600
-	cloudProviderConfFileTemplate   = `cloud: {{ .AzureCloudType }}
+	// Below we need separate path for master's kubelet as master machine
+	// is regular VM not running in VMSS. This may change soonish.
+
+	cloudProviderConfFileName              = "/etc/kubernetes/config/azure.yaml"
+	cloudProviderConfFileNameMasterKubelet = "/etc/kubernetes/config/azure-kubelet.yaml"
+	cloudProviderConfFileOwner             = "root:root"
+	cloudProviderConfFilePermission        = 0600
+	cloudProviderConfFileTemplate          = `cloud: {{ .AzureCloudType }}
 tenantId: {{ .TenantID }}
 subscriptionId: {{ .SubscriptionID }}
 resourceGroup: {{ .ResourceGroup }}
 location: {{ .Location }}
+primaryScaleSetName: {{ .PrimaryScaleSetName }}
 subnetName: {{ .SubnetName }}
 securityGroupName: {{ .SecurityGroupName }}
 vnetName: {{ .VnetName }}
+vmType: {{ .VMType }}
 routeTableName: {{ .RouteTableName }}
 useManagedIdentityExtension: true
 `
