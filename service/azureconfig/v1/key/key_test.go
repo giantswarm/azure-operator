@@ -40,6 +40,22 @@ func Test_ClusterID(t *testing.T) {
 	}
 }
 
+func Test_ClusterNamespace(t *testing.T) {
+	expectedNamespace := "9dj1k"
+
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: expectedNamespace,
+			},
+		},
+	}
+
+	if ClusterNamespace(customObject) != expectedNamespace {
+		t.Fatalf("Expected cluster namespace %s but was %s", expectedNamespace, ClusterNamespace(customObject))
+	}
+}
+
 func Test_ClusterCustomer(t *testing.T) {
 	expectedID := "test-customer"
 

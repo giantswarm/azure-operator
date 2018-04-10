@@ -21,7 +21,9 @@ import (
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/key"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/service"
 	"github.com/giantswarm/azure-operator/service/azureconfig/v1/resource/vnetpeering"
 )
 
@@ -175,6 +177,42 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 		}
 	}
 
+	var namespaceResource framework.Resource
+	{
+		c := namespace.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
+
+		ops, err := namespace.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		namespaceResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var serviceResource framework.Resource
+	{
+		c := service.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
+
+		ops, err := service.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		serviceResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vnetPeeringResource framework.Resource
 	{
 		c := vnetpeering.Config{
@@ -196,6 +234,8 @@ func NewResourceSet(config ResourceSetConfig) (*framework.ResourceSet, error) {
 	}
 
 	resources := []framework.Resource{
+		namespaceResource,
+		serviceResource,
 		resourceGroupResource,
 		deploymentResource,
 		dnsrecordResource,
