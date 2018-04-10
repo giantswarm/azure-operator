@@ -54,11 +54,11 @@
         }
     },
     "variables": {
-        "networkApiVersion": "2017-06-01",
+        "authorizationApiVersion": "2014-10-01-preview",
         "computeApiVersion": "2017-12-01",
 
-
         "contributorRoleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+        "roleAssignmentName": "[concat(parameters('vmssName'), '-', 'roleassignment')]",
         "vmssResourceId": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
         "___vmssPipName": "___[concat(parameters('vmssName'), '-pip')]",
         "___vmssPipResourceId": "___[resourceId('Microsoft.Network/publicIpAddresses', variables('vmssPipName'))]",
@@ -269,9 +269,9 @@
             }
         },
         {
+            "apiVersion": "[variables('authorizationApiVersion')]",
             "type": "Microsoft.Authorization/roleAssignments",
-            "apiVersion": "2014-10-01-preview",
-            "name": "[guid(variables('roleAssignmentName'))]",
+            "name": "[variables('roleAssignmentName')]",
             "tags": {
                 "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
             },
