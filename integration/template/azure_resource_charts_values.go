@@ -7,8 +7,8 @@ sshUser: "test-user"
 sshPublicKey: ${IDRSA_PUB}
 azure:
   location: ${AZURE_LOCATION}
-  vmSizeMaster: "Standard_D2s_v3"
-  vmSizeWorker: "Standard_D2s_v3"
+  vmSizeMaster: "Standard_DS1_v2"
+  vmSizeWorker: "Standard_DS1_v2"
   calicoSubnetCIDR: ${AZURE_CALICO_SUBNET_CIDR}
   cidr: ${AZURE_CIDR}
   masterSubnetCIDR: ${AZURE_MASTER_SUBNET_CIDR}
