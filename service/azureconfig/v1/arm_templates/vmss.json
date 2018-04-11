@@ -269,7 +269,7 @@
             }
         },
         {
-            "apiVersion": "[variables('authorizationApiVersion')]",
+            "apiVersion": "2017-05-01",
             "type": "Microsoft.Authorization/roleAssignments",
             "name": "[variables('roleAssignmentName')]",
             "tags": {
@@ -277,7 +277,8 @@
             },
             "properties": {
                 "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-                "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]"
+                "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+                "scope": "[resourceGroup().id]"
             }
         }
     ]
