@@ -57,7 +57,8 @@
         "authorizationApiVersion": "2014-10-01-preview",
         "computeApiVersion": "2017-12-01",
 
-        "contributorRoleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+        "contributorRoleDefinitionGUID": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+        "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleDefinitionGUID'))]",
         "roleAssignmentName": "[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
         "vmssResourceId": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
         "___vmssPipName": "___[concat(parameters('vmssName'), '-pip')]",
