@@ -63,7 +63,7 @@
         "roleAssignmentName": "[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
 
         "vmssResourceId": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
-        "vmssVmNamePrefix": "[toLower(parameters('vmssName'))]",
+        "vmssVmNamePrefix": "[concat(toLower(parameters('vmssName')), '-')]",
         "vmssSinglePlacementGroup": "true",
         "vmssStandardLrsSize": [
             "Standard_A0",
