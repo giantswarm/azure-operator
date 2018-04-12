@@ -409,21 +409,21 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "location":             {"value": "[resourceGroup().location]"},
-          "GiantSwarmTags":       {"value": "[parameters('GiantSwarmTags')]"},
-          "vmssName":             {"value": "worker-vmss"},
-          "vmssVmSize":           {"value": "[parameters('workerNodes')[0].vmSize]"},
-          "vmssVmCount":          {"value": "[length(parameters('workerNodes'))]"},
-          "vmssVmDataDisks":      {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
-          "vmssSshUser":          {"value": "[parameters('workerNodes')[0].adminUsername]"},
-          "vmssSshPublicKey":     {"value": "[parameters('workerNodes')[0].adminSSHKeyData]"},
+          "location": {"value": "[resourceGroup().location]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "vmssName": {"value": "worker-vmss"},
+          "vmssVmSize": {"value": "[parameters('workerNodes')[0].vmSize]"},
+          "vmssVmCount": {"value": "[length(parameters('workerNodes'))]"},
+          "vmssVmDataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
+          "vmssSshUser": {"value": "[parameters('workerNodes')[0].adminUsername]"},
+          "vmssSshPublicKey": {"value": "[parameters('workerNodes')[0].adminSSHKeyData]"},
           "vmssOsImagePublisher": {"value": "[parameters('workerNodes')[0].osImage.publisher]"},
-          "vmssOsImageOffer":     {"value": "[parameters('workerNodes')[0].osImage.offer]"},
-          "vmssOsImageSKU":       {"value": "[parameters('workerNodes')[0].osImage.sku]"},
-          "vmssOsImageVersion":   {"value": "[parameters('workerNodes')[0].osImage.version]"},
-          "vmssVmCustomData":     {"value": "[parameters('workerCloudConfigData')]"},
-          "vmssLbBackendPoolId":  {"value": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"},
-          "vmssVnetSubnetId":     {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
+          "vmssOsImageOffer": {"value": "[parameters('workerNodes')[0].osImage.offer]"},
+          "vmssOsImageSKU": {"value": "[parameters('workerNodes')[0].osImage.sku]"},
+          "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
+          "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
+          "vmssLbBackendPoolId": {"value": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"},
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
         }
       }
     }
