@@ -54,21 +54,17 @@
         }
     },
     "variables": {
-        "authorizationApiVersion": "2014-10-01-preview",
-        "computeApiVersion": "2017-12-01",
+        "authorizationAPIVersion": "2017-05-01",
+        "computeAPIVersion": "2017-12-01",
 
         "contributorRoleDefinitionGUID": "b24988ac-6180-42a0-ab88-20f7382dd24c",
         "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleDefinitionGUID'))]",
+
         "roleAssignmentName": "[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
+
         "vmssResourceId": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
-        "___vmssPipName": "___[concat(parameters('vmssName'), '-pip')]",
-        "___vmssPipResourceId": "___[resourceId('Microsoft.Network/publicIpAddresses', variables('vmssPipName'))]",
-        "__comment__": "Must be between 1 and 15 characters.",
         "vmssVmNamePrefix": "[toLower(parameters('vmssName'))]",
-        "__comment__": "When true this limits the scale set to a single placement group, of max size 100 virtual machines.",
         "vmssSinglePlacementGroup": "true",
-        "___vmssLbName": "___[concat(parameters('vmssName'), '-lb')]",
-        "___vmssLbResourceId": "___[resourceId('Microsoft.Network/loadBalancers/', variables('vmssLbName'))]",
         "vmssStandardLrsSize": [
             "Standard_A0",
             "Standard_A1",
@@ -155,7 +151,7 @@
     },
     "resources": [
         {
-            "apiVersion": "[variables('computeApiVersion')]",
+            "apiVersion": "[variables('computeAPIVersion')]",
             "type": "Microsoft.Compute/virtualMachineScaleSets",
             "name": "[parameters('vmssName')]",
             "location": "[parameters('location')]",
@@ -270,7 +266,7 @@
             }
         },
         {
-            "apiVersion": "2017-05-01",
+            "apiVersion": "[variables('authorizationAPIVersion')]",
             "type": "Microsoft.Authorization/roleAssignments",
             "name": "[variables('roleAssignmentName')]",
             "tags": {
