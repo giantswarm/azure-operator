@@ -830,7 +830,7 @@ write_files:
           serviceAccountName: kube-proxy
           containers:
             - name: kube-proxy
-              image: quay.io/giantswarm/hyperkube:v1.10.0
+              image: quay.io/giantswarm/hyperkube:v1.9.5
               command:
               - /hyperkube
               - proxy
@@ -1885,7 +1885,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-api-server
-        image: quay.io/giantswarm/hyperkube:v1.10.0
+        image: quay.io/giantswarm/hyperkube:v1.9.5
         env:
         - name: HOST_IP
           valueFrom:
@@ -1897,13 +1897,13 @@ write_files:
         {{ range .Hyperkube.Apiserver.Pod.CommandExtraArgs -}}
         - {{ . }}
         {{ end -}}
-        - --allow-privileged=true
-        - --insecure-bind-address=0.0.0.0
+        - --allow_privileged=true
+        - --insecure_bind_address=0.0.0.0
         - --anonymous-auth=false
         - --insecure-port=0
-        - --kubelet-https=true
+        - --kubelet_https=true
         - --kubelet-preferred-address-types=InternalIP
-        - --secure-port={{.Cluster.Kubernetes.API.SecurePort}}
+        - --secure_port={{.Cluster.Kubernetes.API.SecurePort}}
         - --bind-address=$(HOST_IP)
         - --etcd-prefix={{.Cluster.Etcd.Prefix}}
         - --profiling=false
@@ -2007,7 +2007,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-controller-manager
-        image: quay.io/giantswarm/hyperkube:v1.10.0
+        image: quay.io/giantswarm/hyperkube:v1.9.5
         command:
         - /hyperkube
         - controller-manager
@@ -2080,7 +2080,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-scheduler
-        image: quay.io/giantswarm/hyperkube:v1.10.0
+        image: quay.io/giantswarm/hyperkube:v1.9.5
         command:
         - /hyperkube
         - scheduler
@@ -2369,7 +2369,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.10.0"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.9.5"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
