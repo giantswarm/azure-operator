@@ -37,9 +37,16 @@ jobs:
       TEST_DIR: "integration/test/hello"
     <<: *e2eTest
 
+  e2eTestFoo:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/foo"
+    <<: *e2eTest
+
 workflows:
   version: 2
   build_and_e2eTest:
     jobs:
       - build
       - e2eTestHello
+      - e2eTestFoo
