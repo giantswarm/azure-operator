@@ -411,7 +411,7 @@
         "parameters": {
           "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "vmssName": {"value": "worker-vmss"},
+          "vmssName": {"value": "[concat(parameters('clusterID'), '-worker')]"},
           "vmssVmSize": {"value": "[parameters('workerNodes')[0].vmSize]"},
           "vmssVmCount": {"value": "[length(parameters('workerNodes'))]"},
           "vmssVmDataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
