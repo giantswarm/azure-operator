@@ -59,6 +59,8 @@ type AzureClientSet struct {
 	DNSRecordSetsClient *dns.RecordSetsClient
 	// DNSRecordSetsClient manages DNS zones.
 	DNSZonesClient *dns.ZonesClient
+	// InterfacesClient manages virtual network interfaces.
+	InterfacesClient *network.InterfacesClient
 	// VnetPeeringClient manages virtual network peerings.
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
@@ -89,6 +91,11 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	interfacesClient, err := newInterfacesClient(config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	vnetPeeringClient, err := newVnetPeeringClient(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -99,6 +106,7 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 		GroupsClient:        groupsClient,
 		DNSRecordSetsClient: dnsRecordSetsClient,
 		DNSZonesClient:      dnsZonesClient,
+		InterfacesClient:    interfacesClient,
 		VnetPeeringClient:   vnetPeeringClient,
 	}
 
@@ -158,6 +166,18 @@ func newDNSZonesClient(config AzureConfig) (*dns.ZonesClient, error) {
 	}
 
 	client := dns.NewZonesClient(config.SubscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+
+	return &client, nil
+}
+
+func newInterfacesClient(config AzureConfig) (*network.InterfacesClient, error) {
+	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
+	if err != nil {
+		return nil, microerror.Maskf(err, "creating service principal token")
+	}
+
+	client := network.NewInterfacesClient(config.SubscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(spt)
 
 	return &client, nil

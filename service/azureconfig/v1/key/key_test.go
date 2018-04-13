@@ -173,3 +173,19 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 		}
 	}
 }
+
+func Test_MasterNICName(t *testing.T) {
+	expectedMasterNICName := "3p5j2-Master-1-NIC"
+
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "3p5j2",
+			},
+		},
+	}
+
+	if MasterNICName(customObject) != expectedMasterNICName {
+		t.Fatalf("Expected master nic name %s but was %s", expectedMasterNICName, MasterNICName(customObject))
+	}
+}
