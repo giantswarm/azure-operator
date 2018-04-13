@@ -147,6 +147,10 @@ func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
+func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return "worker-vmss"
+}
+
 // ResourceGroupName returns name of the resource group for this cluster.
 func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return ClusterID(customObject)

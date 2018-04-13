@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_4"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_5"
 	"github.com/giantswarm/microerror"
 )
 
@@ -59,9 +59,27 @@ func renderCertificatesFiles(certFiles certs.Files) ([]k8scloudconfig.FileAsset,
 }
 
 func renderCloudProviderConfFile(params cloudProviderConfFileParams) (k8scloudconfig.FileAsset, error) {
+	asset, err := renderCloudProviderConfFilePath(cloudProviderConfFileName, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func renderCloudProviderConfFileMasterKubelet(params cloudProviderConfFileParams) (k8scloudconfig.FileAsset, error) {
+	asset, err := renderCloudProviderConfFilePath(cloudProviderConfFileNameMasterKubelet, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func renderCloudProviderConfFilePath(path string, params cloudProviderConfFileParams) (k8scloudconfig.FileAsset, error) {
 	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: cloudProviderConfFileTemplate,
-		Path:         cloudProviderConfFileName,
+		Path:         path,
 		Owner:        cloudProviderConfFileOwner,
 		Permissions:  cloudProviderConfFilePermission,
 	}

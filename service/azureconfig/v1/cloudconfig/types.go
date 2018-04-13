@@ -20,29 +20,40 @@ func newCalicoAzureFileParams(obj providerv1alpha1.AzureConfig) calicoAzureFileP
 	}
 }
 
+type cloudProviderConfFileVMType string
+
+const (
+	vmTypeStandard cloudProviderConfFileVMType = "standard"
+	vmTypeVMSS     cloudProviderConfFileVMType = "vmss"
+)
+
 type cloudProviderConfFileParams struct {
-	AzureCloudType    string
-	Location          string
-	ResourceGroup     string
-	RouteTableName    string
-	SecurityGroupName string
-	SubnetName        string
-	SubscriptionID    string
-	TenantID          string
-	VnetName          string
+	AzureCloudType      string
+	Location            string
+	PrimaryScaleSetName string
+	ResourceGroup       string
+	RouteTableName      string
+	SecurityGroupName   string
+	SubnetName          string
+	SubscriptionID      string
+	TenantID            string
+	VnetName            string
+	VMType              cloudProviderConfFileVMType
 }
 
-func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
+func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig, vmType cloudProviderConfFileVMType) cloudProviderConfFileParams {
 	return cloudProviderConfFileParams{
-		AzureCloudType:    key.AzureCloudType(obj),
-		Location:          azure.Location,
-		ResourceGroup:     key.ResourceGroupName(obj),
-		RouteTableName:    key.RouteTableName(obj),
-		SecurityGroupName: key.WorkerSecurityGroupName(obj),
-		SubnetName:        key.WorkerSubnetName(obj),
-		SubscriptionID:    azureConfig.SubscriptionID,
-		TenantID:          azureConfig.TenantID,
-		VnetName:          key.VnetName(obj),
+		AzureCloudType:      key.AzureCloudType(obj),
+		Location:            azure.Location,
+		PrimaryScaleSetName: key.WorkerVMSSName(obj),
+		ResourceGroup:       key.ResourceGroupName(obj),
+		RouteTableName:      key.RouteTableName(obj),
+		SecurityGroupName:   key.WorkerSecurityGroupName(obj),
+		SubnetName:          key.WorkerSubnetName(obj),
+		SubscriptionID:      azureConfig.SubscriptionID,
+		TenantID:            azureConfig.TenantID,
+		VnetName:            key.VnetName(obj),
+		VMType:              vmType,
 	}
 }
 

@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_4"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_5"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -35,6 +35,11 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
 	}
 
+	cloudProviderConfFileMasterKubelet, err := me.renderCloudProviderConfFileMasterKubelet()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderCloudProviderConfFileMasterKubelet")
+	}
+
 	defaultStorageClassFile, err := me.renderDefaultStorageClassFile()
 	if err != nil {
 		return nil, microerror.Maskf(err, "renderDefaultStorageClassFile")
@@ -43,6 +48,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	files := []k8scloudconfig.FileAsset{
 		calicoAzureFile,
 		cloudProviderConfFile,
+		cloudProviderConfFileMasterKubelet,
 		defaultStorageClassFile,
 	}
 	files = append(files, certificateFiles...)
@@ -117,9 +123,20 @@ func (me *masterExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 }
 
 func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
-	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject)
+	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject, vmTypeVMSS)
 
 	asset, err := renderCloudProviderConfFile(params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderCloudProviderConfFileMasterKubelet() (k8scloudconfig.FileAsset, error) {
+	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject, vmTypeStandard)
+
+	asset, err := renderCloudProviderConfFileMasterKubelet(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}

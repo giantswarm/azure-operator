@@ -127,6 +127,10 @@
       "type": "string",
       "defaultValue": "peering.json"
     },
+    "vmssTemplateFile": {
+      "type": "string",
+      "defaultValue": "vmss.json"
+    },
     "dnsZones": {
       "type": "object",
       "metadata": {
@@ -144,6 +148,7 @@
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "networkPeeringTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('networkPeeringTemplateFile'))]",
+    "vmssTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('vmssTemplateFile'))]",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
   },
@@ -193,7 +198,7 @@
       "name": "virtual_network_setup",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
-          "route_table_setup"
+        "route_table_setup"
       ],
       "properties": {
         "mode": "incremental",
@@ -248,23 +253,6 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": {"value": "[variables('masterPrefix')]"}
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "worker_availability_sets_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('availabilitySetsTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": {"value": "[variables('workerPrefix')]"}
         }
       }
     },
@@ -412,35 +400,30 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "[concat('worker_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
-      "copy": {
-        "name": "worker_nodes_setup_copy",
-        "count":  "[length(parameters('workerNodes'))]"
-      },
+      "name": "worker-vmss-deploy",
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('nodeSetupTemplateURI')]",
+          "uri": "[variables('vmssTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
+          "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": {"value": "[concat(variables('workerPrefix'), '-', copyIndex(1))]"},
-          "subnetID": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
-          "availabilitySetID": {"value": "[reference('worker_availability_sets_setup').outputs.availabilitySetID.value]"},
-          "disablePasswordAuth": {"value": "[parameters('workerDisablePasswordAuth')]"},
-          "vmSize": {"value": "[parameters('workerNodes')[copyIndex()].vmSize]"},
-          "dataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
-          "adminUsername": {"value": "[parameters('workerNodes')[copyIndex()].adminUsername]"},
-          "adminSSHKeyData": {"value": "[parameters('workerNodes')[copyIndex()].adminSSHKeyData]"},
-          "osImagePublisher": {"value": "[parameters('workerNodes')[copyIndex()].osImage.publisher]"},
-          "osImageOffer": {"value": "[parameters('workerNodes')[copyIndex()].osImage.offer]"},
-          "osImageSKU": {"value": "[parameters('workerNodes')[copyIndex()].osImage.sku]"},
-          "osImageVersion": {"value": "[parameters('workerNodes')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('workerCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('ingress_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
+          "vmssName": {"value": "[concat(parameters('clusterID'), '-worker')]"},
+          "vmssVmSize": {"value": "[parameters('workerNodes')[0].vmSize]"},
+          "vmssVmCount": {"value": "[length(parameters('workerNodes'))]"},
+          "vmssVmDataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
+          "vmssSshUser": {"value": "[parameters('workerNodes')[0].adminUsername]"},
+          "vmssSshPublicKey": {"value": "[parameters('workerNodes')[0].adminSSHKeyData]"},
+          "vmssOsImagePublisher": {"value": "[parameters('workerNodes')[0].osImage.publisher]"},
+          "vmssOsImageOffer": {"value": "[parameters('workerNodes')[0].osImage.offer]"},
+          "vmssOsImageSKU": {"value": "[parameters('workerNodes')[0].osImage.sku]"},
+          "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
+          "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
+          "vmssLbBackendPoolId": {"value": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"},
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
         }
       }
     }

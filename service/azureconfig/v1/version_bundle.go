@@ -11,22 +11,7 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "Enabled encryption at rest.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "kubernetes",
-				Description: "Updated to version 1.9.5.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "kubernetes",
-				Description: "Switched vanilla (previously coreos) hyperkube image.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "calico",
-				Description: "Updated to version 3.0.1.",
+				Description: "Updated to version 1.10.1.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -40,28 +25,8 @@ func VersionBundle() versionbundle.Bundle {
 				Kind:        versionbundle.KindChanged,
 			},
 			{
-				Component:   "calico",
-				Description: "Removed calico-ipip-pinger.",
-				Kind:        versionbundle.KindRemoved,
-			},
-			{
-				Component:   "calico",
-				Description: "Removed calico-node-controller.",
-				Kind:        versionbundle.KindRemoved,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Replace systemd units for Kubernetes components with self-hosted pods.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
 				Component:   "azure-operator",
 				Description: "Change default etcd data dir to /var/lib/etcd.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Improved encryption key injection.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
@@ -80,7 +45,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "etcd",
-				Version: "3.2.7",
+				Version: "3.3.1",
 			},
 			{
 				Name:    "coredns",
@@ -88,7 +53,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.9.5",
+				Version: "1.10.1",
 			},
 			{
 				Name:    "nginx-ingress-controller",

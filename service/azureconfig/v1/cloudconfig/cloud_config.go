@@ -9,7 +9,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_4"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_2_5"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -125,7 +125,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 						"-v /var/lib/waagent:/var/lib/waagent:ro",
 					},
 					CommandExtraArgs: []string{
-						"--cloud-config=/etc/kubernetes/config/azure.yaml",
+						"--cloud-config=/etc/kubernetes/config/azure-kubelet.yaml",
 					},
 				},
 			},
@@ -199,15 +199,19 @@ func newCloudConfig(template string, params k8scloudconfig.Params) (string, erro
 		return "", microerror.Maskf(err, "compressing cloud-config")
 	}
 
-	// cloud-config is compressed so we fit the tight 65.5kB limit of ARM
-	// template parameter size.
+	// cloud-config is compressed so we fit the tight 85kB limit of
+	// customData parameter.
+	//
+	// "Custom data in OSProfile must be in Base64 encoding and with
+	// a maximum length of 87380 characters."
+	//
+	//  87380 / 1024 = 85
 	customData := fmt.Sprintf(`#!/bin/bash
 D="/root/cloudinit"
 mkdir -m 700 -p ${D}
 echo -n "%s" | base64 -d | gzip -d -c > ${D}/cc
 coreos-cloudinit --from-file=${D}/cc`, compressed)
 
-	// TODO use base64() in ARM template
 	customData = base64.StdEncoding.EncodeToString([]byte(customData))
 	return customData, nil
 }

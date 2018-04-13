@@ -140,6 +140,10 @@
     "ipAddress": {
       "type": "string",
       "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
+    },
+    "backendPoolId": {
+      "type": "string",
+      "value": "[reference(variables('loadBalancerID')).backendAddressPools[0].id]"
     }
   }
 }
