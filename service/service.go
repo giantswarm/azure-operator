@@ -140,7 +140,7 @@ func New(config Config) (*Service, error) {
 			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 		}
 
-		clusterFramework, err = controller.NewCluster(c)
+		clusterFramework, err = controller.NewClusterFramework(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
