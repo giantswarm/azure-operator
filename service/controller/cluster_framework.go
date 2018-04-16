@@ -129,6 +129,8 @@ func NewClusterFramework(config ClusterFrameworkConfig) (*framework.Framework, e
 			Logger:         config.Logger,
 			ResourceRouter: resourceRouter,
 			K8sClient:      config.K8sClient,
+
+			Name: config.ProjectName,
 		}
 
 		f, err = framework.New(c)
