@@ -132,6 +132,9 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Informer:       newInformer,
 			Logger:         config.Logger,
 			ResourceRouter: resourceRouter,
+			K8sClient:      config.K8sClient,
+
+			Name: config.ProjectName,
 		}
 
 		f, err = framework.New(c)
