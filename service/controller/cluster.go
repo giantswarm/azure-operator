@@ -16,7 +16,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v1"
 )
 
-type ClusterFrameworkConfig struct {
+type ClusterConfig struct {
 	G8sClient        gsclient.Interface
 	InstallationName string
 	K8sClient        kubernetes.Interface
@@ -29,7 +29,11 @@ type ClusterFrameworkConfig struct {
 	TemplateVersion string
 }
 
-func NewClusterFramework(config ClusterFrameworkConfig) (*framework.Framework, error) {
+type Cluster struct {
+	*framework.Framework
+}
+
+func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var err error
 
 	if config.G8sClient == nil {
@@ -136,5 +140,9 @@ func NewClusterFramework(config ClusterFrameworkConfig) (*framework.Framework, e
 		}
 	}
 
-	return f, nil
+	c := &Cluster{
+		Framework: f,
+	}
+
+	return c, nil
 }
