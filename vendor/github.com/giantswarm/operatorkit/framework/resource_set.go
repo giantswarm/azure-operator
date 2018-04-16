@@ -10,7 +10,6 @@ import (
 	"k8s.io/apimachinery/pkg/api/meta"
 
 	"github.com/giantswarm/operatorkit/framework/context/reconciliationcanceledcontext"
-	"github.com/giantswarm/operatorkit/framework/context/resourcecanceledcontext"
 	"github.com/giantswarm/operatorkit/framework/context/updateallowedcontext"
 	"github.com/giantswarm/operatorkit/framework/context/updatenecessarycontext"
 )
@@ -29,7 +28,8 @@ type ResourceSetConfig struct {
 	// Logger is a usual micrologger instance to emit log messages, if any.
 	Logger micrologger.Logger
 	// Resources is the list of framework resources being executed on runtime
-	// object reconciliation if Handles returns true when asked by the framework.
+	// object reconciliation if Handles returns true when asked by the
+	// framework. Resources are executed in given order.
 	Resources []Resource
 }
 
@@ -69,7 +69,6 @@ func NewResourceSet(c ResourceSetConfig) (*ResourceSet, error) {
 
 func (r *ResourceSet) InitCtx(ctx context.Context, obj interface{}) (context.Context, error) {
 	ctx = reconciliationcanceledcontext.NewContext(ctx, make(chan struct{}))
-	ctx = resourcecanceledcontext.NewContext(ctx, make(chan struct{}))
 	ctx = updateallowedcontext.NewContext(ctx, make(chan struct{}))
 	ctx = updatenecessarycontext.NewContext(ctx, make(chan struct{}))
 
