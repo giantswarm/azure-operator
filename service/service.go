@@ -19,8 +19,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/service/azureconfig"
-	"github.com/giantswarm/azure-operator/service/azureconfig/setting"
+	"github.com/giantswarm/azure-operator/service/controller"
+	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/healthz"
 )
 
@@ -38,9 +38,9 @@ type Config struct {
 }
 
 type Service struct {
-	AzureConfigFramework *framework.Framework
-	Healthz              *healthz.Service
-	Version              *version.Service
+	ClusterFramework *framework.Framework
+	Healthz          *healthz.Service
+	Version          *version.Service
 
 	bootOnce sync.Once
 }
@@ -125,9 +125,9 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	var azureConfigFramework *framework.Framework
+	var clusterFramework *framework.Framework
 	{
-		c := azureconfig.FrameworkConfig{
+		c := controller.ClusterFrameworkConfig{
 			G8sClient:    g8sClient,
 			K8sClient:    k8sClient,
 			K8sExtClient: k8sExtClient,
@@ -140,7 +140,7 @@ func New(config Config) (*Service, error) {
 			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 		}
 
-		azureConfigFramework, err = azureconfig.NewFramework(c)
+		clusterFramework, err = controller.NewClusterFramework(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -175,11 +175,11 @@ func New(config Config) (*Service, error) {
 	}
 
 	newService := &Service{
-		AzureConfigFramework: azureConfigFramework,
-		Healthz:              healthzService,
-		Version:              versionService,
+		Healthz: healthzService,
+		Version: versionService,
 
-		bootOnce: sync.Once{},
+		bootOnce:         sync.Once{},
+		ClusterFramework: clusterFramework,
 	}
 
 	return newService, nil
@@ -187,6 +187,6 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		s.AzureConfigFramework.Boot()
+		s.ClusterFramework.Boot()
 	})
 }

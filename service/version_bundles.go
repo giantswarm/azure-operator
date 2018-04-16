@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/giantswarm/versionbundle"
 
-	"github.com/giantswarm/azure-operator/service/azureconfig/v1"
+	"github.com/giantswarm/azure-operator/service/controller/v1"
 )
 
 func NewVersionBundles() []versionbundle.Bundle {

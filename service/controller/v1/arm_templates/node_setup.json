@@ -1,0 +1,326 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "networkInterfacesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-09-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/networkInterfaces resource."
+      }
+    },
+    "virtualMachinesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2017-03-30",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/virtualMachines resource."
+      }
+    },
+    "virtualMachinesExtensionsAPIVersion": {
+      "type": "string",
+      "defaultValue": "2016-08-30",
+      "metadata": {
+        "description": "API version used by the Microsoft.Compute/virtualMachines/extensions resource."
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
+    "prefix": {
+      "type": "string"
+    },
+    "subnetID": {
+      "type": "string"
+    },
+    "availabilitySetID": {
+      "type": "string"
+    },
+    "disablePasswordAuth": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "cloudConfigData": {
+      "type": "secureString"
+    },
+    "vmSize": {
+      "type": "string"
+    },
+    "adminUsername": {
+      "type": "string"
+    },
+    "adminSSHKeyData": {
+      "type": "string"
+    },
+    "osImagePublisher": {
+      "type": "string"
+    },
+    "osImageOffer": {
+      "type": "string"
+    },
+    "osImageSKU": {
+      "type": "string"
+    },
+    "osImageVersion": {
+      "type": "string"
+    },
+    "loadBalancerBackendPoolIDs": {
+      "type": "array"
+    },
+    "contributorRoleDefinitionId": {
+      "type": "string",
+      "defaultValue": "b24988ac-6180-42a0-ab88-20f7382dd24c",
+      "metadata": {
+        "description": "The ID of the contributor role."
+      }
+    },
+    "dataDisks": {
+      "type": "array"
+    }
+  },
+  "variables": {
+    "adminSSHKeyPath": "[concat('/home/', parameters('adminUsername'), '/.ssh/authorized_keys')]",
+    "ipName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
+    "nicName": "[concat(parameters('clusterID'), '-', parameters('prefix'),'-NIC')]",
+    "vmName": "[concat(parameters('clusterID'), '-', parameters('prefix'))]",
+    "roleAssignmentName": "[guid(concat(parameters('clusterID'), '-', parameters('prefix') ,'-roleassignment'))]",
+    "contributorRoleDefinitionId": "[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', parameters('contributorRoleDefinitionId'))]",
+    "standardLRSSize": [
+      "Standard_A0",
+      "Standard_A1",
+      "Standard_A10",
+      "Standard_A11",
+      "Standard_A1_v2",
+      "Standard_A2",
+      "Standard_A2_v2",
+      "Standard_A2m_v2",
+      "Standard_A3",
+      "Standard_A4",
+      "Standard_A4_v2",
+      "Standard_A4m_v2",
+      "Standard_A5",
+      "Standard_A6",
+      "Standard_A7",
+      "Standard_A8",
+      "Standard_A8_v2",
+      "Standard_A8m_v2",
+      "Standard_A9",
+      "Standard_D1",
+      "Standard_D11",
+      "Standard_D11_v2",
+      "Standard_D11_v2_Promo",
+      "Standard_D12",
+      "Standard_D12_v2",
+      "Standard_D12_v2_Promo",
+      "Standard_D13",
+      "Standard_D13_v2",
+      "Standard_D13_v2_Promo",
+      "Standard_D14",
+      "Standard_D14_v2",
+      "Standard_D14_v2_Promo",
+      "Standard_D15_v2",
+      "Standard_D16_v3",
+      "Standard_D1_v2",
+      "Standard_D2",
+      "Standard_D2_v2",
+      "Standard_D2_v2_Promo",
+      "Standard_D2_v3",
+      "Standard_D3",
+      "Standard_D32_v3",
+      "Standard_D3_v2",
+      "Standard_D3_v2_Promo",
+      "Standard_D4",
+      "Standard_D4_v2",
+      "Standard_D4_v2_Promo",
+      "Standard_D4_v3",
+      "Standard_D5_v2",
+      "Standard_D5_v2_Promo",
+      "Standard_D64_v3",
+      "Standard_D8_v3",
+      "Standard_E16_v3",
+      "Standard_E2_v3",
+      "Standard_E32_v3",
+      "Standard_E4_v3",
+      "Standard_E64_v3",
+      "Standard_E8_v3",
+      "Standard_F1",
+      "Standard_F16",
+      "Standard_F2",
+      "Standard_F4",
+      "Standard_F8",
+      "Standard_G1",
+      "Standard_G2",
+      "Standard_G3",
+      "Standard_G4",
+      "Standard_G5",
+      "Standard_H16",
+      "Standard_H16m",
+      "Standard_H16mr",
+      "Standard_H16r",
+      "Standard_H8",
+      "Standard_H8m",
+      "Standard_NC12",
+      "Standard_NC24",
+      "Standard_NC24r",
+      "Standard_NC6",
+      "Standard_NV12",
+      "Standard_NV24",
+      "Standard_NV6"
+    ],
+    "storageAccountType": "[if(contains(variables('standardLRSSize'), parameters('vmSize')), 'Standard_LRS', 'Premium_LRS')]"
+  },
+  "resources": [
+    {
+      "apiVersion": "[parameters('networkInterfacesAPIVersion')]",
+      "type": "Microsoft.Network/networkInterfaces",
+      "name": "[variables('nicName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "properties": {
+        "enableIPForwarding": true,
+        "ipConfigurations": [
+          {
+            "name": "[variables('ipName')]",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[parameters('subnetID')]"
+              },
+              "loadBalancerBackendAddressPools": "[parameters('loadBalancerBackendPoolIDs')]"
+            }
+          }
+        ]
+      }
+    },
+    {
+      "type": "Microsoft.Compute/virtualMachines/extensions",
+      "name": "[concat(variables('vmName'),'/ManagedIdentityExtensionForLinux')]",
+      "apiVersion": "[parameters('virtualMachinesExtensionsAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Compute/virtualMachines/', variables('vmName'))]"
+      ],
+      "properties": {
+        "publisher": "Microsoft.ManagedIdentity",
+        "type": "ManagedIdentityExtensionForLinux",
+        "typeHandlerVersion": "1.0",
+        "autoUpgradeMinorVersion": true,
+        "settings": {
+          "port": 50342
+        },
+        "protectedSettings": {}
+      }
+    },
+    {
+      "apiVersion": "[parameters('virtualMachinesAPIVersion')]",
+      "type": "Microsoft.Compute/virtualMachines",
+      "identity": {
+        "type": "systemAssigned"
+      },
+      "name": "[variables('vmName')]",
+      "tags": {
+         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "dependsOn": [
+        "[concat('Microsoft.Network/networkInterfaces/', variables('nicName'))]"
+      ],
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "availabilitySet": {
+          "id": "[parameters('availabilitySetID')]"
+        },
+        "hardwareProfile": {
+          "vmSize": "[parameters('vmSize')]"
+        },
+        "osProfile": {
+          "computerName": "[variables('vmName')]",
+          "adminUsername": "[parameters('adminUsername')]",
+          "customData": "[parameters('cloudConfigData')]",
+          "linuxConfiguration": {
+            "disablePasswordAuthentication": "[parameters('disablePasswordAuth')]",
+            "ssh": {
+              "publicKeys": [
+                {
+                  "keyData": "[parameters('adminSSHKeyData')]",
+                  "path": "[variables('adminSSHKeyPath')]"
+                }
+              ]
+            }
+          }
+        },
+        "storageProfile": {
+          "imageReference": {
+            "publisher": "[parameters('osImagePublisher')]",
+            "offer": "[parameters('osImageOffer')]",
+            "sku": "[parameters('osImageSKU')]",
+            "version": "[parameters('osImageVersion')]"
+          },
+          "osDisk": {
+            "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-OSDisk')]",
+            "caching": "ReadWrite",
+            "managedDisk": {
+              "storageAccountType": "[variables('storageAccountType')]"
+            },
+            "createOption": "FromImage"
+          },
+          "copy": [
+            {
+              "name": "dataDisks",
+              "count": "[length(parameters('dataDisks'))]",
+              "input": {
+                "name": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', parameters('dataDisks')[copyIndex('dataDisks')].name)]",
+                "caching": "ReadWrite",
+                "diskSizeGB": "[parameters('dataDisks')[copyIndex('dataDisks')].sizeGB]",
+                "managedDisk": {
+                  "storageAccountType": "[variables('storageAccountType')]"
+                },
+                "createOption": "Empty",
+                "lun": "[copyIndex('dataDisks')]"
+              }
+            }
+          ]
+        },
+        "networkProfile": {
+          "networkInterfaces": [
+            {
+              "id": "[resourceId('Microsoft.Network/networkInterfaces', variables('nicName'))]"
+            }
+          ]
+        }
+      }
+    },
+    {
+      "apiVersion": "2017-05-01",
+      "type": "Microsoft.Authorization/roleAssignments",
+      "name": "[variables('roleAssignmentName')]",
+      "tags": {
+          "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "properties": {
+        "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
+        "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('vmName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]",
+        "scope": "[resourceGroup().id]"
+      }
+    }
+  ],
+  "outputs": {
+    "nodePrincipalID": {
+      "type": "string",
+      "value": "[reference(concat(resourceId('Microsoft.Compute/virtualMachines/', variables('vmName')), '/providers/Microsoft.ManagedIdentity/Identities/default'), '2015-08-31-PREVIEW').principalId]"
+    },
+    "ipAddress": {
+      "type": "string",
+      "value": "[reference(resourceId('Microsoft.Network/networkInterfaces/', variables('nicName')), parameters('networkInterfacesAPIVersion')).ipConfigurations[0].properties.privateIPAddress]"
+    }
+  }
+}
