@@ -49,5 +49,9 @@ workflows:
   build_and_e2eTest:
     jobs:
       - build
-      - e2eTestHello
-      - e2eTestFoo
+      - e2eTestHello:
+          requires:
+            - build
+      - e2eTestFoo:
+          requires:
+            - build
