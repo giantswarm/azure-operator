@@ -1,11 +1,13 @@
 package network
 
 import (
+	"encoding/binary"
 	"fmt"
 	"log"
 	"math"
 	"net"
 	"os"
+	"strconv"
 
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
@@ -71,7 +73,7 @@ func NextSubnet(network net.IPNet, mask int, allocatedSubnet ...net.IPNet) (*net
 	return &subnet, nil
 }
 
-func AzureCIDR() (*net.IPNet, error) {
+func AzureCIDR() (azureSubnet *net.IPNet, err error) {
 	azureCDIR := os.Getenv(EnvAzureCIDR)
 	if azureCDIR == "" {
 		e2eCIDR := os.Getenv(EnvE2ECIDR)
@@ -94,23 +96,30 @@ func AzureCIDR() (*net.IPNet, error) {
 		ones, _ := e2eSubnet.Mask.Size()
 		subnetSize := e2eMask - ones
 		if subnetSize <= 0 {
-			return nil, microerror.Maskf("subnet: %v, requested: %v", e2eSubnet.Mask, e2eMask)
+			return nil, microerror.Mask(fmt.Errorf("subnet: %v, requested: %v", e2eSubnet.Mask, e2eMask))
 		}
 		subnetQuantity := int(math.Pow(2, float64(subnetSize)))
 
 		subnetShift := uint(32 - e2eMask)
 		subnet := int(buildNumber%subnetQuantity) << subnetShift
 
-		networkShift := 32 - ones
+		networkShift := uint(32 - ones)
 		network := ipToDecimal(e2eSubnet.IP) >> networkShift << networkShift
 
 		network |= subnet
+
+		azureSubnet = &net.IPNet{
+			IP:   decimalToIP(network),
+			Mask: net.CIDRMask(e2eMask, 32),
+		}
+	} else {
+		_, azureSubnet, err = net.ParseCIDR(azureCDIR)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
-	return &net.IPNet{
-		IP:   decimalToIP(network),
-		Mask: net.CIDRMask(e2eMask, 32),
-	}, nil
+	return azureSubnet, nil
 }
 
 // ipToDecimal converts a net.IP to an int.
