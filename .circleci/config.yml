@@ -12,6 +12,7 @@ e2eTest: &e2eTest
   - run:
       command: ./e2e-harness teardown
       when: always
+      no_output_timeout: 15m
 
 
 version: 2
