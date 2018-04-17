@@ -13,12 +13,13 @@ import (
 
 	"github.com/cenkalti/backoff"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	giantclientset "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
+	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
 
 	"github.com/giantswarm/e2e-harness/pkg/harness"
@@ -36,9 +37,10 @@ type HostConfig struct {
 }
 
 type Host struct {
-	backoff   *backoff.ExponentialBackOff
-	g8sClient *giantclientset.Clientset
-	k8sClient kubernetes.Interface
+	backoff    *backoff.ExponentialBackOff
+	g8sClient  *versioned.Clientset
+	k8sClient  kubernetes.Interface
+	restConfig *rest.Config
 }
 
 func NewHost(c HostConfig) (*Host, error) {
@@ -46,24 +48,25 @@ func NewHost(c HostConfig) (*Host, error) {
 		c.Backoff = newCustomExponentialBackoff()
 	}
 
-	config, err := clientcmd.BuildConfigFromFlags("", harness.DefaultKubeConfig)
+	restConfig, err := clientcmd.BuildConfigFromFlags("", harness.DefaultKubeConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	g8sClient, err := giantclientset.NewForConfig(config)
+	g8sClient, err := versioned.NewForConfig(restConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	k8sClient, err := kubernetes.NewForConfig(config)
+	k8sClient, err := kubernetes.NewForConfig(restConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	h := &Host{
-		backoff:   c.Backoff,
-		g8sClient: g8sClient,
-		k8sClient: k8sClient,
+		backoff:    c.Backoff,
+		g8sClient:  g8sClient,
+		k8sClient:  k8sClient,
+		restConfig: restConfig,
 	}
 
 	return h, nil
@@ -159,9 +162,63 @@ func (h *Host) InstallOperator(name, cr, values, version string) error {
 	return nil
 }
 
+func (h *Host) InstallResource(name, values string, conditions ...func() error) error {
+	chartValuesEnv := os.ExpandEnv(values)
+
+	tmpfile, err := ioutil.TempFile("", name+"-values")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	defer os.Remove(tmpfile.Name())
+
+	if _, err := tmpfile.Write([]byte(chartValuesEnv)); err != nil {
+		return microerror.Mask(err)
+	}
+
+	installCmd := fmt.Sprintf("registry install quay.io/giantswarm/%[1]s -- -n %[1]s --values %[2]s", name, tmpfile.Name())
+	deleteCmd := fmt.Sprintf("delete --purge %s", name)
+	operation := func() error {
+		// NOTE we ignore errors here because we cannot get really useful error
+		// handling done. This here should anyway only be a quick fix until we use
+		// the helm client lib. Then error handling will be better.
+		HelmCmd(deleteCmd)
+
+		err := HelmCmd(installCmd)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+	notify := newNotify(name + " install")
+	err = backoff.RetryNotify(operation, h.backoff, notify)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, c := range conditions {
+		err = waitFor(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
 func (h *Host) InstallCertResource() error {
 	operation := func() error {
-		return HelmCmd("registry install quay.io/giantswarm/cert-resource-lab-chart:stable -- -n cert-resource-lab --set commonDomain=${COMMON_DOMAIN_GUEST} --set clusterName=${CLUSTER_NAME}")
+		// NOTE we ignore errors here because we cannot get really useful error
+		// handling done. This here should anyway only be a quick fix until we use
+		// the helm client lib. Then error handling will be better.
+		HelmCmd("delete --purge cert-resource-lab")
+
+		err := HelmCmd("registry install quay.io/giantswarm/cert-resource-lab-chart:stable -- -n cert-resource-lab --set commonDomain=${COMMON_DOMAIN_GUEST} --set clusterName=${CLUSTER_NAME}")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
 	}
 	notify := newNotify("cert-resource-lab-chart install")
 	err := backoff.RetryNotify(operation, h.backoff, notify)
@@ -172,6 +229,11 @@ func (h *Host) InstallCertResource() error {
 	secretName := fmt.Sprintf("%s-api", os.Getenv("CLUSTER_NAME"))
 	log.Printf("waiting for secret %v\n", secretName)
 	return waitFor(h.secret("default", secretName))
+}
+
+// K8sClient returns the host cluster framework's Kubernetes client.
+func (h *Host) K8sClient() kubernetes.Interface {
+	return h.k8sClient
 }
 
 func (h *Host) PodName(namespace, labelSelector string) (string, error) {
@@ -191,6 +253,11 @@ func (h *Host) PodName(namespace, labelSelector string) (string, error) {
 	}
 	pod := pods.Items[0]
 	return pod.Name, nil
+}
+
+// RestConfig returns the host cluster framework's rest config.
+func (h *Host) RestConfig() *rest.Config {
+	return h.restConfig
 }
 
 func (h *Host) Setup() error {
@@ -305,7 +372,17 @@ func (h *Host) CreateNamespace(ns string) error {
 
 func (h *Host) installVault() error {
 	operation := func() error {
-		return HelmCmd("registry install quay.io/giantswarm/vaultlab-chart:stable -- --set vaultToken=${VAULT_TOKEN} -n vault")
+		// NOTE we ignore errors here because we cannot get really useful error
+		// handling done. This here should anyway only be a quick fix until we use
+		// the helm client lib. Then error handling will be better.
+		HelmCmd("delete --purge vault")
+
+		err := HelmCmd("registry install quay.io/giantswarm/vaultlab-chart:stable -- --set vaultToken=${VAULT_TOKEN} -n vault")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
 	}
 	notify := newNotify("vaultlab-chart install")
 	err := backoff.RetryNotify(operation, h.backoff, notify)
@@ -345,4 +422,24 @@ func (h *Host) runningPod(namespace, labelSelector string) func() error {
 		}
 		return nil
 	}
+}
+
+func (h *Host) GetPodName(namespace, labelSelector string) (string, error) {
+	o := metav1.ListOptions{
+		LabelSelector: labelSelector,
+	}
+	pods, err := h.k8sClient.CoreV1().Pods(namespace).List(o)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	if len(pods.Items) > 1 {
+		return "", microerror.Mask(tooManyResultsError)
+	}
+	if len(pods.Items) == 0 {
+		return "", microerror.Mask(notFoundError)
+	}
+	pod := pods.Items[0]
+
+	return pod.Name, nil
 }
