@@ -3,7 +3,6 @@
 package setup
 
 import (
-	"io/ioutil"
 	"log"
 	"os"
 	"testing"
@@ -84,27 +83,10 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 			return microerror.Mask(err)
 		}
 
-		err = installAzureResource()
+		err = h.InstallResource("azure-resource-chart", template.AzureResourceChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
-
-	return nil
-}
-
-func installAzureResource() error {
-	azureResourceChartValuesEnv := os.ExpandEnv(template.AzureResourceChartValues)
-	d := []byte(azureResourceChartValuesEnv)
-
-	err := ioutil.WriteFile(azureResourceValuesFile, d, 0644)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = framework.HelmCmd("registry install quay.io/giantswarm/azure-resource-chart -- -n azure-resource-lab --values " + azureResourceValuesFile)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	return nil
