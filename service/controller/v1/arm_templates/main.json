@@ -423,7 +423,7 @@
           "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
           "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
           "vmssLbBackendPoolId": {"value": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"},
-          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"}
         }
       }
     }
