@@ -12,6 +12,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	_ "github.com/giantswarm/azure-operator/integration/env"
+	_ "github.com/giantswarm/azure-operator/integration/network"
 	"github.com/giantswarm/azure-operator/integration/teardown"
 	"github.com/giantswarm/azure-operator/integration/template"
 )
