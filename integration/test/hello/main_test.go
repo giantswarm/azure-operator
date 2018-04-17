@@ -24,33 +24,43 @@ var (
 func TestMain(m *testing.M) {
 	var err error
 
-	g, err = framework.NewGuest()
-	if err != nil {
-		panic(err.Error())
-	}
-	h, err = framework.NewHost(framework.HostConfig{})
-	if err != nil {
-		panic(err.Error())
-	}
-
-	var newLogger micrologger.Logger
+	var logger micrologger.Logger
 	{
-		loggerConfig := micrologger.Config{
+		c := micrologger.Config{
 			IOWriter: os.Stdout,
 		}
-		newLogger, err = micrologger.New(loggerConfig)
+		logger, err = micrologger.New(c)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	{
+		c := framework.GuestConfig{
+			Logger: logger,
+		}
+		g, err = framework.NewGuest(c)
+		if err != nil {
+			panic(err.Error())
+		}
+	}
+
+	{
+		c := framework.HostConfig{}
+		h, err = framework.NewHost(c)
 		if err != nil {
 			panic(err.Error())
 		}
 	}
 
 	var azureConfig = client.AzureConfig{
-		Logger:         newLogger,
+		Logger:         logger,
 		ClientID:       os.Getenv("AZURE_CLIENTID"),
 		ClientSecret:   os.Getenv("AZURE_CLIENTSECRET"),
 		SubscriptionID: os.Getenv("AZURE_SUBSCRIPTIONID"),
 		TenantID:       os.Getenv("AZURE_TENANTID"),
 	}
+
 	c, err := client.NewAzureClientSet(azureConfig)
 	if err != nil {
 		panic(err.Error())
