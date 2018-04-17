@@ -8,12 +8,12 @@ e2eTest: &e2eTest
       chmod +x ./e2e-harness
   - run: ./e2e-harness localkube
   - run: ./e2e-harness setup --remote=false
-  - run: ./e2e-harness test --test-dir=${TEST_DIR}
+  - run:
+      command: ./e2e-harness test --test-dir=${TEST_DIR}
+      no_output_timeout: 15m
   - run:
       command: ./e2e-harness teardown
       when: always
-      no_output_timeout: 15m
-
 
 version: 2
 jobs:
