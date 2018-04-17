@@ -22,3 +22,17 @@ var wrongTypeError = microerror.New("wrong type")
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
 }
+
+var incorrectNumberNetworkInterfacesError = microerror.New("incorrect number network interfaces")
+
+// IsincorrectNumberNetworkInterfacesError asserts incorrectNumberNetworkInterfacesError.
+func IsIncorrectNumberNetworkInterfacesError(err error) bool {
+	return microerror.Cause(err) == incorrectNumberNetworkInterfacesError
+}
+
+var privateIPAddressEmptyError = microerror.New("private ip address empty")
+
+// IsPrivateIPAddressEmptyError asserts privateIPAddressEmptyError.
+func IsPrivateIPAddressEmptyError(err error) bool {
+	return microerror.Cause(err) == privateIPAddressEmptyError
+}

@@ -30,11 +30,17 @@ func (r *Resource) getMasterNICPrivateIP(resourceGroupName, networkInterfaceName
 		return "", microerror.Mask(err)
 	}
 
-	privateIP := ""
-	for _, ipConfiguration := range *networkInterface.IPConfigurations {
-		if *ipConfiguration.PrivateIPAddress != "" {
-			privateIP = *ipConfiguration.PrivateIPAddress
-		}
+	ipConfigurations := *networkInterface.IPConfigurations
+
+	if len(ipConfigurations) != 1 {
+		return "", microerror.Mask(incorrectNumberNetworkInterfacesError)
+	}
+
+	ipConfiguration := ipConfigurations[0]
+	privateIP := *ipConfiguration.PrivateIPAddress
+
+	if privateIP == "" {
+		return "", microerror.Mask(privateIPAddressEmptyError)
 	}
 
 	return privateIP, nil

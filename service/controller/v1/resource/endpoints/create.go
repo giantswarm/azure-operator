@@ -51,7 +51,7 @@ func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desir
 	}
 
 	var endpointsToCreate *apiv1.Endpoints
-	if currentEndpoints == nil || desiredEndpoints.Name != currentEndpoints.Name {
+	if currentEndpoints == nil {
 		endpointsToCreate = desiredEndpoints
 	}
 

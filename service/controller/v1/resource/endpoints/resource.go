@@ -60,7 +60,7 @@ func toEndpoints(v interface{}) (*apiv1.Endpoints, error) {
 
 	endpoints, ok := v.(*apiv1.Endpoints)
 	if !ok {
-		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &apiv1.Endpoints{}, v)
+		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", endpoints, v)
 	}
 
 	return endpoints, nil

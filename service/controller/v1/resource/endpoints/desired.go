@@ -32,6 +32,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 				"customer":                   key.ClusterCustomer(customObject),
 				"giantswarm.io/cluster":      key.ClusterID(customObject),
 				"giantswarm.io/organization": key.ClusterCustomer(customObject),
+				"giantswarm.io/managed-by":   "azure-operator",
 			},
 		},
 		Subsets: []v1.EndpointSubset{
