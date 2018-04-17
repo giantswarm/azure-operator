@@ -3,7 +3,6 @@ package network
 import (
 	"encoding/binary"
 	"fmt"
-	"log"
 	"math"
 	"net"
 	"os"
@@ -38,7 +37,6 @@ func init() {
 			panic(err)
 		}
 		os.Setenv(EnvAzureCIDR, azureNetwork.String())
-		log.Println("azureCIDR", azureNetwork.String())
 	}
 
 	var azureMasterSubnet *net.IPNet
@@ -48,7 +46,6 @@ func init() {
 			panic(err)
 		}
 		os.Setenv(EnvAzureMasterSubnetCIDR, azureMasterSubnet.String())
-		log.Println("azureMasterCIDR", azureMasterSubnet.String())
 	}
 
 	var azureWorkerSubnet *net.IPNet
@@ -58,7 +55,6 @@ func init() {
 			panic(err)
 		}
 		os.Setenv(EnvAzureWorkerSubnetCIDR, azureWorkerSubnet.String())
-		log.Println("azureWorkerCIDR", azureWorkerSubnet.String())
 	}
 
 	var azureCalicoSubnet *net.IPNet
@@ -68,7 +64,6 @@ func init() {
 			panic(err)
 		}
 		os.Setenv(EnvAzureCalicoSubnetCIDR, azureCalicoSubnet.String())
-		log.Println("azureCalicoSubnet", azureCalicoSubnet.String())
 	}
 }
 
