@@ -8,19 +8,6 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
-func Test_AzureCloudType(t *testing.T) {
-	customObject := providerv1alpha1.AzureConfig{
-		Spec: providerv1alpha1.AzureConfigSpec{
-			Cluster: providerv1alpha1.Cluster{},
-		},
-	}
-
-	actualRes := AzureCloudType(customObject)
-	if actualRes != defaultAzureCloudType {
-		t.Fatalf("Expected cloud type %s but was %s", defaultAzureCloudType, actualRes)
-	}
-}
-
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
 

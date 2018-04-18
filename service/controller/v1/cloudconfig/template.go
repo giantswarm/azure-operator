@@ -524,7 +524,7 @@ const (
 	cloudProviderConfFileNameMasterKubelet = "/etc/kubernetes/config/azure-kubelet.yaml"
 	cloudProviderConfFileOwner             = "root:root"
 	cloudProviderConfFilePermission        = 0600
-	cloudProviderConfFileTemplate          = `cloud: {{ .AzureCloudType }}
+	cloudProviderConfFileTemplate          = `cloud: AZUREPUBLICCLOUD
 tenantId: {{ .TenantID }}
 subscriptionId: {{ .SubscriptionID }}
 resourceGroup: {{ .ResourceGroup }}
