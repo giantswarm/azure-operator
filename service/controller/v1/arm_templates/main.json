@@ -91,10 +91,6 @@
         "description": "The base URI from which the templates will be fetched. Ends with a trailing '/'."
       }
     },
-    "availabilitySetsTemplateFile": {
-      "type": "string",
-      "defaultValue": "availability_sets_setup.json"
-    },
     "dnsASetupTemplateFile": {
       "type": "string",
       "defaultValue": "dns_a_setup.json"
@@ -135,7 +131,6 @@
     }
   },
   "variables": {
-    "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
@@ -231,23 +226,6 @@
           "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
           "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
           "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "master_availability_sets_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('availabilitySetsTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": {"value": "[variables('masterPrefix')]"}
         }
       }
     },
