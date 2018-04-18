@@ -1,7 +1,7 @@
 package endpoints
 
 import (
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/microerror"
@@ -53,12 +53,12 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func toEndpoints(v interface{}) (*apiv1.Endpoints, error) {
+func toEndpoints(v interface{}) (*corev1.Endpoints, error) {
 	if v == nil {
 		return nil, nil
 	}
 
-	endpoints, ok := v.(*apiv1.Endpoints)
+	endpoints, ok := v.(*corev1.Endpoints)
 	if !ok {
 		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", endpoints, v)
 	}

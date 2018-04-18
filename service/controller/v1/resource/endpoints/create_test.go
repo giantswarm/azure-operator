@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -21,7 +21,7 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 		obj               interface{}
 		cur               interface{}
 		des               interface{}
-		expectedEndpoints *apiv1.Endpoints
+		expectedEndpoints *corev1.Endpoints
 	}{
 		{
 			description: "current state matches desired state, desired state is empty",
@@ -32,7 +32,7 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			cur: &apiv1.Endpoints{
+			cur: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -41,7 +41,7 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 					Name: "master",
 				},
 			},
-			des: &apiv1.Endpoints{
+			des: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -62,7 +62,7 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 				},
 			},
 			cur: nil,
-			des: &apiv1.Endpoints{
+			des: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -71,7 +71,7 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 					Name: "master",
 				},
 			},
-			expectedEndpoints: &apiv1.Endpoints{
+			expectedEndpoints: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -108,7 +108,7 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 					t.Errorf("expected '%v' got '%v'", tc.expectedEndpoints, result)
 				}
 			} else {
-				endpointsToCreate, ok := result.(*apiv1.Endpoints)
+				endpointsToCreate, ok := result.(*corev1.Endpoints)
 				if !ok {
 					t.Errorf("case expected '%T', got '%T'", endpointsToCreate, result)
 				}

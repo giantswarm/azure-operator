@@ -4,7 +4,7 @@ import (
 	"context"
 	"reflect"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
@@ -70,7 +70,7 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the endpoints has to be updated")
 
-	var endpointsToUpdate *apiv1.Endpoints
+	var endpointsToUpdate *corev1.Endpoints
 
 	// The subsets can change if the private IP of the master node has changed.
 	// We then need to update the endpoints resource.

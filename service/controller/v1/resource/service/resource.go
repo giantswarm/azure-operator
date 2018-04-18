@@ -3,7 +3,7 @@ package service
 import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -44,14 +44,14 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func toService(v interface{}) (*apiv1.Service, error) {
+func toService(v interface{}) (*corev1.Service, error) {
 	if v == nil {
 		return nil, nil
 	}
 
-	service, ok := v.(*apiv1.Service)
+	service, ok := v.(*corev1.Service)
 	if !ok {
-		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &apiv1.Service{}, v)
+		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &corev1.Service{}, v)
 	}
 
 	return service, nil

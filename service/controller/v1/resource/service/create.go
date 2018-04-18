@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/microerror"
@@ -50,7 +50,7 @@ func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desir
 		return nil, microerror.Mask(err)
 	}
 
-	var serviceToCreate *apiv1.Service
+	var serviceToCreate *corev1.Service
 	if currentService == nil || desiredService.Name != currentService.Name {
 		serviceToCreate = desiredService
 	}

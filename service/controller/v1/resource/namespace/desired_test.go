@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -57,7 +57,7 @@ func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
 		if err != nil {
 			t.Fatal("case", i+1, "expected", nil, "got", err)
 		}
-		name := result.(*apiv1.Namespace).Name
+		name := result.(*corev1.Namespace).Name
 		if tc.ExpectedName != name {
 			t.Fatalf("case %d expected %#v got %#v", i+1, tc.ExpectedName, name)
 		}

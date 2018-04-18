@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -19,7 +19,7 @@ func Test_Resource_Service_newCreateChange(t *testing.T) {
 		obj             interface{}
 		cur             interface{}
 		des             interface{}
-		expectedService *apiv1.Service
+		expectedService *corev1.Service
 	}{
 		{
 			description: "current state matches desired state, desired state is empty",
@@ -30,7 +30,7 @@ func Test_Resource_Service_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			cur: &apiv1.Service{
+			cur: &corev1.Service{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Service",
 					APIVersion: "v1",
@@ -39,7 +39,7 @@ func Test_Resource_Service_newCreateChange(t *testing.T) {
 					Name: "master",
 				},
 			},
-			des: &apiv1.Service{
+			des: &corev1.Service{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Service",
 					APIVersion: "v1",
@@ -61,7 +61,7 @@ func Test_Resource_Service_newCreateChange(t *testing.T) {
 				},
 			},
 			cur: nil,
-			des: &apiv1.Service{
+			des: &corev1.Service{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Service",
 					APIVersion: "v1",
@@ -70,7 +70,7 @@ func Test_Resource_Service_newCreateChange(t *testing.T) {
 					Name: "master",
 				},
 			},
-			expectedService: &apiv1.Service{
+			expectedService: &corev1.Service{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Service",
 					APIVersion: "v1",
@@ -106,7 +106,7 @@ func Test_Resource_Service_newCreateChange(t *testing.T) {
 					t.Errorf("expected '%v' got '%v'", tc.expectedService, result)
 				}
 			} else {
-				serviceToCreate, ok := result.(*apiv1.Service)
+				serviceToCreate, ok := result.(*corev1.Service)
 				if !ok {
 					t.Errorf("case expected '%T', got '%T'", serviceToCreate, result)
 				}
