@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8srestconfig"
-	"github.com/giantswarm/operatorkit/framework"
 	"github.com/spf13/viper"
 
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
@@ -38,11 +37,11 @@ type Config struct {
 }
 
 type Service struct {
-	ClusterFramework *framework.Framework
-	Healthz          *healthz.Service
-	Version          *version.Service
+	Healthz *healthz.Service
+	Version *version.Service
 
-	bootOnce sync.Once
+	bootOnce          sync.Once
+	clusterController *controller.Cluster
 }
 
 // New creates a new configured service object.
@@ -125,9 +124,9 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	var clusterFramework *framework.Framework
+	var clusterController *controller.Cluster
 	{
-		c := controller.ClusterFrameworkConfig{
+		c := controller.ClusterConfig{
 			G8sClient:    g8sClient,
 			K8sClient:    k8sClient,
 			K8sExtClient: k8sExtClient,
@@ -140,7 +139,7 @@ func New(config Config) (*Service, error) {
 			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 		}
 
-		clusterFramework, err = controller.NewClusterFramework(c)
+		clusterController, err = controller.NewCluster(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -178,8 +177,8 @@ func New(config Config) (*Service, error) {
 		Healthz: healthzService,
 		Version: versionService,
 
-		bootOnce:         sync.Once{},
-		ClusterFramework: clusterFramework,
+		bootOnce:          sync.Once{},
+		clusterController: clusterController,
 	}
 
 	return newService, nil
@@ -187,6 +186,6 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		s.ClusterFramework.Boot()
+		s.clusterController.Boot()
 	})
 }
