@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"
-	"github.com/giantswarm/operatorkit/framework"
+	"github.com/giantswarm/operatorkit/controller"
 	"github.com/giantswarm/operatorkit/informer"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
@@ -30,7 +30,7 @@ type ClusterConfig struct {
 }
 
 type Cluster struct {
-	*framework.Framework
+	*controller.Controller
 }
 
 func NewCluster(config ClusterConfig) (*Cluster, error) {
@@ -88,7 +88,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var v1ResourceSet *framework.ResourceSet
+	var v1ResourceSet *controller.ResourceSet
 	{
 		c := v1.ResourceSetConfig{
 			K8sClient:    config.K8sClient,
@@ -108,25 +108,25 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var resourceRouter *framework.ResourceRouter
+	var resourceRouter *controller.ResourceRouter
 	{
-		c := framework.ResourceRouterConfig{
+		c := controller.ResourceRouterConfig{
 			Logger: config.Logger,
 
-			ResourceSets: []*framework.ResourceSet{
+			ResourceSets: []*controller.ResourceSet{
 				v1ResourceSet,
 			},
 		}
 
-		resourceRouter, err = framework.NewResourceRouter(c)
+		resourceRouter, err = controller.NewResourceRouter(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	var f *framework.Framework
+	var operatorkitController *controller.Controller
 	{
-		c := framework.Config{
+		c := controller.Config{
 			CRD:            v1alpha1.NewAzureConfigCRD(),
 			CRDClient:      crdClient,
 			Informer:       newInformer,
@@ -137,14 +137,14 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Name: config.ProjectName,
 		}
 
-		f, err = framework.New(c)
+		operatorkitController, err = controller.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	c := &Cluster{
-		Framework: f,
+		Controller: operatorkitController,
 	}
 
 	return c, nil

@@ -9,7 +9,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/framework"
+	"github.com/giantswarm/operatorkit/controller"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -118,8 +118,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 // NewUpdatePatch returns the patch creating resource group for this cluster if
 // it is needed.
-func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
-	patch := framework.NewPatch()
+func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
+	patch := controller.NewPatch()
 
 	resourceGroupToCreate, err := r.newCreateChange(ctx, obj, currentState, desiredState)
 	if err != nil {
@@ -132,8 +132,8 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 
 // NewDeletePatch returns the patch deleting resource group for this cluster if
 // it is needed.
-func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*framework.Patch, error) {
-	patch := framework.NewPatch()
+func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
+	patch := controller.NewPatch()
 
 	resourceGroupToDelete, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
 	if err != nil {
