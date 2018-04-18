@@ -136,8 +136,6 @@ func DetermineSubnet(cidr string, mask, decider uint) (*net.IPNet, error) {
 	subnetQuantity := int(math.Pow(2, float64(subnetSize)))
 
 	subnet := int(decider % uint(subnetQuantity))
-	// uncomment following line to start
-	// subnet = possibilities - 1 - subnet
 	subnetShift := uint(32 - mask)
 	subnet <<= subnetShift
 
