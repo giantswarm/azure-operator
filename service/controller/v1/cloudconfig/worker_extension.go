@@ -80,7 +80,7 @@ func (we *workerExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 }
 
 func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
-	params := newCloudProviderConfFileParams(we.Azure, we.AzureConfig, we.CustomObject, vmTypeVMSS)
+	params := newCloudProviderConfFileParams(we.Azure, we.AzureConfig, we.CustomObject)
 
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {

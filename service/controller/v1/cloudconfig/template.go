@@ -532,7 +532,7 @@ primaryScaleSetName: {{ .PrimaryScaleSetName }}
 subnetName: {{ .SubnetName }}
 securityGroupName: {{ .SecurityGroupName }}
 vnetName: {{ .VnetName }}
-vmType: {{ .VMType }}
+vmType: vmss
 routeTableName: {{ .RouteTableName }}
 useManagedIdentityExtension: true
 `
