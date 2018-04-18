@@ -151,6 +151,11 @@ func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return "worker-vmss"
 }
 
+// MasterNICName returns name of the master NIC.
+func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(customObject))
+}
+
 // ResourceGroupName returns name of the resource group for this cluster.
 func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return ClusterID(customObject)
