@@ -35,11 +35,6 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
 	}
 
-	cloudProviderConfFileMasterKubelet, err := me.renderCloudProviderConfFileMasterKubelet()
-	if err != nil {
-		return nil, microerror.Maskf(err, "renderCloudProviderConfFileMasterKubelet")
-	}
-
 	defaultStorageClassFile, err := me.renderDefaultStorageClassFile()
 	if err != nil {
 		return nil, microerror.Maskf(err, "renderDefaultStorageClassFile")
@@ -48,7 +43,6 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	files := []k8scloudconfig.FileAsset{
 		calicoAzureFile,
 		cloudProviderConfFile,
-		cloudProviderConfFileMasterKubelet,
 		defaultStorageClassFile,
 	}
 	files = append(files, certificateFiles...)
@@ -126,17 +120,6 @@ func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject, vmTypeVMSS)
 
 	asset, err := renderCloudProviderConfFile(params)
-	if err != nil {
-		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (me *masterExtension) renderCloudProviderConfFileMasterKubelet() (k8scloudconfig.FileAsset, error) {
-	params := newCloudProviderConfFileParams(me.Azure, me.AzureConfig, me.CustomObject, vmTypeStandard)
-
-	asset, err := renderCloudProviderConfFileMasterKubelet(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
