@@ -1,173 +1,73 @@
 package network
 
 import (
-	"encoding/binary"
 	"fmt"
-	"math"
 	"net"
-	"os"
-	"strconv"
 
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
 )
 
 const (
-	EnvCircleBuildNumber = "CIRCLE_BUILD_NUM"
-	EnvE2ECIDR           = "E2E_CIDR"
-	EnvE2EMask           = "E2E_MASK"
+	e2eNetwork        = "11.%d.0.0"
+	e2eSubnetQuantity = 256
 
-	EnvAzureCIDR             = "AZURE_CIDR"
-	EnvAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
-	EnvAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
-	EnvAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
-
-	AzureCalicoSubnetMask = 17
-	AzureMasterSubnetMask = 24
-	AzureWorkerSubnetMask = 24
+	azureCalicoSubnetMask = 17
+	azureMasterSubnetMask = 24
+	azureWorkerSubnetMask = 24
 )
 
-func init() {
-	var err error
-
-	var azureNetwork *net.IPNet
-	{
-		azureNetwork, err = AzureNetwork()
-		if err != nil {
-			panic(err)
-		}
-		os.Setenv(EnvAzureCIDR, azureNetwork.String())
-	}
-
-	var azureMasterSubnet *net.IPNet
-	{
-		azureMasterSubnet, err = AzureSubnet(EnvAzureMasterSubnetCIDR, *azureNetwork, AzureMasterSubnetMask)
-		if err != nil {
-			panic(err)
-		}
-		os.Setenv(EnvAzureMasterSubnetCIDR, azureMasterSubnet.String())
-	}
-
-	var azureWorkerSubnet *net.IPNet
-	{
-		azureWorkerSubnet, err = AzureSubnet(EnvAzureWorkerSubnetCIDR, *azureNetwork, AzureWorkerSubnetMask, *azureMasterSubnet)
-		if err != nil {
-			panic(err)
-		}
-		os.Setenv(EnvAzureWorkerSubnetCIDR, azureWorkerSubnet.String())
-	}
-
-	var azureCalicoSubnet *net.IPNet
-	{
-		azureCalicoSubnet, err = AzureSubnet(EnvAzureCalicoSubnetCIDR, *azureNetwork, AzureCalicoSubnetMask, *azureMasterSubnet, *azureWorkerSubnet)
-		if err != nil {
-			panic(err)
-		}
-		os.Setenv(EnvAzureCalicoSubnetCIDR, azureCalicoSubnet.String())
-	}
+type azureCIDR struct {
+	AzureCIDR        string
+	MasterSubnetCIDR string
+	WorkerSubnetCIDR string
+	CalicoSubnetCIDR string
 }
 
-// AzureNetwork either return network from CIDR found at EnvAzureCIDR environement variable or
-// determine network using EnvE2ECIDR, EnvE2EMask and EnvCircleBuildNumber.
-func AzureNetwork() (azureNetwork *net.IPNet, err error) {
-	azureCDIR := os.Getenv(EnvAzureCIDR)
-	if azureCDIR == "" {
-		e2eCIDR := os.Getenv(EnvE2ECIDR)
+func ComputeCIDR(buildNumber uint) (*azureCIDR, error) {
+	cidrs := new(azureCIDR)
 
-		e2eMask, err := strconv.ParseUint(os.Getenv(EnvE2EMask), 10, 32)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+	azureNetwork := determineSubnet(e2eNetwork, e2eSubnetQuantity, buildNumber)
+	cidrs.AzureCIDR = azureNetwork.String()
 
-		buildNumber, err := strconv.ParseUint(os.Getenv(EnvCircleBuildNumber), 10, 32)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		azureNetwork, err = DetermineSubnet(e2eCIDR, uint(e2eMask), uint(buildNumber))
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	} else {
-		_, azureNetwork, err = net.ParseCIDR(azureCDIR)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+	azureMasterSubnet, err := ipamFree(azureNetwork, azureMasterSubnetMask)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
+	cidrs.MasterSubnetCIDR = azureMasterSubnet.String()
 
-	return azureNetwork, nil
+	azureWorkerSubnet, err := ipamFree(azureNetwork, azureWorkerSubnetMask, *azureMasterSubnet)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	cidrs.WorkerSubnetCIDR = azureWorkerSubnet.String()
+
+	azureCalicoSubnet, err := ipamFree(azureNetwork, azureCalicoSubnetMask, *azureMasterSubnet, *azureWorkerSubnet)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	cidrs.CalicoSubnetCIDR = azureCalicoSubnet.String()
+
+	return cidrs, nil
 }
 
-// AzureSubnet either return subnet from CIDR found at envVar environement variable or
-// compute the next free subnet using network, mask and allocatedSubnet (if any).
-func AzureSubnet(envVar string, network net.IPNet, mask int, allocatedSubnet ...net.IPNet) (subnet *net.IPNet, err error) {
-	subnetCIDR := os.Getenv(envVar)
-	if subnetCIDR == "" {
-		s, err := ipam.Free(network, net.CIDRMask(mask, 32), allocatedSubnet)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		subnet = &s
-	} else {
-		_, subnet, err = net.ParseCIDR(subnetCIDR)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	return subnet, nil
-}
-
-// DetermineSubnet is deterministic, it will always return the same network given the same input.
-// It compute the number of available networks between cidr and mask.
-// And use `decider mod available networks` to determine which one to pick.
-// e.g. DetermineSubnet("10.255.0.0/9", 16, 42)  >  10.170.0.0/16
-func DetermineSubnet(cidr string, mask, decider uint) (*net.IPNet, error) {
-	_, network, err := net.ParseCIDR(cidr)
+// ipamFree wrap call to ipam.Free, and use 32 bits CIDRMask.
+func ipamFree(network net.IPNet, mask int, allocatedSubnet ...net.IPNet) (subnet *net.IPNet, err error) {
+	s, err := ipam.Free(network, net.CIDRMask(mask, 32), allocatedSubnet)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	ones, _ := network.Mask.Size()
-	subnetSize := mask - uint(ones)
-	if subnetSize <= 0 {
-		return nil, microerror.Mask(fmt.Errorf("subnet: %v, requested: %v", network.Mask, mask))
-	}
-	subnetQuantity := int(math.Pow(2, float64(subnetSize)))
-
-	subnet := int(decider % uint(subnetQuantity))
-	subnetShift := uint(32 - mask)
-	subnet <<= subnetShift
-
-	ip := ipToDecimal(network.IP)
-	ipShift := uint(32 - ones)
-	ip >>= ipShift
-	ip <<= ipShift
-
-	ip |= subnet
-
-	return &net.IPNet{
-		IP:   decimalToIP(ip),
-		Mask: net.CIDRMask(int(mask), 32),
-	}, nil
+	return &s, nil
 }
 
-// ipToDecimal converts a net.IP to an int.
-// stolen from github.com/giantswarm/ipam
-func ipToDecimal(ip net.IP) int {
-	t := ip
-	if len(ip) == 16 {
-		t = ip[12:16]
+// determineSubnet compute a subnet by wrapping decider in subnetQuantity and writing the resulting value in cidrFormat.
+// cidrFormat must hold exactly one decimal verb (%d).
+func determineSubnet(cidrFormat string, subnetQuantity uint, decider uint) net.IPNet {
+	subnetIP := fmt.Sprintf(cidrFormat, int(decider%subnetQuantity))
+
+	return net.IPNet{
+		IP:   net.ParseIP(subnetIP),
+		Mask: net.CIDRMask(16, 32),
 	}
-
-	return int(binary.BigEndian.Uint32(t))
-}
-
-// decimalToIP converts an int to a net.IP.
-// stolen from github.com/giantswarm/ipam
-func decimalToIP(ip int) net.IP {
-	t := make(net.IP, 4)
-	binary.BigEndian.PutUint32(t, uint32(ip))
-
-	return t
 }
