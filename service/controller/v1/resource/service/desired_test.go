@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -57,7 +57,7 @@ func Test_Resource_Service_GetDesiredState(t *testing.T) {
 			if err != nil {
 				t.Errorf("expected '%v' got '%#v'", nil, err)
 			}
-			desiredService, ok := result.(*apiv1.Service)
+			desiredService, ok := result.(*corev1.Service)
 			if !ok {
 				t.Errorf("case expected '%T', got '%T'", desiredService, result)
 			}

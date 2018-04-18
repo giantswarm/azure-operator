@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -21,7 +21,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 		obj               interface{}
 		cur               interface{}
 		des               interface{}
-		expectedEndpoints *apiv1.Endpoints
+		expectedEndpoints *corev1.Endpoints
 	}{
 		{
 			description: "current and desired states are different, return desired state",
@@ -32,7 +32,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 					},
 				},
 			},
-			cur: &apiv1.Endpoints{
+			cur: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -40,9 +40,9 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
-				Subsets: []apiv1.EndpointSubset{
+				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []apiv1.EndpointAddress{
+						Addresses: []corev1.EndpointAddress{
 							{
 								IP: "10.0.0.1",
 							},
@@ -50,7 +50,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 					},
 				},
 			},
-			des: &apiv1.Endpoints{
+			des: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -58,9 +58,9 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
-				Subsets: []apiv1.EndpointSubset{
+				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []apiv1.EndpointAddress{
+						Addresses: []corev1.EndpointAddress{
 							{
 								IP: "127.0.0.1",
 							},
@@ -68,7 +68,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 					},
 				},
 			},
-			expectedEndpoints: &apiv1.Endpoints{
+			expectedEndpoints: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -76,9 +76,9 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
-				Subsets: []apiv1.EndpointSubset{
+				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []apiv1.EndpointAddress{
+						Addresses: []corev1.EndpointAddress{
 							{
 								IP: "127.0.0.1",
 							},
@@ -96,7 +96,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 					},
 				},
 			},
-			cur: &apiv1.Endpoints{
+			cur: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -104,9 +104,9 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
-				Subsets: []apiv1.EndpointSubset{
+				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []apiv1.EndpointAddress{
+						Addresses: []corev1.EndpointAddress{
 							{
 								IP: "10.0.0.1",
 							},
@@ -114,7 +114,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 					},
 				},
 			},
-			des: &apiv1.Endpoints{
+			des: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -122,9 +122,9 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
-				Subsets: []apiv1.EndpointSubset{
+				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []apiv1.EndpointAddress{
+						Addresses: []corev1.EndpointAddress{
 							{
 								IP: "10.0.0.1",
 							},
@@ -144,7 +144,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 				},
 			},
 			cur: nil,
-			des: &apiv1.Endpoints{
+			des: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Endpoints",
 					APIVersion: "v1",
@@ -152,9 +152,9 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
-				Subsets: []apiv1.EndpointSubset{
+				Subsets: []corev1.EndpointSubset{
 					{
-						Addresses: []apiv1.EndpointAddress{
+						Addresses: []corev1.EndpointAddress{
 							{
 								IP: "10.0.0.1",
 							},
@@ -191,7 +191,7 @@ func Test_Resource_Endpoints_newUpdateChange(t *testing.T) {
 					t.Errorf("expected '%v' got '%v'", tc.expectedEndpoints, result)
 				}
 			} else {
-				endpointsToUpdate, ok := result.(*apiv1.Endpoints)
+				endpointsToUpdate, ok := result.(*corev1.Endpoints)
 				if !ok {
 					t.Errorf("case expected '%T', got '%T'", endpointsToUpdate, result)
 				}

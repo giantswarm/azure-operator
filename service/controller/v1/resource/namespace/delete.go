@@ -3,7 +3,7 @@ package namespace
 import (
 	"context"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -59,7 +59,7 @@ func (r *Resource) newDeleteChange(ctx context.Context, obj, currentState, desir
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the namespace has to be deleted")
 
-	var namespaceToDelete *apiv1.Namespace
+	var namespaceToDelete *corev1.Namespace
 	if currentNamespace != nil {
 		namespaceToDelete = desiredNamespace
 	}

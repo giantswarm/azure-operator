@@ -4,7 +4,7 @@ import (
 	"context"
 	"testing"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
@@ -18,7 +18,7 @@ func Test_Resource_Namespace_newCreateChange(t *testing.T) {
 		Obj               interface{}
 		Cur               interface{}
 		Des               interface{}
-		ExpectedNamespace *apiv1.Namespace
+		ExpectedNamespace *corev1.Namespace
 	}{
 		{
 			Obj: &v1alpha1.AzureConfig{
@@ -28,7 +28,7 @@ func Test_Resource_Namespace_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			Cur: &apiv1.Namespace{
+			Cur: &corev1.Namespace{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Namespace",
 					APIVersion: "v1",
@@ -41,7 +41,7 @@ func Test_Resource_Namespace_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			Des: &apiv1.Namespace{
+			Des: &corev1.Namespace{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Namespace",
 					APIVersion: "v1",
@@ -66,7 +66,7 @@ func Test_Resource_Namespace_newCreateChange(t *testing.T) {
 				},
 			},
 			Cur: nil,
-			Des: &apiv1.Namespace{
+			Des: &corev1.Namespace{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Namespace",
 					APIVersion: "v1",
@@ -79,7 +79,7 @@ func Test_Resource_Namespace_newCreateChange(t *testing.T) {
 					},
 				},
 			},
-			ExpectedNamespace: &apiv1.Namespace{
+			ExpectedNamespace: &corev1.Namespace{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Namespace",
 					APIVersion: "v1",
@@ -118,7 +118,7 @@ func Test_Resource_Namespace_newCreateChange(t *testing.T) {
 				t.Fatal("case", i+1, "expected", tc.ExpectedNamespace, "got", result)
 			}
 		} else {
-			name := result.(*apiv1.Namespace).Name
+			name := result.(*corev1.Namespace).Name
 			if tc.ExpectedNamespace.Name != name {
 				t.Fatal("case", i+1, "expected", tc.ExpectedNamespace.Name, "got", name)
 			}

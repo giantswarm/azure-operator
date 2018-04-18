@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -22,7 +22,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	namespace := key.ClusterNamespace(customObject)
 
 	// Lookup the current state of the endpoints.
-	var endpoints *apiv1.Endpoints
+	var endpoints *corev1.Endpoints
 	{
 		manifest, err := r.k8sClient.CoreV1().Endpoints(namespace).Get(masterEndpointsName, apismetav1.GetOptions{})
 		if apierrors.IsNotFound(err) {

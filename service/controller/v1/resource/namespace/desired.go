@@ -3,7 +3,7 @@ package namespace
 import (
 	"context"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/microerror"
@@ -17,7 +17,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	namespace := &apiv1.Namespace{
+	namespace := &corev1.Namespace{
 		TypeMeta: apismetav1.TypeMeta{
 			Kind:       "Namespace",
 			APIVersion: "v1",

@@ -3,7 +3,7 @@ package service
 import (
 	"context"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -66,7 +66,7 @@ func (r *Resource) newDeleteChange(ctx context.Context, obj, currentState, desir
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the service has to be deleted")
 
-	var serviceToDelete *apiv1.Service
+	var serviceToDelete *corev1.Service
 	if currentService != nil && desiredService.Name == currentService.Name {
 		serviceToDelete = desiredService
 	}
