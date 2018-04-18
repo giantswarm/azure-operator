@@ -10,7 +10,7 @@ e2eTest: &e2eTest
   - run: ./e2e-harness setup --remote=false
   - run:
       command: ./e2e-harness test --test-dir=${TEST_DIR}
-      no_output_timeout: 15m
+      no_output_timeout: 20m
   - run:
       command: ./e2e-harness teardown
       when: always
