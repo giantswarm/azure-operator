@@ -520,10 +520,10 @@ const (
 	// Below we need separate path for master's kubelet as master machine
 	// is regular VM not running in VMSS. This may change soonish.
 
-	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
+  cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
 	cloudProviderConfFileOwner      = "root:root"
 	cloudProviderConfFilePermission = 0600
-	cloudProviderConfFileTemplate   = `cloud: {{ .AzureCloudType }}
+	cloudProviderConfFileTemplate   = `cloud: AZUREPUBLICCLOUD
 tenantId: {{ .TenantID }}
 subscriptionId: {{ .SubscriptionID }}
 resourceGroup: {{ .ResourceGroup }}

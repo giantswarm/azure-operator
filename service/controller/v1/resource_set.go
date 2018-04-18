@@ -21,6 +21,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v1/key"
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/controller/v1/resource/endpoints"
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/service"
@@ -177,6 +178,25 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var endpointsResource controller.Resource
+	{
+		c := endpoints.Config{
+			AzureConfig: config.AzureConfig,
+			K8sClient:   config.K8sClient,
+			Logger:      config.Logger,
+		}
+
+		ops, err := endpoints.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		endpointsResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var namespaceResource controller.Resource
 	{
 		c := namespace.Config{
@@ -238,6 +258,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		serviceResource,
 		resourceGroupResource,
 		deploymentResource,
+		endpointsResource,
 		dnsrecordResource,
 		vnetPeeringResource,
 	}

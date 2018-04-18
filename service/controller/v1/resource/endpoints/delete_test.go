@@ -1,4 +1,4 @@
-package service
+package endpoints
 
 import (
 	"context"
@@ -10,16 +10,18 @@ import (
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
+
+	"github.com/giantswarm/azure-operator/client/fakeclient"
 )
 
-func Test_Resource_Service_newDeleteChange(t *testing.T) {
+func Test_Resource_Endpoints_newDeleteChange(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		description     string
-		obj             interface{}
-		cur             interface{}
-		des             interface{}
-		expectedService *corev1.Service
+		description       string
+		obj               interface{}
+		cur               interface{}
+		des               interface{}
+		expectedEndpoints *corev1.Endpoints
 	}{
 		{
 			description: "current state matches desired state, return desired state",
@@ -30,27 +32,27 @@ func Test_Resource_Service_newDeleteChange(t *testing.T) {
 					},
 				},
 			},
-			cur: &corev1.Service{
+			cur: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
-					Kind:       "Service",
+					Kind:       "Endpoints",
 					APIVersion: "v1",
 				},
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
 			},
-			des: &corev1.Service{
+			des: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
-					Kind:       "Service",
+					Kind:       "Endpoints",
 					APIVersion: "v1",
 				},
 				ObjectMeta: apismetav1.ObjectMeta{
 					Name: "master",
 				},
 			},
-			expectedService: &corev1.Service{
+			expectedEndpoints: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
-					Kind:       "Service",
+					Kind:       "Endpoints",
 					APIVersion: "v1",
 				},
 				ObjectMeta: apismetav1.ObjectMeta{
@@ -68,7 +70,7 @@ func Test_Resource_Service_newDeleteChange(t *testing.T) {
 				},
 			},
 			cur: nil,
-			des: &corev1.Service{
+			des: &corev1.Endpoints{
 				TypeMeta: apismetav1.TypeMeta{
 					Kind:       "Service",
 					APIVersion: "v1",
@@ -77,28 +79,7 @@ func Test_Resource_Service_newDeleteChange(t *testing.T) {
 					Name: "master",
 				},
 			},
-			expectedService: nil,
-		},
-		{
-			description: "current and desired states are different, no change",
-			obj: &v1alpha1.AzureConfig{
-				Spec: v1alpha1.AzureConfigSpec{
-					Cluster: v1alpha1.Cluster{
-						ID: "foobar",
-					},
-				},
-			},
-			cur: nil,
-			des: &corev1.Service{
-				TypeMeta: apismetav1.TypeMeta{
-					Kind:       "Service",
-					APIVersion: "v1",
-				},
-				ObjectMeta: apismetav1.ObjectMeta{
-					Name: "master",
-				},
-			},
-			expectedService: nil,
+			expectedEndpoints: nil,
 		},
 	}
 
@@ -106,8 +87,9 @@ func Test_Resource_Service_newDeleteChange(t *testing.T) {
 	var newResource *Resource
 	{
 		c := Config{
-			K8sClient: fake.NewSimpleClientset(),
-			Logger:    microloggertest.New(),
+			AzureConfig: fakeclient.NewAzureConfig(),
+			K8sClient:   fake.NewSimpleClientset(),
+			Logger:      microloggertest.New(),
 		}
 		newResource, err = New(c)
 		if err != nil {
@@ -121,17 +103,17 @@ func Test_Resource_Service_newDeleteChange(t *testing.T) {
 			if err != nil {
 				t.Errorf("expected '%v' got '%#v'", nil, err)
 			}
-			if tc.expectedService == nil {
-				if tc.expectedService != result {
-					t.Errorf("expected '%v' got '%v'", tc.expectedService, result)
+			if tc.expectedEndpoints == nil {
+				if tc.expectedEndpoints != result {
+					t.Errorf("expected '%v' got '%v'", tc.expectedEndpoints, result)
 				}
 			} else {
-				serviceToDelete, ok := result.(*corev1.Service)
+				endpointsToDelete, ok := result.(*corev1.Endpoints)
 				if !ok {
-					t.Fatalf("case expected '%T', got '%T'", serviceToDelete, result)
+					t.Errorf("case expected '%T', got '%T'", endpointsToDelete, result)
 				}
-				if tc.expectedService.Name != serviceToDelete.Name {
-					t.Errorf("expected %s, got %s", tc.expectedService.Name, serviceToDelete.Name)
+				if tc.expectedEndpoints.Name != endpointsToDelete.Name {
+					t.Errorf("expected %s, got %s", tc.expectedEndpoints.Name, endpointsToDelete.Name)
 				}
 			}
 		})

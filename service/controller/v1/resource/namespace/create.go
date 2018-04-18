@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	apiv1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 )
 
@@ -43,7 +43,7 @@ func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desir
 		return nil, microerror.Mask(err)
 	}
 
-	var namespaceToCreate *apiv1.Namespace
+	var namespaceToCreate *corev1.Namespace
 	if currentNamespace == nil {
 		namespaceToCreate = desiredNamespace
 	}

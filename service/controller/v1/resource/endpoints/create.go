@@ -1,4 +1,4 @@
-package service
+package endpoints
 
 import (
 	"context"
@@ -16,44 +16,44 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	serviceToCreate, err := toService(createChange)
+	endpointsToCreate, err := toEndpoints(createChange)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if serviceToCreate != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes service")
+	if endpointsToCreate != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints")
 
 		namespace := key.ClusterNamespace(customObject)
-		_, err = r.k8sClient.CoreV1().Services(namespace).Create(serviceToCreate)
+		_, err = r.k8sClient.CoreV1().Endpoints(namespace).Create(endpointsToCreate)
 		if apierrors.IsAlreadyExists(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes service: created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints: created")
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes service: already created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints: already created")
 	}
 
 	return nil
 }
 
 func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentService, err := toService(currentState)
+	currentEndpoints, err := toEndpoints(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	desiredService, err := toService(desiredState)
+	desiredEndpoints, err := toEndpoints(desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	var serviceToCreate *corev1.Service
-	if currentService == nil || desiredService.Name != currentService.Name {
-		serviceToCreate = desiredService
+	var endpointsToCreate *corev1.Endpoints
+	if currentEndpoints == nil {
+		endpointsToCreate = desiredEndpoints
 	}
 
-	return serviceToCreate, nil
+	return endpointsToCreate, nil
 }

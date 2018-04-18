@@ -1,4 +1,4 @@
-package service
+package endpoints
 
 import (
 	"context"
@@ -18,25 +18,25 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange inte
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	serviceToDelete, err := toService(deleteChange)
+	endpointsToDelete, err := toEndpoints(deleteChange)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if serviceToDelete != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service")
+	if endpointsToDelete != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes endpoints")
 
 		namespace := key.ClusterNamespace(customObject)
-		err := r.k8sClient.CoreV1().Services(namespace).Delete(serviceToDelete.Name, &apismetav1.DeleteOptions{})
+		err := r.k8sClient.CoreV1().Endpoints(namespace).Delete(endpointsToDelete.Name, &apismetav1.DeleteOptions{})
 		if apierrors.IsNotFound(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service: deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes endpoints: deleted")
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service: already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes endpoints: already deleted")
 	}
 
 	return nil
@@ -55,23 +55,23 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 }
 
 func (r *Resource) newDeleteChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentService, err := toService(currentState)
+	currentEndpoints, err := toEndpoints(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	desiredService, err := toService(desiredState)
+	desiredEndpoints, err := toEndpoints(desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the service has to be deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the endpoints has to be deleted")
 
-	var serviceToDelete *corev1.Service
-	if currentService != nil && desiredService.Name == currentService.Name {
-		serviceToDelete = desiredService
+	var endpointsToDelete *corev1.Endpoints
+	if currentEndpoints != nil && desiredEndpoints.Name == currentEndpoints.Name {
+		endpointsToDelete = desiredEndpoints
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out if the service has to be deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out if the endpoints has to be deleted")
 
-	return serviceToDelete, nil
+	return endpointsToDelete, nil
 }

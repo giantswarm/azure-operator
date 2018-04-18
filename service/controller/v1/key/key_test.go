@@ -8,19 +8,6 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
-func Test_AzureCloudType(t *testing.T) {
-	customObject := providerv1alpha1.AzureConfig{
-		Spec: providerv1alpha1.AzureConfigSpec{
-			Cluster: providerv1alpha1.Cluster{},
-		},
-	}
-
-	actualRes := AzureCloudType(customObject)
-	if actualRes != defaultAzureCloudType {
-		t.Fatalf("Expected cloud type %s but was %s", defaultAzureCloudType, actualRes)
-	}
-}
-
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
 
@@ -171,5 +158,21 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 		if actualRes != tc.ExpectedResult {
 			t.Fatalf("Expected %s but was %s", tc.ExpectedResult, actualRes)
 		}
+	}
+}
+
+func Test_MasterNICName(t *testing.T) {
+	expectedMasterNICName := "3p5j2-Master-1-NIC"
+
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Cluster: providerv1alpha1.Cluster{
+				ID: "3p5j2",
+			},
+		},
+	}
+
+	if MasterNICName(customObject) != expectedMasterNICName {
+		t.Fatalf("Expected master nic name %s but was %s", expectedMasterNICName, MasterNICName(customObject))
 	}
 }
