@@ -8,8 +8,6 @@ import (
 )
 
 const (
-	defaultAzureCloudType = "AZUREPUBLICCLOUD"
-
 	clusterTagName      = "GiantSwarmCluster"
 	installationTagName = "GiantSwarmInstallation"
 	organizationTagName = "GiantSwarmOrganization"
@@ -21,12 +19,6 @@ const (
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
 )
-
-// AzureCloudType returns cloud type.
-func AzureCloudType(customObject providerv1alpha1.AzureConfig) string {
-	// TODO: For now only public cloud supported.
-	return defaultAzureCloudType
-}
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
 	users := customObject.Spec.Cluster.Kubernetes.SSH.UserList
