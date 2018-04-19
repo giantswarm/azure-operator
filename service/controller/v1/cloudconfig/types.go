@@ -22,11 +22,6 @@ func newCalicoAzureFileParams(obj providerv1alpha1.AzureConfig) calicoAzureFileP
 
 type cloudProviderConfFileVMType string
 
-const (
-	vmTypeStandard cloudProviderConfFileVMType = "standard"
-	vmTypeVMSS     cloudProviderConfFileVMType = "vmss"
-)
-
 type cloudProviderConfFileParams struct {
 	Location            string
 	PrimaryScaleSetName string
@@ -37,10 +32,9 @@ type cloudProviderConfFileParams struct {
 	SubscriptionID      string
 	TenantID            string
 	VnetName            string
-	VMType              cloudProviderConfFileVMType
 }
 
-func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig, vmType cloudProviderConfFileVMType) cloudProviderConfFileParams {
+func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
 	return cloudProviderConfFileParams{
 		Location:            azure.Location,
 		PrimaryScaleSetName: key.WorkerVMSSName(obj),
@@ -51,7 +45,6 @@ func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.Azur
 		SubscriptionID:      azureConfig.SubscriptionID,
 		TenantID:            azureConfig.TenantID,
 		VnetName:            key.VnetName(obj),
-		VMType:              vmType,
 	}
 }
 

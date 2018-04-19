@@ -30,13 +30,6 @@ func Test_render(t *testing.T) {
 			Fn:   func() error { _, err := renderCloudProviderConfFile(cloudProviderConfFileParams{}); return err },
 		},
 		{
-			Name: "renderCloudProviderConfFileMasterKubelet",
-			Fn: func() error {
-				_, err := renderCloudProviderConfFileMasterKubelet(cloudProviderConfFileParams{})
-				return err
-			},
-		},
-		{
 			Name: "renderDefaultStorageClassFile",
 			Fn:   func() error { _, err := renderDefaultStorageClassFile(); return err },
 		},

@@ -91,10 +91,6 @@
         "description": "The base URI from which the templates will be fetched. Ends with a trailing '/'."
       }
     },
-    "availabilitySetsTemplateFile": {
-      "type": "string",
-      "defaultValue": "availability_sets_setup.json"
-    },
     "dnsASetupTemplateFile": {
       "type": "string",
       "defaultValue": "dns_a_setup.json"
@@ -102,10 +98,6 @@
     "dnsCNAMESetupTemplateFile": {
       "type": "string",
       "defaultValue": "dns_cname_setup.json"
-    },
-    "nodeSetupTemplateFile": {
-      "type": "string",
-      "defaultValue": "node_setup.json"
     },
     "publicLoadBalancerTemplateFile": {
       "type": "string",
@@ -139,10 +131,8 @@
     }
   },
   "variables": {
-    "availabilitySetsTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('availabilitySetsTemplateFile'))]",
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
-    "nodeSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('nodeSetupTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
@@ -236,23 +226,6 @@
           "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
           "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
           "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "master_availability_sets_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('availabilitySetsTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": {"value": "[variables('masterPrefix')]"}
         }
       }
     },
@@ -366,35 +339,30 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "[concat('master_nodes_setup_', copyIndex(1))]",
       "type": "Microsoft.Resources/deployments",
-      "copy": {
-        "name": "master_nodes_setup_copy",
-        "count":  "[length(parameters('masterNodes'))]"
-      },
+      "name": "master-vmss-deploy",
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('nodeSetupTemplateURI')]",
+          "uri": "[variables('vmssTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
+          "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": {"value": "[concat(variables('masterPrefix'), '-', copyIndex(1))]"},
-          "subnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
-          "availabilitySetID": {"value": "[reference('master_availability_sets_setup').outputs.availabilitySetID.value]"},
-          "disablePasswordAuth": {"value": "[parameters('masterDisablePasswordAuth')]"},
-          "vmSize": {"value": "[parameters('masterNodes')[copyIndex()].vmSize]"},
-          "dataDisks": {"value": [{"name": "EtcdDisk", "sizeGB": 10}, {"name": "DockerDisk", "sizeGB": 50}]},
-          "adminUsername": {"value": "[parameters('masterNodes')[copyIndex()].adminUsername]"},
-          "adminSSHKeyData": {"value": "[parameters('masterNodes')[copyIndex()].adminSSHKeyData]"},
-          "osImagePublisher": {"value": "[parameters('masterNodes')[copyIndex()].osImage.publisher]"},
-          "osImageOffer": {"value": "[parameters('masterNodes')[copyIndex()].osImage.offer]"},
-          "osImageSKU": {"value": "[parameters('masterNodes')[copyIndex()].osImage.sku]"},
-          "osImageVersion": {"value": "[parameters('masterNodes')[copyIndex()].osImage.version]"},
-          "cloudConfigData": {"value": "[parameters('masterCloudConfigData')]"},
-          "loadBalancerBackendPoolIDs": {"value": "[createArray(reference('api_load_balancer_setup').outputs.loadBalancerBackendPoolID.value)]"}
+          "vmssName": {"value": "[concat(parameters('clusterID'), '-master')]"},
+          "vmssVmSize": {"value": "[parameters('masterNodes')[0].vmSize]"},
+          "vmssVmCount": {"value": "[length(parameters('masterNodes'))]"},
+          "vmssVmDataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
+          "vmssSshUser": {"value": "[parameters('masterNodes')[0].adminUsername]"},
+          "vmssSshPublicKey": {"value": "[parameters('masterNodes')[0].adminSSHKeyData]"},
+          "vmssOsImagePublisher": {"value": "[parameters('masterNodes')[0].osImage.publisher]"},
+          "vmssOsImageOffer": {"value": "[parameters('masterNodes')[0].osImage.offer]"},
+          "vmssOsImageSKU": {"value": "[parameters('masterNodes')[0].osImage.sku]"},
+          "vmssOsImageVersion": {"value": "[parameters('masterNodes')[0].osImage.version]"},
+          "vmssVmCustomData": {"value": "[parameters('masterCloudConfigData')]"},
+          "vmssLbBackendPoolId": {"value": "[reference('api_load_balancer_setup').outputs.backendPoolId.value]"},
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
         }
       }
     },

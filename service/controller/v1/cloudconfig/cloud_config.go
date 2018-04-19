@@ -125,7 +125,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 						"-v /var/lib/waagent:/var/lib/waagent:ro",
 					},
 					CommandExtraArgs: []string{
-						"--cloud-config=/etc/kubernetes/config/azure-kubelet.yaml",
+						"--cloud-config=/etc/kubernetes/config/azure.yaml",
 					},
 				},
 			},
