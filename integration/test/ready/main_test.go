@@ -1,6 +1,6 @@
 // +build k8srequired
 
-package hello
+package ready
 
 import (
 	"os"
