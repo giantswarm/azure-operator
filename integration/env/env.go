@@ -59,13 +59,13 @@ func init() {
 		os.Setenv(EnvAzureCalicoSubnetCIDR, cidrs.CalicoSubnetCIDR)
 	} else {
 		if os.Getenv(EnvAzureCalicoSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty", EnvAzureCalicoSubnetCIDR))
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureCalicoSubnetCIDR))
 		}
 		if os.Getenv(EnvAzureMasterSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty", EnvAzureMasterSubnetCIDR))
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureMasterSubnetCIDR))
 		}
 		if os.Getenv(EnvAzureWorkerSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty", EnvAzureWorkerSubnetCIDR))
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureWorkerSubnetCIDR))
 		}
 
 	}
