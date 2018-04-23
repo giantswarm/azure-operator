@@ -4,15 +4,24 @@ import (
 	"crypto/sha1"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 	"time"
+
+	"github.com/giantswarm/azure-operator/integration/network"
 )
 
 const (
-	EnvClusterName   = "CLUSTER_NAME"
-	EnvCircleSHA     = "CIRCLE_SHA1"
-	EnvCircleJobName = "CIRCLE_JOB"
-	EnvCircleJobID   = "CIRCLE_WORKFLOW_JOB_ID"
+	EnvClusterName       = "CLUSTER_NAME"
+	EnvCircleSHA         = "CIRCLE_SHA1"
+	EnvCircleJobName     = "CIRCLE_JOB"
+	EnvCircleJobID       = "CIRCLE_WORKFLOW_JOB_ID"
+	EnvCircleBuildNumber = "CIRCLE_BUILD_NUM"
+
+	EnvAzureCIDR             = "AZURE_CIDR"
+	EnvAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
+	EnvAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
+	EnvAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
 )
 
 var (
@@ -28,6 +37,37 @@ func init() {
 	clusterName := os.Getenv(EnvClusterName)
 	if clusterName == "" {
 		os.Setenv(EnvClusterName, ClusterName())
+	}
+
+	// azureCDIR must be provided along with other CIDRs,
+	// otherwise we compute CIDRs base on EnvCircleBuildNumber value.
+	azureCDIR := os.Getenv(EnvAzureCIDR)
+	if azureCDIR == "" {
+		buildNumber, err := strconv.ParseUint(os.Getenv(EnvCircleBuildNumber), 10, 32)
+		if err != nil {
+			panic(err)
+		}
+
+		cidrs, err := network.ComputeCIDR(uint(buildNumber))
+		if err != nil {
+			panic(err)
+		}
+
+		os.Setenv(EnvAzureCIDR, cidrs.AzureCIDR)
+		os.Setenv(EnvAzureMasterSubnetCIDR, cidrs.MasterSubnetCIDR)
+		os.Setenv(EnvAzureWorkerSubnetCIDR, cidrs.WorkerSubnetCIDR)
+		os.Setenv(EnvAzureCalicoSubnetCIDR, cidrs.CalicoSubnetCIDR)
+	} else {
+		if os.Getenv(EnvAzureCalicoSubnetCIDR) == "" {
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureCalicoSubnetCIDR))
+		}
+		if os.Getenv(EnvAzureMasterSubnetCIDR) == "" {
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureMasterSubnetCIDR))
+		}
+		if os.Getenv(EnvAzureWorkerSubnetCIDR) == "" {
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureWorkerSubnetCIDR))
+		}
+
 	}
 }
 
