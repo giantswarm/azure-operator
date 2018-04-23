@@ -32,16 +32,9 @@ jobs:
             ./architect deploy
           fi
 
-  e2eTestHello:
+  e2eTestReady:
     environment:
-      TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/hello"
-    <<: *e2eTest
-
-  e2eTestFoo:
-    environment:
-      TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/foo"
+      TEST_DIR: "integration/test/ready"
     <<: *e2eTest
 
 workflows:
@@ -49,9 +42,6 @@ workflows:
   build_and_e2eTest:
     jobs:
       - build
-      - e2eTestHello:
-          requires:
-            - build
-      - e2eTestFoo:
+      - e2eTestReady:
           requires:
             - build
