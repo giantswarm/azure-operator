@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/setup"
 )
 
@@ -55,10 +56,10 @@ func TestMain(m *testing.M) {
 
 	var azureConfig = client.AzureConfig{
 		Logger:         logger,
-		ClientID:       os.Getenv("AZURE_CLIENTID"),
-		ClientSecret:   os.Getenv("AZURE_CLIENTSECRET"),
-		SubscriptionID: os.Getenv("AZURE_SUBSCRIPTIONID"),
-		TenantID:       os.Getenv("AZURE_TENANTID"),
+		ClientID:       env.AzureClientID(),
+		ClientSecret:   env.AzureClientSecret(),
+		SubscriptionID: env.AzureSubscriptionID(),
+		TenantID:       env.AzureTenantID(),
 	}
 
 	c, err := client.NewAzureClientSet(azureConfig)

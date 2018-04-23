@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
-	_ "github.com/giantswarm/azure-operator/integration/env"
+	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/teardown"
 	"github.com/giantswarm/azure-operator/integration/template"
 )
@@ -32,7 +32,7 @@ func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Hos
 		r = m.Run()
 	}
 
-	if os.Getenv("KEEP_RESOURCES") != "true" {
+	if env.KeepResources() != "true" {
 		teardown.Teardown(c, g, h)
 	}
 

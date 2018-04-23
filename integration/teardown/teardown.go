@@ -3,12 +3,11 @@
 package teardown
 
 import (
-	"os"
-
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/integration/env"
 )
 
 // Teardown e2e testing environment.
@@ -19,7 +18,7 @@ func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) e
 		h.DeleteGuestCluster("azure-operator", "azureconfig", "deleting host vnet peering: deleted")
 
 		// only do full teardown when not on CI
-		if os.Getenv("CIRCLECI") == "true" {
+		if env.CircleCI() == "true" {
 			return nil
 		}
 	}
