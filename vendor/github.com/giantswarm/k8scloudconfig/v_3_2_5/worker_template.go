@@ -6,8 +6,10 @@ users:
     groups:
       - "sudo"
       - "docker"
+{{ if ne $user.PublicKey "" }}
     ssh-authorized-keys:
        - "{{ $user.PublicKey }}"
+{{ end }}
 {{end}}
 write_files:
 - path: /etc/kubernetes/config/proxy-kubeconfig.yml
@@ -275,6 +277,7 @@ coreos:
       -v /etc/iscsi/:/etc/iscsi/ \
       -v /dev/disk/by-path/:/dev/disk/by-path/ \
       -v /dev/mapper/:/dev/mapper/ \
+      -v /lib/modules:/lib/modules \
       -v /usr/sbin/mkfs.xfs:/usr/sbin/mkfs.xfs \
       -v /usr/lib64/libxfs.so.0:/usr/lib/libxfs.so.0 \
       -v /usr/lib64/libxcmd.so.0:/usr/lib/libxcmd.so.0 \

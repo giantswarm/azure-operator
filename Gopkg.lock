@@ -119,7 +119,7 @@
   branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = ["v_3_2_5"]
-  revision = "8d8159d5aa740bebd3d4d68af3f1284002fb1c9b"
+  revision = "7012556c3984317b3b2ea04183a186f1310950bd"
 
 [[projects]]
   branch = "master"
