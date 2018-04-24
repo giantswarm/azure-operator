@@ -10,24 +10,9 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "kubernetes",
-				Description: "Updated to version 1.10.1.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "containerlinux",
-				Description: "Updated to version 1632.3.0.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "docker",
-				Description: "Updated to version 17.09.0.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
 				Component:   "azure-operator",
-				Description: "Change default etcd data dir to /var/lib/etcd.",
-				Kind:        versionbundle.KindChanged,
+				Description: "Added first release.",
+				Kind:        versionbundle.KindAdded,
 			},
 		},
 		Components: []versionbundle.Component{
@@ -37,11 +22,11 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "1632.3.0",
+				Version: "1688.5.3",
 			},
 			{
 				Name:    "docker",
-				Version: "17.09.0",
+				Version: "17.12.1",
 			},
 			{
 				Name:    "etcd",
