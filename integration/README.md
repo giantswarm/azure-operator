@@ -1,4 +1,4 @@
-# Requirements
+## Requirements
 
 ```
 go get -u github.com/giantswarm/e2e-harness
@@ -37,7 +37,7 @@ OR
 
 ```
 
-# How to run integration test
+## How to run integration test
 
 ```
 $ minikube start --extra-config=apiserver.Authorization.Mode=RBAC
