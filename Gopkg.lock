@@ -72,8 +72,8 @@
     ".",
     "log"
   ]
-  revision = "26b41036311f2da8242db402557a0dbd09dc83da"
-  version = "v2.6.0"
+  revision = "2810ccc68e0ca445fa81ebfa03fbf70aca5c41ae"
+  version = "v2.7.0"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -98,7 +98,7 @@
     "pkg/clientset/versioned/typed/core/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "1470b7cff67311b0f4d3c7d6349115ae568d59ee"
+  revision = "292a0157b9683e2593f1d65e2e52c5ff2859f124"
 
 [[projects]]
   branch = "master"
@@ -107,7 +107,7 @@
     ".",
     "certstest"
   ]
-  revision = "162a1130d27d6bbe1ab101059afab985707e46b0"
+  revision = "7be474c80bf0e824b1e575d21fb699686c0a9e4d"
 
 [[projects]]
   branch = "master"
@@ -116,7 +116,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "8d95d3f28a008eef6132eb5f64646b7465105bb7"
+  revision = "e88a980a9eb3082a727fc65d68136ac8a6424fbd"
 
 [[projects]]
   branch = "master"
@@ -128,7 +128,7 @@
   branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = ["v_3_2_5"]
-  revision = "7012556c3984317b3b2ea04183a186f1310950bd"
+  revision = "c78b750fbd9378b78cb2ee63a3d52b68d9264ebf"
 
 [[projects]]
   branch = "master"
@@ -164,7 +164,7 @@
     "server",
     "tls"
   ]
-  revision = "72abbaa63827895b5e4964983814e7cdc5353474"
+  revision = "e512bc900e56853249173da6028a45939ebe8e85"
 
 [[projects]]
   branch = "master"
@@ -174,7 +174,7 @@
     "loggermeta",
     "microloggertest"
   ]
-  revision = "2aaea11da0707ebb7f9fbabb07028a37b00efc16"
+  revision = "ad4de16de22043f947fdf6c587cbc2736456d33d"
 
 [[projects]]
   branch = "master"
@@ -189,6 +189,7 @@
     "client/k8scrdclient",
     "client/k8srestconfig",
     "controller",
+    "controller/context/finalizerskeptcontext",
     "controller/context/reconciliationcanceledcontext",
     "controller/context/resourcecanceledcontext",
     "controller/context/updateallowedcontext",
@@ -198,7 +199,7 @@
     "controller/resource/retryresource",
     "informer"
   ]
-  revision = "3e96a44c04a17fc0f5c626d10358cc388906833f"
+  revision = "1ddbbec19f4b9a9f8f942cb9313fc273e2a6a63c"
 
 [[projects]]
   branch = "master"
@@ -213,7 +214,7 @@
   branch = "master"
   name = "github.com/giantswarm/versionbundle"
   packages = ["."]
-  revision = "9d68178349b5a16f2af8c3d2b4a14dcbcd6fb08b"
+  revision = "94e7abbcdd8662cf87bb046f612fa4016277b30a"
 
 [[projects]]
   name = "github.com/go-kit/kit"
@@ -247,19 +248,19 @@
   branch = "master"
   name = "github.com/go-openapi/spec"
   packages = ["."]
-  revision = "a3092263d8b39f66ff6fe87b0109668eca1e24ff"
+  revision = "bcff419492eeeb01f76e77d2ebc714dc97b607f5"
 
 [[projects]]
   branch = "master"
   name = "github.com/go-openapi/swag"
   packages = ["."]
-  revision = "ceb469cb0fdf2d792f28d771bc05da6c606f55e5"
+  revision = "811b1089cde9dad18d4d0c2d09fbdbf28dbd27a5"
 
 [[projects]]
   name = "github.com/go-resty/resty"
   packages = ["."]
-  revision = "65798e030a35b911602b4d1d743d6f50ac93b665"
-  version = "v1.3"
+  revision = "f8815663de1e64d57cdd4ee9e2b2fa96977a030e"
+  version = "v1.4"
 
 [[projects]]
   name = "github.com/go-stack/stack"
@@ -361,7 +362,7 @@
     "json/scanner",
     "json/token"
   ]
-  revision = "f40e974e75af4e271d97ce0fc917af5898ae7bda"
+  revision = "ef8a98b0bbce4a65b5aa4c368430a80ddc533168"
 
 [[projects]]
   branch = "master"
@@ -470,7 +471,7 @@
     "prometheus",
     "prometheus/promhttp"
   ]
-  revision = "d49167c4b9f3c4451707560c5c71471ff5291aaa"
+  revision = "82f5ff156b29e276022b1a958f7d385870fb9814"
 
 [[projects]]
   branch = "master"
@@ -486,7 +487,7 @@
     "internal/bitbucket.org/ww/goautoneg",
     "model"
   ]
-  revision = "e4aa40a9169a88835b849a6efb71e05dc04b88f0"
+  revision = "e5b036cc37a466a0af27d604d1ee500211d16d6a"
 
 [[projects]]
   branch = "master"
@@ -497,7 +498,7 @@
     "nfs",
     "xfs"
   ]
-  revision = "780932d4fbbe0e69b84c34c20f5c8d0981e109ea"
+  revision = "8b1c2da0d56deffdbb9e48d4414b4e674bd8083e"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -517,8 +518,8 @@
 [[projects]]
   name = "github.com/spf13/cobra"
   packages = ["."]
-  revision = "7b2c5ac9fc04fc5efafb60700713d4fa609b777b"
-  version = "v0.0.1"
+  revision = "a1f051bc3eba734da4772d60e2d677f47cf93ef4"
+  version = "v0.0.2"
 
 [[projects]]
   branch = "master"
@@ -529,8 +530,8 @@
 [[projects]]
   name = "github.com/spf13/pflag"
   packages = ["."]
-  revision = "e57e3eeb33f795204c1ca35f56c44f83227c6e66"
-  version = "v1.0.0"
+  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
+  version = "v1.0.1"
 
 [[projects]]
   name = "github.com/spf13/viper"
@@ -548,20 +549,21 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "b2aa35443fbc700ab74c586ae79b81c171851023"
+  revision = "b0697eccbea9adec5b7ba8008f4c33d98d733388"
 
 [[projects]]
   branch = "master"
   name = "golang.org/x/net"
   packages = [
     "context",
+    "http/httpguts",
     "http2",
     "http2/hpack",
     "idna",
     "lex/httplex",
     "publicsuffix"
   ]
-  revision = "6078986fec03a1dcc236c34816c71b0e05018fda"
+  revision = "5f9ae10d9af5b1c89ae6904293b14b064d4ada23"
 
 [[projects]]
   branch = "master"
@@ -576,7 +578,7 @@
     "unix",
     "windows"
   ]
-  revision = "91ee8cde435411ca3f1cd365e8f20131aed4d0a1"
+  revision = "79b0c6888797020a994db17c8510466c72fe75d9"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -603,8 +605,8 @@
 [[projects]]
   name = "gopkg.in/inf.v0"
   packages = ["."]
-  revision = "3887ee99ecf07df5b447e9b00d9c0b2adaa9f3e4"
-  version = "v0.9.0"
+  revision = "d2d2541c53f18d2a059457998ce2876cc8e67cbf"
+  version = "v0.9.1"
 
 [[projects]]
   name = "gopkg.in/yaml.v2"
@@ -795,7 +797,7 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "50ae88d24ede7b8bad68e23c805b5d3da5c8abaf"
+  revision = "1e45fb05b06309c0d807d0930e1a81fe0a1cd4b8"
 
 [solve-meta]
   analyzer-name = "dep"
