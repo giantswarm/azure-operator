@@ -139,8 +139,12 @@ func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
+func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-master", ClusterID(customObject))
+}
+
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return "worker-vmss"
+	return fmt.Sprintf("%s-worker", ClusterID(customObject))
 }
 
 // MasterNICName returns name of the master NIC.

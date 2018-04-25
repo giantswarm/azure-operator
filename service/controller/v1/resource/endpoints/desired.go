@@ -17,7 +17,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	masterNICPrivateIP, err := r.getMasterNICPrivateIP(key.ClusterID(customObject), key.MasterNICName(customObject))
+	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(key.ClusterID(customObject), key.MasterVMSSName(customObject))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -35,20 +35,21 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 				"giantswarm.io/managed-by":   "azure-operator",
 			},
 		},
-		Subsets: []v1.EndpointSubset{
-			{
-				Addresses: []v1.EndpointAddress{
-					{
-						IP: masterNICPrivateIP,
-					},
-				},
-				Ports: []v1.EndpointPort{
-					{
-						Port: httpsPort,
-					},
+	}
+
+	for _, ip := range masterNICPrivateIPs {
+		endpoints.Subsets = append(endpoints.Subsets, v1.EndpointSubset{
+			Addresses: []v1.EndpointAddress{
+				{
+					IP: ip,
 				},
 			},
-		},
+			Ports: []v1.EndpointPort{
+				{
+					Port: httpsPort,
+				},
+			},
+		})
 	}
 
 	return endpoints, nil

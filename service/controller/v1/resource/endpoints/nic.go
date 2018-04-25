@@ -14,36 +14,47 @@ const (
 	expands = ""
 )
 
-func (r *Resource) getMasterNICPrivateIP(resourceGroupName, networkInterfaceName string) (string, error) {
+func (r *Resource) getMasterNICPrivateIPs(resourceGroupName, virtualMachineScaleSetName string) ([]string, error) {
+	var ips []string
+
 	interfacesClient, err := r.getInterfacesClient()
 	if err != nil {
-		return "", microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
-	networkInterface, err := interfacesClient.Get(
+	result, err := interfacesClient.ListVirtualMachineScaleSetNetworkInterfaces(
 		context.Background(),
 		resourceGroupName,
-		networkInterfaceName,
-		expands,
+		virtualMachineScaleSetName,
 	)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
-	ipConfigurations := *networkInterface.IPConfigurations
+	for result.NotDone() {
+		values := result.Values()
+		for _, networkInterface := range values {
+			ipConfigurations := *networkInterface.IPConfigurations
+			if len(ipConfigurations) != 1 {
+				return nil, microerror.Mask(incorrectNumberNetworkInterfacesError)
+			}
 
-	if len(ipConfigurations) != 1 {
-		return "", microerror.Mask(incorrectNumberNetworkInterfacesError)
+			ipConfiguration := ipConfigurations[0]
+			privateIP := *ipConfiguration.PrivateIPAddress
+			if privateIP == "" {
+				return nil, microerror.Mask(privateIPAddressEmptyError)
+			}
+
+			ips = append(ips, privateIP)
+		}
+
+		err := result.Next()
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
-	ipConfiguration := ipConfigurations[0]
-	privateIP := *ipConfiguration.PrivateIPAddress
-
-	if privateIP == "" {
-		return "", microerror.Mask(privateIPAddressEmptyError)
-	}
-
-	return privateIP, nil
+	return ips, nil
 }
 
 func (r *Resource) getInterfacesClient() (*network.InterfacesClient, error) {
