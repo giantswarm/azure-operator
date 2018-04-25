@@ -83,7 +83,7 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallResource("azure-resource-chart", template.AzureResourceChartValues)
+		err = h.InstallResource("azure-resource-chart", template.AzureResourceChartValues, ":stable")
 		if err != nil {
 			return microerror.Mask(err)
 		}
