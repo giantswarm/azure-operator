@@ -5,6 +5,8 @@ metadata:
   namespace: giantswarm
   labels:
     app: azure-operator
+  annotations:
+    checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 spec:
   replicas: 1
   revisionHistoryLimit: 3
