@@ -139,8 +139,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var deploymentResource controller.Resource
 	{
 		c := deployment.Config{
-			CertsSearcher: certsSearcher,
-			Logger:        config.Logger,
+			Logger: config.Logger,
 
 			Azure:           config.Azure,
 			AzureConfig:     config.AzureConfig,
