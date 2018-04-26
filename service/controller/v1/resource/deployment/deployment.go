@@ -19,8 +19,6 @@ func getDeploymentNames() []string {
 }
 
 func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deployment, error) {
-	var err error
-
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
 		n := node{
@@ -43,20 +41,14 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		workerNodes = append(workerNodes, n)
 	}
 
-	var masterCloudConfig, workerCloudConfig string
-	// Do not generate cloud configs when AzureConfig is deleted. Otherwise
-	// there is a potential race. Certificate Secrets can be already
-	// deleted.
-	if !key.IsDeleted(obj) {
-		masterCloudConfig, err = r.cloudConfig.NewMasterCloudConfig(obj)
-		if err != nil {
-			return deployment{}, microerror.Mask(err)
-		}
+	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
+	if err != nil {
+		return deployment{}, microerror.Mask(err)
+	}
 
-		workerCloudConfig, err = r.cloudConfig.NewWorkerCloudConfig(obj)
-		if err != nil {
-			return deployment{}, microerror.Mask(err)
-		}
+	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
+	if err != nil {
+		return deployment{}, microerror.Mask(err)
 	}
 
 	params := map[string]interface{}{

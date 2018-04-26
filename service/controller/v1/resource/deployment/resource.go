@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -81,6 +82,13 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	customObject, err := toCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
+	}
+
+	// Deleting the resource group will take care about cleaning
+	// deployments.
+	if IsDeleted(customObject) {
+		resourcecanceledcontext.SetCanceled(ctx)
+		return nil, nil
 	}
 
 	resourceGroupName := key.ClusterID(customObject)
