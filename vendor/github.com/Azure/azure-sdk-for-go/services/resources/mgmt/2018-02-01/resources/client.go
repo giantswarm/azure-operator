@@ -1,8 +1,6 @@
-// Package resources implements the Azure ARM Resources service API version 2017-05-10.
+// Package resources implements the Azure ARM Resources service API version 2018-02-01.
 //
 // Provides operations for working with resources and resource groups.
-//
-// Deprecated: Please instead use github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources
 package resources
 
 // Copyright (c) Microsoft and contributors.  All rights reserved.
@@ -31,21 +29,21 @@ const (
 	DefaultBaseURI = "https://management.azure.com"
 )
 
-// ManagementClient is the base client for Resources.
-type ManagementClient struct {
+// BaseClient is the base client for Resources.
+type BaseClient struct {
 	autorest.Client
 	BaseURI        string
 	SubscriptionID string
 }
 
-// New creates an instance of the ManagementClient client.
-func New(subscriptionID string) ManagementClient {
+// New creates an instance of the BaseClient client.
+func New(subscriptionID string) BaseClient {
 	return NewWithBaseURI(DefaultBaseURI, subscriptionID)
 }
 
-// NewWithBaseURI creates an instance of the ManagementClient client.
-func NewWithBaseURI(baseURI string, subscriptionID string) ManagementClient {
-	return ManagementClient{
+// NewWithBaseURI creates an instance of the BaseClient client.
+func NewWithBaseURI(baseURI string, subscriptionID string) BaseClient {
+	return BaseClient{
 		Client:         autorest.NewClientWithUserAgent(UserAgent()),
 		BaseURI:        baseURI,
 		SubscriptionID: subscriptionID,

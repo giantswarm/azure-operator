@@ -132,7 +132,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Informer:       newInformer,
 			Logger:         config.Logger,
 			ResourceRouter: resourceRouter,
-			K8sClient:      config.K8sClient,
+			RESTClient:     config.K8sClient.CoreV1().RESTClient(),
 
 			Name: config.ProjectName,
 		}
