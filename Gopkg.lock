@@ -4,12 +4,13 @@
 [[projects]]
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
-    "arm/resources/resources",
     "services/dns/mgmt/2017-09-01/dns",
-    "services/network/mgmt/2017-09-01/network"
+    "services/network/mgmt/2017-09-01/network",
+    "services/resources/mgmt/2018-02-01/resources",
+    "version"
   ]
-  revision = "934e2462aeb6e0c14186dcfeedd73a026d1b8eeb"
-  version = "v12.1.0-beta"
+  revision = "fad8443a79b0e755c18c3bec29a8d2bedab0b421"
+  version = "v15.3.0"
 
 [[projects]]
   name = "github.com/Azure/go-autorest"
@@ -21,8 +22,8 @@
     "autorest/to",
     "autorest/validation"
   ]
-  revision = "fc3b03a2d2d1f43fad3007038bd16f044f870722"
-  version = "v9.10.0"
+  revision = "1ff28809256a84bb6966640ff3d0371af82ccba4"
+  version = "v10.6.2"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -802,6 +803,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "245c6f9fbdc46233405ce05f5930b555edefb1b07b5aab5acc69e31f8d7c3686"
+  inputs-digest = "c74f5c88f043d3daaed9073c4bf91d9607d1e69791fcfdec533743ffc4fc333b"
   solver-name = "gps-cdcl"
   solver-version = 1
