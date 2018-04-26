@@ -45,7 +45,8 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 
 	var masterCloudConfig, workerCloudConfig string
 	// Do not generate cloud configs when AzureConfig is deleted. Otherwise
-	// there is potential race. Certificate Secrets can be already deleted.
+	// there is a potential race. Certificate Secrets can be already
+	// deleted.
 	if !key.IsDeleted(obj) {
 		masterCloudConfig, err = r.cloudConfig.NewMasterCloudConfig(obj)
 		if err != nil {
