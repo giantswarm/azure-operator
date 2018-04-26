@@ -8,6 +8,7 @@ import (
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/v1/key"
 )
@@ -16,6 +17,13 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
+	}
+
+	// Deleting the K8s namespace will take care of cleaning the service.
+	if key.IsDeleted(customObject) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling service deletion: deleted with the namespace")
+		resourcecanceledcontext.SetCanceled(ctx)
+		return nil, nil
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the master service in the Kubernetes API")
