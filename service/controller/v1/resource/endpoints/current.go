@@ -20,6 +20,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	// Deleting the K8s namespace will take care of cleaning the endpoints.
 	if key.IsDeleted(customObject) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling endpoints deletion: deleted with the namespace")
 		resourcecanceledcontext.SetCanceled(ctx)
 		return nil, nil
 	}
