@@ -119,6 +119,10 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
 }
 
+func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {
+	return customObject.GetDeletionTimestamp() != nil
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)

@@ -8,7 +8,6 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
@@ -27,9 +26,8 @@ const (
 )
 
 type Config struct {
-	CertsSearcher certs.Interface
-	CloudConfig   *cloudconfig.CloudConfig
-	Logger        micrologger.Logger
+	CloudConfig *cloudconfig.CloudConfig
+	Logger      micrologger.Logger
 
 	Azure       setting.Azure
 	AzureConfig client.AzureConfig
@@ -39,9 +37,8 @@ type Config struct {
 }
 
 type Resource struct {
-	certsSearcher certs.Interface
-	cloudConfig   *cloudconfig.CloudConfig
-	logger        micrologger.Logger
+	cloudConfig *cloudconfig.CloudConfig
+	logger      micrologger.Logger
 
 	azure           setting.Azure
 	azureConfig     client.AzureConfig
@@ -49,9 +46,6 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
-	if config.CertsSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
-	}
 	if config.CloudConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CloudConfig must not be empty", config)
 	}
@@ -70,9 +64,8 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		certsSearcher: config.CertsSearcher,
-		cloudConfig:   config.CloudConfig,
-		logger:        config.Logger,
+		cloudConfig: config.CloudConfig,
+		logger:      config.Logger,
 
 		azure:           config.Azure,
 		azureConfig:     config.AzureConfig,
