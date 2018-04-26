@@ -61,9 +61,8 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		}
 
 		c := Config{
-			CertsSearcher: certstest.NewSearcher(),
-			CloudConfig:   cloudConfig,
-			Logger:        microloggertest.New(),
+			CloudConfig: cloudConfig,
+			Logger:      microloggertest.New(),
 
 			Azure:           testAzure,
 			AzureConfig:     fakeclient.NewAzureConfig(),
@@ -200,9 +199,8 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 		}
 
 		c := Config{
-			CertsSearcher: certstest.NewSearcher(),
-			CloudConfig:   cloudConfig,
-			Logger:        microloggertest.New(),
+			CloudConfig: cloudConfig,
+			Logger:      microloggertest.New(),
 
 			Azure:           testAzure,
 			AzureConfig:     fakeclient.NewAzureConfig(),
