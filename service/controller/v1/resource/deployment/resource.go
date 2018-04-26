@@ -84,8 +84,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	// Deleting the resource group will take care about cleaning
-	// deployments.
+	// Deleting the resource group will take care of cleaning deployments.
 	if IsDeleted(customObject) {
 		resourcecanceledcontext.SetCanceled(ctx)
 		return nil, nil
