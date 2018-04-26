@@ -19,11 +19,6 @@ func getDeploymentNames() []string {
 }
 
 func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deployment, error) {
-	_, err := r.certsSearcher.SearchCluster(key.ClusterID(obj))
-	if err != nil {
-		return deployment{}, microerror.Mask(err)
-	}
-
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
 		n := node{
