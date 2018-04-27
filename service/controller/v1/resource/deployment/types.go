@@ -8,7 +8,7 @@ type deployment struct {
 	TemplateURI   string
 
 	// TemplateContentVersion is a value to fill in
-	// github.com/Azure/azure-sdk-for-go/arm/resources/resources.TemplateLink.ContentVersion.
+	// github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources.TemplateLink.ContentVersion.
 	// For more information see contentVersion documentation
 	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates.
 	TemplateContentVersion string
