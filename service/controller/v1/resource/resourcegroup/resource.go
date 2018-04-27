@@ -162,7 +162,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group")
 
 	if resourceGroupToCreate.Name != "" {
-		groupClient, err := r.getGroupsClient()
+		groupsClient, err := r.getGroupsClient()
 		if err != nil {
 			return microerror.Maskf(err, "creating Azure resource group")
 		}
@@ -173,9 +173,9 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 			ManagedBy: to.StringPtr(managedBy),
 			Tags:      *to.StringMapPtr(resourceGroupToCreate.Tags),
 		}
-		_, err = groupClient.CreateOrUpdate(ctx, resourceGroupToCreate.Name, resourceGroup)
+		_, err = groupsClient.CreateOrUpdate(ctx, resourceGroupToCreate.Name, resourceGroup)
 		if err != nil {
-			return microerror.Maskf(err, "creating Azure resource group")
+			return microerror.Mask(err)
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group: created")
