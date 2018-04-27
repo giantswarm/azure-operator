@@ -77,7 +77,7 @@ func (s *Service) GetHealthz(ctx context.Context) (healthzservice.Response, erro
 				return
 			}
 
-			_, err = azureClients.GroupsClient.List("", to.Int32Ptr(TopResultCount))
+			_, err = azureClients.GroupsClient.List(ctx, "", to.Int32Ptr(TopResultCount))
 			if err != nil {
 				ch <- err.Error()
 				return

@@ -5,7 +5,7 @@ import (
 	"fmt"
 	"time"
 
-	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -101,7 +101,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	var deployments []deployment
 	{
 		for _, deploymentName := range getDeploymentNames() {
-			deploymentExtended, err := deploymentClient.Get(resourceGroupName, deploymentName)
+			deploymentExtended, err := deploymentClient.Get(ctx, resourceGroupName, deploymentName)
 			if err != nil {
 				if client.ResponseWasNotFound(deploymentExtended.Response) {
 					// Fall through.
@@ -112,11 +112,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			}
 
 			d := deployment{
-				Name:                   *deploymentExtended.Name,
-				Parameters:             *deploymentExtended.Properties.Parameters,
-				ResourceGroup:          resourceGroupName,
-				TemplateURI:            *deploymentExtended.Properties.TemplateLink.URI,
-				TemplateContentVersion: *deploymentExtended.Properties.TemplateLink.ContentVersion,
+				Name: *deploymentExtended.Name,
 			}
 			deployments = append(deployments, d)
 		}
@@ -203,14 +199,13 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 				},
 			}
 
-			_, errchan := deploymentsClient.CreateOrUpdate(resourceGroupName, deploy.Name, d, nil)
-			select {
-			case err := <-errchan:
-				if err != nil {
-					return microerror.Maskf(err, "creating Azure deployments: creating %#q", deploy.Name)
-				}
-			case <-time.After(createTimeout):
-				return microerror.Maskf(timeoutError, "creating Azure deployments: creating %#q", deploy.Name)
+			f, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, deploy.Name, d)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			err = f.WaitForCompletion(ctx, deploymentsClient.Client)
+			if err != nil {
+				return microerror.Mask(err)
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))

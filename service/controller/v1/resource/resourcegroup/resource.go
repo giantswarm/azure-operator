@@ -4,7 +4,7 @@ import (
 	"context"
 	"time"
 
-	azureresource "github.com/Azure/azure-sdk-for-go/arm/resources/resources"
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -81,7 +81,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			return nil, microerror.Mask(err)
 		}
 
-		resourceGroup, err := groupsClient.Get(key.ClusterID(customObject))
+		resourceGroup, err := groupsClient.Get(ctx, key.ClusterID(customObject))
 		if err != nil {
 			if client.ResponseWasNotFound(resourceGroup.Response) {
 				// Fall through.
@@ -91,9 +91,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			return nil, microerror.Mask(err)
 		}
 		group = Group{
-			Name:     *resourceGroup.Name,
-			Location: *resourceGroup.Location,
-			Tags:     to.StringMap(*resourceGroup.Tags),
+			Name: *resourceGroup.Name,
 		}
 	}
 
@@ -164,7 +162,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group")
 
 	if resourceGroupToCreate.Name != "" {
-		groupClient, err := r.getGroupsClient()
+		groupsClient, err := r.getGroupsClient()
 		if err != nil {
 			return microerror.Maskf(err, "creating Azure resource group")
 		}
@@ -173,11 +171,11 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 			Name:      to.StringPtr(resourceGroupToCreate.Name),
 			Location:  to.StringPtr(resourceGroupToCreate.Location),
 			ManagedBy: to.StringPtr(managedBy),
-			Tags:      to.StringMapPtr(resourceGroupToCreate.Tags),
+			Tags:      *to.StringMapPtr(resourceGroupToCreate.Tags),
 		}
-		_, err = groupClient.CreateOrUpdate(resourceGroupToCreate.Name, resourceGroup)
+		_, err = groupsClient.CreateOrUpdate(ctx, resourceGroupToCreate.Name, resourceGroup)
 		if err != nil {
-			return microerror.Maskf(err, "creating Azure resource group")
+			return microerror.Mask(err)
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure resource group: created")
@@ -209,14 +207,13 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState inter
 
 		// Delete the resource group which also deletes all resources it
 		// contains. We wait for the error channel while the deletion happens.
-		_, errchan := groupsClient.Delete(resourceGroupToDelete.Name, nil)
-		select {
-		case err := <-errchan:
-			if err != nil {
-				return microerror.Maskf(err, "deleting Azure resource group")
-			}
-		case <-time.After(deleteTimeout):
-			return microerror.Maskf(timeoutError, "deleting Azure resource group")
+		f, err := groupsClient.Delete(ctx, resourceGroupToDelete.Name)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		err = f.WaitForCompletion(ctx, groupsClient.Client)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Azure resource group: deleted")
