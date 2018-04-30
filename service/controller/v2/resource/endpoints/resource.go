@@ -11,7 +11,7 @@ import (
 )
 
 const (
-	Name = "endpointsv1"
+	Name = "endpointsv2"
 
 	httpsPort           = 443
 	masterEndpointsName = "master"

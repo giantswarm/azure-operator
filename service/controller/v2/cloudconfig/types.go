@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v1/key"
+	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
 type calicoAzureFileParams struct {
