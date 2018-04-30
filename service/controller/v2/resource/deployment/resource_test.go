@@ -12,7 +12,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client/fakeclient"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v1/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
 )
 
 var testAzure = setting.Azure{

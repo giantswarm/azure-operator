@@ -1,4 +1,4 @@
-package v1
+package v2
 
 import (
 	"fmt"
@@ -17,15 +17,15 @@ import (
 	"github.com/giantswarm/randomkeys"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v1/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/v1/key"
-	"github.com/giantswarm/azure-operator/service/controller/v1/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/controller/v1/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/service/controller/v1/resource/endpoints"
-	"github.com/giantswarm/azure-operator/service/controller/v1/resource/namespace"
-	"github.com/giantswarm/azure-operator/service/controller/v1/resource/resourcegroup"
-	"github.com/giantswarm/azure-operator/service/controller/v1/resource/service"
-	"github.com/giantswarm/azure-operator/service/controller/v1/resource/vnetpeering"
+	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/deployment"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/endpoints"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/namespace"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/service"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/vnetpeering"
 )
 
 const (
