@@ -14,11 +14,16 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Added first release.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "kubernetes",
+				Description: "Updated to 1.10.2.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
 				Name:    "calico",
-				Version: "3.0.1",
+				Version: "3.0.5",
 			},
 			{
 				Name:    "containerlinux",
@@ -30,15 +35,15 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "etcd",
-				Version: "3.3.1",
+				Version: "3.3.3",
 			},
 			{
 				Name:    "coredns",
-				Version: "1.0.6",
+				Version: "1.1.1",
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.10.1",
+				Version: "1.10.2",
 			},
 			{
 				Name:    "nginx-ingress-controller",
