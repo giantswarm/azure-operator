@@ -10,14 +10,14 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "azure-operator",
-				Description: "Added first release.",
-				Kind:        versionbundle.KindAdded,
+				Component:   "kubernetes",
+				Description: "updated to 1.10.2.",
+				Kind:        versionbundle.KindChanged,
 			},
 			{
-				Component:   "kubernetes",
-				Description: "Updated to 1.10.2.",
-				Kind:        versionbundle.KindChanged,
+				Component:   "cloudconfig",
+				Description: "Removed kube-state-metrics related components (will be managed by chart-operator).",
+				Kind:        versionbundle.KindRemoved,
 			},
 		},
 		Components: []versionbundle.Component{
@@ -53,8 +53,8 @@ func VersionBundle() versionbundle.Bundle {
 		Dependencies: []versionbundle.Dependency{},
 		Deprecated:   false,
 		Name:         "azure-operator",
-		Time:         time.Date(2018, time.January, 7, 8, 35, 0, 0, time.UTC),
+		Time:         time.Date(2018, time.May, 14, 12, 00, 0, 0, time.UTC),
 		Version:      "0.2.0",
-		WIP:          true,
+		WIP:          false,
 	}
 }
