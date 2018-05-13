@@ -22,10 +22,19 @@ type AzureConfig struct {
 	ClientID string
 	// ClientSecret is the secret of the Active Directory Service Principal.
 	ClientSecret string
+	// The cloud environment identifier. Takes values from https://github.com/Azure/go-autorest/blob/ec5f4903f77ed9927ac95b19ab8e44ada64c1356/autorest/azure/environments.go#L13
+	Cloud string
 	// SubscriptionID is the ID of the Azure subscription.
 	SubscriptionID string
 	// TenantID is the ID of the Active Directory tenant.
 	TenantID string
+}
+
+// azureClientConfig contains all essential information to create an Azure client.
+type azureClientConfig struct {
+	subscriptionID          string
+	resourceManagerEndpoint string
+	servicePrincipalToken   *adal.ServicePrincipalToken
 }
 
 func (c AzureConfig) Validate() error {
@@ -71,32 +80,50 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.%s", err)
 	}
 
-	deploymentsClient, err := newDeploymentsClient(config)
+	// Returns environment object contains all API endpoints for specific Azure cloud.
+	// For empty config.Cloud returns Azure public cloud.
+	env, err := parseAzureEnvironment(config.Cloud)
+	if err != nil {
+		return nil, err
+	}
+
+	servicePrincipalToken, err := newServicePrincipalToken(config, env)
+	if err != nil {
+		return nil, microerror.Maskf(err, "creating service principal token")
+	}
+
+	clientConfig := &azureClientConfig{
+		subscriptionID:          config.SubscriptionID,
+		resourceManagerEndpoint: env.ResourceManagerEndpoint,
+		servicePrincipalToken:   servicePrincipalToken,
+	}
+
+	deploymentsClient, err := newDeploymentsClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	groupsClient, err := newGroupsClient(config)
+	groupsClient, err := newGroupsClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	dnsRecordSetsClient, err := newDNSRecordSetsClient(config)
+	dnsRecordSetsClient, err := newDNSRecordSetsClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	dnsZonesClient, err := newDNSZonesClient(config)
+	dnsZonesClient, err := newDNSZonesClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	interfacesClient, err := newInterfacesClient(config)
+	interfacesClient, err := newInterfacesClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	vnetPeeringClient, err := newVnetPeeringClient(config)
+	vnetPeeringClient, err := newVnetPeeringClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -123,83 +150,69 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 	return false
 }
 
-func newDeploymentsClient(config AzureConfig) (*resources.DeploymentsClient, error) {
-	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		return nil, microerror.Maskf(err, "creating service principal token")
-	}
-
-	client := resources.NewDeploymentsClient(config.SubscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+func newDeploymentsClient(config *azureClientConfig) (*resources.DeploymentsClient, error) {
+	client := resources.NewDeploymentsClient(config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
-func newGroupsClient(config AzureConfig) (*resources.GroupsClient, error) {
-	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		return nil, microerror.Maskf(err, "creating service principal token")
-	}
-
-	client := resources.NewGroupsClient(config.SubscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+func newGroupsClient(config *azureClientConfig) (*resources.GroupsClient, error) {
+	client := resources.NewGroupsClient(config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
-func newDNSRecordSetsClient(config AzureConfig) (*dns.RecordSetsClient, error) {
-	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		return nil, microerror.Maskf(err, "creating service principal token")
-	}
-
-	client := dns.NewRecordSetsClient(config.SubscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+func newDNSRecordSetsClient(config *azureClientConfig) (*dns.RecordSetsClient, error) {
+	client := dns.NewRecordSetsClient(config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
-func newDNSZonesClient(config AzureConfig) (*dns.ZonesClient, error) {
-	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		return nil, microerror.Maskf(err, "creating service principal token")
-	}
-
-	client := dns.NewZonesClient(config.SubscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+func newDNSZonesClient(config *azureClientConfig) (*dns.ZonesClient, error) {
+	client := dns.NewZonesClient(config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
-func newInterfacesClient(config AzureConfig) (*network.InterfacesClient, error) {
-	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		return nil, microerror.Maskf(err, "creating service principal token")
-	}
-
-	client := network.NewInterfacesClient(config.SubscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+func newInterfacesClient(config *azureClientConfig) (*network.InterfacesClient, error) {
+	client := network.NewInterfacesClient(config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
-func newVnetPeeringClient(config AzureConfig) (*network.VirtualNetworkPeeringsClient, error) {
-	spt, err := newServicePrincipalToken(config, azure.PublicCloud.ResourceManagerEndpoint)
-	if err != nil {
-		return nil, microerror.Maskf(err, "creating service principal token")
-	}
-
-	client := network.NewVirtualNetworkPeeringsClient(config.SubscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(spt)
+func newVnetPeeringClient(config *azureClientConfig) (*network.VirtualNetworkPeeringsClient, error) {
+	client := network.NewVirtualNetworkPeeringsClient(config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
-func newServicePrincipalToken(config AzureConfig, scope string) (*adal.ServicePrincipalToken, error) {
-	oauthConfig, err := adal.NewOAuthConfig(azure.PublicCloud.ActiveDirectoryEndpoint, config.TenantID)
+func newServicePrincipalToken(config AzureConfig, env *azure.Environment) (*adal.ServicePrincipalToken, error) {
+	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
 		return nil, microerror.Maskf(err, "creating OAuth config")
 	}
 
-	return adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, scope)
+	return adal.NewServicePrincipalToken(
+		*oauthConfig,
+		config.ClientID,
+		config.ClientSecret,
+		env.ServiceManagementEndpoint)
+}
+
+// parseAzureEnvironment returns azure environment by name.
+func parseAzureEnvironment(cloudName string) (*azure.Environment, error) {
+	var env azure.Environment
+	var err error
+	if cloudName == "" {
+		env = azure.PublicCloud
+	} else {
+		env, err = azure.EnvironmentFromName(cloudName)
+	}
+	return &env, err
 }
