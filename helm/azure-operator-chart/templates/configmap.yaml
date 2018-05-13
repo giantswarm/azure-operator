@@ -10,6 +10,7 @@ data:
         address: 'http://0.0.0.0:8000'
     service:
       azure:
+        cloud: '{{ .Values.Installation.V1.Provider.Azure.Cloud }}'
         hostCluster:
           cidr: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.CIDR }}'
           resourceGroup: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.ResourceGroup }}'
