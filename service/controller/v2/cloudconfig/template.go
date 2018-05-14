@@ -4,8 +4,8 @@ const (
 	calicoAzureFileName       = "/srv/calico-azure.yaml"
 	calicoAzureFileOwner      = "root:root"
 	calicoAzureFilePermission = 0600
-	calicoAzureFileTemplate   = `# Calico Version v3.0.1
-# https://docs.projectcalico.org/v3.0/releases#v3.0.1
+	calicoAzureFileTemplate   = `# Calico Version v3.0.5
+# https://docs.projectcalico.org/v3.0/releases#v3.0.5
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -91,11 +91,11 @@ subjects:
 
 ---
 
-# Calico Version v3.0.1
-# https://docs.projectcalico.org/v3.0/releases#v3.0.1
+# Calico Version v3.0.5
+# https://docs.projectcalico.org/v3.0/releases#v3.0.5
 # This manifest includes the following component versions:
-#   calico/node:v3.0.1
-#   calico/cni:v2.0.0
+#   calico/node:v3.0.5
+#   calico/cni:v2.0.4
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -200,7 +200,7 @@ spec:
       hostNetwork: true
       serviceAccountName: calico-node
       containers:
-      - image: quay.io/calico/typha:v0.6.0
+      - image: quay.io/calico/typha:v0.6.3
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -290,7 +290,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v3.0.1
+          image: quay.io/calico/node:v3.0.5
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -365,7 +365,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v2.0.0
+          image: quay.io/calico/cni:v2.0.4
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -523,7 +523,7 @@ const (
 	cloudProviderConfFileName       = "/etc/kubernetes/config/azure.yaml"
 	cloudProviderConfFileOwner      = "root:root"
 	cloudProviderConfFilePermission = 0600
-	cloudProviderConfFileTemplate   = `cloud: AZUREPUBLICCLOUD
+	cloudProviderConfFileTemplate   = `cloud: {{ .Cloud }}
 tenantId: {{ .TenantID }}
 subscriptionId: {{ .SubscriptionID }}
 resourceGroup: {{ .ResourceGroup }}

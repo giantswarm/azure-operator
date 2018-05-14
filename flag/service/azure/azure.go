@@ -6,6 +6,7 @@ import (
 )
 
 type Azure struct {
+	Cloud          string
 	ClientID       string
 	ClientSecret   string
 	HostCluster    hostcluster.HostCluster

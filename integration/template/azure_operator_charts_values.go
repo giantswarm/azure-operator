@@ -17,6 +17,7 @@ var AzureOperatorChartValues = `Installation:
     Name: ci-azure-operator
     Provider:
       Azure:
+        Cloud: AZUREPUBLICCLOUD
         HostCluster:
           CIDR: "10.0.0.0/16"
           ResourceGroup: "godsmack"

@@ -23,6 +23,7 @@ func newCalicoAzureFileParams(obj providerv1alpha1.AzureConfig) calicoAzureFileP
 type cloudProviderConfFileVMType string
 
 type cloudProviderConfFileParams struct {
+	Cloud               string
 	Location            string
 	PrimaryScaleSetName string
 	ResourceGroup       string
@@ -36,6 +37,7 @@ type cloudProviderConfFileParams struct {
 
 func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
 	return cloudProviderConfFileParams{
+		Cloud:               azure.Cloud,
 		Location:            azure.Location,
 		PrimaryScaleSetName: key.WorkerVMSSName(obj),
 		ResourceGroup:       key.ResourceGroupName(obj),

@@ -3,11 +3,15 @@ package setting
 import "fmt"
 
 type Azure struct {
+	Cloud       string
 	HostCluster AzureHostCluster
 	Location    string
 }
 
 func (a Azure) Validate() error {
+	if a.Cloud == "" {
+		return fmt.Errorf("Location must not be empty")
+	}
 	if err := a.HostCluster.Validate(); err != nil {
 		return fmt.Errorf("HostCluster.%s", err)
 	}
