@@ -19,6 +19,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Removed kube-state-metrics related components (will be managed by chart-operator).",
 				Kind:        versionbundle.KindRemoved,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Added German cloud support.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
