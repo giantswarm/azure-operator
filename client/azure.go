@@ -218,5 +218,5 @@ func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
 			return env, microerror.Maskf(err, "parsing Azure environment")
 		}
 	}
-	return env, err
+	return env, microerror.Maskf(err, "parsing Azure environment")
 }
