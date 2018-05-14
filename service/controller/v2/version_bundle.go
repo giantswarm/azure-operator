@@ -24,6 +24,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Added German cloud support.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "cloudconfig",
+				Description: "Updated Calico to 3.0.5",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -60,6 +65,6 @@ func VersionBundle() versionbundle.Bundle {
 		Name:         "azure-operator",
 		Time:         time.Date(2018, time.May, 14, 12, 00, 0, 0, time.UTC),
 		Version:      "0.2.0",
-		WIP:          false,
+		WIP:          true,
 	}
 }

@@ -84,7 +84,7 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 	// For empty config.Cloud returns Azure public cloud.
 	env, err := parseAzureEnvironment(config.Cloud)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Maskf(err, "parsing Azure environment")
 	}
 
 	servicePrincipalToken, err := newServicePrincipalToken(config, env)
@@ -204,27 +204,26 @@ func newVnetPeeringClient(config *azureClientConfig) (*network.VirtualNetworkPee
 	return &client, nil
 }
 
-func newServicePrincipalToken(config AzureConfig, env *azure.Environment) (*adal.ServicePrincipalToken, error) {
+func newServicePrincipalToken(config AzureConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
 	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
 		return nil, microerror.Maskf(err, "creating OAuth config")
 	}
 
-	return adal.NewServicePrincipalToken(
-		*oauthConfig,
-		config.ClientID,
-		config.ClientSecret,
-		env.ServiceManagementEndpoint)
+	return adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, env.ServiceManagementEndpoint)
 }
 
 // parseAzureEnvironment returns azure environment by name.
-func parseAzureEnvironment(cloudName string) (*azure.Environment, error) {
+func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
 	var env azure.Environment
 	var err error
 	if cloudName == "" {
 		env = azure.PublicCloud
 	} else {
 		env, err = azure.EnvironmentFromName(cloudName)
+		if err != nil {
+			return env, microerror.Maskf(err, "parsing Azure environment")
+		}
 	}
-	return &env, err
+	return env, err
 }

@@ -46,7 +46,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Dependencies: []versionbundle.Dependency{},
-		Deprecated:   true,
+		Deprecated:   false,
 		Name:         "azure-operator",
 		Time:         time.Date(2018, time.January, 7, 8, 35, 0, 0, time.UTC),
 		Version:      "0.1.0",
