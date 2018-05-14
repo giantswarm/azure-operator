@@ -151,54 +151,42 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 }
 
 func newDeploymentsClient(config *azureClientConfig) (*resources.DeploymentsClient, error) {
-	client := resources.NewDeploymentsClientWithBaseURI(
-		config.resourceManagerEndpoint,
-		config.subscriptionID)
+	client := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
 func newGroupsClient(config *azureClientConfig) (*resources.GroupsClient, error) {
-	client := resources.NewGroupsClientWithBaseURI(
-		config.resourceManagerEndpoint,
-		config.subscriptionID)
+	client := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
 func newDNSRecordSetsClient(config *azureClientConfig) (*dns.RecordSetsClient, error) {
-	client := dns.NewRecordSetsClientWithBaseURI(
-		config.resourceManagerEndpoint,
-		config.subscriptionID)
+	client := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
 func newDNSZonesClient(config *azureClientConfig) (*dns.ZonesClient, error) {
-	client := dns.NewZonesClientWithBaseURI(
-		config.resourceManagerEndpoint,
-		config.subscriptionID)
+	client := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
 func newInterfacesClient(config *azureClientConfig) (*network.InterfacesClient, error) {
-	client := network.NewInterfacesClientWithBaseURI(
-		config.resourceManagerEndpoint,
-		config.subscriptionID)
+	client := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
 }
 
 func newVnetPeeringClient(config *azureClientConfig) (*network.VirtualNetworkPeeringsClient, error) {
-	client := network.NewVirtualNetworkPeeringsClientWithBaseURI(
-		config.resourceManagerEndpoint,
-		config.subscriptionID)
+	client := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
@@ -210,7 +198,12 @@ func newServicePrincipalToken(config AzureConfig, env azure.Environment) (*adal.
 		return nil, microerror.Maskf(err, "creating OAuth config")
 	}
 
-	return adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, env.ServiceManagementEndpoint)
+	token, err := adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, env.ServiceManagementEndpoint)
+	if err != nil {
+		return nil, microerror.Maskf(err, "getting token")
+	}
+
+	return token, nil
 }
 
 // parseAzureEnvironment returns azure environment by name.
