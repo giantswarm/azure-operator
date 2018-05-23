@@ -29,6 +29,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Updated Calico to 3.0.5",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Add etcd private loadbalancer.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{

@@ -51,6 +51,7 @@
     "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
 
     "cadvisorPort": "4194",
+    "etcdPort": "2379",
     "kubeletPort": "10250",
     "nodeExporterPort": "10300",
     "kubeStateMetricsPort": "10301"
@@ -133,7 +134,35 @@
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3900"
+              "priority": "3902"
+            }
+          },
+          {
+            "name": "etcdLoadBalancerRuleHost",
+            "properties": {
+              "description": "Allow host cluster to reach the etcd loadbalancer.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[variables('etcdPort')]",
+              "sourceAddressPrefix": "[parameters('hostClusterCidr')]",
+              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3901"
+            }
+          },
+          {
+            "name": "etcdLoadBalancerRuleWorker",
+            "properties": {
+              "description": "Allow worker subnet to reach the etcd loadbalancer.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[variables('etcdPort')]",
+              "sourceAddressPrefix": "[parameters('workerSubnetCidr')]",
+              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3901"
             }
           },
           {
