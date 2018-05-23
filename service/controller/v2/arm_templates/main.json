@@ -410,7 +410,10 @@
           "vmssOsImageSKU": {"value": "[parameters('masterNodes')[0].osImage.sku]"},
           "vmssOsImageVersion": {"value": "[parameters('masterNodes')[0].osImage.version]"},
           "vmssVmCustomData": {"value": "[parameters('masterCloudConfigData')]"},
-          "vmssLbBackendPoolId": {"value": "[reference('api_load_balancer_setup').outputs.backendPoolId.value]"},
+          "vmssLbBackendPoolIds": {"value": [
+            {"id": "[reference('api_load_balancer_setup').outputs.backendPoolId.value]"},
+            {"id": "[reference('etcd_load_balancer_setup').outputs.backendPoolId.value]"}
+          ]},
           "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
         }
       }
@@ -439,7 +442,7 @@
           "vmssOsImageSKU": {"value": "[parameters('workerNodes')[0].osImage.sku]"},
           "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
           "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
-          "vmssLbBackendPoolId": {"value": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"},
+          "vmssLbBackendPoolIds": {"value": [{"id": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"}]},
           "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"}
         }
       }
