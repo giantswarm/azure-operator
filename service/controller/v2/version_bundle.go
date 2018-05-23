@@ -32,7 +32,7 @@ func VersionBundle() versionbundle.Bundle {
 			{
 				Component:   "azure-operator",
 				Description: "Add etcd private loadbalancer.",
-				Kind:        versionbundle.KindChanged,
+				Kind:        versionbundle.KindAdded,
 			},
 		},
 		Components: []versionbundle.Component{

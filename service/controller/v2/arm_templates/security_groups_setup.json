@@ -162,7 +162,7 @@
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3901"
+              "priority": "3900"
             }
           },
           {
