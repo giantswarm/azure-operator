@@ -7,7 +7,6 @@ import (
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
@@ -79,7 +78,7 @@ func New(config Config) (*Resource, error) {
 // GetCurrentState gets the current deployments for this cluster via the
 // Azure API.
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := toCustomObject(obj)
+	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -123,7 +122,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 // GetDesiredState returns the desired deployments for this cluster.
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := toCustomObject(obj)
+	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -166,7 +165,7 @@ func (r *Resource) Name() string {
 
 // ApplyCreateChange creates the deployments via the Azure API.
 func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState interface{}) error {
-	customObject, err := toCustomObject(obj)
+	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -278,20 +277,6 @@ func getDeploymentByName(list []deployment, name string) (deployment, error) {
 	}
 
 	return deployment{}, microerror.Maskf(notFoundError, name)
-}
-
-func toCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
-	if v == nil {
-		return providerv1alpha1.AzureConfig{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
-	}
-
-	customObjectPointer, ok := v.(*providerv1alpha1.AzureConfig)
-	if !ok {
-		return providerv1alpha1.AzureConfig{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
-	}
-	customObject := *customObjectPointer
-
-	return customObject, nil
 }
 
 func toDeployments(v interface{}) ([]deployment, error) {
