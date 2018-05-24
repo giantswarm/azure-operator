@@ -134,21 +134,21 @@
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3902"
+              "priority": "3903"
             }
           },
           {
-            "name": "etcdLoadBalancerRule",
+            "name": "allowEtcdLoadBalancer",
             "properties": {
-              "description": "Allow cluster subnet to reach the etcd loadbalancer.",
+              "description": "Allow traffic from LB to master instance.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[variables('etcdPort')]",
-              "sourceAddressPrefix": "[parameters('virtualNetworkCidr')]",
+              "sourceAddressPrefix": "AzureLoadBalancer",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
-              "priority": "3901"
+              "priority": "3902"
             }
           },
           {
@@ -159,6 +159,20 @@
               "sourcePortRange": "*",
               "destinationPortRange": "[variables('etcdPort')]",
               "sourceAddressPrefix": "[parameters('hostClusterCidr')]",
+              "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
+              "access": "Allow",
+              "direction": "Inbound",
+              "priority": "3901"
+            }
+          },
+          {
+            "name": "etcdLoadBalancerRuleCluster",
+            "properties": {
+              "description": "Allow cluster subnet to reach the etcd loadbalancer.",
+              "protocol": "tcp",
+              "sourcePortRange": "*",
+              "destinationPortRange": "[variables('etcdPort')]",
+              "sourceAddressPrefix": "[parameters('virtualNetworkCidr')]",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
