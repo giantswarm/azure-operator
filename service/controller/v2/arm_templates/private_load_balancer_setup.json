@@ -112,7 +112,7 @@
   "outputs": {
     "ipAddress": {
       "type": "string",
-      "value": "[reference(variables('loadBalancerID')).frontendIPConfiguration[0].properties.privateIPAddress]"
+      "value": "[reference(variables('loadBalancerID')).frontendIPConfigurations[0].properties.privateIPAddress]"
     },
     "backendPoolId": {
       "type": "string",
