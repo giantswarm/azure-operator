@@ -3,7 +3,6 @@ package deployment
 import (
 	"context"
 	"fmt"
-	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -21,8 +20,6 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "deploymentv2"
-
-	createTimeout = 30 * time.Minute
 )
 
 type Config struct {

@@ -3,10 +3,9 @@ package endpoints
 import (
 	"context"
 
+	"github.com/giantswarm/microerror"
 	"k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
