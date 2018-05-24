@@ -29,16 +29,16 @@
     }
   },
   "variables": {
-    "loadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PublicLoadBalancer')]",
+    "loadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PrivateLoadBalancer')]",
     "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
 
-    "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-BackendPool')]",
+    "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PrivateLoadBalancer-BackendPool')]",
     "loadBalancerBackendPoolID": "[concat(variables('loadBalancerID'),'/backendAddressPools/',variables('loadBalancerBackendPoolName'))]",
 
-    "loadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-Frontend')]",
+    "loadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PrivateLoadBalancer-Frontend')]",
     "loadBalancerFrontendID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('loadBalancerFrontendName'))]",
 
-    "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-Probe')]",
+    "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PrivateLoadBalancer-Probe')]",
     "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]",
 
     "loadBalancerSubnetID": "[parameters('masterSubnetID')]"
