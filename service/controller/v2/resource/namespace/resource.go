@@ -1,11 +1,10 @@
 package namespace
 
 import (
-	corev1 "k8s.io/api/core/v1"
-	"k8s.io/client-go/kubernetes"
-
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/kubernetes"
 )
 
 const (

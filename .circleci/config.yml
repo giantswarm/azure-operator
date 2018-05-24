@@ -15,6 +15,8 @@ e2eTest: &e2eTest
       command: ./e2e-harness teardown
       when: always
 
+
+
 version: 2
 jobs:
   build:
@@ -32,16 +34,36 @@ jobs:
             ./architect deploy
           fi
 
+
+
   e2eTestReady:
     environment:
       TEST_DIR: "integration/test/ready"
     <<: *e2eTest
+
+
 
 workflows:
   version: 2
   build_and_e2eTest:
     jobs:
       - build
-      - e2eTestReady:
+      - hold:
+          type: approval
+          filters:
+            branches:
+              ignore: master
           requires:
-            - build
+          - build
+
+
+
+      - e2eTestPRReady:
+          requires:
+          - hold
+      - e2eTestMasterReady:
+          filters:
+            branches:
+              only: master
+          requires:
+          - build

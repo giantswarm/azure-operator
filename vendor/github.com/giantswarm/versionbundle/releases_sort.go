@@ -1,12 +1,20 @@
 package versionbundle
 
-import "time"
+import (
+	"time"
+
+	"github.com/coreos/go-semver/semver"
+)
 
 type SortReleasesByVersion []Release
 
-func (r SortReleasesByVersion) Len() int           { return len(r) }
-func (r SortReleasesByVersion) Swap(i, j int)      { r[i], r[j] = r[j], r[i] }
-func (r SortReleasesByVersion) Less(i, j int) bool { return r[i].Version() < r[j].Version() }
+func (r SortReleasesByVersion) Len() int      { return len(r) }
+func (r SortReleasesByVersion) Swap(i, j int) { r[i], r[j] = r[j], r[i] }
+func (r SortReleasesByVersion) Less(i, j int) bool {
+	verA := semver.New(r[i].Version())
+	verB := semver.New(r[j].Version())
+	return verA.LessThan(*verB)
+}
 
 type SortReleasesByTimestamp []Release
 
