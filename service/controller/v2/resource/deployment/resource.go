@@ -83,7 +83,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// Deleting the resource group will take care about cleaning
 	// deployments.
 	if key.IsDeleted(customObject) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting responsibility of deletion of deployments to resource group termination")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deletion of deployments is redirected to resource group termination")
 		resourcecanceledcontext.SetCanceled(ctx)
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 		return nil, nil
