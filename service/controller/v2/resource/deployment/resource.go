@@ -83,8 +83,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// Deleting the resource group will take care about cleaning
 	// deployments.
 	if key.IsDeleted(customObject) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling deployment deletion: deleted with the resource group")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting responsibility of deletion of deployments to resource group termination")
 		resourcecanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 		return nil, nil
 	}
 
@@ -172,8 +173,6 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure deployments")
-
 	if len(deploymentsToCreate) != 0 {
 		resourceGroupName := key.ClusterID(customObject)
 		deploymentsClient, err := r.getDeploymentsClient()
@@ -182,7 +181,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		}
 
 		for _, deploy := range deploymentsToCreate {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating Azure deployments: creating %#q", deploy.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating deployment '%s'", deploy.Name))
 
 			d := azureresource.Deployment{
 				Properties: &azureresource.DeploymentProperties{
@@ -204,12 +203,10 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating Azure deployments: creating %#q: created", deploy.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created deployment '%s'", deploy.Name))
 		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure deployments: created")
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Azure deployments: already created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not creating any deployment")
 	}
 
 	return nil
