@@ -103,6 +103,10 @@
       "type": "string",
       "defaultValue": "public_load_balancer_setup.json"
     },
+    "privateLoadBalancerTemplateFile": {
+      "type": "string",
+      "defaultValue": "private_load_balancer_setup.json"
+    },
     "routeTableTemplateFile": {
       "type": "string",
       "defaultValue": "route_table_setup.json"
@@ -134,6 +138,7 @@
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
+    "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
@@ -256,6 +261,32 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "etcd_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('privateLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "prefix": {"value": "ETCD"},
+          "ports": {"value":
+          [
+            {
+              "frontend": 2379,
+              "backend": 2379
+            }
+          ]
+          },
+          "masterSubnetID": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "ingress_load_balancer_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
@@ -298,6 +329,24 @@
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": { "value": "api" },
           "ipAddress": { "value": "[reference('api_load_balancer_setup').outputs.ipAddress.value]" }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "name": "kubernetes_etcd_dns_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('dnsASetupTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').api.name)]" },
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "prefix": { "value": "etcd" },
+          "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.ipAddress.value]" }
         }
       }
     },
@@ -361,7 +410,10 @@
           "vmssOsImageSKU": {"value": "[parameters('masterNodes')[0].osImage.sku]"},
           "vmssOsImageVersion": {"value": "[parameters('masterNodes')[0].osImage.version]"},
           "vmssVmCustomData": {"value": "[parameters('masterCloudConfigData')]"},
-          "vmssLbBackendPoolId": {"value": "[reference('api_load_balancer_setup').outputs.backendPoolId.value]"},
+          "vmssLbBackendPools": {"value": [
+            {"id": "[reference('api_load_balancer_setup').outputs.backendPoolId.value]"},
+            {"id": "[reference('etcd_load_balancer_setup').outputs.backendPoolId.value]"}
+          ]},
           "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
         }
       }
@@ -390,7 +442,7 @@
           "vmssOsImageSKU": {"value": "[parameters('workerNodes')[0].osImage.sku]"},
           "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
           "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
-          "vmssLbBackendPoolId": {"value": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"},
+          "vmssLbBackendPools": {"value": [{"id": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"}]},
           "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"}
         }
       }
