@@ -4,17 +4,15 @@ import (
 	"context"
 	"sync"
 
+	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8srestconfig"
 	"github.com/spf13/viper"
-
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
-
-	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
