@@ -2,7 +2,6 @@ package resourcegroup
 
 import (
 	"context"
-	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -19,8 +18,7 @@ const (
 	// Name is the identifier of the resource.
 	Name = "resourcegroupv2"
 
-	deleteTimeout = 30 * time.Minute
-	managedBy     = "azure-operator"
+	managedBy = "azure-operator"
 )
 
 type Config struct {
