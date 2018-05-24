@@ -138,13 +138,13 @@
             }
           },
           {
-            "name": "etcdLoadBalancerRuleHost",
+            "name": "etcdLoadBalancerRule",
             "properties": {
-              "description": "Allow host cluster to reach the etcd loadbalancer.",
+              "description": "Allow cluster subnet to reach the etcd loadbalancer.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[variables('etcdPort')]",
-              "sourceAddressPrefix": "[parameters('hostClusterCidr')]",
+              "sourceAddressPrefix": "[parameters('virtualNetworkCidr')]",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
@@ -152,13 +152,13 @@
             }
           },
           {
-            "name": "etcdLoadBalancerRuleWorker",
+            "name": "etcdLoadBalancerRuleHost",
             "properties": {
-              "description": "Allow worker subnet to reach the etcd loadbalancer.",
+              "description": "Allow host cluster to reach the etcd loadbalancer.",
               "protocol": "tcp",
               "sourcePortRange": "*",
               "destinationPortRange": "[variables('etcdPort')]",
-              "sourceAddressPrefix": "[parameters('workerSubnetCidr')]",
+              "sourceAddressPrefix": "[parameters('hostClusterCidr')]",
               "destinationAddressPrefix": "[parameters('masterSubnetCidr')]",
               "access": "Allow",
               "direction": "Inbound",
