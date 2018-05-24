@@ -46,8 +46,8 @@
         "vmssVmCustomData": {
             "type": "secureString"
         },
-        "vmssLbBackendPoolId": {
-            "type": "string"
+        "vmssLbBackendPools": {
+            "type": "array"
         },
         "vmssVnetSubnetId": {
             "type": "string"
@@ -233,11 +233,7 @@
                                                 "subnet": {
                                                     "id": "[parameters('vmssVnetSubnetId')]"
                                                 },
-                                                "loadBalancerBackendAddressPools": [
-                                                    {
-                                                        "id": "[parameters('vmssLbBackendPoolId')]"
-                                                    }
-                                                ]
+                                                "loadBalancerBackendAddressPools": "[parameters('vmssLbBackendPools')]"
                                             }
                                         }
                                     ]
