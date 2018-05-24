@@ -36,7 +36,12 @@ jobs:
 
 
 
-  e2eTestReady:
+  e2eTestMasterReady:
+    environment:
+      TEST_DIR: "integration/test/ready"
+    <<: *e2eTest
+
+  e2eTestPRReady:
     environment:
       TEST_DIR: "integration/test/ready"
     <<: *e2eTest
