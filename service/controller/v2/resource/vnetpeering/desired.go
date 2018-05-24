@@ -3,12 +3,12 @@ package vnetpeering
 import (
 	"context"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
-	"github.com/giantswarm/microerror"
-
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
 // GetDesiredState return desired peering for host cluster virtual network.

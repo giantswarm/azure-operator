@@ -6,9 +6,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
+
+	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
 // ApplyDeleteChange deletes the resource group via the Azure API.

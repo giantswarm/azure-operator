@@ -3,12 +3,12 @@ package vnetpeering
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 	"github.com/giantswarm/microerror"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
 // GetCurrentState retrieve the current host cluster virtual network peering resource from azure.
