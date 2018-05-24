@@ -18,18 +18,18 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 	if err != nil {
 		return microerror.Maskf(err, "deleting host cluster DNS records")
 	}
-	change, err := toDNSRecords(change)
+	dnsRecords, err := toDNSRecords(change)
 	if err != nil {
 		return microerror.Maskf(err, "deleting host cluster DNS records")
 	}
 
-	if len(change) != 0 {
+	if len(dnsRecords) != 0 {
 		recordSetsClient, err := r.getDNSRecordSetsClient()
 		if err != nil {
-			return microerror.Maskf(err, fmt.Sprintf("deleting host cluster DNS record=%#v", record))
+			return microerror.Mask(err)
 		}
 
-		for _, record := range change {
+		for _, record := range dnsRecords {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record '%s'", record.RelativeName))
 
 			_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
