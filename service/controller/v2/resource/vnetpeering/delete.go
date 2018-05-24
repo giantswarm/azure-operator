@@ -16,20 +16,20 @@ import (
 func (r Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 	c, err := toVnetPeering(current)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 	d, err := toVnetPeering(desired)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	patch, err := r.newDeletePatch(ctx, a, c, d)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	return patch, nil
@@ -46,16 +46,16 @@ func (r Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alph
 func (r Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change interface{}) error {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return microerror.Maskf(err, "ApplyDeleteChange")
+		return microerror.Mask(err)
 	}
 	c, err := toVnetPeering(change)
 	if err != nil {
-		return microerror.Maskf(err, "ApplyDeleteChange")
+		return microerror.Mask(err)
 	}
 
 	err = r.applyDeleteChange(ctx, a, c)
 	if err != nil {
-		return microerror.Maskf(err, "ApplyDeleteChange")
+		return microerror.Mask(err)
 	}
 
 	return nil
@@ -66,12 +66,12 @@ func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1a
 
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
-		return microerror.Maskf(err, "deleting host vnet peering")
+		return microerror.Mask(err)
 	}
 
 	respFuture, err := vnetPeeringClient.Delete(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.ResourceGroup, *change.Name)
 	if err != nil {
-		return microerror.Maskf(err, "deleting host vnet peering")
+		return microerror.Mask(err)
 	}
 
 	res, err := vnetPeeringClient.DeleteResponder(respFuture.Response())
@@ -80,7 +80,7 @@ func (r Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1a
 		return nil
 	}
 	if err != nil {
-		return microerror.Maskf(err, "deleting host vnet peering")
+		return microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vnet peering: deleted")

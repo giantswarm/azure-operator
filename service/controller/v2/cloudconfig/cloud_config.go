@@ -196,7 +196,7 @@ func newCloudConfig(template string, params k8scloudconfig.Params) (string, erro
 
 	compressed, err := gzipBase64(cloudConfig.String())
 	if err != nil {
-		return "", microerror.Maskf(err, "compressing cloud-config")
+		return "", microerror.Mask(err)
 	}
 
 	// cloud-config is compressed so we fit the tight 85kB limit of
@@ -221,15 +221,15 @@ func gzipBase64(s string) (string, error) {
 
 	w, err := gzip.NewWriterLevel(buf, gzip.BestCompression)
 	if err != nil {
-		return "", microerror.Maskf(err, "creating gzip stream")
+		return "", microerror.Mask(err)
 	}
 	_, err = io.WriteString(w, s)
 	if err != nil {
-		return "", microerror.Maskf(err, "writing to gzip stream")
+		return "", microerror.Mask(err)
 	}
 	err = w.Close()
 	if err != nil {
-		return "", microerror.Maskf(err, "closing gzip stream")
+		return "", microerror.Mask(err)
 	}
 
 	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil

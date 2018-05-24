@@ -16,12 +16,12 @@ import (
 func (r Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "GetDesiredState")
+		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
 	vnetPeering, err := r.getDesiredState(ctx, a)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "GetDesiredState")
+		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
 	return vnetPeering, nil

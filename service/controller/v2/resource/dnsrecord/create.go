@@ -13,12 +13,12 @@ import (
 func (r *Resource) ApplyCreateChange(ctx context.Context, obj, change interface{}) error {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
-		return microerror.Maskf(err, "creating DNS records in host cluster")
+		return microerror.Mask(err)
 	}
 
 	c, err := toDNSRecords(change)
 	if err != nil {
-		return microerror.Maskf(err, "creating DNS records in host cluster")
+		return microerror.Mask(err)
 	}
 
 	return r.applyCreateChange(ctx, o, c)

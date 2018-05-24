@@ -15,12 +15,12 @@ import (
 func (r Resource) GetCurrentState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "GetCurrentState")
+		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
 	vnetPeering, err := r.getCurrentState(ctx, a)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "GetCurrentState")
+		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
 	return vnetPeering, nil
@@ -29,7 +29,7 @@ func (r Resource) GetCurrentState(ctx context.Context, azureConfig interface{}) 
 func (r Resource) getCurrentState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (network.VirtualNetworkPeering, error) {
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Maskf(err, "getCurrentState")
+		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
 	vnetPeering, err := vnetPeeringClient.Get(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.ResourceGroup, key.ResourceGroupName(azureConfig))

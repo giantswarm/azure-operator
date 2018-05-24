@@ -16,11 +16,11 @@ import (
 func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{}) error {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
-		return microerror.Maskf(err, "deleting host cluster DNS records")
+		return microerror.Mask(err)
 	}
 	c, err := toDNSRecords(change)
 	if err != nil {
-		return microerror.Maskf(err, "deleting host cluster DNS records")
+		return microerror.Mask(err)
 	}
 
 	return r.applyDeleteChange(ctx, o, c)
@@ -36,7 +36,7 @@ func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.A
 
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
-		return microerror.Maskf(err, "deleting host cluster DNS records")
+		return microerror.Mask(err)
 	}
 
 	for _, record := range change {
@@ -44,7 +44,7 @@ func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.A
 
 		_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
 		if err != nil {
-			return microerror.Maskf(err, fmt.Sprintf("deleting host cluster DNS record=%#v", record))
+			return microerror.Mask(err)
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record=%#v: deleted", record))
@@ -59,15 +59,15 @@ func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.A
 func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 	c, err := toDNSRecords(currentState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 	d, err := toDNSRecords(desiredState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	return r.newDeletePatch(ctx, o, c, d)
@@ -78,7 +78,7 @@ func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.Azur
 
 	deleteChange, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	patch.SetDeleteChange(deleteChange)

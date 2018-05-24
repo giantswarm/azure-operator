@@ -15,20 +15,20 @@ import (
 func (r Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 	c, err := toVnetPeering(current)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 	d, err := toVnetPeering(desired)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	patch, err := r.newUpdatePatch(ctx, a, c, d)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	return patch, nil
@@ -39,7 +39,7 @@ func (r Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alph
 
 	change, err := r.newUpdateChange(ctx, azureConfig, current, desired)
 	if err != nil {
-		return nil, microerror.Maskf(err, "newUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	patch.SetUpdateChange(change)
@@ -93,16 +93,16 @@ func needUpdate(current, desired network.VirtualNetworkPeering) bool {
 func (r Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change interface{}) error {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return microerror.Maskf(err, "ApplyUpdateChange")
+		return microerror.Mask(err)
 	}
 	c, err := toVnetPeering(change)
 	if err != nil {
-		return microerror.Maskf(err, "ApplyUpdateChange")
+		return microerror.Mask(err)
 	}
 
 	err = r.applyUpdateChange(ctx, a, c)
 	if err != nil {
-		return microerror.Maskf(err, "ApplyUpdateChange")
+		return microerror.Mask(err)
 	}
 
 	return nil
@@ -113,7 +113,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
-		return microerror.Maskf(err, "ensure host vnet peering")
+		return microerror.Mask(err)
 	}
 
 	if isVNetPeeringEmpty(change) {
@@ -123,7 +123,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 
 	_, err = vnetPeeringClient.CreateOrUpdate(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.VirtualNetwork, *change.Name, change)
 	if err != nil {
-		return microerror.Maskf(err, "ensure host vnet peering %#v", change)
+		return microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering: created")

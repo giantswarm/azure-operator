@@ -22,22 +22,22 @@ type masterExtension struct {
 func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	calicoAzureFile, err := me.renderCalicoAzureFile()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderCalicoAzureFile")
+		return nil, microerror.Mask(err)
 	}
 
 	certificateFiles, err := me.renderCertificatesFiles()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderCertificatesFiles")
+		return nil, microerror.Mask(err)
 	}
 
 	cloudProviderConfFile, err := me.renderCloudProviderConfFile()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
+		return nil, microerror.Mask(err)
 	}
 
 	defaultStorageClassFile, err := me.renderDefaultStorageClassFile()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderDefaultStorageClassFile")
+		return nil, microerror.Mask(err)
 	}
 
 	files := []k8scloudconfig.FileAsset{
@@ -55,25 +55,25 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	// Unit to format etcd disk.
 	formatEtcdUnit, err := me.renderEtcdDiskFormatUnit()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderEtcdDiskFormatUnit")
+		return nil, microerror.Mask(err)
 	}
 
 	// Unit to mount etcd disk.
 	mountEtcdUnit, err := me.renderEtcdMountUnit()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderEtcdMountUnit")
+		return nil, microerror.Mask(err)
 	}
 
 	// Unit to format docker disk.
 	formatDockerUnit, err := me.renderDockerDiskFormatUnit()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderDockerDiskFormatUnit")
+		return nil, microerror.Mask(err)
 	}
 
 	// Unit to mount docker disk.
 	mountDockerUnit, err := me.renderDockerMountUnit()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderDockerMountUnit")
+		return nil, microerror.Mask(err)
 	}
 
 	units := []k8scloudconfig.UnitAsset{

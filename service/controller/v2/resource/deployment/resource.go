@@ -178,7 +178,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState inter
 		resourceGroupName := key.ClusterID(customObject)
 		deploymentsClient, err := r.getDeploymentsClient()
 		if err != nil {
-			return microerror.Maskf(err, "creating Azure deployments")
+			return microerror.Mask(err)
 		}
 
 		for _, deploy := range deploymentsToCreate {
