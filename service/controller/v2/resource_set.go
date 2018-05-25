@@ -146,12 +146,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			TemplateVersion: config.TemplateVersion,
 		}
 
-		ops, err := deployment.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		deploymentResource, err = toCRUDResource(config.Logger, ops)
+		deploymentResource, err = deployment.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

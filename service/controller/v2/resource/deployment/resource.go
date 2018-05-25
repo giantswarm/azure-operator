@@ -2,14 +2,11 @@ package deployment
 
 import (
 	"context"
-	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/controller"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -72,155 +69,51 @@ func New(config Config) (*Resource, error) {
 	return r, nil
 }
 
-// GetCurrentState gets the current deployments for this cluster via the
-// Azure API.
-func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
+func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 
-	// Deleting the resource group will take care about cleaning
-	// deployments.
-	if key.IsDeleted(customObject) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deletion of deployments is redirected to resource group termination")
-		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-		return nil, nil
+	deploymentsClient, err := r.getDeploymentsClient()
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	resourceGroupName := key.ClusterID(customObject)
-	deploymentClient, err := r.getDeploymentsClient()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var deployments []deployment
-	{
-		for _, deploymentName := range getDeploymentNames() {
-			deploymentExtended, err := deploymentClient.Get(ctx, resourceGroupName, deploymentName)
-			if err != nil {
-				if client.ResponseWasNotFound(deploymentExtended.Response) {
-					// Fall through.
-					continue
-				}
-
-				return nil, microerror.Mask(err)
-			}
-
-			d := deployment{
-				Name: *deploymentExtended.Name,
-			}
-			deployments = append(deployments, d)
-		}
-	}
-
-	return deployments, nil
-}
-
-// GetDesiredState returns the desired deployments for this cluster.
-func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	mainDeployment, err := r.newMainDeployment(customObject)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return microerror.Mask(err)
 	}
-	deployments := []deployment{
-		mainDeployment,
+	d := azureresource.Deployment{
+		Properties: &azureresource.DeploymentProperties{
+			Mode:       azureresource.Complete,
+			Parameters: &mainDeployment.Parameters,
+			TemplateLink: &azureresource.TemplateLink{
+				URI:            to.StringPtr(mainDeployment.TemplateURI),
+				ContentVersion: to.StringPtr(mainDeployment.TemplateContentVersion),
+			},
+		},
 	}
-	return deployments, nil
-}
-
-// NewUpdatePatch returns the deployments that should be created for this
-// cluster.
-func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
-	patch := controller.NewPatch()
-
-	deploymentsToCreate, err := r.newCreateChange(ctx, obj, currentState, desiredState)
+	f, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, d)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return microerror.Mask(err)
+	}
+	err = f.WaitForCompletion(ctx, deploymentsClient.Client)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	patch.SetCreateChange(deploymentsToCreate)
-	return patch, nil
+	return nil
 }
 
-// NewDeletePatch returns an empty patch. Deployments are deleted together with
-// the resource group.
-func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
-	p := controller.NewPatch()
-	return p, nil
+func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
+	return nil
 }
 
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-// ApplyCreateChange creates the deployments via the Azure API.
-func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createState interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	deploymentsToCreate, err := toDeployments(createState)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if len(deploymentsToCreate) != 0 {
-		resourceGroupName := key.ClusterID(customObject)
-		deploymentsClient, err := r.getDeploymentsClient()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		for _, deploy := range deploymentsToCreate {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating deployment '%s'", deploy.Name))
-
-			d := azureresource.Deployment{
-				Properties: &azureresource.DeploymentProperties{
-					Mode:       azureresource.Complete,
-					Parameters: &deploy.Parameters,
-					TemplateLink: &azureresource.TemplateLink{
-						URI:            to.StringPtr(deploy.TemplateURI),
-						ContentVersion: to.StringPtr(deploy.TemplateContentVersion),
-					},
-				},
-			}
-
-			f, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, deploy.Name, d)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			err = f.WaitForCompletion(ctx, deploymentsClient.Client)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created deployment '%s'", deploy.Name))
-		}
-	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not creating any deployment")
-	}
-
-	return nil
-}
-
-// ApplyDeleteChange is a noop. Deployments are deleted with the resource
-// group.
-func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteState interface{}) error {
-	return nil
-}
-
-// ApplyUpdateChange is not yet implemented.
-func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateState interface{}) error {
-	return nil
 }
 
 func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {
