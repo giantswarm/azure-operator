@@ -3,6 +3,7 @@ package key
 import (
 	"fmt"
 
+	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 )
@@ -60,11 +61,11 @@ func ClusterOrganization(customObject providerv1alpha1.AzureConfig) string {
 }
 
 // ClusterTags returns a map with the resource tags for this cluster.
-func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName string) map[string]string {
-	tags := map[string]string{
-		clusterTagName:      ClusterID(customObject),
-		installationTagName: installationName,
-		organizationTagName: ClusterOrganization(customObject),
+func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName string) map[string]*string {
+	tags := map[string]*string{
+		clusterTagName:      to.StringPtr(ClusterID(customObject)),
+		installationTagName: to.StringPtr(installationName),
+		organizationTagName: to.StringPtr(ClusterOrganization(customObject)),
 	}
 
 	return tags
