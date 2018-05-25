@@ -108,20 +108,15 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is deleted")
 
 	f, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
-	if err != nil {
-		response, err := f.Result(*groupsClient)
+	if IsNotFound(err) {
+		// fall through
+	} else if err != nil {
+		return microerror.Mask(err)
+	} else {
+		err = f.WaitForCompletion(ctx, groupsClient.Client)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		if client.ResponseWasNotFound(response) {
-			return nil
-		}
-
-		return microerror.Mask(err)
-	}
-	err = f.WaitForCompletion(ctx, groupsClient.Client)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is deleted")
