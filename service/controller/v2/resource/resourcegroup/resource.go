@@ -109,6 +109,14 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	f, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
 	if err != nil {
+		response, err := f.Result(*groupsClient)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if client.ResponseWasNotFound(response) {
+			return nil
+		}
+
 		return microerror.Mask(err)
 	}
 	err = f.WaitForCompletion(ctx, groupsClient.Client)
