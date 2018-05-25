@@ -3,6 +3,7 @@ package resourcegroup
 import (
 	"fmt"
 
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
 )
@@ -22,8 +23,6 @@ func IsNotFound(err error) bool {
 		return false
 	}
 
-	fmt.Printf("err: %#v\n", err)
-
 	c := microerror.Cause(err)
 
 	fmt.Printf("c: %#v\n", c)
@@ -33,12 +32,15 @@ func IsNotFound(err error) bool {
 	}
 
 	{
-		rErr, ok := c.(azure.RequestError)
+		dErr, ok := c.(autorest.DetailedError)
 		if ok {
-			fmt.Printf("rErr: %#v\n", rErr)
-			fmt.Printf("rErr.ServiceError: %#v\n", rErr.ServiceError)
-			if rErr.ServiceError.Code == "404" {
-				return true
+			fmt.Printf("dErr: %#v\n", dErr)
+			sErr, ok := dErr.Original.(azure.ServiceError)
+			if ok {
+				fmt.Printf("sErr: %#v\n", sErr)
+				if sErr.Code == "ResourceGroupNotFound" {
+					return true
+				}
 			}
 		}
 	}
