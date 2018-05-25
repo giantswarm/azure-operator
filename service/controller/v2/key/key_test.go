@@ -5,6 +5,7 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
@@ -85,10 +86,10 @@ func Test_ClusterOrganization(t *testing.T) {
 func Test_ClusterTags(t *testing.T) {
 	installName := "test-install"
 
-	expectedTags := map[string]string{
-		"GiantSwarmCluster":      "test-cluster",
-		"GiantSwarmInstallation": "test-install",
-		"GiantSwarmOrganization": "test-org",
+	expectedTags := map[string]*string{
+		"GiantSwarmCluster":      to.StringPtr("test-cluster"),
+		"GiantSwarmInstallation": to.StringPtr("test-install"),
+		"GiantSwarmOrganization": to.StringPtr("test-org"),
 	}
 
 	customObject := providerv1alpha1.AzureConfig{

@@ -124,12 +124,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			InstallationName: config.InstallationName,
 		}
 
-		ops, err := resourcegroup.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		resourceGroupResource, err = toCRUDResource(config.Logger, ops)
+		resourceGroupResource, err = resourcegroup.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
