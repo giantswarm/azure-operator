@@ -14,43 +14,35 @@ import (
 
 // ApplyDeleteChange deletes the resource group via the Azure API.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{}) error {
-	o, err := key.ToCustomObject(obj)
+	obj, err := key.ToCustomObject(obj)
 	if err != nil {
 		return microerror.Maskf(err, "deleting host cluster DNS records")
 	}
-	c, err := toDNSRecords(change)
-	if err != nil {
-		return microerror.Maskf(err, "deleting host cluster DNS records")
-	}
-
-	return r.applyDeleteChange(ctx, o, c)
-}
-
-func (r *Resource) applyDeleteChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host cluster DNS records")
-
-	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host cluster DNS records: already deleted")
-		return nil
-	}
-
-	recordSetsClient, err := r.getDNSRecordSetsClient()
+	dnsRecords, err := toDNSRecords(change)
 	if err != nil {
 		return microerror.Maskf(err, "deleting host cluster DNS records")
 	}
 
-	for _, record := range change {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record=%#v", record))
-
-		_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
+	if len(dnsRecords) != 0 {
+		recordSetsClient, err := r.getDNSRecordSetsClient()
 		if err != nil {
-			return microerror.Maskf(err, fmt.Sprintf("deleting host cluster DNS record=%#v", record))
+			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record=%#v: deleted", record))
+		for _, record := range dnsRecords {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record '%s'", record.RelativeName))
+
+			_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted host cluster DNS record '%s'", record.RelativeName))
+		}
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting host cluster DNS records")
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host cluster DNS records: deleted")
 	return nil
 }
 
@@ -82,6 +74,7 @@ func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.Azur
 	}
 
 	patch.SetDeleteChange(deleteChange)
+
 	return patch, nil
 }
 
