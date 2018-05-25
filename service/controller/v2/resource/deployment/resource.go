@@ -80,6 +80,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is created")
+
 	resourceGroupName := key.ClusterID(customObject)
 	mainDeployment, err := r.newMainDeployment(customObject)
 	if err != nil {
@@ -104,9 +106,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment is created")
+
 	return nil
 }
 
+// EnsureDeleted is a noop since the deletion of deployments is redirected to
+// the deletion of resource groups because they garbage collect them.
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	return nil
 }
