@@ -16,12 +16,12 @@ import (
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{}) error {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
-		return microerror.Maskf(err, "ensuring host cluster DNS records")
+		return microerror.Mask(err)
 	}
 
 	c, err := toDNSRecords(change)
 	if err != nil {
-		return microerror.Maskf(err, "ensuring host cluster DNS records")
+		return microerror.Mask(err)
 	}
 
 	return r.applyUpdateChange(ctx, o, c)
@@ -32,7 +32,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 
 	recordSetsClient, err := r.getDNSRecordSetsClient()
 	if err != nil {
-		return microerror.Maskf(err, "ensuring host cluster DNS records")
+		return microerror.Mask(err)
 	}
 
 	if len(change) == 0 {
@@ -57,7 +57,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 
 		_, err := recordSetsClient.CreateOrUpdate(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
 		if err != nil {
-			return microerror.Maskf(err, fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
+			return microerror.Mask(err)
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record))
@@ -72,15 +72,15 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 	c, err := toDNSRecords(currentState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 	d, err := toDNSRecords(desiredState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	return r.newUpdatePatch(ctx, o, c, d)
@@ -91,7 +91,7 @@ func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.Azur
 
 	updateChange, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewUpdatePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	patch.SetUpdateChange(updateChange)

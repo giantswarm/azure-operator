@@ -14,7 +14,7 @@ import (
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Maskf(err, "GetDesiredState")
+		return nil, microerror.Mask(err)
 	}
 
 	return r.getDesiredState(ctx, o)
@@ -23,7 +23,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.AzureConfig) (dnsRecords, error) {
 	zonesClient, err := r.getDNSZonesClient()
 	if err != nil {
-		return nil, microerror.Maskf(err, "GetDesiredState")
+		return nil, microerror.Mask(err)
 	}
 
 	desired := newPartialDNSRecords(obj)
@@ -34,7 +34,7 @@ func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.Azu
 		if client.ResponseWasNotFound(resp.Response) {
 			return dnsRecords{}, nil
 		} else if err != nil {
-			return nil, microerror.Maskf(err, "GetDesiredState: getting zone=%q", zone)
+			return nil, microerror.Mask(err)
 		}
 
 		var nameServers []string

@@ -80,7 +80,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 		certsSearcher, err = certs.NewSearcher(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "certs.NewSearcher")
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -93,7 +93,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 		randomkeysSearcher, err = randomkeys.NewSearcher(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "randomkeys.NewSearcher")
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -110,7 +110,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 		cloudConfig, err = cloudconfig.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "cloudconfig.New")
+			return nil, microerror.Mask(err)
 		}
 	}
 

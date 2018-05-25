@@ -16,11 +16,11 @@ import (
 func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{}) error {
 	obj, err := key.ToCustomObject(obj)
 	if err != nil {
-		return microerror.Maskf(err, "deleting host cluster DNS records")
+		return microerror.Mask(err)
 	}
 	dnsRecords, err := toDNSRecords(change)
 	if err != nil {
-		return microerror.Maskf(err, "deleting host cluster DNS records")
+		return microerror.Mask(err)
 	}
 
 	if len(dnsRecords) != 0 {
@@ -51,15 +51,15 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 	c, err := toDNSRecords(currentState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 	d, err := toDNSRecords(desiredState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	return r.newDeletePatch(ctx, o, c, d)
@@ -70,7 +70,7 @@ func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.Azur
 
 	deleteChange, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
 	if err != nil {
-		return nil, microerror.Maskf(err, "NewDeletePatch")
+		return nil, microerror.Mask(err)
 	}
 
 	patch.SetDeleteChange(deleteChange)

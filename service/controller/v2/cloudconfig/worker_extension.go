@@ -22,12 +22,12 @@ type workerExtension struct {
 func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	certificateFiles, err := we.renderCertificatesFiles()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderCertificatesFiles")
+		return nil, microerror.Mask(err)
 	}
 
 	cloudProviderConfFile, err := we.renderCloudProviderConfFile()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderCloudProviderConfFile")
+		return nil, microerror.Mask(err)
 	}
 
 	files := []k8scloudconfig.FileAsset{
@@ -43,13 +43,13 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	// Unit to format docker disk.
 	formatDockerUnit, err := we.renderDockerDiskFormatUnit()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderDockerDiskFormatUnit")
+		return nil, microerror.Mask(err)
 	}
 
 	// Unit to mount docker disk.
 	mountDockerUnit, err := we.renderDockerMountUnit()
 	if err != nil {
-		return nil, microerror.Maskf(err, "renderDockerMountUnit")
+		return nil, microerror.Mask(err)
 	}
 
 	units := []k8scloudconfig.UnitAsset{

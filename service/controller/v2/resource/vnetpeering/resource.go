@@ -59,7 +59,7 @@ func (r Resource) Name() string {
 func (r Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
-		return nil, microerror.Maskf(err, "creating Azure virtual network peering client")
+		return nil, microerror.Mask(err)
 	}
 
 	return azureClients.VnetPeeringClient, nil

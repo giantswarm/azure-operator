@@ -12,7 +12,7 @@ func secondHalf(cidr string) (string, error) {
 	{
 		_, n, err := net.ParseCIDR(cidr)
 		if err != nil {
-			return "", microerror.Maskf(err, "parsing cidr=%q", cidr)
+			return "", microerror.Mask(err)
 		}
 		network = *n
 	}

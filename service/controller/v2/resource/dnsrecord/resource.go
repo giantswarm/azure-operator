@@ -48,7 +48,7 @@ func (r *Resource) Name() string {
 func (r *Resource) getDNSRecordSetsClient() (*dns.RecordSetsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
-		return nil, microerror.Maskf(err, "creating Azure DNS record sets client")
+		return nil, microerror.Mask(err)
 	}
 
 	return azureClients.DNSRecordSetsClient, nil
@@ -57,7 +57,7 @@ func (r *Resource) getDNSRecordSetsClient() (*dns.RecordSetsClient, error) {
 func (r *Resource) getDNSZonesClient() (*dns.ZonesClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
-		return nil, microerror.Maskf(err, "creating Azure DNS zones client")
+		return nil, microerror.Mask(err)
 	}
 
 	return azureClients.DNSZonesClient, nil
