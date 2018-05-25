@@ -17,10 +17,3 @@ var wrongTypeError = microerror.New("wrong type")
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
 }
-
-var timeoutError = microerror.New("timeout")
-
-// IsTimeoutError asserts deleteTimeoutError.
-func IsTimeoutError(err error) bool {
-	return microerror.Cause(err) == timeoutError
-}
