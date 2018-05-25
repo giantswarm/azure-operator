@@ -75,6 +75,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created")
+
 	resourceGroup := azureresource.Group{
 		Name:      to.StringPtr(key.ClusterID(customObject)),
 		Location:  to.StringPtr(r.azure.Location),
@@ -86,6 +88,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is created")
+
 	return nil
 }
 
@@ -96,12 +100,13 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	// Delete the resource group which also deletes all resources it
-	// contains. We wait for the error channel while the deletion happens.
 	groupsClient, err := r.getGroupsClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is deleted")
+
 	f, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
 	if err != nil {
 		return microerror.Mask(err)
@@ -110,6 +115,8 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is deleted")
 
 	return nil
 }
