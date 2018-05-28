@@ -113,7 +113,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		f, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
+		_, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
