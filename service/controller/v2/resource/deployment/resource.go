@@ -99,23 +99,24 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		},
 	}
 	d, err := deploymentsClient.Get(ctx, resourceGroupName, mainDeployment.Name)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	s := *d.Properties.ProvisioningState
-	fmt.Printf("\n")
-	fmt.Printf("provisioning state: %s\n", s)
-	fmt.Printf("\n")
-
-	if s == "InProgress" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is in progress")
-
-		return nil
-
-	} else {
+	if IsNotFound(err) {
 		_, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, newDeployment)
 		if err != nil {
 			return microerror.Mask(err)
+		}
+	} else if err != nil {
+		return microerror.Mask(err)
+	} else {
+		s := *d.Properties.ProvisioningState
+		fmt.Printf("\n")
+		fmt.Printf("provisioning state: %s\n", s)
+		fmt.Printf("\n")
+
+		if s == "InProgress" {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is in progress")
+
+			return nil
+
 		}
 	}
 
