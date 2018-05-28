@@ -107,9 +107,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "debug", "ensuring deployment initiated")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment initiated")
 		reconciliationcanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "debug", "canceling reconciliation for custom object")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for custom object")
 
 		return nil
 	} else if err != nil {
@@ -120,7 +120,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if !isFinalState(s) {
 			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "debug", "canceling reconciliation for resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for resource")
 
 			return nil
 		}

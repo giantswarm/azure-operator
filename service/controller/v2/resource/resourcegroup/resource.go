@@ -7,6 +7,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -105,7 +107,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion")
 
 	_, err = groupsClient.Get(ctx, key.ClusterID(customObject))
 	if IsNotFound(err) {
@@ -118,10 +120,17 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion initiated")
+			finalizerskeptcontext.SetKept(ctx)
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for custom object")
+
+			return nil
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group deletion")
 
 	return nil
 }
