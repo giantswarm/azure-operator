@@ -1,6 +1,8 @@
 package deployment
 
 import (
+	"fmt"
+
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
@@ -34,10 +36,20 @@ func IsNotFound(err error) bool {
 		return true
 	}
 
+	fmt.Printf("\n")
+	fmt.Printf("c: %#v\n", c)
+	fmt.Printf("\n")
+
 	{
 		dErr, ok := c.(autorest.DetailedError)
+		fmt.Printf("\n")
+		fmt.Printf("dErr: %#v\n", dErr)
+		fmt.Printf("\n")
 		if ok {
 			sErr, ok := dErr.Original.(azure.ServiceError)
+			fmt.Printf("\n")
+			fmt.Printf("sErr: %#v\n", sErr)
+			fmt.Printf("\n")
 			if ok {
 				if sErr.Code == "DeploymentNotFound" {
 					return true
