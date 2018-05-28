@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -104,6 +105,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
+		r.logger.LogCtx(ctx, "debug", "ensuring deployment initiated")
+		reconciliationcanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "debug", "canceling reconciliation for custom object")
+
+		return nil
+
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
@@ -114,6 +122,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if s == "InProgress" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is in progress")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "debug", "canceling reconciliation for custom object")
+
+			return nil
 
 			return nil
 

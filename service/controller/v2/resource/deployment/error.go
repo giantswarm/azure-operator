@@ -1,8 +1,6 @@
 package deployment
 
 import (
-	"fmt"
-
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
 )
@@ -34,10 +32,6 @@ func IsNotFound(err error) bool {
 	if c == notFoundError {
 		return true
 	}
-
-	fmt.Printf("\n")
-	fmt.Printf("c: %#v\n", c)
-	fmt.Printf("\n")
 
 	{
 		dErr, ok := c.(autorest.DetailedError)
