@@ -118,11 +118,6 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
-		} else {
-			err = f.WaitForCompletion(ctx, groupsClient.Client)
-			if err != nil {
-				return microerror.Mask(err)
-			}
 		}
 	}
 
