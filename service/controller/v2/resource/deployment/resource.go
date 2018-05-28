@@ -111,28 +111,26 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "debug", "canceling reconciliation for custom object")
 
 		return nil
-
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
 		s := *d.Properties.ProvisioningState
-		fmt.Printf("\n")
-		fmt.Printf("provisioning state: %s\n", s)
-		fmt.Printf("\n")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 		if s == "InProgress" {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is in progress")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "debug", "canceling reconciliation for custom object")
 
 			return nil
-
-			return nil
-
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment is created")
+	_, err = deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, newDeployment)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "debug", "ensuring deployment initiated")
 
 	return nil
 }
