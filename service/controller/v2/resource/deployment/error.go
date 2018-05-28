@@ -46,12 +46,12 @@ func IsNotFound(err error) bool {
 		fmt.Printf("dErr: %#v\n", dErr)
 		fmt.Printf("\n")
 		if ok {
-			sErr, ok := dErr.Original.(azure.ServiceError)
+			rErr, ok := dErr.Original.(azure.RequestError)
 			fmt.Printf("\n")
-			fmt.Printf("sErr: %#v\n", sErr)
+			fmt.Printf("rErr: %#v\n", rErr)
 			fmt.Printf("\n")
 			if ok {
-				if sErr.Code == "DeploymentNotFound" {
+				if rErr.ServiceError.Code == "DeploymentNotFound" {
 					return true
 				}
 			}
