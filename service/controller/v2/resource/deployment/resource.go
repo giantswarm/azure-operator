@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -118,8 +119,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 		if !isFinalState(s) {
-			reconciliationcanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "debug", "canceling reconciliation for custom object")
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "debug", "canceling reconciliation for resource")
 
 			return nil
 		}
@@ -130,7 +131,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "debug", "ensuring deployment initiated")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment is created")
 
 	return nil
 }
