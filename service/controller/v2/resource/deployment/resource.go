@@ -117,7 +117,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		s := *d.Properties.ProvisioningState
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
-		if s == "InProgress" {
+		if !isFinalState(s) {
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "debug", "canceling reconciliation for custom object")
 
@@ -194,6 +194,20 @@ func getDeploymentByName(list []deployment, name string) (deployment, error) {
 	}
 
 	return deployment{}, microerror.Maskf(notFoundError, name)
+}
+
+func isFinalState(s string) bool {
+	if s == "Succeeded" {
+		return true
+	}
+	if s == "Failed" {
+		return true
+	}
+	if s == "Canceled" {
+		return true
+	}
+
+	return false
 }
 
 func toDeployments(v interface{}) ([]deployment, error) {
