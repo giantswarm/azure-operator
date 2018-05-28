@@ -83,7 +83,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
 	resourceGroupName := key.ClusterID(customObject)
 	mainDeployment, err := r.newMainDeployment(customObject)
@@ -100,6 +100,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			},
 		},
 	}
+
 	d, err := deploymentsClient.Get(ctx, resourceGroupName, mainDeployment.Name)
 	if IsNotFound(err) {
 		_, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, newDeployment)
@@ -131,7 +132,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment is created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
 
 	return nil
 }
