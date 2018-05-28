@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -87,7 +88,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	d := azureresource.Deployment{
+	newDeployment := azureresource.Deployment{
 		Properties: &azureresource.DeploymentProperties{
 			Mode:       azureresource.Complete,
 			Parameters: &mainDeployment.Parameters,
@@ -97,13 +98,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			},
 		},
 	}
-	f, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, d)
+	d, err := deploymentsClient.Get(ctx, resourceGroupName, mainDeployment.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	err = f.WaitForCompletion(ctx, deploymentsClient.Client)
-	if err != nil {
-		return microerror.Mask(err)
+	s := *d.Properties.ProvisioningState
+	fmt.Printf("\n")
+	fmt.Printf("provisioning state: %s\n", s)
+	fmt.Printf("\n")
+
+	if s == "InProgress" {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is in progress")
+
+		return nil
+
+	} else {
+		_, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, newDeployment)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment is created")

@@ -2,6 +2,7 @@ package resourcegroup
 
 import (
 	"context"
+	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -107,15 +108,31 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is deleted")
 
-	f, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
+	g, err := groupsClient.Get(ctx, key.ClusterID(customObject))
 	if IsNotFound(err) {
 		// fall through
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		err = f.WaitForCompletion(ctx, groupsClient.Client)
-		if err != nil {
-			return microerror.Mask(err)
+		s := *g.Properties.ProvisioningState
+		fmt.Printf("\n")
+		fmt.Printf("provisioning state: %s\n", s)
+		fmt.Printf("\n")
+
+		if s == "InProgress" {
+			// fall through
+		} else {
+			f, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
+			if IsNotFound(err) {
+				// fall through
+			} else if err != nil {
+				return microerror.Mask(err)
+			} else {
+				err = f.WaitForCompletion(ctx, groupsClient.Client)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+			}
 		}
 	}
 
