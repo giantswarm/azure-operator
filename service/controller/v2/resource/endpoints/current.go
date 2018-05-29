@@ -20,8 +20,10 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	// Deleting the K8s namespace will take care of cleaning the endpoints.
 	if key.IsDeleted(customObject) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling endpoints deletion: deleted with the namespace")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting responsibility of deletion of endpoints to namespace termination")
 		resourcecanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
 		return nil, nil
 	}
 
@@ -35,6 +37,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		manifest, err := r.k8sClient.CoreV1().Endpoints(namespace).Get(masterEndpointsName, apismetav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the master endpoints in the Kubernetes API")
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
 			return nil, nil
 		} else if err != nil {
 			return nil, microerror.Mask(err)
