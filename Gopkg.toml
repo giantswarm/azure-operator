@@ -35,7 +35,7 @@
   name = "github.com/giantswarm/certs"
 
 [[constraint]]
-  branch = "master"
+  branch = "remove-node-exporter"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
