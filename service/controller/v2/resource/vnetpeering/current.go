@@ -4,38 +4,42 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-// GetCurrentState retrieve the current host cluster virtual network peering resource from azure.
-func (r Resource) GetCurrentState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
-	a, err := key.ToCustomObject(azureConfig)
+// GetCurrentState retrieve the current host cluster virtual network peering
+// resource from azure.
+func (r Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
+	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
-	vnetPeering, err := r.getCurrentState(ctx, a)
-	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Mask(err)
-	}
-
-	return vnetPeering, nil
-}
-
-func (r Resource) getCurrentState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (network.VirtualNetworkPeering, error) {
 	vnetPeeringClient, err := r.getVnetPeeringClient()
 	if err != nil {
 		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
-	vnetPeering, err := vnetPeeringClient.Get(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.ResourceGroup, key.ResourceGroupName(azureConfig))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the Vnet Peerings in the Azure API")
+
+	g := r.azure.HostCluster.ResourceGroup
+	n := key.ResourceGroupName(customObject)
+	vnetPeering, err := vnetPeeringClient.Get(ctx, g, g, n)
 	if client.ResponseWasNotFound(vnetPeering.Response) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the Vnet Peerings in the Azure API")
+		resourcecanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
 		return network.VirtualNetworkPeering{}, nil
+	} else if err != nil {
+		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
-	return vnetPeering, err
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found the Vnet Peerings in the Azure API")
+
+	return vnetPeering, nil
 }
