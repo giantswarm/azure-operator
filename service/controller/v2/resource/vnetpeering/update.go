@@ -57,11 +57,13 @@ func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1al
 	return change, nil
 }
 
-// needUpdate determine if current needs to be updated in order to comply with desired.
-// Following properties are compared (and must be present in desired)
+// needUpdate determine if current needs to be updated in order to comply with
+// desired. Following properties are compared and must be present in desired.
+//
 //     Name
 //     VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess
 //     VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID
+//
 func needUpdate(current, desired network.VirtualNetworkPeering) bool {
 	if current.Name == nil || *current.Name != *desired.Name {
 		return true
