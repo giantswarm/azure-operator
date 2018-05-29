@@ -13,7 +13,7 @@ import (
 
 // GetCurrentState retrieve the current host cluster virtual network peering
 // resource from azure.
-func (r Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
+func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return network.VirtualNetworkPeering{}, microerror.Mask(err)

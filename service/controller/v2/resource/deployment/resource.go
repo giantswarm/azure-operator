@@ -119,7 +119,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 		if !isFinalState(s) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
 			return nil
 		}
