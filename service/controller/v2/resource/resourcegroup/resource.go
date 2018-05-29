@@ -121,7 +121,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion initiated")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion in progress")
 			finalizerskeptcontext.SetKept(ctx)
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for custom object")

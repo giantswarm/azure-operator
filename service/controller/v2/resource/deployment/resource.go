@@ -107,7 +107,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment initiated")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment in progress")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for custom object")
 
