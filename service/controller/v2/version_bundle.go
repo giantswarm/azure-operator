@@ -11,12 +11,12 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "updated to 1.10.2.",
+				Description: "Updated to 1.10.3.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
 				Component:   "cloudconfig",
-				Description: "Removed kube-state-metrics related components (will be managed by chart-operator).",
+				Description: "Removed kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
 				Kind:        versionbundle.KindRemoved,
 			},
 			{
@@ -58,7 +58,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.10.2",
+				Version: "1.10.3",
 			},
 			{
 				Name:    "nginx-ingress-controller",
