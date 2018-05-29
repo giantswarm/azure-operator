@@ -32,8 +32,8 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			return network.VirtualNetworkPeering{}, microerror.Mask(err)
 		}
 
-		g := r.azure.HostCluster.ResourceGroup
-		n := r.azure.HostCluster.VirtualNetwork
+		g := key.ResourceGroupName(customObject)
+		n := key.VnetName(customObject)
 		e := ""
 		v, err := c.Get(ctx, g, n, e)
 		if IsVirtualNetworkNotFound(err) {
