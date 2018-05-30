@@ -51,12 +51,24 @@ func New(config Config) (*Resource, error) {
 	return r, nil
 }
 
-func (r Resource) Name() string {
+func (r *Resource) Name() string {
 	return Name
 }
 
-// getVnetPeeringClient return an azure client to interact with VirtualNetworkPeering resource.
-func (r Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
+// getVirtualNetworksClient return an azure client to interact with
+// VirtualNetworks resources.
+func (r *Resource) getVirtualNetworksClient() (*network.VirtualNetworksClient, error) {
+	azureClients, err := client.NewAzureClientSet(r.azureConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return azureClients.VirtualNetworkClient, nil
+}
+
+// getVnetPeeringClient return an azure client to interact with
+// VirtualNetworkPeering resources.
+func (r *Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)

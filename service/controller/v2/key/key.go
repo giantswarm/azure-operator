@@ -124,6 +124,20 @@ func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {
 	return customObject.GetDeletionTimestamp() != nil
 }
 
+func IsFinalProvisioningState(s string) bool {
+	if s == "Succeeded" {
+		return true
+	}
+	if s == "Failed" {
+		return true
+	}
+	if s == "Canceled" {
+		return true
+	}
+
+	return false
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)

@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -80,14 +81,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment is created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
 	resourceGroupName := key.ClusterID(customObject)
 	mainDeployment, err := r.newMainDeployment(customObject)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	d := azureresource.Deployment{
+	newDeployment := azureresource.Deployment{
 		Properties: &azureresource.DeploymentProperties{
 			Mode:       azureresource.Complete,
 			Parameters: &mainDeployment.Parameters,
@@ -97,16 +98,29 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			},
 		},
 	}
-	f, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, d)
-	if err != nil {
+
+	d, err := deploymentsClient.Get(ctx, resourceGroupName, mainDeployment.Name)
+	if IsNotFound(err) {
+		// fall through
+	} else if err != nil {
 		return microerror.Mask(err)
+	} else {
+		s := *d.Properties.ProvisioningState
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+
+		if !key.IsFinalProvisioningState(s) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+			return nil
+		}
 	}
-	err = f.WaitForCompletion(ctx, deploymentsClient.Client)
+
+	_, err = deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, newDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment is created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
 
 	return nil
 }
