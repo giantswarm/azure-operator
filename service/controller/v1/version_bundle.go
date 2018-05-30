@@ -1,8 +1,6 @@
 package v1
 
 import (
-	"time"
-
 	"github.com/giantswarm/versionbundle"
 )
 
@@ -45,11 +43,7 @@ func VersionBundle() versionbundle.Bundle {
 				Version: "0.12.0",
 			},
 		},
-		Dependencies: []versionbundle.Dependency{},
-		Deprecated:   false,
-		Name:         "azure-operator",
-		Time:         time.Date(2018, time.January, 7, 8, 35, 0, 0, time.UTC),
-		Version:      "0.1.0",
-		WIP:          false,
+		Name:    "azure-operator",
+		Version: "0.1.0",
 	}
 }
