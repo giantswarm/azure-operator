@@ -2,7 +2,6 @@ package resourcegroup
 
 import (
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
 )
 
@@ -30,11 +29,8 @@ func IsNotFound(err error) bool {
 	{
 		dErr, ok := c.(autorest.DetailedError)
 		if ok {
-			sErr, ok := dErr.Original.(azure.ServiceError)
-			if ok {
-				if sErr.Code == "ResourceGroupNotFound" {
-					return true
-				}
+			if dErr.StatusCode == 404 {
+				return true
 			}
 		}
 	}

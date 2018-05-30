@@ -70,6 +70,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	// VirtualNetworkClient manages virtual networks.
+	VirtualNetworkClient *network.VirtualNetworksClient
 	// VnetPeeringClient manages virtual network peerings.
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
@@ -102,39 +104,39 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
 	groupsClient, err := newGroupsClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
 	dnsRecordSetsClient, err := newDNSRecordSetsClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
 	dnsZonesClient, err := newDNSZonesClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
 	interfacesClient, err := newInterfacesClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
+	virtualNetworksClient, err := newVirtualNetworkClient(clientConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	vnetPeeringClient, err := newVnetPeeringClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	clientset := &AzureClientSet{
-		DeploymentsClient:   deploymentsClient,
-		GroupsClient:        groupsClient,
-		DNSRecordSetsClient: dnsRecordSetsClient,
-		DNSZonesClient:      dnsZonesClient,
-		InterfacesClient:    interfacesClient,
-		VnetPeeringClient:   vnetPeeringClient,
+		DeploymentsClient:    deploymentsClient,
+		GroupsClient:         groupsClient,
+		DNSRecordSetsClient:  dnsRecordSetsClient,
+		DNSZonesClient:       dnsZonesClient,
+		InterfacesClient:     interfacesClient,
+		VirtualNetworkClient: virtualNetworksClient,
+		VnetPeeringClient:    vnetPeeringClient,
 	}
 
 	return clientset, nil
@@ -180,6 +182,13 @@ func newDNSZonesClient(config *azureClientConfig) (*dns.ZonesClient, error) {
 
 func newInterfacesClient(config *azureClientConfig) (*network.InterfacesClient, error) {
 	client := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &client, nil
+}
+
+func newVirtualNetworkClient(config *azureClientConfig) (*network.VirtualNetworksClient, error) {
+	client := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
