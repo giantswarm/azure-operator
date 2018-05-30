@@ -12,9 +12,9 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-var virtualNetworkNFoundError = microerror.New("virtual network not found")
+var virtualNetworkNotFoundError = microerror.New("virtual network not found")
 
-// IsVirtualNetworkNotFound asserts virtualNetworkNFoundError.
+// IsVirtualNetworkNotFound asserts virtualNetworkNotFoundError.
 func IsVirtualNetworkNotFound(err error) bool {
 	if err == nil {
 		return false
@@ -22,7 +22,7 @@ func IsVirtualNetworkNotFound(err error) bool {
 
 	c := microerror.Cause(err)
 
-	if c == virtualNetworkNFoundError {
+	if c == virtualNetworkNotFoundError {
 		return true
 	}
 

@@ -12,8 +12,7 @@ import (
 const (
 	Name = "endpointsv2"
 
-	httpsPort           = 443
-	masterEndpointsName = "master"
+	httpsPort = 443
 )
 
 type Config struct {
