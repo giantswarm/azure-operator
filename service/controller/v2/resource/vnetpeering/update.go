@@ -12,7 +12,7 @@ import (
 )
 
 // NewUpdatePatch provide a controller.Patch holding the needed network.VirtualNetworkPeering update to have current comply with desired.
-func (r Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
+func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -34,7 +34,7 @@ func (r Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desi
 	return patch, nil
 }
 
-func (r Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*controller.Patch, error) {
+func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*controller.Patch, error) {
 	patch := controller.NewPatch()
 
 	change, err := r.newUpdateChange(ctx, azureConfig, current, desired)
@@ -47,7 +47,7 @@ func (r Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alph
 	return patch, nil
 }
 
-func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (network.VirtualNetworkPeering, error) {
+func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (network.VirtualNetworkPeering, error) {
 	var change network.VirtualNetworkPeering
 
 	if needUpdate(current, desired) {
@@ -57,11 +57,13 @@ func (r Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alp
 	return change, nil
 }
 
-// needUpdate determine if current needs to be updated in order to comply with desired.
-// Following properties are compared (and must be present in desired)
+// needUpdate determine if current needs to be updated in order to comply with
+// desired. Following properties are compared and must be present in desired.
+//
 //     Name
 //     VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess
 //     VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID
+//
 func needUpdate(current, desired network.VirtualNetworkPeering) bool {
 	if current.Name == nil || *current.Name != *desired.Name {
 		return true
@@ -90,7 +92,7 @@ func needUpdate(current, desired network.VirtualNetworkPeering) bool {
 }
 
 // ApplyUpdateChange perform the host cluster virtual network peering update against azure.
-func (r Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change interface{}) error {
+func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change interface{}) error {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return microerror.Mask(err)

@@ -17,9 +17,3 @@ func (b SortBundlesByVersion) Less(i, j int) bool {
 	verB := semver.New(b[j].Version)
 	return verA.LessThan(*verB)
 }
-
-type SortBundlesByTime []Bundle
-
-func (b SortBundlesByTime) Len() int           { return len(b) }
-func (b SortBundlesByTime) Swap(i, j int)      { b[i], b[j] = b[j], b[i] }
-func (b SortBundlesByTime) Less(i, j int) bool { return b[i].Time.UnixNano() < b[j].Time.UnixNano() }

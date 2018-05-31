@@ -3,7 +3,6 @@ package v2
 import (
 	"fmt"
 
-	"github.com/cenkalti/backoff"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
@@ -25,10 +24,6 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/service"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/vnetpeering"
-)
-
-const (
-	ResourceRetries uint64 = 3
 )
 
 type ResourceSetConfig struct {
@@ -141,12 +136,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			TemplateVersion: config.TemplateVersion,
 		}
 
-		ops, err := deployment.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		deploymentResource, err = toCRUDResource(config.Logger, ops)
+		deploymentResource, err = deployment.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -258,8 +248,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	{
 		c := retryresource.WrapConfig{
-			BackOffFactory: func() backoff.BackOff { return backoff.WithMaxTries(backoff.NewExponentialBackOff(), ResourceRetries) },
-			Logger:         config.Logger,
+			Logger: config.Logger,
 		}
 
 		resources, err = retryresource.Wrap(resources, c)
