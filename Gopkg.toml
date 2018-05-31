@@ -35,7 +35,7 @@
   name = "github.com/giantswarm/certs"
 
 [[constraint]]
-  branch = "master"
+  branch = "ic-param"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
