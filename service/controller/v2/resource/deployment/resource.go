@@ -8,9 +8,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
@@ -24,29 +23,22 @@ const (
 )
 
 type Config struct {
-	CloudConfig *cloudconfig.CloudConfig
-	Logger      micrologger.Logger
+	Logger micrologger.Logger
 
-	Azure       setting.Azure
-	AzureConfig client.AzureClientSetConfig
+	Azure setting.Azure
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
 	TemplateVersion string
 }
 
 type Resource struct {
-	cloudConfig *cloudconfig.CloudConfig
-	logger      micrologger.Logger
+	logger micrologger.Logger
 
 	azure           setting.Azure
-	azureConfig     client.AzureClientSetConfig
 	templateVersion string
 }
 
 func New(config Config) (*Resource, error) {
-	if config.CloudConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CloudConfig must not be empty", config)
-	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -54,19 +46,14 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
-	}
 	if config.TemplateVersion == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateURIVersion must not be empty", config)
 	}
 
 	r := &Resource{
-		cloudConfig: config.CloudConfig,
-		logger:      config.Logger,
+		logger: config.Logger,
 
 		azure:           config.Azure,
-		azureConfig:     config.AzureConfig,
 		templateVersion: config.TemplateVersion,
 	}
 
@@ -79,7 +66,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.getDeploymentsClient()
+	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -93,7 +80,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		params := map[string]interface{}{
 			"initialProvisioning": "Yes",
 		}
-		deployment, err = r.newDeployment(customObject, params)
+		deployment, err = r.newDeployment(ctx, customObject, params)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -139,11 +126,11 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.azureConfig)
+func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
+	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.DeploymentsClient, nil
+	return sc.AzureClientSet.DeploymentsClient, nil
 }

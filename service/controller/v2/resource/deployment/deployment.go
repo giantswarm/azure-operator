@@ -1,11 +1,14 @@
 package deployment
 
 import (
+	"context"
+
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
@@ -19,7 +22,7 @@ func getDeploymentNames() []string {
 	}
 }
 
-func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
 		n := node{
@@ -42,12 +45,17 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		workerNodes = append(workerNodes, n)
 	}
 
-	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
+	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
+	masterCloudConfig, err := sc.CloudConfig.NewMasterCloudConfig(obj)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
+	workerCloudConfig, err := sc.CloudConfig.NewWorkerCloudConfig(obj)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
