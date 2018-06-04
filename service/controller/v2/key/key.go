@@ -76,6 +76,16 @@ func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName str
 	return tags
 }
 
+// CredentialName returns name of the credential secret.
+func CredentialName(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.CredentialSecret.Name
+}
+
+// CredentialName returns namespace of the credential secret.
+func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.CredentialSecret.Namespace
+}
+
 // DNSZoneAPI returns api parent DNS zone domain name.
 func DNSZoneAPI(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.API.Name
