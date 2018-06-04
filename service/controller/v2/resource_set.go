@@ -128,9 +128,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var endpointsResource controller.Resource
 	{
 		c := endpoints.Config{
-			AzureConfig: config.HostAzureConfig,
-			K8sClient:   config.K8sClient,
-			Logger:      config.Logger,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
 		}
 
 		ops, err := endpoints.New(c)
