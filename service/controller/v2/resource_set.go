@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -15,6 +16,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
+	"github.com/giantswarm/azure-operator/service/controller/v2/credential"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/dnsrecord"
@@ -68,24 +71,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		randomkeysSearcher, err = randomkeys.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var cloudConfig *cloudconfig.CloudConfig
-	{
-		c := cloudconfig.Config{
-			CertsSearcher:      certsSearcher,
-			Logger:             config.Logger,
-			RandomkeysSearcher: randomkeysSearcher,
-
-			Azure:       config.Azure,
-			AzureConfig: config.HostAzureConfig,
-			OIDC:        config.OIDC,
-		}
-
-		cloudConfig, err = cloudconfig.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -280,10 +265,48 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		return false
 	}
 
+	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		guestAzureConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		azureClients, err := client.NewAzureClientSet(*guestAzureConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		var cloudConfig *cloudconfig.CloudConfig
+		{
+			c := cloudconfig.Config{
+				CertsSearcher:      certsSearcher,
+				Logger:             config.Logger,
+				RandomkeysSearcher: randomkeysSearcher,
+
+				Azure:       config.Azure,
+				AzureConfig: *guestAzureConfig,
+			}
+
+			cloudConfig, err = cloudconfig.New(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+
+		c := servicecontext.Context{
+			AzureClientSet: azureClients,
+			CloudConfig:    cloudConfig,
+		}
+		ctx = servicecontext.NewContext(ctx, c)
+
+		return ctx, nil
+	}
+
 	var resourceSet *controller.ResourceSet
 	{
 		c := controller.ResourceSetConfig{
 			Handles:   handlesFunc,
+			InitCtx:   initCtxFunc,
 			Logger:    config.Logger,
 			Resources: resources,
 		}
