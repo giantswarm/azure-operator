@@ -83,8 +83,6 @@ func New(config Config) (*Service, error) {
 	}
 
 	azureConfig := client.AzureClientSetConfig{
-		Logger: config.Logger,
-
 		ClientID:       config.Viper.GetString(config.Flag.Service.Azure.ClientID),
 		ClientSecret:   config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
 		Cloud:          config.Viper.GetString(config.Flag.Service.Azure.Cloud),
