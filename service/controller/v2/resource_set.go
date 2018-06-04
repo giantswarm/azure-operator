@@ -82,7 +82,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger: config.Logger,
 
 			Azure:            config.Azure,
-			AzureConfig:      config.HostAzureConfig,
 			InstallationName: config.InstallationName,
 		}
 
