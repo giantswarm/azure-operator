@@ -31,7 +31,7 @@ type ResourceSetConfig struct {
 	Logger    micrologger.Logger
 
 	Azure            setting.Azure
-	AzureConfig      client.AzureClientSetConfig
+	HostAzureConfig  client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
 	OIDC             setting.OIDC
@@ -81,7 +81,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			RandomkeysSearcher: randomkeysSearcher,
 
 			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			AzureConfig: config.HostAzureConfig,
 			OIDC:        config.OIDC,
 		}
 
@@ -97,7 +97,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger: config.Logger,
 
 			Azure:            config.Azure,
-			AzureConfig:      config.AzureConfig,
+			AzureConfig:      config.HostAzureConfig,
 			InstallationName: config.InstallationName,
 		}
 
@@ -113,7 +113,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger: config.Logger,
 
 			Azure:           config.Azure,
-			AzureConfig:     config.AzureConfig,
+			AzureConfig:     config.HostAzureConfig,
 			CloudConfig:     cloudConfig,
 			TemplateVersion: config.TemplateVersion,
 		}
@@ -129,7 +129,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := dnsrecord.Config{
 			Logger: config.Logger,
 
-			AzureConfig: config.AzureConfig,
+			AzureConfig: config.HostAzureConfig,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -146,7 +146,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var endpointsResource controller.Resource
 	{
 		c := endpoints.Config{
-			AzureConfig: config.AzureConfig,
+			AzureConfig: config.HostAzureConfig,
 			K8sClient:   config.K8sClient,
 			Logger:      config.Logger,
 		}
@@ -219,7 +219,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger: config.Logger,
 
 			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			AzureConfig: config.HostAzureConfig,
 		}
 
 		ops, err := vnetpeering.New(c)
