@@ -199,8 +199,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := vnetpeering.Config{
 			Logger: config.Logger,
 
-			Azure:       config.Azure,
-			AzureConfig: config.HostAzureConfig,
+			Azure:           config.Azure,
+			HostAzureConfig: config.HostAzureConfig,
 		}
 
 		ops, err := vnetpeering.New(c)

@@ -33,7 +33,7 @@ func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1al
 		VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
 			AllowVirtualNetworkAccess: to.BoolPtr(true),
 			RemoteVirtualNetwork: &network.SubResource{
-				ID: to.StringPtr(key.VNetID(azureConfig, r.azureConfig.SubscriptionID)),
+				ID: to.StringPtr(key.VNetID(azureConfig, r.hostAzureConfig.SubscriptionID)),
 			},
 		},
 	}, nil

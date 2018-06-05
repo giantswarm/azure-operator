@@ -27,7 +27,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// existence the client calls of CreateOrUpdate would fail with not found
 	// errors.
 	if !key.IsDeleted(customObject) {
-		c, err := r.getVirtualNetworksClient()
+		c, err := r.getVirtualNetworksClient(ctx)
 		if err != nil {
 			return network.VirtualNetworkPeering{}, microerror.Mask(err)
 		}
@@ -64,7 +64,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the vnet peerings in the Azure API")
 
-		c, err := r.getVnetPeeringClient()
+		c, err := r.getVnetPeeringClient(ctx)
 		if err != nil {
 			return network.VirtualNetworkPeering{}, microerror.Mask(err)
 		}

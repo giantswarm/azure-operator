@@ -113,7 +113,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change in
 func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change network.VirtualNetworkPeering) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering")
 
-	vnetPeeringClient, err := r.getVnetPeeringClient()
+	vnetPeeringClient, err := r.getVnetPeeringClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}

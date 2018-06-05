@@ -64,7 +64,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change network.VirtualNetworkPeering) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vnet peering")
 
-	vnetPeeringClient, err := r.getVnetPeeringClient()
+	vnetPeeringClient, err := r.getVnetPeeringClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
