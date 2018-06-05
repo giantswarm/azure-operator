@@ -26,7 +26,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// guest cluster creation. If we would not check for the virtual network
 	// existence the client calls of CreateOrUpdate would fail with not found
 	// errors.
-	{
+	if !key.IsDeleted(customObject) {
 		c, err := r.getVirtualNetworksClient()
 		if err != nil {
 			return network.VirtualNetworkPeering{}, microerror.Mask(err)
