@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/endpoints"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/instance"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/service"
@@ -180,6 +181,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var instanceResource controller.Resource
+	{
+		c := instance.Config{
+			Logger: config.Logger,
+
+			Azure:       config.Azure,
+			AzureConfig: config.AzureConfig,
+		}
+
+		instanceResource, err = instance.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var namespaceResource controller.Resource
 	{
 		c := namespace.Config{
@@ -241,6 +257,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		serviceResource,
 		resourceGroupResource,
 		deploymentResource,
+		instanceResource,
 		endpointsResource,
 		dnsrecordResource,
 		vnetPeeringResource,
