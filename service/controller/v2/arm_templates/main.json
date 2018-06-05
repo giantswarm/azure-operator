@@ -53,12 +53,6 @@
     "kubernetesAPISecurePort": {
       "type": "int"
     },
-    "kubernetesIngressSecurePort": {
-      "type": "int"
-    },
-    "kubernetesIngressInsecurePort": {
-      "type": "int"
-    },
     "masterNodes": {
       "type": "array"
     },
@@ -166,9 +160,7 @@
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "hostClusterCidr": {"value": "[parameters('hostClusterCidr')]"},
-          "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
-          "kubernetesIngressSecurePort": {"value": "[parameters('kubernetesIngressSecurePort')]"},
-          "kubernetesIngressInsecurePort": {"value": "[parameters('kubernetesIngressInsecurePort')]"}
+          "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"}
         }
       }
     },
@@ -287,35 +279,6 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "ingress_load_balancer_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('publicLoadBalancerTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "clusterID": {"value": "[parameters('clusterID')]"},
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": {"value": "Ingress"},
-          "ports": {"value":
-            [
-              {
-                "frontend": 80,
-                "backend": 30010
-              },
-              {
-                "frontend": 443,
-                "backend": 30011
-              }
-            ]
-          }
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
       "name": "kubernetes_api_dns_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
@@ -347,24 +310,6 @@
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": { "value": "etcd" },
           "ipAddress": { "value": "[reference('etcd_load_balancer_setup').outputs.ipAddress.value]" }
-        }
-      }
-    },
-    {
-      "apiVersion": "2016-09-01",
-      "name": "kubernetes_ingress_dns_setup",
-      "type": "Microsoft.Resources/deployments",
-      "properties": {
-        "mode": "incremental",
-        "templateLink": {
-          "uri": "[variables('dnsASetupTemplateURI')]",
-          "contentVersion": "1.0.0.0"
-        },
-        "parameters": {
-          "dnsZone": { "value": "[concat(parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" },
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "prefix": { "value": "ingress" },
-          "ipAddress": { "value": "[reference('ingress_load_balancer_setup').outputs.ipAddress.value]" }
         }
       }
     },
@@ -442,7 +387,7 @@
           "vmssOsImageSKU": {"value": "[parameters('workerNodes')[0].osImage.sku]"},
           "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
           "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
-          "vmssLbBackendPools": {"value": [{"id": "[reference('ingress_load_balancer_setup').outputs.backendPoolId.value]"}]},
+          "vmssLbBackendPools": {"value": []},
           "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"}
         }
       }

@@ -65,8 +65,6 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		"hostClusterResourceGroupName":  r.azure.HostCluster.ResourceGroup,
 		"hostClusterVirtualNetworkName": r.azure.HostCluster.VirtualNetwork,
 		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
-		"kubernetesIngressSecurePort":   obj.Spec.Cluster.Kubernetes.IngressController.SecurePort,
-		"kubernetesIngressInsecurePort": obj.Spec.Cluster.Kubernetes.IngressController.InsecurePort,
 		"masterCloudConfigData":         masterCloudConfig,
 		"workerCloudConfigData":         workerCloudConfig,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
