@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
@@ -25,7 +26,8 @@ const (
 type Config struct {
 	Logger micrologger.Logger
 
-	Azure setting.Azure
+	Azure           setting.Azure
+	HostAzureConfig client.AzureConfig
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
 	TemplateVersion string
@@ -35,6 +37,7 @@ type Resource struct {
 	logger micrologger.Logger
 
 	azure           setting.Azure
+	hostAzureConfig client.AzureConfig
 	templateVersion string
 }
 
@@ -46,6 +49,9 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
+	if err := config.HostAzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.HostAzureConfig.%s", err)
+	}
 	if config.TemplateVersion == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateURIVersion must not be empty", config)
 	}
@@ -54,6 +60,7 @@ func New(config Config) (*Resource, error) {
 		logger: config.Logger,
 
 		azure:           config.Azure,
+		hostAzureConfig: config.HostAzureConfig,
 		templateVersion: config.TemplateVersion,
 	}
 
