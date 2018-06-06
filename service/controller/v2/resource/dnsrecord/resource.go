@@ -1,11 +1,14 @@
 package dnsrecord
 
 import (
+	"context"
+
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 )
 
 const (
@@ -54,11 +57,11 @@ func (r *Resource) getDNSRecordSetsClient() (*dns.RecordSetsClient, error) {
 	return azureClients.DNSRecordSetsClient, nil
 }
 
-func (r *Resource) getDNSZonesClient() (*dns.ZonesClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureConfig)
+func (r *Resource) getDNSZonesClient(ctx context.Context) (*dns.ZonesClient, error) {
+	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.DNSZonesClient, nil
+	return sc.AzureClientSet.DNSZonesClient, nil
 }
