@@ -140,6 +140,9 @@
       "metadata": {
         "description": "The DNS zones for kubernetes api and ingress."
       }
+    },
+    "hostSubscriptionID": {
+      "type": "string",
     }
   },
   "variables": {
@@ -238,6 +241,7 @@
         },
         "parameters": {
           "name": {"value": "[parameters('hostClusterResourceGroupName')]"},
+          "subscriptionID": {"value": "[parameters('hostSubscriptionID')]"},
           "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
           "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
           "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}

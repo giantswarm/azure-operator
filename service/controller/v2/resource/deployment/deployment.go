@@ -71,6 +71,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"workerNodes":                   workerNodes,
 		"dnsZones":                      obj.Spec.Azure.DNSZones,
 		"hostClusterCidr":               r.azure.HostCluster.CIDR,
+		"hostSubscriptionID":            r.hostAzureConfig.SubscriptionID,
 		"hostClusterResourceGroupName":  r.azure.HostCluster.ResourceGroup,
 		"hostClusterVirtualNetworkName": r.azure.HostCluster.VirtualNetwork,
 		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
