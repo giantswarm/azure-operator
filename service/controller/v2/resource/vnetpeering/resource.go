@@ -1,15 +1,12 @@
 package vnetpeering
 
 import (
-	"context"
-
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 )
 
 const (
@@ -60,22 +57,22 @@ func (r *Resource) Name() string {
 
 // getVirtualNetworksClient return an azure client to interact with
 // VirtualNetworks resources.
-func (r *Resource) getVirtualNetworksClient(ctx context.Context) (*network.VirtualNetworksClient, error) {
-	sc, err := servicecontext.FromContext(ctx)
+func (r *Resource) getVirtualNetworksClient() (*network.VirtualNetworksClient, error) {
+	azureClients, err := client.NewAzureClientSet(r.hostAzureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.VirtualNetworkClient, nil
+	return azureClients.VirtualNetworkClient, nil
 }
 
 // getVnetPeeringClient return an azure client to interact with
 // VirtualNetworkPeering resources.
-func (r *Resource) getVnetPeeringClient(ctx context.Context) (*network.VirtualNetworkPeeringsClient, error) {
-	sc, err := servicecontext.FromContext(ctx)
+func (r *Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
+	azureClients, err := client.NewAzureClientSet(r.hostAzureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.VnetPeeringClient, nil
+	return azureClients.VnetPeeringClient, nil
 }
