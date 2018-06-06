@@ -18,8 +18,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("EnsureCreated called for cluster ID '%s'", key.ClusterID(customObject)))
-
 	// Find the next instance ID we want to trigger the update for. Instance IDs
 	// look something like the following example.
 	//
@@ -27,6 +25,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	//
 	var instanceID string
 	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated")
+
 		c, err := r.getVMsClient()
 		if err != nil {
 			return microerror.Mask(err)
@@ -54,10 +54,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			break
 		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceID))
 	}
 
-	// TODO trigger update for found instance
+	// Trigger the update for the found instance.
 	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceID))
+
 		c, err := r.getScaleSetsClient()
 		if err != nil {
 			return microerror.Mask(err)
@@ -74,6 +78,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceID))
 	}
 
 	return nil
