@@ -4,6 +4,7 @@
 [[projects]]
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
+    "services/compute/mgmt/2018-04-01/compute",
     "services/dns/mgmt/2017-09-01/dns",
     "services/network/mgmt/2017-09-01/network",
     "services/resources/mgmt/2018-02-01/resources",
@@ -22,8 +23,8 @@
     "autorest/to",
     "autorest/validation"
   ]
-  revision = "aa2a4534ab680e938d933870f58f23f77e0e208e"
-  version = "v10.9.0"
+  revision = "4de44cd533576f3c7b44dcb08dc03754d217144d"
+  version = "v10.9.2"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -73,8 +74,8 @@
     ".",
     "log"
   ]
-  revision = "2810ccc68e0ca445fa81ebfa03fbf70aca5c41ae"
-  version = "v2.7.0"
+  revision = "3658237ded108b4134956c1b3050349d93e7b895"
+  version = "v2.7.1"
 
 [[projects]]
   name = "github.com/fsnotify/fsnotify"
@@ -101,7 +102,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "461375f2ed17f7efd1c97917daa135c1f135ac1f"
+  revision = "8599d0312c41dcf2bd3122b77935b87a74b5918f"
 
 [[projects]]
   branch = "master"
@@ -119,7 +120,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "eccb060d743da4f0b3086feb2b04267432a0648b"
+  revision = "54be9f9ff435305dcbe09ee26fc94361ac57a330"
 
 [[projects]]
   branch = "master"
@@ -134,7 +135,7 @@
     "v_3_2_5",
     "v_3_3_0"
   ]
-  revision = "119402e11843b12ffcc2c5f88997f1ec3849e14b"
+  revision = "3b7a98c25794f2767606d5d1cc89d4041f68a7fb"
 
 [[projects]]
   branch = "master"
@@ -438,7 +439,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "8b799c424f57fa123fc63a99d6383bc6e4c02578"
+  revision = "9825584555aa620c53c265d4a09ace0df1346fd9"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
@@ -467,8 +468,8 @@
 [[projects]]
   name = "github.com/pelletier/go-toml"
   packages = ["."]
-  revision = "acdc4509485b587f5e675510c4f2c63e90ff68a8"
-  version = "v1.1.0"
+  revision = "c01d1270ff3e442a8a57cddc1c92dc1138598194"
+  version = "v1.2.0"
 
 [[projects]]
   branch = "master"
@@ -489,7 +490,7 @@
     "prometheus",
     "prometheus/promhttp"
   ]
-  revision = "42bc0a18c2207d46ac4039bbb6b4cf1507872837"
+  revision = "7540c0707421d7c58cfce34f4294d1b1f25f240d"
 
 [[projects]]
   branch = "master"
@@ -516,7 +517,7 @@
     "nfs",
     "xfs"
   ]
-  revision = "fe93d378a6b03758a2c1b65e86cf630bf78681c0"
+  revision = "94663424ae5ae9856b40a9f170762b4197024661"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -561,7 +562,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "ab813273cd59e1333f7ae7bff5d027d4aadf528c"
+  revision = "b47b1587369238182299fe4dad77d05b8b461e06"
 
 [[projects]]
   branch = "master"
@@ -575,7 +576,7 @@
     "idna",
     "publicsuffix"
   ]
-  revision = "4ef37e81ae7d4d477bda45ba9506a70004e1317b"
+  revision = "1e491301e022f8f977054da4c2d852decd59571f"
 
 [[projects]]
   branch = "master"
@@ -832,11 +833,11 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/common"]
-  revision = "98b5c3f6a62e3f879d7017752989c925732b6c7d"
+  revision = "8a9b82f00b3a86eac24681da3f9fe6c34c01cea2"
 
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "85c74fd2549a5f3a78469c515c7859fc750f495d6c264365b2ed851b641f68f5"
+  inputs-digest = "24ce163beb4f27ab90da358c8043140479c582ce7e9399caedf34778a185429f"
   solver-name = "gps-cdcl"
   solver-version = 1
