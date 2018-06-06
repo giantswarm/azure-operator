@@ -40,7 +40,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		g := key.ResourceGroupName(customObject)
 		s := key.WorkerVMSSName(customObject)
 		result, err := c.List(ctx, g, s, "", "", "")
-		if err != nil {
+		if IsScaleSetNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the scale set")
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
