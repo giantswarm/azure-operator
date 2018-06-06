@@ -19,7 +19,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	// Find the next instance ID we want to trigger the update for. Instance IDs
-	// look something like the following example.
+	// look something like the following example. Anyways, the instance ID the
+	// Azure API expects when triggering updates is a simple non negative integer.
+	// The computation of the final instance ID is done by the resource manager
+	// internally.
 	//
 	//     0gjpt-worker-000004
 	//
@@ -44,12 +47,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				continue
 			}
 
-			instanceID = fmt.Sprintf("%s-worker-%06s\n", key.ClusterID(customObject), *v.InstanceID)
+			instanceID = *v.InstanceID
 
 			if !key.IsFinalProvisioningState(*v.ProvisioningState) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceID, *v.ProvisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+				return nil
 			}
 
 			break
