@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
@@ -72,6 +73,10 @@ type AzureClientSet struct {
 	InterfacesClient *network.InterfacesClient
 	// VirtualNetworkClient manages virtual networks.
 	VirtualNetworkClient *network.VirtualNetworksClient
+	// VirtualMachineScaleSetsClient manages virtual machine scale sets.
+	VirtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient
+	// VirtualMachineScaleSetVMsClient manages virtual machine scale set VMs.
+	VirtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient
 	// VnetPeeringClient manages virtual network peerings.
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
@@ -124,19 +129,29 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(clientConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(clientConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	vnetPeeringClient, err := newVnetPeeringClient(clientConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	clientset := &AzureClientSet{
-		DeploymentsClient:    deploymentsClient,
-		GroupsClient:         groupsClient,
-		DNSRecordSetsClient:  dnsRecordSetsClient,
-		DNSZonesClient:       dnsZonesClient,
-		InterfacesClient:     interfacesClient,
-		VirtualNetworkClient: virtualNetworksClient,
-		VnetPeeringClient:    vnetPeeringClient,
+		DeploymentsClient:               deploymentsClient,
+		GroupsClient:                    groupsClient,
+		DNSRecordSetsClient:             dnsRecordSetsClient,
+		DNSZonesClient:                  dnsZonesClient,
+		InterfacesClient:                interfacesClient,
+		VirtualNetworkClient:            virtualNetworksClient,
+		VirtualMachineScaleSetVMsClient: virtualMachineScaleSetVMsClient,
+		VirtualMachineScaleSetsClient:   virtualMachineScaleSetsClient,
+		VnetPeeringClient:               vnetPeeringClient,
 	}
 
 	return clientset, nil
@@ -189,6 +204,20 @@ func newInterfacesClient(config *azureClientConfig) (*network.InterfacesClient, 
 
 func newVirtualNetworkClient(config *azureClientConfig) (*network.VirtualNetworksClient, error) {
 	client := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &client, nil
+}
+
+func newVirtualMachineScaleSetsClient(config *azureClientConfig) (*compute.VirtualMachineScaleSetsClient, error) {
+	client := compute.NewVirtualMachineScaleSetsClient(config.subscriptionID)
+	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &client, nil
+}
+
+func newVirtualMachineScaleSetVMsClient(config *azureClientConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
+	client := compute.NewVirtualMachineScaleSetVMsClient(config.subscriptionID)
 	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &client, nil
