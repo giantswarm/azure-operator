@@ -195,6 +195,10 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
+func ToInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+	return fmt.Sprintf("%s-worker-%06s\n", ClusterID(customObject), instanceID)
+}
+
 func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.VersionBundle.Version
 }

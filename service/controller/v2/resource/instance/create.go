@@ -18,15 +18,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	// Find the next instance ID we want to trigger the update for. Instance IDs
-	// look something like the following example. Anyways, the instance ID the
-	// Azure API expects when triggering updates is a simple non negative integer.
-	// The computation of the final instance ID is done by the resource manager
-	// internally.
+	// Find the next instance ID and instance name we want to trigger the update
+	// for. Instance names look something like the following example.
 	//
 	//     0gjpt-worker-000004
 	//
+	// Instance IDs are simple non negative integers.
+	//
+	//     4
+	//
 	var instanceID string
+	var instanceName string
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated")
 
@@ -48,9 +50,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			instanceID = *v.InstanceID
+			instanceName = key.ToInstanceName(customObject, *v.InstanceID)
 
 			if !key.IsFinalProvisioningState(*v.ProvisioningState) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceID, *v.ProvisioningState))
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceName, *v.ProvisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
@@ -60,12 +63,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			break
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceID))
+		if instanceID == "" {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance ID found that needs to be updated")
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+			return nil
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceName))
 	}
 
 	// Trigger the update for the found instance.
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceID))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
 
 		c, err := r.getScaleSetsClient()
 		if err != nil {
@@ -84,7 +95,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceID))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
 	}
 
 	return nil
