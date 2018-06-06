@@ -54,12 +54,7 @@ func TestMain(m *testing.M) {
 		}
 	}
 
-	var azureConfig = client.AzureClientSetConfig{
-		ClientID:       env.AzureClientID(),
-		ClientSecret:   env.AzureClientSecret(),
-		SubscriptionID: env.AzureSubscriptionID(),
-		TenantID:       env.AzureTenantID(),
-	}
+	var azureConfig = env.AzureConfig()
 
 	c, err := client.NewAzureClientSet(azureConfig)
 	if err != nil {

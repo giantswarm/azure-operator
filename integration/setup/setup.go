@@ -112,6 +112,8 @@ func installCredential(h *framework.Host) error {
 
 		k8sClient.CoreV1().Secrets(credentialNamespace).Delete(credentialName, &metav1.DeleteOptions{})
 
+		c := env.AzureGuestConfig()
+
 		secret := &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: credentialName,
@@ -119,10 +121,10 @@ func installCredential(h *framework.Host) error {
 
 			// TODO: change to guest subscription credential.
 			Data: map[string][]byte{
-				credential.ClientIDKey:       []byte(env.AzureClientID()),
-				credential.ClientSecretKey:   []byte(env.AzureClientSecret()),
-				credential.SubscriptionIDKey: []byte(env.AzureSubscriptionID()),
-				credential.TenantIDKey:       []byte(env.AzureTenantID()),
+				credential.ClientIDKey:       []byte(c.ClientID),
+				credential.ClientSecretKey:   []byte(c.ClientSecret),
+				credential.SubscriptionIDKey: []byte(c.SubscriptionID),
+				credential.TenantIDKey:       []byte(c.TenantID),
 			},
 		}
 
