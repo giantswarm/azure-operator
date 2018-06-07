@@ -23,8 +23,8 @@
     "autorest/to",
     "autorest/validation"
   ]
-  revision = "4de44cd533576f3c7b44dcb08dc03754d217144d"
-  version = "v10.9.2"
+  revision = "d21db7ee8958d471f5b185d700762c903549ee08"
+  version = "v10.10.0"
 
 [[projects]]
   name = "github.com/PuerkitoBio/purell"
@@ -124,6 +124,12 @@
 
 [[projects]]
   branch = "master"
+  name = "github.com/giantswarm/e2etemplates"
+  packages = ["pkg/e2etemplates"]
+  revision = "641ca85450f736082b846d20c8be8bb2f1504e30"
+
+[[projects]]
+  branch = "master"
   name = "github.com/giantswarm/ipam"
   packages = ["."]
   revision = "442e28b638045e8dcbe75dd596241590ded3b0f7"
@@ -135,7 +141,7 @@
     "v_3_2_5",
     "v_3_3_0"
   ]
-  revision = "3b7a98c25794f2767606d5d1cc89d4041f68a7fb"
+  revision = "570aa461fd8c9fc1d56f45cfc5b8afffc4af7109"
 
 [[projects]]
   branch = "master"
@@ -171,7 +177,7 @@
     "server",
     "tls"
   ]
-  revision = "77c2b7f4339670c6095d67d02d89fab885516575"
+  revision = "6578efbcb390bb4be316637e0de492241bea52a3"
 
 [[projects]]
   branch = "master"
@@ -439,7 +445,7 @@
     "jlexer",
     "jwriter"
   ]
-  revision = "9825584555aa620c53c265d4a09ace0df1346fd9"
+  revision = "3fdea8d05856a0c8df22ed4bc71b3219245e4485"
 
 [[projects]]
   name = "github.com/matttproud/golang_protobuf_extensions"
@@ -490,7 +496,7 @@
     "prometheus",
     "prometheus/promhttp"
   ]
-  revision = "7540c0707421d7c58cfce34f4294d1b1f25f240d"
+  revision = "faf4ec335fe01ae5a6a0eaa34a5a9333bfbd1a30"
 
 [[projects]]
   branch = "master"
@@ -600,7 +606,7 @@
     "unix",
     "windows"
   ]
-  revision = "c11f84a56e43e20a78cee75a7c034031ecf57d1f"
+  revision = "9527bec2660bd847c050fda93a0f0c6dee0800bb"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -838,6 +844,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "24ce163beb4f27ab90da358c8043140479c582ce7e9399caedf34778a185429f"
+  inputs-digest = "fd323d256579ca1c2f6f03875707f9f7c2665d6b84714000d7fe29fbc8f3cdc6"
   solver-name = "gps-cdcl"
   solver-version = 1
