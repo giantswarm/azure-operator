@@ -7,7 +7,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
@@ -42,7 +41,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		result, err := c.List(ctx, g, s, "", "", "")
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the scale set")
-			resourcecanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
 			return nil
@@ -60,7 +58,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			if !key.IsFinalProvisioningState(*v.ProvisioningState) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceName, *v.ProvisioningState))
-				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
 				return nil
@@ -71,7 +68,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if instanceID == "" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance ID found that needs to be updated")
-			resourcecanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
 			return nil
