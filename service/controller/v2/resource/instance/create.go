@@ -87,12 +87,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		g := key.ResourceGroupName(customObject)
 		s := key.WorkerVMSSName(customObject)
-		IDs := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+		ids := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
 			InstanceIds: to.StringSlicePtr([]string{
 				instanceID,
 			}),
 		}
-		_, err = c.UpdateInstances(ctx, g, s, IDs)
+		_, err = c.UpdateInstances(ctx, g, s, ids)
 		if err != nil {
 			return microerror.Mask(err)
 		}
