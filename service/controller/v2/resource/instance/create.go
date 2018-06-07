@@ -48,16 +48,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		fmt.Printf("\n")
-		fmt.Printf("\n")
-		fmt.Printf("\n")
-		fmt.Printf("%#v\n", result.Values())
-		fmt.Printf("%#v\n", result.Values())
-		fmt.Printf("%#v\n", result.Values())
-		fmt.Printf("\n")
-		fmt.Printf("\n")
-		fmt.Printf("\n")
-
 		for _, v := range result.Values() {
 			if key.IsFinalProvisioningState(*v.ProvisioningState) {
 				continue
