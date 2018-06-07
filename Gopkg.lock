@@ -119,7 +119,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "eccb060d743da4f0b3086feb2b04267432a0648b"
+  revision = "54be9f9ff435305dcbe09ee26fc94361ac57a330"
 
 [[projects]]
   branch = "master"
