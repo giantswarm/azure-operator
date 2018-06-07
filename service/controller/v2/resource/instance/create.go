@@ -56,7 +56,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			instanceID = *v.InstanceID
-			instanceName = key.ToInstanceName(customObject, *v.InstanceID)
+			instanceName = key.InstanceName(customObject, *v.InstanceID)
 
 			if !key.IsFinalProvisioningState(*v.ProvisioningState) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceName, *v.ProvisioningState))
