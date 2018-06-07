@@ -119,7 +119,13 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "eccb060d743da4f0b3086feb2b04267432a0648b"
+  revision = "54be9f9ff435305dcbe09ee26fc94361ac57a330"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/giantswarm/e2etemplates"
+  packages = ["pkg/e2etemplates"]
+  revision = "641ca85450f736082b846d20c8be8bb2f1504e30"
 
 [[projects]]
   branch = "master"
@@ -837,6 +843,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "85c74fd2549a5f3a78469c515c7859fc750f495d6c264365b2ed851b641f68f5"
+  inputs-digest = "af879c707b3e1717b4ab9977efc5ce3ce6bd33a20b88c55584dacf3301e66bcd"
   solver-name = "gps-cdcl"
   solver-version = 1

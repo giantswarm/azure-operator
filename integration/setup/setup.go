@@ -8,6 +8,7 @@ import (
 	"testing"
 
 	"github.com/giantswarm/e2e-harness/pkg/framework"
+	"github.com/giantswarm/e2etemplates/pkg/e2etemplates"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -66,24 +67,24 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 	var err error
 
 	{
-		err = h.InstallStableOperator("cert-operator", "certconfig", template.CertOperatorChartValues)
+		err = h.InstallStableOperator("cert-operator", "certconfig", e2etemplates.CertOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallCertResource()
+		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
+		err = h.InstallCertResource()
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallResource("azure-resource", template.AzureResourceChartValues, ":stable")
+		err = h.InstallResource("apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
 		if err != nil {
 			return microerror.Mask(err)
 		}
