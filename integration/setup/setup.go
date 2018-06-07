@@ -71,14 +71,14 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallCertResource()
+		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
+		err = h.InstallCertResource()
 		if err != nil {
 			return microerror.Mask(err)
 		}
