@@ -71,7 +71,7 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallResource("apiextensions-cert-config-e2e", template.AzureResourceChartValues, ":stable")
+		err = h.InstallResource("apiextensions-cert-config-e2e", template.AzureConfigE2EChartValues, ":stable")
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -83,7 +83,7 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallResource("apiextensions-azure-config-e2e", template.AzureResourceChartValues, ":stable")
+		err = h.InstallResource("apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
 		if err != nil {
 			return microerror.Mask(err)
 		}
