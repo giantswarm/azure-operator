@@ -7,18 +7,7 @@ import (
 )
 
 const (
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	LongMaxWait = 1 * time.Minute
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
-	// REVERT
+	LongMaxWait  = 30 * time.Minute
 	ShortMaxWait = 2 * time.Minute
 )
 
