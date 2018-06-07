@@ -48,6 +48,29 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
+		fmt.Printf("\n")
+		fmt.Printf("\n")
+		fmt.Printf("\n")
+		fmt.Printf("%#v\n", result.Values())
+		fmt.Printf("%#v\n", result.Values())
+		fmt.Printf("%#v\n", result.Values())
+		fmt.Printf("\n")
+		fmt.Printf("\n")
+		fmt.Printf("\n")
+
+		for _, v := range result.Values() {
+			if key.IsFinalProvisioningState(*v.ProvisioningState) {
+				continue
+			}
+
+			instanceName = key.InstanceName(customObject, *v.InstanceID)
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceName, *v.ProvisioningState))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+			return nil
+		}
+
 		for _, v := range result.Values() {
 			if *v.LatestModelApplied {
 				continue
@@ -55,13 +78,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			instanceID = *v.InstanceID
 			instanceName = key.InstanceName(customObject, *v.InstanceID)
-
-			if !key.IsFinalProvisioningState(*v.ProvisioningState) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceName, *v.ProvisioningState))
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
-				return nil
-			}
 
 			break
 		}
