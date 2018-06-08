@@ -168,66 +168,66 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 }
 
 func newDeploymentsClient(config *azureClientConfig) (*resources.DeploymentsClient, error) {
-	client := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newGroupsClient(config *azureClientConfig) (*resources.GroupsClient, error) {
-	client := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newDNSRecordSetsClient(config *azureClientConfig) (*dns.RecordSetsClient, error) {
-	client := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newDNSZonesClient(config *azureClientConfig) (*dns.ZonesClient, error) {
-	client := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newInterfacesClient(config *azureClientConfig) (*network.InterfacesClient, error) {
-	client := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newVirtualNetworkClient(config *azureClientConfig) (*network.VirtualNetworksClient, error) {
-	client := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newVirtualMachineScaleSetsClient(config *azureClientConfig) (*compute.VirtualMachineScaleSetsClient, error) {
-	client := compute.NewVirtualMachineScaleSetsClient(config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := compute.NewVirtualMachineScaleSetsClient(config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newVirtualMachineScaleSetVMsClient(config *azureClientConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	client := compute.NewVirtualMachineScaleSetVMsClient(config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := compute.NewVirtualMachineScaleSetVMsClient(config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newVnetPeeringClient(config *azureClientConfig) (*network.VirtualNetworkPeeringsClient, error) {
-	client := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	client.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &client, nil
+	return &c, nil
 }
 
 func newServicePrincipalToken(config AzureConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
