@@ -4,9 +4,6 @@ import (
 	"errors"
 	"net/http"
 
-	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
-
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
@@ -14,9 +11,11 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 )
 
-type AzureConfig struct {
+type AzureClientSetConfig struct {
 	Logger micrologger.Logger
 
 	// ClientID is the ID of the Active Directory Service Principal.
@@ -31,14 +30,14 @@ type AzureConfig struct {
 	TenantID string
 }
 
-// azureClientConfig contains all essential information to create an Azure client.
-type azureClientConfig struct {
+// clientConfig contains all essential information to create an Azure client.
+type clientConfig struct {
 	subscriptionID          string
 	resourceManagerEndpoint string
 	servicePrincipalToken   *adal.ServicePrincipalToken
 }
 
-func (c AzureConfig) Validate() error {
+func (c AzureClientSetConfig) Validate() error {
 	if c.Logger == nil {
 		return errors.New("Logger must not be empty")
 	}
@@ -82,7 +81,7 @@ type AzureClientSet struct {
 }
 
 // NewAzureClientSet returns the Azure API clients.
-func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
+func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	if err := config.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.%s", err)
 	}
@@ -99,62 +98,25 @@ func NewAzureClientSet(config AzureConfig) (*AzureClientSet, error) {
 		return nil, microerror.Maskf(err, "creating service principal token")
 	}
 
-	clientConfig := &azureClientConfig{
+	c := &clientConfig{
 		subscriptionID:          config.SubscriptionID,
 		resourceManagerEndpoint: env.ResourceManagerEndpoint,
 		servicePrincipalToken:   servicePrincipalToken,
 	}
 
-	deploymentsClient, err := newDeploymentsClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	groupsClient, err := newGroupsClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	dnsRecordSetsClient, err := newDNSRecordSetsClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	dnsZonesClient, err := newDNSZonesClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	interfacesClient, err := newInterfacesClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	virtualNetworksClient, err := newVirtualNetworkClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	vnetPeeringClient, err := newVnetPeeringClient(clientConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	clientSet := &AzureClientSet{
+		DeploymentsClient:               newDeploymentsClient(c),
+		GroupsClient:                    newGroupsClient(c),
+		DNSRecordSetsClient:             newDNSRecordSetsClient(c),
+		DNSZonesClient:                  newDNSZonesClient(c),
+		InterfacesClient:                newInterfacesClient(c),
+		VirtualNetworkClient:            newVirtualNetworkClient(c),
+		VirtualMachineScaleSetVMsClient: newVirtualMachineScaleSetVMsClient(c),
+		VirtualMachineScaleSetsClient:   newVirtualMachineScaleSetsClient(c),
+		VnetPeeringClient:               newVnetPeeringClient(c),
 	}
 
-	clientset := &AzureClientSet{
-		DeploymentsClient:               deploymentsClient,
-		GroupsClient:                    groupsClient,
-		DNSRecordSetsClient:             dnsRecordSetsClient,
-		DNSZonesClient:                  dnsZonesClient,
-		InterfacesClient:                interfacesClient,
-		VirtualNetworkClient:            virtualNetworksClient,
-		VirtualMachineScaleSetVMsClient: virtualMachineScaleSetVMsClient,
-		VirtualMachineScaleSetsClient:   virtualMachineScaleSetsClient,
-		VnetPeeringClient:               vnetPeeringClient,
-	}
-
-	return clientset, nil
+	return clientSet, nil
 }
 
 // ResponseWasNotFound returns true if the response code from the Azure API
@@ -167,70 +129,70 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 	return false
 }
 
-func newDeploymentsClient(config *azureClientConfig) (*resources.DeploymentsClient, error) {
+func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
 	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newGroupsClient(config *azureClientConfig) (*resources.GroupsClient, error) {
+func newGroupsClient(config *clientConfig) *resources.GroupsClient {
 	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newDNSRecordSetsClient(config *azureClientConfig) (*dns.RecordSetsClient, error) {
+func newDNSRecordSetsClient(config *clientConfig) *dns.RecordSetsClient {
 	c := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newDNSZonesClient(config *azureClientConfig) (*dns.ZonesClient, error) {
+func newDNSZonesClient(config *clientConfig) *dns.ZonesClient {
 	c := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newInterfacesClient(config *azureClientConfig) (*network.InterfacesClient, error) {
+func newInterfacesClient(config *clientConfig) *network.InterfacesClient {
 	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newVirtualNetworkClient(config *azureClientConfig) (*network.VirtualNetworksClient, error) {
+func newVirtualNetworkClient(config *clientConfig) *network.VirtualNetworksClient {
 	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newVirtualMachineScaleSetsClient(config *azureClientConfig) (*compute.VirtualMachineScaleSetsClient, error) {
+func newVirtualMachineScaleSetsClient(config *clientConfig) *compute.VirtualMachineScaleSetsClient {
 	c := compute.NewVirtualMachineScaleSetsClient(config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newVirtualMachineScaleSetVMsClient(config *azureClientConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
+func newVirtualMachineScaleSetVMsClient(config *clientConfig) *compute.VirtualMachineScaleSetVMsClient {
 	c := compute.NewVirtualMachineScaleSetVMsClient(config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newVnetPeeringClient(config *azureClientConfig) (*network.VirtualNetworkPeeringsClient, error) {
+func newVnetPeeringClient(config *clientConfig) *network.VirtualNetworkPeeringsClient {
 	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
-	return &c, nil
+	return &c
 }
 
-func newServicePrincipalToken(config AzureConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
+func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
 	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
 		return nil, microerror.Maskf(err, "creating OAuth config")

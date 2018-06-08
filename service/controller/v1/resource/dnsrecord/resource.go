@@ -14,13 +14,13 @@ const (
 )
 
 type Config struct {
-	AzureConfig client.AzureConfig
+	AzureConfig client.AzureClientSetConfig
 	Logger      micrologger.Logger
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	azureConfig client.AzureConfig
+	azureConfig client.AzureClientSetConfig
 	logger      micrologger.Logger
 }
 

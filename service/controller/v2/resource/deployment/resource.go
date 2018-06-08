@@ -25,7 +25,7 @@ type Config struct {
 	Logger      micrologger.Logger
 
 	Azure       setting.Azure
-	AzureConfig client.AzureConfig
+	AzureConfig client.AzureClientSetConfig
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
 	TemplateVersion string
@@ -36,7 +36,7 @@ type Resource struct {
 	logger      micrologger.Logger
 
 	azure           setting.Azure
-	azureConfig     client.AzureConfig
+	azureConfig     client.AzureClientSetConfig
 	templateVersion string
 }
 
