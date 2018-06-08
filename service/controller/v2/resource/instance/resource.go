@@ -1,6 +1,7 @@
 package instance
 
 import (
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -50,4 +51,22 @@ func New(config Config) (*Resource, error) {
 
 func (r *Resource) Name() string {
 	return Name
+}
+
+func (r *Resource) getScaleSetsClient() (*compute.VirtualMachineScaleSetsClient, error) {
+	cs, err := client.NewAzureClientSet(r.azureConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cs.VirtualMachineScaleSetsClient, nil
+}
+
+func (r *Resource) getVMsClient() (*compute.VirtualMachineScaleSetVMsClient, error) {
+	cs, err := client.NewAzureClientSet(r.azureConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cs.VirtualMachineScaleSetVMsClient, nil
 }
