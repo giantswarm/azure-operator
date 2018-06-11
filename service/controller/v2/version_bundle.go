@@ -9,13 +9,8 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "Updated to 1.10.3.",
+				Description: "Updated to 1.10.4.",
 				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Removed kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
-				Kind:        versionbundle.KindRemoved,
 			},
 			{
 				Component:   "azure-operator",
@@ -29,8 +24,23 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "azure-operator",
-				Description: "Add Etcd private loadbalancer.",
+				Description: "Added etcd private loadbalancer.",
 				Kind:        versionbundle.KindAdded,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Updated resource implementations to be non-blocking.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Added basic support for worker updates.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "cloudconfig",
+				Description: "Removed kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
+				Kind:        versionbundle.KindRemoved,
 			},
 		},
 		Components: []versionbundle.Component{
