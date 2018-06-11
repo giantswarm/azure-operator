@@ -37,6 +37,7 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Added basic support for worker updates.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
 				Component:   "azure-operator",
 				Description: "Ingress load balancer managed by Kubernetes.",
 				Kind:        versionbundle.KindChanged,
