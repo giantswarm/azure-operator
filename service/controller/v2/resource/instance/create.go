@@ -106,7 +106,7 @@ func (r *Resource) ensureDeploymentUpdate(ctx context.Context, customObject prov
 		}
 
 		g := key.ResourceGroupName(customObject)
-		s := key.WorkerVMSSName(customObject)
+		s := deploymentNameFunc(customObject)
 		ids := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
 			InstanceIds: to.StringSlicePtr([]string{
 				instanceID,
