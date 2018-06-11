@@ -195,7 +195,7 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
-func InstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), instanceID)
 }
 
