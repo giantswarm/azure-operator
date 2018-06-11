@@ -69,7 +69,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -81,25 +81,25 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "6432d5e9d211094d511f17b560819dd757c97bb6"
+  revision = "18c1aa070409bfa5ebdf91660837370dfb4071b1"
 
 [[projects]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/certs"
   packages = [
     ".",
     "certstest"
   ]
-  revision = "257d07274c96c906f40e3214f5bd0c6e0cc52d6d"
+  revision = "04529861e1d707d6edb01808e1d9870e1b48c711"
 
 [[projects]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "9cf26f144d2cd33ef454818f8c90b39d04b44b5e"
+  revision = "c5b82c0351c122d5c4f96de2381c58fd97f1e354"
 
 [[projects]]
   branch = "master"
@@ -175,7 +175,7 @@
   revision = "4411a6307c6b844b7f9e68aaba37407b41b1c4d7"
 
 [[projects]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/operatorkit"
   packages = [
     "client/k8scrdclient",
@@ -191,7 +191,7 @@
     "controller/resource/retryresource",
     "informer"
   ]
-  revision = "f744e97ecf7ce924044c3b387bcd2bf841af1d35"
+  revision = "d80fdea79511051e5f7fbd585a98b5919671ea45"
 
 [[projects]]
   branch = "k8s-1.10.4"
@@ -759,6 +759,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "acfbebff928085dc7d9726bdb2933a4e95289777dbd1917828a551a84495abd2"
+  inputs-digest = "fd323d256579ca1c2f6f03875707f9f7c2665d6b84714000d7fe29fbc8f3cdc6"
   solver-name = "gps-cdcl"
   solver-version = 1

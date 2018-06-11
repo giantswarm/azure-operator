@@ -27,11 +27,11 @@
   version = "v15.3.0"
 
 [[constraint]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/certs"
 
 [[constraint]]
@@ -55,7 +55,7 @@
   branch = "master"
 
 [[constraint]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
@@ -69,7 +69,7 @@
   go-tests = true
 
 [[constraint]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/e2e-harness"
 
 [[constraint]]
