@@ -35,12 +35,6 @@
     },
     "kubernetesAPISecurePort": {
       "type": "int"
-    },
-    "kubernetesIngressSecurePort": {
-      "type": "int"
-    },
-    "kubernetesIngressInsecurePort": {
-      "type": "int"
     }
   },
   "variables": {
@@ -330,34 +324,6 @@
               "access": "Allow",
               "direction": "Inbound",
               "priority": "4000"
-            }
-          },
-          {
-            "name": "ingressSecurePortRule",
-            "properties": {
-              "description": "Allow anyone to reach the ingress controller secure port.",
-              "protocol": "tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[string(parameters('kubernetesIngressSecurePort'))]",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": "3900"
-            }
-          },
-          {
-            "name": "ingressInsecurePortRule",
-            "properties": {
-              "description": "Allow anyone to reach the ingress controller insecure port.",
-              "protocol": "tcp",
-              "sourcePortRange": "*",
-              "destinationPortRange": "[string(parameters('kubernetesIngressInsecurePort'))]",
-              "sourceAddressPrefix": "*",
-              "destinationAddressPrefix": "[parameters('workerSubnetCidr')]",
-              "access": "Allow",
-              "direction": "Inbound",
-              "priority": "3800"
             }
           },
           {

@@ -34,6 +34,10 @@ func Test_render(t *testing.T) {
 			Fn:   func() error { _, err := renderDefaultStorageClassFile(); return err },
 		},
 		{
+			Name: "renderIngressLBFile",
+			Fn:   func() error { _, err := renderIngressLBFile(ingressLBFileParams{}); return err },
+		},
+		{
 			Name: "renderEtcdMountUnit",
 			Fn:   func() error { _, err := renderEtcdMountUnit(diskParams{}); return err },
 		},
@@ -48,6 +52,10 @@ func Test_render(t *testing.T) {
 		{
 			Name: "renderDockerDiskFormatUnit",
 			Fn:   func() error { _, err := renderDockerDiskFormatUnit(diskParams{}); return err },
+		},
+		{
+			Name: "renderIngressLBUnit",
+			Fn:   func() error { _, err := renderIngressLBUnit(); return err },
 		},
 	}
 
