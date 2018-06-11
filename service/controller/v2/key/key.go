@@ -162,8 +162,8 @@ func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master", ClusterID(customObject))
 }
 
-func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker", ClusterID(customObject))
+func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), instanceID)
 }
 
 // MasterNICName returns name of the master NIC.
@@ -197,6 +197,10 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), instanceID)
+}
+
+func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-worker", ClusterID(customObject))
 }
 
 func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {

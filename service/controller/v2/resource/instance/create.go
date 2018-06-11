@@ -18,6 +18,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	err = r.ensureDeploymentUpdate(ctx, customObject, key.MasterVMSSName, key.MasterInstanceName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 	err = r.ensureDeploymentUpdate(ctx, customObject, key.WorkerVMSSName, key.WorkerInstanceName)
 	if err != nil {
 		return microerror.Mask(err)
