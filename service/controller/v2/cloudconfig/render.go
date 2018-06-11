@@ -102,6 +102,27 @@ func renderDefaultStorageClassFile() (k8scloudconfig.FileAsset, error) {
 	return file, nil
 }
 
+func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, error) {
+	fileMeta := k8scloudconfig.FileMetadata{
+		AssetContent: ingressLBFileTemplate,
+		Path:         ingressLBFileName,
+		Owner:        ingressLBFileOwner,
+		Permissions:  ingressLBFilePermission,
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	file := k8scloudconfig.FileAsset{
+		Metadata: fileMeta,
+		Content:  content,
+	}
+
+	return file, nil
+}
+
 func renderEtcdMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: etcdMountUnitTemplate,
@@ -169,6 +190,29 @@ func renderDockerDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, er
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: dockerDiskFormatUnitTemplate,
 		Name:         dockerDiskFormatUnitName,
+		Enable:       true,
+		Command:      "start",
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
+}
+
+func renderIngressLBUnit() (k8scloudconfig.UnitAsset, error) {
+	params := struct{}{}
+
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: ingressLBUnitTemplate,
+		Name:         ingressLBUnitName,
 		Enable:       true,
 		Command:      "start",
 	}

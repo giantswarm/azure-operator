@@ -647,3 +647,42 @@ ExecStart=-/bin/bash -c "if ! findfs LABEL=$LABEL > /tmp/label.$LABEL; then wipe
 WantedBy=multi-user.target
 `
 )
+
+// TODO: This part should be removed when parameterized charts will be supported.
+const (
+	ingressLBFileName       = "/srv/k8s-ingress-loadbalancer.yaml"
+	ingressLBFileOwner      = "root:root"
+	ingressLBFilePermission = 0600
+	ingressLBFileTemplate   = `apiVersion: v1
+kind: Service
+metadata:
+  name: ingress-loadbalancer
+  namespace: kube-system
+  annotations:
+    external-dns.alpha.kubernetes.io/hostname: ingress.{{ .ClusterDNSDomain }}.
+  labels:
+    app: ingress-loadbalancer
+spec:
+  type: LoadBalancer
+  ports:
+  - name: http
+    port: 80
+  - name: https
+    port: 443
+  selector:
+    k8s-app: nginx-ingress-controller
+`
+	ingressLBUnitName     = "k8s-ingress-loadbalancer.service"
+	ingressLBUnitTemplate = `[Unit]
+Description=Script to create Kubernetes load balancer
+Wants=k8s-addons.service
+After=k8s-addons.service
+[Service]
+Type=oneshot
+Environment="KUBECTL=quay.io/giantswarm/docker-kubectl:8cabd75bacbcdad7ac5d85efc3ca90c2fabf023b"
+Environment="KUBECONFIG=/etc/kubernetes/config/addons-kubeconfig.yml"
+ExecStart=/bin/sh -c "/usr/bin/docker run -e KUBECONFIG=${KUBECONFIG} --net=host --rm -v /srv:/srv -v /etc/kubernetes:/etc/kubernetes $KUBECTL apply -f /srv/k8s-ingress-loadbalancer.yaml"
+[Install]
+WantedBy=multi-user.target
+`
+)

@@ -37,6 +37,10 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Added basic support for worker updates.",
 				Kind:        versionbundle.KindChanged,
 			},
+				Component:   "azure-operator",
+				Description: "Ingress load balancer managed by Kubernetes.",
+				Kind:        versionbundle.KindChanged,
+			},
 			{
 				Component:   "cloudconfig",
 				Description: "Removed Ingress Controller, kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
