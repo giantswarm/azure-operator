@@ -79,7 +79,7 @@ func New(config Config) (*Service, error) {
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
-	azureConfig := client.AzureConfig{
+	azureConfig := client.AzureClientSetConfig{
 		Logger: config.Logger,
 
 		ClientID:       config.Viper.GetString(config.Flag.Service.Azure.ClientID),

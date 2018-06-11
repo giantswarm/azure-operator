@@ -11,7 +11,6 @@ import (
 	"github.com/giantswarm/operatorkit/controller/resource/metricsresource"
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -28,12 +27,11 @@ import (
 )
 
 type ResourceSetConfig struct {
-	K8sClient    kubernetes.Interface
-	K8sExtClient apiextensionsclient.Interface
-	Logger       micrologger.Logger
+	K8sClient kubernetes.Interface
+	Logger    micrologger.Logger
 
 	Azure            setting.Azure
-	AzureConfig      client.AzureConfig
+	AzureConfig      client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
 	// TemplateVersion is a git branch name to use to get Azure Resource
@@ -42,30 +40,11 @@ type ResourceSetConfig struct {
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
-	var err error
-
-	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
-	}
-	if config.K8sExtClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sExtClient must not be empty", config)
-	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	if err := config.Azure.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
-	}
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
-	}
-	if config.ProjectName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectName must not be empty", config)
-	}
-	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
-	}
+	var err error
 
 	var certsSearcher *certs.Searcher
 	{
