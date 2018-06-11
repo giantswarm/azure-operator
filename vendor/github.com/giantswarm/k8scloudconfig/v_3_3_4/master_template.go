@@ -1,4 +1,4 @@
-package v_3_3_2
+package v_3_3_4
 
 const MasterTemplate = `#cloud-config
 users:
@@ -531,6 +531,7 @@ write_files:
         }
       ]
     }
+{{ if not .DisableIngressController -}}    
 - path: /srv/default-backend-dep.yml
   owner: root
   permissions: 0644
@@ -597,6 +598,7 @@ write_files:
     data:
       server-name-hash-bucket-size: "1024"
       server-name-hash-max-size: "1024"
+      server-tokens: "false"
 - path: /srv/ingress-controller-dep.yml
   owner: root
   permissions: 0644
@@ -717,6 +719,7 @@ write_files:
         targetPort: 443
       selector:
         k8s-app: nginx-ingress-controller
+{{ end -}}
 - path: /srv/kube-proxy-sa.yaml
   owner: root
   permissions: 0644
@@ -763,7 +766,7 @@ write_files:
           serviceAccountName: kube-proxy
           containers:
             - name: kube-proxy
-              image: quay.io/giantswarm/hyperkube:v1.10.2
+              image: quay.io/giantswarm/hyperkube:v1.10.4
               command:
               - /hyperkube
               - proxy
@@ -908,6 +911,7 @@ write_files:
       kind: ClusterRole
       name: calico-node
       apiGroup: rbac.authorization.k8s.io
+    {{ if not .DisableIngressController -}}
     ---
     ## IC
     kind: ClusterRoleBinding
@@ -936,6 +940,7 @@ write_files:
       kind: Role
       name: nginx-ingress-role
       apiGroup: rbac.authorization.k8s.io
+    {{ end -}}
 - path: /srv/rbac_roles.yaml
   owner: root
   permissions: 0644
@@ -971,6 +976,7 @@ write_files:
           - nodes
         verbs:
           - get
+    {{ if not .DisableIngressController -}}
     ---
     ## IC
     apiVersion: v1
@@ -1074,6 +1080,7 @@ write_files:
           - get
           - create
           - update
+    {{ end -}}
 - path: /srv/psp_policies.yaml
   owner: root
   permissions: 0644
@@ -1352,11 +1359,13 @@ write_files:
       MANIFESTS="${MANIFESTS} kube-proxy-sa.yaml"
       MANIFESTS="${MANIFESTS} kube-proxy-ds.yaml"
       MANIFESTS="${MANIFESTS} coredns.yaml"
+      {{ if not .DisableIngressController -}}
       MANIFESTS="${MANIFESTS} default-backend-dep.yml"
       MANIFESTS="${MANIFESTS} default-backend-svc.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-cm.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-dep.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-svc.yml"
+      {{ end -}}
 
       for manifest in $MANIFESTS
       do
@@ -1528,7 +1537,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-api-server
-        image: quay.io/giantswarm/hyperkube:v1.10.2
+        image: quay.io/giantswarm/hyperkube:v1.10.4
         env:
         - name: HOST_IP
           valueFrom:
@@ -1650,7 +1659,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-controller-manager
-        image: quay.io/giantswarm/hyperkube:v1.10.2
+        image: quay.io/giantswarm/hyperkube:v1.10.4
         command:
         - /hyperkube
         - controller-manager
@@ -1723,7 +1732,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-scheduler
-        image: quay.io/giantswarm/hyperkube:v1.10.2
+        image: quay.io/giantswarm/hyperkube:v1.10.4
         command:
         - /hyperkube
         - scheduler
@@ -2011,7 +2020,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.10.2"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.10.4"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
