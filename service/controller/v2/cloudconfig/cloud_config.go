@@ -26,7 +26,7 @@ type Config struct {
 
 	Azure setting.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
-	AzureConfig client.AzureConfig
+	AzureConfig client.AzureClientSetConfig
 }
 
 type CloudConfig struct {
@@ -35,7 +35,7 @@ type CloudConfig struct {
 	randomkeysSearcher randomkeys.Interface
 
 	azure       setting.Azure
-	azureConfig client.AzureConfig
+	azureConfig client.AzureClientSetConfig
 }
 
 func New(config Config) (*CloudConfig, error) {

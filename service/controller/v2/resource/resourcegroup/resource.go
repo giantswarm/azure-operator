@@ -25,7 +25,7 @@ const (
 type Config struct {
 	Logger micrologger.Logger
 
-	AzureConfig      client.AzureConfig
+	AzureConfig      client.AzureClientSetConfig
 	Azure            setting.Azure
 	InstallationName string
 }
@@ -35,7 +35,7 @@ type Resource struct {
 	logger micrologger.Logger
 
 	azure            setting.Azure
-	azureConfig      client.AzureConfig
+	azureConfig      client.AzureClientSetConfig
 	installationName string
 }
 

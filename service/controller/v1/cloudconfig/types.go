@@ -34,7 +34,7 @@ type cloudProviderConfFileParams struct {
 	VnetName            string
 }
 
-func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
+func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.AzureClientSetConfig, obj providerv1alpha1.AzureConfig) cloudProviderConfFileParams {
 	return cloudProviderConfFileParams{
 		Location:            azure.Location,
 		PrimaryScaleSetName: key.WorkerVMSSName(obj),

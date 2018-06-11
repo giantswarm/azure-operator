@@ -2,5 +2,7 @@ azure-operator
 TODO
 !vendor/**
 
+.e2e-harness
+
 /examples/local/*.yaml
 !/examples/local/*.tmpl.yaml

@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"time"
-
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -27,7 +25,7 @@ type ClusterConfig struct {
 	Logger           micrologger.Logger
 
 	Azure           setting.Azure
-	AzureConfig     client.AzureConfig
+	AzureConfig     client.AzureClientSetConfig
 	ProjectName     string
 	TemplateVersion string
 }
@@ -37,33 +35,11 @@ type Cluster struct {
 }
 
 func NewCluster(config ClusterConfig) (*Cluster, error) {
-	var err error
-
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
-	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
-	}
-	if config.K8sExtClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sExtClient must not be empty", config)
-	}
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
-	}
 
-	if err := config.Azure.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
-	}
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
-	}
-	if config.ProjectName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.ProjectName must not be empty", config)
-	}
-	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
-	}
+	var err error
 
 	var crdClient *k8scrdclient.CRDClient
 	{
@@ -84,8 +60,8 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Logger:  config.Logger,
 			Watcher: config.G8sClient.ProviderV1alpha1().AzureConfigs(""),
 
-			//ResyncPeriod: informer.DefaultResyncPeriod,
-			ResyncPeriod: 1 * time.Minute,
+			RateWait:     informer.DefaultRateWait,
+			ResyncPeriod: informer.DefaultResyncPeriod,
 		}
 
 		newInformer, err = informer.New(c)
@@ -117,9 +93,8 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var v2ResourceSet *controller.ResourceSet
 	{
 		c := v2.ResourceSetConfig{
-			K8sClient:    config.K8sClient,
-			K8sExtClient: config.K8sExtClient,
-			Logger:       config.Logger,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
 
 			Azure:            config.Azure,
 			AzureConfig:      config.AzureConfig,

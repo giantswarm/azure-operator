@@ -1,7 +1,7 @@
 package template
 
-var AzureResourceChartValues = `clusterName: ${CLUSTER_NAME}
-commonDomain: ${COMMON_DOMAIN_GUEST_NO_K8S}
+var AzureConfigE2EChartValues = `clusterName: ${CLUSTER_NAME}
+commonDomain: ${COMMON_DOMAIN}
 commonDomainResourceGroup: ${COMMON_DOMAIN_RESOURCE_GROUP}
 azure:
   location: ${AZURE_LOCATION}

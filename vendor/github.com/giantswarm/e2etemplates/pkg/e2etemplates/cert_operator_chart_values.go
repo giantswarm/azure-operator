@@ -1,8 +1,8 @@
-package template
+package e2etemplates
 
 // CertOperatorChartValues values required by cert-operator-chart, the environment
 // variables will be expanded before writing the contents to a file.
-var CertOperatorChartValues = `commonDomain: ${COMMON_DOMAIN_GUEST}
+const CertOperatorChartValues = `commonDomain: k8s.${COMMON_DOMAIN}
 clusterName: ${CLUSTER_NAME}
 Installation:
   V1:
@@ -14,7 +14,7 @@ Installation:
     Guest:
       Kubernetes:
         API:
-          EndpointBase: ${COMMON_DOMAIN_GUEST}
+          EndpointBase: k8s.${COMMON_DOMAIN}
     Secret:
       CertOperator:
         SecretYaml: |
