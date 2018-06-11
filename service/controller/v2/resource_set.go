@@ -291,6 +291,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 		c := servicecontext.Context{
 			AzureClientSet: azureClients,
+			AzureConfig:    *guestAzureConfig,
 			CloudConfig:    cloudConfig,
 		}
 		ctx = servicecontext.NewContext(ctx, c)
