@@ -40,10 +40,16 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	ingressLBFile, err := me.renderIngressLBFile()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderIngressLBFile")
+	}
+
 	files := []k8scloudconfig.FileAsset{
 		calicoAzureFile,
 		cloudProviderConfFile,
 		defaultStorageClassFile,
+		ingressLBFile,
 	}
 	files = append(files, certificateFiles...)
 
@@ -76,11 +82,18 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	// Unit to create Kubernetes load balancer.
+	ingressLBUnit, err := me.renderIngressLBUnit()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderIngressLBUnit")
+	}
+
 	units := []k8scloudconfig.UnitAsset{
 		formatEtcdUnit,
 		mountEtcdUnit,
 		formatDockerUnit,
 		mountDockerUnit,
+		ingressLBUnit,
 	}
 
 	return units, nil
@@ -136,6 +149,17 @@ func (me *masterExtension) renderDefaultStorageClassFile() (k8scloudconfig.FileA
 	return asset, nil
 }
 
+func (me *masterExtension) renderIngressLBFile() (k8scloudconfig.FileAsset, error) {
+	params := newIngressLBFileParams(me.CustomObject)
+
+	asset, err := renderIngressLBFile(params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
 func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
 	params := diskParams{
 		DiskName: "sdc",
@@ -181,6 +205,15 @@ func (me *masterExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsse
 	}
 
 	asset, err := renderDockerDiskFormatUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderIngressLBUnit() (k8scloudconfig.UnitAsset, error) {
+	asset, err := renderIngressLBUnit()
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
