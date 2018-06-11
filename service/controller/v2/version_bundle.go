@@ -39,7 +39,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "cloudconfig",
-				Description: "Removed kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
+				Description: "Removed Ingress Controller, kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
 				Kind:        versionbundle.KindRemoved,
 			},
 		},
@@ -66,11 +66,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.10.3",
-			},
-			{
-				Name:    "nginx-ingress-controller",
-				Version: "0.12.0",
+				Version: "1.10.4",
 			},
 		},
 		Name:    "azure-operator",
