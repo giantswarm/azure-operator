@@ -9,7 +9,7 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "updated to 1.10.2.",
+				Description: "Updated to 1.10.2.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -29,8 +29,18 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "azure-operator",
-				Description: "Add etcd private loadbalancer.",
+				Description: "Added etcd private loadbalancer.",
 				Kind:        versionbundle.KindAdded,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Updated resource implementations to be non-blocking.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Added basic support for worker updates.",
+				Kind:        versionbundle.KindChanged,
 			},
 		},
 		Components: []versionbundle.Component{

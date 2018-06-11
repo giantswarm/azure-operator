@@ -18,13 +18,13 @@ const (
 )
 
 type Config struct {
-	AzureConfig client.AzureConfig
+	AzureConfig client.AzureClientSetConfig
 	K8sClient   kubernetes.Interface
 	Logger      micrologger.Logger
 }
 
 type Resource struct {
-	azureConfig client.AzureConfig
+	azureConfig client.AzureClientSetConfig
 	k8sClient   kubernetes.Interface
 	logger      micrologger.Logger
 }

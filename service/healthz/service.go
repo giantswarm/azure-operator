@@ -34,13 +34,13 @@ const ()
 
 // Config represents the configuration used to create a healthz service.
 type Config struct {
-	AzureConfig client.AzureConfig
+	AzureConfig client.AzureClientSetConfig
 	Logger      micrologger.Logger
 }
 
 // Service implements the healthz service interface.
 type Service struct {
-	azureConfig client.AzureConfig
+	azureConfig client.AzureClientSetConfig
 	logger      micrologger.Logger
 }
 

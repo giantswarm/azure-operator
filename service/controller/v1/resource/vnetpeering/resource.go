@@ -18,7 +18,7 @@ type Config struct {
 	Logger micrologger.Logger
 
 	Azure       setting.Azure
-	AzureConfig client.AzureConfig
+	AzureConfig client.AzureClientSetConfig
 }
 
 // Resource manages Azure virtual network peering.
@@ -26,7 +26,7 @@ type Resource struct {
 	logger micrologger.Logger
 
 	azure       setting.Azure
-	azureConfig client.AzureConfig
+	azureConfig client.AzureClientSetConfig
 }
 
 func New(config Config) (*Resource, error) {

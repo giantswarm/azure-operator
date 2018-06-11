@@ -6,8 +6,8 @@ import (
 )
 
 // TODO(PK) remove it as soon as we sort AzureClient and calico CC extention.
-func NewAzureConfig() client.AzureConfig {
-	return client.AzureConfig{
+func NewAzureConfig() client.AzureClientSetConfig {
+	return client.AzureClientSetConfig{
 		Logger:         microloggertest.New(),
 		ClientID:       "fakeClientID",
 		ClientSecret:   "fakeClientSecret",
