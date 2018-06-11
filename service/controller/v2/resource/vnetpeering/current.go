@@ -27,7 +27,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// existence the client calls of CreateOrUpdate would fail with not found
 	// errors.
 	if !key.IsDeleted(customObject) {
-		c, err := r.getVirtualNetworksClient()
+		c, err := r.getVirtualNetworksClient(ctx)
 		if err != nil {
 			return network.VirtualNetworkPeering{}, microerror.Mask(err)
 		}

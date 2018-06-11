@@ -8,6 +8,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
@@ -28,12 +29,17 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 }
 
 func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (network.VirtualNetworkPeering, error) {
+	sc, err := servicecontext.FromContext(ctx)
+	if err != nil {
+		return network.VirtualNetworkPeering{}, microerror.Mask(err)
+	}
+
 	return network.VirtualNetworkPeering{
 		Name: to.StringPtr(key.ResourceGroupName(azureConfig)),
 		VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
 			AllowVirtualNetworkAccess: to.BoolPtr(true),
 			RemoteVirtualNetwork: &network.SubResource{
-				ID: to.StringPtr(key.VNetID(azureConfig, r.hostAzureConfig.SubscriptionID)),
+				ID: to.StringPtr(key.VNetID(azureConfig, sc.AzureConfig.SubscriptionID)),
 			},
 		},
 	}, nil
