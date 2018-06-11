@@ -158,10 +158,6 @@ func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
-func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-master", ClusterID(customObject))
-}
-
 func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), instanceID)
 }
@@ -169,6 +165,10 @@ func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 // MasterNICName returns name of the master NIC.
 func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(customObject))
+}
+
+func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-master", ClusterID(customObject))
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.
@@ -193,14 +193,6 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	customObject := *customObjectPointer
 
 	return customObject, nil
-}
-
-func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), instanceID)
-}
-
-func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker", ClusterID(customObject))
 }
 
 func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
@@ -230,4 +222,12 @@ func VnetWorkerSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 
 func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
+}
+
+func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), instanceID)
+}
+
+func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-worker", ClusterID(customObject))
 }
