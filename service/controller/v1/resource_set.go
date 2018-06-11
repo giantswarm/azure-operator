@@ -38,7 +38,7 @@ type ResourceSetConfig struct {
 	Logger       micrologger.Logger
 
 	Azure            setting.Azure
-	AzureConfig      client.AzureConfig
+	AzureConfig      client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
 	// TemplateVersion is a git branch name to use to get Azure Resource

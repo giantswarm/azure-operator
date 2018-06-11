@@ -13,7 +13,7 @@ import (
 
 type masterExtension struct {
 	Azure         setting.Azure
-	AzureConfig   client.AzureConfig
+	AzureConfig   client.AzureClientSetConfig
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig
 }
