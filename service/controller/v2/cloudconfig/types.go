@@ -53,3 +53,13 @@ func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.Azur
 type diskParams struct {
 	DiskName string
 }
+
+type ingressLBFileParams struct {
+	ClusterDNSDomain string
+}
+
+func newIngressLBFileParams(obj providerv1alpha1.AzureConfig) ingressLBFileParams {
+	return ingressLBFileParams{
+		ClusterDNSDomain: key.DNSZonePrefixIngress(obj),
+	}
+}
