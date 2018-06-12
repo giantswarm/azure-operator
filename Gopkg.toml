@@ -27,7 +27,7 @@
   version = "v15.3.0"
 
 [[constraint]]
-  branch = "master"
+  branch = "azure-vpn-gateway"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]

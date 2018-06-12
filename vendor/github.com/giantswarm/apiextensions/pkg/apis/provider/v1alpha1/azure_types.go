@@ -94,6 +94,8 @@ type AzureConfigSpecAzureVirtualNetwork struct {
 	MasterSubnetCIDR string `json:"masterSubnetCIDR" yaml:"masterSubnetCIDR"`
 	// WorkerSubnetCIDR is the CIDR for the worker subnet.
 	WorkerSubnetCIDR string `json:"workerSubnetCIDR" yaml:"workerSubnetCIDR"`
+	// VPNSubnetCIDR is the CIDR for the vpn gateway subnet.
+	VPNSubnetCIDR string `json:"vpnSubnetCIDR" yaml:"vpnSubnetCIDR"`
 
 	// CalicoSubnetCIDR is the CIDR for the calico subnet. It has to be
 	// also a worker subnet (Azure limitation).

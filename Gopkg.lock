@@ -69,7 +69,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "azure-vpn-gateway"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -81,7 +81,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "7bd5a0ce29400731deed05bccaf559cedc6f2221"
+  revision = "fdca45e5df5ed07a76714d83d0abd47c7a33b857"
 
 [[projects]]
   branch = "master"
@@ -768,6 +768,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "97c548a870dd357855d27870b4d47e6ad9b2e8e7a682d1adba50cce55fbc1a18"
+  inputs-digest = "a5db46a01fcf70a8baba73687eb5f4e4a76f97311f3a2ff15cf79062ebb6f2fa"
   solver-name = "gps-cdcl"
   solver-version = 1
