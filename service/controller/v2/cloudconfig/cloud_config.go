@@ -9,7 +9,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_3_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_3_4"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -80,9 +80,10 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 	customObject.Spec.Cluster.Etcd.Domain = "127.0.0.1"
 
 	params := k8scloudconfig.Params{
-		APIServerEncryptionKey: apiserverEncryptionKey,
-		Cluster:                customObject.Spec.Cluster,
-		DisableCalico:          true,
+		APIServerEncryptionKey:   apiserverEncryptionKey,
+		Cluster:                  customObject.Spec.Cluster,
+		DisableCalico:            true,
+		DisableIngressController: true,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{

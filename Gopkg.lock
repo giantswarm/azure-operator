@@ -118,9 +118,9 @@
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "v_3_2_5",
-    "v_3_3_0"
+    "v_3_3_4"
   ]
-  revision = "570aa461fd8c9fc1d56f45cfc5b8afffc4af7109"
+  revision = "1970c8fe31efb7b3b147277c1084c9b1dfd1b4f7"
 
 [[projects]]
   branch = "master"
@@ -438,13 +438,13 @@
   revision = "94663424ae5ae9856b40a9f170762b4197024661"
 
 [[projects]]
+  branch = "master"
   name = "github.com/spf13/afero"
   packages = [
     ".",
     "mem"
   ]
-  revision = "63644898a8da0bc22138abf860edaf5277b6102e"
-  version = "v1.1.0"
+  revision = "787d034dfe70e44075ccc060d346146ef53270ad"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -759,6 +759,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "fd323d256579ca1c2f6f03875707f9f7c2665d6b84714000d7fe29fbc8f3cdc6"
+  inputs-digest = "d5e1b978c3857c201646f62e9b9ca7f311ad544c8a8dd8058976569210066c54"
   solver-name = "gps-cdcl"
   solver-version = 1

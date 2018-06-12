@@ -9,13 +9,8 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "Updated to 1.10.2.",
+				Description: "Updated to 1.10.4.",
 				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Removed kube-state-metrics related components (will be managed by chart-operator).",
-				Kind:        versionbundle.KindRemoved,
 			},
 			{
 				Component:   "azure-operator",
@@ -47,6 +42,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Ingress load balancer managed by Kubernetes.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "cloudconfig",
+				Description: "Removed Ingress Controller, kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
+				Kind:        versionbundle.KindRemoved,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -71,11 +71,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.10.2",
-			},
-			{
-				Name:    "nginx-ingress-controller",
-				Version: "0.12.0",
+				Version: "1.10.4",
 			},
 		},
 		Name:    "azure-operator",

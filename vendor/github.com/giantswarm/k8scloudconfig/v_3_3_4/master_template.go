@@ -1,4 +1,4 @@
-package v_3_3_0
+package v_3_3_4
 
 const MasterTemplate = `#cloud-config
 users:
@@ -138,7 +138,7 @@ write_files:
             # container programs network policy and routes on each
             # host.
             - name: calico-node
-              image: quay.io/calico/node:v3.0.5
+              image: quay.io/giantswarm/node:v3.0.5
               env:
                 # The location of the Calico etcd cluster.
                 - name: ETCD_ENDPOINTS
@@ -233,7 +233,7 @@ write_files:
             # This container installs the Calico CNI binaries
             # and CNI network config file on each node.
             - name: install-cni
-              image: quay.io/calico/cni:v2.0.4
+              image: quay.io/giantswarm/cni:v2.0.4
               command: ["/install-cni.sh"]
               env:
                 # Name of the CNI config file to create.
@@ -314,7 +314,7 @@ write_files:
           serviceAccountName: calico-kube-controllers
           containers:
             - name: calico-kube-controllers
-              image: quay.io/calico/kube-controllers:v2.0.3
+              image: quay.io/giantswarm/kube-controllers:v2.0.3
               env:
                 # The location of the Calico etcd cluster.
                 - name: ETCD_ENDPOINTS
@@ -531,6 +531,7 @@ write_files:
         }
       ]
     }
+{{ if not .DisableIngressController -}}    
 - path: /srv/default-backend-dep.yml
   owner: root
   permissions: 0644
@@ -551,7 +552,7 @@ write_files:
         spec:
           containers:
           - name: default-http-backend
-            image: gcr.io/google_containers/defaultbackend:1.0
+            image: quay.io/giantswarm/defaultbackend:1.0
             livenessProbe:
               httpGet:
                 path: /healthz
@@ -597,6 +598,7 @@ write_files:
     data:
       server-name-hash-bucket-size: "1024"
       server-name-hash-max-size: "1024"
+      server-tokens: "false"
 - path: /srv/ingress-controller-dep.yml
   owner: root
   permissions: 0644
@@ -642,7 +644,7 @@ write_files:
             - sh
             - -c
             - sysctl -w net.core.somaxconn=32768; sysctl -w net.ipv4.ip_local_port_range="1024 65535"
-            image: alpine:3.6
+            image: quay.io/giantswarm/alpine:3.7
             imagePullPolicy: IfNotPresent
             name: sysctl
             securityContext:
@@ -717,6 +719,7 @@ write_files:
         targetPort: 443
       selector:
         k8s-app: nginx-ingress-controller
+{{ end -}}
 - path: /srv/kube-proxy-sa.yaml
   owner: root
   permissions: 0644
@@ -763,7 +766,7 @@ write_files:
           serviceAccountName: kube-proxy
           containers:
             - name: kube-proxy
-              image: quay.io/giantswarm/hyperkube:v1.10.2
+              image: quay.io/giantswarm/hyperkube:v1.10.4
               command:
               - /hyperkube
               - proxy
@@ -810,161 +813,6 @@ write_files:
           - hostPath:
               path: /lib/modules
             name: lib-modules
-- path: /srv/node-exporter-svc.yaml
-  owner: root
-  permissions: 0644
-  content: |
-    apiVersion: v1
-    kind: Service
-    metadata:
-      name: node-exporter
-      namespace: kube-system
-      labels:
-        app: node-exporter
-      annotations:
-        prometheus.io/scrape: "true"
-        prometheus.io/scheme: "http"
-    spec:
-      ports:
-        - name: metrics
-          port: 10300
-          targetPort: metrics
-      selector:
-        app: node-exporter
-- path: /srv/node-exporter-sa.yaml
-  owner: root
-  permissions: 0644
-  content: |
-    apiVersion: v1
-    kind: ServiceAccount
-    metadata:
-      name: node-exporter
-      namespace: kube-system
-      labels:
-        app: node-exporter
-- path: /srv/node-exporter-ds.yaml
-  owner: root
-  permissions: 0644
-  content: |
-    apiVersion: extensions/v1beta1
-    kind: DaemonSet
-    metadata:
-      name: node-exporter
-      namespace: kube-system
-      labels:
-        app: node-exporter
-    spec:
-      updateStrategy:
-        type: RollingUpdate
-      template:
-        metadata:
-          name: node-exporter
-          labels:
-            app: node-exporter
-        spec:
-          tolerations:
-          # Tolerate master taint
-          - key: node-role.kubernetes.io/master
-            operator: Exists
-            effect: NoSchedule
-          containers:
-          - image: quay.io/giantswarm/node-exporter:v0.15.1
-            name: node-exporter
-            ports:
-            - name: metrics
-              containerPort: 10300
-            args:
-              - '--log.level=debug'
-              - '--path.procfs=/host/proc'
-              - '--path.sysfs=/host/sys'
-              - '--web.listen-address=:10300'
-              - '--collector.arp'
-              - '--collector.bcache'
-              - '--collector.conntrack'
-              - '--collector.cpu'
-              - '--collector.diskstats'
-              - '--collector.edac'
-              - '--collector.entropy'
-              - '--collector.filefd'
-              - '--collector.filesystem'
-              - '--collector.hwmon'
-              - '--collector.infiniband'
-              - '--collector.ipvs'
-              - '--collector.loadavg'
-              - '--collector.mdadm'
-              - '--collector.meminfo'
-              - '--collector.netdev'
-              - '--collector.netstat'
-              - '--collector.sockstat'
-              - '--collector.stat'
-              - '--collector.systemd'
-              - '--no-collector.textfile'   # we don't use textfile collector.
-              - '--collector.time'
-              - '--collector.timex'
-              - '--collector.uname'
-              - '--collector.vmstat'
-              - '--no-collector.wifi'       # we don't use wifi.
-              - '--collector.xfs'
-              - '--no-collector.zfs'        # we don't use zfs.
-            livenessProbe:
-              httpGet:
-                path: /
-                port: 10300
-              initialDelaySeconds: 5
-              timeoutSeconds: 5
-            readinessProbe:
-              httpGet:
-                path: /
-                port: 10300
-              initialDelaySeconds: 5
-              timeoutSeconds: 5
-            resources:
-              requests:
-                cpu: 55m
-                memory: 125Mi
-            volumeMounts:
-            - name: root
-              mountPath: /rootfs
-              readOnly: true
-            - name: proc
-              mountPath: /host/proc
-              readOnly: true
-            - name: sys
-              mountPath: /host/sys
-              readOnly: true
-            - name: var-lib-docker
-              mountPath: /var/lib/docker
-              readOnly: true
-            - name: var-lib-kubelet
-              mountPath: /var/lib/kubelet
-              readOnly: true
-            - name: var-run-dbus
-              mountPath: /var/run/dbus/
-              readOnly: true
-          volumes:
-          - name: var-run-dbus
-            hostPath:
-              path: /var/run/dbus/
-          - name: root
-            hostPath:
-              path: /
-          - name: proc
-            hostPath:
-              path: /proc
-          - name: sys
-            hostPath:
-              path: /sys
-          - name: var-lib-docker
-            hostPath:
-                  path: /var/lib/docker
-          - name: var-lib-kubelet
-            hostPath:
-              path: /var/lib/kubelet
-          serviceAccountName: node-exporter
-          hostNetwork: true
-          hostPID: true
-          securityContext:
-            runAsUser: 0
 - path: /srv/rbac_bindings.yaml
   owner: root
   permissions: 0644
@@ -1063,6 +911,7 @@ write_files:
       kind: ClusterRole
       name: calico-node
       apiGroup: rbac.authorization.k8s.io
+{{ if not .DisableIngressController -}}
     ---
     ## IC
     kind: ClusterRoleBinding
@@ -1091,22 +940,7 @@ write_files:
       kind: Role
       name: nginx-ingress-role
       apiGroup: rbac.authorization.k8s.io
-    ---
-    kind: RoleBinding
-    apiVersion: rbac.authorization.k8s.io/v1
-    metadata:
-      name: node-exporter
-      namespace: kube-system
-      labels:
-        app: node-exporter
-    subjects:
-    - kind: ServiceAccount
-      name: node-exporter
-      namespace: kube-system
-    roleRef:
-      kind: Role
-      name: node-exporter
-      apiGroup: rbac.authorization.k8s.io
+{{ end -}}
 - path: /srv/rbac_roles.yaml
   owner: root
   permissions: 0644
@@ -1142,6 +976,7 @@ write_files:
           - nodes
         verbs:
           - get
+{{ if not .DisableIngressController -}}
     ---
     ## IC
     apiVersion: v1
@@ -1245,20 +1080,7 @@ write_files:
           - get
           - create
           - update
-    ---
-    apiVersion: rbac.authorization.k8s.io/v1
-    kind: Role
-    metadata:
-      name: node-exporter
-      namespace: kube-system
-      labels:
-        app: node-exporter
-    rules:
-    - apiGroups: ['extensions']
-      resources: ['podsecuritypolicies']
-      verbs:     ['use']
-      resourceNames:
-      - privileged
+{{ end -}}
 - path: /srv/psp_policies.yaml
   owner: root
   permissions: 0644
@@ -1467,7 +1289,7 @@ write_files:
               /usr/bin/docker run -e KUBECONFIG=${KUBECONFIG} --net=host --rm -v /srv:/srv -v /etc/kubernetes:/etc/kubernetes $KUBECTL apply -f /srv/$manifest
               [ "$?" -ne "0" ]
           do
-              echo "failed to apply /src/$manifest, retrying in 5 sec"
+              echo "failed to apply /srv/$manifest, retrying in 5 sec"
               sleep 5s
           done
       done
@@ -1476,7 +1298,7 @@ write_files:
           /usr/bin/docker run -e KUBECONFIG=${KUBECONFIG} --net=host --rm -v /srv:/srv -v /etc/kubernetes:/etc/kubernetes $KUBECTL apply -f /srv/priority_classes.yaml
           [ "$?" -ne "0" ]
       do
-          echo "failed to apply /src/priority_classes.yaml, retrying in 5 sec"
+          echo "failed to apply /srv/priority_classes.yaml, retrying in 5 sec"
           sleep 5s
       done
 
@@ -1496,7 +1318,7 @@ write_files:
               /usr/bin/docker run -e KUBECONFIG=${KUBECONFIG} --net=host --rm -v /srv:/srv -v /etc/kubernetes:/etc/kubernetes $KUBECTL apply -f /srv/$manifest
               [ "$?" -ne "0" ]
           do
-              echo "failed to apply /src/$manifest, retrying in 5 sec"
+              echo "failed to apply /srv/$manifest, retrying in 5 sec"
               sleep 5s
           done
       done
@@ -1537,14 +1359,13 @@ write_files:
       MANIFESTS="${MANIFESTS} kube-proxy-sa.yaml"
       MANIFESTS="${MANIFESTS} kube-proxy-ds.yaml"
       MANIFESTS="${MANIFESTS} coredns.yaml"
+      {{ if not .DisableIngressController -}}
       MANIFESTS="${MANIFESTS} default-backend-dep.yml"
       MANIFESTS="${MANIFESTS} default-backend-svc.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-cm.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-dep.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-svc.yml"
-      MANIFESTS="${MANIFESTS} node-exporter-svc.yaml"
-      MANIFESTS="${MANIFESTS} node-exporter-sa.yaml"
-      MANIFESTS="${MANIFESTS} node-exporter-ds.yaml"
+      {{ end -}}
 
       for manifest in $MANIFESTS
       do
@@ -1716,7 +1537,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-api-server
-        image: quay.io/giantswarm/hyperkube:v1.10.2
+        image: quay.io/giantswarm/hyperkube:v1.10.4
         env:
         - name: HOST_IP
           valueFrom:
@@ -1838,7 +1659,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-controller-manager
-        image: quay.io/giantswarm/hyperkube:v1.10.2
+        image: quay.io/giantswarm/hyperkube:v1.10.4
         command:
         - /hyperkube
         - controller-manager
@@ -1911,7 +1732,7 @@ write_files:
       priorityClassName: core-pods
       containers:
       - name: k8s-scheduler
-        image: quay.io/giantswarm/hyperkube:v1.10.2
+        image: quay.io/giantswarm/hyperkube:v1.10.4
         command:
         - /hyperkube
         - scheduler
@@ -2191,6 +2012,8 @@ coreos:
     command: start
     content: |
       [Unit]
+      Wants=k8s-setup-network-env.service
+      After=k8s-setup-network-env.service
       Description=k8s-kubelet
       StartLimitIntervalSec=0
 
@@ -2199,7 +2022,7 @@ coreos:
       RestartSec=0
       TimeoutStopSec=10
       EnvironmentFile=/etc/network-environment
-      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.10.2"
+      Environment="IMAGE=quay.io/giantswarm/hyperkube:v1.10.4"
       Environment="NAME=%p.service"
       Environment="NETWORK_CONFIG_CONTAINER="
       ExecStartPre=/usr/bin/docker pull $IMAGE
@@ -2233,6 +2056,7 @@ coreos:
       -v /usr/sbin/mkfs.xfs:/usr/sbin/mkfs.xfs \
       -v /usr/lib64/libxfs.so.0:/usr/lib/libxfs.so.0 \
       -v /usr/lib64/libxcmd.so.0:/usr/lib/libxcmd.so.0 \
+      -v /usr/lib64/libreadline.so.6:/usr/lib/libreadline.so.6 \
       -e ETCD_CA_CERT_FILE=/etc/kubernetes/ssl/etcd/server-ca.pem \
       -e ETCD_CERT_FILE=/etc/kubernetes/ssl/etcd/server-crt.pem \
       -e ETCD_KEY_FILE=/etc/kubernetes/ssl/etcd/server-key.pem \
