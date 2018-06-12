@@ -25,6 +25,7 @@ const (
 	EnvAzureCIDR             = "AZURE_CIDR"
 	EnvAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
 	EnvAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
+	EnvAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
 	EnvAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
 
 	EnvAzureClientID       = "AZURE_CLIENTID"
@@ -141,6 +142,7 @@ func init() {
 		os.Setenv(EnvAzureCIDR, cidrs.AzureCIDR)
 		os.Setenv(EnvAzureMasterSubnetCIDR, cidrs.MasterSubnetCIDR)
 		os.Setenv(EnvAzureWorkerSubnetCIDR, cidrs.WorkerSubnetCIDR)
+		os.Setenv(EnvAzureVPNSubnetCIDR, cidrs.VPNSubnetCIDR)
 		os.Setenv(EnvAzureCalicoSubnetCIDR, cidrs.CalicoSubnetCIDR)
 	} else {
 		if os.Getenv(EnvAzureCalicoSubnetCIDR) == "" {
@@ -151,6 +153,9 @@ func init() {
 		}
 		if os.Getenv(EnvAzureWorkerSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureWorkerSubnetCIDR))
+		}
+		if os.Getenv(EnvAzureVPNSubnetCIDR) == "" {
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureVPNSubnetCIDR))
 		}
 	}
 }

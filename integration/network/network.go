@@ -15,13 +15,15 @@ const (
 	azureCalicoSubnetMask = 17
 	azureMasterSubnetMask = 24
 	azureWorkerSubnetMask = 24
+	azureVPNSubnetMask    = 27
 )
 
 type azureCIDR struct {
 	AzureCIDR        string
-	MasterSubnetCIDR string
-	WorkerSubnetCIDR string
 	CalicoSubnetCIDR string
+	MasterSubnetCIDR string
+	VPNSubnetCIDR    string
+	WorkerSubnetCIDR string
 }
 
 func ComputeCIDR(buildNumber uint) (*azureCIDR, error) {
@@ -42,7 +44,13 @@ func ComputeCIDR(buildNumber uint) (*azureCIDR, error) {
 	}
 	cidrs.WorkerSubnetCIDR = azureWorkerSubnet.String()
 
-	azureCalicoSubnet, err := ipamFree(azureNetwork, azureCalicoSubnetMask, *azureMasterSubnet, *azureWorkerSubnet)
+	azureVPNSubnet, err := ipamFree(azureNetwork, azureVPNSubnetMask, *azureMasterSubnet, *azureWorkerSubnet)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	cidrs.VPNSubnetCIDR = azureVPNSubnet.String()
+
+	azureCalicoSubnet, err := ipamFree(azureNetwork, azureCalicoSubnetMask, *azureMasterSubnet, *azureWorkerSubnet, *azureVPNSubnet)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -13,3 +13,4 @@ azure:
   cidr: "10.42.0.0/16"
   masterSubnetCIDR: "10.42.0.0/24"
   workerSubnetCIDR: "10.42.1.0/24"
+  vpnSubnetCidr: "10.42.2.0/27"

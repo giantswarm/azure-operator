@@ -235,6 +235,10 @@ func VnetWorkerSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
 }
 
+func VnetVPNSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.VPNSubnetCIDR
+}
+
 func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
 }

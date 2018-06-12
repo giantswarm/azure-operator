@@ -67,6 +67,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
 		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
 		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
+		"vpnSubnetCidr":                 key.VnetVPNSubnetCIDR(obj),
 		"masterNodes":                   masterNodes,
 		"workerNodes":                   workerNodes,
 		"dnsZones":                      obj.Spec.Azure.DNSZones,

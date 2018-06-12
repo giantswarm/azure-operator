@@ -27,6 +27,9 @@
     "workerSubnetCidr": {
       "type": "string"
     },
+    "vpnSubnetCidr": {
+      "type": "string"
+    },
     "masterSecurityGroupID": {
       "type": "string"
     },
@@ -44,7 +47,10 @@
     "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
 
     "workerSubnetName": "[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
-    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
+    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
+
+    "vpnSubnetName": "[concat(parameters('virtualNetworkName'), '-VPNSubnet')]",
+    "vpnSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('vpnSubnetName'))]"
   },
   "resources": [
     {
@@ -85,6 +91,12 @@
                 "id": "[parameters('routeTableID')]"
               }
             }
+          },
+          {
+            "name": "[variables('vpnSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('vpnSubnetCidr')]"
+            }
           }
         ]
       }
@@ -98,6 +110,10 @@
     "workerSubnetID": {
       "type": "string",
       "value": "[variables('workerSubnetID')]"
+    },
+    "vpnSubnetID": {
+      "type": "string",
+      "value": "[variables('vpnSubnetID')]"
     }
   }
 }
