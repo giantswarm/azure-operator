@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
@@ -17,6 +18,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	err = r.ensureDeploymentUpdate(ctx, customObject, key.MasterVMSSName, key.MasterInstanceName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	err = r.ensureDeploymentUpdate(ctx, customObject, key.WorkerVMSSName, key.WorkerInstanceName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func (r *Resource) ensureDeploymentUpdate(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
 	// Find the next instance ID and instance name we want to trigger the update
 	// for. Instance names look something like the following example.
 	//
@@ -37,7 +51,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		g := key.ResourceGroupName(customObject)
-		s := key.WorkerVMSSName(customObject)
+		s := deploymentNameFunc(customObject)
 		result, err := c.List(ctx, g, s, "", "", "")
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the scale set")
@@ -53,7 +67,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				continue
 			}
 
-			instanceName = key.InstanceName(customObject, *v.InstanceID)
+			instanceName = instanceNameFunc(customObject, *v.InstanceID)
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("instance '%s' is in state '%s'", instanceName, *v.ProvisioningState))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
@@ -67,7 +81,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			instanceID = *v.InstanceID
-			instanceName = key.InstanceName(customObject, *v.InstanceID)
+			instanceName = instanceNameFunc(customObject, *v.InstanceID)
 
 			break
 		}
@@ -92,7 +106,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		g := key.ResourceGroupName(customObject)
-		s := key.WorkerVMSSName(customObject)
+		s := deploymentNameFunc(customObject)
 		ids := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
 			InstanceIds: to.StringSlicePtr([]string{
 				instanceID,
