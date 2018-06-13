@@ -162,6 +162,89 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 	}
 }
 
+func Test_Functions_for_DNSKeys(t *testing.T) {
+	clusterID := "eggs2"
+	baseDomainName := "domain.tld"
+	resourceGroupName := clusterID
+
+	testCases := []struct {
+		Func           func(providerv1alpha1.AzureConfig) string
+		ExpectedResult string
+	}{
+		{
+			Func:           ClusterDNSDomain,
+			ExpectedResult: fmt.Sprintf("%s.k8s.%s", clusterID, baseDomainName),
+		},
+		{
+			Func:           DNSZoneAPI,
+			ExpectedResult: baseDomainName,
+		},
+		{
+			Func:           DNSZoneEtcd,
+			ExpectedResult: baseDomainName,
+		},
+		{
+			Func:           DNSZoneIngress,
+			ExpectedResult: baseDomainName,
+		},
+		{
+			Func:           DNSZonePrefixAPI,
+			ExpectedResult: fmt.Sprintf("%s.k8s", clusterID),
+		},
+		{
+			Func:           DNSZonePrefixEtcd,
+			ExpectedResult: fmt.Sprintf("%s.k8s", clusterID),
+		},
+		{
+			Func:           DNSZonePrefixIngress,
+			ExpectedResult: fmt.Sprintf("%s.k8s", clusterID),
+		},
+		{
+			Func:           DNSZoneResourceGroupAPI,
+			ExpectedResult: resourceGroupName,
+		},
+		{
+			Func:           DNSZoneResourceGroupEtcd,
+			ExpectedResult: resourceGroupName,
+		},
+		{
+			Func:           DNSZoneResourceGroupIngress,
+			ExpectedResult: resourceGroupName,
+		},
+	}
+
+	customObject := providerv1alpha1.AzureConfig{
+		Spec: providerv1alpha1.AzureConfigSpec{
+			Azure: providerv1alpha1.AzureConfigSpecAzure{
+				DNSZones: providerv1alpha1.AzureConfigSpecAzureDNSZones{
+					API: providerv1alpha1.AzureConfigSpecAzureDNSZonesDNSZone{
+						ResourceGroup: resourceGroupName,
+						Name:          baseDomainName,
+					},
+					Etcd: providerv1alpha1.AzureConfigSpecAzureDNSZonesDNSZone{
+						ResourceGroup: resourceGroupName,
+						Name:          baseDomainName,
+					},
+					Ingress: providerv1alpha1.AzureConfigSpecAzureDNSZonesDNSZone{
+						ResourceGroup: resourceGroupName,
+						Name:          baseDomainName,
+					},
+				},
+			},
+			Cluster: providerv1alpha1.Cluster{
+				ID: clusterID,
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		actualRes := tc.Func(customObject)
+		if actualRes != tc.ExpectedResult {
+			t.Fatalf("Expected %s but was %s", tc.ExpectedResult, actualRes)
+		}
+	}
+}
+
 func Test_MasterNICName(t *testing.T) {
 	expectedMasterNICName := "3p5j2-Master-1-NIC"
 

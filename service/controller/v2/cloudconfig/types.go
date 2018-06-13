@@ -60,6 +60,6 @@ type ingressLBFileParams struct {
 
 func newIngressLBFileParams(obj providerv1alpha1.AzureConfig) ingressLBFileParams {
 	return ingressLBFileParams{
-		ClusterDNSDomain: key.DNSZonePrefixIngress(obj),
+		ClusterDNSDomain: key.ClusterDNSDomain(obj),
 	}
 }
