@@ -34,7 +34,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "azure-operator",
-				Description: "Added basic support for worker updates.",
+				Description: "Added basic support for updates.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
