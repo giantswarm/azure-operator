@@ -1,18 +1,5 @@
 package deployment
 
-// deployment defines an Azure Deployment that deploys an ARM template.
-type deployment struct {
-	Parameters    map[string]interface{}
-	ResourceGroup string
-	TemplateURI   string
-
-	// TemplateContentVersion is a value to fill in
-	// github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources.TemplateLink.ContentVersion.
-	// For more information see contentVersion documentation
-	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/resource-group-authoring-templates.
-	TemplateContentVersion string
-}
-
 type node struct {
 	// AdminUsername is the vm administrator username
 	AdminUsername string `json:"adminUsername" yaml:"adminUsername"`

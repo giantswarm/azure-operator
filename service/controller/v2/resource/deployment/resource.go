@@ -147,16 +147,3 @@ func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, err
 
 	return azureClients.DeploymentsClient, nil
 }
-
-func toDeployments(v interface{}) ([]deployment, error) {
-	if v == nil {
-		return []deployment{}, nil
-	}
-
-	deployments, ok := v.([]deployment)
-	if !ok {
-		return []deployment{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", []deployment{}, v)
-	}
-
-	return deployments, nil
-}
