@@ -174,7 +174,6 @@
     {
       "apiVersion": "2016-09-01",
       "name": "route_table_setup",
-      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -184,14 +183,14 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"}
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "initialProvisioning": {"value": "[parameters('initialProvisioning')]"}
         }
       }
     },
     {
       "apiVersion": "2016-09-01",
       "name": "virtual_network_setup",
-      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
         "route_table_setup"
@@ -217,7 +216,6 @@
     {
       "apiVersion": "2016-09-01",
       "name": "peering",
-      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
           "virtual_network_setup"
