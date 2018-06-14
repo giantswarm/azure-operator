@@ -2,7 +2,6 @@ package deployment
 
 // deployment defines an Azure Deployment that deploys an ARM template.
 type deployment struct {
-	Name          string
 	Parameters    map[string]interface{}
 	ResourceGroup string
 	TemplateURI   string
