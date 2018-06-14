@@ -90,7 +90,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	newDeployment := azureresource.Deployment{
 		Properties: &azureresource.DeploymentProperties{
-			Mode:       azureresource.Complete,
+			Mode:       azureresource.Incremental,
 			Parameters: &mainDeployment.Parameters,
 			TemplateLink: &azureresource.TemplateLink{
 				URI:            to.StringPtr(mainDeployment.TemplateURI),
