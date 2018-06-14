@@ -40,10 +40,18 @@ jobs:
     environment:
       TEST_DIR: "integration/test/ready"
     <<: *e2eTest
-
   e2eTestPRReady:
     environment:
       TEST_DIR: "integration/test/ready"
+    <<: *e2eTest
+
+  e2eTestMasterScaling:
+    environment:
+      TEST_DIR: "integration/test/scaling"
+    <<: *e2eTest
+  e2eTestPRScaling:
+    environment:
+      TEST_DIR: "integration/test/scaling"
     <<: *e2eTest
 
 
@@ -67,6 +75,16 @@ workflows:
           requires:
           - hold
       - e2eTestMasterReady:
+          filters:
+            branches:
+              only: master
+          requires:
+          - build
+
+      - e2eTestPRScaling:
+          requires:
+          - hold
+      - e2eTestMasterScaling:
           filters:
             branches:
               only: master

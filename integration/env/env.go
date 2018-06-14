@@ -143,7 +143,7 @@ func CircleJobID() string {
 	return circleJobID
 }
 
-func ClusterName() string {
+func ClusterID() string {
 	return clusterName
 }
 
