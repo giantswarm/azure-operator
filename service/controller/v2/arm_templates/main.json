@@ -16,7 +16,7 @@
     },
     "initial_provisioning": {
       "type": "string",
-      "defaultValue": "Yes"
+      "defaultValue": "Yes",
       "metadata": {
         "description": "Whether the deployment is provisioned the very first time."
       }
