@@ -14,7 +14,7 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
-    "initial_provisioning": {
+    "initialProvisioning": {
       "type": "string",
       "defaultValue": "Yes",
       "metadata": {
@@ -174,7 +174,7 @@
     {
       "apiVersion": "2016-09-01",
       "name": "route_table_setup",
-      "condition": "[equals(parameters('initial_provisioning'), 'Yes')]",
+      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "type": "Microsoft.Resources/deployments",
       "properties": {
         "mode": "incremental",
@@ -191,7 +191,7 @@
     {
       "apiVersion": "2016-09-01",
       "name": "virtual_network_setup",
-      "condition": "[equals(parameters('initial_provisioning'), 'Yes')]",
+      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
         "route_table_setup"
@@ -217,7 +217,7 @@
     {
       "apiVersion": "2016-09-01",
       "name": "peering",
-      "condition": "[equals(parameters('initial_provisioning'), 'Yes')]",
+      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
           "virtual_network_setup"

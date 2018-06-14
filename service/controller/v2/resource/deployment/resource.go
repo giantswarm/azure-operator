@@ -91,7 +91,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), mainDeploymentName)
 	if IsNotFound(err) {
 		params := map[string]interface{}{
-			"initial_provisioning": "Yes",
+			"initialProvisioning": "Yes",
 		}
 		deployment, err = r.newDeployment(customObject, params)
 		if err != nil {
@@ -110,7 +110,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		params := map[string]interface{}{
-			"initial_provisioning": "No",
+			"initialProvisioning": "No",
 		}
 		deployment, err = r.newDeployment(customObject, params)
 		if err != nil {
