@@ -11,6 +11,13 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "initialProvisioning": {
+      "type": "string",
+      "defaultValue": "Yes",
+      "metadata": {
+        "description": "Whether the deployment is provisioned the very first time."
+      }
+    },
     "routeTablesAPIVersion": {
       "type": "string",
       "defaultValue": "2016-09-01",
@@ -27,6 +34,7 @@
     {
       "type": "Microsoft.Network/routeTables",
       "name": "[variables('name')]",
+      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "apiVersion": "[parameters('routeTablesAPIVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {
