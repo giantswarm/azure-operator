@@ -3,23 +3,21 @@ package env
 import (
 	"crypto/sha1"
 	"fmt"
+	"log"
 	"os"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/giantswarm/azure-operator/integration/network"
+	"github.com/giantswarm/e2e-harness/pkg/framework"
 )
 
 const (
-	EnvClusterName   = "CLUSTER_NAME"
 	EnvKeepResources = "KEEP_RESOURCES"
 
 	EnvCircleBuildNumber = "CIRCLE_BUILD_NUM"
 	EnvCircleCI          = "CIRCLECI"
 	EnvCircleJobName     = "CIRCLE_JOB"
-	EnvCircleJobID       = "CIRCLE_WORKFLOW_JOB_ID"
-	EnvCircleSHA         = "CIRCLE_SHA1"
 
 	EnvAzureCIDR             = "AZURE_CIDR"
 	EnvAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
@@ -30,14 +28,35 @@ const (
 	EnvAzureClientSecret   = "AZURE_CLIENTSECRET"
 	EnvAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvAzureTenantID       = "AZURE_TENANTID"
+
+	// TODO
+
+	// EnvVarCircleSHA is the process environment variable representing the
+	// CIRCLE_SHA1 env var.
+	EnvVarCircleSHA = "CIRCLE_SHA1"
+	// EnvVarClusterID is the process environment variable representing the
+	// CLUSTER_NAME env var.
+	//
+	// TODO rename to CLUSTER_ID. Note this also had to be changed in the
+	// framework package of e2e-harness.
+	EnvVarClusterID = "CLUSTER_NAME"
+	// EnvVarGithubBotToken is the process environment variable representing
+	// the GITHUB_BOT_TOKEN env var.
+	EnvVarGithubBotToken = "GITHUB_BOT_TOKEN"
+	// EnvVarTestedVersion is the process environment variable representing the
+	// TESTED_VERSION env var.
+	EnvVarTestedVersion = "TESTED_VERSION"
+	// EnvVarTestDir is the process environment variable representing the
+	// TEST_DIR env var.
+	EnvVarTestDir = "TEST_DIR"
+	// EnvVarVersionBundleVersion is the process environment variable representing
+	// the VERSION_BUNDLE_VERSION env var.
+	EnvVarVersionBundleVersion = "VERSION_BUNDLE_VERSION"
 )
 
 var (
 	circleCI      string
-	circleSHA     string
 	circleJobName string
-	circleJobID   string
-	clusterName   string
 
 	keepResources string
 
@@ -45,32 +64,22 @@ var (
 	azureClientSecret   string
 	azureSubscriptionID string
 	azureTenantID       string
+
+	// TODO
+
+	circleSHA string
+	clusterID string
 )
 
 func init() {
+	var err error
+
 	circleCI = os.Getenv(EnvCircleCI)
 	keepResources = os.Getenv(EnvKeepResources)
-
-	circleSHA = os.Getenv(EnvCircleSHA)
-	if circleSHA == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvCircleSHA))
-	}
 
 	circleJobName = os.Getenv(EnvCircleJobName)
 	if circleJobName == "" {
 		circleJobName = "local"
-	}
-
-	circleJobID = os.Getenv(EnvCircleJobID)
-	if circleJobID == "" {
-		// poor man's id generator
-		circleJobID = fmt.Sprintf("%x", sha1.Sum([]byte(time.Now().Format(time.RFC3339Nano))))
-	}
-
-	clusterName = os.Getenv(EnvClusterName)
-	if clusterName == "" {
-		clusterName = generateClusterName(CircleJobName(), CircleJobID(), CircleSHA())
-		os.Setenv(EnvClusterName, clusterName)
 	}
 
 	azureClientID = os.Getenv(EnvAzureClientID)
@@ -122,33 +131,51 @@ func init() {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureWorkerSubnetCIDR))
 		}
 	}
-}
 
-func generateClusterName(jobName, jobID, sha string) string {
-	var parts []string
+	circleSHA = os.Getenv(EnvVarCircleSHA)
+	if circleSHA == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCircleSHA))
+	}
 
-	parts = append(parts, "ci")
-	parts = append(parts, jobName)
-	parts = append(parts, jobID[0:5])
-	parts = append(parts, sha[0:5])
+	testedVersion = os.Getenv(EnvVarTestedVersion)
+	if testedVersion == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarTestedVersion))
+	}
 
-	return strings.ToLower(strings.Join(parts, "-"))
+	testDir = os.Getenv(EnvVarTestDir)
+
+	// NOTE that implications of changing the order of initialization here means
+	// breaking the initialization behaviour.
+	clusterID := os.Getenv(EnvVarClusterID)
+	if clusterID == "" {
+		os.Setenv(EnvVarClusterID, ClusterID())
+	}
+
+	token := os.Getenv(EnvVarGithubBotToken)
+	params := &framework.VBVParams{
+		Component: "azure-operator",
+		Provider:  "azure",
+		Token:     token,
+		VType:     TestedVersion(),
+	}
+	versionBundleVersion, err = framework.GetVersionBundleVersion(params)
+	if err != nil {
+		panic(err.Error())
+	}
+	// TODO there should be a not found error returned by the framework in such
+	// cases.
+	if VersionBundleVersion() == "" {
+		if strings.ToLower(TestedVersion()) == "wip" {
+			log.Println("WIP version bundle version not present, exiting.")
+			os.Exit(0)
+		}
+		panic("version bundle version  must not be empty")
+	}
+	os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
 }
 
 func CircleJobName() string {
 	return circleJobName
-}
-
-func CircleJobID() string {
-	return circleJobID
-}
-
-func ClusterID() string {
-	return clusterName
-}
-
-func CircleSHA() string {
-	return circleSHA
 }
 
 func CircleCI() string {
@@ -173,4 +200,55 @@ func AzureSubscriptionID() string {
 
 func AzureTenantID() string {
 	return azureTenantID
+}
+
+// TODO
+
+func CircleSHA() string {
+	return circleSHA
+}
+
+// ClusterID returns a cluster ID unique to a run integration test. It might
+// look like ci-wip-3cc75-5e958.
+//
+//     ci is a static identifier stating a CI run of the aws-operator.
+//     wip is a version reference which can also be cur for the current version.
+//     3cc75 is the Git SHA.
+//     5e958 is a hash of the integration test dir, if any.
+//
+func ClusterID() string {
+	var parts []string
+
+	parts = append(parts, "ci")
+	parts = append(parts, TestedVersion()[0:3])
+	parts = append(parts, CircleSHA()[0:5])
+	if TestHash() != "" {
+		parts = append(parts, TestHash())
+	}
+
+	return strings.Join(parts, "-")
+}
+
+func TestedVersion() string {
+	return testedVersion
+}
+
+func TestDir() string {
+	return testDir
+}
+
+func TestHash() string {
+	if TestDir() == "" {
+		return ""
+	}
+
+	h := sha1.New()
+	h.Write([]byte(TestDir()))
+	s := fmt.Sprintf("%x", h.Sum(nil))[0:5]
+
+	return s
+}
+
+func VersionBundleVersion() string {
+	return versionBundleVersion
 }
