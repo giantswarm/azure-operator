@@ -1,0 +1,97 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "GiantSwarmTags": {
+      "type": "object",
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
+    "clusterID": {
+      "type": "string"
+    },
+    "virtualNetworkName": {
+      "type": "string"
+    },
+    "vpnSubnetName": {
+      "type": "string"
+    },
+    "virtualNetworksGatewayAPIVersion": {
+      "type": "string",
+      "defaultValue": "2017-10-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/virtualNetworkGateways resource."
+      }
+    },
+    "publicIPAddressesAPIVersion": {
+      "type": "string",
+      "defaultValue": "2017-10-01",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/virtualNetworkGateways resource."
+      }
+    }
+  },
+  "variables": {
+    "publicIPName": "[concat(parameters('clusterID'), '-VPNGateway-PublicIP')]",
+    "vpnGatewayName": "[concat(parameters('clusterID'), '-VPNGateway')]"
+  },
+  "resources": [
+    {
+      "name": "variables('publicIPName')",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "sku": {
+        "name": "Basic"
+      },
+      "properties": {
+        "publicIPAllocationMethod": "Dynamic"
+      }
+    },
+    {
+      "type": "Microsoft.Network/virtualNetworkGateways",
+      "name": "variables('vpnGatewayName')",
+      "apiVersion": "[parameters('virtualNetworksGatewayAPIVersion')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "properties": {
+        "ipConfigurations": [
+          {
+            "id": "string",
+            "properties": {
+              "privateIPAllocationMethod": "Dynamic",
+              "subnet": {
+                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
+              },
+              "publicIPAddress": {
+                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+              }
+            },
+            "name": "string"
+          }
+        ],
+        "gatewayType": "Vpn",
+        "vpnType": "RouteBased",
+        "vpnClientConfiguration": {
+          "vpnClientProtocols": [
+            "SSTP",
+            "IkeV2"
+          ]
+        },
+        "sku": {
+          "name": "VpnGw1"
+        }
+      },
+      "dependsOn": [
+        "[resourceId('Microsoft.Network/publicIPAddresses', parameters('publicIPName'))]",
+        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
+      ]
+    }
+  ]
+}

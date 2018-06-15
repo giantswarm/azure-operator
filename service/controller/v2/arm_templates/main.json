@@ -127,9 +127,9 @@
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
     },
-    "networkPeeringTemplateFile": {
+    "virtualNetworkGatewaySetupTemplateFile": {
       "type": "string",
-      "defaultValue": "peering.json"
+      "defaultValue": "virtual_network_gateway.json"
     },
     "vmssMSIEnabled": {
       "type": "bool"
@@ -145,7 +145,7 @@
       }
     },
     "hostSubscriptionID": {
-      "type": "string",
+      "type": "string"
     }
   },
   "variables": {
@@ -158,7 +158,7 @@
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
-    "networkPeeringTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('networkPeeringTemplateFile'))]",
+    "virtualNetworkGatewaySetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkGatewaySetupTemplateFile'))]",
     "vmssTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('vmssTemplateFile'))]",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
@@ -232,23 +232,22 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "peering",
+      "name": "virtual_network_gateway_setup",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
-          "virtual_network_setup"
+        "virtual_network_setup"
       ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('networkPeeringTemplateURI')]",
+          "uri": "[variables('virtualNetworkGatewaySetupTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "name": {"value": "[parameters('hostClusterResourceGroupName')]"},
-          "subscriptionID": {"value": "[parameters('hostSubscriptionID')]"},
-          "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
-          "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
-          "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
+          "vpnSubnetName": {"value": "[reference('virtual_network_setup').outputs.vpnSubnetID.value]"}
         }
       }
     },
