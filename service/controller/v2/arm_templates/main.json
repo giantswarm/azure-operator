@@ -45,20 +45,23 @@
     "vpnSubnetCidr": {
       "type": "string"
     },
-    "hostClusterCidr": {
+    "hostCidr": {
       "type": "string"
     },
-    "hostClusterResourceGroupName": {
+    "hostResourceGroupName": {
       "type": "string",
       "metadata": {
         "description": "Resource group's name of the host cluster."
       }
     },
-    "hostClusterVirtualNetworkName": {
+    "hostVirtualNetworkGatewayName": {
       "type": "string",
       "metadata": {
-        "description": "Virtual network's of the host cluster."
+        "description": "Virtual network gateway's name of the host cluster."
       }
+    },
+    "vpnConnectionSharedKey": {
+      "type": "string"
     },
     "kubernetesAPISecurePort": {
       "type": "int"
@@ -244,9 +247,13 @@
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "hostResourceGroupName": {"value": "[parameters('hostResourceGroupName')]"},
+          "hostSubscriptionID": {"value": "[parameters('hostSubscriptionID')]"},
+          "hostVirtualNetworkGatewayName": {"value": "[parameters('hostVirtualNetworkGatewayName')]"},
           "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
+          "vpnConnectionSharedKey": {"value": "[parameters('vpnConnectionSharedKey')]"},
           "vpnSubnetName": {"value": "[reference('virtual_network_setup').outputs.vpnSubnetID.value]"}
         }
       }
