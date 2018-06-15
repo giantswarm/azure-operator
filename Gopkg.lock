@@ -99,13 +99,13 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "fae6052878d9c2e8e187f04f4132ac581984d77c"
+  revision = "fd0ebd0ec770f6ffb095dc5daa2fa23ca505e762"
 
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
-  revision = "641ca85450f736082b846d20c8be8bb2f1504e30"
+  revision = "e9c2163f85a43bd48eadf8c08531130f3642de02"
 
 [[projects]]
   branch = "master"
@@ -129,7 +129,7 @@
     "v_3_2_5",
     "v_3_3_4"
   ]
-  revision = "cf4b32b3be41093a962a86e9ec757d924a0ff614"
+  revision = "200acb0904fc7ead3b188f64106681b21a44a7d6"
 
 [[projects]]
   branch = "master"
@@ -489,7 +489,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "37a17fe027db43f76fd88b056ddf588563fc8722"
+  revision = "a8fb68e7206f8c78be19b432c58eb52a6aa34462"
 
 [[projects]]
   branch = "master"
@@ -527,7 +527,7 @@
     "unix",
     "windows"
   ]
-  revision = "56ede360ec1c541828fb88741b3f1049406d28f5"
+  revision = "8014b7b116a67fea23fbb82cd834c9ad656ea44b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -618,7 +618,6 @@
   revision = "8b7507fac302640dd5f1efbf9643199952cc58db"
 
 [[projects]]
-  branch = "release-1.10"
   name = "k8s.io/apiextensions-apiserver"
   packages = [
     "pkg/apis/apiextensions",
@@ -628,9 +627,9 @@
     "pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
   ]
   revision = "8e7f43002fec5394a8d96ebca781aa9d4b37aaef"
+  version = "kubernetes-1.10.4"
 
 [[projects]]
-  branch = "release-1.10"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -673,6 +672,7 @@
     "third_party/forked/golang/reflect"
   ]
   revision = "17529ec7eadb8de8e7dc835201455f53571f655a"
+  version = "kubernetes-1.10.4"
 
 [[projects]]
   branch = "release-7.0"
