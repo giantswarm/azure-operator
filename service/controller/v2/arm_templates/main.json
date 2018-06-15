@@ -355,7 +355,10 @@
           "vmssName": {"value": "[concat(parameters('clusterID'), '-master')]"},
           "vmssVmSize": {"value": "[parameters('masterNodes')[0].vmSize]"},
           "vmssVmCount": {"value": "[length(parameters('masterNodes'))]"},
-          "vmssVmDataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
+          "vmssVmDataDisks": {"value": [
+                  {"name": "EtcdDisk", "sizeGB": 100},
+                  {"name": "DockerDisk", "sizeGB": 50}
+          ]},
           "vmssSshUser": {"value": "[parameters('masterNodes')[0].adminUsername]"},
           "vmssSshPublicKey": {"value": "[parameters('masterNodes')[0].adminSSHKeyData]"},
           "vmssOsImagePublisher": {"value": "[parameters('masterNodes')[0].osImage.publisher]"},
