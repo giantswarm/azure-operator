@@ -1,6 +1,8 @@
 package deployment
 
 import (
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
+	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
@@ -8,7 +10,6 @@ import (
 )
 
 const (
-	mainDeploymentName     = "cluster-main-template"
 	templateContentVersion = "1.0.0.0"
 )
 
@@ -18,7 +19,7 @@ func getDeploymentNames() []string {
 	}
 }
 
-func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deployment, error) {
+func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
 		n := node{
@@ -43,15 +44,15 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 
 	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
 	if err != nil {
-		return deployment{}, microerror.Mask(err)
+		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
 	if err != nil {
-		return deployment{}, microerror.Mask(err)
+		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	params := map[string]interface{}{
+	defaultParams := map[string]interface{}{
 		"clusterID":                     key.ClusterID(obj),
 		"virtualNetworkName":            key.VnetName(obj),
 		"virtualNetworkCidr":            key.VnetCIDR(obj),
@@ -70,27 +71,37 @@ func (r Resource) newMainDeployment(obj providerv1alpha1.AzureConfig) (deploymen
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
 	}
 
-	d := deployment{
-		Name:                   mainDeploymentName,
-		Parameters:             convertParameters(params),
-		ResourceGroup:          key.ClusterID(obj),
-		TemplateURI:            templateURI(r.templateVersion, mainTemplate),
-		TemplateContentVersion: templateContentVersion,
+	d := azureresource.Deployment{
+		Properties: &azureresource.DeploymentProperties{
+			Mode:       azureresource.Incremental,
+			Parameters: convertParameters(defaultParams, overwrites),
+			TemplateLink: &azureresource.TemplateLink{
+				URI:            to.StringPtr(templateURI(r.templateVersion, mainTemplate)),
+				ContentVersion: to.StringPtr(templateContentVersion),
+			},
+		},
 	}
 
 	return d, nil
 }
 
-// convertParameters converts the map into the structure used by the Azure API.
-func convertParameters(inputs map[string]interface{}) map[string]interface{} {
-	params := make(map[string]interface{}, len(inputs))
-	for key, val := range inputs {
-		params[key] = struct {
-			Value interface{}
-		}{
-			Value: val,
+// convertParameters merges the input maps and converts the result into the
+// structure used by the Azure API. Note that the order of inputs is relevant.
+// Default parameters should be given first. Data of the following maps will
+// overwrite eventual data of preceeding maps. This mechanism is used for e.g.
+// setting the initialProvisioning parameter accordingly to the cluster's state.
+func convertParameters(list ...map[string]interface{}) map[string]interface{} {
+	allParams := map[string]interface{}{}
+
+	for _, l := range list {
+		for key, val := range l {
+			allParams[key] = struct {
+				Value interface{}
+			}{
+				Value: val,
+			}
 		}
 	}
 
-	return params
+	return allParams
 }
