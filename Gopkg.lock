@@ -23,8 +23,8 @@
     "autorest/to",
     "autorest/validation"
   ]
-  revision = "d21db7ee8958d471f5b185d700762c903549ee08"
-  version = "v10.10.0"
+  revision = "76796dcb80ab6491bf22e344402023c081a7a282"
+  version = "v10.11.1"
 
 [[projects]]
   branch = "master"
@@ -81,7 +81,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "18c1aa070409bfa5ebdf91660837370dfb4071b1"
+  revision = "7bd5a0ce29400731deed05bccaf559cedc6f2221"
 
 [[projects]]
   branch = "master"
@@ -99,19 +99,28 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "c5b82c0351c122d5c4f96de2381c58fd97f1e354"
+  revision = "fd0ebd0ec770f6ffb095dc5daa2fa23ca505e762"
 
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
-  revision = "641ca85450f736082b846d20c8be8bb2f1504e30"
+  revision = "e9c2163f85a43bd48eadf8c08531130f3642de02"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/giantswarm/e2etests"
+  packages = [
+    "scaling",
+    "scaling/provider"
+  ]
+  revision = "fa5400777e4dfb94fd0e6417f1d2c025f81fa921"
 
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/ipam"
   packages = ["."]
-  revision = "442e28b638045e8dcbe75dd596241590ded3b0f7"
+  revision = "9f5e82f904b3f54b19ac8cb58cbbadb59d50eb89"
 
 [[projects]]
   branch = "master"
@@ -120,7 +129,7 @@
     "v_3_2_5",
     "v_3_3_4"
   ]
-  revision = "1970c8fe31efb7b3b147277c1084c9b1dfd1b4f7"
+  revision = "200acb0904fc7ead3b188f64106681b21a44a7d6"
 
 [[projects]]
   branch = "master"
@@ -156,7 +165,7 @@
     "server",
     "tls"
   ]
-  revision = "6578efbcb390bb4be316637e0de492241bea52a3"
+  revision = "19f5fe4a59000232718a4e563090d8346bd06ad9"
 
 [[projects]]
   branch = "master"
@@ -194,13 +203,13 @@
   revision = "d80fdea79511051e5f7fbd585a98b5919671ea45"
 
 [[projects]]
-  branch = "k8s-1.10.4"
+  branch = "master"
   name = "github.com/giantswarm/randomkeys"
   packages = [
     ".",
     "randomkeystest"
   ]
-  revision = "6235d97583aaf71ad18502dcbbf49f168b56b1fa"
+  revision = "b2516ed0f070900eddc2b2654ce4f3d356ddf24a"
 
 [[projects]]
   branch = "master"
@@ -267,7 +276,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "2ae5df7848328c214a48cec94c7d410cf8526527"
+  revision = "a83ae98ad5d09188c49d6056edb60ec9bdf202bd"
 
 [[projects]]
   branch = "master"
@@ -338,8 +347,8 @@
 [[projects]]
   name = "github.com/imdario/mergo"
   packages = ["."]
-  revision = "9d5f1277e9a8ed20c3684bda8fde67c05628518c"
-  version = "v0.3.4"
+  revision = "9316a62528ac99aaecb4e47eadd6dc8aa6533d58"
+  version = "v0.3.5"
 
 [[projects]]
   name = "github.com/inconshreveable/mousetrap"
@@ -435,16 +444,16 @@
     "nfs",
     "xfs"
   ]
-  revision = "94663424ae5ae9856b40a9f170762b4197024661"
+  revision = "7d6f385de8bea29190f15ba9931442a0eaef9af7"
 
 [[projects]]
-  branch = "master"
   name = "github.com/spf13/afero"
   packages = [
     ".",
     "mem"
   ]
   revision = "787d034dfe70e44075ccc060d346146ef53270ad"
+  version = "v1.1.1"
 
 [[projects]]
   name = "github.com/spf13/cast"
@@ -480,7 +489,7 @@
   branch = "master"
   name = "golang.org/x/crypto"
   packages = ["ssh/terminal"]
-  revision = "b47b1587369238182299fe4dad77d05b8b461e06"
+  revision = "a8fb68e7206f8c78be19b432c58eb52a6aa34462"
 
 [[projects]]
   branch = "master"
@@ -494,7 +503,7 @@
     "idna",
     "publicsuffix"
   ]
-  revision = "1e491301e022f8f977054da4c2d852decd59571f"
+  revision = "db08ff08e8622530d9ed3a0e8ac279f6d4c02196"
 
 [[projects]]
   branch = "master"
@@ -518,7 +527,7 @@
     "unix",
     "windows"
   ]
-  revision = "9527bec2660bd847c050fda93a0f0c6dee0800bb"
+  revision = "8014b7b116a67fea23fbb82cd834c9ad656ea44b"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -609,7 +618,6 @@
   revision = "8b7507fac302640dd5f1efbf9643199952cc58db"
 
 [[projects]]
-  branch = "release-1.10"
   name = "k8s.io/apiextensions-apiserver"
   packages = [
     "pkg/apis/apiextensions",
@@ -619,9 +627,9 @@
     "pkg/client/clientset/clientset/typed/apiextensions/v1beta1"
   ]
   revision = "8e7f43002fec5394a8d96ebca781aa9d4b37aaef"
+  version = "kubernetes-1.10.4"
 
 [[projects]]
-  branch = "release-1.10"
   name = "k8s.io/apimachinery"
   packages = [
     "pkg/api/errors",
@@ -664,6 +672,7 @@
     "third_party/forked/golang/reflect"
   ]
   revision = "17529ec7eadb8de8e7dc835201455f53571f655a"
+  version = "kubernetes-1.10.4"
 
 [[projects]]
   branch = "release-7.0"
@@ -759,6 +768,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "d5e1b978c3857c201646f62e9b9ca7f311ad544c8a8dd8058976569210066c54"
+  inputs-digest = "97c548a870dd357855d27870b4d47e6ad9b2e8e7a682d1adba50cce55fbc1a18"
   solver-name = "gps-cdcl"
   solver-version = 1
