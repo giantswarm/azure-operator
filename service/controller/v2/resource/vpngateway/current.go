@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-10-01/network"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
@@ -12,12 +12,15 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-// GetCurrentState retrieve the current host cluster virtual network peering
-// resource from azure.
+// GetCurrentState retrieve current virtual network gateway connection from host to guest cluster.
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Mask(err)
+		return network.VirtualNetworkGatewayConnection{}, microerror.Mask(err)
+	}
+
+	if !key.IsDeleted(customObject) {
+
 	}
 
 	// In order to make vnet peering work we need a virtual network which we can
