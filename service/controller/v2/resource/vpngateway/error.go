@@ -1,4 +1,4 @@
-package vnetpeering
+package vpngateway
 
 import (
 	"github.com/Azure/go-autorest/autorest"
