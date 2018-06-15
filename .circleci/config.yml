@@ -36,27 +36,6 @@ jobs:
 
 
 
-  e2eTestCurMasterReady:
-    environment:
-      TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/ready"
-    <<: *e2eTest
-  e2eTestCurPRReady:
-    environment:
-      TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/ready"
-    <<: *e2eTest
-  e2eTestWIPMasterReady:
-    environment:
-      TESTED_VERSION: "wip"
-      TEST_DIR: "integration/test/ready"
-    <<: *e2eTest
-  e2eTestWIPPRReady:
-    environment:
-      TESTED_VERSION: "wip"
-      TEST_DIR: "integration/test/ready"
-    <<: *e2eTest
-
   e2eTestCurMasterScaling:
     environment:
       TESTED_VERSION: "current"
@@ -94,25 +73,6 @@ workflows:
           - build
 
 
-
-      - e2eTestCurPRReady:
-          requires:
-          - hold
-      - e2eTestCurMasterReady:
-          filters:
-            branches:
-              only: master
-          requires:
-          - build
-      - e2eTestWIPPRReady:
-          requires:
-          - hold
-      - e2eTestWIPMasterReady:
-          filters:
-            branches:
-              only: master
-          requires:
-          - build
 
       - e2eTestCurPRScaling:
           requires:
