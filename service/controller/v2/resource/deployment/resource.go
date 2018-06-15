@@ -27,7 +27,7 @@ type Config struct {
 	Logger micrologger.Logger
 
 	Azure           setting.Azure
-	HostAzureConfig client.AzureConfig
+	HostAzureConfig client.AzureClientSetConfig
 	// TemplateVersion is the ARM template version. Currently is the name
 	// of the git branch in which the version is stored.
 	TemplateVersion string
@@ -37,7 +37,7 @@ type Resource struct {
 	logger micrologger.Logger
 
 	azure           setting.Azure
-	hostAzureConfig client.AzureConfig
+	hostAzureConfig client.AzureClientSetConfig
 	templateVersion string
 }
 
@@ -106,7 +106,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		params := map[string]interface{}{
 			"initialProvisioning": "No",
 		}
-		deployment, err = r.newDeployment(customObject, params)
+		deployment, err = r.newDeployment(ctx, customObject, params)
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -196,14 +196,14 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var vpnGatewayResource controller.Resource
 	{
-		c := vpnGateway.Config{
+		c := vpngateway.Config{
 			Logger: config.Logger,
 
 			Azure:           config.Azure,
 			HostAzureConfig: config.HostAzureConfig,
 		}
 
-		ops, err := vpnGateway.New(c)
+		ops, err := vpngateway.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

@@ -2,14 +2,13 @@ package vpngateway
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-10-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	// "github.com/giantswarm/azure-operator/client"
+	// "github.com/giantswarm/azure-operator/service/controller/v2/key"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 )
 
 // getVirtualNetworksClient return an azure client to interact with

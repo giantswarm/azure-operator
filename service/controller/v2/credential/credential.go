@@ -17,7 +17,7 @@ const (
 	TenantIDKey       = "tenantID"
 )
 
-func GetAzureConfig(k8sClient kubernetes.Interface, obj interface{}) (*client.AzureConfig, error) {
+func GetAzureConfig(k8sClient kubernetes.Interface, obj interface{}) (*client.AzureClientSetConfig, error) {
 	credential, err := readCredential(k8sClient, obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -31,7 +31,7 @@ func GetAzureConfig(k8sClient kubernetes.Interface, obj interface{}) (*client.Az
 	return config, nil
 }
 
-func getAzureConfig(credential *v1.Secret) (*client.AzureConfig, error) {
+func getAzureConfig(credential *v1.Secret) (*client.AzureClientSetConfig, error) {
 	errorFormat := "%s not found in credential"
 
 	clientID, ok := credential.Data[ClientIDKey]
@@ -54,7 +54,7 @@ func getAzureConfig(credential *v1.Secret) (*client.AzureConfig, error) {
 		return nil, microerror.Maskf(invalidConfig, errorFormat, TenantIDKey)
 	}
 
-	c := &client.AzureConfig{
+	c := &client.AzureClientSetConfig{
 		ClientID:       string(clientID),
 		ClientSecret:   string(clientSecret),
 		SubscriptionID: string(subscriptionID),

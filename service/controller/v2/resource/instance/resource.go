@@ -1,11 +1,14 @@
 package instance
 
 import (
+	"context"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 )
 
 const (
@@ -46,20 +49,20 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) getScaleSetsClient() (*compute.VirtualMachineScaleSetsClient, error) {
-	cs, err := client.NewAzureClientSet(r.azureConfig)
+func (r *Resource) getScaleSetsClient(ctx context.Context) (*compute.VirtualMachineScaleSetsClient, error) {
+	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return cs.VirtualMachineScaleSetsClient, nil
+	return sc.AzureClientSet.VirtualMachineScaleSetsClient, nil
 }
 
-func (r *Resource) getVMsClient() (*compute.VirtualMachineScaleSetVMsClient, error) {
-	cs, err := client.NewAzureClientSet(r.azureConfig)
+func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineScaleSetVMsClient, error) {
+	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return cs.VirtualMachineScaleSetVMsClient, nil
+	return sc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
 }
