@@ -5,32 +5,15 @@ import (
 	"fmt"
 	"log"
 	"os"
-	"strconv"
 	"strings"
 
-	"github.com/giantswarm/azure-operator/integration/network"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 )
 
 const (
-	EnvKeepResources = "KEEP_RESOURCES"
-
-	EnvCircleBuildNumber = "CIRCLE_BUILD_NUM"
-	EnvCircleCI          = "CIRCLECI"
-	EnvCircleJobName     = "CIRCLE_JOB"
-
-	EnvAzureCIDR             = "AZURE_CIDR"
-	EnvAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
-	EnvAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
-	EnvAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
-
-	EnvAzureClientID       = "AZURE_CLIENTID"
-	EnvAzureClientSecret   = "AZURE_CLIENTSECRET"
-	EnvAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
-	EnvAzureTenantID       = "AZURE_TENANTID"
-
-	// TODO
-
+	// EnvVarCircleCI is the process environment variable representing the
+	// CIRCLECI env var.
+	EnvVarCircleCI = "CIRCLECI"
 	// EnvVarCircleSHA is the process environment variable representing the
 	// CIRCLE_SHA1 env var.
 	EnvVarCircleSHA = "CIRCLE_SHA1"
@@ -43,6 +26,9 @@ const (
 	// EnvVarGithubBotToken is the process environment variable representing
 	// the GITHUB_BOT_TOKEN env var.
 	EnvVarGithubBotToken = "GITHUB_BOT_TOKEN"
+	// EnvVarKeepResources is the process environment variable representing the
+	// KEEP_RESOURCES env var.
+	EnvVarKeepResources = "KEEP_RESOURCES"
 	// EnvVarTestedVersion is the process environment variable representing the
 	// TESTED_VERSION env var.
 	EnvVarTestedVersion = "TESTED_VERSION"
@@ -55,82 +41,20 @@ const (
 )
 
 var (
-	circleCI      string
-	circleJobName string
-
-	keepResources string
-
-	azureClientID       string
-	azureClientSecret   string
-	azureSubscriptionID string
-	azureTenantID       string
-
-	// TODO
-
-	circleSHA string
-	clusterID string
+	circleCI             string
+	circleSHA            string
+	clusterID            string
+	testDir              string
+	testedVersion        string
+	keepResources        string
+	versionBundleVersion string
 )
 
 func init() {
 	var err error
 
-	circleCI = os.Getenv(EnvCircleCI)
-	keepResources = os.Getenv(EnvKeepResources)
-
-	circleJobName = os.Getenv(EnvCircleJobName)
-	if circleJobName == "" {
-		circleJobName = "local"
-	}
-
-	azureClientID = os.Getenv(EnvAzureClientID)
-	if azureClientID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvAzureClientID))
-	}
-
-	azureClientSecret = os.Getenv(EnvAzureClientSecret)
-	if azureClientSecret == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvAzureClientSecret))
-	}
-
-	azureSubscriptionID = os.Getenv(EnvAzureSubscriptionID)
-	if azureSubscriptionID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvAzureSubscriptionID))
-	}
-
-	azureTenantID = os.Getenv(EnvAzureTenantID)
-	if azureTenantID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvAzureTenantID))
-	}
-
-	// azureCDIR must be provided along with other CIDRs,
-	// otherwise we compute CIDRs base on EnvCircleBuildNumber value.
-	azureCDIR := os.Getenv(EnvAzureCIDR)
-	if azureCDIR == "" {
-		buildNumber, err := strconv.ParseUint(os.Getenv(EnvCircleBuildNumber), 10, 32)
-		if err != nil {
-			panic(err)
-		}
-
-		cidrs, err := network.ComputeCIDR(uint(buildNumber))
-		if err != nil {
-			panic(err)
-		}
-
-		os.Setenv(EnvAzureCIDR, cidrs.AzureCIDR)
-		os.Setenv(EnvAzureMasterSubnetCIDR, cidrs.MasterSubnetCIDR)
-		os.Setenv(EnvAzureWorkerSubnetCIDR, cidrs.WorkerSubnetCIDR)
-		os.Setenv(EnvAzureCalicoSubnetCIDR, cidrs.CalicoSubnetCIDR)
-	} else {
-		if os.Getenv(EnvAzureCalicoSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureCalicoSubnetCIDR))
-		}
-		if os.Getenv(EnvAzureMasterSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureMasterSubnetCIDR))
-		}
-		if os.Getenv(EnvAzureWorkerSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvAzureWorkerSubnetCIDR))
-		}
-	}
+	circleCI = os.Getenv(EnvVarCircleCI)
+	keepResources = os.Getenv(EnvVarKeepResources)
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)
 	if circleSHA == "" {
@@ -174,35 +98,9 @@ func init() {
 	os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
 }
 
-func CircleJobName() string {
-	return circleJobName
-}
-
 func CircleCI() string {
 	return circleCI
 }
-
-func KeepResources() string {
-	return keepResources
-}
-
-func AzureClientID() string {
-	return azureClientID
-}
-
-func AzureClientSecret() string {
-	return azureClientSecret
-}
-
-func AzureSubscriptionID() string {
-	return azureSubscriptionID
-}
-
-func AzureTenantID() string {
-	return azureTenantID
-}
-
-// TODO
 
 func CircleSHA() string {
 	return circleSHA
@@ -227,6 +125,10 @@ func ClusterID() string {
 	}
 
 	return strings.Join(parts, "-")
+}
+
+func KeepResources() string {
+	return keepResources
 }
 
 func TestedVersion() string {
