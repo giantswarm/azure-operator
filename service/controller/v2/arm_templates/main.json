@@ -14,6 +14,13 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "initialProvisioning": {
+      "type": "string",
+      "defaultValue": "Yes",
+      "metadata": {
+        "description": "Whether the deployment is provisioned the very first time."
+      }
+    },
     "virtualNetworkName": {
       "type": "string",
       "metadata": {
@@ -176,7 +183,8 @@
         },
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
-          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"}
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "initialProvisioning": {"value": "[parameters('initialProvisioning')]"}
         }
       }
     },

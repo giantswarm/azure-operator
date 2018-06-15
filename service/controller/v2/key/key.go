@@ -44,6 +44,11 @@ func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Customer.ID
 }
 
+// ClusterDNSDomain returns cluster DNS domain.
+func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s.%s", DNSZonePrefixAPI(customObject), DNSZoneAPI(customObject))
+}
+
 // ClusterID returns the unique ID for this cluster.
 func ClusterID(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.ID
