@@ -85,12 +85,11 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 	return d, nil
 }
 
-// convertParameters merges the input maps and converts teh result into the
+// convertParameters merges the input maps and converts the result into the
 // structure used by the Azure API. Note that the order of inputs is relevant.
 // Default parameters should be given first. Data of the following maps will
 // overwrite eventual data of preceeding maps. This mechanism is used for e.g.
-// setting the initialProvisioning parameter accordingly to the cluster's
-// state.
+// setting the initialProvisioning parameter accordingly to the cluster's state.
 func convertParameters(list ...map[string]interface{}) map[string]interface{} {
 	allParams := map[string]interface{}{}
 
