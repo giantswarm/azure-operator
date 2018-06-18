@@ -29,7 +29,7 @@
             "type": "String"
         },
         "vmssSshPublicKey": {
-            "type": "String"
+            "type": "string"
         },
         "vmssOsImagePublisher": {
             "type": "string"
@@ -43,6 +43,10 @@
         "vmssOsImageVersion": {
             "type": "string"
         },
+        "vmssOverprovision": {
+            "type": "string",
+            "defaultValue": "true"
+        },
         "vmssVmCustomData": {
             "type": "secureString"
         },
@@ -51,6 +55,10 @@
         },
         "vmssVnetSubnetId": {
             "type": "string"
+        },
+        "vmssUpgradePolicy": {
+            "type": "string",
+            "defaultValue": "Manual"
         }
     },
     "variables": {
@@ -167,9 +175,9 @@
                 "type": "systemAssigned"
             },
             "properties": {
-                "overprovision": "true",
+                "overprovision": "[parameters('vmssOverprovision')]",
                 "upgradePolicy": {
-                    "mode": "Manual"
+                    "mode": "[parameters('vmssUpgradePolicy')]"
                 },
                 "singlePlacementGroup": "[variables('vmssSinglePlacementGroup')]",
                 "virtualMachineProfile": {

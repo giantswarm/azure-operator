@@ -365,12 +365,14 @@
           "vmssOsImageOffer": {"value": "[parameters('masterNodes')[0].osImage.offer]"},
           "vmssOsImageSKU": {"value": "[parameters('masterNodes')[0].osImage.sku]"},
           "vmssOsImageVersion": {"value": "[parameters('masterNodes')[0].osImage.version]"},
+          "vmssOverprovision": {"value": "false"},
           "vmssVmCustomData": {"value": "[parameters('masterCloudConfigData')]"},
           "vmssLbBackendPools": {"value": [
             {"id": "[reference('api_load_balancer_setup').outputs.backendPoolId.value]"},
             {"id": "[reference('etcd_load_balancer_setup').outputs.backendPoolId.value]"}
           ]},
-          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"}
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
+          "vmssUpgradePolicy": {"value": "Manual"}
         }
       }
     },
@@ -397,9 +399,11 @@
           "vmssOsImageOffer": {"value": "[parameters('workerNodes')[0].osImage.offer]"},
           "vmssOsImageSKU": {"value": "[parameters('workerNodes')[0].osImage.sku]"},
           "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
+          "vmssOverprovision": {"value": "true"},
           "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
           "vmssLbBackendPools": {"value": []},
-          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"}
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
+          "vmssUpgradePolicy": {"value": "Manual"}
         }
       }
     }
