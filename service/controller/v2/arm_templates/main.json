@@ -167,7 +167,8 @@
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
           "hostClusterCidr": {"value": "[parameters('hostClusterCidr')]"},
-          "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"}
+          "kubernetesAPISecurePort": {"value": "[parameters('kubernetesAPISecurePort')]"},
+          "initialProvisioning": {"value": "[parameters('initialProvisioning')]"}
         }
       }
     },
