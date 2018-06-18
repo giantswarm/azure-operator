@@ -18,6 +18,13 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "initialProvisioning": {
+      "type": "string",
+      "defaultValue": "Yes",
+      "metadata": {
+        "description": "Whether the deployment is provisioned the very first time."
+      }
+    },
     "virtualNetworkCidr": {
       "type": "string"
     },
@@ -249,6 +256,7 @@
     {
       "type": "Microsoft.Network/networkSecurityGroups",
       "name": "[variables('workerSecurityGroupName')]",
+      "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "apiVersion": "[parameters('networkSecurityGroupsAPIVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {
