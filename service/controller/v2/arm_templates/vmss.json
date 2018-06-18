@@ -11,6 +11,12 @@
                 "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
             }
         },
+        "versionBundleVersion": {
+            "type": "string",
+            "metadata": {
+              "description": "The versionbundle version used to reconcile the guest cluster."
+            }
+        },
         "vmssName": {
             "type": "string"
         },
@@ -164,7 +170,8 @@
             "name": "[parameters('vmssName')]",
             "location": "[parameters('location')]",
             "tags": {
-                "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+                "provider": "[toUpper(parameters('GiantSwarmTags').provider)]",
+                "versionBundleVersion": "[parameters('versionBundleVersion')]"
             },
             "sku": {
                 "name": "[parameters('vmssVmSize')]",

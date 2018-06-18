@@ -53,22 +53,23 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 	}
 
 	defaultParams := map[string]interface{}{
-		"clusterID":                     key.ClusterID(obj),
-		"virtualNetworkName":            key.VnetName(obj),
-		"virtualNetworkCidr":            key.VnetCIDR(obj),
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
-		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
-		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
-		"masterNodes":                   masterNodes,
-		"workerNodes":                   workerNodes,
+		"clusterID":                     key.ClusterID(obj),
 		"dnsZones":                      obj.Spec.Azure.DNSZones,
 		"hostClusterCidr":               r.azure.HostCluster.CIDR,
 		"hostClusterResourceGroupName":  r.azure.HostCluster.ResourceGroup,
 		"hostClusterVirtualNetworkName": r.azure.HostCluster.VirtualNetwork,
 		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
 		"masterCloudConfigData":         masterCloudConfig,
-		"workerCloudConfigData":         workerCloudConfig,
+		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
+		"masterNodes":                   masterNodes,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
+		"versionBundleVersion":          key.VersionBundleVersion(obj),
+		"virtualNetworkCidr":            key.VnetCIDR(obj),
+		"virtualNetworkName":            key.VnetName(obj),
+		"workerCloudConfigData":         workerCloudConfig,
+		"workerNodes":                   workerNodes,
+		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
 	}
 
 	d := azureresource.Deployment{

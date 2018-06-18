@@ -204,6 +204,15 @@ func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.VersionBundle.Version
 }
 
+func VersionBundleVersionFromTags(t map[string]*string) string {
+	v, ok := t["versionBundleVersion"]
+	if !ok {
+		return ""
+	}
+
+	return *v
+}
+
 // VnetName returns name of the virtual network.
 func VnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), virtualNetworkSuffix)
