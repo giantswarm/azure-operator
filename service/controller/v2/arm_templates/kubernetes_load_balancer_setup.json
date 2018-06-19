@@ -24,6 +24,9 @@
       "type": "Microsoft.Network/loadBalancers",
       "condition": "[equals(parameters('initialProvisioning'), 'Yes')]",
       "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', 'dummy-pip')]"
+      ],
       "properties": {
         "frontendIPConfigurations": [
           {
