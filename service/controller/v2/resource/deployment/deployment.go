@@ -68,6 +68,7 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
 		"masterCloudConfigData":         masterCloudConfig,
 		"workerCloudConfigData":         workerCloudConfig,
+		"vmssMSIEnabled":                r.azure.MSI.Enabled,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
 	}
 

@@ -124,6 +124,9 @@
       "type": "string",
       "defaultValue": "peering.json"
     },
+    "vmssMSIEnabled": {
+      "type": "bool"
+    },
     "vmssTemplateFile": {
       "type": "string",
       "defaultValue": "vmss.json"
@@ -353,6 +356,7 @@
           "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "vmssName": {"value": "[concat(parameters('clusterID'), '-master')]"},
+          "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
           "vmssVmSize": {"value": "[parameters('masterNodes')[0].vmSize]"},
           "vmssVmCount": {"value": "[length(parameters('masterNodes'))]"},
           "vmssVmDataDisks": {"value": [
@@ -390,6 +394,7 @@
           "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "vmssName": {"value": "[concat(parameters('clusterID'), '-worker')]"},
+          "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
           "vmssVmSize": {"value": "[parameters('workerNodes')[0].vmSize]"},
           "vmssVmCount": {"value": "[length(parameters('workerNodes'))]"},
           "vmssVmDataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
