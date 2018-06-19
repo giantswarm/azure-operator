@@ -89,6 +89,13 @@ func New(config Config) (*Service, error) {
 		TenantID:       config.Viper.GetString(config.Flag.Service.Azure.TenantID),
 	}
 
+	OIDC := setting.OIDC{
+		ClientID:      config.Viper.GetString(config.Flag.Service.Installation.Guest.Kubernetes.API.Auth.Provider.OIDC.ClientID),
+		IssuerURL:     config.Viper.GetString(config.Flag.Service.Installation.Guest.Kubernetes.API.Auth.Provider.OIDC.IssuerURL),
+		UsernameClaim: config.Viper.GetString(config.Flag.Service.Installation.Guest.Kubernetes.API.Auth.Provider.OIDC.UsernameClaim),
+		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Guest.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
+	}
+
 	var restConfig *rest.Config
 	{
 		c := k8srestconfig.Config{
@@ -134,6 +141,7 @@ func New(config Config) (*Service, error) {
 
 			Azure:            azure,
 			AzureConfig:      azureConfig,
+			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,
 			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
