@@ -676,16 +676,13 @@ spec:
   selector:
     k8s-app: nginx-ingress-controller
 `
-	ingressLBUnitName     = "k8s-ingress-loadbalancer.service"
+	ingressLBUnitName     = "k8s-addons-ingress-loadbalancer.service"
 	ingressLBUnitTemplate = `[Unit]
-Description=Script to create Kubernetes load balancer
-Wants=k8s-addons.service
-After=k8s-addons.service
+Description=Add Kubernetes load balancer manifest to addons
+ConditionPathExists=!/srv/k8s-ingress-loadbalancer.yaml.lock
 [Service]
 Type=oneshot
-Environment="KUBECTL=quay.io/giantswarm/docker-kubectl:8cabd75bacbcdad7ac5d85efc3ca90c2fabf023b"
-Environment="KUBECONFIG=/etc/kubernetes/config/addons-kubeconfig.yml"
-ExecStart=/bin/sh -c "/usr/bin/docker run -e KUBECONFIG=${KUBECONFIG} --net=host --rm -v /srv:/srv -v /etc/kubernetes:/etc/kubernetes $KUBECTL apply -f /srv/k8s-ingress-loadbalancer.yaml"
+ExecStart=/bin/sh -c "sed -i '/MANIFESTS=\"\"/a MANIFESTS=\"\$\{MANIFESTS\}\ k8s-ingress-loadbalancer.yaml\"' /opt/k8s-addons && touch /srv/k8s-ingress-loadbalancer.yaml.lock"
 [Install]
 WantedBy=multi-user.target
 `
