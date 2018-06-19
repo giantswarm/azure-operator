@@ -22,8 +22,8 @@ var AzureOperatorChartValues = `Installation:
           CIDR: "10.0.0.0/16"
           ResourceGroup: "godsmack"
           VirtualNetwork: "godsmack"
-	MSI:
-	  Enabled: true
+        MSI:
+          Enabled: true
         Location: ${AZURE_LOCATION}
     Secret:
       AzureOperator:
