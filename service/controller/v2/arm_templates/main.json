@@ -100,6 +100,10 @@
       "type": "string",
       "defaultValue": "dns_cname_setup.json"
     },
+    "kubernetesLoadBalancerTemplateFile": {
+      "type": "string",
+      "defaultValue": "kubernetes_load_balancer_setup.json"
+    },
     "publicLoadBalancerTemplateFile": {
       "type": "string",
       "defaultValue": "public_load_balancer_setup.json"
@@ -138,6 +142,8 @@
   "variables": {
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
+    "kubernetesLBBackendID": "[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
+    "kubernetesLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('kubernetesLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
@@ -288,6 +294,21 @@
     },
     {
       "apiVersion": "2016-09-01",
+      "name": "kubernetes_load_balancer_setup",
+      "type": "Microsoft.Resources/deployments",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('kubernetesLoadBalancerTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "initialProvisioning": {"value": "[parameters('initialProvisioning')]"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
       "name": "kubernetes_api_dns_setup",
       "type": "Microsoft.Resources/deployments",
       "properties": {
@@ -402,7 +423,9 @@
           "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
           "vmssOverprovision": {"value": "true"},
           "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
-          "vmssLbBackendPools": {"value": []},
+          "vmssLbBackendPools": {"value": [
+            {"id": "[variables('kubernetesLBBackendID')]"}
+          ]},
           "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
           "vmssUpgradePolicy": {"value": "Manual"}
         }
