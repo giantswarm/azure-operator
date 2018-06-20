@@ -72,6 +72,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Add OIDC support.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Add non-MSI support.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
