@@ -58,7 +58,7 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateURIVersion must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
 	}
 
 	r := &Resource{

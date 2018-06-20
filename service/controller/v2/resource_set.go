@@ -34,6 +34,7 @@ type ResourceSetConfig struct {
 	AzureConfig      client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
+	OIDC             setting.OIDC
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
 	TemplateVersion string
@@ -81,6 +82,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:       config.Azure,
 			AzureConfig: config.AzureConfig,
+			OIDC:        config.OIDC,
 		}
 
 		cloudConfig, err = cloudconfig.New(c)

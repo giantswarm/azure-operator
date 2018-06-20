@@ -67,6 +67,7 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		"versionBundleVersion":          key.VersionBundleVersion(obj),
 		"virtualNetworkCidr":            key.VnetCIDR(obj),
 		"virtualNetworkName":            key.VnetName(obj),
+		"vmssMSIEnabled":                r.azure.MSI.Enabled,
 		"workerCloudConfigData":         workerCloudConfig,
 		"workerNodes":                   workerNodes,
 		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
