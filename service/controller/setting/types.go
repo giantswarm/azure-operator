@@ -43,6 +43,14 @@ func (h AzureHostCluster) Validate() error {
 	return nil
 }
 
+
 type AzureMSI struct {
 	Enabled bool
+}
+
+type OIDC struct {
+	ClientID      string
+	IssuerURL     string
+	UsernameClaim string
+	GroupsClaim   string
 }
