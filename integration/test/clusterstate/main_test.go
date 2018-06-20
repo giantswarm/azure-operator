@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/giantswarm/e2e-harness/pkg/framework"
+	e2eclient "github.com/giantswarm/e2eclients/azure"
 	"github.com/giantswarm/e2etests/clusterstate"
 	"github.com/giantswarm/e2etests/clusterstate/provider"
 	"github.com/giantswarm/micrologger"
@@ -57,7 +58,13 @@ func init() {
 
 	var p *provider.Azure
 	{
+		ac, err := e2eclient.NewClient()
+		if err != nil {
+			panic(err.Error())
+		}
+
 		c := provider.AzureConfig{
+			AzureClient:    ac,
 			GuestFramework: g,
 			HostFramework:  h,
 			Logger:         logger,
