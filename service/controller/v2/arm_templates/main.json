@@ -235,7 +235,6 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
-          "vpnConnectionSharedKey": {"value": "[parameters('vpnConnectionSharedKey')]"},
           "vpnSubnetName": {"value": "[reference('virtual_network_setup').outputs.vpnSubnetID.value]"}
         }
       }
