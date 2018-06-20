@@ -35,6 +35,10 @@
   name = "github.com/giantswarm/certs"
 
 [[constraint]]
+  branch = "azure"
+  name = "github.com/giantswarm/e2eclients"
+
+[[constraint]]
   branch = "master-node"
   name = "github.com/giantswarm/e2etests"
 
