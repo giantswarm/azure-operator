@@ -1,15 +1,11 @@
 package vpngateway
 
 import (
-	"context"
-
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 )
 
 const (
@@ -56,26 +52,4 @@ func New(config Config) (*Resource, error) {
 
 func (r *Resource) Name() string {
 	return Name
-}
-
-// getVirtualNetworksClient return an azure client to interact with
-// VirtualNetworks resources.
-func (r *Resource) getVirtualNetworksClient(ctx context.Context) (*network.VirtualNetworksClient, error) {
-	sc, err := servicecontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return sc.AzureClientSet.VirtualNetworkClient, nil
-}
-
-// getVnetPeeringClient return an azure client to interact with
-// VirtualNetworkPeering resources.
-func (r *Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return azureClients.VnetPeeringClient, nil
 }

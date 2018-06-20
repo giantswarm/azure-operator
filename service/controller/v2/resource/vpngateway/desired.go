@@ -17,29 +17,50 @@ import (
 func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Mask(err)
+		return network.VirtualNetworkGatewayConnection{}, microerror.Mask(err)
 	}
 
-	vnetPeering, err := r.getDesiredState(ctx, a)
+	vpnGatewayConnections, err := r.getDesiredState(ctx, a)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Mask(err)
+		return network.VirtualNetworkGatewayConnection{}, microerror.Mask(err)
 	}
 
-	return vnetPeering, nil
+	return vpnGatewayConnections, nil
 }
 
-func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (network.VirtualNetworkPeering, error) {
+func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (connections, error) {
 	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
-		return network.VirtualNetworkPeering{}, microerror.Mask(err)
+		return connections{}, microerror.Mask(err)
 	}
 
-	return network.VirtualNetworkPeering{
-		Name: to.StringPtr(key.ResourceGroupName(azureConfig)),
-		VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
-			AllowVirtualNetworkAccess: to.BoolPtr(true),
-			RemoteVirtualNetwork: &network.SubResource{
-				ID: to.StringPtr(key.VNetID(azureConfig, sc.AzureConfig.SubscriptionID)),
+	sharedKey := randStringBytes(128)
+
+	return connections{
+		Host: network.VirtualNetworkGatewayConnection{
+			Name: to.StringPtr(key.ResourceGroupName(azureConfig)),
+			VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
+				ConnectionType: network.Vnet2Vnet,
+				SharedKey:      to.StringPtr(sharedKey),
+				VirtualNetworkGateway1: &network.VirtualNetworkGateway{
+					ID: to.StringPtr(key.VPNGatewayID(r.hostAzureConfig.SubscriptionID, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.VirtualNetworkGateway)),
+				},
+				VirtualNetworkGateway2: &network.VirtualNetworkGateway{
+					ID: to.StringPtr(key.VPNGatewayID(sc.AzureConfig.SubscriptionID, key.ResourceGroupName(azureConfig), key.VPNGatewayName(azureConfig))),
+				},
+			},
+		},
+		Guest: network.VirtualNetworkGatewayConnection{
+			Name: to.StringPtr(r.azure.HostCluster.ResourceGroup),
+			VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
+				ConnectionType: network.Vnet2Vnet,
+				SharedKey:      to.StringPtr(sharedKey),
+				VirtualNetworkGateway1: &network.VirtualNetworkGateway{
+					ID: to.StringPtr(key.VPNGatewayID(sc.AzureConfig.SubscriptionID, key.ResourceGroupName(azureConfig), key.VPNGatewayName(azureConfig))),
+				},
+				VirtualNetworkGateway2: &network.VirtualNetworkGateway{
+					ID: to.StringPtr(key.VPNGatewayID(r.hostAzureConfig.SubscriptionID, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.VirtualNetworkGateway)),
+				},
 			},
 		},
 	}, nil

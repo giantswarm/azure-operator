@@ -11,17 +11,17 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-// NewUpdatePatch provide a controller.Patch holding the needed network.VirtualNetworkPeering update to have current comply with desired.
+// NewUpdatePatch provide a controller.Patch holding the needed network.VirtualNetworkGatewayConnection update to have current comply with desired.
 func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	c, err := toVnetPeering(current)
+	c, err := toVPNGatewayConnections(current)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	d, err := toVnetPeering(desired)
+	d, err := toVPNGatewayConnections(desired)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -34,7 +34,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, des
 	return patch, nil
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (*controller.Patch, error) {
+func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*controller.Patch, error) {
 	patch := controller.NewPatch()
 
 	change, err := r.newUpdateChange(ctx, azureConfig, current, desired)
@@ -47,10 +47,13 @@ func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alp
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired network.VirtualNetworkPeering) (network.VirtualNetworkPeering, error) {
-	var change network.VirtualNetworkPeering
+func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (connections, error) {
+	var change connections
 
-	if needUpdate(current, desired) {
+	if needUpdate(current.Host, desired.Host) {
+		change = desired
+	}
+	if needUpdate(current.Guest, desired.Guest) {
 		change = desired
 	}
 
@@ -61,30 +64,48 @@ func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1al
 // desired. Following properties are compared and must be present in desired.
 //
 //     Name
-//     VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess
-//     VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID
+//     VirtualNetworkGatewayConnectionPropertiesFormat.AllowVirtualNetworkAccess
+//     VirtualNetworkGatewayConnectionPropertiesFormat.RemoteVirtualNetwork.ID
 //
-func needUpdate(current, desired network.VirtualNetworkPeering) bool {
-	if current.Name == nil || *current.Name != *desired.Name {
+func needUpdate(current, desired network.VirtualNetworkGatewayConnection) bool {
+	if desired.Name == nil ||
+		desired.VirtualNetworkGatewayConnectionPropertiesFormat == nil ||
+		desired.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1 == nil ||
+		desired.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1.ID == nil ||
+		desired.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway2 == nil ||
+		desired.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway2.ID == nil {
+		return false
+	}
+
+	if current.Name == nil ||
+		*current.Name != *desired.Name {
 		return true
 	}
 
-	if current.VirtualNetworkPeeringPropertiesFormat == nil {
+	if current.VirtualNetworkGatewayConnectionPropertiesFormat == nil {
 		return true
 	}
 
-	if current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess == nil ||
-		*current.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess != *desired.VirtualNetworkPeeringPropertiesFormat.AllowVirtualNetworkAccess {
+	if current.VirtualNetworkGatewayConnectionPropertiesFormat.ConnectionType !=
+		desired.VirtualNetworkGatewayConnectionPropertiesFormat.ConnectionType {
 		return true
 	}
 
-	if current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork == nil ||
-		current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID == nil ||
-		*current.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID != *desired.VirtualNetworkPeeringPropertiesFormat.RemoteVirtualNetwork.ID {
+	if current.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1 == nil ||
+		current.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1.ID == nil ||
+		*current.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1.ID !=
+			*desired.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1.ID {
 		return true
 	}
 
-	if current.VirtualNetworkPeeringPropertiesFormat.PeeringState == network.Disconnected {
+	if current.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway2 == nil ||
+		current.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway2.ID == nil ||
+		*current.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway2.ID !=
+			*desired.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway2.ID {
+		return true
+	}
+
+	if current.VirtualNetworkGatewayConnectionPropertiesFormat.ConnectionStatus == network.VirtualNetworkGatewayConnectionStatusNotConnected {
 		return true
 	}
 
@@ -97,7 +118,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change in
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	c, err := toVnetPeering(change)
+	c, err := toVPNGatewayConnections(change)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -110,24 +131,40 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change in
 	return nil
 }
 
-func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change network.VirtualNetworkPeering) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering")
+func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vpn gateway connections")
 
-	vnetPeeringClient, err := r.getVnetPeeringClient()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if isVNetPeeringEmpty(change) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering: already ensured")
+	if change.isEmpty() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vpn gateway connections: already ensured")
 		return nil
 	}
 
-	_, err = vnetPeeringClient.CreateOrUpdate(ctx, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.VirtualNetwork, *change.Name, change)
+	hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vnet peering: created")
+	guestGatewayConnectionClient, err := r.getGuestVirtualNetworkGatewayConnectionsClient(ctx)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	resourceGroup := r.azure.HostCluster.ResourceGroup
+	connectionName := *change.Host.Name
+	connection := change.Host
+	_, err = hostGatewayConnectionClient.CreateOrUpdate(ctx, resourceGroup, connectionName, connection)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	resourceGroup = key.ResourceGroupName(azureConfig)
+	connectionName = *change.Guest.Name
+	connection = change.Guest
+	_, err = guestGatewayConnectionClient.CreateOrUpdate(ctx, resourceGroup, connectionName, connection)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vpn gateway connections: created")
 	return nil
 }

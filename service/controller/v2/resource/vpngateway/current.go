@@ -12,79 +12,107 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-// GetCurrentState retrieve current virtual network gateway connection from host to guest cluster.
-func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
+// GetCurrentState retrieve current vpn gateway connection from host to guest cluster.
+func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (result interface{}, err error) {
+	result = connections{}
+
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return network.VirtualNetworkGatewayConnection{}, microerror.Mask(err)
+		err = microerror.Mask(err)
+		return
 	}
 
+	// Do not check for vpn gateway when deleting.
+	// As we do not require guest cluster vpn gateway to be ready in order to
+	// delete connection from host cluster vpn gateway.
 	if !key.IsDeleted(customObject) {
+		var vpnGateway *network.VirtualNetworkGateway
+		{
+			// In order to make vpn gateway connection work we need 2 vpn gateway.
+			// We assume the host cluster vpn gateway is ready.
+			// Here we check for guest cluster vpn gateway readiness.
+			// In case vpn gateway is not ready we cancel the resource
+			// and try again on the next resync period.
 
-	}
+			guestResourceGroup := key.ResourceGroupName(customObject)
+			vpnGatewayName := key.VPNGatewayName(customObject)
 
-	// In order to make vnet peering work we need a virtual network which we can
-	// use to peer. In case there is no virtual network yet we cancel the resource
-	// and try again on the next resync period. This is a classical scenario on
-	// guest cluster creation. If we would not check for the virtual network
-	// existence the client calls of CreateOrUpdate would fail with not found
-	// errors.
-	if !key.IsDeleted(customObject) {
-		c, err := r.getVirtualNetworksClient(ctx)
-		if err != nil {
-			return network.VirtualNetworkPeering{}, microerror.Mask(err)
-		}
-
-		g := key.ResourceGroupName(customObject)
-		n := key.VnetName(customObject)
-		e := ""
-		v, err := c.Get(ctx, g, n, e)
-		if IsVirtualNetworkNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the virtual network in the Azure API")
-			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
-			return network.VirtualNetworkPeering{}, nil
-		} else if err != nil {
-			return network.VirtualNetworkPeering{}, microerror.Mask(err)
-		} else {
-			s := *v.ProvisioningState
-
-			if !key.IsFinalProvisioningState(s) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("virtual network is in state '%s'", s))
+			vpnGateway, err = r.getVirtualNetworkGateway(ctx, guestResourceGroup, vpnGatewayName)
+			if client.ResponseWasNotFound(vpnGateway.Response) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
-				return network.VirtualNetworkPeering{}, nil
+				return
+			} else if err != nil {
+				err = microerror.Mask(err)
+				return
+			}
+
+			if provisioningState := *vpnGateway.ProvisioningState; provisioningState != "Succeeded" {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("vpn gateway is in state '%s'", provisioningState))
+				resourcecanceledcontext.SetCanceled(ctx)
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+				return
 			}
 		}
+
 	}
 
-	// Look for the current state of the vnet peering. It is a valid operation to
-	// not find any state. This indicates we want to create the vnet peering in
-	// the following steps.
-	var vnetPeering network.VirtualNetworkPeering
+	var hostVPNGatewayConnection *network.VirtualNetworkGatewayConnection
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the vnet peerings in the Azure API")
+		resourceGroup := r.azure.HostCluster.ResourceGroup
+		connectionName := key.ResourceGroupName(customObject)
 
-		c, err := r.getVnetPeeringClient()
-		if err != nil {
-			return network.VirtualNetworkPeering{}, microerror.Mask(err)
-		}
+		hostVPNGatewayConnection, err = r.getHostVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)
+		if client.ResponseWasNotFound(hostVPNGatewayConnection.Response) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway connection not found")
 
-		g := r.azure.HostCluster.ResourceGroup
-		n := key.ResourceGroupName(customObject)
-		vnetPeering, err = c.Get(ctx, g, g, n)
-		if client.ResponseWasNotFound(vnetPeering.Response) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the vnet peerings in the Azure API")
-
-			return network.VirtualNetworkPeering{}, nil
+			return
 		} else if err != nil {
-			return network.VirtualNetworkPeering{}, microerror.Mask(err)
+			err = microerror.Mask(err)
+			return
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found the vnet peerings in the Azure API")
+		if provisioningState := *hostVPNGatewayConnection.ProvisioningState; !key.IsFinalProvisioningState(provisioningState) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway connection is in state '%s'", provisioningState))
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+			return
+		}
 	}
 
-	return vnetPeering, nil
+	var guestVPNGatewayConnection *network.VirtualNetworkGatewayConnection
+	{
+		resourceGroup := key.ResourceGroupName(customObject)
+		connectionName := r.azure.HostCluster.ResourceGroup
+
+		guestVPNGatewayConnection, err = r.getGuestVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)
+		if client.ResponseWasNotFound(guestVPNGatewayConnection.Response) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "guest vpn gateway connection not found")
+
+			return
+		} else if err != nil {
+			err = microerror.Mask(err)
+			return
+		}
+
+		if provisioningState := *guestVPNGatewayConnection.ProvisioningState; !key.IsFinalProvisioningState(provisioningState) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway connection is in state '%s'", provisioningState))
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+			return
+		}
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "vpn gateway connections found")
+	result = connections{
+		Host:  *hostVPNGatewayConnection,
+		Guest: *guestVPNGatewayConnection,
+	}
+
+	return
 }

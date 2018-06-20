@@ -1,27 +1,32 @@
 package vpngateway
 
 import (
-	"github.com/giantswarm/microerror"
+	"math/rand"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/giantswarm/microerror"
 )
 
-// toVnePeering convert v to network.VirtualNetworkPeering.
-// If v is nil and empty network.VirtualNetworkPeering is returned.
-func toVnetPeering(v interface{}) (network.VirtualNetworkPeering, error) {
+// toVPNGatewayConnections convert v to network.VirtualNetworkGatewayConnection.
+// If v is nil and empty network.VirtualNetworkGatewayConnection is returned.
+func toVPNGatewayConnections(v interface{}) (connections, error) {
 	if v == nil {
-		return network.VirtualNetworkPeering{}, nil
+		return connections{}, nil
 	}
 
-	vnetPeering, ok := v.(network.VirtualNetworkPeering)
+	vpnGatewayConnections, ok := v.(connections)
 	if !ok {
-		return network.VirtualNetworkPeering{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", network.VirtualNetworkPeering{}, v)
+		return connections{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", connections{}, v)
 	}
 
-	return vnetPeering, nil
+	return vpnGatewayConnections, nil
 }
 
-// isVNetPeeringEmpty check whether peering correspond to network.VirtualNetworkPeering zero value.
-func isVNetPeeringEmpty(peering network.VirtualNetworkPeering) bool {
-	return peering == network.VirtualNetworkPeering{}
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+
+func randStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+	return string(b)
 }
