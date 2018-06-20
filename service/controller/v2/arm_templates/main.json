@@ -383,6 +383,7 @@
         "parameters": {
           "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "versionBundleVersion": {"value": "[parameters('versionBundleVersion')]"},
           "vmssName": {"value": "[concat(parameters('clusterID'), '-master')]"},
           "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
           "vmssVmSize": {"value": "[parameters('masterNodes')[0].vmSize]"},
@@ -421,6 +422,7 @@
         "parameters": {
           "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "versionBundleVersion": {"value": "[parameters('versionBundleVersion')]"},
           "vmssName": {"value": "[concat(parameters('clusterID'), '-worker')]"},
           "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
           "vmssVmSize": {"value": "[parameters('workerNodes')[0].vmSize]"},
