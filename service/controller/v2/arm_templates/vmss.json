@@ -14,7 +14,7 @@
         "versionBundleVersion": {
             "type": "string",
             "metadata": {
-              "description": "The versionbundle version used to reconcile the guest cluster."
+              "description": "The version bundle version used to reconcile the guest cluster."
             }
         },
         "vmssMSIEnabled": {

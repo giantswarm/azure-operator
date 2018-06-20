@@ -148,6 +148,30 @@ func (r *Resource) processInstance(ctx context.Context, customObject providerv1a
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
 	}
 
+	if instanceToReimage != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring tags of instance '%s' to be updated", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
+
+		c, err := r.getVMsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		g := key.ResourceGroupName(customObject)
+		s := deploymentNameFunc(customObject)
+		id := *instanceToReimage.InstanceID
+		p := compute.VirtualMachineScaleSetVM{
+			Tags: map[string]*string{
+				"versionBundleVersion": to.StringPtr(key.VersionBundleVersion(customObject)),
+			},
+		}
+		_, err = c.Update(ctx, g, s, id, p)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured tags of instance '%s' to be updated", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
+	}
+
 	return nil
 }
 

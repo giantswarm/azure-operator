@@ -14,6 +14,12 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "versionBundleVersion": {
+        "type": "string",
+        "metadata": {
+          "description": "The version bundle version used to reconcile the guest cluster."
+        }
+    },
     "initialProvisioning": {
       "type": "string",
       "defaultValue": "Yes",
