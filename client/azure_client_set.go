@@ -65,6 +65,10 @@ type AzureClientSet struct {
 	InterfacesClient *network.InterfacesClient
 	// VirtualNetworkClient manages virtual networks.
 	VirtualNetworkClient *network.VirtualNetworksClient
+	// VirtualNetworkGatewaysClient manages virtual network gateways.
+	VirtualNetworkGatewaysClient *network.VirtualNetworkGatewaysClient
+	// VirtualNetworkGatewayConnectionsClient manages virtual network gateway connections.
+	VirtualNetworkGatewayConnectionsClient *network.VirtualNetworkGatewayConnectionsClient
 	// VirtualMachineScaleSetsClient manages virtual machine scale sets.
 	VirtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient
 	// VirtualMachineScaleSetVMsClient manages virtual machine scale set VMs.
@@ -98,15 +102,17 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	}
 
 	clientSet := &AzureClientSet{
-		DeploymentsClient:               newDeploymentsClient(c),
-		GroupsClient:                    newGroupsClient(c),
-		DNSRecordSetsClient:             newDNSRecordSetsClient(c),
-		DNSZonesClient:                  newDNSZonesClient(c),
-		InterfacesClient:                newInterfacesClient(c),
-		VirtualNetworkClient:            newVirtualNetworkClient(c),
-		VirtualMachineScaleSetVMsClient: newVirtualMachineScaleSetVMsClient(c),
-		VirtualMachineScaleSetsClient:   newVirtualMachineScaleSetsClient(c),
-		VnetPeeringClient:               newVnetPeeringClient(c),
+		DeploymentsClient:                      newDeploymentsClient(c),
+		GroupsClient:                           newGroupsClient(c),
+		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
+		DNSZonesClient:                         newDNSZonesClient(c),
+		InterfacesClient:                       newInterfacesClient(c),
+		VirtualNetworkClient:                   newVirtualNetworkClient(c),
+		VirtualNetworkGatewaysClient:           newVirtualNetworkGatewaysClient(c),
+		VirtualNetworkGatewayConnectionsClient: newVirtualNetworkGatewayConnectionsClient(c),
+		VirtualMachineScaleSetVMsClient:        newVirtualMachineScaleSetVMsClient(c),
+		VirtualMachineScaleSetsClient:          newVirtualMachineScaleSetsClient(c),
+		VnetPeeringClient:                      newVnetPeeringClient(c),
 	}
 
 	return clientSet, nil
@@ -159,6 +165,20 @@ func newInterfacesClient(config *ClientConfig) *network.InterfacesClient {
 
 func newVirtualNetworkClient(config *ClientConfig) *network.VirtualNetworksClient {
 	c := network.NewVirtualNetworksClientWithBaseURI(config.ResourceManagerEndpoint, config.SubscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.ServicePrincipalToken)
+
+	return &c
+}
+
+func newVirtualNetworkGatewaysClient(config *ClientConfig) *network.VirtualNetworkGatewaysClient {
+	c := network.NewVirtualNetworkGatewaysClientWithBaseURI(config.ResourceManagerEndpoint, config.SubscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.ServicePrincipalToken)
+
+	return &c
+}
+
+func newVirtualNetworkGatewayConnectionsClient(config *ClientConfig) *network.VirtualNetworkGatewayConnectionsClient {
+	c := network.NewVirtualNetworkGatewayConnectionsClientWithBaseURI(config.ResourceManagerEndpoint, config.SubscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.ServicePrincipalToken)
 
 	return &c
