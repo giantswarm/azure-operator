@@ -48,19 +48,7 @@
     "hostCidr": {
       "type": "string"
     },
-    "hostResourceGroupName": {
-      "type": "string",
-      "metadata": {
-        "description": "Resource group's name of the host cluster."
-      }
-    },
-    "hostVirtualNetworkGatewayName": {
-      "type": "string",
-      "metadata": {
-        "description": "Virtual network gateway's name of the host cluster."
-      }
-    },
-    "vpnConnectionSharedKey": {
+    "vpnGatewayName": {
       "type": "string"
     },
     "kubernetesAPISecurePort": {
@@ -146,9 +134,6 @@
       "metadata": {
         "description": "The DNS zones for kubernetes api and ingress."
       }
-    },
-    "hostSubscriptionID": {
-      "type": "string"
     }
   },
   "variables": {
@@ -249,9 +234,6 @@
         "parameters": {
           "clusterID": {"value": "[parameters('clusterID')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
-          "hostResourceGroupName": {"value": "[parameters('hostResourceGroupName')]"},
-          "hostSubscriptionID": {"value": "[parameters('hostSubscriptionID')]"},
-          "hostVirtualNetworkGatewayName": {"value": "[parameters('hostVirtualNetworkGatewayName')]"},
           "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
           "vpnConnectionSharedKey": {"value": "[parameters('vpnConnectionSharedKey')]"},
           "vpnSubnetName": {"value": "[reference('virtual_network_setup').outputs.vpnSubnetID.value]"}
