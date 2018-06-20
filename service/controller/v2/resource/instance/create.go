@@ -26,7 +26,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
 	}
 
 	{
@@ -37,7 +37,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
 	}
 
 	return nil
