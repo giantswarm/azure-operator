@@ -268,7 +268,7 @@
                         ]
                     },
                     "extensionProfile": {
-                        "extensions": "[if(parameters('vmssMSIEnabled', variables('vmssExtensions'), json('[]'))]"
+                        "extensions": "[if(parameters('vmssMSIEnabled'), variables('vmssExtensions'), json('[]'))]"
                     }
                 }
             }
