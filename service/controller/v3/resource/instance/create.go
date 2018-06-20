@@ -178,15 +178,30 @@ func (r *Resource) processInstance(ctx context.Context, customObject providerv1a
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+	for _, i := range list {
+		if i.ProvisioningState == nil {
+			continue
+		}
+		fmt.Printf("%#v\n", *i.InstanceID)
+		fmt.Printf("%#v\n", i.Tags)
+		for k, v := range i.Tags {
+			fmt.Printf("%#v\n", k)
+			fmt.Printf("%#v\n", v)
+		}
+	}
 	instanceInProgress := firstInstanceInProgress(customObject, list)
+
+	fmt.Printf("1\n")
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
 	if instanceInProgress == nil {
+		fmt.Printf("2\n")
 		instanceToUpdate = firstInstanceToUpdate(customObject, list)
 	}
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	if instanceToUpdate == nil {
+		fmt.Printf("3\n")
 		instanceToReimage = firstInstanceToReimage(customObject, list)
 	}
 
