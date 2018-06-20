@@ -45,7 +45,7 @@
     "vpnSubnetCidr": {
       "type": "string"
     },
-    "hostCidr": {
+    "hostClusterCidr": {
       "type": "string"
     },
     "vpnGatewayName": {

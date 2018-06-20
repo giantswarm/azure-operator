@@ -71,7 +71,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"masterNodes":             masterNodes,
 		"workerNodes":             workerNodes,
 		"dnsZones":                obj.Spec.Azure.DNSZones,
-		"hostCidr":                r.azure.HostCluster.CIDR,
+		"hostClusterCidr":         r.azure.HostCluster.CIDR,
 		"vpnGatewayName":          key.VPNGatewayName(obj),
 		"kubernetesAPISecurePort": obj.Spec.Cluster.Kubernetes.API.SecurePort,
 		"masterCloudConfigData":   masterCloudConfig,
