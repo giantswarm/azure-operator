@@ -25,7 +25,7 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		n := node{
 			AdminUsername:   key.AdminUsername(obj),
 			AdminSSHKeyData: key.AdminSSHKeyData(obj),
-			OSImage:         newNodeOSImageCoreOS_1688_5_3(),
+			OSImage:         newNodeOSImageCoreOS_1745_7_0(),
 			VMSize:          m.VMSize,
 		}
 		masterNodes = append(masterNodes, n)
@@ -36,7 +36,7 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		n := node{
 			AdminUsername:   key.AdminUsername(obj),
 			AdminSSHKeyData: key.AdminSSHKeyData(obj),
-			OSImage:         newNodeOSImageCoreOS_1688_5_3(),
+			OSImage:         newNodeOSImageCoreOS_1745_7_0(),
 			VMSize:          w.VMSize,
 		}
 		workerNodes = append(workerNodes, n)
