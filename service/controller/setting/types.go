@@ -43,7 +43,6 @@ func (h AzureHostCluster) Validate() error {
 	return nil
 }
 
-
 type AzureMSI struct {
 	Enabled bool
 }
