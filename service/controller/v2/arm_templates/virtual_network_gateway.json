@@ -58,7 +58,7 @@
     },
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
-      "name": "parameters('vpnGatewayName')",
+      "name": "[parameters('vpnGatewayName')]",
       "apiVersion": "[parameters('virtualNetworksGatewayAPIVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {
