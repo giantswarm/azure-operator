@@ -37,11 +37,14 @@
     }
   },
   "variables": {
-    "publicIPName": "[concat(parameters('clusterID'), '-VPNGateway-PublicIP')]"
+    "publicIPName": "[concat(parameters('clusterID'), '-VPNGateway-PublicIP')]",
+    "publicIPID": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]",
+
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
   },
   "resources": [
     {
-      "name": "variables('publicIPName')",
+      "name": "[variables('publicIPName')]",
       "type": "Microsoft.Network/publicIPAddresses",
       "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
       "location": "[resourceGroup().location]",
@@ -73,10 +76,10 @@
             "properties": {
               "privateIPAllocationMethod": "Dynamic",
               "subnet": {
-                "id": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
+                "id": "[variables('vnetID')]"
               },
               "publicIPAddress": {
-                "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]"
+                "id": "[variables('publicIPID')]"
               }
             },
             "name": "string"
@@ -91,13 +94,10 @@
           ]
         },
         "sku": {
-          "name": "VpnGw1"
+          "name": "VpnGw1",
+          "tier": "VpnGw1"
         }
-      },
-      "dependsOn": [
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPName'))]",
-        "[concat('Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
-      ]
+      }
     }
   ]
 }
