@@ -11,6 +11,9 @@
                 "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
             }
         },
+        "vmssMSIEnabled": {
+            "type": "bool"
+        },
         "vmssName": {
             "type": "string"
         },
@@ -70,6 +73,21 @@
 
         "roleAssignmentName": "[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
 
+        "vmssExtensions": [
+            {
+                "name": "MSILinuxExtension",
+                "properties": {
+                    "publisher": "Microsoft.ManagedIdentity",
+                    "type": "ManagedIdentityExtensionForLinux",
+                    "typeHandlerVersion": "1.0",
+                    "autoUpgradeMinorVersion": true,
+                    "settings": {
+                        "port": 50342
+                    },
+                    "protectedSettings": {}
+                }
+            }
+        ],
         "vmssResourceId": "[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
         "vmssVmNamePrefix": "[concat(toLower(parameters('vmssName')), '-')]",
         "vmssSinglePlacementGroup": "true",
@@ -250,27 +268,14 @@
                         ]
                     },
                     "extensionProfile": {
-                        "extensions": [
-                            {
-                                "name": "MSILinuxExtension",
-                                "properties": {
-                                    "publisher": "Microsoft.ManagedIdentity",
-                                    "type": "ManagedIdentityExtensionForLinux",
-                                    "typeHandlerVersion": "1.0",
-                                    "autoUpgradeMinorVersion": true,
-                                    "settings": {
-                                        "port": 50342
-                                    },
-                                    "protectedSettings": {}
-                                }
-                            }
-                        ]
+                        "extensions": "[if(parameters('vmssMSIEnabled'), variables('vmssExtensions'), json('[]'))]"
                     }
                 }
             }
         },
         {
             "apiVersion": "[variables('authorizationAPIVersion')]",
+            "condition": "[parameters('vmssMSIEnabled')]",
             "type": "Microsoft.Authorization/roleAssignments",
             "name": "[variables('roleAssignmentName')]",
             "tags": {

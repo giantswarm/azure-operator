@@ -5,6 +5,7 @@ import "fmt"
 type Azure struct {
 	Cloud       string
 	HostCluster AzureHostCluster
+	MSI         AzureMSI
 	Location    string
 }
 
@@ -40,6 +41,10 @@ func (h AzureHostCluster) Validate() error {
 	}
 
 	return nil
+}
+
+type AzureMSI struct {
+	Enabled bool
 }
 
 type OIDC struct {

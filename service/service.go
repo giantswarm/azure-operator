@@ -76,6 +76,9 @@ func New(config Config) (*Service, error) {
 			ResourceGroup:  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
 			VirtualNetwork: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),
 		},
+		MSI: setting.AzureMSI{
+			Enabled: config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
+		},
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
