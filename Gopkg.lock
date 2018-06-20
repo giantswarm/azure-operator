@@ -215,10 +215,13 @@
   revision = "fd0ebd0ec770f6ffb095dc5daa2fa23ca505e762"
 
 [[projects]]
-  branch = "master"
+  branch = "azure"
   name = "github.com/giantswarm/e2eclients"
-  packages = ["aws"]
-  revision = "cb45cf36a000b2212427dac1697740dd316d2f0b"
+  packages = [
+    "aws",
+    "azure"
+  ]
+  revision = "99fd0854de7daad70efb97ea1be8f69a664a7a19"
 
 [[projects]]
   branch = "master"
@@ -235,7 +238,7 @@
     "scaling",
     "scaling/provider"
   ]
-  revision = "140a3cf7935521ef89a1f2d12ca7fba46b31b89c"
+  revision = "c8e9993fb00414f542190ff71a0553717aab8e8f"
 
 [[projects]]
   branch = "master"

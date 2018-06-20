@@ -1,11 +1,13 @@
 package provider
 
 import (
+	"context"
 	"fmt"
 	"time"
 
 	"github.com/giantswarm/apprclient"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
+	azureclient "github.com/giantswarm/e2eclients/azure"
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -18,6 +20,7 @@ const (
 )
 
 type AzureConfig struct {
+	AzureClient    *azureclient.Client
 	GuestFramework *framework.Guest
 	HostFramework  *framework.Host
 	Logger         micrologger.Logger
@@ -26,6 +29,7 @@ type AzureConfig struct {
 }
 
 type Azure struct {
+	azureClient    *azureclient.Client
 	guestFramework *framework.Guest
 	hostFramework  *framework.Host
 	logger         micrologger.Logger
@@ -34,6 +38,9 @@ type Azure struct {
 }
 
 func NewAzure(config AzureConfig) (*Azure, error) {
+	if config.AzureClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClient must not be empty", config)
+	}
 	if config.GuestFramework == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.GuestFramework must not be empty", config)
 	}
@@ -49,6 +56,7 @@ func NewAzure(config AzureConfig) (*Azure, error) {
 	}
 
 	a := &Azure{
+		azureClient:    config.AzureClient,
 		guestFramework: config.GuestFramework,
 		hostFramework:  config.HostFramework,
 		logger:         config.Logger,
@@ -117,7 +125,13 @@ func (a *Azure) InstallTestApp() error {
 }
 
 func (a *Azure) RebootMaster() error {
-	// TODO
+	resourceGroupName := a.clusterID
+	masterVMName := fmt.Sprintf("%s-Master-1", a.clusterID)
+	_, err := a.azureClient.VirtualMachineClient.Restart(context.TODO(), resourceGroupName, masterVMName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	return nil
 }
 
