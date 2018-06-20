@@ -15,7 +15,7 @@
       "type": "string"
     },
     "vpnGatewayName": {
-      "type": "string",
+      "type": "string"
     },
     "vpnSubnetName": {
       "type": "string",
@@ -63,6 +63,9 @@
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
       },
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPName'))]"
+      ],
       "properties": {
         "ipConfigurations": [
           {
@@ -92,8 +95,8 @@
         }
       },
       "dependsOn": [
-        "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]",
-        "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIPName'))]",
+        "[concat('Microsoft.Network/virtualNetworks/subnets/', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
       ]
     }
   ]
