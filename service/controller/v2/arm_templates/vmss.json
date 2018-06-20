@@ -189,9 +189,7 @@
                 "tier": "Standard",
                 "capacity": "[int(parameters('vmssVmCount'))]"
             },
-            "identity": {
-                "type": "systemAssigned"
-            },
+            "identity": "[if(parameters('vmssMSIEnabled'), json('{\"type\":\"systemAssigned\"}'), json('{\"type\":\"None\"}'))]",
             "properties": {
                 "overprovision": "[parameters('vmssOverprovision')]",
                 "upgradePolicy": {
@@ -283,7 +281,7 @@
             },
             "properties": {
                 "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-                "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+                "principalId": "[if(parameters('vmssMSIEnabled'), reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId, '')]",
                 "scope": "[resourceGroup().id]"
             }
         }
