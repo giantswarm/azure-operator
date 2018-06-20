@@ -47,6 +47,21 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Removed Ingress Controller, kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
 				Kind:        versionbundle.KindRemoved,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Add second disk for master vmss.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Disable overprovisioning of master vmss.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Multiple fixes related to resource reconciliation.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -75,6 +90,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "0.2.0",
+		Version: "1.0.0",
 	}
 }
