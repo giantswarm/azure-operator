@@ -16,7 +16,6 @@
     },
     "vpnGatewayName": {
       "type": "string",
-      "defaultValue": "GatewaySubnet"
     },
     "vpnSubnetName": {
       "type": "string",

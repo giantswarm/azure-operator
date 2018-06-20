@@ -49,8 +49,7 @@
     "workerSubnetName": "[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
     "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
 
-    "vpnSubnetName": "[concat(parameters('virtualNetworkName'), '-VPNSubnet')]",
-    "vpnSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('vpnSubnetName'))]"
+    "vpnSubnetName": "GatewaySubnet",
   },
   "resources": [
     {
@@ -110,10 +109,6 @@
     "workerSubnetID": {
       "type": "string",
       "value": "[variables('workerSubnetID')]"
-    },
-    "vpnSubnetID": {
-      "type": "string",
-      "value": "[variables('vpnSubnetID')]"
     }
   }
 }
