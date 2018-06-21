@@ -14,13 +14,10 @@ import (
 )
 
 // GetDesiredState return desired vpn gateway connections.
-func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (result interface{}, err error) {
-	result = connections{}
-
+func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
 	customObject, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		err = microerror.Mask(err)
-		return
+		return connections{}, microerror.Mask(err)
 	}
 
 	var (
@@ -46,18 +43,16 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 				r.logger.LogCtx(ctx, "level", "debug", "message", "guest vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-				err = nil
-				return
+				return connections{}, nil
 			} else if err != nil {
-				err = microerror.Mask(err)
-				return
+				return connections{}, microerror.Mask(err)
 			}
 
 			if provisioningState := *guestVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway is in state '%s'", provisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-				return
+				return connections{}, nil
 			}
 		}
 
@@ -70,26 +65,23 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 				r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-				err = nil
-				return
+				return connections{}, nil
 			} else if err != nil {
-				err = microerror.Mask(err)
-				return
+				return connections{}, microerror.Mask(err)
 			}
 
 			if provisioningState := *hostVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-				return
+				return connections{}, nil
 			}
 		}
 	}
 
 	vpnGatewayConnections, err := r.getDesiredState(ctx, customObject, guestVPNGateway, hostVPNGateway)
 	if err != nil {
-		err = microerror.Mask(err)
-		return
+		return connections{}, microerror.Mask(err)
 	}
 
 	return vpnGatewayConnections, nil
