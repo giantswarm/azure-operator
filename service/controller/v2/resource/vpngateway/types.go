@@ -10,5 +10,5 @@ type connections struct {
 }
 
 func (c connections) isEmpty() bool {
-	return c.Host.VirtualNetworkGatewayConnectionPropertiesFormat != nil || c.Guest.VirtualNetworkGatewayConnectionPropertiesFormat != nil
+	return c.Host.VirtualNetworkGatewayConnectionPropertiesFormat == nil || c.Guest.VirtualNetworkGatewayConnectionPropertiesFormat == nil
 }

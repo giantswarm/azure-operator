@@ -2,65 +2,121 @@ package vpngateway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
-	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-// GetDesiredState return desired peering for host cluster virtual network.
-// Peering resource is named after guest cluster's resource group and targeting its virtual network.
-func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
-	a, err := key.ToCustomObject(azureConfig)
+// GetDesiredState return desired vpn gateway connections.
+func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (result interface{}, err error) {
+	result = connections{}
+
+	customObject, err := key.ToCustomObject(azureConfig)
 	if err != nil {
-		return network.VirtualNetworkGatewayConnection{}, microerror.Mask(err)
+		err = microerror.Mask(err)
+		return
 	}
 
-	vpnGatewayConnections, err := r.getDesiredState(ctx, a)
+	var (
+		hostVPNGateway  *network.VirtualNetworkGateway
+		guestVPNGateway *network.VirtualNetworkGateway
+	)
+	// Do not check for vpn gateway when deleting.
+	// As we do not require guest cluster vpn gateway to be ready in order to
+	// delete connection from host cluster vpn gateway.
+	if !key.IsDeleted(customObject) {
+		// In order to make vpn gateway connection work we need 2 vpn gateway.
+		// One on the host cluster and one on the host cluster.
+		// Here we check for vpn gateways readiness.
+		// In case one of the vpn gateway is not ready we cancel the resource
+		// and try again on the next resync period.
+		{
+
+			resourceGroup := key.ResourceGroupName(customObject)
+			vpnGatewayName := key.VPNGatewayName(customObject)
+
+			guestVPNGateway, err = r.getGuestVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
+			if IsVPNGatewayNotFound(err) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "guest vpn gateway was not found")
+				resourcecanceledcontext.SetCanceled(ctx)
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				err = nil
+				return
+			} else if err != nil {
+				err = microerror.Mask(err)
+				return
+			}
+
+			if provisioningState := *guestVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway is in state '%s'", provisioningState))
+				resourcecanceledcontext.SetCanceled(ctx)
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				return
+			}
+		}
+
+		{
+			resourceGroup := r.azure.HostCluster.ResourceGroup
+			vpnGatewayName := r.azure.HostCluster.VirtualNetworkGateway
+
+			hostVPNGateway, err = r.getHostVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
+			if IsVPNGatewayNotFound(err) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway was not found")
+				resourcecanceledcontext.SetCanceled(ctx)
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				err = nil
+				return
+			} else if err != nil {
+				err = microerror.Mask(err)
+				return
+			}
+
+			if provisioningState := *hostVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState))
+				resourcecanceledcontext.SetCanceled(ctx)
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				return
+			}
+		}
+	}
+
+	vpnGatewayConnections, err := r.getDesiredState(ctx, customObject, guestVPNGateway, hostVPNGateway)
 	if err != nil {
-		return network.VirtualNetworkGatewayConnection{}, microerror.Mask(err)
+		err = microerror.Mask(err)
+		return
 	}
 
 	return vpnGatewayConnections, nil
 }
 
-func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (connections, error) {
-	sc, err := servicecontext.FromContext(ctx)
-	if err != nil {
-		return connections{}, microerror.Mask(err)
-	}
-
+func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) (connections, error) {
 	sharedKey := randStringBytes(128)
 
 	return connections{
 		Host: network.VirtualNetworkGatewayConnection{
-			Name: to.StringPtr(key.ResourceGroupName(azureConfig)),
+			Name:     to.StringPtr(key.ResourceGroupName(azureConfig)),
+			Location: hostVPNGateway.Location,
 			VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
-				ConnectionType: network.Vnet2Vnet,
-				SharedKey:      to.StringPtr(sharedKey),
-				VirtualNetworkGateway1: &network.VirtualNetworkGateway{
-					ID: to.StringPtr(key.VPNGatewayID(r.hostAzureConfig.SubscriptionID, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.VirtualNetworkGateway)),
-				},
-				VirtualNetworkGateway2: &network.VirtualNetworkGateway{
-					ID: to.StringPtr(key.VPNGatewayID(sc.AzureConfig.SubscriptionID, key.ResourceGroupName(azureConfig), key.VPNGatewayName(azureConfig))),
-				},
+				ConnectionType:         network.Vnet2Vnet,
+				SharedKey:              to.StringPtr(sharedKey),
+				VirtualNetworkGateway1: hostVPNGateway,
+				VirtualNetworkGateway2: guestVPNGateway,
 			},
 		},
 		Guest: network.VirtualNetworkGatewayConnection{
-			Name: to.StringPtr(r.azure.HostCluster.ResourceGroup),
+			Name:     to.StringPtr(r.azure.HostCluster.ResourceGroup),
+			Location: guestVPNGateway.Location,
 			VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
-				ConnectionType: network.Vnet2Vnet,
-				SharedKey:      to.StringPtr(sharedKey),
-				VirtualNetworkGateway1: &network.VirtualNetworkGateway{
-					ID: to.StringPtr(key.VPNGatewayID(sc.AzureConfig.SubscriptionID, key.ResourceGroupName(azureConfig), key.VPNGatewayName(azureConfig))),
-				},
-				VirtualNetworkGateway2: &network.VirtualNetworkGateway{
-					ID: to.StringPtr(key.VPNGatewayID(r.hostAzureConfig.SubscriptionID, r.azure.HostCluster.ResourceGroup, r.azure.HostCluster.VirtualNetworkGateway)),
-				},
+				ConnectionType:         network.Vnet2Vnet,
+				SharedKey:              to.StringPtr(sharedKey),
+				VirtualNetworkGateway1: guestVPNGateway,
+				VirtualNetworkGateway2: hostVPNGateway,
 			},
 		},
 	}, nil

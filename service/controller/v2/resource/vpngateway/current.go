@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
@@ -22,53 +21,15 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (result
 		return
 	}
 
-	// Do not check for vpn gateway when deleting.
-	// As we do not require guest cluster vpn gateway to be ready in order to
-	// delete connection from host cluster vpn gateway.
-	if !key.IsDeleted(customObject) {
-		var vpnGateway *network.VirtualNetworkGateway
-		{
-			// In order to make vpn gateway connection work we need 2 vpn gateway.
-			// We assume the host cluster vpn gateway is ready.
-			// Here we check for guest cluster vpn gateway readiness.
-			// In case vpn gateway is not ready we cancel the resource
-			// and try again on the next resync period.
-
-			guestResourceGroup := key.ResourceGroupName(customObject)
-			vpnGatewayName := key.VPNGatewayName(customObject)
-
-			vpnGateway, err = r.getVirtualNetworkGateway(ctx, guestResourceGroup, vpnGatewayName)
-			if client.ResponseWasNotFound(vpnGateway.Response) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "vpn gateway was not found")
-				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
-				return
-			} else if err != nil {
-				err = microerror.Mask(err)
-				return
-			}
-
-			if provisioningState := *vpnGateway.ProvisioningState; provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("vpn gateway is in state '%s'", provisioningState))
-				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
-				return
-			}
-		}
-
-	}
-
 	var hostVPNGatewayConnection *network.VirtualNetworkGatewayConnection
 	{
 		resourceGroup := r.azure.HostCluster.ResourceGroup
 		connectionName := key.ResourceGroupName(customObject)
 
 		hostVPNGatewayConnection, err = r.getHostVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)
-		if client.ResponseWasNotFound(hostVPNGatewayConnection.Response) {
+		if IsVPNGatewayConnectionNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway connection not found")
-
+			err = nil
 			return
 		} else if err != nil {
 			err = microerror.Mask(err)
@@ -79,9 +40,11 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (result
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway connection is in state '%s'", provisioningState))
 			resourcecanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
 			return
 		}
+	}
+	result = connections{
+		Host: *hostVPNGatewayConnection,
 	}
 
 	var guestVPNGatewayConnection *network.VirtualNetworkGatewayConnection
@@ -90,9 +53,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (result
 		connectionName := r.azure.HostCluster.ResourceGroup
 
 		guestVPNGatewayConnection, err = r.getGuestVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)
-		if client.ResponseWasNotFound(guestVPNGatewayConnection.Response) {
+		if IsVPNGatewayConnectionNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "guest vpn gateway connection not found")
-
+			err = nil
 			return
 		} else if err != nil {
 			err = microerror.Mask(err)
@@ -103,16 +66,14 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (result
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway connection is in state '%s'", provisioningState))
 			resourcecanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
 			return
 		}
 	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "vpn gateway connections found")
 	result = connections{
 		Host:  *hostVPNGatewayConnection,
 		Guest: *guestVPNGatewayConnection,
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "vpn gateway connections found")
 	return
 }

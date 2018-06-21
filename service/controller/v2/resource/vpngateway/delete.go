@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-// NewDeletePatch provide a controller.Patch holding the network.VirtualNetworkPeering to be deleted.
+// NewDeletePatch provide a controller.Patch holding connections to be deleted.
 func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
@@ -37,11 +37,13 @@ func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, des
 // newDeletePatch use desired as delete patch since it is mostly static and more likely to be present than current.
 func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*controller.Patch, error) {
 	patch := controller.NewPatch()
+
 	patch.SetDeleteChange(desired)
+
 	return patch, nil
 }
 
-// ApplyDeleteChange perform deletion of the change virtual network peering against azure.
+// ApplyDeleteChange perform deletion of vpn gateway connection against azure.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change interface{}) error {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
@@ -61,20 +63,21 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 }
 
 func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vnet peering")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vpn gateway connection")
+
+	if change.isEmpty() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "delete host vpn gateway connections: already deleted")
+		return nil
+	}
 
 	hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	guestGatewayConnectionClient, err := r.getGuestVirtualNetworkGatewayConnectionsClient(ctx)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	resourceGroup := r.azure.HostCluster.ResourceGroup
 	connectionName := *change.Host.Name
+
 	respFuture, err := hostGatewayConnectionClient.Delete(ctx, resourceGroup, connectionName)
 	if err != nil {
 		return microerror.Mask(err)
@@ -87,22 +90,6 @@ func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1
 		return microerror.Mask(err)
 	} else {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted host vpn gateway connection")
-	}
-
-	resourceGroup = key.ResourceGroupName(azureConfig)
-	connectionName = *change.Guest.Name
-	respFuture, err = guestGatewayConnectionClient.Delete(ctx, resourceGroup, connectionName)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	res, err = guestGatewayConnectionClient.DeleteResponder(respFuture.Response())
-	if client.ResponseWasNotFound(res) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find guest vpn gateway connection")
-	} else if err != nil {
-		return microerror.Mask(err)
-	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted guest vpn gateway connection")
 	}
 
 	return nil

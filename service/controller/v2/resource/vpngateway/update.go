@@ -11,16 +11,18 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-// NewUpdatePatch provide a controller.Patch holding the needed network.VirtualNetworkGatewayConnection update to have current comply with desired.
+// NewUpdatePatch provide a controller.Patch holding the needed connections update.
 func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
 	c, err := toVPNGatewayConnections(current)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
 	d, err := toVPNGatewayConnections(desired)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -37,17 +39,14 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, des
 func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*controller.Patch, error) {
 	patch := controller.NewPatch()
 
-	change, err := r.newUpdateChange(ctx, azureConfig, current, desired)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	change := r.newUpdateChange(ctx, azureConfig, current, desired)
 
 	patch.SetUpdateChange(change)
 
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (connections, error) {
+func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) connections {
 	var change connections
 
 	if needUpdate(current.Host, desired.Host) {
@@ -57,15 +56,17 @@ func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1al
 		change = desired
 	}
 
-	return change, nil
+	return change
 }
 
 // needUpdate determine if current needs to be updated in order to comply with
-// desired. Following properties are compared and must be present in desired.
+// desired. Following properties are examined:
 //
 //     Name
-//     VirtualNetworkGatewayConnectionPropertiesFormat.AllowVirtualNetworkAccess
-//     VirtualNetworkGatewayConnectionPropertiesFormat.RemoteVirtualNetwork.ID
+//     VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1.ID
+//     VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway2.ID
+//     VirtualNetworkGatewayConnectionPropertiesFormat.ConnectionType
+//     VirtualNetworkGatewayConnectionPropertiesFormat.ConnectionStatus
 //
 func needUpdate(current, desired network.VirtualNetworkGatewayConnection) bool {
 	if desired.Name == nil ||
@@ -112,12 +113,13 @@ func needUpdate(current, desired network.VirtualNetworkGatewayConnection) bool {
 	return false
 }
 
-// ApplyUpdateChange perform the host cluster virtual network peering update against azure.
+// ApplyUpdateChange perform the host cluster vpn gateway connections update against azure.
 func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change interface{}) error {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
 	c, err := toVPNGatewayConnections(change)
 	if err != nil {
 		return microerror.Mask(err)
@@ -132,10 +134,10 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change in
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vpn gateway connections")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure vpn gateway connections")
 
 	if change.isEmpty() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vpn gateway connections: already ensured")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensure vpn gateway connections: already ensured")
 		return nil
 	}
 
@@ -165,6 +167,6 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure host vpn gateway connections: created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure vpn gateway connections: created")
 	return nil
 }
