@@ -19,7 +19,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "cloudconfig",
-				Description: "Updated Calico to 3.1.3",
+				Description: "Updated Calico to 3.0.8",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -81,7 +81,7 @@ func VersionBundle() versionbundle.Bundle {
 		Components: []versionbundle.Component{
 			{
 				Name:    "calico",
-				Version: "3.1.3",
+				Version: "3.0.8",
 			},
 			{
 				Name:    "containerlinux",
