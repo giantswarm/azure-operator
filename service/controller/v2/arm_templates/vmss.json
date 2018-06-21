@@ -189,7 +189,9 @@
                 "tier": "Standard",
                 "capacity": "[int(parameters('vmssVmCount'))]"
             },
-            "identity": "[if(parameters('vmssMSIEnabled'), json('{\"type\":\"systemAssigned\"}'), json('{\"type\":\"None\"}'))]",
+            "identity": {
+                "type": "[if(parameters('vmssMSIEnabled'), 'systemAssigned', 'None')]"
+            },
             "properties": {
                 "overprovision": "[parameters('vmssOverprovision')]",
                 "upgradePolicy": {

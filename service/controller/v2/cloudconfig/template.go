@@ -84,6 +84,8 @@ subjects:
   name: calico-node
   namespace: kube-system
 
+---
+
 # Calico Version v3.0.8
 # https://docs.projectcalico.org/v3.0/releases#v3.0.8
 # This manifest includes the following component versions:
