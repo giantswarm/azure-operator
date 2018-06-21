@@ -3,7 +3,7 @@ package instance
 import "fmt"
 
 const (
-	templateURIFmt = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v3/arm_templates/%s"
+	templateURIFmt = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v3/resource/instance/template/%s"
 
 	mainTemplate = "main.json"
 )
