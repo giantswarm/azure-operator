@@ -190,7 +190,7 @@
                 "capacity": "[int(parameters('vmssVmCount'))]"
             },
             "identity": {
-                "type": "systemAssigned"
+                "type": "[if(parameters('vmssMSIEnabled'), 'systemAssigned', 'None')]"
             },
             "properties": {
                 "overprovision": "[parameters('vmssOverprovision')]",
@@ -283,7 +283,7 @@
             },
             "properties": {
                 "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-                "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
+                "principalId": "[if(parameters('vmssMSIEnabled'), reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId, '')]",
                 "scope": "[resourceGroup().id]"
             }
         }

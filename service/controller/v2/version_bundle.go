@@ -19,7 +19,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "cloudconfig",
-				Description: "Updated Calico to 3.0.5",
+				Description: "Updated Calico to 3.1.3",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -47,19 +47,49 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Removed Ingress Controller, kube-state-metrics and node-exporter related components (will be managed by chart-operator).",
 				Kind:        versionbundle.KindRemoved,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Updated Container Linux to 1745.7.0",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Add second disk for master vmss.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Disable overprovisioning of master vmss.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Multiple fixes related to resource reconciliation.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Add OIDC support.",
+				Kind:        versionbundle.KindAdded,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Add non-MSI support.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
 				Name:    "calico",
-				Version: "3.0.5",
+				Version: "3.1.3",
 			},
 			{
 				Name:    "containerlinux",
-				Version: "1688.5.3",
+				Version: "1745.7.0",
 			},
 			{
 				Name:    "docker",
-				Version: "17.12.1",
+				Version: "18.03.1",
 			},
 			{
 				Name:    "etcd",
@@ -75,6 +105,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "0.2.0",
+		Version: "1.0.0",
 	}
 }
