@@ -15,7 +15,6 @@ const serviceKey contextKey = "service"
 
 type Context struct {
 	AzureClientSet *client.AzureClientSet
-	AzureConfig    client.AzureClientSetConfig
 	CloudConfig    *cloudconfig.CloudConfig
 }
 
