@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
 
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
 // NewUpdatePatch provide a controller.Patch holding the needed network.VirtualNetworkPeering update to have current comply with desired.

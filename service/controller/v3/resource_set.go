@@ -1,4 +1,4 @@
-package v2
+package v3
 
 import (
 	"fmt"
@@ -14,16 +14,16 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/endpoints"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/instance"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/namespace"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/resourcegroup"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/service"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/vnetpeering"
+	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v3/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/deployment"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/endpoints"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/instance"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/namespace"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/service"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/vnetpeering"
 )
 
 type ResourceSetConfig struct {
