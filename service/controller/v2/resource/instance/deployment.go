@@ -47,15 +47,13 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 	}
 
 	defaultParams := map[string]interface{}{
-		"clusterID":                   key.ClusterID(obj),
-		"masterCloudConfigData":       masterCloudConfig,
-		"masterNodes":                 masterNodes,
-		"masterVersionBundleVersions": TODO,
-		"templatesBaseURI":            baseTemplateURI(r.templateVersion),
-		"vmssMSIEnabled":              r.azure.MSI.Enabled,
-		"workerCloudConfigData":       workerCloudConfig,
-		"workerNodes":                 workerNodes,
-		"workerVersionBundleVersions": TODO,
+		"clusterID":             key.ClusterID(obj),
+		"masterCloudConfigData": masterCloudConfig,
+		"masterNodes":           masterNodes,
+		"templatesBaseURI":      baseTemplateURI(r.templateVersion),
+		"vmssMSIEnabled":        r.azure.MSI.Enabled,
+		"workerCloudConfigData": workerCloudConfig,
+		"workerNodes":           workerNodes,
 	}
 
 	d := azureresource.Deployment{
