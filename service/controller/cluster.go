@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v1"
 	"github.com/giantswarm/azure-operator/service/controller/v2"
+	"github.com/giantswarm/azure-operator/service/controller/v3"
 )
 
 type ClusterConfig struct {
@@ -111,6 +112,26 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
+	var v3ResourceSet *controller.ResourceSet
+	{
+		c := v3.ResourceSetConfig{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			Azure:            config.Azure,
+			AzureConfig:      config.AzureConfig,
+			InstallationName: config.InstallationName,
+			ProjectName:      config.ProjectName,
+			OIDC:             config.OIDC,
+			TemplateVersion:  config.TemplateVersion,
+		}
+
+		v3ResourceSet, err = v3.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var resourceRouter *controller.ResourceRouter
 	{
 		c := controller.ResourceRouterConfig{
@@ -119,6 +140,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			ResourceSets: []*controller.ResourceSet{
 				v1ResourceSet,
 				v2ResourceSet,
+				v3ResourceSet,
 			},
 		}
 
