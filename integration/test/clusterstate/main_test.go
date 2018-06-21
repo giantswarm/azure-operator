@@ -64,10 +64,9 @@ func init() {
 		}
 
 		c := provider.AzureConfig{
-			AzureClient:    ac,
-			GuestFramework: g,
-			HostFramework:  h,
-			Logger:         logger,
+			AzureClient:   ac,
+			HostFramework: h,
+			Logger:        logger,
 
 			ClusterID: env.ClusterID(),
 		}
@@ -80,8 +79,9 @@ func init() {
 
 	{
 		c := clusterstate.Config{
-			Logger:   logger,
-			Provider: p,
+			GuestFramework: g,
+			Logger:         logger,
+			Provider:       p,
 		}
 
 		cs, err = clusterstate.New(c)
