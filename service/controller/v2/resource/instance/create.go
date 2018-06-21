@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"encoding/json"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
@@ -159,11 +160,7 @@ func (r *Resource) processInstance(ctx context.Context, customObject providerv1a
 		g := key.ResourceGroupName(customObject)
 		s := deploymentNameFunc(customObject)
 		id := *instanceToReimage.InstanceID
-		p := compute.VirtualMachineScaleSetVM{
-			Tags: map[string]*string{
-				"versionBundleVersion": to.StringPtr(key.VersionBundleVersion(customObject)),
-			},
-		}
+		p := setVersionBundleVersion(instanceToReimage, key.VersionBundleVersion(customObject))
 		_, err = c.Update(ctx, g, s, id, p)
 		if err != nil {
 			return microerror.Mask(err)
@@ -230,7 +227,7 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // firstInstanceToReimage return nil.
 func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
-		if key.VersionBundleVersion(customObject) == key.VersionBundleVersionFromTags(v.Tags) {
+		if key.VersionBundleVersion(customObject) == versionBundleVersionForInstance(v) {
 			continue
 		}
 
@@ -253,4 +250,48 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	}
 
 	return nil
+}
+
+func setVersionBundleVersion(instance compute.VirtualMachineScaleSetVM, version string) compute.VirtualMachineScaleSetVM {
+	blob, ok := instance.Tags["versionBundleVersions"]
+	if !ok {
+		panic("missing tags")
+	}
+
+	var m map[string]string
+	err := json.Unmarshal([]byte(blob), &m)
+	if err != nil {
+		panic(err)
+	}
+
+	m[*v.InstanceID] = version
+
+	raw, err := json.Marshal(m)
+	if err != nil {
+		panic(err)
+	}
+
+	instance.Tags["versionBundleVersions"] = string(raw)
+
+	return instance
+}
+
+func versionBundleVersionForInstance(v compute.VirtualMachineScaleSetVM) string {
+	blob, ok := v.Tags["versionBundleVersions"]
+	if !ok {
+		panic("missing tags")
+	}
+
+	var m map[string]string
+	err := json.Unmarshal([]byte(blob), &m)
+	if err != nil {
+		panic(err)
+	}
+
+	version, ok := m[*v.InstanceID]
+	if !ok {
+		panic("missing id")
+	}
+
+	return version
 }
