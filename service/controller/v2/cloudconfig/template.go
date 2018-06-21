@@ -4,8 +4,8 @@ const (
 	calicoAzureFileName       = "/srv/calico-azure.yaml"
 	calicoAzureFileOwner      = "root:root"
 	calicoAzureFilePermission = 0600
-	calicoAzureFileTemplate   = `# Calico Version v3.1.3
-# https://docs.projectcalico.org/v3.1/releases#v3.1.3
+	calicoAzureFileTemplate   = `# Calico Version v3.0.8
+# https://docs.projectcalico.org/v3.0/releases#v3.0.8
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -38,11 +38,6 @@ rules:
       - get
   - apiGroups: [""]
     resources:
-      - endpoints
-    verbs:
-      - get
-  - apiGroups: [""]
-    resources:
       - nodes
     verbs:
       - get
@@ -56,12 +51,6 @@ rules:
       - get
       - list
       - watch
-  - apiGroups: ["networking.k8s.io"]
-    resources:
-      - networkpolicies
-    verbs:
-      - watch
-      - list
   - apiGroups: ["crd.projectcalico.org"]
     resources:
       - globalfelixconfigs
@@ -71,10 +60,8 @@ rules:
       - bgpconfigurations
       - ippools
       - globalnetworkpolicies
-      - globalnetworksets
       - networkpolicies
       - clusterinformations
-      - hostendpoints
     verbs:
       - create
       - get
@@ -97,13 +84,11 @@ subjects:
   name: calico-node
   namespace: kube-system
 
----
-
-# Calico Version v3.1.3
-# https://docs.projectcalico.org/v3.1/releases#v3.1.3
+# Calico Version v3.0.8
+# https://docs.projectcalico.org/v3.0/releases#v3.0.8
 # This manifest includes the following component versions:
-#   calico/node:v3.1.3
-#   calico/cni:v3.1.3
+#   calico/node:v3.0.8
+#   calico/cni:v2.0.6
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -116,7 +101,6 @@ data:
   # below.  We recommend using Typha if you have more than 50 nodes. Above 100 nodes it is
   # essential.
   typha_service_name: "none"
-
   # The CNI network configuration to install on each node.
   cni_network_config: |-
     {
@@ -130,14 +114,16 @@ data:
           "nodename": "__KUBERNETES_NODE_NAME__",
           "mtu": 1500,
           "ipam": {
-            "type": "host-local",
-            "subnet": "usePodCidr"
+              "type": "host-local",
+              "subnet": "usePodCidr"
           },
           "policy": {
-            "type": "k8s"
+              "type": "k8s",
+              "k8s_auth_token": "__SERVICEACCOUNT_TOKEN__"
           },
           "kubernetes": {
-            "kubeconfig": "__KUBECONFIG_FILEPATH__"
+              "k8s_api_root": "https://__KUBERNETES_SERVICE_HOST__:__KUBERNETES_SERVICE_PORT__",
+              "kubeconfig": "__KUBECONFIG_FILEPATH__"
           }
         },
         {
@@ -199,16 +185,15 @@ spec:
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
-      hostNetwork: true
       tolerations:
-        # Mark the pod as a critical add-on for rescheduling.
-        - key: CriticalAddonsOnly
-          operator: Exists
+      - key: CriticalAddonsOnly
+        operator: Exists
       # Since Calico can't network a pod until Typha is up, we need to run Typha itself
       # as a host-networked pod.
+      hostNetwork: true
       serviceAccountName: calico-node
       containers:
-      - image: quay.io/calico/typha:v0.7.4
+      - image: quay.io/giantswarm/typha:v0.6.6
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -281,16 +266,15 @@ spec:
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
       hostNetwork: true
+      serviceAccountName: calico-node
       tolerations:
-        # Make sure calico/node gets scheduled on all nodes.
-        - effect: NoSchedule
-          operator: Exists
+        # Allow the pod to run on the master.  This is required for
+        # the master to communicate with pods.
+        - key: node-role.kubernetes.io/master
+          effect: NoSchedule
         # Mark the pod as a critical add-on for rescheduling.
         - key: CriticalAddonsOnly
           operator: Exists
-        - effect: NoExecute
-          operator: Exists
-      serviceAccountName: calico-node
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
@@ -299,7 +283,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v3.1.3
+          image: quay.io/giantswarm/node:v3.0.8
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -325,9 +309,7 @@ spec:
             # Wait for the datastore.
             - name: WAIT_FOR_DATASTORE
               value: "true"
-            # The default IPv4 pool to create on startup if none exists. Pod IPs will be
-            # chosen from this range. Changing this value after installation will have
-            # no effect. This should fall within --cluster-cidr.
+            # The Calico IPv4 pool to use.  This should match --cluster-cidr
             - name: CALICO_IPV4POOL_CIDR
               value: "{{ .CalicoCIDR }}"
             # Enable IPIP
@@ -344,6 +326,9 @@ spec:
               valueFrom:
                 fieldRef:
                   fieldPath: spec.nodeName
+            # No IP address needed.
+            - name: IP
+              value: ""
             - name: FELIX_HEALTHENABLED
               value: "true"
           securityContext:
@@ -370,13 +355,10 @@ spec:
             - mountPath: /var/run/calico
               name: var-run-calico
               readOnly: false
-            - mountPath: /var/lib/calico
-              name: var-lib-calico
-              readOnly: false
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v3.1.3
+          image: quay.io/giantswarm/cni:v2.0.6
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -406,9 +388,6 @@ spec:
         - name: var-run-calico
           hostPath:
             path: /var/run/calico
-        - name: var-lib-calico
-          hostPath:
-            path: /var/lib/calico
         # Used to install CNI.
         - name: cni-bin-dir
           hostPath:
@@ -470,22 +449,6 @@ spec:
 ---
 
 apiVersion: apiextensions.k8s.io/v1beta1
-description: Calico Host Endpoints
-kind: CustomResourceDefinition
-metadata:
-  name: hostendpoints.crd.projectcalico.org
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: HostEndpoint
-    plural: hostendpoints
-    singular: hostendpoint
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
 description: Calico Cluster Information
 kind: CustomResourceDefinition
 metadata:
@@ -514,22 +477,6 @@ spec:
     kind: GlobalNetworkPolicy
     plural: globalnetworkpolicies
     singular: globalnetworkpolicy
-
----
-
-apiVersion: apiextensions.k8s.io/v1beta1
-description: Calico Global Network Sets
-kind: CustomResourceDefinition
-metadata:
-  name: globalnetworksets.crd.projectcalico.org
-spec:
-  scope: Cluster
-  group: crd.projectcalico.org
-  version: v1
-  names:
-    kind: GlobalNetworkSet
-    plural: globalnetworksets
-    singular: globalnetworkset
 
 ---
 
