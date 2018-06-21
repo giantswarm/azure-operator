@@ -8,7 +8,7 @@ import (
 )
 
 func Test_Cluster_State(t *testing.T) {
-	err := s.Test(context.Background())
+	err := cs.Test(context.Background())
 	if err != nil {
 		t.Fatalf("%#v", err)
 	}
