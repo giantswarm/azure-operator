@@ -1,11 +1,14 @@
 package dnsrecord
 
 import (
+	"context"
+
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 )
 
 const (
@@ -14,27 +17,27 @@ const (
 )
 
 type Config struct {
-	AzureConfig client.AzureClientSetConfig
-	Logger      micrologger.Logger
+	HostAzureConfig client.AzureClientSetConfig
+	Logger          micrologger.Logger
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	azureConfig client.AzureClientSetConfig
-	logger      micrologger.Logger
+	hostAzureConfig client.AzureClientSetConfig
+	logger          micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.AzureConfig.%s", err)
+	if err := config.HostAzureConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.HostAzureConfig.%s", err)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 
 	r := &Resource{
-		azureConfig: config.AzureConfig,
-		logger:      config.Logger,
+		hostAzureConfig: config.HostAzureConfig,
+		logger:          config.Logger,
 	}
 
 	return r, nil
@@ -46,7 +49,7 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) getDNSRecordSetsClient() (*dns.RecordSetsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.azureConfig)
+	azureClients, err := client.NewAzureClientSet(r.hostAzureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -54,11 +57,11 @@ func (r *Resource) getDNSRecordSetsClient() (*dns.RecordSetsClient, error) {
 	return azureClients.DNSRecordSetsClient, nil
 }
 
-func (r *Resource) getDNSZonesClient() (*dns.ZonesClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.azureConfig)
+func (r *Resource) getDNSZonesClient(ctx context.Context) (*dns.ZonesClient, error) {
+	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.DNSZonesClient, nil
+	return sc.AzureClientSet.DNSZonesClient, nil
 }

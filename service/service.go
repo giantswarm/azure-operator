@@ -72,9 +72,10 @@ func New(config Config) (*Service, error) {
 	azure := setting.Azure{
 		Cloud: config.Viper.GetString(config.Flag.Service.Azure.Cloud),
 		HostCluster: setting.AzureHostCluster{
-			CIDR:           config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
-			ResourceGroup:  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
-			VirtualNetwork: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),
+			CIDR:                  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
+			ResourceGroup:         config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
+			VirtualNetwork:        config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),
+			VirtualNetworkGateway: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetworkGateway),
 		},
 		MSI: setting.AzureMSI{
 			Enabled: config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
@@ -83,8 +84,6 @@ func New(config Config) (*Service, error) {
 	}
 
 	azureConfig := client.AzureClientSetConfig{
-		Logger: config.Logger,
-
 		ClientID:       config.Viper.GetString(config.Flag.Service.Azure.ClientID),
 		ClientSecret:   config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
 		Cloud:          config.Viper.GetString(config.Flag.Service.Azure.Cloud),

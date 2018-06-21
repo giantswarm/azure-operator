@@ -6,17 +6,17 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/client"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
 )
 
 const (
 	expands = ""
 )
 
-func (r *Resource) getMasterNICPrivateIPs(resourceGroupName, virtualMachineScaleSetName string) ([]string, error) {
+func (r *Resource) getMasterNICPrivateIPs(ctx context.Context, resourceGroupName, virtualMachineScaleSetName string) ([]string, error) {
 	var ips []string
 
-	interfacesClient, err := r.getInterfacesClient()
+	interfacesClient, err := r.getInterfacesClient(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -56,11 +56,11 @@ func (r *Resource) getMasterNICPrivateIPs(resourceGroupName, virtualMachineScale
 	return ips, nil
 }
 
-func (r *Resource) getInterfacesClient() (*network.InterfacesClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.azureConfig)
+func (r *Resource) getInterfacesClient(ctx context.Context) (*network.InterfacesClient, error) {
+	sc, err := servicecontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.InterfacesClient, nil
+	return sc.AzureClientSet.InterfacesClient, nil
 }

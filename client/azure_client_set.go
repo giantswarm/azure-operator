@@ -12,12 +12,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
 )
 
 type AzureClientSetConfig struct {
-	Logger micrologger.Logger
-
 	// ClientID is the ID of the Active Directory Service Principal.
 	ClientID string
 	// ClientSecret is the secret of the Active Directory Service Principal.
@@ -38,10 +35,6 @@ type clientConfig struct {
 }
 
 func (c AzureClientSetConfig) Validate() error {
-	if c.Logger == nil {
-		return errors.New("Logger must not be empty")
-	}
-
 	if c.ClientID == "" {
 		return errors.New("ClientID must not be empty")
 	}
@@ -72,6 +65,10 @@ type AzureClientSet struct {
 	InterfacesClient *network.InterfacesClient
 	// VirtualNetworkClient manages virtual networks.
 	VirtualNetworkClient *network.VirtualNetworksClient
+	// VirtualNetworkGatewayConnectionsClient manages virtual network gateway connections.
+	VirtualNetworkGatewayConnectionsClient *network.VirtualNetworkGatewayConnectionsClient
+	// VirtualNetworkGatewaysClient manages virtual network gateways.
+	VirtualNetworkGatewaysClient *network.VirtualNetworkGatewaysClient
 	// VirtualMachineScaleSetsClient manages virtual machine scale sets.
 	VirtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient
 	// VirtualMachineScaleSetVMsClient manages virtual machine scale set VMs.
@@ -105,15 +102,17 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	}
 
 	clientSet := &AzureClientSet{
-		DeploymentsClient:               newDeploymentsClient(c),
-		GroupsClient:                    newGroupsClient(c),
-		DNSRecordSetsClient:             newDNSRecordSetsClient(c),
-		DNSZonesClient:                  newDNSZonesClient(c),
-		InterfacesClient:                newInterfacesClient(c),
-		VirtualNetworkClient:            newVirtualNetworkClient(c),
-		VirtualMachineScaleSetVMsClient: newVirtualMachineScaleSetVMsClient(c),
-		VirtualMachineScaleSetsClient:   newVirtualMachineScaleSetsClient(c),
-		VnetPeeringClient:               newVnetPeeringClient(c),
+		DeploymentsClient:                      newDeploymentsClient(c),
+		GroupsClient:                           newGroupsClient(c),
+		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
+		DNSZonesClient:                         newDNSZonesClient(c),
+		InterfacesClient:                       newInterfacesClient(c),
+		VirtualNetworkClient:                   newVirtualNetworkClient(c),
+		VirtualNetworkGatewayConnectionsClient: newVirtualNetworkGatewayConnectionsClient(c),
+		VirtualNetworkGatewaysClient:           newVirtualNetworkGatewaysClient(c),
+		VirtualMachineScaleSetVMsClient:        newVirtualMachineScaleSetVMsClient(c),
+		VirtualMachineScaleSetsClient:          newVirtualMachineScaleSetsClient(c),
+		VnetPeeringClient:                      newVnetPeeringClient(c),
 	}
 
 	return clientSet, nil
@@ -166,6 +165,20 @@ func newInterfacesClient(config *clientConfig) *network.InterfacesClient {
 
 func newVirtualNetworkClient(config *clientConfig) *network.VirtualNetworksClient {
 	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &c
+}
+
+func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) *network.VirtualNetworkGatewayConnectionsClient {
+	c := network.NewVirtualNetworkGatewayConnectionsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &c
+}
+
+func newVirtualNetworkGatewaysClient(config *clientConfig) *network.VirtualNetworkGatewaysClient {
+	c := network.NewVirtualNetworkGatewaysClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &c

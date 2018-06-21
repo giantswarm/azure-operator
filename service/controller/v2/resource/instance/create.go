@@ -45,7 +45,7 @@ func (r *Resource) ensureDeploymentUpdate(ctx context.Context, customObject prov
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated")
 
-		c, err := r.getVMsClient()
+		c, err := r.getVMsClient(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -100,7 +100,7 @@ func (r *Resource) ensureDeploymentUpdate(ctx context.Context, customObject prov
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
 
-		c, err := r.getScaleSetsClient()
+		c, err := r.getScaleSetsClient(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}

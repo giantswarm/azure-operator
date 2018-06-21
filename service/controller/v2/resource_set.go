@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -15,6 +16,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
+	servicecontext "github.com/giantswarm/azure-operator/service/controller/v2/context"
+	"github.com/giantswarm/azure-operator/service/controller/v2/credential"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/dnsrecord"
@@ -23,7 +26,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/service"
-	"github.com/giantswarm/azure-operator/service/controller/v2/resource/vnetpeering"
+	"github.com/giantswarm/azure-operator/service/controller/v2/resource/vpngateway"
 )
 
 type ResourceSetConfig struct {
@@ -31,7 +34,7 @@ type ResourceSetConfig struct {
 	Logger    micrologger.Logger
 
 	Azure            setting.Azure
-	AzureConfig      client.AzureClientSetConfig
+	HostAzureConfig  client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
 	OIDC             setting.OIDC
@@ -73,31 +76,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var cloudConfig *cloudconfig.CloudConfig
-	{
-		c := cloudconfig.Config{
-			CertsSearcher:      certsSearcher,
-			Logger:             config.Logger,
-			RandomkeysSearcher: randomkeysSearcher,
-
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
-			OIDC:        config.OIDC,
-		}
-
-		cloudConfig, err = cloudconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var resourceGroupResource controller.Resource
 	{
 		c := resourcegroup.Config{
 			Logger: config.Logger,
 
 			Azure:            config.Azure,
-			AzureConfig:      config.AzureConfig,
 			InstallationName: config.InstallationName,
 		}
 
@@ -113,8 +97,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger: config.Logger,
 
 			Azure:           config.Azure,
-			AzureConfig:     config.AzureConfig,
-			CloudConfig:     cloudConfig,
+			HostAzureConfig: config.HostAzureConfig,
 			TemplateVersion: config.TemplateVersion,
 		}
 
@@ -129,7 +112,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := dnsrecord.Config{
 			Logger: config.Logger,
 
-			AzureConfig: config.AzureConfig,
+			HostAzureConfig: config.HostAzureConfig,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -146,9 +129,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var endpointsResource controller.Resource
 	{
 		c := endpoints.Config{
-			AzureConfig: config.AzureConfig,
-			K8sClient:   config.K8sClient,
-			Logger:      config.Logger,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
 		}
 
 		ops, err := endpoints.New(c)
@@ -167,8 +149,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := instance.Config{
 			Logger: config.Logger,
 
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			Azure: config.Azure,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -213,21 +194,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var vnetPeeringResource controller.Resource
+	var vpnGatewayResource controller.Resource
 	{
-		c := vnetpeering.Config{
+		c := vpngateway.Config{
 			Logger: config.Logger,
 
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			Azure:           config.Azure,
+			HostAzureConfig: config.HostAzureConfig,
 		}
 
-		ops, err := vnetpeering.New(c)
+		ops, err := vpngateway.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		vnetPeeringResource, err = toCRUDResource(config.Logger, ops)
+		vpnGatewayResource, err = toCRUDResource(config.Logger, ops)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -241,7 +222,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		instanceResource,
 		endpointsResource,
 		dnsrecordResource,
-		vnetPeeringResource,
+		vpnGatewayResource,
 	}
 
 	{
@@ -280,10 +261,48 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		return false
 	}
 
+	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		guestAzureConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		azureClients, err := client.NewAzureClientSet(*guestAzureConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		var cloudConfig *cloudconfig.CloudConfig
+		{
+			c := cloudconfig.Config{
+				CertsSearcher:      certsSearcher,
+				Logger:             config.Logger,
+				RandomkeysSearcher: randomkeysSearcher,
+
+				Azure:       config.Azure,
+				AzureConfig: *guestAzureConfig,
+			}
+
+			cloudConfig, err = cloudconfig.New(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+
+		c := servicecontext.Context{
+			AzureClientSet: azureClients,
+			CloudConfig:    cloudConfig,
+		}
+		ctx = servicecontext.NewContext(ctx, c)
+
+		return ctx, nil
+	}
+
 	var resourceSet *controller.ResourceSet
 	{
 		c := controller.ResourceSetConfig{
 			Handles:   handlesFunc,
+			InitCtx:   initCtxFunc,
 			Logger:    config.Logger,
 			Resources: resources,
 		}

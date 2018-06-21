@@ -19,6 +19,7 @@ const (
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
+	vpnGatewaySuffix          = "VPNGateway"
 )
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
@@ -74,6 +75,16 @@ func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName str
 	}
 
 	return tags
+}
+
+// CredentialName returns name of the credential secret.
+func CredentialName(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.CredentialSecret.Name
+}
+
+// CredentialName returns namespace of the credential secret.
+func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.CredentialSecret.Namespace
 }
 
 // DNSZoneAPI returns api parent DNS zone domain name.
@@ -225,8 +236,21 @@ func VnetWorkerSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
 }
 
+func VnetVPNSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.VPNSubnetCIDR
+}
+
 func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
+}
+
+// VPNGatewayName returns name of the virtual network gateway.
+func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
+}
+
+func VPNGatewayID(subscriptionID, resourceGroupName, resourceName string) string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworkGateways/%s", subscriptionID, resourceGroupName, resourceName)
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
