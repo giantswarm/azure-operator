@@ -15,7 +15,7 @@ const (
 	azureCalicoSubnetMask = 17
 	azureMasterSubnetMask = 24
 	azureWorkerSubnetMask = 24
-	azureVPNSubnetMask    = 27
+	azureVPNSubnetMask    = 24
 )
 
 type azureCIDR struct {
