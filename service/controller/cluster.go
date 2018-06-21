@@ -29,6 +29,7 @@ type ClusterConfig struct {
 	AzureConfig     client.AzureClientSetConfig
 	ProjectName     string
 	OIDC            setting.OIDC
+	SSOPublicKey    string
 	TemplateVersion string
 }
 
@@ -123,6 +124,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			InstallationName: config.InstallationName,
 			ProjectName:      config.ProjectName,
 			OIDC:             config.OIDC,
+			SSOPublicKey:     config.SSOPublicKey,
 			TemplateVersion:  config.TemplateVersion,
 		}
 

@@ -9,7 +9,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_3_4"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_4_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -26,8 +26,9 @@ type Config struct {
 
 	Azure setting.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
-	AzureConfig client.AzureClientSetConfig
-	OIDC        setting.OIDC
+	AzureConfig  client.AzureClientSetConfig
+	OIDC         setting.OIDC
+	SSOPublicKey string
 }
 
 type CloudConfig struct {
@@ -35,9 +36,10 @@ type CloudConfig struct {
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
-	azure       setting.Azure
-	azureConfig client.AzureClientSetConfig
-	OIDC        setting.OIDC
+	azure        setting.Azure
+	azureConfig  client.AzureClientSetConfig
+	OIDC         setting.OIDC
+	ssoPublicKey string
 }
 
 func New(config Config) (*CloudConfig, error) {
@@ -63,9 +65,10 @@ func New(config Config) (*CloudConfig, error) {
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
 
-		azure:       config.Azure,
-		azureConfig: config.AzureConfig,
-		OIDC:        config.OIDC,
+		azure:        config.Azure,
+		azureConfig:  config.AzureConfig,
+		OIDC:         config.OIDC,
+		ssoPublicKey: config.SSOPublicKey,
 	}
 
 	return c, nil
@@ -159,6 +162,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		ExtraManifests: []string{
 			"calico-azure.yaml",
 		},
+		SSOPublicKey: c.ssoPublicKey,
 	}
 
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
@@ -187,6 +191,7 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
 		},
+		SSOPublicKey: c.ssoPublicKey,
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
