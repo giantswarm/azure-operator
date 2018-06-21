@@ -12,6 +12,32 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
+var deploymentNotFoundError = microerror.New("not found")
+
+// IsDeploymentNotFound asserts deploymentNotFoundError.
+func IsDeploymentNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	c := microerror.Cause(err)
+
+	if c == deploymentNotFoundError {
+		return true
+	}
+
+	{
+		dErr, ok := c.(autorest.DetailedError)
+		if ok {
+			if dErr.StatusCode == 404 {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 var scaleSetNotFoundError = microerror.New("scale set not found")
 
 // IsScaleSetNotFound asserts scaleSetNotFoundError.

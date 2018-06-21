@@ -8,10 +8,6 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-const (
-	templateContentVersion = "1.0.0.0"
-)
-
 func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	defaultParams := map[string]interface{}{
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
@@ -34,7 +30,7 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 			Parameters: key.ToParameters(defaultParams, overwrites),
 			TemplateLink: &azureresource.TemplateLink{
 				URI:            to.StringPtr(templateURI(r.templateVersion, mainTemplate)),
-				ContentVersion: to.StringPtr(templateContentVersion),
+				ContentVersion: to.StringPtr(key.TemplateContentVersion),
 			},
 		},
 	}

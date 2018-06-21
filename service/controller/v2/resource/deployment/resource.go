@@ -10,7 +10,6 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
@@ -19,13 +18,8 @@ const (
 	Name = "deploymentv2"
 )
 
-const (
-	mainDeploymentName = "cluster-main-template"
-)
-
 type Config struct {
-	CloudConfig *cloudconfig.CloudConfig
-	Logger      micrologger.Logger
+	Logger micrologger.Logger
 
 	Azure       setting.Azure
 	AzureConfig client.AzureClientSetConfig
@@ -35,8 +29,7 @@ type Config struct {
 }
 
 type Resource struct {
-	cloudConfig *cloudconfig.CloudConfig
-	logger      micrologger.Logger
+	logger micrologger.Logger
 
 	azure           setting.Azure
 	azureConfig     client.AzureClientSetConfig
@@ -44,9 +37,6 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
-	if config.CloudConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CloudConfig must not be empty", config)
-	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -62,8 +52,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		cloudConfig: config.CloudConfig,
-		logger:      config.Logger,
+		logger: config.Logger,
 
 		azure:           config.Azure,
 		azureConfig:     config.AzureConfig,
@@ -88,7 +77,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var deployment azureresource.Deployment
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), mainDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.MainDeploymentName)
 	if IsNotFound(err) {
 		params := map[string]interface{}{
 			"initialProvisioning": "Yes",
@@ -118,7 +107,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
+	_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.MainDeploymentName, deployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}

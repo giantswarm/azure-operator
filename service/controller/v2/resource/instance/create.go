@@ -6,6 +6,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -19,51 +20,97 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	var allMasterInstances []compute.VirtualMachineScaleSetVM
-	var masterInstance *compute.VirtualMachineScaleSetVM
+	var fetchedDeployment *azureresource.DeploymentExtended
+	var parameters map[string]interface{}
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
-
-		allMasterInstances, masterInstance, err = r.processInstance(ctx, customObject, key.MasterVMSSName, key.MasterInstanceName)
+		deploymentsClient, err := r.getDeploymentsClient()
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.MainDeploymentName)
+		if IsDeploymentNotFound(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+		fetchedDeployment = &d
+		// TODO error handling
+		parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
+	}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
+	var allMasterInstances []compute.VirtualMachineScaleSetVM
+	var updatedMasterInstance *compute.VirtualMachineScaleSetVM
+	{
+		allMasterInstances, err = r.allInstances(ctx, customObject, key.MasterVMSSName)
+		if IsScaleSetNotFound(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
+
+			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters["masterVersionBundleVersions"])
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			err = r.updateInstance(ctx, customObject, instanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			err = r.reimageInstance(ctx, customObject, instanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			updatedMasterInstance = instanceToReimage
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
+		}
 	}
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
-	var workerInstance *compute.VirtualMachineScaleSetVM
+	var updatedWorkerInstance *compute.VirtualMachineScaleSetVM
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
-
-		allWorkerInstances, workerInstance, err = r.processInstance(ctx, customObject, key.WorkerVMSSName, key.WorkerInstanceName)
-		if err != nil {
+		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
+		if IsScaleSetNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
-		}
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
+			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters["workerVersionBundleVersions"])
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			err = r.updateInstance(ctx, customObject, instanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			err = r.reimageInstance(ctx, customObject, instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			updatedWorkerInstance = instanceToReimage
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
+		}
 	}
 
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		var deployment azureresource.Deployment
-
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), mainDeploymentName)
-		if IsNotFound(err) {
+		var computedDeployment azureresource.Deployment
+		if fetchedDeployment == nil {
 			params := map[string]interface{}{
-				"masterVersionBundleVersions": "{}",
-				"workerVersionBundleVersions": "{}",
+				"masterVersionBundleVersions": createVersionParameterValue(allMasterInstances, key.VersionBundleVersion(customObject)),
+				"workerVersionBundleVersions": createVersionParameterValue(allWorkerInstances, key.VersionBundleVersion(customObject)),
 			}
-			deployment, err = r.newDeployment(customObject, params)
+			computedDeployment, err = r.newDeployment(customObject, params)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-		} else if err != nil {
-			return microerror.Mask(err)
 		} else {
-			s := *d.Properties.ProvisioningState
+			s := *fetchedDeployment.Properties.ProvisioningState
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 			if !key.IsFinalProvisioningState(s) {
@@ -73,16 +120,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			params := map[string]interface{}{
-				"masterVersionBundleVersions": TODO,
-				"workerVersionBundleVersions": TODO,
+				"masterVersionBundleVersions": updateVersionParameterValue(parameters["masterVersionBundleVersions"], allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject)),
+				"workerVersionBundleVersions": updateVersionParameterValue(parameters["workerVersionBundleVersions"], allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject)),
 			}
-			deployment, err = r.newDeployment(customObject, params)
+			computedDeployment, err = r.newDeployment(customObject, params)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 		}
 
-		_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
+		deploymentsClient, err := r.getDeploymentsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.MainDeploymentName, computedDeployment)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -93,7 +144,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) findInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
 	c, err := r.getVMsClient()
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -105,7 +156,7 @@ func (r *Resource) findInstances(ctx context.Context, customObject providerv1alp
 	if IsScaleSetNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the scale set")
 
-		return nil, nil
+		return nil, microerror.Mask(scaleSetNotFoundError)
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -128,87 +179,114 @@ func (r *Resource) findInstances(ctx context.Context, customObject providerv1alp
 //     loop 5: worker 2 reimage
 //     loop 6: worker 3 reimage
 //
-func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated or reimaged")
+func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+	var err error
 
-	instanceToUpdate, instanceToReimage, err := findActionableInstance(customObject, instances)
-	if err != nil {
-		return nil, nil, microerror.Mask(err)
-	}
+	var instanceToUpdate *compute.VirtualMachineScaleSetVM
+	var instanceToReimage *compute.VirtualMachineScaleSetVM
+	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated or reimaged")
 
-	if instanceToUpdate == nil && instanceToReimage == nil {
-		// Neither did we find an instance to be updated nor to be reimaged.
-		// Nothing has to be done or we already processes all instances.
-		r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated or reimaged")
+		instanceToUpdate, instanceToReimage, err = findActionableInstance(customObject, instances, value)
+		if err != nil {
+			return nil, nil, microerror.Mask(err)
+		}
 
-		return nil, nil, nil
-	}
+		if instanceToUpdate == nil && instanceToReimage == nil {
+			// Neither did we find an instance to be updated nor to be reimaged.
+			// Nothing has to be done or we already processes all instances.
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated or reimaged")
 
-	if instanceToUpdate != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceNameFunc(customObject, *instanceToUpdate.InstanceID)))
-	}
-	if instanceToReimage != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be reimaged", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
+			return nil, nil, nil
+		}
+
+		if instanceToUpdate != nil {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceNameFunc(customObject, *instanceToUpdate.InstanceID)))
+		}
+		if instanceToReimage != nil {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be reimaged", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
+		}
 	}
 
 	return instanceToUpdate, instanceToReimage, nil
 }
 
-func (r *Resource) processInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
-	// Trigger the update for the found instance.
-	if instanceToUpdate != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceNameFunc(customObject, *instanceToUpdate.InstanceID)))
-
-		c, err := r.getScaleSetsClient()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		g := key.ResourceGroupName(customObject)
-		s := deploymentNameFunc(customObject)
-		ids := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
-			InstanceIds: to.StringSlicePtr([]string{
-				*instanceToUpdate.InstanceID,
-			}),
-		}
-		_, err = c.UpdateInstances(ctx, g, s, ids)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceNameFunc(customObject, *instanceToUpdate.InstanceID)))
+func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+	if instance != nil {
+		return nil
 	}
 
-	// Trigger the reimage for the found instance.
-	if instanceToReimage != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceNameFunc(customObject, *instance.InstanceID)))
 
-		c, err := r.getScaleSetsClient()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		g := key.ResourceGroupName(customObject)
-		s := deploymentNameFunc(customObject)
-		ids := &compute.VirtualMachineScaleSetVMInstanceIDs{
-			InstanceIds: to.StringSlicePtr([]string{
-				*instanceToReimage.InstanceID,
-			}),
-		}
-		_, err = c.Reimage(ctx, g, s, ids)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
+	c, err := r.getScaleSetsClient()
+	if err != nil {
+		return microerror.Mask(err)
 	}
+
+	g := key.ResourceGroupName(customObject)
+	s := deploymentNameFunc(customObject)
+	ids := &compute.VirtualMachineScaleSetVMInstanceIDs{
+		InstanceIds: to.StringSlicePtr([]string{
+			*instance.InstanceID,
+		}),
+	}
+	_, err = c.Reimage(ctx, g, s, ids)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceNameFunc(customObject, *instance.InstanceID)))
 
 	return nil
 }
 
+func (r *Resource) updateInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+	if instance == nil {
+		return nil
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceNameFunc(customObject, *instance.InstanceID)))
+
+	c, err := r.getScaleSetsClient()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	g := key.ResourceGroupName(customObject)
+	s := deploymentNameFunc(customObject)
+	ids := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+		InstanceIds: to.StringSlicePtr([]string{
+			*instance.InstanceID,
+		}),
+	}
+	_, err = c.UpdateInstances(ctx, g, s, ids)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceNameFunc(customObject, *instance.InstanceID)))
+
+	return nil
+}
+
+func createVersionParameterValue(list []compute.VirtualMachineScaleSetVM, version string) string {
+	m := map[string]string{}
+	for _, v := range list {
+		m[*v.InstanceID] = version
+	}
+
+	b, err := json.Marshal(m)
+	if err != nil {
+		// TODO error handling
+		return ""
+	}
+
+	return string(b)
+}
+
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
-func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	for _, i := range list {
 		if i.ProvisioningState == nil {
 			continue
@@ -233,7 +311,7 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []co
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	if instanceToUpdate == nil {
 		fmt.Printf("3\n")
-		instanceToReimage = firstInstanceToReimage(customObject, list)
+		instanceToReimage = firstInstanceToReimage(customObject, list, value)
 	}
 
 	return instanceToUpdate, instanceToReimage, nil
@@ -259,9 +337,9 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
+func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
-		if key.VersionBundleVersion(customObject) == versionBundleVersionForInstance(v) {
+		if key.VersionBundleVersion(customObject) == versionBundleVersionForInstance(&v, value) {
 			continue
 		}
 
@@ -286,45 +364,53 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func setVersionBundleVersion(instance compute.VirtualMachineScaleSetVM, version string) compute.VirtualMachineScaleSetVM {
-	blob, ok := instance.Tags["versionBundleVersions"]
-	if !ok {
-		panic("missing tags")
+func updateVersionParameterValue(value interface{}, list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string) string {
+	// In case the given instance is nil there is nothing to change and we just
+	// return what we got.
+	if instance == nil {
+		// TODO error handling
+		return value.(string)
 	}
 
-	var m map[string]string
-	err := json.Unmarshal([]byte(blob), &m)
-	if err != nil {
-		panic(err)
+	// Here we got an instance which implies we have to update its version bundle
+	// version carried in the paramter value.
+	var raw string
+	{
+		var m map[string]string
+		// TODO error handling
+		err := json.Unmarshal([]byte(value.(string)), &m)
+		if err != nil {
+			// TODO error handling
+			return ""
+		}
+
+		m[*instance.InstanceID] = version
+
+		b, err := json.Marshal(m)
+		if err != nil {
+			// TODO error handling
+			return ""
+		}
+
+		raw = string(b)
 	}
 
-	m[*v.InstanceID] = version
-
-	raw, err := json.Marshal(m)
-	if err != nil {
-		panic(err)
-	}
-
-	instance.Tags["versionBundleVersions"] = string(raw)
-
-	return instance
+	return raw
 }
 
-func versionBundleVersionForInstance(v compute.VirtualMachineScaleSetVM) string {
-	blob, ok := v.Tags["versionBundleVersions"]
-	if !ok {
-		panic("missing tags")
-	}
-
+func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) string {
 	var m map[string]string
-	err := json.Unmarshal([]byte(blob), &m)
+	// TODO error handling
+	err := json.Unmarshal([]byte(value.(string)), &m)
 	if err != nil {
-		panic(err)
+		// TODO error handling
+		return ""
 	}
 
-	version, ok := m[*v.InstanceID]
+	version, ok := m[*instance.InstanceID]
 	if !ok {
-		panic("missing id")
+		// TODO error handling
+		return ""
 	}
 
 	return version

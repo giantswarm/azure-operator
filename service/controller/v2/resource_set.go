@@ -114,7 +114,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:           config.Azure,
 			AzureConfig:     config.AzureConfig,
-			CloudConfig:     cloudConfig,
 			TemplateVersion: config.TemplateVersion,
 		}
 
@@ -165,10 +164,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource controller.Resource
 	{
 		c := instance.Config{
-			Logger: config.Logger,
+			CloudConfig: cloudConfig,
+			Logger:      config.Logger,
 
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			Azure:           config.Azure,
+			AzureConfig:     config.AzureConfig,
+			TemplateVersion: config.TemplateVersion,
 		}
 
 		instanceResource, err = instance.New(c)

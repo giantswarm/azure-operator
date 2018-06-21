@@ -19,6 +19,9 @@ const (
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
+
+	MainDeploymentName     = "cluster-main-template"
+	TemplateContentVersion = "1.0.0.0"
 )
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {

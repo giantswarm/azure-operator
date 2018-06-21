@@ -19,6 +19,9 @@ const (
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
+
+	MainDeploymentName     = "cluster-main-template"
+	TemplateContentVersion = "1.0.0.0"
 )
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
@@ -200,17 +203,29 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
-func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.VersionBundle.Version
-}
+// ToParameters merges the input maps and converts the result into the
+// structure used by the Azure API. Note that the order of inputs is relevant.
+// Default parameters should be given first. Data of the following maps will
+// overwrite eventual data of preceeding maps. This mechanism is used for e.g.
+// setting the initialProvisioning parameter accordingly to the cluster's state.
+func ToParameters(list ...map[string]interface{}) map[string]interface{} {
+	allParams := map[string]interface{}{}
 
-func VersionBundleVersionFromTags(t map[string]*string) string {
-	v, ok := t["versionBundleVersion"]
-	if !ok {
-		return ""
+	for _, l := range list {
+		for key, val := range l {
+			allParams[key] = struct {
+				Value interface{}
+			}{
+				Value: val,
+			}
+		}
 	}
 
-	return *v
+	return allParams
+}
+
+func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.VersionBundle.Version
 }
 
 // VnetName returns name of the virtual network.
