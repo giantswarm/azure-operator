@@ -6,7 +6,13 @@ import (
 
 func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
-		Changelogs: []versionbundle.Changelog{},
+		Changelogs: []versionbundle.Changelog{
+			{
+				Component:   "azure-operator",
+				Description: "add your change here",
+				Kind:        versionbundle.KindChanged,
+			},
+		},
 		Components: []versionbundle.Component{
 			{
 				Name:    "calico",
