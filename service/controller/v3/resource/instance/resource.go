@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Name = "instancev2"
+	Name = "instancev3"
 )
 
 type Config struct {
