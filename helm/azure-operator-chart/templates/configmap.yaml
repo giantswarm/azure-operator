@@ -18,6 +18,9 @@ data:
         location: '{{ .Values.Installation.V1.Provider.Azure.Location }}'
         msi:
           enabled: '{{ .Values.Installation.V1.Provider.Azure.MSI.Enabled }}'
+      guest:
+        ssh:
+          ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
       installation:
         name: '{{ .Values.Installation.V1.Name }}'
       {{- if .Values.Installation.V1.Guest }}
