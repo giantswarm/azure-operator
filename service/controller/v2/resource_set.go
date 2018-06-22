@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -14,6 +13,7 @@ import (
 	"github.com/giantswarm/randomkeys"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v2/controllercontext"
