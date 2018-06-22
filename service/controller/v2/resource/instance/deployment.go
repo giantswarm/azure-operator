@@ -2,7 +2,6 @@ package instance
 
 import (
 	"context"
-	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -40,13 +39,11 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-	fmt.Printf("masterCloudConfig: %#v\n", masterCloudConfig)
 
 	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-	fmt.Printf("workerCloudConfig: %#v\n", workerCloudConfig)
 
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {

@@ -1,14 +1,6 @@
 package instance
 
-import (
-	"reflect"
-	"testing"
-
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-)
-
+/*
 func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 	testCases := []struct {
 		Name                      string
@@ -282,3 +274,4 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		})
 	}
 }
+*/

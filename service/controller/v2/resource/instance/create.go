@@ -41,6 +41,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			fetchedDeployment = &d
 			// TODO error handling
 			parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
+			fmt.Printf("fetchedDeployment.Properties.Outputs: %#v\n", fetchedDeployment.Properties.Outputs)
+			fmt.Printf("fetchedDeployment.Properties.Parameters: %#v\n", fetchedDeployment.Properties.Parameters)
 		}
 	}
 
@@ -419,10 +421,8 @@ func updateVersionParameterValue(value interface{}, list []compute.VirtualMachin
 }
 
 func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) string {
-	var m map[string]string
-	// TODO error handling
-	err := json.Unmarshal([]byte(value.(string)), &m)
-	if err != nil {
+	m, ok := value.(map[string]interface{})
+	if !ok {
 		// TODO error handling
 		return ""
 	}
@@ -432,6 +432,7 @@ func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM,
 		// TODO error handling
 		return ""
 	}
+	fmt.Printf("version: %#v\n", version)
 
-	return version
+	return version.(string)
 }
