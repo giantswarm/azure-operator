@@ -36,10 +36,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			fetchedDeployment = &d
+			// TODO error handling
+			parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
 		}
-		fetchedDeployment = &d
-		// TODO error handling
-		parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
 	}
 
 	var allMasterInstances []compute.VirtualMachineScaleSetVM
