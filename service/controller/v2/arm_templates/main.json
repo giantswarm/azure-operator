@@ -60,26 +60,6 @@
     "kubernetesAPISecurePort": {
       "type": "int"
     },
-    "masterDisablePasswordAuth": {
-      "type": "bool",
-      "defaultValue": true
-    },
-    "workerDisablePasswordAuth": {
-      "type": "bool",
-      "defaultValue": true
-    },
-    "masterCloudConfigData": {
-      "type": "secureString",
-      "metadata": {
-        "description": "Base64-encoded cloud-config data."
-      }
-    },
-    "workerCloudConfigData": {
-      "type": "secureString",
-      "metadata": {
-        "description": "Base64-encoded cloud-config data."
-      }
-    },
     "templatesBaseURI" : {
       "type": "string",
       "metadata": {
