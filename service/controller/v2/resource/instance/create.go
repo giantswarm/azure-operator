@@ -309,30 +309,15 @@ func createVersionParameterValue(list []compute.VirtualMachineScaleSetVM, versio
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
-	for _, i := range list {
-		if i.ProvisioningState == nil {
-			continue
-		}
-		fmt.Printf("%#v\n", *i.InstanceID)
-		fmt.Printf("%#v\n", i.Tags)
-		for k, v := range i.Tags {
-			fmt.Printf("%#v\n", k)
-			fmt.Printf("%#v\n", v)
-		}
-	}
 	instanceInProgress := firstInstanceInProgress(customObject, list)
-
-	fmt.Printf("1\n")
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
 	if instanceInProgress == nil {
-		fmt.Printf("2\n")
 		instanceToUpdate = firstInstanceToUpdate(customObject, list)
 	}
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	if instanceToUpdate == nil {
-		fmt.Printf("3\n")
 		instanceToReimage = firstInstanceToReimage(customObject, list, value)
 	}
 
@@ -423,16 +408,27 @@ func updateVersionParameterValue(value interface{}, list []compute.VirtualMachin
 func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) string {
 	m, ok := value.(map[string]interface{})
 	if !ok {
+		//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
 		// TODO error handling
 		return ""
 	}
-
-	version, ok := m[*instance.InstanceID]
+	v, ok := m["value"]
 	if !ok {
+		//		return "", microerror.Maskf(missingParameterValueError, "value")
 		// TODO error handling
 		return ""
 	}
-	fmt.Printf("version: %#v\n", version)
+	var d map[string]string
+	err := json.Unmarshal([]byte(v.(string)), &d)
+	if err != nil {
+		// TODO error handling
+		return ""
+	}
+	version, ok := d[*instance.InstanceID]
+	if !ok {
+		// instance is not yet tracked
+		return ""
+	}
 
-	return version.(string)
+	return version
 }
