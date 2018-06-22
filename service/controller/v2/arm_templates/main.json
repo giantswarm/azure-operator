@@ -14,18 +14,6 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
-    "masterVersionBundleVersions": {
-      "type": "object",
-      "metadata": {
-        "description": "JSON blob of key-value pairs mapping master VMSS instance names to their applied version bundle versions."
-      }
-    },
-    "workerVersionBundleVersions": {
-      "type": "object",
-      "metadata": {
-        "description": "JSON blob of key-value pairs mapping worker VMSS instance names to their applied version bundle versions."
-      }
-    },
     "initialProvisioning": {
       "type": "string",
       "defaultValue": "Yes",
