@@ -11,6 +11,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/service/controller/v2/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
@@ -111,7 +112,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				"workerVersionBundleVersions": createVersionParameterValue(allWorkerInstances, key.VersionBundleVersion(customObject)),
 			}
 			computedDeployment, err = r.newDeployment(ctx, customObject, params)
-			if err != nil {
+			if controllercontext.IsInvalidContext(err) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+				return nil
+			} else if err != nil {
 				return microerror.Mask(err)
 			}
 		} else {
@@ -129,7 +135,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				"workerVersionBundleVersions": updateVersionParameterValue(parameters["workerVersionBundleVersions"], allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject)),
 			}
 			computedDeployment, err = r.newDeployment(ctx, customObject, params)
-			if err != nil {
+			if controllercontext.IsInvalidContext(err) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+				return nil
+			} else if err != nil {
 				return microerror.Mask(err)
 			}
 		}
