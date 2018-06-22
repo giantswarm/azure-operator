@@ -161,6 +161,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
+
 	c, err := r.getVMsClient()
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -170,12 +172,14 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 	s := deploymentNameFunc(customObject)
 	result, err := c.List(ctx, g, s, "", "", "")
 	if IsScaleSetNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the scale set")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", deploymentNameFunc(customObject)))
 
 		return nil, microerror.Mask(scaleSetNotFoundError)
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
 
 	return result.Values(), nil
 }

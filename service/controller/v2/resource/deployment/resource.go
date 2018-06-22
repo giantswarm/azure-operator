@@ -203,14 +203,22 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	if !ok {
 		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, d.Properties.Outputs)
 	}
+	fmt.Printf("0: %#v\n", m)
 	v, ok := m[outputName]
 	if !ok {
 		return "", microerror.Maskf(missingOutputValueError, outputName)
 	}
-	s, ok := v.(string)
+	fmt.Printf("1: %#v\n", v)
+	m, ok = v.(map[string]interface{})
 	if !ok {
-		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", "", v)
+		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, d.Properties.Outputs)
 	}
+	fmt.Printf("2: %#v\n", m)
+	v, ok := m["Value"]
+	if !ok {
+		return "", microerror.Maskf(missingOutputValueError, outputName)
+	}
+	fmt.Printf("3: %#v\n", v)
 
 	return s, nil
 }
