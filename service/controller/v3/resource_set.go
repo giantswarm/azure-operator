@@ -84,9 +84,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:             config.Logger,
 			RandomkeysSearcher: randomkeysSearcher,
 
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
-			OIDC:        config.OIDC,
+			Azure:        config.Azure,
+			AzureConfig:  config.AzureConfig,
+			OIDC:         config.OIDC,
+			SSOPublicKey: config.SSOPublicKey,
 		}
 
 		cloudConfig, err = cloudconfig.New(c)
