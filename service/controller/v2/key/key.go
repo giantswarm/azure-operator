@@ -20,7 +20,6 @@ const (
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
 
-	MainDeploymentName     = "cluster-main-template"
 	TemplateContentVersion = "1.0.0.0"
 )
 

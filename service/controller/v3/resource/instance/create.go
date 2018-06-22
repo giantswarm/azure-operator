@@ -14,6 +14,10 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
+const (
+	vmssDeploymentName = "cluster-vmss-template"
+)
+
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
@@ -27,7 +31,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.MainDeploymentName)
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
 		if IsDeploymentNotFound(err) {
 			// fall through
 		} else if err != nil {
@@ -133,7 +137,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.MainDeploymentName, computedDeployment)
+		_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
 		if err != nil {
 			return microerror.Mask(err)
 		}

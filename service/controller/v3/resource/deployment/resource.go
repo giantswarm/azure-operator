@@ -18,6 +18,10 @@ const (
 	Name = "deploymentv3"
 )
 
+const (
+	mainDeploymentName = "cluster-main-template"
+)
+
 type Config struct {
 	Logger micrologger.Logger
 
@@ -77,7 +81,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var deployment azureresource.Deployment
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.MainDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), mainDeploymentName)
 	if IsNotFound(err) {
 		params := map[string]interface{}{
 			"initialProvisioning": "Yes",
@@ -107,7 +111,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.MainDeploymentName, deployment)
+	_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
