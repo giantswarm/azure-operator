@@ -147,6 +147,7 @@ func New(config Config) (*Service, error) {
 			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,
+			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Guest.SSH.SSOPublicKey),
 			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 		}
 

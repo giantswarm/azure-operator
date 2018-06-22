@@ -1,4 +1,4 @@
-package v_3_3_4
+package v_3_4_0
 
 const MasterTemplate = `#cloud-config
 users:
@@ -12,6 +12,11 @@ users:
 {{ end }}
 {{end}}
 write_files:
+- path: /etc/ssh/trusted-user-ca-keys.pem
+  owner: root
+  permissions: 644
+  content: |
+    {{ .SSOPublicKey }}
 {{ if not .DisableCalico -}}
 - path: /srv/calico-kube-controllers-sa.yaml
   owner: root
@@ -531,7 +536,7 @@ write_files:
         }
       ]
     }
-{{ if not .DisableIngressController -}}    
+{{- if not .DisableIngressController }}
 - path: /srv/default-backend-dep.yml
   owner: root
   permissions: 0644
@@ -719,7 +724,7 @@ write_files:
         targetPort: 443
       selector:
         k8s-app: nginx-ingress-controller
-{{ end -}}
+{{- end }}
 - path: /srv/kube-proxy-sa.yaml
   owner: root
   permissions: 0644
@@ -911,7 +916,7 @@ write_files:
       kind: ClusterRole
       name: calico-node
       apiGroup: rbac.authorization.k8s.io
-{{ if not .DisableIngressController -}}
+{{- if not .DisableIngressController }}
     ---
     ## IC
     kind: ClusterRoleBinding
@@ -940,7 +945,7 @@ write_files:
       kind: Role
       name: nginx-ingress-role
       apiGroup: rbac.authorization.k8s.io
-{{ end -}}
+{{- end }}
 - path: /srv/rbac_roles.yaml
   owner: root
   permissions: 0644
@@ -976,7 +981,7 @@ write_files:
           - nodes
         verbs:
           - get
-{{ if not .DisableIngressController -}}
+{{- if not .DisableIngressController }}
     ---
     ## IC
     apiVersion: v1
@@ -1080,7 +1085,7 @@ write_files:
           - get
           - create
           - update
-{{ end -}}
+{{- end }}
 - path: /srv/psp_policies.yaml
   owner: root
   permissions: 0644
@@ -1782,6 +1787,7 @@ write_files:
     # Non defaults (#100)
     ClientAliveCountMax 2
     PasswordAuthentication no
+    TrustedUserCAKeys /etc/ssh/trusted-user-ca-keys.pem
 - path: /etc/sysctl.d/hardening.conf
   owner: root
   permissions: 0600

@@ -37,6 +37,7 @@ type ResourceSetConfig struct {
 	InstallationName string
 	ProjectName      string
 	OIDC             setting.OIDC
+	SSOPublicKey     string
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
 	TemplateVersion string
@@ -45,6 +46,9 @@ type ResourceSetConfig struct {
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.SSOPublicKey == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.SSOPublicKey must not be empty", config)
 	}
 
 	var err error
@@ -82,9 +86,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:             config.Logger,
 			RandomkeysSearcher: randomkeysSearcher,
 
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
-			OIDC:        config.OIDC,
+			Azure:        config.Azure,
+			AzureConfig:  config.AzureConfig,
+			OIDC:         config.OIDC,
+			SSOPublicKey: config.SSOPublicKey,
 		}
 
 		cloudConfig, err = cloudconfig.New(c)
