@@ -2,10 +2,22 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
+    "apiLBBackendPoolID":{
+      "type":"string",
+      "metadata":{
+        "description":"Output value of the API load balancer backend pool ID as referenced from the API load balancer setup."
+      }
+    },
     "clusterID":{
       "type":"string",
       "metadata":{
-        "description":"Unique ID of this guest cluster."
+        "description":"Unique ID of the guest cluster."
+      }
+    },
+    "etcdLBBackendPoolID":{
+      "type":"string",
+      "metadata":{
+        "description":"Output value of the Etcd load balancer backend pool ID as referenced from the Etcd load balancer setup."
       }
     },
     "GiantSwarmTags":{
@@ -22,6 +34,12 @@
     },
     "masterNodes":{
       "type":"array"
+    },
+    "masterSubnetID":{
+      "type":"string",
+      "metadata":{
+        "description":"Output value of the master subnet ID as referenced from the virtual network setup."
+      }
     },
     "masterVersionBundleVersions":{
       "type":"string",
@@ -50,6 +68,12 @@
     },
     "workerNodes":{
       "type":"array"
+    },
+    "workerSubnetID":{
+      "type":"string",
+      "metadata":{
+        "description":"Output value of the worker subnet ID as referenced from the virtual network setup."
+      }
     },
     "workerVersionBundleVersions":{
       "type":"string",
@@ -131,15 +155,15 @@
           "vmssLbBackendPools":{
             "value":[
               {
-                "id":"[reference('api_load_balancer_setup').outputs.backendPoolId.value]"
+                "id":"[parameters('apiLBBackendPoolID')]"
               },
               {
-                "id":"[reference('etcd_load_balancer_setup').outputs.backendPoolId.value]"
+                "id":"[parameters('etcdLBBackendPoolID')]"
               }
             ]
           },
           "vmssVnetSubnetId":{
-            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
+            "value":"[parameters('masterSubnetID')]"
           },
           "vmssUpgradePolicy":{
             "value":"Manual"
@@ -216,7 +240,7 @@
             ]
           },
           "vmssVnetSubnetId":{
-            "value":"[reference('virtual_network_setup').outputs.workerSubnetID.value]"
+            "value":"[parameters('workerSubnetID')]"
           },
           "vmssUpgradePolicy":{
             "value":"Manual"

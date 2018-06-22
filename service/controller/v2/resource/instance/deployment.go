@@ -1,15 +1,18 @@
 package instance
 
 import (
+	"context"
+
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/service/controller/v2/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
 		n := node{
@@ -42,14 +45,23 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
 	defaultParams := map[string]interface{}{
+		"apiLBBackendPoolID":    cc.APILBBackendPoolID,
 		"clusterID":             key.ClusterID(obj),
+		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
 		"masterCloudConfigData": masterCloudConfig,
 		"masterNodes":           masterNodes,
+		"masterSubnetID":        cc.MasterSubnetID,
 		"templatesBaseURI":      baseTemplateURI(r.templateVersion),
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           workerNodes,
+		"workerSubnetID":        cc.WorkerSubnetID,
 	}
 
 	d := azureresource.Deployment{

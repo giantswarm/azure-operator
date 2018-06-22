@@ -36,10 +36,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			fetchedDeployment = &d
+			// TODO error handling
+			parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
 		}
-		fetchedDeployment = &d
-		// TODO error handling
-		parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
 	}
 
 	var allMasterInstances []compute.VirtualMachineScaleSetVM
@@ -109,7 +110,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				"masterVersionBundleVersions": createVersionParameterValue(allMasterInstances, key.VersionBundleVersion(customObject)),
 				"workerVersionBundleVersions": createVersionParameterValue(allWorkerInstances, key.VersionBundleVersion(customObject)),
 			}
-			computedDeployment, err = r.newDeployment(customObject, params)
+			computedDeployment, err = r.newDeployment(ctx, customObject, params)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -127,7 +128,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				"masterVersionBundleVersions": updateVersionParameterValue(parameters["masterVersionBundleVersions"], allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject)),
 				"workerVersionBundleVersions": updateVersionParameterValue(parameters["workerVersionBundleVersions"], allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject)),
 			}
-			computedDeployment, err = r.newDeployment(customObject, params)
+			computedDeployment, err = r.newDeployment(ctx, customObject, params)
 			if err != nil {
 				return microerror.Mask(err)
 			}

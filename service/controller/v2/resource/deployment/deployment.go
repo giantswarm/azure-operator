@@ -1,6 +1,8 @@
 package deployment
 
 import (
+	"context"
+
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -8,7 +10,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 )
 
-func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	defaultParams := map[string]interface{}{
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
 		"clusterID":                     key.ClusterID(obj),

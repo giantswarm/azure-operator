@@ -1,6 +1,7 @@
 package v2
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -15,6 +16,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v2/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/dnsrecord"
@@ -281,10 +283,16 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		return false
 	}
 
+	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
+		return ctx, nil
+	}
+
 	var resourceSet *controller.ResourceSet
 	{
 		c := controller.ResourceSetConfig{
 			Handles:   handlesFunc,
+			InitCtx:   initCtxFunc,
 			Logger:    config.Logger,
 			Resources: resources,
 		}
