@@ -5,6 +5,8 @@ package template
 var AzureOperatorChartValues = `Installation:
   V1:
     Guest:
+      SSH:
+        SSOPublicKey: 'test'
       Kubernetes:
         API:
           Auth:
