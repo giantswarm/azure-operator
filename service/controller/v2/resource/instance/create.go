@@ -38,6 +38,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
+			s := *d.Properties.ProvisioningState
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+
+			if !key.IsFinalProvisioningState(s) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+
+				return nil
+			}
+
 			fetchedDeployment = &d
 			// TODO error handling
 			parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
@@ -105,44 +114,28 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		var computedDeployment azureresource.Deployment
+		var masterBlob string
+		var workerBlob string
 		if fetchedDeployment == nil {
-			params := map[string]interface{}{
-				"masterVersionBundleVersions": "{}",
-				"workerVersionBundleVersions": "{}",
-			}
-			computedDeployment, err = r.newDeployment(ctx, customObject, params)
-			if controllercontext.IsInvalidContext(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
-				return nil
-			} else if err != nil {
-				return microerror.Mask(err)
-			}
+			masterBlob = "{}"
+			workerBlob = "{}"
 		} else {
-			s := *fetchedDeployment.Properties.ProvisioningState
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+			masterBlob = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters["masterVersionBundleVersions"])
+			workerBlob = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters["workerVersionBundleVersions"])
+		}
 
-			if !key.IsFinalProvisioningState(s) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+		params := map[string]interface{}{
+			"masterVersionBundleVersions": masterBlob,
+			"workerVersionBundleVersions": workerBlob,
+		}
+		computedDeployment, err := r.newDeployment(ctx, customObject, params)
+		if controllercontext.IsInvalidContext(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
-				return nil
-			}
-
-			params := map[string]interface{}{
-				"masterVersionBundleVersions": updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters["masterVersionBundleVersions"]),
-				"workerVersionBundleVersions": updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters["workerVersionBundleVersions"]),
-			}
-			computedDeployment, err = r.newDeployment(ctx, customObject, params)
-			if controllercontext.IsInvalidContext(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
-				return nil
-			} else if err != nil {
-				return microerror.Mask(err)
-			}
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
 		}
 
 		deploymentsClient, err := r.getDeploymentsClient()
