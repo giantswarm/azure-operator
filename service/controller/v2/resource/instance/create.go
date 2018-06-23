@@ -325,6 +325,10 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // firstInstanceToReimage return nil.
 func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
+		// TODO when no version bundle version is found it means the cluster just
+		// got created and the version bundle versions are not yet tracked. In this
+		// case we must not select an instance to be reimaged because we would roll
+		// a node that just got created and is already up to date.
 		if key.VersionBundleVersion(customObject) == versionBundleVersionForInstance(&v, value) {
 			continue
 		}
