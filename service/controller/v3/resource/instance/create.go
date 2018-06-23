@@ -41,8 +41,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			fetchedDeployment = &d
 			// TODO error handling
 			parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
-			fmt.Printf("fetchedDeployment.Properties.Outputs: %#v\n", fetchedDeployment.Properties.Outputs)
-			fmt.Printf("fetchedDeployment.Properties.Parameters: %#v\n", fetchedDeployment.Properties.Parameters)
 		}
 	}
 
@@ -133,8 +131,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			params := map[string]interface{}{
-				"masterVersionBundleVersions": updateVersionParameterValue(parameters["masterVersionBundleVersions"], allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject)),
-				"workerVersionBundleVersions": updateVersionParameterValue(parameters["workerVersionBundleVersions"], allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject)),
+				"masterVersionBundleVersions": updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters["masterVersionBundleVersions"]),
+				"workerVersionBundleVersions": updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters["workerVersionBundleVersions"]),
 			}
 			computedDeployment, err = r.newDeployment(ctx, customObject, params)
 			if controllercontext.IsInvalidContext(err) {
@@ -371,22 +369,28 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func updateVersionParameterValue(value interface{}, list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string) string {
+func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) string {
+	fmt.Printf("value: %#v\n", value)
+	fmt.Printf("version: %#v\n", version)
+
 	// In case the given instance is nil there is nothing to change and we just
 	// return what we got.
 	if instance == nil {
-		// TODO error handling
-		return value.(string)
+		b, err := json.Marshal(value)
+		if err != nil {
+			// TODO error handling
+			return ""
+		}
+		return string(b)
 	}
 
 	// Here we got an instance which implies we have to update its version bundle
 	// version carried in the paramter value.
 	var raw string
 	{
-		var m map[string]string
-		// TODO error handling
-		err := json.Unmarshal([]byte(value.(string)), &m)
-		if err != nil {
+		m, ok := value.(map[string]interface{})
+		if !ok {
+			//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
 			// TODO error handling
 			return ""
 		}
