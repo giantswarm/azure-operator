@@ -416,6 +416,7 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		}
 
 		raw = string(b)
+		fmt.Printf("raw: %#v\n", raw)
 	}
 
 	return raw
