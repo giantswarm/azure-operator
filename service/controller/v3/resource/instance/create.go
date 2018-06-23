@@ -108,8 +108,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		var computedDeployment azureresource.Deployment
 		if fetchedDeployment == nil {
 			params := map[string]interface{}{
-				"masterVersionBundleVersions": createVersionParameterValue(allMasterInstances, key.VersionBundleVersion(customObject)),
-				"workerVersionBundleVersions": createVersionParameterValue(allWorkerInstances, key.VersionBundleVersion(customObject)),
+				"masterVersionBundleVersions": "{}",
+				"workerVersionBundleVersions": "{}",
 			}
 			computedDeployment, err = r.newDeployment(ctx, customObject, params)
 			if controllercontext.IsInvalidContext(err) {
@@ -232,7 +232,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 }
 
 func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
-	if instance != nil {
+	if instance == nil {
 		return nil
 	}
 
@@ -287,21 +287,6 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceNameFunc(customObject, *instance.InstanceID)))
 
 	return nil
-}
-
-func createVersionParameterValue(list []compute.VirtualMachineScaleSetVM, version string) string {
-	m := map[string]string{}
-	for _, v := range list {
-		m[*v.InstanceID] = version
-	}
-
-	b, err := json.Marshal(m)
-	if err != nil {
-		// TODO error handling
-		return ""
-	}
-
-	return string(b)
 }
 
 // findActionableInstance either returns an instance to update or an instance to
@@ -373,15 +358,46 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 	fmt.Printf("value: %#v\n", value)
 	fmt.Printf("version: %#v\n", version)
 
-	// In case the given instance is nil there is nothing to change and we just
-	// return what we got.
-	if instance == nil {
-		b, err := json.Marshal(value)
+	var blob string
+	{
+		m, ok := value.(map[string]interface{})
+		if !ok {
+			//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
+			// TODO error handling
+			return ""
+		}
+		v, ok := m["value"]
+		if !ok {
+			//		return "", microerror.Maskf(missingParameterValueError, "value")
+			// TODO error handling
+			return ""
+		}
+		// TODO error handling
+		blob = v.(string)
+		fmt.Printf("blob: %#v\n", blob)
+	}
+
+	if blob == "{}" {
+		m := map[string]string{}
+		for _, v := range list {
+			m[*v.InstanceID] = version
+		}
+
+		b, err := json.Marshal(m)
 		if err != nil {
 			// TODO error handling
 			return ""
 		}
+		fmt.Printf("b: %s\n", b)
+
 		return string(b)
+	}
+
+	// In case the given instance is nil there is nothing to change and we just
+	// return what we got.
+	if instance == nil {
+		// TODO error handling
+		return blob
 	}
 
 	// Here we got an instance which implies we have to update its version bundle
