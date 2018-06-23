@@ -286,6 +286,9 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 // reimage, but never both at the same time.
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	instanceInProgress := firstInstanceInProgress(customObject, list)
+	if instanceInProgress != nil {
+		return nil, nil, nil
+	}
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
 	if instanceInProgress == nil {

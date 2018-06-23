@@ -1,6 +1,14 @@
 package instance
 
-/*
+import (
+	"reflect"
+	"testing"
+
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/go-autorest/autorest/to"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+)
+
 func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 	testCases := []struct {
 		Name                      string
@@ -34,12 +42,15 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 			},
-			Value: `{
-				"alq9y-worker-000001": "0.1.0"
-			}`,
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.1.0"
+        }`,
+			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToReimage: nil,
 			ErrorMatcher:              nil,
@@ -58,19 +69,23 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 				{
 					InstanceID: to.StringPtr("alq9y-worker-000002"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 			},
-			Value: `{
-				"alq9y-worker-000001": "0.1.0",
-				"alq9y-worker-000002": "0.1.0"
-			}`,
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.1.0",
+					"alq9y-worker-000002": "0.1.0"
+        }`,
+			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToReimage: nil,
 			ErrorMatcher:              nil,
@@ -89,16 +104,20 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 			},
-			Value: `{
-				"alq9y-worker-000001": "0.1.0"
-			}`,
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.1.0"
+        }`,
+			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000001"),
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(false),
+					ProvisioningState:  to.StringPtr("Succeeded"),
 				},
 			},
 			ExpectedInstanceToReimage: nil,
@@ -118,23 +137,28 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 				{
 					InstanceID: to.StringPtr("alq9y-worker-000002"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 			},
-			Value: `{
-				"alq9y-worker-000001": "0.1.0",
-				"alq9y-worker-000002": "0.1.0"
-			}`,
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.1.0",
+					"alq9y-worker-000002": "0.1.0"
+        }`,
+			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000001"),
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(false),
+					ProvisioningState:  to.StringPtr("Succeeded"),
 				},
 			},
 			ExpectedInstanceToReimage: nil,
@@ -154,23 +178,28 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 				{
 					InstanceID: to.StringPtr("alq9y-worker-000002"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 			},
-			Value: `{
-				"alq9y-worker-000001": "0.1.0",
-				"alq9y-worker-000002": "0.1.0"
-			}`,
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.1.0",
+					"alq9y-worker-000002": "0.1.0"
+        }`,
+			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000002"),
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(false),
+					ProvisioningState:  to.StringPtr("Succeeded"),
 				},
 			},
 			ExpectedInstanceToReimage: nil,
@@ -190,24 +219,29 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 				{
 					InstanceID: to.StringPtr("alq9y-worker-000002"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 			},
-			Value: `{
-				"alq9y-worker-000001": "0.0.1",
-				"alq9y-worker-000002": "0.0.1"
-			}`,
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.0.1",
+					"alq9y-worker-000002": "0.0.1"
+        }`,
+			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToReimage: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000001"),
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(true),
+					ProvisioningState:  to.StringPtr("Succeeded"),
 				},
 			},
 			ErrorMatcher: nil,
@@ -226,27 +260,102 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 				{
 					InstanceID: to.StringPtr("alq9y-worker-000002"),
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
 					},
 				},
 			},
-			Value: `{
-				"alq9y-worker-000001": "0.1.0",
-				"alq9y-worker-000002": "0.0.1"
-			}`,
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.1.0",
+					"alq9y-worker-000002": "0.0.1"
+        }`,
+			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToReimage: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000002"),
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(true),
+					ProvisioningState:  to.StringPtr("Succeeded"),
 				},
 			},
 			ErrorMatcher: nil,
+		},
+		{
+			Name: "case 8: two instances not having the latest version bundle version applied and being in provisioning state 'InProgress' results in no action",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
+						Version: "0.1.0",
+					},
+				},
+			},
+			Instances: []compute.VirtualMachineScaleSetVM{
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000001"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("InProgress"),
+					},
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000002"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("InProgress"),
+					},
+				},
+			},
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.0.1",
+					"alq9y-worker-000002": "0.0.1"
+        }`,
+			},
+			ExpectedInstanceToUpdate:  nil,
+			ExpectedInstanceToReimage: nil,
+			ErrorMatcher:              nil,
+		},
+		{
+			Name: "case 9: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied and being in provisioning state 'InProgress' results in no action",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
+						Version: "0.1.0",
+					},
+				},
+			},
+			Instances: []compute.VirtualMachineScaleSetVM{
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000001"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("InProgress"),
+					},
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000002"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("InProgress"),
+					},
+				},
+			},
+			Value: map[string]interface{}{
+				"value": `{
+					"alq9y-worker-000001": "0.1.0",
+					"alq9y-worker-000002": "0.0.1"
+        }`,
+			},
+			ExpectedInstanceToUpdate:  nil,
+			ExpectedInstanceToReimage: nil,
+			ErrorMatcher:              nil,
 		},
 	}
 
@@ -274,4 +383,3 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		})
 	}
 }
-*/
