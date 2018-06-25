@@ -85,7 +85,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	// TODO don't process workers when masters are processed.
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	var updatedWorkerInstance *compute.VirtualMachineScaleSetVM
 	{
@@ -105,11 +104,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.reimageInstance(ctx, customObject, instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
-			if err != nil {
-				return microerror.Mask(err)
+			if updatedMasterInstance != nil {
+				// In case the master instance is being updated we want to prevent any
+				// other updates on the workers. This is because the update process
+				// involves the draining of the updated node and if the master is being
+				// updated at the same time the guest cluster's Kubernetes API is not
+				// available in order to drain nodes.
+				err = r.reimageInstance(ctx, customObject, instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				updatedWorkerInstance = instanceToReimage
 			}
-			updatedWorkerInstance = instanceToReimage
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
 		}
@@ -121,6 +127,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		var masterBlobValue string
 		var workerBlobValue string
 		if fetchedDeployment == nil {
+			// The implication of the fetched deployment being empty is that the gust
+			// cluster just got created. Therefore we initialize the version blob
+			// parameter with an empty JSON object.
 			masterBlobValue = "{}"
 			workerBlobValue = "{}"
 		} else {
