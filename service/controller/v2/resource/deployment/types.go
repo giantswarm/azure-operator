@@ -1,4 +1,4 @@
-package instance
+package deployment
 
 type node struct {
 	// AdminUsername is the vm administrator username

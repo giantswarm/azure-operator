@@ -60,6 +60,32 @@
     "kubernetesAPISecurePort": {
       "type": "int"
     },
+    "masterNodes": {
+      "type": "array"
+    },
+    "workerNodes": {
+      "type": "array"
+    },
+    "masterDisablePasswordAuth": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "workerDisablePasswordAuth": {
+      "type": "bool",
+      "defaultValue": true
+    },
+    "masterCloudConfigData": {
+      "type": "secureString",
+      "metadata": {
+        "description": "Base64-encoded cloud-config data."
+      }
+    },
+    "workerCloudConfigData": {
+      "type": "secureString",
+      "metadata": {
+        "description": "Base64-encoded cloud-config data."
+      }
+    },
     "templatesBaseURI" : {
       "type": "string",
       "metadata": {
@@ -102,6 +128,13 @@
       "type": "string",
       "defaultValue": "peering.json"
     },
+    "vmssMSIEnabled": {
+      "type": "bool"
+    },
+    "vmssTemplateFile": {
+      "type": "string",
+      "defaultValue": "vmss.json"
+    },
     "dnsZones": {
       "type": "object",
       "metadata": {
@@ -112,6 +145,7 @@
   "variables": {
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
+    "kubernetesLBBackendID": "[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
     "kubernetesLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('kubernetesLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
@@ -119,6 +153,7 @@
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "networkPeeringTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('networkPeeringTemplateFile'))]",
+    "vmssTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('vmssTemplateFile'))]",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
   },
@@ -326,6 +361,78 @@
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "prefix": { "value": "*" },
           "cname": { "value": "[concat('ingress.', parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]" }
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "master-vmss-deploy",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('vmssTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {"value": "[resourceGroup().location]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "vmssName": {"value": "[concat(parameters('clusterID'), '-master')]"},
+          "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
+          "vmssVmSize": {"value": "[parameters('masterNodes')[0].vmSize]"},
+          "vmssVmCount": {"value": "[length(parameters('masterNodes'))]"},
+          "vmssVmDataDisks": {"value": [
+                  {"name": "EtcdDisk", "sizeGB": 100},
+                  {"name": "DockerDisk", "sizeGB": 50}
+          ]},
+          "vmssSshUser": {"value": "[parameters('masterNodes')[0].adminUsername]"},
+          "vmssSshPublicKey": {"value": "[parameters('masterNodes')[0].adminSSHKeyData]"},
+          "vmssOsImagePublisher": {"value": "[parameters('masterNodes')[0].osImage.publisher]"},
+          "vmssOsImageOffer": {"value": "[parameters('masterNodes')[0].osImage.offer]"},
+          "vmssOsImageSKU": {"value": "[parameters('masterNodes')[0].osImage.sku]"},
+          "vmssOsImageVersion": {"value": "[parameters('masterNodes')[0].osImage.version]"},
+          "vmssOverprovision": {"value": "false"},
+          "vmssVmCustomData": {"value": "[parameters('masterCloudConfigData')]"},
+          "vmssLbBackendPools": {"value": [
+            {"id": "[reference('api_load_balancer_setup').outputs.backendPoolId.value]"},
+            {"id": "[reference('etcd_load_balancer_setup').outputs.backendPoolId.value]"}
+          ]},
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.masterSubnetID.value]"},
+          "vmssUpgradePolicy": {"value": "Manual"}
+        }
+      }
+    },
+    {
+      "apiVersion": "2016-09-01",
+      "type": "Microsoft.Resources/deployments",
+      "name": "worker-vmss-deploy",
+      "properties": {
+        "mode": "incremental",
+        "templateLink": {
+          "uri": "[variables('vmssTemplateURI')]",
+          "contentVersion": "1.0.0.0"
+        },
+        "parameters": {
+          "location": {"value": "[resourceGroup().location]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "vmssName": {"value": "[concat(parameters('clusterID'), '-worker')]"},
+          "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
+          "vmssVmSize": {"value": "[parameters('workerNodes')[0].vmSize]"},
+          "vmssVmCount": {"value": "[length(parameters('workerNodes'))]"},
+          "vmssVmDataDisks": {"value": [{"name": "DockerDisk", "sizeGB": 50}]},
+          "vmssSshUser": {"value": "[parameters('workerNodes')[0].adminUsername]"},
+          "vmssSshPublicKey": {"value": "[parameters('workerNodes')[0].adminSSHKeyData]"},
+          "vmssOsImagePublisher": {"value": "[parameters('workerNodes')[0].osImage.publisher]"},
+          "vmssOsImageOffer": {"value": "[parameters('workerNodes')[0].osImage.offer]"},
+          "vmssOsImageSKU": {"value": "[parameters('workerNodes')[0].osImage.sku]"},
+          "vmssOsImageVersion": {"value": "[parameters('workerNodes')[0].osImage.version]"},
+          "vmssOverprovision": {"value": "true"},
+          "vmssVmCustomData": {"value": "[parameters('workerCloudConfigData')]"},
+          "vmssLbBackendPools": {"value": [
+            {"id": "[variables('kubernetesLBBackendID')]"}
+          ]},
+          "vmssVnetSubnetId": {"value": "[reference('virtual_network_setup').outputs.workerSubnetID.value]"},
+          "vmssUpgradePolicy": {"value": "Manual"}
         }
       }
     }

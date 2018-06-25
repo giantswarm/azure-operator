@@ -1,9 +1,9 @@
 package v2
 
 import (
-	"context"
 	"fmt"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -13,10 +13,8 @@ import (
 	"github.com/giantswarm/randomkeys"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/v2/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v2/key"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v2/resource/dnsrecord"
@@ -116,6 +114,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:           config.Azure,
 			AzureConfig:     config.AzureConfig,
+			CloudConfig:     cloudConfig,
 			TemplateVersion: config.TemplateVersion,
 		}
 
@@ -166,12 +165,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource controller.Resource
 	{
 		c := instance.Config{
-			CloudConfig: cloudConfig,
-			Logger:      config.Logger,
+			Logger: config.Logger,
 
-			Azure:           config.Azure,
-			AzureConfig:     config.AzureConfig,
-			TemplateVersion: config.TemplateVersion,
+			Azure:       config.Azure,
+			AzureConfig: config.AzureConfig,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -283,16 +280,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		return false
 	}
 
-	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
-		ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
-		return ctx, nil
-	}
-
 	var resourceSet *controller.ResourceSet
 	{
 		c := controller.ResourceSetConfig{
 			Handles:   handlesFunc,
-			InitCtx:   initCtxFunc,
 			Logger:    config.Logger,
 			Resources: resources,
 		}
