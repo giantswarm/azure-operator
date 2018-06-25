@@ -85,6 +85,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	// TODO don't process workers when masters are processed.
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	var updatedWorkerInstance *compute.VirtualMachineScaleSetVM
 	{
@@ -123,8 +124,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			masterBlobValue = "{}"
 			workerBlobValue = "{}"
 		} else {
-			masterBlobValue = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters[masterBlobKey])
-			workerBlobValue = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
+			masterBlobValue, err = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters[masterBlobKey])
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			workerBlobValue, err = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		params := map[string]interface{}{
@@ -366,20 +373,18 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) string {
+func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
 	var blob string
 	{
-		m, ok := value.(map[string]interface{})
-		if !ok {
-			//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
-			// TODO error handling
-			return ""
+		m, err := key.ToMap(value)
+		if err != nil {
+			return "", microerror.Mask(err)
 		}
 		v, ok := m["value"]
 		if !ok {
 			//		return "", microerror.Maskf(missingParameterValueError, "value")
 			// TODO error handling
-			return ""
+			return "", nil
 		}
 		// TODO error handling
 		blob = v.(string)
@@ -394,28 +399,26 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		b, err := json.Marshal(m)
 		if err != nil {
 			// TODO error handling
-			return ""
+			return "", nil
 		}
 
-		return string(b)
+		return string(b), nil
 	}
 
 	// In case the given instance is nil there is nothing to change and we just
 	// return what we got.
 	if instance == nil {
 		// TODO error handling
-		return blob
+		return blob, nil
 	}
 
 	// Here we got an instance which implies we have to update its version bundle
 	// version carried in the paramter value.
 	var raw string
 	{
-		m, ok := value.(map[string]interface{})
-		if !ok {
-			//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
-			// TODO error handling
-			return ""
+		m, err := key.ToMap(value)
+		if err != nil {
+			return "", microerror.Mask(err)
 		}
 
 		m[*instance.InstanceID] = version
@@ -423,13 +426,13 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		b, err := json.Marshal(m)
 		if err != nil {
 			// TODO error handling
-			return ""
+			return "", nil
 		}
 
 		raw = string(b)
 	}
 
-	return raw
+	return raw, nil
 }
 
 func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) (string, error) {
