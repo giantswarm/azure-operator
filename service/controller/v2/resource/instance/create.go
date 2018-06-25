@@ -307,6 +307,16 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	return nil
 }
 
+func containsInstanceVersion(list []compute.VirtualMachineScaleSetVM, version string) bool {
+	for _, v := range list {
+		if *v.InstanceID == version {
+			return true
+		}
+	}
+
+	return false
+}
+
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
@@ -389,15 +399,31 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 	// Parse the version blob so we can work with it below.
 	var blob string
 	{
-		m, err := key.ToMap(value)
+		m1, err := key.ToMap(value)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		s, err := key.ToKeyValue(m)
+		s, err := key.ToKeyValue(m1)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		blob = s
+		var m2 map[string]interface{}
+		err = json.Unmarshal([]byte(s), &m2)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		m3 := map[string]interface{}{}
+		for k, v := range m2 {
+			if !containsInstanceVersion(list, k) {
+				continue
+			}
+			m3[k] = v
+		}
+		b, err := json.Marshal(m3)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		blob = string(b)
 	}
 
 	// In case the version blob is just an empty JSON object we initialize it with
@@ -426,7 +452,8 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 	// version carried in the paramter value.
 	var raw string
 	{
-		m, err := key.ToMap(value)
+		var m map[string]string
+		err := json.Unmarshal([]byte(blob), &m)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
