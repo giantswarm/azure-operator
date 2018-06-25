@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	VirtualMachineSize = "Standard_A2"
+	VirtualMachineSize = "Standard_D2s_v3"
 )
 
 type AzureConfig struct {
