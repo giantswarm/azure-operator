@@ -374,22 +374,22 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 }
 
 func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
+	// Parse the version blob so we can work with it below.
 	var blob string
 	{
 		m, err := key.ToMap(value)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		v, ok := m["value"]
-		if !ok {
-			//		return "", microerror.Maskf(missingParameterValueError, "value")
-			// TODO error handling
-			return "", nil
+		s, err := key.ToKeyValue(m)
+		if err != nil {
+			return "", microerror.Mask(err)
 		}
-		// TODO error handling
-		blob = v.(string)
+		blob = s
 	}
 
+	// In case the version blob is just an empty JSON object we initialize it with
+	// all instances we have got.
 	if blob == "{}" {
 		m := map[string]string{}
 		for _, v := range list {
@@ -398,8 +398,7 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 
 		b, err := json.Marshal(m)
 		if err != nil {
-			// TODO error handling
-			return "", nil
+			return "", microerror.Mask(err)
 		}
 
 		return string(b), nil
@@ -408,7 +407,6 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 	// In case the given instance is nil there is nothing to change and we just
 	// return what we got.
 	if instance == nil {
-		// TODO error handling
 		return blob, nil
 	}
 
@@ -425,8 +423,7 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 
 		b, err := json.Marshal(m)
 		if err != nil {
-			// TODO error handling
-			return "", nil
+			return "", microerror.Mask(err)
 		}
 
 		raw = string(b)
@@ -440,18 +437,17 @@ func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM,
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	v, ok := m["value"]
-	if !ok {
-		//		return "", microerror.Maskf(missingParameterValueError, "value")
-		// TODO error handling
-		return "", nil
-	}
-	var d map[string]string
-	err = json.Unmarshal([]byte(v.(string)), &d)
+	s, err := key.ToKeyValue(m)
 	if err != nil {
-		// TODO error handling
-		return "", nil
+		return "", microerror.Mask(err)
 	}
+
+	var d map[string]string
+	err = json.Unmarshal([]byte(s), &d)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
 	version, ok := d[*instance.InstanceID]
 	if !ok {
 		// instance is not yet tracked
