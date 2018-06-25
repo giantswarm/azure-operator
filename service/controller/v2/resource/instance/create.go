@@ -16,7 +16,9 @@ import (
 )
 
 const (
+	masterBlobKey      = "masterVersionBundleVersions"
 	vmssDeploymentName = "cluster-vmss-template"
+	workerBlobKey      = "workerVersionBundleVersions"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -65,7 +67,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters["masterVersionBundleVersions"])
+			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters[masterBlobKey])
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -94,7 +96,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters["workerVersionBundleVersions"])
+			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters[workerBlobKey])
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -115,25 +117,24 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		var masterBlob string
-		var workerBlob string
+		var masterBlobValue string
+		var workerBlobValue string
 		if fetchedDeployment == nil {
-			masterBlob = "{}"
-			workerBlob = "{}"
+			masterBlobValue = "{}"
+			workerBlobValue = "{}"
 		} else {
-			masterBlob = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters["masterVersionBundleVersions"])
-			workerBlob = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters["workerVersionBundleVersions"])
+			masterBlobValue = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters[masterBlobKey])
+			workerBlobValue = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
 		}
 
 		params := map[string]interface{}{
-			"masterVersionBundleVersions": masterBlob,
-			"workerVersionBundleVersions": workerBlob,
+			masterBlobKey: masterBlobValue,
+			workerBlobKey: workerBlobValue,
 		}
 		computedDeployment, err := r.newDeployment(ctx, customObject, params)
 		if controllercontext.IsInvalidContext(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
