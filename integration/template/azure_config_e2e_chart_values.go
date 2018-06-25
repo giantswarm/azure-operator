@@ -9,6 +9,7 @@ azure:
   vmSizeMaster: "Standard_D2s_v3"
   vmSizeWorker: "Standard_D2s_v3"
   workerSubnetCIDR: ${AZURE_WORKER_SUBNET_CIDR}
+  vpnSubnetCIDR: ${AZURE_VPN_SUBNET_CIDR}
 clusterName: ${CLUSTER_NAME}
 commonDomain: ${COMMON_DOMAIN}
 commonDomainResourceGroup: ${COMMON_DOMAIN_RESOURCE_GROUP}

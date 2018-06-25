@@ -24,6 +24,7 @@ var AzureOperatorChartValues = `Installation:
           CIDR: "10.0.0.0/16"
           ResourceGroup: "godsmack"
           VirtualNetwork: "godsmack"
+          VirtualNetworkGateway: "GatewayTest"
         MSI:
           Enabled: true
         Location: ${AZURE_LOCATION}
