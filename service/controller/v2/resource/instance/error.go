@@ -63,3 +63,10 @@ func IsScaleSetNotFound(err error) bool {
 
 	return false
 }
+
+var versionBlobEmptyError = microerror.New("version blob empty")
+
+// IsVersionBlobEmpty asserts versionBlobEmptyError.
+func IsVersionBlobEmpty(err error) bool {
+	return microerror.Cause(err) == versionBlobEmptyError
+}

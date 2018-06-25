@@ -210,7 +210,15 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated or reimaged")
 
 		instanceToUpdate, instanceToReimage, err = findActionableInstance(customObject, instances, value)
-		if err != nil {
+		if IsVersionBlobEmpty(err) {
+			// When no version bundle version is found it means the cluster just got
+			// created and the version bundle versions are not yet tracked within the
+			// parameters of the guest cluster's VMSS deployment. In this case we must
+			// not select an instance to be reimaged because we would roll a node that
+			// just got created and is already up to date.
+			r.logger.LogCtx(ctx, "level", "debug", "message", "version blob still empty")
+			return nil, nil, nil
+		} else if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
 
@@ -218,7 +226,6 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 			// Neither did we find an instance to be updated nor to be reimaged.
 			// Nothing has to be done or we already processes all instances.
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated or reimaged")
-
 			return nil, nil, nil
 		}
 
@@ -339,10 +346,6 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // firstInstanceToReimage return nil.
 func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, error) {
 	for _, v := range list {
-		// TODO when no version bundle version is found it means the cluster just
-		// got created and the version bundle versions are not yet tracked. In this
-		// case we must not select an instance to be reimaged because we would roll
-		// a node that just got created and is already up to date.
 		desiredVersion := key.VersionBundleVersion(customObject)
 		instanceVersion, err := versionBundleVersionForInstance(&v, value)
 		if err != nil {
@@ -450,8 +453,7 @@ func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM,
 
 	version, ok := d[*instance.InstanceID]
 	if !ok {
-		// instance is not yet tracked
-		return "", nil
+		return "", microerror.Mask(versionBlobEmptyError)
 	}
 
 	return version, nil
