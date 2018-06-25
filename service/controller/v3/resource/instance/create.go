@@ -104,7 +104,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			if updatedMasterInstance != nil {
+			if updatedMasterInstance == nil {
 				// In case the master instance is being updated we want to prevent any
 				// other updates on the workers. This is because the update process
 				// involves the draining of the updated node and if the master is being
