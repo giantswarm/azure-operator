@@ -357,6 +357,70 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			ExpectedInstanceToReimage: nil,
 			ErrorMatcher:              nil,
 		},
+		{
+			Name: "case 10: two instances not having the latest version bundle version applied results in versionBlobEmptyError when there are no version bundle versions tracked on the version blob",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
+						Version: "0.1.0",
+					},
+				},
+			},
+			Instances: []compute.VirtualMachineScaleSetVM{
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000001"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
+					},
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000002"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
+					},
+				},
+			},
+			Value: map[string]interface{}{
+				"value": `{}`,
+			},
+			ExpectedInstanceToUpdate:  nil,
+			ExpectedInstanceToReimage: nil,
+			ErrorMatcher:              IsVersionBlobEmpty,
+		},
+		{
+			Name: "case 11: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied results in versionBlobEmptyError when there are no version bundle versions tracked on the version blob",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
+						Version: "0.1.0",
+					},
+				},
+			},
+			Instances: []compute.VirtualMachineScaleSetVM{
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000001"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
+					},
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000002"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
+					},
+				},
+			},
+			Value: map[string]interface{}{
+				"value": `{}`,
+			},
+			ExpectedInstanceToUpdate:  nil,
+			ExpectedInstanceToReimage: nil,
+			ErrorMatcher:              IsVersionBlobEmpty,
+		},
 	}
 
 	for _, tc := range testCases {

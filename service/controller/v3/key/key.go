@@ -211,6 +211,19 @@ func ToMap(v interface{}) (map[string]interface{}, error) {
 	return m, nil
 }
 
+func ToKeyValue(m map[string]interface{}) (string, error) {
+	v, ok := m["value"]
+	if !ok {
+		return "", microerror.Maskf(missingOutputValueError, "value")
+	}
+	s, ok := v.(string)
+	if !ok {
+		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", "", v)
+	}
+
+	return s, nil
+}
+
 // ToParameters merges the input maps and converts the result into the
 // structure used by the Azure API. Note that the order of inputs is relevant.
 // Default parameters should be given first. Data of the following maps will
