@@ -115,6 +115,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 					return microerror.Mask(err)
 				}
 				updatedWorkerInstance = instanceToReimage
+			} else {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not ensuring instance '%s' to be reimaged due to master processing", key.WorkerInstanceName(customObject, *instance.InstanceID)))
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
