@@ -1,8 +1,6 @@
 package controller
 
 import (
-	"time"
-
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -66,7 +64,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Watcher: config.G8sClient.ProviderV1alpha1().AzureConfigs(""),
 
 			RateWait:     informer.DefaultRateWait,
-			ResyncPeriod: 3 * time.Minute,
+			ResyncPeriod: informer.DefaultResyncPeriod,
 		}
 
 		newInformer, err = informer.New(c)
