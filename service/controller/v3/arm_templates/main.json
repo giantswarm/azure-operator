@@ -112,6 +112,7 @@
   "variables": {
     "dnsASetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
+    "kubernetesLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('kubernetesLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "privateLoadBalancerTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
