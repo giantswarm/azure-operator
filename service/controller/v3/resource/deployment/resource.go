@@ -211,13 +211,9 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	v, ok = m["value"]
-	if !ok {
-		return "", microerror.Maskf(missingOutputValueError, "value")
-	}
-	s, ok := v.(string)
-	if !ok {
-		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", "", v)
+	s, err := key.ToKeyValue(m)
+	if err != nil {
+		return "", microerror.Mask(err)
 	}
 
 	return s, nil
