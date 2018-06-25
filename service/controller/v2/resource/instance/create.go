@@ -43,13 +43,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			if !key.IsFinalProvisioningState(s) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
 				return nil
 			}
 
 			fetchedDeployment = &d
-			// TODO error handling
-			parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
+			parameters, err = key.ToMap(fetchedDeployment.Properties.Parameters)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 

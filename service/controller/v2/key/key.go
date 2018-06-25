@@ -202,6 +202,15 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
+func ToMap(v interface{}) (map[string]interface{}, error) {
+	m, ok := v.(map[string]interface{})
+	if !ok {
+		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
+	}
+
+	return m, nil
+}
+
 // ToParameters merges the input maps and converts the result into the
 // structure used by the Azure API. Note that the order of inputs is relevant.
 // Default parameters should be given first. Data of the following maps will
