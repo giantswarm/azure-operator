@@ -16,7 +16,9 @@ import (
 )
 
 const (
+	masterBlobKey      = "masterVersionBundleVersions"
 	vmssDeploymentName = "cluster-vmss-template"
+	workerBlobKey      = "workerVersionBundleVersions"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -43,13 +45,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			if !key.IsFinalProvisioningState(s) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
 				return nil
 			}
 
 			fetchedDeployment = &d
-			// TODO error handling
-			parameters = fetchedDeployment.Properties.Parameters.(map[string]interface{})
+			parameters, err = key.ToMap(fetchedDeployment.Properties.Parameters)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
@@ -64,7 +67,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters["masterVersionBundleVersions"])
+			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters[masterBlobKey])
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -82,6 +85,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	// TODO don't process workers when masters are processed.
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	var updatedWorkerInstance *compute.VirtualMachineScaleSetVM
 	{
@@ -93,7 +97,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters["workerVersionBundleVersions"])
+			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters[workerBlobKey])
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -114,25 +118,30 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		var masterBlob string
-		var workerBlob string
+		var masterBlobValue string
+		var workerBlobValue string
 		if fetchedDeployment == nil {
-			masterBlob = "{}"
-			workerBlob = "{}"
+			masterBlobValue = "{}"
+			workerBlobValue = "{}"
 		} else {
-			masterBlob = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters["masterVersionBundleVersions"])
-			workerBlob = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters["workerVersionBundleVersions"])
+			masterBlobValue, err = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters[masterBlobKey])
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			workerBlobValue, err = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 
 		params := map[string]interface{}{
-			"masterVersionBundleVersions": masterBlob,
-			"workerVersionBundleVersions": workerBlob,
+			masterBlobKey: masterBlobValue,
+			workerBlobKey: workerBlobValue,
 		}
 		computedDeployment, err := r.newDeployment(ctx, customObject, params)
 		if controllercontext.IsInvalidContext(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
@@ -285,6 +294,8 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+	var err error
+
 	instanceInProgress := firstInstanceInProgress(customObject, list)
 	if instanceInProgress != nil {
 		return nil, nil, nil
@@ -297,7 +308,10 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []co
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	if instanceToUpdate == nil {
-		instanceToReimage = firstInstanceToReimage(customObject, list, value)
+		instanceToReimage, err = firstInstanceToReimage(customObject, list, value)
+		if err != nil {
+			return nil, nil, microerror.Mask(err)
+		}
 	}
 
 	return instanceToUpdate, instanceToReimage, nil
@@ -323,20 +337,25 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) *compute.VirtualMachineScaleSetVM {
+func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, error) {
 	for _, v := range list {
 		// TODO when no version bundle version is found it means the cluster just
 		// got created and the version bundle versions are not yet tracked. In this
 		// case we must not select an instance to be reimaged because we would roll
 		// a node that just got created and is already up to date.
-		if key.VersionBundleVersion(customObject) == versionBundleVersionForInstance(&v, value) {
+		desiredVersion := key.VersionBundleVersion(customObject)
+		instanceVersion, err := versionBundleVersionForInstance(&v, value)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if desiredVersion == instanceVersion {
 			continue
 		}
 
-		return &v
+		return &v, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 // firstInstanceToUpdate return the first instance to be updated. The decision
@@ -354,27 +373,21 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) string {
-	fmt.Printf("value: %#v\n", value)
-	fmt.Printf("version: %#v\n", version)
-
+func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
 	var blob string
 	{
-		m, ok := value.(map[string]interface{})
-		if !ok {
-			//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
-			// TODO error handling
-			return ""
+		m, err := key.ToMap(value)
+		if err != nil {
+			return "", microerror.Mask(err)
 		}
 		v, ok := m["value"]
 		if !ok {
 			//		return "", microerror.Maskf(missingParameterValueError, "value")
 			// TODO error handling
-			return ""
+			return "", nil
 		}
 		// TODO error handling
 		blob = v.(string)
-		fmt.Printf("blob: %#v\n", blob)
 	}
 
 	if blob == "{}" {
@@ -386,29 +399,26 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		b, err := json.Marshal(m)
 		if err != nil {
 			// TODO error handling
-			return ""
+			return "", nil
 		}
-		fmt.Printf("b: %s\n", b)
 
-		return string(b)
+		return string(b), nil
 	}
 
 	// In case the given instance is nil there is nothing to change and we just
 	// return what we got.
 	if instance == nil {
 		// TODO error handling
-		return blob
+		return blob, nil
 	}
 
 	// Here we got an instance which implies we have to update its version bundle
 	// version carried in the paramter value.
 	var raw string
 	{
-		m, ok := value.(map[string]interface{})
-		if !ok {
-			//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
-			// TODO error handling
-			return ""
+		m, err := key.ToMap(value)
+		if err != nil {
+			return "", microerror.Mask(err)
 		}
 
 		m[*instance.InstanceID] = version
@@ -416,40 +426,37 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		b, err := json.Marshal(m)
 		if err != nil {
 			// TODO error handling
-			return ""
+			return "", nil
 		}
 
 		raw = string(b)
-		fmt.Printf("raw: %#v\n", raw)
 	}
 
-	return raw
+	return raw, nil
 }
 
-func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) string {
-	m, ok := value.(map[string]interface{})
-	if !ok {
-		//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
-		// TODO error handling
-		return ""
+func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) (string, error) {
+	m, err := key.ToMap(value)
+	if err != nil {
+		return "", microerror.Mask(err)
 	}
 	v, ok := m["value"]
 	if !ok {
 		//		return "", microerror.Maskf(missingParameterValueError, "value")
 		// TODO error handling
-		return ""
+		return "", nil
 	}
 	var d map[string]string
-	err := json.Unmarshal([]byte(v.(string)), &d)
+	err = json.Unmarshal([]byte(v.(string)), &d)
 	if err != nil {
 		// TODO error handling
-		return ""
+		return "", nil
 	}
 	version, ok := d[*instance.InstanceID]
 	if !ok {
 		// instance is not yet tracked
-		return ""
+		return "", nil
 	}
 
-	return version
+	return version, nil
 }
