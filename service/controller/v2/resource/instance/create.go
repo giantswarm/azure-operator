@@ -287,6 +287,8 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+	var err error
+
 	instanceInProgress := firstInstanceInProgress(customObject, list)
 	if instanceInProgress != nil {
 		return nil, nil, nil
@@ -299,7 +301,10 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []co
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	if instanceToUpdate == nil {
-		instanceToReimage = firstInstanceToReimage(customObject, list, value)
+		instanceToReimage, err = firstInstanceToReimage(customObject, list, value)
+		if err != nil {
+			return nil, nil, microerror.Mask(err)
+		}
 	}
 
 	return instanceToUpdate, instanceToReimage, nil
@@ -325,20 +330,25 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) *compute.VirtualMachineScaleSetVM {
+func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, error) {
 	for _, v := range list {
 		// TODO when no version bundle version is found it means the cluster just
 		// got created and the version bundle versions are not yet tracked. In this
 		// case we must not select an instance to be reimaged because we would roll
 		// a node that just got created and is already up to date.
-		if key.VersionBundleVersion(customObject) == versionBundleVersionForInstance(&v, value) {
+		desiredVersion := key.VersionBundleVersion(customObject)
+		instanceVersion, err := versionBundleVersionForInstance(&v, value)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		if desiredVersion == instanceVersion {
 			continue
 		}
 
-		return &v
+		return &v, nil
 	}
 
-	return nil
+	return nil, nil
 }
 
 // firstInstanceToUpdate return the first instance to be updated. The decision
@@ -428,30 +438,28 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 	return raw
 }
 
-func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) string {
-	m, ok := value.(map[string]interface{})
-	if !ok {
-		//		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, v)
-		// TODO error handling
-		return ""
+func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) (string, error) {
+	m, err := key.ToMap(value)
+	if err != nil {
+		return "", microerror.Mask(err)
 	}
 	v, ok := m["value"]
 	if !ok {
 		//		return "", microerror.Maskf(missingParameterValueError, "value")
 		// TODO error handling
-		return ""
+		return "", nil
 	}
 	var d map[string]string
-	err := json.Unmarshal([]byte(v.(string)), &d)
+	err = json.Unmarshal([]byte(v.(string)), &d)
 	if err != nil {
 		// TODO error handling
-		return ""
+		return "", nil
 	}
 	version, ok := d[*instance.InstanceID]
 	if !ok {
 		// instance is not yet tracked
-		return ""
+		return "", nil
 	}
 
-	return version
+	return version, nil
 }
