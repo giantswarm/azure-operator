@@ -367,9 +367,6 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 }
 
 func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) string {
-	fmt.Printf("value: %#v\n", value)
-	fmt.Printf("version: %#v\n", version)
-
 	var blob string
 	{
 		m, ok := value.(map[string]interface{})
@@ -386,7 +383,6 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		}
 		// TODO error handling
 		blob = v.(string)
-		fmt.Printf("blob: %#v\n", blob)
 	}
 
 	if blob == "{}" {
@@ -400,7 +396,6 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 			// TODO error handling
 			return ""
 		}
-		fmt.Printf("b: %s\n", b)
 
 		return string(b)
 	}
@@ -432,7 +427,6 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		}
 
 		raw = string(b)
-		fmt.Printf("raw: %#v\n", raw)
 	}
 
 	return raw
