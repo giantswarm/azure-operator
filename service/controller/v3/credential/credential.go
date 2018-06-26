@@ -7,7 +7,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
 const (
