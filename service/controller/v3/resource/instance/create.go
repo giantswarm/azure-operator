@@ -395,8 +395,27 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimag
 		return "{}", nil
 	}
 
-	// init full
-	if len(list) != 0 && value == nil {
+	// parse existing
+	var versionMap map[string]string
+	if len(list) != 0 && value != nil {
+		fmt.Printf("3\n")
+		m, err := key.ToMap(value)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		s, err := key.ToKeyValue(m)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		err = json.Unmarshal([]byte(s), &versionMap)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+	}
+
+	// fill empty
+	if len(versionMap) == 0 {
 		fmt.Printf("2\n")
 		m := map[string]string{}
 		for _, v := range list {
@@ -411,37 +430,26 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimag
 		return string(b), nil
 	}
 
-	// update and cleanup
-	if len(list) != 0 && value != nil {
-		fmt.Printf("3\n")
-		m1, err := key.ToMap(value)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-		s, err := key.ToKeyValue(m1)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		var m2 map[string]interface{}
-		err = json.Unmarshal([]byte(s), &m2)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		m3 := map[string]interface{}{}
-		for k, v := range m2 {
+	// remove missing
+	if len(versionMap) != 0 {
+		m := map[string]string{}
+		for k, v := range versionMap {
 			if !containsInstanceVersion(list, k) {
 				continue
 			}
-			m3[k] = v
+			m[k] = v
 		}
 
+		versionMap = m
+	}
+
+	// update existing
+	if len(versionMap) != 0 {
 		if reimagedInstance != nil {
-			m3[*reimagedInstance.InstanceID] = version
+			versionMap[*reimagedInstance.InstanceID] = version
 		}
 
-		b, err := json.Marshal(m3)
+		b, err := json.Marshal(versionMap)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
