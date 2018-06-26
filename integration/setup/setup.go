@@ -112,7 +112,12 @@ func installCredential(h *framework.Host) error {
 
 		k8sClient.CoreV1().Secrets(credentialNamespace).Delete(credentialName, &metav1.DeleteOptions{})
 
-		c := env.AzureGuestConfig()
+		c := client.AzureClientSetConfig{
+			ClientID:       env.AzureGuestClientID(),
+			ClientSecret:   env.AzureGuestClientSecret(),
+			SubscriptionID: env.AzureGuestSubscriptionID(),
+			TenantID:       env.AzureGuestTenantID(),
+		}
 
 		secret := &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{

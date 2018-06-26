@@ -5,7 +5,6 @@ import (
 	"os"
 	"strconv"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/integration/network"
 )
 
@@ -117,20 +116,34 @@ func init() {
 	}
 }
 
-func AzureConfig() client.AzureClientSetConfig {
-	return client.AzureClientSetConfig{
-		ClientID:       azureClientID,
-		ClientSecret:   azureClientSecret,
-		SubscriptionID: azureSubscriptionID,
-		TenantID:       azureTenantID,
-	}
+func AzureClientID() string {
+	return azureClientID
 }
 
-func AzureGuestConfig() client.AzureClientSetConfig {
-	return client.AzureClientSetConfig{
-		ClientID:       azureGuestClientID,
-		ClientSecret:   azureGuestClientSecret,
-		SubscriptionID: azureGuestSubscriptionID,
-		TenantID:       azureGuestTenantID,
-	}
+func AzureClientSecret() string {
+	return azureClientSecret
+}
+
+func AzureSubscriptionID() string {
+	return azureSubscriptionID
+}
+
+func AzureTenantID() string {
+	return azureTenantID
+}
+
+func AzureGuestClientID() string {
+	return azureGuestClientID
+}
+
+func AzureGuestClientSecret() string {
+	return azureGuestClientSecret
+}
+
+func AzureGuestSubscriptionID() string {
+	return azureGuestSubscriptionID
+}
+
+func AzureGuestTenantID() string {
+	return azureGuestTenantID
 }
