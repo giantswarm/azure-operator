@@ -25,7 +25,7 @@ func NewContext(ctx context.Context, c Context) context.Context {
 func FromContext(ctx context.Context) (*Context, error) {
 	c, ok := ctx.Value(serviceKey).(*Context)
 	if !ok {
-		return nil, microerror.Mask(serviceNotFound)
+		return nil, microerror.Mask(notFoundError)
 	}
 
 	return c, nil
