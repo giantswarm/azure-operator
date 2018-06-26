@@ -65,17 +65,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("m: %#v\n", m)
 		v, err := key.ToKeyValue(m)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("v: %#v\n", v)
 		masterVersionsValue, err = key.ToStringMap(v)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("masterVersionsValue: %#v\n", masterVersionsValue)
 	}
 
 	var workerVersionsValue map[string]string
@@ -155,17 +152,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
+			// In case the master instance is being updated we want to prevent any
+			// other updates on the workers. This is because the update process
+			// involves the draining of the updated node and if the master is being
+			// updated at the same time the guest cluster's Kubernetes API is not
+			// available in order to drain nodes. As consequence we have to reset the
+			// worker instance selected to be reimaged in order to not update its
+			// version information. The next reconciliation loop will catch up here
+			// and instruct the worker instance to be reimaged again.
 			if reimagedMasterInstance == nil {
-				// In case the master instance is being updated we want to prevent any
-				// other updates on the workers. This is because the update process
-				// involves the draining of the updated node and if the master is being
-				// updated at the same time the guest cluster's Kubernetes API is not
-				// available in order to drain nodes.
 				err = r.reimageInstance(ctx, customObject, reimagedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
 			} else if reimagedWorkerInstance != nil {
+				reimagedWorkerInstance = nil
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not ensuring instance '%s' to be reimaged due to master processing", key.WorkerInstanceName(customObject, *reimagedWorkerInstance.InstanceID)))
 			}
 
@@ -180,12 +181,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("4: %#v\n", masterVersionsValue)
 		workerVersionsValue, err := updateVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("5: %#v\n", workerVersionsValue)
 		params := map[string]interface{}{
 			masterVersionsKey: masterVersionsValue,
 			workerVersionsKey: workerVersionsValue,
