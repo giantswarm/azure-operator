@@ -19,7 +19,7 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/teardown"
 	"github.com/giantswarm/azure-operator/integration/template"
-	"github.com/giantswarm/azure-operator/service/controller/v2/credential"
+	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
 )
 
 const (
