@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -449,6 +448,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 	}
 }
 
+/*
 func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 	testCases := []struct {
 		Name                string
@@ -700,3 +700,4 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 		})
 	}
 }
+*/

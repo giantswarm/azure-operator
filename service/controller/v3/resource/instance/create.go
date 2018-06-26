@@ -57,6 +57,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	var allMasterInstances []compute.VirtualMachineScaleSetVM
+	var reimagedMasterInstance *compute.VirtualMachineScaleSetVM
 	var updatedMasterInstance *compute.VirtualMachineScaleSetVM
 	{
 		allMasterInstances, err = r.allInstances(ctx, customObject, key.MasterVMSSName)
@@ -67,25 +68,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters[masterBlobKey])
+			updatedMasterInstance, reimagedMasterInstance, err = r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters[masterBlobKey])
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.updateInstance(ctx, customObject, instanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
+			err = r.updateInstance(ctx, customObject, updatedMasterInstance, key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.reimageInstance(ctx, customObject, instanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
+			err = r.reimageInstance(ctx, customObject, reimagedMasterInstance, key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			updatedMasterInstance = instanceToReimage
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
 		}
 	}
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
+	var reimagedWorkerInstance *compute.VirtualMachineScaleSetVM
 	var updatedWorkerInstance *compute.VirtualMachineScaleSetVM
 	{
 		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
@@ -96,27 +97,26 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-			instanceToUpdate, instanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters[workerBlobKey])
+			updatedWorkerInstance, reimagedWorkerInstance, err = r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters[workerBlobKey])
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.updateInstance(ctx, customObject, instanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
+			err = r.updateInstance(ctx, customObject, updatedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			if updatedMasterInstance == nil {
+			if reimagedMasterInstance == nil {
 				// In case the master instance is being updated we want to prevent any
 				// other updates on the workers. This is because the update process
 				// involves the draining of the updated node and if the master is being
 				// updated at the same time the guest cluster's Kubernetes API is not
 				// available in order to drain nodes.
-				err = r.reimageInstance(ctx, customObject, instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
+				err = r.reimageInstance(ctx, customObject, reimagedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				updatedWorkerInstance = instanceToReimage
-			} else if instanceToReimage != nil {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not ensuring instance '%s' to be reimaged due to master processing", key.WorkerInstanceName(customObject, *instanceToReimage.InstanceID)))
+			} else if reimagedWorkerInstance != nil {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not ensuring instance '%s' to be reimaged due to master processing", key.WorkerInstanceName(customObject, *reimagedWorkerInstance.InstanceID)))
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
@@ -126,25 +126,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		var masterBlobValue string
-		var workerBlobValue string
-		if fetchedDeployment == nil {
-			// The implication of the fetched deployment being empty is that the gust
-			// cluster just got created. Therefore we initialize the version blob
-			// parameter with an empty JSON object.
-			masterBlobValue = "{}"
-			workerBlobValue = "{}"
-		} else {
-			masterBlobValue, err = updateVersionParameterValue(allMasterInstances, updatedMasterInstance, key.VersionBundleVersion(customObject), parameters[masterBlobKey])
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			workerBlobValue, err = updateVersionParameterValue(allWorkerInstances, updatedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
-			if err != nil {
-				return microerror.Mask(err)
-			}
+		masterBlobValue, err := updateVersionParameterValue(allMasterInstances, reimagedMasterInstance, key.VersionBundleVersion(customObject), parameters[masterBlobKey])
+		if err != nil {
+			return microerror.Mask(err)
 		}
-
+		workerBlobValue, err := updateVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
+		if err != nil {
+			return microerror.Mask(err)
+		}
 		params := map[string]interface{}{
 			masterBlobKey: masterBlobValue,
 			workerBlobKey: workerBlobValue,
@@ -397,62 +386,14 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
-	// Parse the version blob so we can work with it below.
-	var blob string
-	if value != nil {
-		m1, err := key.ToMap(value)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-		s, err := key.ToKeyValue(m1)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-		var m2 map[string]interface{}
-		err = json.Unmarshal([]byte(s), &m2)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-		m3 := map[string]interface{}{}
-		for k, v := range m2 {
-			if !containsInstanceVersion(list, k) {
-				continue
-			}
-			m3[k] = v
-		}
-		b, err := json.Marshal(m3)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-		blob = string(b)
+func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
+	// init empty
+	if len(list) == 0 && value == nil {
+		return "{}", nil
 	}
 
-	// In case the given value is nil we are in a situation in which we update
-	// from an older version to a newer one where this very update mechanism got
-	// introduced. We need to prepare the version blob so it can be updated step
-	// by step.
-	if value == nil {
-		m := map[string]string{}
-		for _, v := range list {
-			m[*v.InstanceID] = ""
-		}
-
-		if instance != nil {
-			m[*instance.InstanceID] = version
-		}
-
-		b, err := json.Marshal(m)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		return string(b), nil
-	}
-
-	// In case the version blob is just an empty JSON object we initialize it with
-	// all instances we have got.
-	if blob == "{}" {
+	// init full
+	if len(list) != 0 && value == nil {
 		m := map[string]string{}
 		for _, v := range list {
 			m[*v.InstanceID] = version
@@ -466,33 +407,44 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 		return string(b), nil
 	}
 
-	// In case the given instance is nil there is nothing to change and we just
-	// return what we got.
-	if instance == nil {
-		return blob, nil
-	}
-
-	// Here we got an instance which implies we have to update its version bundle
-	// version carried in the paramter value.
-	var raw string
-	{
-		var m map[string]string
-		err := json.Unmarshal([]byte(blob), &m)
+	// update and cleanup
+	if len(list) != 0 && value != nil {
+		m1, err := key.ToMap(value)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		s, err := key.ToKeyValue(m1)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		m[*instance.InstanceID] = version
-
-		b, err := json.Marshal(m)
+		var m2 map[string]interface{}
+		err = json.Unmarshal([]byte(s), &m2)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		raw = string(b)
+		m3 := map[string]interface{}{}
+		for k, v := range m2 {
+			if !containsInstanceVersion(list, k) {
+				continue
+			}
+			m3[k] = v
+		}
+
+		if reimagedInstance != nil {
+			m3[*reimagedInstance.InstanceID] = version
+		}
+
+		b, err := json.Marshal(m3)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		return string(b), nil
 	}
 
-	return raw, nil
+	return "", microerror.Mask(invalidConfigError)
 }
 
 func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) (string, error) {
