@@ -2,7 +2,6 @@ package instance
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
@@ -62,20 +61,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("p: %#v\n", p)
 		m, err := key.ToMap(p[versionsKey])
 		if err != nil {
 			return microerror.Mask(err)
 		}
 		fmt.Printf("m: %#v\n", m)
-		s, err := key.ToKeyValue(m)
+		v, err := key.ToKeyValue(m)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = json.Unmarshal([]byte(s), &masterVersionsValue)
+		fmt.Printf("v: %#v\n", v)
+		masterVersionsValue, err = key.ToStringMap(v)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		fmt.Printf("masterVersionsValue: %#v\n", masterVersionsValue)
 	}
 
 	var workerVersionsValue map[string]string
@@ -96,11 +96,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		s, err := key.ToKeyValue(m)
+		v, err := key.ToKeyValue(m)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = json.Unmarshal([]byte(s), &workerVersionsValue)
+		workerVersionsValue, err = key.ToStringMap(v)
 		if err != nil {
 			return microerror.Mask(err)
 		}

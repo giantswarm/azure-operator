@@ -202,6 +202,15 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
+func ToKeyValue(m map[string]interface{}) (interface{}, error) {
+	v, ok := m["value"]
+	if !ok {
+		return "", microerror.Maskf(missingOutputValueError, "value")
+	}
+
+	return v, nil
+}
+
 func ToMap(v interface{}) (map[string]interface{}, error) {
 	m, ok := v.(map[string]interface{})
 	if !ok {
@@ -209,19 +218,6 @@ func ToMap(v interface{}) (map[string]interface{}, error) {
 	}
 
 	return m, nil
-}
-
-func ToKeyValue(m map[string]interface{}) (string, error) {
-	v, ok := m["value"]
-	if !ok {
-		return "", microerror.Maskf(missingOutputValueError, "value")
-	}
-	s, ok := v.(string)
-	if !ok {
-		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", "", v)
-	}
-
-	return s, nil
 }
 
 // ToParameters merges the input maps and converts the result into the
@@ -243,6 +239,33 @@ func ToParameters(list ...map[string]interface{}) map[string]interface{} {
 	}
 
 	return allParams
+}
+
+func ToString(v interface{}) (string, error) {
+	s, ok := v.(string)
+	if !ok {
+		return "", microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", "", v)
+	}
+
+	return s, nil
+}
+
+func ToStringMap(v interface{}) (map[string]string, error) {
+	m, err := ToMap(v)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	stringMap := map[string]string{}
+	for k, v := range m {
+		s, err := ToString(v)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		stringMap[k] = s
+	}
+
+	return stringMap, nil
 }
 
 func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {

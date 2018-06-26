@@ -211,7 +211,11 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	s, err := key.ToKeyValue(m)
+	v, err = key.ToKeyValue(m)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	s, err := key.ToString(v)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
