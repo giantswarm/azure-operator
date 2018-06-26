@@ -6,7 +6,6 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
-	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -16,9 +15,10 @@ import (
 )
 
 const (
-	masterBlobKey      = "masterVersionBundleVersions"
+	masterVersionsKey  = "masterVersionBundleVersions"
+	versionsKey        = "versionBundleVersions"
 	vmssDeploymentName = "cluster-vmss-template"
-	workerBlobKey      = "workerVersionBundleVersions"
+	workerVersionsKey  = "workerVersionBundleVersions"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -27,8 +27,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	var fetchedDeployment *azureresource.DeploymentExtended
-	var parameters map[string]interface{}
 	{
 		deploymentsClient, err := r.getDeploymentsClient()
 		if err != nil {
@@ -47,12 +45,62 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 				return nil
 			}
+		}
+	}
 
-			fetchedDeployment = &d
-			parameters, err = key.ToMap(fetchedDeployment.Properties.Parameters)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+	var masterVersionsValue map[string]string
+	{
+		deploymentsClient, err := r.getDeploymentsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "master-vmss-deploy")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		p, err := key.ToMap(d.Properties.Parameters)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		m, err := key.ToMap(p[versionsKey])
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		s, err := key.ToKeyValue(m)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		err = json.Unmarshal([]byte(s), &masterVersionsValue)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var workerVersionsValue map[string]string
+	{
+		deploymentsClient, err := r.getDeploymentsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "worker-vmss-deploy")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		p, err := key.ToMap(d.Properties.Parameters)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		m, err := key.ToMap(p[versionsKey])
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		s, err := key.ToKeyValue(m)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		err = json.Unmarshal([]byte(s), &workerVersionsValue)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 	}
 
@@ -68,7 +116,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			updatedMasterInstance, reimagedMasterInstance, err = r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, parameters[masterBlobKey])
+			updatedMasterInstance, reimagedMasterInstance, err = r.nextInstance(ctx, customObject, allMasterInstances, key.MasterInstanceName, masterVersionsValue)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -97,7 +145,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-			updatedWorkerInstance, reimagedWorkerInstance, err = r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, parameters[workerBlobKey])
+			updatedWorkerInstance, reimagedWorkerInstance, err = r.nextInstance(ctx, customObject, allWorkerInstances, key.WorkerInstanceName, workerVersionsValue)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -126,19 +174,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		masterBlobValue, err := updateVersionParameterValue(allMasterInstances, reimagedMasterInstance, key.VersionBundleVersion(customObject), parameters[masterBlobKey])
+		masterVersionsValue, err := updateVersionParameterValue(allMasterInstances, reimagedMasterInstance, key.VersionBundleVersion(customObject), masterVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("4: %#v\n", masterBlobValue)
-		workerBlobValue, err := updateVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
+		fmt.Printf("4: %#v\n", masterVersionsValue)
+		workerVersionsValue, err := updateVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		fmt.Printf("5: %#v\n", workerBlobValue)
+		fmt.Printf("5: %#v\n", workerVersionsValue)
 		params := map[string]interface{}{
-			masterBlobKey: masterBlobValue,
-			workerBlobKey: workerBlobValue,
+			masterVersionsKey: masterVersionsValue,
+			workerVersionsKey: workerVersionsValue,
 		}
 		computedDeployment, err := r.newDeployment(ctx, customObject, params)
 		if controllercontext.IsInvalidContext(err) {
@@ -203,7 +251,7 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 //     loop 5: worker 2 reimage
 //     loop 6: worker 3 reimage
 //
-func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	var err error
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
@@ -211,7 +259,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated or reimaged")
 
-		instanceToUpdate, instanceToReimage, err = findActionableInstance(customObject, instances, value)
+		instanceToUpdate, instanceToReimage, err = findActionableInstance(customObject, instances, versionValue)
 		if IsVersionBlobEmpty(err) {
 			// When no version bundle version is found it means the cluster just got
 			// created and the version bundle versions are not yet tracked within the
@@ -312,7 +360,7 @@ func containsInstanceVersion(list []compute.VirtualMachineScaleSetVM, version st
 
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
-func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	var err error
 
 	instanceInProgress := firstInstanceInProgress(customObject, list)
@@ -327,7 +375,7 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []co
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	if instanceToUpdate == nil {
-		instanceToReimage, err = firstInstanceToReimage(customObject, list, value)
+		instanceToReimage, err = firstInstanceToReimage(customObject, list, versionValue)
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
@@ -356,12 +404,16 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, value interface{}) (*compute.VirtualMachineScaleSetVM, error) {
+func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
+	if versionValue == nil {
+		return nil, microerror.Mask(versionBlobEmptyError)
+	}
+
 	for _, v := range list {
 		desiredVersion := key.VersionBundleVersion(customObject)
-		instanceVersion, err := versionBundleVersionForInstance(&v, value)
-		if err != nil {
-			return nil, microerror.Mask(err)
+		instanceVersion, ok := versionValue[*v.InstanceID]
+		if !ok {
+			return nil, microerror.Mask(versionBlobEmptyError)
 		}
 		if desiredVersion == instanceVersion {
 			continue
@@ -388,102 +440,47 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
-	// init empty
-	if len(list) == 0 && value == nil {
+func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, versionValue map[string]string) (map[string]string, error) {
+	// ignore empty
+	if len(list) == 0 && versionValue == nil {
 		fmt.Printf("1\n")
-		return "{}", nil
-	}
-
-	// parse existing
-	var versionMap map[string]string
-	if len(list) != 0 && value != nil {
-		fmt.Printf("2\n")
-		m, err := key.ToMap(value)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-		s, err := key.ToKeyValue(m)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		err = json.Unmarshal([]byte(s), &versionMap)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
+		return nil, nil
 	}
 
 	// fill empty
-	if len(versionMap) == 0 {
-		fmt.Printf("3\n")
+	if len(list) != 0 && versionValue == nil {
+		fmt.Printf("2\n")
 		m := map[string]string{}
 		for _, v := range list {
 			m[*v.InstanceID] = version
 		}
 
-		b, err := json.Marshal(m)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		return string(b), nil
+		return m, nil
 	}
 
 	// remove missing
-	if len(versionMap) != 0 {
+	if len(versionValue) != 0 {
+		fmt.Printf("3\n")
 		m := map[string]string{}
-		for k, v := range versionMap {
+		for k, v := range versionValue {
 			if !containsInstanceVersion(list, k) {
 				continue
 			}
 			m[k] = v
 		}
 
-		versionMap = m
+		versionValue = m
 	}
 
 	// update existing
-	if len(versionMap) != 0 {
+	if len(versionValue) != 0 {
+		fmt.Printf("4\n")
 		if reimagedInstance != nil {
-			versionMap[*reimagedInstance.InstanceID] = version
+			versionValue[*reimagedInstance.InstanceID] = version
 		}
 
-		b, err := json.Marshal(versionMap)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		return string(b), nil
+		return versionValue, nil
 	}
 
-	return "", microerror.Mask(invalidConfigError)
-}
-
-func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) (string, error) {
-	if value == nil {
-		return "", microerror.Mask(versionBlobEmptyError)
-	}
-
-	m, err := key.ToMap(value)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	s, err := key.ToKeyValue(m)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	var d map[string]string
-	err = json.Unmarshal([]byte(s), &d)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	version, ok := d[*instance.InstanceID]
-	if !ok {
-		return "", microerror.Mask(versionBlobEmptyError)
-	}
-
-	return version, nil
+	return nil, microerror.Mask(invalidConfigError)
 }

@@ -1,7 +1,6 @@
 package instance
 
 import (
-	"encoding/json"
 	"reflect"
 	"testing"
 
@@ -15,19 +14,19 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		Name                      string
 		CustomObject              providerv1alpha1.AzureConfig
 		Instances                 []compute.VirtualMachineScaleSetVM
-		Value                     interface{}
+		VersionValue              map[string]string
 		ExpectedInstanceToUpdate  *compute.VirtualMachineScaleSetVM
 		ExpectedInstanceToReimage *compute.VirtualMachineScaleSetVM
 		ErrorMatcher              func(err error) bool
 	}{
 		{
-			Name:         "case 0: empty input results in no action",
-			CustomObject: providerv1alpha1.AzureConfig{},
-			Instances:    []compute.VirtualMachineScaleSetVM{},
-			Value:        "",
+			Name:                      "case 0: empty input results in no action",
+			CustomObject:              providerv1alpha1.AzureConfig{},
+			Instances:                 nil,
+			VersionValue:              nil,
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToReimage: nil,
-			ErrorMatcher:              nil,
+			ErrorMatcher:              IsVersionBlobEmpty,
 		},
 		{
 			Name: "case 1: one instance being up to date results in no action",
@@ -47,10 +46,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToReimage: nil,
@@ -81,11 +78,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.1.0"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.1.0",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToReimage: nil,
@@ -109,10 +104,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
 			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000001"),
@@ -149,11 +142,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.1.0"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.1.0",
 			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000001"),
@@ -190,11 +181,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.1.0"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.1.0",
 			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("alq9y-worker-000002"),
@@ -231,11 +220,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.0.1",
-					"alq9y-worker-000002": "0.0.1"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.0.1",
+				"alq9y-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToReimage: &compute.VirtualMachineScaleSetVM{
@@ -272,11 +259,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.0.1"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToReimage: &compute.VirtualMachineScaleSetVM{
@@ -313,11 +298,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.0.1",
-					"alq9y-worker-000002": "0.0.1"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.0.1",
+				"alq9y-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToReimage: nil,
@@ -348,85 +331,19 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.0.1"
-        }`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToReimage: nil,
 			ErrorMatcher:              nil,
 		},
-		{
-			Name: "case 10: two instances not having the latest version bundle version applied results in versionBlobEmptyError when there are no version bundle versions tracked on the version blob",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Spec: providerv1alpha1.AzureConfigSpec{
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
-					},
-				},
-			},
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("alq9y-worker-000001"),
-					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-						LatestModelApplied: to.BoolPtr(true),
-						ProvisioningState:  to.StringPtr("Succeeded"),
-					},
-				},
-				{
-					InstanceID: to.StringPtr("alq9y-worker-000002"),
-					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-						LatestModelApplied: to.BoolPtr(true),
-						ProvisioningState:  to.StringPtr("Succeeded"),
-					},
-				},
-			},
-			Value: map[string]interface{}{
-				"value": `{}`,
-			},
-			ExpectedInstanceToUpdate:  nil,
-			ExpectedInstanceToReimage: nil,
-			ErrorMatcher:              IsVersionBlobEmpty,
-		},
-		{
-			Name: "case 11: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied results in versionBlobEmptyError when there are no version bundle versions tracked on the version blob",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Spec: providerv1alpha1.AzureConfigSpec{
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
-					},
-				},
-			},
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("alq9y-worker-000001"),
-					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-						LatestModelApplied: to.BoolPtr(true),
-						ProvisioningState:  to.StringPtr("Succeeded"),
-					},
-				},
-				{
-					InstanceID: to.StringPtr("alq9y-worker-000002"),
-					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-						LatestModelApplied: to.BoolPtr(true),
-						ProvisioningState:  to.StringPtr("Succeeded"),
-					},
-				},
-			},
-			Value: map[string]interface{}{
-				"value": `{}`,
-			},
-			ExpectedInstanceToUpdate:  nil,
-			ExpectedInstanceToReimage: nil,
-			ErrorMatcher:              IsVersionBlobEmpty,
-		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			instanceToUpdate, instanceToReimage, err := findActionableInstance(tc.CustomObject, tc.Instances, tc.Value)
+			instanceToUpdate, instanceToReimage, err := findActionableInstance(tc.CustomObject, tc.Instances, tc.VersionValue)
 
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:
@@ -451,22 +368,22 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 
 func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 	testCases := []struct {
-		Name                string
-		Instances           []compute.VirtualMachineScaleSetVM
-		Instance            *compute.VirtualMachineScaleSetVM
-		Version             string
-		Value               interface{}
-		ExpectedVersionBlob string
-		ErrorMatcher        func(err error) bool
+		Name                 string
+		Instances            []compute.VirtualMachineScaleSetVM
+		Instance             *compute.VirtualMachineScaleSetVM
+		Version              string
+		VersionValue         map[string]string
+		ExpectedVersionValue map[string]string
+		ErrorMatcher         func(err error) bool
 	}{
 		{
-			Name:                "case 0: empty input results in an empty JSON blob",
-			Instances:           nil,
-			Instance:            nil,
-			Version:             "",
-			Value:               nil,
-			ExpectedVersionBlob: "{}",
-			ErrorMatcher:        nil,
+			Name:                 "case 0: empty input results in an empty JSON blob",
+			Instances:            nil,
+			Instance:             nil,
+			Version:              "",
+			VersionValue:         nil,
+			ExpectedVersionValue: nil,
+			ErrorMatcher:         nil,
 		},
 		{
 			Name: "case 1: having an empty version bundle version blob and an instance and a version bundle version given results in a JSON blob with the instance ID and its version bundle version",
@@ -475,12 +392,12 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000001"),
 				},
 			},
-			Instance: nil,
-			Version:  "0.1.0",
-			Value:    nil,
-			ExpectedVersionBlob: `{
-				"alq9y-worker-000001": "0.1.0"
-			}`,
+			Instance:     nil,
+			Version:      "0.1.0",
+			VersionValue: nil,
+			ExpectedVersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+			},
 			ErrorMatcher: nil,
 		},
 		{
@@ -496,14 +413,14 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 					InstanceID: to.StringPtr("alq9y-worker-000003"),
 				},
 			},
-			Instance: nil,
-			Version:  "0.1.0",
-			Value:    nil,
-			ExpectedVersionBlob: `{
+			Instance:     nil,
+			Version:      "0.1.0",
+			VersionValue: nil,
+			ExpectedVersionValue: map[string]string{
 				"alq9y-worker-000001": "0.1.0",
 				"alq9y-worker-000002": "0.1.0",
-				"alq9y-worker-000003": "0.1.0"
-			}`,
+				"alq9y-worker-000003": "0.1.0",
+			},
 			ErrorMatcher: nil,
 		},
 		{
@@ -523,18 +440,16 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 				InstanceID: to.StringPtr("alq9y-worker-000001"),
 			},
 			Version: "0.2.0",
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.1.0",
-					"alq9y-worker-000003": "0.1.0"
-				}`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.1.0",
+				"alq9y-worker-000003": "0.1.0",
 			},
-			ExpectedVersionBlob: `{
+			ExpectedVersionValue: map[string]string{
 				"alq9y-worker-000001": "0.2.0",
 				"alq9y-worker-000002": "0.1.0",
-				"alq9y-worker-000003": "0.1.0"
-			}`,
+				"alq9y-worker-000003": "0.1.0",
+			},
 			ErrorMatcher: nil,
 		},
 		{
@@ -554,18 +469,16 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 				InstanceID: to.StringPtr("alq9y-worker-000003"),
 			},
 			Version: "1.0.0",
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.1.0",
-					"alq9y-worker-000003": "0.1.0"
-				}`,
-			},
-			ExpectedVersionBlob: `{
+			VersionValue: map[string]string{
 				"alq9y-worker-000001": "0.1.0",
 				"alq9y-worker-000002": "0.1.0",
-				"alq9y-worker-000003": "1.0.0"
-			}`,
+				"alq9y-worker-000003": "0.1.0",
+			},
+			ExpectedVersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.1.0",
+				"alq9y-worker-000003": "1.0.0",
+			},
 			ErrorMatcher: nil,
 		},
 		{
@@ -577,16 +490,14 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 			},
 			Instance: nil,
 			Version:  "1.0.0",
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.1.0",
-					"alq9y-worker-000003": "0.1.0"
-				}`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.1.0",
+				"alq9y-worker-000003": "0.1.0",
 			},
-			ExpectedVersionBlob: `{
-				"alq9y-worker-000002": "0.1.0"
-			}`,
+			ExpectedVersionValue: map[string]string{
+				"alq9y-worker-000002": "0.1.0",
+			},
 			ErrorMatcher: nil,
 		},
 		{
@@ -600,23 +511,21 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 				InstanceID: to.StringPtr("alq9y-worker-000002"),
 			},
 			Version: "1.0.0",
-			Value: map[string]interface{}{
-				"value": `{
-					"alq9y-worker-000001": "0.1.0",
-					"alq9y-worker-000002": "0.1.0",
-					"alq9y-worker-000003": "0.1.0"
-				}`,
+			VersionValue: map[string]string{
+				"alq9y-worker-000001": "0.1.0",
+				"alq9y-worker-000002": "0.1.0",
+				"alq9y-worker-000003": "0.1.0",
 			},
-			ExpectedVersionBlob: `{
-				"alq9y-worker-000002": "1.0.0"
-			}`,
+			ExpectedVersionValue: map[string]string{
+				"alq9y-worker-000002": "1.0.0",
+			},
 			ErrorMatcher: nil,
 		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			versionBlob, err := updateVersionParameterValue(tc.Instances, tc.Instance, tc.Version, tc.Value)
+			versionValue, err := updateVersionParameterValue(tc.Instances, tc.Instance, tc.Version, tc.VersionValue)
 
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:
@@ -629,19 +538,8 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 				t.Fatalf("expected %#v got %#v", true, false)
 			}
 
-			var m1 map[string]string
-			err = json.Unmarshal([]byte(versionBlob), &m1)
-			if err != nil {
-				t.Fatalf("expected %#v got %#v", nil, err)
-			}
-			var m2 map[string]string
-			err = json.Unmarshal([]byte(tc.ExpectedVersionBlob), &m2)
-			if err != nil {
-				t.Fatalf("expected %#v got %#v", nil, err)
-			}
-
-			if !reflect.DeepEqual(m1, m2) {
-				t.Fatalf("expected %#v got %#v", m2, m1)
+			if !reflect.DeepEqual(versionValue, tc.ExpectedVersionValue) {
+				t.Fatalf("expected %#v got %#v", tc.ExpectedVersionValue, versionValue)
 			}
 		})
 	}

@@ -42,7 +42,7 @@
       }
     },
     "masterVersionBundleVersions":{
-      "type":"string",
+      "type":"object",
       "metadata":{
         "description":"JSON blob of key-value pairs mapping master VMSS instance names to their applied version bundle versions."
       }
@@ -76,7 +76,7 @@
       }
     },
     "workerVersionBundleVersions":{
-      "type":"string",
+      "type":"object",
       "metadata":{
         "description":"JSON blob of key-value pairs mapping worker VMSS instance names to their applied version bundle versions."
       }
@@ -103,6 +103,9 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
+          },
+          "versionBundleVersions":{
+            "value":"[parameters('masterVersionBundleVersions')]"
           },
           "vmssName":{
             "value":"[concat(parameters('clusterID'), '-master')]"
@@ -187,6 +190,9 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
+          },
+          "versionBundleVersions":{
+            "value":"[parameters('workerVersionBundleVersions')]"
           },
           "vmssName":{
             "value":"[concat(parameters('clusterID'), '-worker')]"
