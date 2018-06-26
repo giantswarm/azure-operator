@@ -11,10 +11,10 @@ import (
 )
 
 const (
-	ClientIDKey       = "clientID"
-	ClientSecretKey   = "clientSecret"
-	SubscriptionIDKey = "subscriptionID"
-	TenantIDKey       = "tenantID"
+	ClientIDKey       = "azure.azureoperator.clientid"
+	ClientSecretKey   = "azure.azureoperator.clientsecret"
+	SubscriptionIDKey = "azure.azureoperator.subscriptionid"
+	TenantIDKey       = "azure.azureoperator.tenantid"
 )
 
 func GetAzureConfig(k8sClient kubernetes.Interface, obj interface{}) (*client.AzureClientSetConfig, error) {
