@@ -130,10 +130,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		fmt.Printf("4: %#v\n", masterBlobValue)
 		workerBlobValue, err := updateVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), parameters[workerBlobKey])
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		fmt.Printf("5: %#v\n", workerBlobValue)
 		params := map[string]interface{}{
 			masterBlobKey: masterBlobValue,
 			workerBlobKey: workerBlobValue,
@@ -389,11 +391,13 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
 	// init empty
 	if len(list) == 0 && value == nil {
+		fmt.Printf("1\n")
 		return "{}", nil
 	}
 
 	// init full
 	if len(list) != 0 && value == nil {
+		fmt.Printf("2\n")
 		m := map[string]string{}
 		for _, v := range list {
 			m[*v.InstanceID] = version
@@ -409,6 +413,7 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimag
 
 	// update and cleanup
 	if len(list) != 0 && value != nil {
+		fmt.Printf("3\n")
 		m1, err := key.ToMap(value)
 		if err != nil {
 			return "", microerror.Mask(err)
