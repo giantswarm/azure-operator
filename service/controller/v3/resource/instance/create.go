@@ -400,7 +400,7 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, value interface{}) (string, error) {
 	// Parse the version blob so we can work with it below.
 	var blob string
-	{
+	if value != nil {
 		m1, err := key.ToMap(value)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -426,6 +426,28 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 			return "", microerror.Mask(err)
 		}
 		blob = string(b)
+	}
+
+	// In case the given value is nil we are in a situation in which we update
+	// from an older version to a newer one where this very update mechanism got
+	// introduced. We need to prepare the version blob so it can be updated step
+	// by step.
+	if value == nil {
+		m := map[string]string{}
+		for _, v := range list {
+			m[*v.InstanceID] = ""
+		}
+
+		if instance != nil {
+			m[*instance.InstanceID] = version
+		}
+
+		b, err := json.Marshal(m)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		return string(b), nil
 	}
 
 	// In case the version blob is just an empty JSON object we initialize it with
@@ -474,6 +496,10 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instan
 }
 
 func versionBundleVersionForInstance(instance *compute.VirtualMachineScaleSetVM, value interface{}) (string, error) {
+	if value == nil {
+		return "", microerror.Mask(versionBlobEmptyError)
+	}
+
 	m, err := key.ToMap(value)
 	if err != nil {
 		return "", microerror.Mask(err)

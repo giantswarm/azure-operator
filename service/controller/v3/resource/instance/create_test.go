@@ -618,6 +618,54 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 			}`,
 			ErrorMatcher: nil,
 		},
+		{
+			Name: "case 7: having no version bundle version blob given results in an initialized JSON blob",
+			Instances: []compute.VirtualMachineScaleSetVM{
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000001"),
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000002"),
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000003"),
+				},
+			},
+			Instance: nil,
+			Version:  "0.2.0",
+			Value:    nil,
+			ExpectedVersionBlob: `{
+				"alq9y-worker-000001": "",
+				"alq9y-worker-000002": "",
+				"alq9y-worker-000003": ""
+			}`,
+			ErrorMatcher: nil,
+		},
+		{
+			Name: "case 8: having no version bundle version blob and an instance given results in an initialized JSON blob with the updated instance",
+			Instances: []compute.VirtualMachineScaleSetVM{
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000001"),
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000002"),
+				},
+				{
+					InstanceID: to.StringPtr("alq9y-worker-000003"),
+				},
+			},
+			Instance: &compute.VirtualMachineScaleSetVM{
+				InstanceID: to.StringPtr("alq9y-worker-000001"),
+			},
+			Version: "0.2.0",
+			Value:   nil,
+			ExpectedVersionBlob: `{
+				"alq9y-worker-000001": "0.2.0",
+				"alq9y-worker-000002": "",
+				"alq9y-worker-000003": ""
+			}`,
+			ErrorMatcher: nil,
+		},
 	}
 
 	for _, tc := range testCases {
