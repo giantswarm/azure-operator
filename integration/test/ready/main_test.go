@@ -55,7 +55,6 @@ func TestMain(m *testing.M) {
 	}
 
 	var azureConfig = client.AzureClientSetConfig{
-		Logger:         logger,
 		ClientID:       env.AzureClientID(),
 		ClientSecret:   env.AzureClientSecret(),
 		SubscriptionID: env.AzureSubscriptionID(),
