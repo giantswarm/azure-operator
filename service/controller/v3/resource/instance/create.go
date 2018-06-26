@@ -398,7 +398,7 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimag
 	// parse existing
 	var versionMap map[string]string
 	if len(list) != 0 && value != nil {
-		fmt.Printf("3\n")
+		fmt.Printf("2\n")
 		m, err := key.ToMap(value)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -416,7 +416,7 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimag
 
 	// fill empty
 	if len(versionMap) == 0 {
-		fmt.Printf("2\n")
+		fmt.Printf("3\n")
 		m := map[string]string{}
 		for _, v := range list {
 			m[*v.InstanceID] = version
