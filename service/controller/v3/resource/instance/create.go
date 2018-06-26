@@ -62,10 +62,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		fmt.Printf("p: %#v\n", p)
 		m, err := key.ToMap(p[versionsKey])
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		fmt.Printf("m: %#v\n", m)
 		s, err := key.ToKeyValue(m)
 		if err != nil {
 			return microerror.Mask(err)
