@@ -50,15 +50,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var masterVersionsValue map[string]string
 	{
 		deploymentsClient, err := r.getDeploymentsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "master-vmss-deploy")
 		if IsDeploymentNotFound(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "master-vmss-deploy")
-			if err != nil {
-				return microerror.Mask(err)
-			}
 			p, err := key.ToMap(d.Properties.Parameters)
 			if err != nil {
 				return microerror.Mask(err)
@@ -81,15 +81,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var workerVersionsValue map[string]string
 	{
 		deploymentsClient, err := r.getDeploymentsClient()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "worker-vmss-deploy")
 		if IsDeploymentNotFound(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "worker-vmss-deploy")
-			if err != nil {
-				return microerror.Mask(err)
-			}
 			p, err := key.ToMap(d.Properties.Parameters)
 			if err != nil {
 				return microerror.Mask(err)
