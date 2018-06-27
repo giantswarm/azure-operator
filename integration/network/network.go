@@ -10,6 +10,11 @@ import (
 const (
 	e2eNetwork        = "11.%d.0.0"
 	e2eSubnetQuantity = 256
+
+	azureCalicoSubnetMask = 17
+	azureMasterSubnetMask = 24
+	azureVPNSubnetMask    = 24
+	azureWorkerSubnetMask = 24
 )
 
 func ComputeSubnets(buildNumber uint) (*network.Subnets, error) {
