@@ -4,6 +4,9 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
 )
 
 type contextKey string
@@ -12,6 +15,8 @@ const controllerKey contextKey = "controller"
 
 type Context struct {
 	APILBBackendPoolID  string
+	AzureClientSet      *client.AzureClientSet
+	CloudConfig         *cloudconfig.CloudConfig
 	EtcdLBBackendPoolID string
 	MasterSubnetID      string
 	WorkerSubnetID      string
@@ -41,7 +46,7 @@ func NewContext(ctx context.Context, c Context) context.Context {
 func FromContext(ctx context.Context) (*Context, error) {
 	c, ok := ctx.Value(controllerKey).(*Context)
 	if !ok {
-		return nil, microerror.Maskf(notFoundError, "context key %q of type %T", controllerKey, controllerKey)
+		return nil, microerror.Mask(notFoundError)
 	}
 
 	return c, nil
