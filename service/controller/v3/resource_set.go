@@ -34,7 +34,7 @@ type ResourceSetConfig struct {
 	Logger    micrologger.Logger
 
 	Azure            setting.Azure
-	AzureConfig      client.AzureClientSetConfig
+	HostAzureConfig  client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
 	OIDC             setting.OIDC
