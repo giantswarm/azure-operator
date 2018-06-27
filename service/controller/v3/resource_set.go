@@ -92,25 +92,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var cloudConfig *cloudconfig.CloudConfig
-	{
-		c := cloudconfig.Config{
-			CertsSearcher:      certsSearcher,
-			Logger:             config.Logger,
-			RandomkeysSearcher: randomkeysSearcher,
-
-			Azure:        config.Azure,
-			AzureConfig:  config.AzureConfig,
-			OIDC:         config.OIDC,
-			SSOPublicKey: config.SSOPublicKey,
-		}
-
-		cloudConfig, err = cloudconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var resourceGroupResource controller.Resource
 	{
 		c := resourcegroup.Config{
