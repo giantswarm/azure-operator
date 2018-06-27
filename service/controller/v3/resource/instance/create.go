@@ -63,17 +63,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			m, err := key.ToMap(p[versionsKey])
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			v, err := key.ToKeyValue(m)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			masterVersionsValue, err = key.ToStringMap(v)
-			if err != nil {
-				return microerror.Mask(err)
+			v, ok := p[versionsKey]
+			if !ok {
+				// fall through
+			} else {
+				m, err := key.ToMap(v)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				v, err := key.ToKeyValue(m)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				masterVersionsValue, err = key.ToStringMap(v)
+				if err != nil {
+					return microerror.Mask(err)
+				}
 			}
 		}
 	}
@@ -94,17 +99,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			m, err := key.ToMap(p[versionsKey])
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			v, err := key.ToKeyValue(m)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			workerVersionsValue, err = key.ToStringMap(v)
-			if err != nil {
-				return microerror.Mask(err)
+			v, ok := p[versionsKey]
+			if !ok {
+				// fall through
+			} else {
+				m, err := key.ToMap(v)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				v, err := key.ToKeyValue(m)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				workerVersionsValue, err = key.ToStringMap(v)
+				if err != nil {
+					return microerror.Mask(err)
+				}
 			}
 		}
 	}
