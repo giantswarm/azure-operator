@@ -5,12 +5,14 @@ import (
 	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
@@ -93,7 +95,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		params := map[string]interface{}{
 			"initialProvisioning": "Yes",
 		}
-		deployment, err = r.newDeployment(customObject, params)
+		deployment, err = r.newDeployment(ctx, customObject, params)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -112,7 +114,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		params := map[string]interface{}{
 			"initialProvisioning": "No",
 		}
-		deployment, err = r.newDeployment(customObject, params)
+		deployment, err = r.newDeployment(ctx, customObject, params)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = r.enrichControllerContext(ctx, customObject)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -139,6 +146,47 @@ func (r *Resource) Name() string {
 	return Name
 }
 
+func (r *Resource) enrichControllerContext(ctx context.Context, customObject providerv1alpha1.AzureConfig) error {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	{
+		v, err := r.getDeploymentOutputValue(ctx, customObject, "api_load_balancer_setup", "backendPoolId")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		cc.APILBBackendPoolID = v
+	}
+
+	{
+		v, err := r.getDeploymentOutputValue(ctx, customObject, "etcd_load_balancer_setup", "backendPoolId")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		cc.EtcdLBBackendPoolID = v
+	}
+
+	{
+		v, err := r.getDeploymentOutputValue(ctx, customObject, "virtual_network_setup", "masterSubnetID")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		cc.MasterSubnetID = v
+	}
+
+	{
+		v, err := r.getDeploymentOutputValue(ctx, customObject, "virtual_network_setup", "workerSubnetID")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		cc.WorkerSubnetID = v
+	}
+
+	return nil
+}
+
 func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
@@ -146,4 +194,38 @@ func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, err
 	}
 
 	return azureClients.DeploymentsClient, nil
+}
+
+func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentName string, outputName string) (string, error) {
+	deploymentsClient, err := r.getDeploymentsClient()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), deploymentName)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	m, err := key.ToMap(d.Properties.Outputs)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	v, ok := m[outputName]
+	if !ok {
+		return "", microerror.Maskf(missingOutputValueError, outputName)
+	}
+	m, err = key.ToMap(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	v, err = key.ToKeyValue(m)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	s, err := key.ToString(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return s, nil
 }
