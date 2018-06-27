@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -21,6 +23,8 @@ const (
 
 const (
 	mainDeploymentName = "cluster-main-template"
+	masterVersionsKey  = "masterVersionBundleVersions"
+	workerVersionsKey  = "workerVersionBundleVersions"
 )
 
 type Config struct {
@@ -112,6 +116,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		params := map[string]interface{}{
 			"initialProvisioning": "No",
 		}
+
+		allMasterInstances, err := r.allInstances(ctx, customObject, key.MasterVMSSName)
+		if IsScaleSetNotFound(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else {
+			params[masterVersionsKey] = toVersionValue(allMasterInstances, key.VersionBundleVersion(customObject))
+		}
+
+		allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
+		if IsScaleSetNotFound(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else {
+			params[workerVersionsKey] = toVersionValue(allWorkerInstances, key.VersionBundleVersion(customObject))
+		}
+
 		deployment, err = r.newDeployment(customObject, params)
 		if err != nil {
 			return microerror.Mask(err)
@@ -139,6 +162,30 @@ func (r *Resource) Name() string {
 	return Name
 }
 
+func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
+
+	c, err := r.getVMsClient()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	g := key.ResourceGroupName(customObject)
+	s := deploymentNameFunc(customObject)
+	result, err := c.List(ctx, g, s, "", "", "")
+	if IsScaleSetNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", deploymentNameFunc(customObject)))
+
+		return nil, microerror.Mask(scaleSetNotFoundError)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
+
+	return result.Values(), nil
+}
+
 func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
@@ -146,4 +193,23 @@ func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, err
 	}
 
 	return azureClients.DeploymentsClient, nil
+}
+
+func (r *Resource) getVMsClient() (*compute.VirtualMachineScaleSetVMsClient, error) {
+	cs, err := client.NewAzureClientSet(r.azureConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cs.VirtualMachineScaleSetVMsClient, nil
+}
+
+func toVersionValue(list []compute.VirtualMachineScaleSetVM, version string) map[string]string {
+	m := map[string]string{}
+
+	for _, v := range list {
+		m[*v.InstanceID] = version
+	}
+
+	return m
 }
