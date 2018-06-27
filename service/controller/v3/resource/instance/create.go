@@ -25,12 +25,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	deploymentsClient, err := r.getDeploymentsClient()
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	{
-		deploymentsClient, err := r.getDeploymentsClient()
+		cc, err := controllercontext.FromContext(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		err = cc.Validate()
+		if err != nil {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+			return nil
+		}
+	}
+
+	{
 		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
 		if IsDeploymentNotFound(err) {
 			// fall through
@@ -49,10 +62,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var masterVersionsValue map[string]string
 	{
-		deploymentsClient, err := r.getDeploymentsClient()
-		if err != nil {
-			return microerror.Mask(err)
-		}
 		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "master-vmss-deploy")
 		if IsDeploymentNotFound(err) {
 			// fall through
@@ -85,10 +94,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var workerVersionsValue map[string]string
 	{
-		deploymentsClient, err := r.getDeploymentsClient()
-		if err != nil {
-			return microerror.Mask(err)
-		}
 		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "worker-vmss-deploy")
 		if IsDeploymentNotFound(err) {
 			// fall through
@@ -206,15 +211,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			workerVersionsKey: workerVersionsValue,
 		}
 		computedDeployment, err := r.newDeployment(ctx, customObject, params)
-		if controllercontext.IsInvalidContext(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-			return nil
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
-
-		deploymentsClient, err := r.getDeploymentsClient()
 		if err != nil {
 			return microerror.Mask(err)
 		}

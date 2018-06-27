@@ -49,10 +49,6 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-	err = cc.Validate()
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
 
 	defaultParams := map[string]interface{}{
 		"apiLBBackendPoolID":    cc.APILBBackendPoolID,
