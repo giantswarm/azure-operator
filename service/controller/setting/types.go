@@ -24,9 +24,10 @@ func (a Azure) Validate() error {
 }
 
 type AzureHostCluster struct {
-	CIDR           string
-	ResourceGroup  string
-	VirtualNetwork string
+	CIDR                  string
+	ResourceGroup         string
+	VirtualNetwork        string
+	VirtualNetworkGateway string
 }
 
 func (h AzureHostCluster) Validate() error {
@@ -38,6 +39,9 @@ func (h AzureHostCluster) Validate() error {
 	}
 	if h.VirtualNetwork == "" {
 		return fmt.Errorf("VirtualNetwork must not be empty")
+	}
+	if h.VirtualNetworkGateway == "" {
+		return fmt.Errorf("VirtualNetworkGateway must not be empty")
 	}
 
 	return nil
