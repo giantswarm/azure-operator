@@ -149,7 +149,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := dnsrecord.Config{
 			Logger: config.Logger,
 
-			AzureConfig: config.AzureConfig,
+			HostAzureConfig: config.HostAzureConfig,
 		}
 
 		ops, err := dnsrecord.New(c)
