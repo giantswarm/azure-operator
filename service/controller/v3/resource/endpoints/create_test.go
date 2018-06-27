@@ -9,8 +9,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
-
-	"github.com/giantswarm/azure-operator/client/fakeclient"
 )
 
 func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
@@ -86,9 +84,8 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 	var newResource *Resource
 	{
 		c := Config{
-			AzureConfig: fakeclient.NewAzureConfig(),
-			K8sClient:   fake.NewSimpleClientset(),
-			Logger:      microloggertest.New(),
+			K8sClient: fake.NewSimpleClientset(),
+			Logger:    microloggertest.New(),
 		}
 		newResource, err = New(c)
 		if err != nil {
