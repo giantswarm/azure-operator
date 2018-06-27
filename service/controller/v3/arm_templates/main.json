@@ -42,20 +42,14 @@
     "workerSubnetCidr": {
       "type": "string"
     },
+    "vpnSubnetCidr": {
+      "type": "string"
+    },
     "hostClusterCidr": {
       "type": "string"
     },
-    "hostClusterResourceGroupName": {
-      "type": "string",
-      "metadata": {
-        "description": "Resource group's name of the host cluster."
-      }
-    },
-    "hostClusterVirtualNetworkName": {
-      "type": "string",
-      "metadata": {
-        "description": "Virtual network's of the host cluster."
-      }
+    "vpnGatewayName": {
+      "type": "string"
     },
     "kubernetesAPISecurePort": {
       "type": "int"
@@ -98,9 +92,9 @@
       "type": "string",
       "defaultValue": "virtual_network_setup.json"
     },
-    "networkPeeringTemplateFile": {
+    "virtualNetworkGatewaySetupTemplateFile": {
       "type": "string",
-      "defaultValue": "peering.json"
+      "defaultValue": "virtual_network_gateway.json"
     },
     "dnsZones": {
       "type": "object",
@@ -118,7 +112,7 @@
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
-    "networkPeeringTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('networkPeeringTemplateFile'))]",
+    "virtualNetworkGatewaySetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkGatewaySetupTemplateFile'))]",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
   },
@@ -182,6 +176,7 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
+          "vpnSubnetCidr": {"value": "[parameters('vpnSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
           "routeTableID": {"value": "[reference('route_table_setup').outputs.id.value]"}
@@ -190,22 +185,22 @@
     },
     {
       "apiVersion": "2016-09-01",
-      "name": "peering",
+      "name": "virtual_network_gateway_setup",
       "type": "Microsoft.Resources/deployments",
       "dependsOn": [
-          "virtual_network_setup"
+        "virtual_network_setup"
       ],
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('networkPeeringTemplateURI')]",
+          "uri": "[variables('virtualNetworkGatewaySetupTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
-          "name": {"value": "[parameters('hostClusterResourceGroupName')]"},
-          "resourceGroup": {"value": "[parameters('hostClusterResourceGroupName')]"},
-          "sourceNetwork": {"value": "[parameters('virtualNetworkName')]"},
-          "targetNetwork": {"value": "[parameters('hostClusterVirtualNetworkName')]"}
+          "clusterID": {"value": "[parameters('clusterID')]"},
+          "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
+          "vpnGatewayName": {"value": "[parameters('vpnGatewayName')]"}
         }
       }
     },

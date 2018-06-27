@@ -27,6 +27,9 @@
     "workerSubnetCidr": {
       "type": "string"
     },
+    "vpnSubnetCidr": {
+      "type": "string"
+    },
     "masterSecurityGroupID": {
       "type": "string"
     },
@@ -44,7 +47,9 @@
     "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
 
     "workerSubnetName": "[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
-    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
+    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
+
+    "vpnSubnetName": "GatewaySubnet",
   },
   "resources": [
     {
@@ -84,6 +89,12 @@
               "routeTable": {
                 "id": "[parameters('routeTableID')]"
               }
+            }
+          },
+          {
+            "name": "[variables('vpnSubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('vpnSubnetCidr')]"
             }
           }
         ]
