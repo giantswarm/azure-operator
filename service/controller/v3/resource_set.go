@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/aws-operator/service/controller/v12/controllercontext"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
@@ -17,6 +16,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/dnsrecord"
