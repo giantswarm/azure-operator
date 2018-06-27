@@ -319,6 +319,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 				Azure:        config.Azure,
 				AzureConfig:  config.HostAzureConfig,
+				AzureNetwork: *subnets,
 				OIDC:         config.OIDC,
 				SSOPublicKey: config.SSOPublicKey,
 			}
@@ -331,7 +332,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 		c := controllercontext.Context{
 			AzureClientSet: azureClients,
-			AzureNetwork:   *subnets,
+			AzureNetwork:   subnets,
 			CloudConfig:    cloudConfig,
 		}
 		ctx = controllercontext.NewContext(ctx, c)

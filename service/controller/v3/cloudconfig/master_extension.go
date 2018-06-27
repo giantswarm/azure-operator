@@ -14,6 +14,7 @@ import (
 type masterExtension struct {
 	Azure         setting.Azure
 	AzureConfig   client.AzureClientSetConfig
+	CalicoCIDR    string
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig
 }
@@ -105,7 +106,7 @@ func (me *masterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 }
 
 func (me *masterExtension) renderCalicoAzureFile() (k8scloudconfig.FileAsset, error) {
-	params := newCalicoAzureFileParams(me.CustomObject)
+	params := newCalicoAzureFileParams(me.CustomObject, me.CalicoCIDR)
 
 	asset, err := renderCalicoAzureFile(params)
 	if err != nil {
