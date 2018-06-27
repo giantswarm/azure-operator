@@ -461,11 +461,11 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimag
 	// ignore empty
 	if len(list) == 0 && versionValue == nil {
 		fmt.Printf("1\n")
-		return nil, nil
+		return map[string]string{}, nil
 	}
 
 	// fill empty
-	if len(list) != 0 && versionValue == nil {
+	if len(list) != 0 && len(versionValue) == 0 {
 		fmt.Printf("2\n")
 		m := map[string]string{}
 		for _, v := range list {

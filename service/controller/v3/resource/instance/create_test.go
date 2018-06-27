@@ -382,7 +382,7 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 			Instance:             nil,
 			Version:              "",
 			VersionValue:         nil,
-			ExpectedVersionValue: nil,
+			ExpectedVersionValue: map[string]string{},
 			ErrorMatcher:         nil,
 		},
 		{
@@ -394,7 +394,7 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 			},
 			Instance:     nil,
 			Version:      "0.1.0",
-			VersionValue: nil,
+			VersionValue: map[string]string{},
 			ExpectedVersionValue: map[string]string{
 				"alq9y-worker-000001": "0.1.0",
 			},
@@ -415,7 +415,7 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 			},
 			Instance:     nil,
 			Version:      "0.1.0",
-			VersionValue: nil,
+			VersionValue: map[string]string{},
 			ExpectedVersionValue: map[string]string{
 				"alq9y-worker-000001": "0.1.0",
 				"alq9y-worker-000002": "0.1.0",
