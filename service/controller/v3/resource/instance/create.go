@@ -50,56 +50,62 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var masterVersionsValue map[string]string
 	{
 		deploymentsClient, err := r.getDeploymentsClient()
-		if err != nil {
+		if IsDeploymentNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
-		}
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "master-vmss-deploy")
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		p, err := key.ToMap(d.Properties.Parameters)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		m, err := key.ToMap(p[versionsKey])
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		v, err := key.ToKeyValue(m)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		masterVersionsValue, err = key.ToStringMap(v)
-		if err != nil {
-			return microerror.Mask(err)
+		} else {
+			d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "master-vmss-deploy")
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			p, err := key.ToMap(d.Properties.Parameters)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m, err := key.ToMap(p[versionsKey])
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			v, err := key.ToKeyValue(m)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			masterVersionsValue, err = key.ToStringMap(v)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
 	var workerVersionsValue map[string]string
 	{
 		deploymentsClient, err := r.getDeploymentsClient()
-		if err != nil {
+		if IsDeploymentNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
-		}
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "worker-vmss-deploy")
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		p, err := key.ToMap(d.Properties.Parameters)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		m, err := key.ToMap(p[versionsKey])
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		v, err := key.ToKeyValue(m)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		workerVersionsValue, err = key.ToStringMap(v)
-		if err != nil {
-			return microerror.Mask(err)
+		} else {
+			d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), "worker-vmss-deploy")
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			p, err := key.ToMap(d.Properties.Parameters)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m, err := key.ToMap(p[versionsKey])
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			v, err := key.ToKeyValue(m)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			workerVersionsValue, err = key.ToStringMap(v)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
