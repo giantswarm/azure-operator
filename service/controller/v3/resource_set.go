@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v3/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3/network"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/endpoints"
@@ -299,6 +300,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		subnets, err := network.ComputeFromCR(ctx, obj, config.Azure.Network)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
 		azureClients, err := client.NewAzureClientSet(config.HostAzureConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -325,6 +331,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 		c := controllercontext.Context{
 			AzureClientSet: azureClients,
+			AzureNetwork:   *subnets,
 			CloudConfig:    cloudConfig,
 		}
 		ctx = controllercontext.NewContext(ctx, c)
