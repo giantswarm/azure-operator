@@ -1,8 +1,10 @@
 package v3
 
 import (
+	"context"
 	"fmt"
 
+	"github.com/giantswarm/aws-operator/service/controller/v12/controllercontext"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
@@ -285,10 +287,16 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		return false
 	}
 
+	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
+		return ctx, nil
+	}
+
 	var resourceSet *controller.ResourceSet
 	{
 		c := controller.ResourceSetConfig{
 			Handles:   handlesFunc,
+			InitCtx:   initCtxFunc,
 			Logger:    config.Logger,
 			Resources: resources,
 		}
