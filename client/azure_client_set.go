@@ -12,12 +12,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
 )
 
 type AzureClientSetConfig struct {
-	Logger micrologger.Logger
-
 	// ClientID is the ID of the Active Directory Service Principal.
 	ClientID string
 	// ClientSecret is the secret of the Active Directory Service Principal.
@@ -38,10 +35,6 @@ type clientConfig struct {
 }
 
 func (c AzureClientSetConfig) Validate() error {
-	if c.Logger == nil {
-		return errors.New("Logger must not be empty")
-	}
-
 	if c.ClientID == "" {
 		return errors.New("ClientID must not be empty")
 	}
