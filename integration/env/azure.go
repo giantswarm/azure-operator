@@ -59,15 +59,15 @@ func init() {
 			panic(err)
 		}
 
-		cidrs, err := network.ComputeCIDR(uint(buildNumber))
+		subnets, err := network.ComputeSubnets(uint(buildNumber))
 		if err != nil {
 			panic(err)
 		}
 
-		os.Setenv(EnvVarAzureCIDR, cidrs.AzureCIDR)
-		os.Setenv(EnvVarAzureMasterSubnetCIDR, cidrs.MasterSubnetCIDR)
-		os.Setenv(EnvVarAzureWorkerSubnetCIDR, cidrs.WorkerSubnetCIDR)
-		os.Setenv(EnvVarAzureCalicoSubnetCIDR, cidrs.CalicoSubnetCIDR)
+		os.Setenv(EnvVarAzureCIDR, subnets.Parent.String())
+		os.Setenv(EnvVarAzureMasterSubnetCIDR, subnets.Master.String())
+		os.Setenv(EnvVarAzureWorkerSubnetCIDR, subnets.Worker.String())
+		os.Setenv(EnvVarAzureCalicoSubnetCIDR, subnets.Calico.String())
 	} else {
 		if os.Getenv(EnvVarAzureCalicoSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureCalicoSubnetCIDR))

@@ -4,8 +4,8 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/giantswarm/ipam"
-	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/service/controller/v3/network"
 )
 
 const (
@@ -14,51 +14,21 @@ const (
 
 	azureCalicoSubnetMask = 17
 	azureMasterSubnetMask = 24
+	azureVPNSubnetMask    = 24
 	azureWorkerSubnetMask = 24
 )
 
-type azureCIDR struct {
-	AzureCIDR        string
-	MasterSubnetCIDR string
-	WorkerSubnetCIDR string
-	CalicoSubnetCIDR string
-}
-
-func ComputeCIDR(buildNumber uint) (*azureCIDR, error) {
-	cidrs := new(azureCIDR)
-
+func ComputeSubnets(buildNumber uint) (*network.Subnets, error) {
 	azureNetwork := determineSubnet(e2eNetwork, e2eSubnetQuantity, buildNumber)
-	cidrs.AzureCIDR = azureNetwork.String()
 
-	azureMasterSubnet, err := ipamFree(azureNetwork, azureMasterSubnetMask)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	cidrs.MasterSubnetCIDR = azureMasterSubnet.String()
-
-	azureWorkerSubnet, err := ipamFree(azureNetwork, azureWorkerSubnetMask, *azureMasterSubnet)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	cidrs.WorkerSubnetCIDR = azureWorkerSubnet.String()
-
-	azureCalicoSubnet, err := ipamFree(azureNetwork, azureCalicoSubnetMask, *azureMasterSubnet, *azureWorkerSubnet)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	cidrs.CalicoSubnetCIDR = azureCalicoSubnet.String()
-
-	return cidrs, nil
-}
-
-// ipamFree wrap call to ipam.Free, and use 32 bits CIDRMask.
-func ipamFree(network net.IPNet, mask int, allocatedSubnet ...net.IPNet) (subnet *net.IPNet, err error) {
-	s, err := ipam.Free(network, net.CIDRMask(mask, 32), allocatedSubnet)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	s := setting.AzureNetwork{
+		CalicoSubnetMask: azureCalicoSubnetMask,
+		MasterSubnetMask: azureMasterSubnetMask,
+		VPNSubnetMask:    azureVPNSubnetMask,
+		WorkerSubnetMask: azureWorkerSubnetMask,
 	}
 
-	return &s, nil
+	return network.Compute(azureNetwork, s)
 }
 
 // determineSubnet compute a subnet by wrapping decider in subnetQuantity and writing the resulting value in cidrFormat.
