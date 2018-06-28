@@ -23,6 +23,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/endpoints"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/instance"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/migration"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/service"
@@ -254,7 +255,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var migrationResource controller.Resource
+	{
+		c := migration.Config{
+			G8sClient: config.G8sClient,
+			Logger:    config.Logger,
+		}
+
+		migrationResource, err = migration.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []controller.Resource{
+		migrationResource,
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
