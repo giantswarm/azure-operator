@@ -92,7 +92,6 @@ func init() {
 
 	{
 		config := client.AzureClientSetConfig{
-			Logger:         logger,
 			ClientID:       env.AzureClientID(),
 			ClientSecret:   env.AzureClientSecret(),
 			SubscriptionID: env.AzureSubscriptionID(),
