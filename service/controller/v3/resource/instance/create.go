@@ -462,13 +462,11 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, versionValue map[string]string) (map[string]string, error) {
 	// ignore empty
 	if len(list) == 0 && versionValue == nil {
-		fmt.Printf("1\n")
 		return map[string]string{}, nil
 	}
 
 	// fill empty
 	if len(list) != 0 && len(versionValue) == 0 {
-		fmt.Printf("2\n")
 		m := map[string]string{}
 		for _, v := range list {
 			m[*v.InstanceID] = version
@@ -479,7 +477,6 @@ func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedI
 
 	// remove missing
 	if len(versionValue) != 0 {
-		fmt.Printf("3\n")
 		m := map[string]string{}
 		for k, v := range versionValue {
 			if !containsInstanceID(list, k) {
@@ -493,7 +490,6 @@ func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedI
 
 	// update existing
 	if len(versionValue) != 0 {
-		fmt.Printf("4\n")
 		if reimagedInstance != nil {
 			versionValue[*reimagedInstance.InstanceID] = version
 		}
