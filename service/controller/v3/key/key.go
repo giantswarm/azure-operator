@@ -142,13 +142,22 @@ func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {
 }
 
 func IsFinalProvisioningState(s string) bool {
-	if s == "Succeeded" {
-		return true
-	}
+	return IsFailedProvisioningState(s) || IsSucceededProvisioningState(s)
+}
+
+func IsFailedProvisioningState(s string) bool {
 	if s == "Failed" {
 		return true
 	}
 	if s == "Canceled" {
+		return true
+	}
+
+	return false
+}
+
+func IsSucceededProvisioningState(s string) bool {
+	if s == "Succeeded" {
 		return true
 	}
 

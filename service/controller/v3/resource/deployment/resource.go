@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v3/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
@@ -27,6 +28,7 @@ const (
 
 type Config struct {
 	CloudConfig *cloudconfig.CloudConfig
+	Debugger    *debugger.Debugger
 	Logger      micrologger.Logger
 
 	Azure       setting.Azure
@@ -38,6 +40,7 @@ type Config struct {
 
 type Resource struct {
 	cloudConfig *cloudconfig.CloudConfig
+	debugger    *debugger.Debugger
 	logger      micrologger.Logger
 
 	azure           setting.Azure
@@ -48,6 +51,9 @@ type Resource struct {
 func New(config Config) (*Resource, error) {
 	if config.CloudConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CloudConfig must not be empty", config)
+	}
+	if config.Debugger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -65,6 +71,7 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		cloudConfig: config.CloudConfig,
+		debugger:    config.Debugger,
 		logger:      config.Logger,
 
 		azure:           config.Azure,
@@ -102,10 +109,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		s := *d.Properties.ProvisioningState
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", *d.Properties.ProvisioningState))
 
-		if !key.IsFinalProvisioningState(s) {
+		if !key.IsFinalProvisioningState(*d.Properties.ProvisioningState) {
+			r.debugger.LogFailedDeployment(ctx, d)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 
 			return nil
