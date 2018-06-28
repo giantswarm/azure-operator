@@ -1,6 +1,7 @@
 package v3
 
 import (
+	"context"
 	"fmt"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -15,6 +16,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v3/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/dnsrecord"
@@ -59,6 +62,18 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var newDebugger *debugger.Debugger
+	{
+		c := debugger.Config{
+			Logger: config.Logger,
+		}
+
+		newDebugger, err = debugger.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -115,7 +130,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var deploymentResource controller.Resource
 	{
 		c := deployment.Config{
-			Logger: config.Logger,
+			Debugger: newDebugger,
+			Logger:   config.Logger,
 
 			Azure:           config.Azure,
 			AzureConfig:     config.AzureConfig,
@@ -285,10 +301,16 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		return false
 	}
 
+	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
+		return ctx, nil
+	}
+
 	var resourceSet *controller.ResourceSet
 	{
 		c := controller.ResourceSetConfig{
 			Handles:   handlesFunc,
+			InitCtx:   initCtxFunc,
 			Logger:    config.Logger,
 			Resources: resources,
 		}

@@ -11,6 +11,12 @@
                 "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
             }
         },
+        "versionBundleVersions":{
+          "type":"object",
+          "metadata":{
+            "description":"JSON blob of key-value pairs mapping VMSS instance names to their applied version bundle versions."
+          }
+        },
         "vmssMSIEnabled": {
             "type": "bool"
         },
