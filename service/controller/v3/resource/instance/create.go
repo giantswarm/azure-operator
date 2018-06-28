@@ -384,6 +384,9 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []co
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
 	if instanceInProgress == nil {
 		instanceToUpdate = firstInstanceToUpdate(customObject, list)
+		if instanceToUpdate != nil {
+			return instanceToUpdate, nil, nil
+		}
 	}
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
@@ -392,9 +395,12 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, list []co
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
+		if instanceToReimage != nil {
+			return nil, instanceToReimage, nil
+		}
 	}
 
-	return instanceToUpdate, instanceToReimage, nil
+	return nil, nil, nil
 }
 
 // firstInstanceInProgress returns the first instance in the list not having a
