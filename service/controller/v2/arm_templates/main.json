@@ -21,6 +21,12 @@
         "description": "Whether the deployment is provisioned the very first time."
       }
     },
+    "masterVersionBundleVersions":{
+      "type":"object",
+      "metadata":{
+        "description":"JSON blob of key-value pairs mapping master VMSS instance names to their applied version bundle versions."
+      }
+    },
     "virtualNetworkName": {
       "type": "string",
       "metadata": {
@@ -31,6 +37,12 @@
       "type": "string",
       "metadata": {
         "description": "The main CIDR block reserved for this virtual network."
+      }
+    },
+    "workerVersionBundleVersions":{
+      "type":"object",
+      "metadata":{
+        "description":"JSON blob of key-value pairs mapping worker VMSS instance names to their applied version bundle versions."
       }
     },
     "calicoSubnetCidr": {
@@ -377,6 +389,9 @@
         "parameters": {
           "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "versionBundleVersions":{
+            "value":"[parameters('masterVersionBundleVersions')]"
+          },
           "vmssName": {"value": "[concat(parameters('clusterID'), '-master')]"},
           "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
           "vmssVmSize": {"value": "[parameters('masterNodes')[0].vmSize]"},
@@ -415,6 +430,9 @@
         "parameters": {
           "location": {"value": "[resourceGroup().location]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
+          "versionBundleVersions":{
+            "value":"[parameters('workerVersionBundleVersions')]"
+          },
           "vmssName": {"value": "[concat(parameters('clusterID'), '-worker')]"},
           "vmssMSIEnabled": {"value": "[parameters('vmssMSIEnabled')]"},
           "vmssVmSize": {"value": "[parameters('workerNodes')[0].vmSize]"},

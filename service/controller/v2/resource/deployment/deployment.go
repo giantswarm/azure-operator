@@ -70,6 +70,9 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		"workerCloudConfigData":         workerCloudConfig,
 		"vmssMSIEnabled":                r.azure.MSI.Enabled,
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
+
+		masterVersionsKey: map[string]string{},
+		workerVersionsKey: map[string]string{},
 	}
 
 	d := azureresource.Deployment{
