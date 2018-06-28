@@ -361,9 +361,9 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	return nil
 }
 
-func containsInstanceVersion(list []compute.VirtualMachineScaleSetVM, version string) bool {
+func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool {
 	for _, v := range list {
-		if *v.InstanceID == version {
+		if *v.InstanceID == id {
 			return true
 		}
 	}
@@ -482,7 +482,7 @@ func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimag
 		fmt.Printf("3\n")
 		m := map[string]string{}
 		for k, v := range versionValue {
-			if !containsInstanceVersion(list, k) {
+			if !containsInstanceID(list, k) {
 				continue
 			}
 			m[k] = v
