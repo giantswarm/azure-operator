@@ -198,11 +198,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		masterVersionsValue, err := updateVersionParameterValue(allMasterInstances, reimagedMasterInstance, key.VersionBundleVersion(customObject), masterVersionsValue)
+		masterVersionsValue, err := newVersionParameterValue(allMasterInstances, reimagedMasterInstance, key.VersionBundleVersion(customObject), masterVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		workerVersionsValue, err := updateVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
+		workerVersionsValue, err := newVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -459,7 +459,7 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func updateVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, versionValue map[string]string) (map[string]string, error) {
+func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, versionValue map[string]string) (map[string]string, error) {
 	// ignore empty
 	if len(list) == 0 && versionValue == nil {
 		fmt.Printf("1\n")

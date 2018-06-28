@@ -366,7 +366,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 	}
 }
 
-func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
+func Test_Resource_Instance_newVersionParameterValue(t *testing.T) {
 	testCases := []struct {
 		Name                 string
 		Instances            []compute.VirtualMachineScaleSetVM
@@ -525,7 +525,7 @@ func Test_Resource_Instance_updateVersionParameterValue(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			versionValue, err := updateVersionParameterValue(tc.Instances, tc.Instance, tc.Version, tc.VersionValue)
+			versionValue, err := newVersionParameterValue(tc.Instances, tc.Instance, tc.Version, tc.VersionValue)
 
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:
