@@ -19,6 +19,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
 	"github.com/giantswarm/azure-operator/service/controller/v3/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 	"github.com/giantswarm/azure-operator/service/controller/v3/network"
@@ -324,7 +325,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSet(config.HostAzureConfig)
+		guestAzureConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		azureClients, err := client.NewAzureClientSet(*guestAzureConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -337,7 +343,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				RandomkeysSearcher: randomkeysSearcher,
 
 				Azure:        config.Azure,
-				AzureConfig:  config.HostAzureConfig,
+				AzureConfig:  *guestAzureConfig,
 				AzureNetwork: *subnets,
 				OIDC:         config.OIDC,
 				SSOPublicKey: config.SSOPublicKey,
