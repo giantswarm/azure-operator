@@ -21,12 +21,12 @@ func getDeploymentNames() []string {
 	}
 }
 
-func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	var masterNodes []node
-	for _, m := range obj.Spec.Azure.Masters {
+	for _, m := range customObject.Spec.Azure.Masters {
 		n := node{
-			AdminUsername:   key.AdminUsername(obj),
-			AdminSSHKeyData: key.AdminSSHKeyData(obj),
+			AdminUsername:   key.AdminUsername(customObject),
+			AdminSSHKeyData: key.AdminSSHKeyData(customObject),
 			OSImage:         newNodeOSImageCoreOS_1745_7_0(),
 			VMSize:          m.VMSize,
 		}
@@ -34,40 +34,40 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	var workerNodes []node
-	for _, w := range obj.Spec.Azure.Workers {
+	for _, w := range customObject.Spec.Azure.Workers {
 		n := node{
-			AdminUsername:   key.AdminUsername(obj),
-			AdminSSHKeyData: key.AdminSSHKeyData(obj),
+			AdminUsername:   key.AdminUsername(customObject),
+			AdminSSHKeyData: key.AdminSSHKeyData(customObject),
 			OSImage:         newNodeOSImageCoreOS_1745_7_0(),
 			VMSize:          w.VMSize,
 		}
 		workerNodes = append(workerNodes, n)
 	}
 
-	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
+	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(customObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
+	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(customObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	defaultParams := map[string]interface{}{
-		"clusterID":                     key.ClusterID(obj),
-		"virtualNetworkName":            key.VnetName(obj),
-		"virtualNetworkCidr":            key.VnetCIDR(obj),
-		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
-		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
-		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
+		"clusterID":                     key.ClusterID(customObject),
+		"virtualNetworkName":            key.VnetName(customObject),
+		"virtualNetworkCidr":            key.VnetCIDR(customObject),
+		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(customObject),
+		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(customObject),
+		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(customObject),
 		"masterNodes":                   masterNodes,
 		"workerNodes":                   workerNodes,
-		"dnsZones":                      obj.Spec.Azure.DNSZones,
+		"dnsZones":                      key.DNSZones(customObject),
 		"hostClusterCidr":               r.azure.HostCluster.CIDR,
 		"hostClusterResourceGroupName":  r.azure.HostCluster.ResourceGroup,
 		"hostClusterVirtualNetworkName": r.azure.HostCluster.VirtualNetwork,
-		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
+		"kubernetesAPISecurePort":       key.APISecurePort(customObject),
 		"masterCloudConfigData":         masterCloudConfig,
 		"workerCloudConfigData":         workerCloudConfig,
 		"vmssMSIEnabled":                r.azure.MSI.Enabled,
