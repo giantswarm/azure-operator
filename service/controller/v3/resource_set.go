@@ -280,6 +280,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		azureClients, err := client.NewAzureClientSet(config.HostAzureConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
 		var cloudConfig *cloudconfig.CloudConfig
 		{
 			c := cloudconfig.Config{
@@ -300,6 +305,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		c := controllercontext.Context{
+			AzureClientSet: azureClients,
 			CloudConfig:    cloudConfig,
 		}
 		ctx = controllercontext.NewContext(ctx, c)
