@@ -13,6 +13,7 @@ const (
 	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
 	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
 	EnvVarAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
+	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
 
 	EnvVarAzureClientID       = "AZURE_CLIENTID"
 	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
@@ -65,15 +66,19 @@ func init() {
 		}
 
 		os.Setenv(EnvVarAzureCIDR, subnets.Parent.String())
-		os.Setenv(EnvVarAzureMasterSubnetCIDR, subnets.Master.String())
-		os.Setenv(EnvVarAzureWorkerSubnetCIDR, subnets.Worker.String())
 		os.Setenv(EnvVarAzureCalicoSubnetCIDR, subnets.Calico.String())
+		os.Setenv(EnvVarAzureMasterSubnetCIDR, subnets.Master.String())
+		os.Setenv(EnvVarAzureVPNSubnetCIDR, subnets.VPN.String())
+		os.Setenv(EnvVarAzureWorkerSubnetCIDR, subnets.Worker.String())
 	} else {
 		if os.Getenv(EnvVarAzureCalicoSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureCalicoSubnetCIDR))
 		}
 		if os.Getenv(EnvVarAzureMasterSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureMasterSubnetCIDR))
+		}
+		if os.Getenv(EnvVarAzureVPNSubnetCIDR) == "" {
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureVPNSubnetCIDR))
 		}
 		if os.Getenv(EnvVarAzureWorkerSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureWorkerSubnetCIDR))
