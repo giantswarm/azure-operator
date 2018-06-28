@@ -41,6 +41,10 @@ func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
 	return users[0].PublicKey
 }
 
+func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
+	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
+}
+
 // ClusterCustomer returns the customer ID for this cluster.
 func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Customer.ID
@@ -135,6 +139,10 @@ func DNSZoneResourceGroupEtcd(customObject providerv1alpha1.AzureConfig) string 
 // parent DNS zone.
 func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
+}
+
+func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureConfigSpecAzureDNSZones {
+	return customObject.Spec.Azure.DNSZones
 }
 
 func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {

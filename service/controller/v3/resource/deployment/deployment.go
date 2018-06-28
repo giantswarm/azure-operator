@@ -10,20 +10,20 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
-func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	defaultParams := map[string]interface{}{
-		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
-		"clusterID":                     key.ClusterID(obj),
-		"dnsZones":                      obj.Spec.Azure.DNSZones,
+		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(customObject),
+		"clusterID":                     key.ClusterID(customObject),
+		"dnsZones":                      key.DNSZones(customObject),
 		"hostClusterCidr":               r.azure.HostCluster.CIDR,
 		"hostClusterResourceGroupName":  r.azure.HostCluster.ResourceGroup,
 		"hostClusterVirtualNetworkName": r.azure.HostCluster.VirtualNetwork,
-		"kubernetesAPISecurePort":       obj.Spec.Cluster.Kubernetes.API.SecurePort,
-		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
+		"kubernetesAPISecurePort":       key.APISecurePort(customObject),
+		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(customObject),
 		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
-		"virtualNetworkCidr":            key.VnetCIDR(obj),
-		"virtualNetworkName":            key.VnetName(obj),
-		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
+		"virtualNetworkCidr":            key.VnetCIDR(customObject),
+		"virtualNetworkName":            key.VnetName(customObject),
+		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(customObject),
 	}
 
 	d := azureresource.Deployment{
