@@ -280,7 +280,30 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
-		ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
+		var cloudConfig *cloudconfig.CloudConfig
+		{
+			c := cloudconfig.Config{
+				CertsSearcher:      certsSearcher,
+				Logger:             config.Logger,
+				RandomkeysSearcher: randomkeysSearcher,
+
+				Azure:        config.Azure,
+				AzureConfig:  config.HostAzureConfig,
+				OIDC:         config.OIDC,
+				SSOPublicKey: config.SSOPublicKey,
+			}
+
+			cloudConfig, err = cloudconfig.New(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+
+		c := controllercontext.Context{
+			CloudConfig:    cloudConfig,
+		}
+		ctx = controllercontext.NewContext(ctx, c)
+
 		return ctx, nil
 	}
 
