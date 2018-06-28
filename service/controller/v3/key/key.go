@@ -215,7 +215,7 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 func ToKeyValue(m map[string]interface{}) (interface{}, error) {
 	v, ok := m["value"]
 	if !ok {
-		return "", microerror.Maskf(missingOutputValueError, "value")
+		return "", microerror.Mask(missingOutputValueError)
 	}
 
 	return v, nil
