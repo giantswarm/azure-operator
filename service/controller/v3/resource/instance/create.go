@@ -130,7 +130,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		allMasterInstances, err = r.allInstances(ctx, customObject, key.MasterVMSSName)
 		if IsScaleSetNotFound(err) {
-			// fall through
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(customObject)))
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
@@ -159,7 +159,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
-			// fall through
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
@@ -237,8 +237,6 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 	s := deploymentNameFunc(customObject)
 	result, err := c.List(ctx, g, s, "", "", "")
 	if IsScaleSetNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", deploymentNameFunc(customObject)))
-
 		return nil, microerror.Mask(scaleSetNotFoundError)
 	} else if err != nil {
 		return nil, microerror.Mask(err)
