@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/randomkeys"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
@@ -141,7 +142,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:           config.Azure,
 			AzureConfig:     config.AzureConfig,
-			CloudConfig:     cloudConfig,
 			TemplateVersion: config.TemplateVersion,
 		}
 
@@ -192,10 +192,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource controller.Resource
 	{
 		c := instance.Config{
-			Logger: config.Logger,
+			CloudConfig: cloudConfig,
+			Logger:      config.Logger,
 
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			Azure:           config.Azure,
+			AzureConfig:     config.AzureConfig,
+			TemplateVersion: config.TemplateVersion,
 		}
 
 		instanceResource, err = instance.New(c)
