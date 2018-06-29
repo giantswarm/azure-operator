@@ -28,7 +28,12 @@ func ComputeFromCR(ctx context.Context, obj interface{}, networkSetting setting.
 		return nil, microerror.Mask(err)
 	}
 
-	return Compute(*vnet, networkSetting)
+	subnets, err := Compute(*vnet, networkSetting)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return subnets, nil
 }
 
 // Compute network subnets.
