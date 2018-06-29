@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	ipv4Mask = 32
+	ipv4MaskSize = 32
 )
 
 // Compute network subnets within network from CR.
@@ -42,25 +42,25 @@ func Compute(network net.IPNet, networkSetting setting.AzureNetwork) (subnets *S
 
 	subnets.Parent = network
 
-	masterSubnetMask := net.CIDRMask(networkSetting.MasterSubnetMask, ipv4Mask)
+	masterSubnetMask := net.CIDRMask(networkSetting.MasterSubnetMask, ipv4MaskSize)
 	subnets.Master, err = ipam.Free(network, masterSubnetMask, nil)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	workerSubnetMask := net.CIDRMask(networkSetting.WorkerSubnetMask, ipv4Mask)
+	workerSubnetMask := net.CIDRMask(networkSetting.WorkerSubnetMask, ipv4MaskSize)
 	subnets.Worker, err = ipam.Free(network, workerSubnetMask, []net.IPNet{subnets.Master})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	vpnSubnetMask := net.CIDRMask(networkSetting.VPNSubnetMask, ipv4Mask)
+	vpnSubnetMask := net.CIDRMask(networkSetting.VPNSubnetMask, ipv4MaskSize)
 	subnets.VPN, err = ipam.Free(network, vpnSubnetMask, []net.IPNet{subnets.Master, subnets.Worker})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	calicoSubnetMask := net.CIDRMask(networkSetting.CalicoSubnetMask, ipv4Mask)
+	calicoSubnetMask := net.CIDRMask(networkSetting.CalicoSubnetMask, ipv4MaskSize)
 	subnets.Calico, err = ipam.Free(network, calicoSubnetMask, []net.IPNet{subnets.Master, subnets.Worker, subnets.VPN})
 	if err != nil {
 		return nil, microerror.Mask(err)
