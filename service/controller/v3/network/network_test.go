@@ -24,14 +24,14 @@ func TestComputeSubnets(t *testing.T) {
 		{
 			"ok",
 			setting.AzureNetwork{
-				CalicoSubnetMask: 27,
+				CalicoSubnetMask: 17,
 				MasterSubnetMask: 24,
 				VPNSubnetMask:    24,
 				WorkerSubnetMask: 24,
 			},
 			"10.0.0.0/16",
 			Subnets{
-				Calico: net.IPNet{IP: net.IPv4(10, 0, 3, 0), Mask: net.IPv4Mask(255, 255, 255, 224)},
+				Calico: net.IPNet{IP: net.IPv4(10, 0, 3, 0), Mask: net.IPv4Mask(255, 255, 128, 0)},
 				Master: net.IPNet{IP: net.IPv4(10, 0, 0, 0), Mask: net.IPv4Mask(255, 255, 255, 0)},
 				Parent: net.IPNet{IP: net.IPv4(10, 0, 0, 0), Mask: net.IPv4Mask(255, 255, 0, 0)},
 				VPN:    net.IPNet{IP: net.IPv4(10, 0, 2, 0), Mask: net.IPv4Mask(255, 255, 255, 0)},
@@ -42,7 +42,7 @@ func TestComputeSubnets(t *testing.T) {
 		{
 			"cidr too small",
 			setting.AzureNetwork{
-				CalicoSubnetMask: 27,
+				CalicoSubnetMask: 17,
 				MasterSubnetMask: 24,
 				VPNSubnetMask:    24,
 				WorkerSubnetMask: 24,
@@ -54,7 +54,7 @@ func TestComputeSubnets(t *testing.T) {
 		{
 			"cidr invalid",
 			setting.AzureNetwork{
-				CalicoSubnetMask: 27,
+				CalicoSubnetMask: 17,
 				MasterSubnetMask: 24,
 				VPNSubnetMask:    24,
 				WorkerSubnetMask: 24,
@@ -78,7 +78,7 @@ func TestComputeSubnets(t *testing.T) {
 		{
 			"subnet mask invalid",
 			setting.AzureNetwork{
-				CalicoSubnetMask: 27,
+				CalicoSubnetMask: 17,
 				MasterSubnetMask: 24,
 				VPNSubnetMask:    24,
 				WorkerSubnetMask: 0,
