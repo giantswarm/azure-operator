@@ -21,6 +21,11 @@ const (
 
 // ComputeFromCR computes subnets using network found in CR.
 func ComputeFromCR(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (*Subnets, error) {
+	azureConfig, err := key.ToCustomObject(obj)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	vnetCIDR := key.VnetCIDR(azureConfig)
 	_, vnet, err := net.ParseCIDR(vnetCIDR)
 	if err != nil {
