@@ -80,7 +80,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "CR updated, canceling reconciliation")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for custom object")
 	reconciliationcanceledcontext.SetCanceled(ctx)
 
 	return nil
