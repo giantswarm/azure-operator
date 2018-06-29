@@ -66,7 +66,7 @@ func (r *Resource) getDNSRecordSetsGuestClient(ctx context.Context) (*dns.Record
 	return sc.AzureClientSet.DNSRecordSetsClient, nil
 }
 
-func (r *Resource) getDNSZonesClient(ctx context.Context) (*dns.ZonesClient, error) {
+func (r *Resource) getDNSZonesGuestClient(ctx context.Context) (*dns.ZonesClient, error) {
 	sc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
