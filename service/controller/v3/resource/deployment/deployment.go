@@ -7,7 +7,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 
-	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 

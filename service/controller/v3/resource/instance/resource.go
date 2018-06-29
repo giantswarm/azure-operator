@@ -56,7 +56,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {
+func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
 	sc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)

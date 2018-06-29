@@ -25,7 +25,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	deploymentsClient, err := r.getDeploymentsClient()
+	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -228,7 +228,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
 
-	c, err := r.getVMsClient()
+	c, err := r.getVMsClient(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -308,7 +308,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceNameFunc(customObject, *instance.InstanceID)))
 
-	c, err := r.getScaleSetsClient()
+	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -337,7 +337,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceNameFunc(customObject, *instance.InstanceID)))
 
-	c, err := r.getScaleSetsClient()
+	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
