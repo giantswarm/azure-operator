@@ -15,7 +15,7 @@ const (
 	ipv4MaskSize = 32
 )
 
-// Compute network subnets within network from CR.
+// ComputeFromCR computes subnets using network found in CR.
 func ComputeFromCR(ctx context.Context, obj interface{}, subnetsSetting setting.AzureNetwork) (*Subnets, error) {
 	azureConfig, err := key.ToCustomObject(obj)
 	if err != nil {
@@ -36,7 +36,9 @@ func ComputeFromCR(ctx context.Context, obj interface{}, subnetsSetting setting.
 	return subnets, nil
 }
 
-// Compute network subnets.
+// Compute computes subnets within network based on subnetsSetting.
+//
+// subnets computation rely on ipam.Free and use ipv4MaskSize as IPMask length.
 func Compute(network net.IPNet, subnetsSetting setting.AzureNetwork) (subnets *Subnets, err error) {
 	subnets = new(Subnets)
 
