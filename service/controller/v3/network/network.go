@@ -31,6 +31,7 @@ func ComputeFromCR(ctx context.Context, azureConfig providerv1alpha1.AzureConfig
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
 	return subnets, nil
 }
 
