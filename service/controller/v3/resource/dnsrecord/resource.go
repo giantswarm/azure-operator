@@ -48,13 +48,22 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) getDNSRecordSetsClient() (*dns.RecordSetsClient, error) {
+func (r *Resource) getDNSRecordSetsHostClient() (*dns.RecordSetsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.hostAzureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	return azureClients.DNSRecordSetsClient, nil
+}
+
+func (r *Resource) getDNSRecordSetsGuestClient(ctx context.Context) (*dns.RecordSetsClient, error) {
+	sc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return sc.AzureClientSet.DNSRecordSetsClient, nil
 }
 
 func (r *Resource) getDNSZonesClient(ctx context.Context) (*dns.ZonesClient, error) {

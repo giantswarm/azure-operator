@@ -24,7 +24,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 	}
 
 	if len(dnsRecords) != 0 {
-		recordSetsClient, err := r.getDNSRecordSetsClient()
+		recordSetsClient, err := r.getDNSRecordSetsHostClient()
 		if err != nil {
 			return microerror.Mask(err)
 		}
