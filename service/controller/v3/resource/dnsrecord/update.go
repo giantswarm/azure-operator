@@ -30,7 +30,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records")
 
-	recordSetsClient, err := r.getDNSRecordSetsClient()
+	recordSetsClient, err := r.getDNSRecordSetsHostClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}

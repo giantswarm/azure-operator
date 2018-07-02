@@ -21,7 +21,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 }
 
 func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.AzureConfig) (dnsRecords, error) {
-	zonesClient, err := r.getDNSZonesClient()
+	zonesClient, err := r.getDNSZonesGuestClient(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

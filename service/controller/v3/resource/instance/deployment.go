@@ -35,17 +35,17 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		workerNodes = append(workerNodes, n)
 	}
 
-	masterCloudConfig, err := r.cloudConfig.NewMasterCloudConfig(obj)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
-	workerCloudConfig, err := r.cloudConfig.NewWorkerCloudConfig(obj)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
+	masterCloudConfig, err := cc.CloudConfig.NewMasterCloudConfig(obj)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
+	workerCloudConfig, err := cc.CloudConfig.NewWorkerCloudConfig(obj)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}

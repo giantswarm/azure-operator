@@ -10,8 +10,8 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
@@ -25,7 +25,6 @@ const (
 type Config struct {
 	Logger micrologger.Logger
 
-	AzureConfig      client.AzureClientSetConfig
 	Azure            setting.Azure
 	InstallationName string
 }
@@ -35,7 +34,6 @@ type Resource struct {
 	logger micrologger.Logger
 
 	azure            setting.Azure
-	azureConfig      client.AzureClientSetConfig
 	installationName string
 }
 
@@ -47,9 +45,6 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
-	}
 	if config.InstallationName == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
 	}
@@ -57,9 +52,8 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		installationName: config.InstallationName,
 
-		azure:       config.Azure,
-		azureConfig: config.AzureConfig,
-		logger:      config.Logger,
+		azure:  config.Azure,
+		logger: config.Logger,
 	}
 
 	return r, nil
@@ -72,7 +66,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	groupsClient, err := r.getGroupsClient()
+	groupsClient, err := r.getGroupsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -102,7 +96,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	groupsClient, err := r.getGroupsClient()
+	groupsClient, err := r.getGroupsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -140,13 +134,13 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) getGroupsClient() (*azureresource.GroupsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.azureConfig)
+func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
+	sc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.GroupsClient, nil
+	return sc.AzureClientSet.GroupsClient, nil
 }
 
 func toGroup(v interface{}) (Group, error) {

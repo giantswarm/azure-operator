@@ -123,7 +123,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Logger:    config.Logger,
 
 			Azure:            config.Azure,
-			AzureConfig:      config.AzureConfig,
+			HostAzureConfig:  config.AzureConfig,
 			InstallationName: config.InstallationName,
 			ProjectName:      config.ProjectName,
 			OIDC:             config.OIDC,
