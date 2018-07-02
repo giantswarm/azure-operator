@@ -79,11 +79,6 @@ func New(config Config) (*Service, error) {
 		MSI: setting.AzureMSI{
 			Enabled: config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		},
-		Network: setting.AzureNetwork{
-			MasterSubnetMask: config.Viper.GetInt(config.Flag.Service.Azure.Network.MasterSubnetMask),
-			VPNSubnetMask:    config.Viper.GetInt(config.Flag.Service.Azure.Network.VPNSubnetMask),
-			WorkerSubnetMask: config.Viper.GetInt(config.Flag.Service.Azure.Network.WorkerSubnetMask),
-		},
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 

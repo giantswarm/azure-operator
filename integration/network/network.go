@@ -4,29 +4,18 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/network"
 )
 
 const (
 	e2eNetwork        = "11.%d.0.0"
 	e2eSubnetQuantity = 256
-
-	azureMasterSubnetMask = 24
-	azureVPNSubnetMask    = 24
-	azureWorkerSubnetMask = 24
 )
 
 func ComputeSubnets(buildNumber uint) (*network.Subnets, error) {
 	azureNetwork := determineSubnet(e2eNetwork, e2eSubnetQuantity, buildNumber)
 
-	s := setting.AzureNetwork{
-		MasterSubnetMask: azureMasterSubnetMask,
-		VPNSubnetMask:    azureVPNSubnetMask,
-		WorkerSubnetMask: azureWorkerSubnetMask,
-	}
-
-	return network.Compute(azureNetwork, s)
+	return network.Compute(azureNetwork)
 }
 
 // determineSubnet compute a subnet by wrapping decider in subnetQuantity and writing the resulting value in cidrFormat.

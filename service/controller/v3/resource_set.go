@@ -300,7 +300,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
-		subnets, err := network.ComputeFromCR(ctx, obj, config.Azure.Network)
+		subnets, err := network.ComputeFromCR(ctx, obj)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

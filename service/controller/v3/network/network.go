@@ -7,16 +7,19 @@ import (
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
 const (
+	masterSubnetMask = 24
+	workerSubnetMask = 24
+	vpnSubnetMask    = 24
+
 	ipv4MaskSize = 32
 )
 
 // ComputeFromCR computes subnets using network found in CR.
-func ComputeFromCR(ctx context.Context, obj interface{}, subnetsSetting setting.AzureNetwork) (*Subnets, error) {
+func ComputeFromCR(ctx context.Context, obj interface{}) (*Subnets, error) {
 	azureConfig, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -28,7 +31,7 @@ func ComputeFromCR(ctx context.Context, obj interface{}, subnetsSetting setting.
 		return nil, microerror.Mask(err)
 	}
 
-	subnets, err := Compute(*vnet, subnetsSetting)
+	subnets, err := Compute(*vnet)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -36,10 +39,10 @@ func ComputeFromCR(ctx context.Context, obj interface{}, subnetsSetting setting.
 	return subnets, nil
 }
 
-// Compute computes subnets within network based on subnetsSetting.
+// Compute computes subnets within network.
 //
 // subnets computation rely on ipam.Free and use ipv4MaskSize as IPMask length.
-func Compute(network net.IPNet, subnetsSetting setting.AzureNetwork) (subnets *Subnets, err error) {
+func Compute(network net.IPNet) (subnets *Subnets, err error) {
 	subnets = new(Subnets)
 
 	subnets.Parent = network
@@ -49,20 +52,20 @@ func Compute(network net.IPNet, subnetsSetting setting.AzureNetwork) (subnets *S
 		return nil, microerror.Mask(err)
 	}
 
-	masterSubnetMask := net.CIDRMask(subnetsSetting.MasterSubnetMask, ipv4MaskSize)
-	subnets.Master, err = ipam.Free(network, masterSubnetMask, []net.IPNet{subnets.Calico})
+	masterCIDRMask := net.CIDRMask(masterSubnetMask, ipv4MaskSize)
+	subnets.Master, err = ipam.Free(network, masterCIDRMask, []net.IPNet{subnets.Calico})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	workerSubnetMask := net.CIDRMask(subnetsSetting.WorkerSubnetMask, ipv4MaskSize)
-	subnets.Worker, err = ipam.Free(network, workerSubnetMask, []net.IPNet{subnets.Calico, subnets.Master})
+	workerCIDRMask := net.CIDRMask(workerSubnetMask, ipv4MaskSize)
+	subnets.Worker, err = ipam.Free(network, workerCIDRMask, []net.IPNet{subnets.Calico, subnets.Master})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	vpnSubnetMask := net.CIDRMask(subnetsSetting.VPNSubnetMask, ipv4MaskSize)
-	subnets.VPN, err = ipam.Free(network, vpnSubnetMask, []net.IPNet{subnets.Calico, subnets.Master, subnets.Worker})
+	vpnCIDRMask := net.CIDRMask(vpnSubnetMask, ipv4MaskSize)
+	subnets.VPN, err = ipam.Free(network, vpnCIDRMask, []net.IPNet{subnets.Calico, subnets.Master, subnets.Worker})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

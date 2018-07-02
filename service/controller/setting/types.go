@@ -6,7 +6,6 @@ type Azure struct {
 	Cloud       string
 	HostCluster AzureHostCluster
 	MSI         AzureMSI
-	Network     AzureNetwork
 	Location    string
 }
 
@@ -53,10 +52,4 @@ type OIDC struct {
 	IssuerURL     string
 	UsernameClaim string
 	GroupsClaim   string
-}
-
-type AzureNetwork struct {
-	MasterSubnetMask int
-	VPNSubnetMask    int
-	WorkerSubnetMask int
 }
