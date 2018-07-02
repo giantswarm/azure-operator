@@ -56,7 +56,6 @@ type OIDC struct {
 }
 
 type AzureNetwork struct {
-	CalicoSubnetMask int
 	MasterSubnetMask int
 	VPNSubnetMask    int
 	WorkerSubnetMask int

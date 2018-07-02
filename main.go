@@ -125,7 +125,6 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.ResourceGroup, "", "Host cluster resource group name.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetwork, "", "Host cluster virtual network name.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Azure.MSI.Enabled, true, "Whether to enabled Managed Service Identity (MSI).")
-	daemonCommand.PersistentFlags().Int(f.Service.Azure.Network.CalicoSubnetMask, 17, "calico network subnet mask.")
 	daemonCommand.PersistentFlags().Int(f.Service.Azure.Network.MasterSubnetMask, 24, "master network subnet mask.")
 	daemonCommand.PersistentFlags().Int(f.Service.Azure.Network.VPNSubnetMask, 24, "vpn network subnet mask.")
 	daemonCommand.PersistentFlags().Int(f.Service.Azure.Network.WorkerSubnetMask, 24, "worker network subnet mask.")
