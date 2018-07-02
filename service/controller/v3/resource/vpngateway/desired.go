@@ -29,7 +29,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 	// delete connection from host cluster vpn gateway.
 	if !key.IsDeleted(customObject) {
 		// In order to make vpn gateway connection work we need 2 vpn gateway.
-		// One on the host cluster and one on the host cluster.
+		// One on the host cluster and one on the guest cluster.
 		// Here we check for vpn gateways readiness.
 		// In case one of the vpn gateway is not ready we cancel the resource
 		// and try again on the next resync period.
