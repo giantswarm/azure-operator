@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
@@ -19,12 +20,7 @@ const (
 )
 
 // ComputeFromCR computes subnets using network found in CR.
-func ComputeFromCR(ctx context.Context, obj interface{}) (*Subnets, error) {
-	azureConfig, err := key.ToCustomObject(obj)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
+func ComputeFromCR(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (*Subnets, error) {
 	vnetCIDR := key.VnetCIDR(azureConfig)
 	_, vnet, err := net.ParseCIDR(vnetCIDR)
 	if err != nil {
