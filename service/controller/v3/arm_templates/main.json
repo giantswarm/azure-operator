@@ -112,7 +112,7 @@
     "routeTableTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
-    "virtualNetworkGatewaySetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkGatewaySetupTemplateFile'))]",
+    "virtualNetworkGatewayTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkGatewaySetupTemplateFile'))]",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
   },
@@ -193,7 +193,7 @@
       "properties": {
         "mode": "incremental",
         "templateLink": {
-          "uri": "[variables('virtualNetworkGatewaySetupTemplateURI')]",
+          "uri": "[variables('virtualNetworkGatewayTemplateURI')]",
           "contentVersion": "1.0.0.0"
         },
         "parameters": {
