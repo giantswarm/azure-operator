@@ -46,7 +46,7 @@ func TestComputeSubnets(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			cr := &providerv1alpha1.AzureConfig{
+			cr := providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Azure: providerv1alpha1.AzureConfigSpecAzure{
 						VirtualNetwork: providerv1alpha1.AzureConfigSpecAzureVirtualNetwork{
