@@ -23,6 +23,10 @@ const (
 	TemplateContentVersion = "1.0.0.0"
 )
 
+const (
+	ClusterIDLabel = "giantswarm.io/cluster"
+)
+
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
 	users := customObject.Spec.Cluster.Kubernetes.SSH.UserList
 	// We don't want panics when someone is doing something nasty.
@@ -43,6 +47,10 @@ func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
 
 func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
+}
+
+func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.Kubernetes.API.Domain
 }
 
 // ClusterCustomer returns the customer ID for this cluster.

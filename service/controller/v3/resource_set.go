@@ -170,7 +170,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource controller.Resource
 	{
 		c := instance.Config{
-			Logger: config.Logger,
+			G8sClient: config.G8sClient,
+			Logger:    config.Logger,
 
 			Azure:           config.Azure,
 			TemplateVersion: config.TemplateVersion,
