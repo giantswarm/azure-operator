@@ -284,6 +284,10 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 }
 
 func (r *Resource) createNodeConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+	if instance == nil {
+		return nil
+	}
+
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating node config for guest cluster node")
 
 	n := customObject.GetNamespace()
@@ -411,6 +415,10 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 }
 
 func (r *Resource) deleteNodeConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, nodeConfigs []corev1alpha1.NodeConfig) error {
+	if instance == nil {
+		return nil
+	}
+
 	if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instance.InstanceID)) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting node config for guest cluster node")
 
