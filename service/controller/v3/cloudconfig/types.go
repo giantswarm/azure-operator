@@ -13,10 +13,10 @@ type calicoAzureFileParams struct {
 	CalicoCIDR string
 }
 
-func newCalicoAzureFileParams(obj providerv1alpha1.AzureConfig) calicoAzureFileParams {
+func newCalicoAzureFileParams(obj providerv1alpha1.AzureConfig, calicoCIDR string) calicoAzureFileParams {
 	return calicoAzureFileParams{
 		Cluster:    obj.Spec.Cluster,
-		CalicoCIDR: key.VnetCalicoSubnetCIDR(obj),
+		CalicoCIDR: calicoCIDR,
 	}
 }
 

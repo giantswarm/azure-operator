@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -14,15 +14,18 @@ import (
 	"github.com/giantswarm/randomkeys"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v3/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3/network"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/endpoints"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/instance"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/migration"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/service"
@@ -30,11 +33,12 @@ import (
 )
 
 type ResourceSetConfig struct {
+	G8sClient versioned.Interface
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
 	Azure            setting.Azure
-	AzureConfig      client.AzureClientSetConfig
+	HostAzureConfig  client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
 	OIDC             setting.OIDC
@@ -47,6 +51,9 @@ type ResourceSetConfig struct {
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
 	if config.SSOPublicKey == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.SSOPublicKey must not be empty", config)
@@ -92,32 +99,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var cloudConfig *cloudconfig.CloudConfig
-	{
-		c := cloudconfig.Config{
-			CertsSearcher:      certsSearcher,
-			Logger:             config.Logger,
-			RandomkeysSearcher: randomkeysSearcher,
-
-			Azure:        config.Azure,
-			AzureConfig:  config.AzureConfig,
-			OIDC:         config.OIDC,
-			SSOPublicKey: config.SSOPublicKey,
-		}
-
-		cloudConfig, err = cloudconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var resourceGroupResource controller.Resource
 	{
 		c := resourcegroup.Config{
 			Logger: config.Logger,
 
 			Azure:            config.Azure,
-			AzureConfig:      config.AzureConfig,
 			InstallationName: config.InstallationName,
 		}
 
@@ -134,8 +121,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:   config.Logger,
 
 			Azure:           config.Azure,
-			AzureConfig:     config.AzureConfig,
-			CloudConfig:     cloudConfig,
 			TemplateVersion: config.TemplateVersion,
 		}
 
@@ -150,7 +135,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := dnsrecord.Config{
 			Logger: config.Logger,
 
-			AzureConfig: config.AzureConfig,
+			HostAzureConfig: config.HostAzureConfig,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -167,9 +152,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var endpointsResource controller.Resource
 	{
 		c := endpoints.Config{
-			AzureConfig: config.AzureConfig,
-			K8sClient:   config.K8sClient,
-			Logger:      config.Logger,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
 		}
 
 		ops, err := endpoints.New(c)
@@ -188,8 +172,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := instance.Config{
 			Logger: config.Logger,
 
-			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			Azure:           config.Azure,
+			TemplateVersion: config.TemplateVersion,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -240,7 +224,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger: config.Logger,
 
 			Azure:       config.Azure,
-			AzureConfig: config.AzureConfig,
+			AzureConfig: config.HostAzureConfig,
 		}
 
 		ops, err := vnetpeering.New(c)
@@ -254,7 +238,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var migrationResource controller.Resource
+	{
+		c := migration.Config{
+			G8sClient: config.G8sClient,
+			Logger:    config.Logger,
+		}
+
+		migrationResource, err = migration.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []controller.Resource{
+		migrationResource,
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
@@ -302,7 +300,48 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
-		ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
+		azureConfig, err := key.ToCustomObject(obj)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		subnets, err := network.ComputeFromCR(ctx, azureConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		azureClients, err := client.NewAzureClientSet(config.HostAzureConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		var cloudConfig *cloudconfig.CloudConfig
+		{
+			c := cloudconfig.Config{
+				CertsSearcher:      certsSearcher,
+				Logger:             config.Logger,
+				RandomkeysSearcher: randomkeysSearcher,
+
+				Azure:        config.Azure,
+				AzureConfig:  config.HostAzureConfig,
+				AzureNetwork: *subnets,
+				OIDC:         config.OIDC,
+				SSOPublicKey: config.SSOPublicKey,
+			}
+
+			cloudConfig, err = cloudconfig.New(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+
+		c := controllercontext.Context{
+			AzureClientSet: azureClients,
+			AzureNetwork:   subnets,
+			CloudConfig:    cloudConfig,
+		}
+		ctx = controllercontext.NewContext(ctx, c)
+
 		return ctx, nil
 	}
 

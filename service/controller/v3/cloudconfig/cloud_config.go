@@ -17,6 +17,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3/network"
 )
 
 type Config struct {
@@ -27,6 +28,7 @@ type Config struct {
 	Azure setting.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig  client.AzureClientSetConfig
+	AzureNetwork network.Subnets
 	OIDC         setting.OIDC
 	SSOPublicKey string
 }
@@ -38,6 +40,7 @@ type CloudConfig struct {
 
 	azure        setting.Azure
 	azureConfig  client.AzureClientSetConfig
+	azureNetwork network.Subnets
 	OIDC         setting.OIDC
 	ssoPublicKey string
 }
@@ -67,6 +70,7 @@ func New(config Config) (*CloudConfig, error) {
 
 		azure:        config.Azure,
 		azureConfig:  config.AzureConfig,
+		azureNetwork: config.AzureNetwork,
 		OIDC:         config.OIDC,
 		ssoPublicKey: config.SSOPublicKey,
 	}
@@ -138,7 +142,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
 						"--allocate-node-cidrs=true",
-						"--cluster-cidr=" + key.VnetCalicoSubnetCIDR(customObject),
+						"--cluster-cidr=" + c.azureNetwork.Calico.String(),
 					},
 				},
 			},
@@ -156,6 +160,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		Extension: &masterExtension{
 			Azure:         c.azure,
 			AzureConfig:   c.azureConfig,
+			CalicoCIDR:    c.azureNetwork.Calico.String(),
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
 		},

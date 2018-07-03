@@ -7,6 +7,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v3/network"
 )
 
 type contextKey string
@@ -16,6 +17,7 @@ const controllerKey contextKey = "controller"
 type Context struct {
 	APILBBackendPoolID  string
 	AzureClientSet      *client.AzureClientSet
+	AzureNetwork        *network.Subnets
 	CloudConfig         *cloudconfig.CloudConfig
 	EtcdLBBackendPoolID string
 	MasterSubnetID      string
