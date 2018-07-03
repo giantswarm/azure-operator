@@ -14,17 +14,17 @@ func TestNeedUpdate(t *testing.T) {
 		expected         bool
 	}{
 		{
-			"desired state empty",
-			network.VirtualNetworkGatewayConnection{},
-			network.VirtualNetworkGatewayConnection{},
-			false,
+			description: "desired state empty",
+			current:     network.VirtualNetworkGatewayConnection{},
+			desired:     network.VirtualNetworkGatewayConnection{},
+			expected:    false,
 		},
 		{
-			"name",
-			network.VirtualNetworkGatewayConnection{
+			description: "name",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("wrong name"),
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -37,17 +37,17 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			true,
+			expected: true,
 		},
 		{
-			"connection type",
-			network.VirtualNetworkGatewayConnection{
+			description: "connection type",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("test name"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
 					ConnectionType: network.ExpressRoute,
 				},
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -60,11 +60,11 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			true,
+			expected: true,
 		},
 		{
-			"vpn gateway 1",
-			network.VirtualNetworkGatewayConnection{
+			description: "vpn gateway 1",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("test name"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
 					ConnectionType: network.Vnet2Vnet,
@@ -73,7 +73,7 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -86,11 +86,11 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			true,
+			expected: true,
 		},
 		{
-			"vpn gateway 2",
-			network.VirtualNetworkGatewayConnection{
+			description: "vpn gateway 2",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("test name"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
 					ConnectionType: network.Vnet2Vnet,
@@ -102,7 +102,7 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -115,11 +115,11 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			true,
+			expected: true,
 		},
 		{
-			"disconnected",
-			network.VirtualNetworkGatewayConnection{
+			description: "disconnected",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("test name"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
 					ConnectionType:   network.Vnet2Vnet,
@@ -132,7 +132,7 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -145,11 +145,11 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			true,
+			expected: true,
 		},
 		{
-			"connecting",
-			network.VirtualNetworkGatewayConnection{
+			description: "connecting",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("test name"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
 					ConnectionType:   network.Vnet2Vnet,
@@ -162,7 +162,7 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -175,11 +175,11 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			false,
+			expected: false,
 		},
 		{
-			"connection unknown",
-			network.VirtualNetworkGatewayConnection{
+			description: "connection unknown",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("test name"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
 					ConnectionType:   network.Vnet2Vnet,
@@ -192,7 +192,7 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -205,11 +205,11 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			false,
+			expected: false,
 		},
 		{
-			"connected",
-			network.VirtualNetworkGatewayConnection{
+			description: "connected",
+			current: network.VirtualNetworkGatewayConnection{
 				Name: to.StringPtr("test name"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
 					ConnectionType:   network.Vnet2Vnet,
@@ -222,7 +222,7 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			network.VirtualNetworkGatewayConnection{
+			desired: network.VirtualNetworkGatewayConnection{
 				Name:     to.StringPtr("test name"),
 				Location: to.StringPtr("test location"),
 				VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
@@ -235,7 +235,7 @@ func TestNeedUpdate(t *testing.T) {
 					},
 				},
 			},
-			false,
+			expected: false,
 		},
 	}
 
