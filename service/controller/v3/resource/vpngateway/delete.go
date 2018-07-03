@@ -63,10 +63,10 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 }
 
 func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting host vpn gateway connection")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host vpn gateway connection is deleted")
 
 	if change.isEmpty() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "delete host vpn gateway connections: already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured host vpn gateway connection is deleted")
 		return nil
 	}
 
@@ -85,12 +85,11 @@ func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1
 
 	res, err := hostGatewayConnectionClient.DeleteResponder(respFuture.Response())
 	if client.ResponseWasNotFound(res) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find host vpn gateway connection")
+		// fall through
 	} else if err != nil {
 		return microerror.Mask(err)
-	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted host vpn gateway connection")
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured host vpn gateway connection is deleted")
 	return nil
 }
