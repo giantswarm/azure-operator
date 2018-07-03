@@ -201,10 +201,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.createNodeConfig(ctx, customObject, drainedWorkerInstance, key.WorkerInstanceName)
-			if err != nil {
-				return microerror.Mask(err)
-			}
 			// In case the master instance is being updated we want to prevent any
 			// other updates on the workers. This is because the update process
 			// involves the draining of the updated node and if the master is being
@@ -214,6 +210,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// version information. The next reconciliation loop will catch up here
 			// and instruct the worker instance to be reimaged again.
 			if reimagedMasterInstance == nil {
+				err = r.createNodeConfig(ctx, customObject, drainedWorkerInstance, key.WorkerInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
 				err = r.reimageInstance(ctx, customObject, reimagedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
@@ -290,7 +290,7 @@ func (r *Resource) createNodeConfig(ctx context.Context, customObject providerv1
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating node config for guest cluster node")
 
-	n := customObject.GetNamespace()
+	n := key.ClusterID(customObject)
 	c := &corev1alpha1.NodeConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
@@ -326,6 +326,41 @@ func (r *Resource) createNodeConfig(ctx context.Context, customObject providerv1
 	return nil
 }
 
+func (r *Resource) deleteNodeConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, nodeConfigs []corev1alpha1.NodeConfig) error {
+	if instance == nil {
+		return nil
+	}
+
+	if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instance.InstanceID)) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting node config for guest cluster node")
+
+		var nodeConfigToRemove corev1alpha1.NodeConfig
+		for _, n := range nodeConfigs {
+			if n.GetName() == instanceNameFunc(customObject, *instance.InstanceID) {
+				nodeConfigToRemove = n
+				break
+			}
+		}
+
+		n := nodeConfigToRemove.GetNamespace()
+		i := nodeConfigToRemove.GetName()
+		o := &metav1.DeleteOptions{}
+
+		err := r.g8sClient.CoreV1alpha1().NodeConfigs(n).Delete(i, o)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted node config for guest cluster node")
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting node config for guest cluster node due to undrained node")
+	}
+
+	// TODO implement safety net to delete node configs that are over due for e.g. when node-operator fucks up
+
+	return nil
+}
+
 // nextInstance finds the next instance to either be updated, drained or
 // reimaged. There always only be one of either options at the same time. We
 // only either update an instance, drain an instance, or reimage it. The order
@@ -349,7 +384,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 	var instanceToDrain *compute.VirtualMachineScaleSetVM
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated or reimaged")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated, drained or reimaged")
 
 		instanceToUpdate, instanceToDrain, instanceToReimage, err = findActionableInstance(customObject, instances, nodeConfigs, instanceNameFunc, versionValue)
 		if IsVersionBlobEmpty(err) {
@@ -367,7 +402,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 		if instanceToUpdate == nil && instanceToDrain == nil && instanceToReimage == nil {
 			// Neither did we find an instance to be updated nor to be reimaged.
 			// Nothing has to be done or we already processes all instances.
-			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated or reimaged")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged")
 			return nil, nil, nil, nil
 		}
 
@@ -410,41 +445,6 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceNameFunc(customObject, *instance.InstanceID)))
-
-	return nil
-}
-
-func (r *Resource) deleteNodeConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, nodeConfigs []corev1alpha1.NodeConfig) error {
-	if instance == nil {
-		return nil
-	}
-
-	if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instance.InstanceID)) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting node config for guest cluster node")
-
-		var nodeConfigToRemove corev1alpha1.NodeConfig
-		for _, n := range nodeConfigs {
-			if n.GetName() == instanceNameFunc(customObject, *instance.InstanceID) {
-				nodeConfigToRemove = n
-				break
-			}
-		}
-
-		n := nodeConfigToRemove.GetNamespace()
-		i := nodeConfigToRemove.GetName()
-		o := &metav1.DeleteOptions{}
-
-		err := r.g8sClient.CoreV1alpha1().NodeConfigs(n).Delete(i, o)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted node config for guest cluster node")
-	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting node config for guest cluster node due to undrained node")
-	}
-
-	// TODO implement safety net to delete node configs that are over due for e.g. when node-operator fucks up
 
 	return nil
 }
