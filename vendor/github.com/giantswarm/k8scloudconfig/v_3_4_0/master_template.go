@@ -536,7 +536,7 @@ write_files:
         }
       ]
     }
-{{ if not .DisableIngressController -}}    
+{{- if not .DisableIngressController }}
 - path: /srv/default-backend-dep.yml
   owner: root
   permissions: 0644
@@ -728,7 +728,7 @@ write_files:
         targetPort: 443
       selector:
         k8s-app: nginx-ingress-controller
-{{ end -}}
+{{- end }}
 - path: /srv/kube-proxy-sa.yaml
   owner: root
   permissions: 0644
@@ -963,7 +963,7 @@ write_files:
       kind: Role
       name: nginx-ingress-role
       apiGroup: rbac.authorization.k8s.io
-{{ end -}}
+{{- end }}
 - path: /srv/rbac_roles.yaml
   owner: root
   permissions: 0644
@@ -1116,7 +1116,7 @@ write_files:
           - get
           - create
           - update
-{{ end -}}
+{{- end }}
 - path: /srv/psp_policies.yaml
   owner: root
   permissions: 0644
