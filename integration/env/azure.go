@@ -97,6 +97,7 @@ func init() {
 
 		os.Setenv(EnvVarAzureCIDR, subnets.Parent.String())
 		os.Setenv(EnvVarAzureMasterSubnetCIDR, subnets.Master.String())
+		os.Setenv(EnvVarAzureVPNSubnetCIDR, subnets.VPN.String())
 		os.Setenv(EnvVarAzureWorkerSubnetCIDR, subnets.Worker.String())
 		os.Setenv(EnvVarAzureCalicoSubnetCIDR, subnets.Calico.String())
 	} else {
