@@ -24,7 +24,8 @@
 
 required = [
   "github.com/docker/distribution/reference",
-  "k8s.io/apiserver/pkg/endpoints/request"
+  "k8s.io/apiserver/pkg/endpoints/request",
+  "k8s.io/apiserver/pkg/authentication/authenticator"
 ]
 
 
