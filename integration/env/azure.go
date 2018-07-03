@@ -12,6 +12,7 @@ const (
 	EnvVarAzureCIDR             = "AZURE_CIDR"
 	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
 	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
+	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
 	EnvVarAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
 	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
 
@@ -19,6 +20,11 @@ const (
 	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
+
+	EnvVarAzureGuestClientID       = "AZURE_GUEST_CLIENTID"
+	EnvVarAzureGuestClientSecret   = "AZURE_GUEST_CLIENTSECRET"
+	EnvVarAzureGuestSubscriptionID = "AZURE_GUEST_SUBSCRIPTIONID"
+	EnvVarAzureGuestTenantID       = "AZURE_GUEST_TENANTID"
 
 	EnvVarCircleBuildNumber = "CIRCLE_BUILD_NUM"
 )
@@ -28,6 +34,11 @@ var (
 	azureClientSecret   string
 	azureSubscriptionID string
 	azureTenantID       string
+
+	azureGuestClientID       string
+	azureGuestClientSecret   string
+	azureGuestSubscriptionID string
+	azureGuestTenantID       string
 )
 
 func init() {
@@ -49,6 +60,26 @@ func init() {
 	azureTenantID = os.Getenv(EnvVarAzureTenantID)
 	if azureTenantID == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureTenantID))
+	}
+
+	azureGuestClientID = os.Getenv(EnvVarAzureGuestClientID)
+	if azureGuestClientID == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientID))
+	}
+
+	azureGuestClientSecret = os.Getenv(EnvVarAzureGuestClientSecret)
+	if azureGuestClientSecret == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientSecret))
+	}
+
+	azureGuestSubscriptionID = os.Getenv(EnvVarAzureGuestSubscriptionID)
+	if azureGuestSubscriptionID == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestSubscriptionID))
+	}
+
+	azureGuestTenantID = os.Getenv(EnvVarAzureGuestTenantID)
+	if azureGuestTenantID == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestTenantID))
 	}
 
 	// azureCDIR must be provided along with other CIDRs,
@@ -100,4 +131,20 @@ func AzureSubscriptionID() string {
 
 func AzureTenantID() string {
 	return azureTenantID
+}
+
+func AzureGuestClientID() string {
+	return azureGuestClientID
+}
+
+func AzureGuestClientSecret() string {
+	return azureGuestClientSecret
+}
+
+func AzureGuestSubscriptionID() string {
+	return azureGuestSubscriptionID
+}
+
+func AzureGuestTenantID() string {
+	return azureGuestTenantID
 }
