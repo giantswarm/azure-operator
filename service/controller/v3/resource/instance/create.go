@@ -411,30 +411,30 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 }
 
 func (r *Resource) deleteNodeConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, nodeConfigs []corev1alpha1.NodeConfig) error {
-	if !isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instance.InstanceID)) {
-		return nil
-	}
+	if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instance.InstanceID)) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting node config for guest cluster node")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting node config for guest cluster node")
-
-	var nodeConfigToRemove corev1alpha1.NodeConfig
-	for _, n := range nodeConfigs {
-		if n.GetName() == instanceNameFunc(customObject, *instance.InstanceID) {
-			nodeConfigToRemove = n
-			break
+		var nodeConfigToRemove corev1alpha1.NodeConfig
+		for _, n := range nodeConfigs {
+			if n.GetName() == instanceNameFunc(customObject, *instance.InstanceID) {
+				nodeConfigToRemove = n
+				break
+			}
 		}
+
+		n := nodeConfigToRemove.GetNamespace()
+		i := nodeConfigToRemove.GetName()
+		o := &metav1.DeleteOptions{}
+
+		err := r.g8sClient.CoreV1alpha1().NodeConfigs(n).Delete(i, o)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted node config for guest cluster node")
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting node config for guest cluster node due to undrained node")
 	}
-
-	n := nodeConfigToRemove.GetNamespace()
-	i := nodeConfigToRemove.GetName()
-	o := &metav1.DeleteOptions{}
-
-	err := r.g8sClient.CoreV1alpha1().NodeConfigs(n).Delete(i, o)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted node config for guest cluster node")
 
 	// TODO implement safety net to delete node configs that are over due for e.g. when node-operator fucks up
 
