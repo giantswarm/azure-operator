@@ -382,7 +382,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 		}
 	}
 
-	return instanceToUpdate, instanceToReimage, instanceToDrain, nil
+	return instanceToUpdate, instanceToDrain, instanceToReimage, nil
 }
 
 func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
