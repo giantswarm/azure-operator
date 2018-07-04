@@ -99,7 +99,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "fd0ebd0ec770f6ffb095dc5daa2fa23ca505e762"
+  revision = "bec65bb6f5a8860f27cbd94a61f243abcfc64398"
 
 [[projects]]
   branch = "master"
@@ -216,7 +216,7 @@
   branch = "version-update"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "0e5a4915667640b948f2bda1f0c9070c88c538df"
+  revision = "eb31968d351f88eb9098e7ae119af3d19c058592"
 
 [[projects]]
   branch = "master"
@@ -283,7 +283,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "e96c8d145b73ef0bc15d2d3f0327ce6d88a17c5a"
+  revision = "60f2773bd99aa86164bc80bf370be6ba63b47dea"
 
 [[projects]]
   branch = "master"
