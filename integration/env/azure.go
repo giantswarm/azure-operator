@@ -12,12 +12,18 @@ const (
 	EnvVarAzureCIDR             = "AZURE_CIDR"
 	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
 	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
+	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
 	EnvVarAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
 
 	EnvVarAzureClientID       = "AZURE_CLIENTID"
 	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
+
+	EnvVarAzureGuestClientID       = "AZURE_GUEST_CLIENTID"
+	EnvVarAzureGuestClientSecret   = "AZURE_GUEST_CLIENTSECRET"
+	EnvVarAzureGuestSubscriptionID = "AZURE_GUEST_SUBSCRIPTIONID"
+	EnvVarAzureGuestTenantID       = "AZURE_GUEST_TENANTID"
 
 	EnvVarCircleBuildNumber = "CIRCLE_BUILD_NUM"
 )
@@ -27,6 +33,11 @@ var (
 	azureClientSecret   string
 	azureSubscriptionID string
 	azureTenantID       string
+
+	azureGuestClientID       string
+	azureGuestClientSecret   string
+	azureGuestSubscriptionID string
+	azureGuestTenantID       string
 )
 
 func init() {
@@ -50,6 +61,26 @@ func init() {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureTenantID))
 	}
 
+	azureGuestClientID = os.Getenv(EnvVarAzureGuestClientID)
+	if azureGuestClientID == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientID))
+	}
+
+	azureGuestClientSecret = os.Getenv(EnvVarAzureGuestClientSecret)
+	if azureGuestClientSecret == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientSecret))
+	}
+
+	azureGuestSubscriptionID = os.Getenv(EnvVarAzureGuestSubscriptionID)
+	if azureGuestSubscriptionID == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestSubscriptionID))
+	}
+
+	azureGuestTenantID = os.Getenv(EnvVarAzureGuestTenantID)
+	if azureGuestTenantID == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestTenantID))
+	}
+
 	// azureCDIR must be provided along with other CIDRs,
 	// otherwise we compute CIDRs base on EnvVarCircleBuildNumber value.
 	azureCDIR := os.Getenv(EnvVarAzureCIDR)
@@ -66,6 +97,7 @@ func init() {
 
 		os.Setenv(EnvVarAzureCIDR, subnets.Parent.String())
 		os.Setenv(EnvVarAzureMasterSubnetCIDR, subnets.Master.String())
+		os.Setenv(EnvVarAzureVPNSubnetCIDR, subnets.VPN.String())
 		os.Setenv(EnvVarAzureWorkerSubnetCIDR, subnets.Worker.String())
 		os.Setenv(EnvVarAzureCalicoSubnetCIDR, subnets.Calico.String())
 	} else {
@@ -74,6 +106,9 @@ func init() {
 		}
 		if os.Getenv(EnvVarAzureMasterSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureMasterSubnetCIDR))
+		}
+		if os.Getenv(EnvVarAzureVPNSubnetCIDR) == "" {
+			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureVPNSubnetCIDR))
 		}
 		if os.Getenv(EnvVarAzureWorkerSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureWorkerSubnetCIDR))
@@ -95,4 +130,20 @@ func AzureSubscriptionID() string {
 
 func AzureTenantID() string {
 	return azureTenantID
+}
+
+func AzureGuestClientID() string {
+	return azureGuestClientID
+}
+
+func AzureGuestClientSecret() string {
+	return azureGuestClientSecret
+}
+
+func AzureGuestSubscriptionID() string {
+	return azureGuestSubscriptionID
+}
+
+func AzureGuestTenantID() string {
+	return azureGuestTenantID
 }

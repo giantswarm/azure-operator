@@ -25,6 +25,7 @@ spec:
       cidr: "{{ .Values.azure.cidr }}"
       masterSubnetCIDR: "{{ .Values.azure.masterSubnetCIDR }}"
       workerSubnetCIDR: "{{ .Values.azure.workerSubnetCIDR }}"
+      vpnSubnetCidr: "{{ .Values.azure.vpnSubnetCidr }}"
   cluster:
     calico:
       cidr: 16
