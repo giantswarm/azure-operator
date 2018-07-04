@@ -56,9 +56,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
-	if config.SSOPublicKey == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.SSOPublicKey must not be empty", config)
-	}
 
 	var err error
 
