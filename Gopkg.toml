@@ -26,8 +26,8 @@
   name = "github.com/Azure/azure-sdk-for-go"
   version = "v15.3.0"
 
-[[constraint]]
-  branch = "master"
+[[override]]
+  branch = "status"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
