@@ -37,7 +37,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if currentVersion != "" && currentVersion != desiredVersion {
 			patches = append(patches, Patch{
 				Op:   "add",
-				Path: "/status/cluster/conditions",
+				Path: "/status/cluster/conditions/-",
 				Value: providerv1alpha1.StatusClusterCondition{
 					Status: providerv1alpha1.StatusClusterStatusTrue,
 					Type:   providerv1alpha1.StatusClusterTypeUpdating,
@@ -45,7 +45,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			})
 			patches = append(patches, Patch{
 				Op:   "add",
-				Path: "/status/cluster/versions",
+				Path: "/status/cluster/versions/-",
 				Value: providerv1alpha1.StatusClusterVersion{
 					Date:   time.Now(),
 					Semver: desiredVersion,
@@ -58,7 +58,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if currentVersion == "" {
 			patches = append(patches, Patch{
 				Op:   "add",
-				Path: "/status/cluster/versions",
+				Path: "/status/cluster/versions/-",
 				Value: providerv1alpha1.StatusClusterVersion{
 					Date:   time.Now(),
 					Semver: desiredVersion,

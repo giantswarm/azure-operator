@@ -216,7 +216,7 @@
   branch = "version-update"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "3a6da2ed84211a048a1feaaa38c9859713dfedfd"
+  revision = "0e5a4915667640b948f2bda1f0c9070c88c538df"
 
 [[projects]]
   branch = "master"
