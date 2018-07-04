@@ -184,7 +184,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var drainedWorkerInstance *compute.VirtualMachineScaleSetVM
 	var reimagedWorkerInstance *compute.VirtualMachineScaleSetVM
 	var updatedWorkerInstance *compute.VirtualMachineScaleSetVM
-	{
+	// In case the master instance is being updated we want to prevent any
+	// other updates on the workers. This is because the update process
+	// involves the draining of the updated node and if the master is being
+	// updated at the same time the guest cluster's Kubernetes API is not
+	// available in order to drain nodes. As consequence we have to reset the
+	// worker instance selected to be reimaged in order to not update its
+	// version information. The next reconciliation loop will catch up here
+	// and instruct the worker instance to be reimaged again.
+	if drainedMasterInstance == nil && reimagedMasterInstance == nil {
 		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
@@ -201,44 +209,33 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			// In case the master instance is being updated we want to prevent any
-			// other updates on the workers. This is because the update process
-			// involves the draining of the updated node and if the master is being
-			// updated at the same time the guest cluster's Kubernetes API is not
-			// available in order to drain nodes. As consequence we have to reset the
-			// worker instance selected to be reimaged in order to not update its
-			// version information. The next reconciliation loop will catch up here
-			// and instruct the worker instance to be reimaged again.
-			if reimagedMasterInstance == nil {
-				err = r.createNodeConfig(ctx, customObject, drainedWorkerInstance, key.WorkerInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.reimageInstance(ctx, customObject, reimagedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.deleteNodeConfig(ctx, customObject, reimagedWorkerInstance, key.WorkerInstanceName, nodeConfigs)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-			} else if reimagedWorkerInstance != nil {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not ensuring instance '%s' to be reimaged due to master processing", key.WorkerInstanceName(customObject, *reimagedWorkerInstance.InstanceID)))
-				reimagedWorkerInstance = nil
+			err = r.createNodeConfig(ctx, customObject, drainedWorkerInstance, key.WorkerInstanceName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			err = r.reimageInstance(ctx, customObject, reimagedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			err = r.deleteNodeConfig(ctx, customObject, reimagedWorkerInstance, key.WorkerInstanceName, nodeConfigs)
+			if err != nil {
+				return microerror.Mask(err)
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
 		}
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not processing worker VMSSs due to master VMSSs processing")
 	}
 
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		masterVersionsValue, err := newVersionParameterValue(allMasterInstances, reimagedMasterInstance, key.VersionBundleVersion(customObject), masterVersionsValue)
+		masterVersionsValue, err := newVersionParameterValue(allMasterInstances, drainedMasterInstance, key.VersionBundleVersion(customObject), masterVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		workerVersionsValue, err := newVersionParameterValue(allWorkerInstances, reimagedWorkerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
+		workerVersionsValue, err := newVersionParameterValue(allWorkerInstances, drainedWorkerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
