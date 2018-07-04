@@ -21,34 +21,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	currentVersion := clusterStatus.LatestVersion()
-	desiredVersion, err := r.versionBundleVersionFunc(obj)
-	if err != nil {
-		return microerror.Mask(err)
-	}
 
+	var patches []Patch
+
+	// In case a CR might not have a status we can work with we have to initialize
+	// it.
+	//
+	// TODO remove this as soon as all CRs have a status structure applied.
 	{
-		var patches []Patch
-
-		if clusterStatus.Conditions == nil {
+		if clusterStatus.Conditions == nil && clusterStatus.Versions == nil {
 			patches = append(patches, Patch{
-				Op:    "add",
-				Path:  "/status/cluster/conditions",
-				Value: []providerv1alpha1.StatusClusterCondition{},
+				Op:   "add",
+				Path: "/status",
+				Value: Status{
+					Cluster: providerv1alpha1.StatusCluster{
+						Conditions: []providerv1alpha1.StatusClusterCondition{},
+						Versions:   []providerv1alpha1.StatusClusterVersion{},
+					},
+				},
 			})
-		}
-
-		if clusterStatus.Versions == nil {
-			patches = append(patches, Patch{
-				Op:    "add",
-				Path:  "/status/cluster/versions",
-				Value: []providerv1alpha1.StatusClusterVersion{},
-			})
-		}
-
-		err := r.patchObject(ctx, accessor, patches)
-		if err != nil {
-			return microerror.Mask(err)
 		}
 	}
 
@@ -56,7 +47,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// tracked already. This indicates an update is about to be processed. So we
 	// also set the status condition indicating the guest cluster is updating now.
 	{
-		var patches []Patch
+		currentVersion := clusterStatus.LatestVersion()
+		desiredVersion, err := r.versionBundleVersionFunc(obj)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
 		if currentVersion != "" && currentVersion != desiredVersion {
 			patches = append(patches, Patch{
@@ -67,7 +62,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 					Type:   providerv1alpha1.StatusClusterTypeUpdating,
 				},
 			})
-
 			patches = append(patches, Patch{
 				Op:   "add",
 				Path: "/status/cluster/versions/-",
@@ -78,17 +72,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			})
 		}
 
-		err = r.patchObject(ctx, accessor, patches)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	// TODO remove this once the transition period is completed and all stati
-	// contain the latest version.
-	{
-		var patches []Patch
-
+		// TODO remove this once the transition period is completed and all stati
+		// contain the latest version.
 		if currentVersion == "" {
 			patches = append(patches, Patch{
 				Op:   "add",
@@ -99,15 +84,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				},
 			})
 		}
+	}
 
+	// TODO when updating state is set and guest cluster is updated set updated status
+	// TODO emit metrics when update did not complete within a certain timeframe
+
+	// Apply the computed list of patches to make the status update take effect.
+	{
 		err := r.patchObject(ctx, accessor, patches)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
-
-	// TODO when updating state is set and guest cluster is updated set updated status
-	// TODO emit metrics when update did not complete within a certain timeframe
 
 	return nil
 }

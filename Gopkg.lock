@@ -81,7 +81,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "e92eb5ebbad4c1ee3ad29e39566058a1de8eee90"
+  revision = "5b6d626c5b869ebcd6384f2791139e16ec187ac9"
 
 [[projects]]
   branch = "master"
@@ -216,7 +216,7 @@
   branch = "version-update"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "eb31968d351f88eb9098e7ae119af3d19c058592"
+  revision = "81f331a50397745b2021c8aa3934e89c0e3bf87c"
 
 [[projects]]
   branch = "master"
@@ -243,8 +243,8 @@
 [[projects]]
   name = "github.com/go-resty/resty"
   packages = ["."]
-  revision = "fc3ad735b5565cada42d34bc298573fd3fe5adc6"
-  version = "v1.6"
+  revision = "fccc498aed22c31ff3768bcac00795f94149a21d"
+  version = "v1.7.0"
 
 [[projects]]
   name = "github.com/go-stack/stack"
