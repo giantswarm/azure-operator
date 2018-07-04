@@ -14,7 +14,6 @@ const (
 	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
 	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
 	EnvVarAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
-	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
 
 	EnvVarAzureClientID       = "AZURE_CLIENTID"
 	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
