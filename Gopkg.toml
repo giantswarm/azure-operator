@@ -36,6 +36,14 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/giantswarm/e2e-harness"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/e2etemplates"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
@@ -63,6 +71,10 @@
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
+  branch = "version-update"
+  name = "github.com/giantswarm/statusresource"
+
+[[constraint]]
   name = "github.com/giantswarm/versionbundle"
   branch = "master"
 
@@ -71,11 +83,3 @@
 [prune]
   unused-packages = true
   go-tests = true
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/giantswarm/e2e-harness"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/giantswarm/e2etemplates"
