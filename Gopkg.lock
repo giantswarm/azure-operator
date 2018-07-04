@@ -206,22 +206,22 @@
   revision = "04529861e1d707d6edb01808e1d9870e1b48c711"
 
 [[projects]]
-  branch = "long-wait-api-down"
+  branch = "master"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "4f34f4f27885490b6b4efb406f9ddd2e4574da3d"
+  revision = "bec65bb6f5a8860f27cbd94a61f243abcfc64398"
 
 [[projects]]
-  branch = "master"
+  branch = "vmss-vm-client"
   name = "github.com/giantswarm/e2eclients"
   packages = [
     "aws",
     "azure"
   ]
-  revision = "9cddbc7af0f20a82d0ec1ad5705b045e0e032188"
+  revision = "615f5facefb3d9e5459532d9cd76608b6e067fe5"
 
 [[projects]]
   branch = "master"
@@ -238,7 +238,7 @@
     "scaling",
     "scaling/provider"
   ]
-  revision = "46b23f87206049f1c99d231b9754c082fc082598"
+  revision = "84b3092c9d041aa6ef8e42e761f007cd7db094e9"
 
 [[projects]]
   branch = "master"
@@ -1321,6 +1321,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "59617de1b45ac76f83c6b1a6fa721fac3e4c2c12e1610bc5e52adcf2832aa7b7"
+  inputs-digest = "b8b177c313ed56cf53719eca26b032ac954c690cf909d5207596110fb0e1e0c3"
   solver-name = "gps-cdcl"
   solver-version = 1
