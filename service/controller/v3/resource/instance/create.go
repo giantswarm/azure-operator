@@ -30,16 +30,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	fmt.Printf("\n")
-	fmt.Printf("\n")
-	fmt.Printf("\n")
-	fmt.Printf("conditions: %#v\n", customObject.Status.Cluster.Conditions)
-	fmt.Printf("\n")
-	fmt.Printf("versions: %#v\n", customObject.Status.Cluster.Versions)
-	fmt.Printf("\n")
-	fmt.Printf("\n")
-	fmt.Printf("\n")
-
 	{
 		cc, err := controllercontext.FromContext(ctx)
 		if err != nil {
