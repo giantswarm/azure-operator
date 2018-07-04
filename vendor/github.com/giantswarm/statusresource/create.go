@@ -21,10 +21,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	var patches []Patch
+	currentVersion := clusterStatus.LatestVersion()
+	desiredVersion, err := r.versionBundleVersionFunc(obj)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	{
+		var patches []Patch
+
 		if clusterStatus.Conditions == nil {
 			patches = append(patches, Patch{
 				Op:    "add",
@@ -40,17 +45,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				Value: []providerv1alpha1.StatusClusterVersion{},
 			})
 		}
+
+		err := r.patchObject(ctx, accessor, patches)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// We add the desired guest cluster version to the status history if it is not
 	// tracked already. This indicates an update is about to be processed. So we
 	// also set the status condition indicating the guest cluster is updating now.
 	{
-		currentVersion := clusterStatus.LatestVersion()
-		desiredVersion, err := r.versionBundleVersionFunc(obj)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		var patches []Patch
 
 		if currentVersion != "" && currentVersion != desiredVersion {
 			patches = append(patches, Patch{
@@ -61,6 +67,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 					Type:   providerv1alpha1.StatusClusterTypeUpdating,
 				},
 			})
+
 			patches = append(patches, Patch{
 				Op:   "add",
 				Path: "/status/cluster/versions/-",
@@ -71,8 +78,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			})
 		}
 
-		// TODO remove this once the transition period is completed and all stati
-		// contain the latest version.
+		err = r.patchObject(ctx, accessor, patches)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	// TODO remove this once the transition period is completed and all stati
+	// contain the latest version.
+	{
+		var patches []Patch
+
 		if currentVersion == "" {
 			patches = append(patches, Patch{
 				Op:   "add",
@@ -83,18 +99,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				},
 			})
 		}
-	}
 
-	// TODO when updating state is set and guest cluster is updated set updated status
-	// TODO emit metrics when update did not complete within a certain timeframe
-
-	// Apply the computed list of patches to make the status update take effect.
-	{
 		err := r.patchObject(ctx, accessor, patches)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
+
+	// TODO when updating state is set and guest cluster is updated set updated status
+	// TODO emit metrics when update did not complete within a certain timeframe
 
 	return nil
 }
