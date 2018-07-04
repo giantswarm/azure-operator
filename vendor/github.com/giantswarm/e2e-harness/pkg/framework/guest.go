@@ -155,7 +155,7 @@ func (g *Guest) WaitForAPIDown() error {
 
 		return microerror.Maskf(waitError, "k8s API is still up")
 	}
-	b := NewConstantBackoff(LongMaxWait, LongMaxInterval)
+	b := NewConstantBackoff(LongMaxWait, ShortMaxInterval)
 	n := func(err error, delay time.Duration) {
 		g.logger.Log("level", "debug", "message", err.Error())
 	}
