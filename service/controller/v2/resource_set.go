@@ -3,6 +3,7 @@ package v2
 import (
 	"fmt"
 
+	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
@@ -11,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/resource/metricsresource"
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
+	"github.com/giantswarm/statusresource"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -27,6 +29,7 @@ import (
 )
 
 type ResourceSetConfig struct {
+	G8sClient versioned.Interface
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
@@ -41,6 +44,9 @@ type ResourceSetConfig struct {
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -86,6 +92,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		cloudConfig, err = cloudconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var statusResource controller.Resource
+	{
+		c := statusresource.Config{
+			ClusterStatusFunc:        key.ToClusterStatus,
+			Logger:                   config.Logger,
+			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
+			VersionBundleVersionFunc: key.ToVersionBundleVersion,
+		}
+
+		statusResource, err = statusresource.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -234,6 +255,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []controller.Resource{
+		statusResource,
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
