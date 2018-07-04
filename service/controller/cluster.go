@@ -98,7 +98,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var v2ResourceSet *controller.ResourceSet
 	{
 		c := v2.ResourceSetConfig{
-			G8sClient: config.G8sClient,
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
