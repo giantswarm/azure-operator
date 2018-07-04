@@ -47,11 +47,11 @@ required = [
   name = "github.com/giantswarm/certs"
 
 [[constraint]]
-  branch = "master"
+  branch = "long-wait-api-down"
   name = "github.com/giantswarm/e2e-harness"
 
 [[constraint]]
-  branch = "vmss-client"
+  branch = "master"
   name = "github.com/giantswarm/e2eclients"
 
 [[constraint]]
