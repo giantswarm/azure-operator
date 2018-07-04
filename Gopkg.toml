@@ -47,7 +47,7 @@
   name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
-  branch = "master"
+  branch = "status"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
