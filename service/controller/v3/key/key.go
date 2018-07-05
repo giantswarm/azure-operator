@@ -223,6 +223,15 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
+func ToClusterStatus(v interface{}) (providerv1alpha1.StatusCluster, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return providerv1alpha1.StatusCluster{}, microerror.Mask(err)
+	}
+
+	return customObject.Status.Cluster, nil
+}
+
 func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	if v == nil {
 		return providerv1alpha1.AzureConfig{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
@@ -301,6 +310,15 @@ func ToStringMap(v interface{}) (map[string]string, error) {
 	}
 
 	return stringMap, nil
+}
+
+func ToVersionBundleVersion(v interface{}) (string, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return customObject.Spec.VersionBundle.Version, nil
 }
 
 func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
