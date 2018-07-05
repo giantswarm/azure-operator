@@ -51,16 +51,16 @@ required = [
   name = "github.com/giantswarm/e2e-harness"
 
 [[constraint]]
-  branch = "vmss-vm-client"
+  branch = "master"
   name = "github.com/giantswarm/e2eclients"
-
-[[constraint]]
-  branch = "master-node"
-  name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
+
+[[constraint]]
+  branch = "master-node"
+  name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
   branch = "master"
@@ -85,6 +85,10 @@ required = [
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/operatorkit"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/statusresource"
 
 [[constraint]]
   name = "github.com/giantswarm/versionbundle"
