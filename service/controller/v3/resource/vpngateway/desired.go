@@ -90,26 +90,36 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) (connections, error) {
 	sharedKey := randStringBytes(128)
 
+	host := network.VirtualNetworkGatewayConnection{
+		Name: to.StringPtr(key.ResourceGroupName(azureConfig)),
+		VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
+			ConnectionType:         network.Vnet2Vnet,
+			SharedKey:              to.StringPtr(sharedKey),
+			VirtualNetworkGateway1: hostVPNGateway,
+			VirtualNetworkGateway2: guestVPNGateway,
+		},
+	}
+
+	guest := network.VirtualNetworkGatewayConnection{
+		Name: to.StringPtr(r.azure.HostCluster.ResourceGroup),
+		VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
+			ConnectionType:         network.Vnet2Vnet,
+			SharedKey:              to.StringPtr(sharedKey),
+			VirtualNetworkGateway1: guestVPNGateway,
+			VirtualNetworkGateway2: hostVPNGateway,
+		},
+	}
+
+	if hostVPNGateway != nil {
+		host.Location = hostVPNGateway.Location
+	}
+
+	if guestVPNGateway != nil {
+		guest.Location = guestVPNGateway.Location
+	}
+
 	return connections{
-		Host: network.VirtualNetworkGatewayConnection{
-			Name:     to.StringPtr(key.ResourceGroupName(azureConfig)),
-			Location: hostVPNGateway.Location,
-			VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
-				ConnectionType:         network.Vnet2Vnet,
-				SharedKey:              to.StringPtr(sharedKey),
-				VirtualNetworkGateway1: hostVPNGateway,
-				VirtualNetworkGateway2: guestVPNGateway,
-			},
-		},
-		Guest: network.VirtualNetworkGatewayConnection{
-			Name:     to.StringPtr(r.azure.HostCluster.ResourceGroup),
-			Location: guestVPNGateway.Location,
-			VirtualNetworkGatewayConnectionPropertiesFormat: &network.VirtualNetworkGatewayConnectionPropertiesFormat{
-				ConnectionType:         network.Vnet2Vnet,
-				SharedKey:              to.StringPtr(sharedKey),
-				VirtualNetworkGateway1: guestVPNGateway,
-				VirtualNetworkGateway2: hostVPNGateway,
-			},
-		},
+		Host:  host,
+		Guest: guest,
 	}, nil
 }
