@@ -69,7 +69,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "status"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -81,7 +81,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "5b6d626c5b869ebcd6384f2791139e16ec187ac9"
+  revision = "384d9ad387472ec2fb6a6cbc3c3b77cc84d7837a"
 
 [[projects]]
   branch = "master"
@@ -123,14 +123,14 @@
   revision = "9f5e82f904b3f54b19ac8cb58cbbadb59d50eb89"
 
 [[projects]]
-  branch = "status"
+  branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "v_3_2_5",
     "v_3_3_4",
     "v_3_4_0"
   ]
-  revision = "70e810a6ad93901c84dd6506cf7abd6c3a32d632"
+  revision = "f30e72fe22c509cfee8c5516b0678549603d7cf9"
 
 [[projects]]
   branch = "master"
@@ -201,7 +201,7 @@
     "controller/resource/retryresource",
     "informer"
   ]
-  revision = "5dc93b8ef81d2684b755a813327aada03d7dc2f8"
+  revision = "070ef8e414feb53402e4107057e89ced6f6e2a3e"
 
 [[projects]]
   branch = "master"
@@ -213,10 +213,10 @@
   revision = "b2516ed0f070900eddc2b2654ce4f3d356ddf24a"
 
 [[projects]]
-  branch = "version-update"
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "81f331a50397745b2021c8aa3934e89c0e3bf87c"
+  revision = "462d5495034535e8b67e680f28066a9f14a64163"
 
 [[projects]]
   branch = "master"
@@ -775,6 +775,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c5279e22d80dd1a2dfe9887b24cc680b71bfd686545b0aaf17877c8398ab8179"
+  inputs-digest = "3e54829c8d3526336b9f488fdda4eb0779f6266625b0cea3ddfd39773aafcb5b"
   solver-name = "gps-cdcl"
   solver-version = 1

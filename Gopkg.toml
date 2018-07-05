@@ -26,8 +26,8 @@
   name = "github.com/Azure/azure-sdk-for-go"
   version = "v15.3.0"
 
-[[override]]
-  branch = "status"
+[[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
@@ -47,7 +47,7 @@
   name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
-  branch = "status"
+  branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
@@ -71,7 +71,7 @@
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
-  branch = "version-update"
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
 
 [[constraint]]

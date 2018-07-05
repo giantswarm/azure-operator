@@ -24,10 +24,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var patches []Patch
 
-	// In case a CR might not have a status we can work with we have to initialize
-	// it.
-	//
-	// TODO remove this as soon as all CRs have a status structure applied.
+	// In case a CR might not have a status at all, we cannot work with it below.
+	// We have to initialize it upfront to be safe.
 	{
 		if clusterStatus.Conditions == nil && clusterStatus.Versions == nil {
 			patches = append(patches, Patch{
@@ -90,7 +88,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// TODO emit metrics when update did not complete within a certain timeframe
 
 	// Apply the computed list of patches to make the status update take effect.
-	{
+	// In case there are no patches we do not need to do anything here. So we
+	// prevent unnecessary API calls.
+	if len(patches) > 0 {
 		err := r.patchObject(ctx, accessor, patches)
 		if err != nil {
 			return microerror.Mask(err)
