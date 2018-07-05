@@ -231,11 +231,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		masterVersionsValue, err := newVersionParameterValue(allMasterInstances, drainedMasterInstance, key.VersionBundleVersion(customObject), masterVersionsValue)
+		masterInstance := drainedMasterInstance
+		if masterInstance == nil {
+			masterInstance = reimagedMasterInstance
+		}
+		masterVersionsValue, err := newVersionParameterValue(allMasterInstances, masterInstance, key.VersionBundleVersion(customObject), masterVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		workerVersionsValue, err := newVersionParameterValue(allWorkerInstances, drainedWorkerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
+		workerInstance := drainedWorkerInstance
+		if workerInstance == nil {
+			workerInstance = reimagedWorkerInstance
+		}
+		workerVersionsValue, err := newVersionParameterValue(allWorkerInstances, workerInstance, key.VersionBundleVersion(customObject), workerVersionsValue)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -587,14 +595,31 @@ func isNodeDrained(nodeConfigs []corev1alpha1.NodeConfig, instanceName string) b
 	return false
 }
 
-func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedInstance *compute.VirtualMachineScaleSetVM, version string, versionValue map[string]string) (map[string]string, error) {
+func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance *compute.VirtualMachineScaleSetVM, version string, versionValue map[string]string) (map[string]string, error) {
+	fmt.Printf("\n")
+	fmt.Printf("\n")
+	fmt.Printf("\n")
+
+	fmt.Printf("list: %#v\n", list)
+	fmt.Printf("instance: %#v\n", instance)
+	fmt.Printf("version: %#v\n", version)
+	fmt.Printf("versionValue: %#v\n", versionValue)
+
+	defer func() {
+		fmt.Printf("\n")
+		fmt.Printf("\n")
+		fmt.Printf("\n")
+	}()
+
 	// ignore empty
 	if len(list) == 0 && versionValue == nil {
+		fmt.Printf("1\n")
 		return map[string]string{}, nil
 	}
 
 	// fill empty
 	if len(list) != 0 && len(versionValue) == 0 {
+		fmt.Printf("2\n")
 		m := map[string]string{}
 		for _, v := range list {
 			m[*v.InstanceID] = version
@@ -605,6 +630,7 @@ func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedI
 
 	// remove missing
 	if len(versionValue) != 0 {
+		fmt.Printf("3\n")
 		m := map[string]string{}
 		for k, v := range versionValue {
 			if !containsInstanceID(list, k) {
@@ -618,8 +644,10 @@ func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, reimagedI
 
 	// update existing
 	if len(versionValue) != 0 {
-		if reimagedInstance != nil {
-			versionValue[*reimagedInstance.InstanceID] = version
+		fmt.Printf("4\n")
+		if instance != nil {
+			fmt.Printf("5\n")
+			versionValue[*instance.InstanceID] = version
 		}
 
 		return versionValue, nil
