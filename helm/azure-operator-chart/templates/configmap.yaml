@@ -15,6 +15,7 @@ data:
           cidr: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.CIDR }}'
           resourceGroup: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.ResourceGroup }}'
           virtualNetwork: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.VirtualNetwork }}'
+          virtualNetworkGateway: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.VirtualNetworkGateway }}'
         location: '{{ .Values.Installation.V1.Provider.Azure.Location }}'
         msi:
           enabled: '{{ .Values.Installation.V1.Provider.Azure.MSI.Enabled }}'
