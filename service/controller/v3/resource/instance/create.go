@@ -617,6 +617,12 @@ func newVersionParameterValue(list []compute.VirtualMachineScaleSetVM, instance 
 		return map[string]string{}, nil
 	}
 
+	// return given
+	if len(list) == 0 && instance == nil && versionValue != nil {
+		fmt.Printf("1\n")
+		return versionValue, nil
+	}
+
 	// fill empty
 	if len(list) != 0 && len(versionValue) == 0 {
 		fmt.Printf("2\n")
