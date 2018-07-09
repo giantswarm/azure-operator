@@ -49,7 +49,7 @@
     "workerSubnetName": "[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
     "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
 
-    "vpnSubnetName": "GatewaySubnet",
+    "vnetGatewaySubnetName": "GatewaySubnet"
   },
   "resources": [
     {
@@ -92,7 +92,7 @@
             }
           },
           {
-            "name": "[variables('vpnSubnetName')]",
+            "name": "[variables('vnetGatewaySubnetName')]",
             "properties": {
               "addressPrefix": "[parameters('vpnSubnetCidr')]"
             }
