@@ -16,37 +16,23 @@
     },
     "vpnGatewayName": {
       "type": "string"
-    },
-    "vpnSubnetName": {
-      "type": "string",
-      "defaultValue": "GatewaySubnet"
-    },
-    "virtualNetworksGatewayAPIVersion": {
-      "type": "string",
-      "defaultValue": "2017-10-01",
-      "metadata": {
-        "description": "API version used by the Microsoft.Network/virtualNetworkGateways resource."
-      }
-    },
-    "publicIPAddressesAPIVersion": {
-      "type": "string",
-      "defaultValue": "2017-10-01",
-      "metadata": {
-        "description": "API version used by the Microsoft.Network/publicIPAddresses resource."
-      }
     }
   },
   "variables": {
     "publicIPName": "[concat(parameters('clusterID'), '-VPNGateway-PublicIP')]",
     "publicIPID": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]",
 
-    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vpnSubnetName'))]"
+    "vpnSubnetName": "GatewaySubnet",
+    "vnetID": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), variables('vpnSubnetName'))]",
+
+    "publicIPAddressesAPIVersion": "2017-10-01",
+    "virtualNetworksGatewayAPIVersion": "2017-10-01"
   },
   "resources": [
     {
       "name": "[variables('publicIPName')]",
       "type": "Microsoft.Network/publicIPAddresses",
-      "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
+      "apiVersion": "[variables('publicIPAddressesAPIVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
@@ -61,7 +47,7 @@
     {
       "type": "Microsoft.Network/virtualNetworkGateways",
       "name": "[parameters('vpnGatewayName')]",
-      "apiVersion": "[parameters('virtualNetworksGatewayAPIVersion')]",
+      "apiVersion": "[variables('virtualNetworksGatewayAPIVersion')]",
       "location": "[resourceGroup().location]",
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
