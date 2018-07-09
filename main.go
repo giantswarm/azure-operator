@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/microkit/command"
@@ -36,6 +38,8 @@ func main() {
 
 func mainError() error {
 	var err error
+
+	rand.Seed(time.Now().UTC().UnixNano())
 
 	ctx := context.Background()
 	logger, err := micrologger.New(micrologger.Config{})
