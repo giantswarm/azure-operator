@@ -318,10 +318,6 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
-func VPNGatewayID(subscriptionID, resourceGroupName, resourceName string) string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworkGateways/%s", subscriptionID, resourceGroupName, resourceName)
-}
-
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), instanceID)
 }
