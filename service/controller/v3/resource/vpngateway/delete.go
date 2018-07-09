@@ -7,7 +7,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
@@ -83,10 +82,8 @@ func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1
 		return microerror.Mask(err)
 	}
 
-	res, err := hostGatewayConnectionClient.DeleteResponder(respFuture.Response())
-	if client.ResponseWasNotFound(res) {
-		// fall through
-	} else if err != nil {
+	_, err = hostGatewayConnectionClient.DeleteResponder(respFuture.Response())
+	if err != nil {
 		return microerror.Mask(err)
 	}
 
