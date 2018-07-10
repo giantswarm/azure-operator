@@ -21,6 +21,15 @@ const (
 	virtualNetworkSuffix      = "VirtualNetwork"
 
 	TemplateContentVersion = "1.0.0.0"
+
+	LabelApp           = "app"
+	LabelCluster       = "giantswarm.io/cluster"
+	LabelCustomer      = "customer"
+	LabelEtcdDomain    = "giantswarm.io/etcd-domain"
+	LabelOrganization  = "giantswarm.io/organization"
+	LabelVersionBundle = "giantswarm.io/version-bundle"
+
+	LegacyLabelCluster = "cluster"
 )
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
