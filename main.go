@@ -29,6 +29,10 @@ var (
 	source      string     = "https://github.com/giantswarm/azure-operator"
 )
 
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
+
 func main() {
 	err := mainError()
 	if err != nil {
@@ -38,8 +42,6 @@ func main() {
 
 func mainError() error {
 	var err error
-
-	rand.Seed(time.Now().UTC().UnixNano())
 
 	ctx := context.Background()
 	logger, err := micrologger.New(micrologger.Config{})
