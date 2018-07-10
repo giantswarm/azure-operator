@@ -21,6 +21,17 @@ const (
 	virtualNetworkSuffix      = "VirtualNetwork"
 
 	TemplateContentVersion = "1.0.0.0"
+
+	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
+	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
+
+	LabelApp           = "app"
+	LabelCluster       = "giantswarm.io/cluster"
+	LabelCustomer      = "customer"
+	LabelOrganization  = "giantswarm.io/organization"
+	LabelVersionBundle = "giantswarm.io/version-bundle"
+
+	LegacyLabelCluster = "cluster"
 )
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
@@ -53,6 +64,10 @@ func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 // ClusterDNSDomain returns cluster DNS domain.
 func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s.%s", DNSZonePrefixAPI(customObject), DNSZoneAPI(customObject))
+}
+
+func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.Etcd.Domain
 }
 
 // ClusterID returns the unique ID for this cluster.
