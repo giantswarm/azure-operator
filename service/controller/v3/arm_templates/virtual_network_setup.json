@@ -27,6 +27,9 @@
     "workerSubnetCidr": {
       "type": "string"
     },
+    "vnetGatewaySubnetName": {
+      "type": "string"
+    },
     "vpnSubnetCidr": {
       "type": "string"
     },
@@ -47,9 +50,7 @@
     "masterSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
 
     "workerSubnetName": "[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
-    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
-
-    "vnetGatewaySubnetName": "GatewaySubnet"
+    "workerSubnetID": "[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
   },
   "resources": [
     {
@@ -92,7 +93,7 @@
             }
           },
           {
-            "name": "[variables('vnetGatewaySubnetName')]",
+            "name": "[parameters('vnetGatewaySubnetName')]",
             "properties": {
               "addressPrefix": "[parameters('vpnSubnetCidr')]"
             }

@@ -113,6 +113,7 @@
     "securityGroupsSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
     "virtualNetworkGatewayTemplateURI": "[concat(parameters('templatesBaseURI'), parameters('virtualNetworkGatewaySetupTemplateFile'))]",
+    "vnetGatewaySubnetName": "GatewaySubnet",
     "masterPrefix": "Master",
     "workerPrefix": "Worker"
   },
@@ -176,6 +177,7 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
+          "vnetGatewaySubnetName": {"value": "[parameters('vnetGatewaySubnetName')]"},
           "vpnSubnetCidr": {"value": "[parameters('vpnSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
@@ -200,6 +202,7 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
+          "vnetGatewaySubnetName": {"value": "[parameters('vnetGatewaySubnetName')]"},
           "vpnGatewayName": {"value": "[parameters('vpnGatewayName')]"}
         }
       }
