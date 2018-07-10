@@ -177,7 +177,7 @@
           "virtualNetworkCidr": {"value": "[parameters('virtualNetworkCidr')]"},
           "masterSubnetCidr": {"value": "[parameters('masterSubnetCidr')]"},
           "workerSubnetCidr": {"value": "[parameters('workerSubnetCidr')]"},
-          "vnetGatewaySubnetName": {"value": "[parameters('vnetGatewaySubnetName')]"},
+          "vnetGatewaySubnetName": {"value": "[variables('vnetGatewaySubnetName')]"},
           "vpnSubnetCidr": {"value": "[parameters('vpnSubnetCidr')]"},
           "masterSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"},
           "workerSecurityGroupID": {"value": "[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"},
@@ -202,7 +202,7 @@
           "clusterID": {"value": "[parameters('clusterID')]"},
           "GiantSwarmTags": {"value": "[parameters('GiantSwarmTags')]"},
           "virtualNetworkName": {"value": "[parameters('virtualNetworkName')]"},
-          "vnetGatewaySubnetName": {"value": "[parameters('vnetGatewaySubnetName')]"},
+          "vnetGatewaySubnetName": {"value": "[variables('vnetGatewaySubnetName')]"},
           "vpnGatewayName": {"value": "[parameters('vpnGatewayName')]"}
         }
       }
