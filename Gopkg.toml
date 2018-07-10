@@ -22,9 +22,21 @@
 
 
 
+required = [
+  "github.com/docker/distribution/reference",
+  "k8s.io/apiserver/pkg/endpoints/request",
+  "k8s.io/apiserver/pkg/authentication/authenticator"
+]
+
+
+
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
   version = "v15.3.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/docker/distribution"
 
 [[constraint]]
   branch = "master"
@@ -33,6 +45,18 @@
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/certs"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/e2e-harness"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/e2eclients"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/e2etemplates"
 
 [[constraint]]
   branch = "master"
@@ -63,19 +87,19 @@
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/statusresource"
+
+[[constraint]]
   name = "github.com/giantswarm/versionbundle"
   branch = "master"
+
+[[constraint]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.10.4"
 
 
 
 [prune]
   unused-packages = true
   go-tests = true
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/giantswarm/e2e-harness"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/giantswarm/e2etemplates"

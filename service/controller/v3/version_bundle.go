@@ -12,6 +12,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Added CA public key into trusted user keys for SSO ssh.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "cloudconfig",
+				Description: "Added support for status subresources for CRDs.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
