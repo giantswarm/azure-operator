@@ -26,12 +26,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 				key.LegacyLabelCluster: key.ClusterID(customObject),
 				key.LabelCustomer:      key.ClusterCustomer(customObject),
 				key.LabelCluster:       key.ClusterID(customObject),
-				key.LabelEtcdDomain:    key.ClusterEtcdDomain(customObject),
 				key.LabelOrganization:  key.ClusterCustomer(customObject),
 				key.LabelVersionBundle: key.VersionBundleVersion(customObject),
 			},
 			Annotations: map[string]string{
-				"giantswarm.io/prometheus-cluster": key.ClusterID(customObject),
+				key.AnnotationPrometheusCluster: key.ClusterID(customObject),
+				key.AnnotationEtcdDomain:        key.ClusterEtcdDomain(customObject),
 			},
 		},
 		Spec: v1.ServiceSpec{

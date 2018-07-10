@@ -22,10 +22,12 @@ const (
 
 	TemplateContentVersion = "1.0.0.0"
 
+	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
+	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
+
 	LabelApp           = "app"
 	LabelCluster       = "giantswarm.io/cluster"
 	LabelCustomer      = "customer"
-	LabelEtcdDomain    = "giantswarm.io/etcd-domain"
 	LabelOrganization  = "giantswarm.io/organization"
 	LabelVersionBundle = "giantswarm.io/version-bundle"
 
