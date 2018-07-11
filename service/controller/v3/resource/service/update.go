@@ -63,9 +63,10 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 	if isServiceModified(desiredService, currentService) {
 		// Make a copy and set the resource version so the service can be updated.
 		serviceToUpdate := desiredService.DeepCopy()
-		serviceToUpdate.ObjectMeta.ResourceVersion = currentService.ObjectMeta.ResourceVersion
-		serviceToUpdate.Spec.ClusterIP = currentService.Spec.ClusterIP
-
+		if currentService != nil {
+			serviceToUpdate.ObjectMeta.ResourceVersion = currentService.ObjectMeta.ResourceVersion
+			serviceToUpdate.Spec.ClusterIP = currentService.Spec.ClusterIP
+		}
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found service '%s' that has to be updated", desiredService.GetName()))
 
 		return serviceToUpdate, nil
