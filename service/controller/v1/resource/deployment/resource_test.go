@@ -18,9 +18,10 @@ import (
 var testAzure = setting.Azure{
 	Cloud: "AZUREPUBLICCLOUD",
 	HostCluster: setting.AzureHostCluster{
-		CIDR:           "10.0.0.0/8",
-		ResourceGroup:  "test-group",
-		VirtualNetwork: "test-vnet",
+		CIDR:                  "10.0.0.0/8",
+		ResourceGroup:         "test-group",
+		VirtualNetwork:        "test-vnet",
+		VirtualNetworkGateway: "test-vnet-gateway",
 	},
 	Location: "westeurope",
 }

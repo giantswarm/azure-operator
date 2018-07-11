@@ -19,18 +19,18 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 	}
 
 	defaultParams := map[string]interface{}{
-		"calicoSubnetCidr":              sc.AzureNetwork.Calico.String(),
-		"clusterID":                     key.ClusterID(customObject),
-		"dnsZones":                      key.DNSZones(customObject),
-		"hostClusterCidr":               r.azure.HostCluster.CIDR,
-		"hostClusterResourceGroupName":  r.azure.HostCluster.ResourceGroup,
-		"hostClusterVirtualNetworkName": r.azure.HostCluster.VirtualNetwork,
-		"kubernetesAPISecurePort":       key.APISecurePort(customObject),
-		"masterSubnetCidr":              sc.AzureNetwork.Master.String(),
-		"templatesBaseURI":              baseTemplateURI(r.templateVersion),
-		"virtualNetworkCidr":            key.VnetCIDR(customObject),
-		"virtualNetworkName":            key.VnetName(customObject),
-		"workerSubnetCidr":              sc.AzureNetwork.Worker.String(),
+		"calicoSubnetCidr":        sc.AzureNetwork.Calico.String(),
+		"clusterID":               key.ClusterID(customObject),
+		"dnsZones":                key.DNSZones(customObject),
+		"hostClusterCidr":         r.azure.HostCluster.CIDR,
+		"kubernetesAPISecurePort": key.APISecurePort(customObject),
+		"masterSubnetCidr":        sc.AzureNetwork.Master.String(),
+		"templatesBaseURI":        baseTemplateURI(r.templateVersion),
+		"virtualNetworkCidr":      key.VnetCIDR(customObject),
+		"virtualNetworkName":      key.VnetName(customObject),
+		"vpnGatewayName":          key.VPNGatewayName(customObject),
+		"vpnSubnetCidr":           sc.AzureNetwork.VPN.String(),
+		"workerSubnetCidr":        sc.AzureNetwork.Worker.String(),
 	}
 
 	d := azureresource.Deployment{

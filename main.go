@@ -3,6 +3,8 @@ package main
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"time"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/microkit/command"
@@ -26,6 +28,10 @@ var (
 	name        string     = "azure-operator"
 	source      string     = "https://github.com/giantswarm/azure-operator"
 )
+
+func init() {
+	rand.Seed(time.Now().UTC().UnixNano())
+}
 
 func main() {
 	err := mainError()
@@ -124,6 +130,7 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.CIDR, "", "CIDR of the host cluster virtual network used to create a peering.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.ResourceGroup, "", "Host cluster resource group name.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetwork, "", "Host cluster virtual network name.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetworkGateway, "", "Host cluster virtual network gateway name.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Azure.MSI.Enabled, true, "Whether to enabled Managed Service Identity (MSI).")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.Location, "", "Location of the host and guset clusters.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.SubscriptionID, "", "ID of the Azure Subscription.")

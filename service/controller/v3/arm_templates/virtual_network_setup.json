@@ -27,6 +27,12 @@
     "workerSubnetCidr": {
       "type": "string"
     },
+    "vnetGatewaySubnetName": {
+      "type": "string"
+    },
+    "vpnSubnetCidr": {
+      "type": "string"
+    },
     "masterSecurityGroupID": {
       "type": "string"
     },
@@ -84,6 +90,12 @@
               "routeTable": {
                 "id": "[parameters('routeTableID')]"
               }
+            }
+          },
+          {
+            "name": "[parameters('vnetGatewaySubnetName')]",
+            "properties": {
+              "addressPrefix": "[parameters('vpnSubnetCidr')]"
             }
           }
         ]
