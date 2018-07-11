@@ -96,10 +96,10 @@ func init() {
 		}
 
 		os.Setenv(EnvVarAzureCIDR, subnets.Parent.String())
+		os.Setenv(EnvVarAzureCalicoSubnetCIDR, subnets.Calico.String())
 		os.Setenv(EnvVarAzureMasterSubnetCIDR, subnets.Master.String())
 		os.Setenv(EnvVarAzureVPNSubnetCIDR, subnets.VPN.String())
 		os.Setenv(EnvVarAzureWorkerSubnetCIDR, subnets.Worker.String())
-		os.Setenv(EnvVarAzureCalicoSubnetCIDR, subnets.Calico.String())
 	} else {
 		if os.Getenv(EnvVarAzureCalicoSubnetCIDR) == "" {
 			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureCalicoSubnetCIDR))

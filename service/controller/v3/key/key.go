@@ -19,6 +19,7 @@ const (
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
+	vpnGatewaySuffix          = "VPNGateway"
 
 	TemplateContentVersion = "1.0.0.0"
 
@@ -343,6 +344,11 @@ func VnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 
 func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
+}
+
+// VPNGatewayName returns name of the virtual network gateway.
+func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
