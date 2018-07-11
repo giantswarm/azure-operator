@@ -86,6 +86,9 @@ func toService(v interface{}) (*corev1.Service, error) {
 
 // portsEqual is a function that is checking if ports in the service have same important values.
 func portsEqual(a, b *corev1.Service) bool {
+	if a == nil || b == nil {
+		return false
+	}
 	if len(a.Spec.Ports) != len(b.Spec.Ports) {
 		return false
 	}
