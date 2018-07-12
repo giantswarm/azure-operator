@@ -71,8 +71,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "f0bbc646e13bfc451409e960cf33239aabb8671a"
-  version = "v1.14.9"
+  revision = "fefacb6d45b233a9e20097a176c1c46e85a782d3"
+  version = "v1.14.25"
 
 [[projects]]
   branch = "master"
@@ -188,7 +188,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "384d9ad387472ec2fb6a6cbc3c3b77cc84d7837a"
+  revision = "4f54cccfdd4bfe6c159488247ef1fcc24715b9c0"
 
 [[projects]]
   branch = "master"
@@ -203,7 +203,7 @@
     ".",
     "certstest"
   ]
-  revision = "04529861e1d707d6edb01808e1d9870e1b48c711"
+  revision = "fa0af96de35e5a2d7c51f5ba9e49a4f346496c00"
 
 [[projects]]
   branch = "master"
@@ -212,7 +212,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "bec65bb6f5a8860f27cbd94a61f243abcfc64398"
+  revision = "4e46ca575b4e7fded983e72facad8da587a21f1c"
 
 [[projects]]
   branch = "master"
@@ -244,7 +244,7 @@
   branch = "master"
   name = "github.com/giantswarm/errors"
   packages = ["guest"]
-  revision = "1aa8d2252e47796136320c0cf768b79fb3d969d6"
+  revision = "55d763df908376a858290cf4009e8bd1c768ccef"
 
 [[projects]]
   branch = "master"
@@ -266,7 +266,7 @@
     "v_3_3_4",
     "v_3_4_0"
   ]
-  revision = "f30e72fe22c509cfee8c5516b0678549603d7cf9"
+  revision = "39cb58590d0ff3307f404d407ac9b90bc4052937"
 
 [[projects]]
   branch = "master"
@@ -343,7 +343,7 @@
     "controller/resource/retryresource",
     "informer"
   ]
-  revision = "070ef8e414feb53402e4107057e89ced6f6e2a3e"
+  revision = "09dd03341dd8ade7ad177c5cce4a412a7a9a4d3b"
 
 [[projects]]
   branch = "master"
@@ -369,8 +369,8 @@
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
-  revision = "06f5f3d67269ccec1fe5fe4134ba6e982984f7f5"
-  version = "v1.37.0"
+  revision = "af26abd521cd7697481572fdbc4a53cbea3dde1b"
+  version = "v1.38.0"
 
 [[projects]]
   name = "github.com/go-kit/kit"
@@ -610,13 +610,13 @@
     "prometheus",
     "prometheus/promhttp"
   ]
-  revision = "d6a9817c4afc94d51115e4a30d449056a3fbf547"
+  revision = "ee1c9d7e23df7f011bdf6f12a5c9e7f0ae10a1fe"
 
 [[projects]]
   branch = "master"
   name = "github.com/prometheus/client_model"
   packages = ["go"]
-  revision = "99fa1f4be8e564e8a6b613da7fa6f46c9edafc6c"
+  revision = "5c3871d89910bfb32f5fcab2aa4b9ec68e65a99f"
 
 [[projects]]
   branch = "master"
@@ -637,7 +637,7 @@
     "nfs",
     "xfs"
   ]
-  revision = "40f013a808ec4fa79def444a1a56de4d1727efcb"
+  revision = "ae68e2d4c00fed4943b5f6698d504a5fe083da8a"
 
 [[projects]]
   name = "github.com/spf13/afero"
@@ -686,7 +686,7 @@
     "ed25519/internal/edwards25519",
     "ssh/terminal"
   ]
-  revision = "a8fb68e7206f8c78be19b432c58eb52a6aa34462"
+  revision = "a49355c7e3f8fe157a85be2f77e6e269a0f89602"
 
 [[projects]]
   branch = "master"
@@ -702,7 +702,7 @@
     "publicsuffix",
     "trace"
   ]
-  revision = "ed29d75add3d7c4bf7ca65aac0c6df3d1420216f"
+  revision = "cffdcf672aee934982473246bc7e9a8ba446aa9b"
 
 [[projects]]
   branch = "master"
@@ -726,7 +726,7 @@
     "unix",
     "windows"
   ]
-  revision = "151529c776cdc58ddbe7963ba9af779f3577b419"
+  revision = "1b2967e3c290b7c545b3db0deeda16e9be4f98a2"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -779,7 +779,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "32ee49c4dd805befd833990acba36cb75042378c"
+  revision = "e92b116572682a5b432ddd840aeaba2a559eeff1"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -1151,7 +1151,7 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/util/proto"]
-  revision = "bf40560368791a7dddfeea9b3cfcf89b34139f44"
+  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
 
 [[projects]]
   name = "k8s.io/kubernetes"
@@ -1309,14 +1309,14 @@
     "pkg/volume/util/recyclerclient",
     "pkg/volume/util/types"
   ]
-  revision = "5ca598b4ba5abb89bb773071ce452e33fb66339d"
-  version = "v1.10.4"
+  revision = "32ac1c9073b132b8ba18aa830f46b77dcceb0723"
+  version = "v1.10.5"
 
 [[projects]]
   branch = "master"
   name = "k8s.io/utils"
   packages = ["exec"]
-  revision = "258e2a2fa64568210fbd6267cf1d8fd87c3cb86e"
+  revision = "ab9069044f32ba0c6da081bb46bb0b12e3862c21"
 
 [[projects]]
   branch = "master"
