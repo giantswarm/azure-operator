@@ -35,7 +35,7 @@ func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) e
 	}
 
 	{
-		err = framework.HelmCmd("delete cert-config-e2e --purge")
+		err = framework.HelmCmd("delete apiextensions-cert-config-e2e --purge")
 		if err != nil {
 			return microerror.Mask(err)
 		}

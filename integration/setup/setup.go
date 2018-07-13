@@ -87,7 +87,7 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 	}
 
 	{
-		err = h.InstallCertResource()
+		err = h.InstallResource("apiextensions-cert-config-e2e", template.CertConfigE2EChartValues, ":stable")
 		if err != nil {
 			return microerror.Mask(err)
 		}
