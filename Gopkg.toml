@@ -83,7 +83,7 @@ required = [
   branch = "master"
 
 [[constraint]]
-  branch = "merge-router"
+  branch = "master"
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
