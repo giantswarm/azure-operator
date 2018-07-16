@@ -30,7 +30,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/service"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/vnetpeering"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/vpngateway"
 )
 
 type ResourceSetConfig struct {
@@ -245,21 +245,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var vnetPeeringResource controller.Resource
+	var vpnGatewayResource controller.Resource
 	{
-		c := vnetpeering.Config{
+		c := vpngateway.Config{
 			Logger: config.Logger,
 
-			Azure:       config.Azure,
-			AzureConfig: config.HostAzureConfig,
+			Azure:           config.Azure,
+			HostAzureConfig: config.HostAzureConfig,
 		}
 
-		ops, err := vnetpeering.New(c)
+		ops, err := vpngateway.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		vnetPeeringResource, err = toCRUDResource(config.Logger, ops)
+		vpnGatewayResource, err = toCRUDResource(config.Logger, ops)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -275,7 +275,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		instanceResource,
 		endpointsResource,
 		dnsrecordResource,
-		vnetPeeringResource,
+		vpnGatewayResource,
 	}
 
 	{

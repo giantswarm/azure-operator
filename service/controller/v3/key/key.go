@@ -19,8 +19,20 @@ const (
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
+	vpnGatewaySuffix          = "VPNGateway"
 
 	TemplateContentVersion = "1.0.0.0"
+
+	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
+	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
+
+	LabelApp           = "app"
+	LabelCluster       = "giantswarm.io/cluster"
+	LabelCustomer      = "customer"
+	LabelOrganization  = "giantswarm.io/organization"
+	LabelVersionBundle = "giantswarm.io/version-bundle"
+
+	LegacyLabelCluster = "cluster"
 )
 
 const (
@@ -61,6 +73,10 @@ func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 // ClusterDNSDomain returns cluster DNS domain.
 func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s.%s", DNSZonePrefixAPI(customObject), DNSZoneAPI(customObject))
+}
+
+func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.Etcd.Domain
 }
 
 // ClusterID returns the unique ID for this cluster.
@@ -336,6 +352,11 @@ func VnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 
 func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
+}
+
+// VPNGatewayName returns name of the virtual network gateway.
+func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {

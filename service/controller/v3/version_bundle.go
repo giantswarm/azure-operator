@@ -17,6 +17,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Added support for status subresources for CRDs.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Added support for etcd monitoring.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
