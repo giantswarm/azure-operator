@@ -138,33 +138,19 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var resourceRouter *controller.ResourceRouter
+	var operatorkitController *controller.Controller
 	{
-		c := controller.ResourceRouterConfig{
-			Logger: config.Logger,
-
+		c := controller.Config{
+			CRD:       v1alpha1.NewAzureConfigCRD(),
+			CRDClient: crdClient,
+			Informer:  newInformer,
+			Logger:    config.Logger,
 			ResourceSets: []*controller.ResourceSet{
 				v1ResourceSet,
 				v2ResourceSet,
 				v3ResourceSet,
 			},
-		}
-
-		resourceRouter, err = controller.NewResourceRouter(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var operatorkitController *controller.Controller
-	{
-		c := controller.Config{
-			CRD:            v1alpha1.NewAzureConfigCRD(),
-			CRDClient:      crdClient,
-			Informer:       newInformer,
-			Logger:         config.Logger,
-			ResourceRouter: resourceRouter,
-			RESTClient:     config.G8sClient.ProviderV1alpha1().RESTClient(),
+			RESTClient: config.G8sClient.ProviderV1alpha1().RESTClient(),
 
 			Name: config.ProjectName,
 		}
