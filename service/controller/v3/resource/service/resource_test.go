@@ -444,7 +444,6 @@ func Test_isServiceModified(t *testing.T) {
 	}
 }
 
-
 func Test_portsEqual(t *testing.T) {
 	testCases := []struct {
 		name           string
