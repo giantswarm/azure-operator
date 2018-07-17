@@ -17,27 +17,27 @@ const (
 )
 
 type Config struct {
-	HostAzureConfig client.AzureClientSetConfig
-	Logger          micrologger.Logger
+	HostAzureClientSetConfig client.AzureClientSetConfig
+	Logger                   micrologger.Logger
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	hostAzureConfig client.AzureClientSetConfig
-	logger          micrologger.Logger
+	hostAzureClientSetConfig client.AzureClientSetConfig
+	logger                   micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
-	if err := config.HostAzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.HostAzureConfig.%s", err)
+	if err := config.HostAzureClientSetConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.HostAzureClientSetConfig.%s", err)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 
 	r := &Resource{
-		hostAzureConfig: config.HostAzureConfig,
-		logger:          config.Logger,
+		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
+		logger: config.Logger,
 	}
 
 	return r, nil
@@ -49,7 +49,7 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) getDNSRecordSetsHostClient() (*dns.RecordSetsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureConfig)
+	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
