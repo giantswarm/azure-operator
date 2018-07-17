@@ -56,6 +56,9 @@ func getServiceByName(list []*corev1.Service, name string) (*corev1.Service, err
 }
 
 func isServiceModified(a, b *corev1.Service) bool {
+	if a == nil || b == nil {
+		return true
+	}
 	if !portsEqual(a, b) {
 		return true
 	}
