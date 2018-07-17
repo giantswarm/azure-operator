@@ -39,6 +39,8 @@ func init() {
 	{
 		c := framework.GuestConfig{
 			Logger: logger,
+
+			ClusterID: env.ClusterID(),
 		}
 
 		g, err = framework.NewGuest(c)
@@ -48,7 +50,11 @@ func init() {
 	}
 
 	{
-		c := framework.HostConfig{}
+		c := framework.HostConfig{
+			Logger: logger,
+
+			ClusterID: env.ClusterID(),
+		}
 
 		h, err = framework.NewHost(c)
 		if err != nil {
