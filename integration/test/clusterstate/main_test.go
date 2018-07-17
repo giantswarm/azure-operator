@@ -40,7 +40,8 @@ func init() {
 		c := framework.GuestConfig{
 			Logger: logger,
 
-			ClusterID: env.ClusterID(),
+			ClusterID:    env.ClusterID(),
+			CommonDomain: env.CommonDomain(),
 		}
 
 		g, err = framework.NewGuest(c)
