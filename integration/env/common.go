@@ -23,6 +23,9 @@ const (
 	// TODO rename to CLUSTER_ID. Note this also had to be changed in the
 	// framework package of e2e-harness.
 	EnvVarClusterID = "CLUSTER_NAME"
+	// EnvVarCommonDomain is the process environment variable representing the
+	// COMMON_DOMAIN env var.
+	EnvVarCommonDomain = "COMMON_DOMAIN"
 	// EnvVarGithubBotToken is the process environment variable representing
 	// the GITHUB_BOT_TOKEN env var.
 	EnvVarGithubBotToken = "GITHUB_BOT_TOKEN"
@@ -44,6 +47,7 @@ var (
 	circleCI             string
 	circleSHA            string
 	clusterID            string
+	commonDomain         string
 	testDir              string
 	testedVersion        string
 	keepResources        string
@@ -73,6 +77,11 @@ func init() {
 	clusterID := os.Getenv(EnvVarClusterID)
 	if clusterID == "" {
 		os.Setenv(EnvVarClusterID, ClusterID())
+	}
+
+	commonDomain = os.Getenv(EnvVarCommonDomain)
+	if commonDomain == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomain))
 	}
 
 	token := os.Getenv(EnvVarGithubBotToken)
@@ -125,6 +134,10 @@ func ClusterID() string {
 	}
 
 	return strings.Join(parts, "-")
+}
+
+func CommonDomain() string {
+	return commonDomain
 }
 
 func KeepResources() string {
