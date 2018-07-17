@@ -39,12 +39,12 @@ type ResourceSetConfig struct {
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
-	Azure            setting.Azure
-	HostAzureConfig  client.AzureClientSetConfig
-	InstallationName string
-	ProjectName      string
-	OIDC             setting.OIDC
-	SSOPublicKey     string
+	Azure                    setting.Azure
+	HostAzureClientSetConfig client.AzureClientSetConfig
+	InstallationName         string
+	ProjectName              string
+	OIDC                     setting.OIDC
+	SSOPublicKey             string
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
 	TemplateVersion string
@@ -162,7 +162,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := dnsrecord.Config{
 			Logger: config.Logger,
 
-			HostAzureConfig: config.HostAzureConfig,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -250,8 +250,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := vpngateway.Config{
 			Logger: config.Logger,
 
-			Azure:           config.Azure,
-			HostAzureConfig: config.HostAzureConfig,
+			Azure: config.Azure,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
 		ops, err := vpngateway.New(c)
@@ -325,12 +325,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
+		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSet(*guestAzureConfig)
+		azureClients, err := client.NewAzureClientSet(*guestAzureClientSetConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -343,7 +343,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				RandomkeysSearcher: randomkeysSearcher,
 
 				Azure:        config.Azure,
-				AzureConfig:  *guestAzureConfig,
+				AzureConfig:  *guestAzureClientSetConfig,
 				AzureNetwork: *subnets,
 				OIDC:         config.OIDC,
 				SSOPublicKey: config.SSOPublicKey,
