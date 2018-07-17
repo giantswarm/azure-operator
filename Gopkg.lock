@@ -23,8 +23,8 @@
     "autorest/to",
     "autorest/validation"
   ]
-  revision = "1f7cd6cfe0adea687ad44a512dfe76140f804318"
-  version = "v10.12.0"
+  revision = "894522ed0d5cab8d143c39116ddc5f605a1931ee"
+  version = "v10.13.0"
 
 [[projects]]
   name = "github.com/BurntSushi/toml"
@@ -60,6 +60,7 @@
     "aws/signer/v4",
     "internal/sdkio",
     "internal/sdkrand",
+    "internal/sdkuri",
     "internal/shareddefaults",
     "private/protocol",
     "private/protocol/ec2query",
@@ -71,8 +72,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "fefacb6d45b233a9e20097a176c1c46e85a782d3"
-  version = "v1.14.25"
+  revision = "94b80148ea4b1b136682116294b151766a3b85c2"
+  version = "v1.14.27"
 
 [[projects]]
   branch = "master"
@@ -188,7 +189,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "4f54cccfdd4bfe6c159488247ef1fcc24715b9c0"
+  revision = "6cb2b75722069008d2a01e29be897236224c9f9f"
 
 [[projects]]
   branch = "master"
@@ -244,13 +245,13 @@
   branch = "master"
   name = "github.com/giantswarm/errors"
   packages = ["guest"]
-  revision = "55d763df908376a858290cf4009e8bd1c768ccef"
+  revision = "823a4ad2876212aba33bcf7ad831f93baffcbdbb"
 
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/helmclient"
   packages = ["."]
-  revision = "b48ae48e60b4891baf6f3ab23eff9ed469532ad0"
+  revision = "84047810776e7ffb8484cc6efe2ccac2b73d1246"
 
 [[projects]]
   branch = "master"
@@ -272,7 +273,7 @@
   branch = "master"
   name = "github.com/giantswarm/k8sportforward"
   packages = ["."]
-  revision = "00489ad5cc81835cf9bf13e9dfa538fa6f3f729e"
+  revision = "5f1a090222cf476117c0d42705846928c577aa5b"
 
 [[projects]]
   branch = "master"
@@ -343,7 +344,7 @@
     "controller/resource/retryresource",
     "informer"
   ]
-  revision = "09dd03341dd8ade7ad177c5cce4a412a7a9a4d3b"
+  revision = "e299b3f2585f09f50ce40debe7aab42345deb7e0"
 
 [[projects]]
   branch = "master"
@@ -369,8 +370,8 @@
 [[projects]]
   name = "github.com/go-ini/ini"
   packages = ["."]
-  revision = "af26abd521cd7697481572fdbc4a53cbea3dde1b"
-  version = "v1.38.0"
+  revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
+  version = "v1.38.1"
 
 [[projects]]
   name = "github.com/go-kit/kit"
@@ -421,8 +422,8 @@
     "proto",
     "sortkeys"
   ]
-  revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
-  version = "v1.0.0"
+  revision = "7d68e886eac4f7e34d0d82241a6273d6c304c5cf"
+  version = "v1.1.0"
 
 [[projects]]
   branch = "master"
@@ -452,7 +453,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "60f2773bd99aa86164bc80bf370be6ba63b47dea"
+  revision = "b14883f2b71b5f7dd303ed96d00bfaefeaeecea2"
 
 [[projects]]
   branch = "master"
@@ -571,7 +572,7 @@
   branch = "master"
   name = "github.com/mitchellh/mapstructure"
   packages = ["."]
-  revision = "bb74f1db0675b241733089d5a1faa5dd8b0ef57b"
+  revision = "f15292f7a699fcc1a38a80977f80a046874ba8ac"
 
 [[projects]]
   name = "github.com/modern-go/concurrent"
@@ -610,7 +611,7 @@
     "prometheus",
     "prometheus/promhttp"
   ]
-  revision = "ee1c9d7e23df7f011bdf6f12a5c9e7f0ae10a1fe"
+  revision = "bcbbc08eb2ddff3af83bbf11e7ec13b4fd730b6e"
 
 [[projects]]
   branch = "master"
@@ -702,7 +703,7 @@
     "publicsuffix",
     "trace"
   ]
-  revision = "cffdcf672aee934982473246bc7e9a8ba446aa9b"
+  revision = "d0887baf81f4598189d4e12a37c6da86f0bba4d0"
 
 [[projects]]
   branch = "master"
@@ -726,7 +727,7 @@
     "unix",
     "windows"
   ]
-  revision = "1b2967e3c290b7c545b3db0deeda16e9be4f98a2"
+  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -838,7 +839,6 @@
   version = "v2.2.1"
 
 [[projects]]
-  branch = "release-1.10"
   name = "k8s.io/api"
   packages = [
     "admissionregistration/v1alpha1",
@@ -871,6 +871,7 @@
     "storage/v1beta1"
   ]
   revision = "8b7507fac302640dd5f1efbf9643199952cc58db"
+  version = "kubernetes-1.10.4"
 
 [[projects]]
   name = "k8s.io/apiextensions-apiserver"
