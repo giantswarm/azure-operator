@@ -14,7 +14,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 		return microerror.Mask(err)
 	}
 
-	if serviceToUpdate != nil {
+	if serviceToUpdate != nil && serviceToUpdate.Spec.ClusterIP != "" {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "updating services")
 
 		_, err := r.k8sClient.CoreV1().Services(serviceToUpdate.Namespace).Update(serviceToUpdate)
