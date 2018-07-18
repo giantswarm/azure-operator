@@ -209,6 +209,17 @@ func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	return customObject, nil
 }
 
+func ToNodeCount(v interface{}) (int, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return 0, microerror.Mask(err)
+	}
+
+	nodeCount := len(customObject.Spec.Cluster.Masters) + len(customObject.Spec.Cluster.Workers)
+
+	return nodeCount, nil
+}
+
 func ToVersionBundleVersion(v interface{}) (string, error) {
 	customObject, err := ToCustomObject(v)
 	if err != nil {
