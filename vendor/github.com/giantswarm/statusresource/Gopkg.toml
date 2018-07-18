@@ -27,6 +27,10 @@
 
 
 [[constraint]]
+  branch = "nodes"
+  name = "github.com/giantswarm/apiextensions"
+
+[[constraint]]
   branch = "master"
   name = "github.com/giantswarm/microerror"
 

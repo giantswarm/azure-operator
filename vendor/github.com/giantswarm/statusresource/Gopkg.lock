@@ -8,10 +8,10 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "nodes"
   name = "github.com/giantswarm/apiextensions"
   packages = ["pkg/apis/provider/v1alpha1"]
-  revision = "eb901a8e7d95ce8b1017d54c655f90a2ddd786ea"
+  revision = "c7d611b32d8800de33f70d6c4c76d6f72bcc7fdb"
 
 [[projects]]
   branch = "master"
@@ -52,8 +52,8 @@
     "proto",
     "sortkeys"
   ]
-  revision = "1adfc126b41513cc696b209667c8656ea7aac67c"
-  version = "v1.0.0"
+  revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
@@ -119,7 +119,7 @@
     "http2/hpack",
     "idna"
   ]
-  revision = "4cb1c02c05b0e749b0365f61ae859a8e0cfceed9"
+  revision = "d0887baf81f4598189d4e12a37c6da86f0bba4d0"
 
 [[projects]]
   branch = "master"
@@ -128,7 +128,7 @@
     "unix",
     "windows"
   ]
-  revision = "7138fd3d9dc8335c567ca206f4333fb75eb05d56"
+  revision = "ac767d655b305d4e9612f5f6e33120b9176c4ad4"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -244,6 +244,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f9ac9341445b093d28dabff368c9ad73c7371c058251de314e5b3cc1ce234534"
+  inputs-digest = "36745380dc0c5244565be1f57b84718698bdb84f048d207c7766841fda968809"
   solver-name = "gps-cdcl"
   solver-version = 1

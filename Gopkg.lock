@@ -72,8 +72,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "94b80148ea4b1b136682116294b151766a3b85c2"
-  version = "v1.14.27"
+  revision = "c25475dd537f7becaf29e97c14617c8082f6b5d4"
+  version = "v1.14.28"
 
 [[projects]]
   branch = "master"
@@ -177,7 +177,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
+  branch = "nodes"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -189,7 +189,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "6cb2b75722069008d2a01e29be897236224c9f9f"
+  revision = "c7d611b32d8800de33f70d6c4c76d6f72bcc7fdb"
 
 [[projects]]
   branch = "master"
@@ -228,7 +228,7 @@
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
-  revision = "a53b3bf982c863948719acb122321ee511dce813"
+  revision = "b6c06a28674e73c7e266202c50a4c8a12b16b255"
 
 [[projects]]
   branch = "master"
@@ -251,7 +251,7 @@
   branch = "master"
   name = "github.com/giantswarm/helmclient"
   packages = ["."]
-  revision = "84047810776e7ffb8484cc6efe2ccac2b73d1246"
+  revision = "3914877fd51ce6d6fed716e770748abc8ab73501"
 
 [[projects]]
   branch = "master"
@@ -273,7 +273,7 @@
   branch = "master"
   name = "github.com/giantswarm/k8sportforward"
   packages = ["."]
-  revision = "5f1a090222cf476117c0d42705846928c577aa5b"
+  revision = "eae67c7a8dfb02cba708181b8066e1b11713288d"
 
 [[projects]]
   branch = "master"
@@ -356,10 +356,10 @@
   revision = "b2516ed0f070900eddc2b2654ce4f3d356ddf24a"
 
 [[projects]]
-  branch = "master"
+  branch = "nodes"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "462d5495034535e8b67e680f28066a9f14a64163"
+  revision = "ff963c6bd84c6482e845c2b6b1b8f52ca8d2b5d3"
 
 [[projects]]
   branch = "master"
@@ -422,8 +422,8 @@
     "proto",
     "sortkeys"
   ]
-  revision = "7d68e886eac4f7e34d0d82241a6273d6c304c5cf"
-  version = "v1.1.0"
+  revision = "636bf0302bc95575d69441b25a2603156ffdddf1"
+  version = "v1.1.1"
 
 [[projects]]
   branch = "master"
@@ -1328,6 +1328,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "2490e26328eada085f24d5678a39eaa5a896c264bc3787512df55c22ea61cc22"
+  inputs-digest = "e37e257cf19fdb4991a02ad6d68af73b46de7d0c3e9c6f8b9361988b30792cf9"
   solver-name = "gps-cdcl"
   solver-version = 1
