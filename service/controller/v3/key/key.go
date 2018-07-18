@@ -68,7 +68,7 @@ func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Cluster.Etcd.Domain
+	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, customObject.Spec.Cluster.Etcd.Port)
 }
 
 // ClusterID returns the unique ID for this cluster.
