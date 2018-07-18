@@ -39,7 +39,7 @@ required = [
   name = "github.com/docker/distribution"
 
 [[override]]
-  branch = "nodes"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
@@ -67,32 +67,32 @@ required = [
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/microendpoint"
-  branch = "master"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/microerror"
-  branch = "master"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/microkit"
-  branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/micrologger"
   branch = "master"
+  name = "github.com/giantswarm/micrologger"
 
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/operatorkit"
 
 [[override]]
-  branch = "nodes"
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
 
 [[constraint]]
-  name = "github.com/giantswarm/versionbundle"
   branch = "master"
+  name = "github.com/giantswarm/versionbundle"
 
 [[constraint]]
   name = "k8s.io/apiserver"
@@ -101,5 +101,5 @@ required = [
 
 
 [prune]
-  unused-packages = true
   go-tests = true
+  unused-packages = true
