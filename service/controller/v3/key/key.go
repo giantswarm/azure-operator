@@ -272,6 +272,17 @@ func ToMap(v interface{}) (map[string]interface{}, error) {
 	return m, nil
 }
 
+func ToNodeCount(v interface{}) (int, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return 0, microerror.Mask(err)
+	}
+
+	nodeCount := len(customObject.Spec.Cluster.Masters) + len(customObject.Spec.Cluster.Workers)
+
+	return nodeCount, nil
+}
+
 // ToParameters merges the input maps and converts the result into the
 // structure used by the Azure API. Note that the order of inputs is relevant.
 // Default parameters should be given first. Data of the following maps will
