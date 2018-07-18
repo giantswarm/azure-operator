@@ -326,7 +326,7 @@ func ToVersionBundleVersion(v interface{}) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	return customObject.Spec.VersionBundle.Version, nil
+	return VersionBundleVersion(customObject), nil
 }
 
 func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
