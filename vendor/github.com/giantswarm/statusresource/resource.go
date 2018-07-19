@@ -12,8 +12,9 @@ const (
 )
 
 type Config struct {
-	ClusterStatusFunc func(obj interface{}) (providerv1alpha1.StatusCluster, error)
+	ClusterStatusFunc func(v interface{}) (providerv1alpha1.StatusCluster, error)
 	Logger            micrologger.Logger
+	NodeCountFunc     func(v interface{}) (int, error)
 	// RESTClient needs to be configured with a serializer capable of serializing
 	// and deserializing the object which is watched by the informer. Otherwise
 	// deserialization will fail when trying to manage the cluster status.
@@ -27,14 +28,15 @@ type Config struct {
 	//     g8sClient.CoreV1alpha1().RESTClient()
 	//
 	RESTClient               rest.Interface
-	VersionBundleVersionFunc func(obj interface{}) (string, error)
+	VersionBundleVersionFunc func(v interface{}) (string, error)
 }
 
 type Resource struct {
-	clusterStatusFunc        func(obj interface{}) (providerv1alpha1.StatusCluster, error)
+	clusterStatusFunc        func(v interface{}) (providerv1alpha1.StatusCluster, error)
 	logger                   micrologger.Logger
+	nodeCountFunc            func(v interface{}) (int, error)
 	restClient               rest.Interface
-	versionBundleVersionFunc func(obj interface{}) (string, error)
+	versionBundleVersionFunc func(v interface{}) (string, error)
 }
 
 func New(config Config) (*Resource, error) {
@@ -43,6 +45,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.NodeCountFunc == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.NodeCountFunc must not be empty", config)
 	}
 	if config.RESTClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RESTClient must not be empty", config)
@@ -54,6 +59,7 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		clusterStatusFunc:        config.ClusterStatusFunc,
 		logger:                   config.Logger,
+		nodeCountFunc:            config.NodeCountFunc,
 		restClient:               config.RESTClient,
 		versionBundleVersionFunc: config.VersionBundleVersionFunc,
 	}

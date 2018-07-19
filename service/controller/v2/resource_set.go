@@ -101,6 +101,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	{
 		c := statusresource.Config{
 			ClusterStatusFunc:        key.ToClusterStatus,
+			NodeCountFunc:            key.ToNodeCount,
 			Logger:                   config.Logger,
 			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
 			VersionBundleVersionFunc: key.ToVersionBundleVersion,
