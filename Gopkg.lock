@@ -214,7 +214,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "7d1cf8b967034bb386de0d0fb1036169c4e2fb1e"
+  revision = "f5216f04480d503616f49745b39bb915fb4565e4"
 
 [[projects]]
   branch = "master"
@@ -246,7 +246,7 @@
   branch = "master"
   name = "github.com/giantswarm/errors"
   packages = ["guest"]
-  revision = "823a4ad2876212aba33bcf7ad831f93baffcbdbb"
+  revision = "856ccc5369b1336eea4861803efdbfd8243ee7e6"
 
 [[projects]]
   branch = "master"
@@ -366,7 +366,7 @@
   branch = "versions"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "5a442018bb2527d76dbe8ad6c85d840b1bb97f21"
+  revision = "b9fcdaa7351e83a64400d2623d73d7ee3eb9a9a5"
 
 [[projects]]
   branch = "master"
