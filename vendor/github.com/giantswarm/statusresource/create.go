@@ -6,6 +6,7 @@ import (
 	"reflect"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/errors/guest"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -122,41 +123,43 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		o := metav1.ListOptions{}
 		list, err := k8sClient.CoreV1().Nodes().List(o)
-		if err != nil {
+		if guest.IsAPINotAvailable(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
-		}
+		} else {
+			var nodes []providerv1alpha1.StatusClusterNode
 
-		var nodes []providerv1alpha1.StatusClusterNode
+			for _, node := range list.Items {
+				l := node.GetLabels()
+				n := node.GetName()
 
-		for _, node := range list.Items {
-			l := node.GetLabels()
-			n := node.GetName()
+				labelProvider := "giantswarm.io/provider"
+				p, ok := l[labelProvider]
+				if !ok {
+					return microerror.Maskf(missingLabelError, labelProvider)
+				}
+				labelVersion := p + "-operator.giantswarm.io/version"
+				v, ok := l[labelVersion]
+				if !ok {
+					return microerror.Maskf(missingLabelError, labelVersion)
+				}
 
-			labelProvider := "giantswarm.io/provider"
-			p, ok := l[labelProvider]
-			if !ok {
-				return microerror.Maskf(missingLabelError, labelProvider)
+				nodes = append(nodes, providerv1alpha1.StatusClusterNode{
+					Name:    n,
+					Version: v,
+				})
 			}
-			labelVersion := p + "-operator.giantswarm.io/version"
-			v, ok := l[labelVersion]
-			if !ok {
-				return microerror.Maskf(missingLabelError, labelVersion)
+
+			nodesDiffer := !reflect.DeepEqual(clusterStatus.Nodes, nodes)
+
+			if nodesDiffer {
+				patches = append(patches, Patch{
+					Op:    "replace",
+					Path:  "/status/cluster/nodes",
+					Value: nodes,
+				})
 			}
-
-			nodes = append(nodes, providerv1alpha1.StatusClusterNode{
-				Name:    n,
-				Version: v,
-			})
-		}
-
-		nodesDiffer := !reflect.DeepEqual(clusterStatus.Nodes, nodes)
-
-		if nodesDiffer {
-			patches = append(patches, Patch{
-				Op:    "replace",
-				Path:  "/status/cluster/nodes",
-				Value: nodes,
-			})
 		}
 	}
 

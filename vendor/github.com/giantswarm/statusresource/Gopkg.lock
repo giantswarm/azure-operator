@@ -160,7 +160,7 @@
   branch = "master"
   name = "github.com/giantswarm/operatorkit"
   packages = ["client/k8srestconfig"]
-  revision = "d67eb6d850f1b2b5842540ab396dbfffe7d8bf73"
+  revision = "c73ec04de943dfc8db8420ee73b63b2940026641"
 
 [[projects]]
   name = "github.com/go-kit/kit"
@@ -755,7 +755,7 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/util/proto"]
-  revision = "0cf8f7e6ed1d2e3d47d02e3b6e559369af24d803"
+  revision = "d8ea2fe547a448256204cfc68dfee7b26c720acb"
 
 [[projects]]
   name = "k8s.io/kubernetes"
@@ -920,7 +920,7 @@
   branch = "master"
   name = "k8s.io/utils"
   packages = ["exec"]
-  revision = "ab9069044f32ba0c6da081bb46bb0b12e3862c21"
+  revision = "73fcbfe1475a06d24a3e101012024bdf9e884cbb"
 
 [[projects]]
   branch = "master"
@@ -931,6 +931,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "59b8f71f8bed96cf3cac5409906134c78cca61d0d25cf3938344e93b01c3e8d4"
+  inputs-digest = "5f4da7fe7a03c0d56319a80b8fb45274555259f6b57f2d848917c135325be460"
   solver-name = "gps-cdcl"
   solver-version = 1
