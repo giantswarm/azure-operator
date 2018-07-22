@@ -86,6 +86,9 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/operatorkit"
 
+[[override]]
+  branch = "waiting-for-connection"
+  name = "github.com/giantswarm/errors"
 [[constraint]]
   branch = "versions"
   name = "github.com/giantswarm/statusresource"

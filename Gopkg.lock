@@ -243,10 +243,10 @@
   revision = "e087f8cfb8a483310a909546a72cf8dc5bbd28d7"
 
 [[projects]]
-  branch = "master"
+  branch = "waiting-for-connection"
   name = "github.com/giantswarm/errors"
   packages = ["guest"]
-  revision = "856ccc5369b1336eea4861803efdbfd8243ee7e6"
+  revision = "e43af2edf5c77f7b2f4d84281324c54c3c14082b"
 
 [[projects]]
   branch = "master"
@@ -1335,6 +1335,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1105b0ae71803aa4d9870b1dba530af04fbd34538dd959b06bce07cbe1afee82"
+  inputs-digest = "08be2eafcd6de8f89ba20b1b3af3d133d73aa5b67a2950071b2a6506ce5ace4c"
   solver-name = "gps-cdcl"
   solver-version = 1

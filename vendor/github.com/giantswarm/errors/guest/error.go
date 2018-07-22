@@ -35,7 +35,7 @@ const (
 	//
 	//     https://play.golang.org/p/KuH2V0IXo-J
 	//
-	tlsHandshakeTimeoutPattern = `Get https://api\..*/api/v1/nodes.* net/http: TLS handshake timeout`
+	tlsHandshakeTimeoutPattern = `Get https://api\..*/api/v1/nodes.* net/http: (TLS handshake timeout|request canceled while waiting for connection).*?`
 
 	// transientInvalidCertificatePattern is a regular expression representing the
 	// kind of transient errors related to certificates returned while the guest
