@@ -55,6 +55,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
+			fmt.Printf("%#v\n", patches)
+
 			if len(patches) > 0 {
 				err := r.applyPatches(ctx, newAccessor, patches)
 				if err != nil {
@@ -137,6 +139,7 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 	// manage their own initialization.
 	{
 		if clusterStatus.Conditions == nil && clusterStatus.Versions == nil {
+			fmt.Printf("1\n")
 			patches = append(patches, Patch{
 				Op:   "add",
 				Path: "/status",
@@ -148,6 +151,8 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 					},
 				},
 			})
+
+			return patches, nil
 		}
 	}
 
@@ -161,6 +166,7 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 		sameVersion := allNodesHaveVersion(clusterStatus.Nodes, desiredVersion)
 
 		if isNotUpdated && sameCount && sameVersion {
+			fmt.Printf("2\n")
 			patches = append(patches, Patch{
 				Op:    "replace",
 				Path:  "/status/cluster/conditions",
@@ -171,6 +177,8 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 				Path:  "/status/cluster/versions",
 				Value: clusterStatus.WithNewVersion(desiredVersion),
 			})
+
+			return patches, nil
 		}
 	}
 
@@ -183,11 +191,14 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 		versionDiffers := currentVersion != desiredVersion
 
 		if isNotEmpty && isNotUpdating && versionDiffers {
+			fmt.Printf("3\n")
 			patches = append(patches, Patch{
 				Op:    "replace",
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithUpdatingCondition(),
 			})
+
+			return patches, nil
 		}
 	}
 
@@ -246,11 +257,14 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 			nodesDiffer := !reflect.DeepEqual(clusterStatus.Nodes, nodes)
 
 			if nodesDiffer {
+				fmt.Printf("4\n")
 				patches = append(patches, Patch{
 					Op:    "replace",
 					Path:  "/status/cluster/nodes",
 					Value: nodes,
 				})
+
+				return patches, nil
 			}
 		}
 	}
