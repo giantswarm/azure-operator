@@ -214,7 +214,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "b190b8396078e2bbed4d5b78c79a6bf9369ce0d7"
+  revision = "280a83f10efb0ccd3a7546d7300641719448870b"
 
 [[projects]]
   branch = "master"
@@ -246,7 +246,7 @@
   branch = "master"
   name = "github.com/giantswarm/errors"
   packages = ["guest"]
-  revision = "57bc941af0be633160a3d35d8d36912d3bd627ed"
+  revision = "cf09767ac71d8449b49372f33b5b7e3b5006c0aa"
 
 [[projects]]
   branch = "master"
@@ -363,10 +363,10 @@
   revision = "b2516ed0f070900eddc2b2654ce4f3d356ddf24a"
 
 [[projects]]
-  branch = "master"
+  branch = "cancel"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "18fc5555eb2164f7abcf69e1254c8e6692db73ba"
+  revision = "4da1ee18d9262ec3c080344c390a46a917dc05ec"
 
 [[projects]]
   branch = "master"
@@ -1335,6 +1335,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c66f9f4cb773240b3bac2705ba9031fe19b44646292b934372fe4011f7d875c1"
+  inputs-digest = "d7bd84908b641bcc8fbb1e2b23b98bff0723d699b46c0d1f729747a8f5a1fd7e"
   solver-name = "gps-cdcl"
   solver-version = 1
