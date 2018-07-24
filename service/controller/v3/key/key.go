@@ -231,6 +231,24 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
+func ToClusterEndpoint(v interface{}) (string, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return customObject.Spec.Cluster.Kubernetes.API.Domain, nil
+}
+
+func ToClusterID(v interface{}) (string, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return ClusterID(customObject), nil
+}
+
 func ToClusterStatus(v interface{}) (providerv1alpha1.StatusCluster, error) {
 	customObject, err := ToCustomObject(v)
 	if err != nil {
