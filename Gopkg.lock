@@ -250,12 +250,6 @@
 
 [[projects]]
   branch = "master"
-  name = "github.com/giantswarm/guestcluster"
-  packages = ["."]
-  revision = "6118d8f8ce7bcbaa0ab502371acd2058ed2d976d"
-
-[[projects]]
-  branch = "master"
   name = "github.com/giantswarm/helmclient"
   packages = ["."]
   revision = "3914877fd51ce6d6fed716e770748abc8ab73501"
@@ -267,14 +261,14 @@
   revision = "9f5e82f904b3f54b19ac8cb58cbbadb59d50eb89"
 
 [[projects]]
-  branch = "master"
+  branch = "ingress-service-param"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "v_3_2_5",
     "v_3_3_4",
-    "v_3_4_0"
+    "v_3_5_0"
   ]
-  revision = "39cb58590d0ff3307f404d407ac9b90bc4052937"
+  revision = "ac8d8e7c4d8d81965aabd1578fa7b63f9c9308e6"
 
 [[projects]]
   branch = "master"
@@ -361,12 +355,6 @@
     "randomkeystest"
   ]
   revision = "b2516ed0f070900eddc2b2654ce4f3d356ddf24a"
-
-[[projects]]
-  branch = "master"
-  name = "github.com/giantswarm/statusresource"
-  packages = ["."]
-  revision = "33a62b1606bd2374aeb076e001e1c88187a5e4c0"
 
 [[projects]]
   branch = "master"
@@ -1335,6 +1323,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "c66f9f4cb773240b3bac2705ba9031fe19b44646292b934372fe4011f7d875c1"
+  inputs-digest = "7fc46a67a2c637957598e242dbb283ac77a5b6cf79c10740858fb5e1ebcc886f"
   solver-name = "gps-cdcl"
   solver-version = 1

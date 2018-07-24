@@ -1,4 +1,4 @@
-package v_3_4_0
+package v_3_5_0
 
 const MasterTemplate = `#cloud-config
 users:
@@ -700,6 +700,8 @@ write_files:
               hostPort: 80
             - containerPort: 443
               hostPort: 443
+{{- end }}
+{{- if not .DisableIngressControllerService }}
 - path: /srv/ingress-controller-svc.yml
   owner: root
   permissions: 0644
