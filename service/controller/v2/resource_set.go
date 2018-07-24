@@ -7,14 +7,12 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
-	"github.com/giantswarm/guestcluster"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
 	"github.com/giantswarm/operatorkit/controller/resource/metricsresource"
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
-	"github.com/giantswarm/statusresource"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -70,20 +68,20 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var guestCluster guestcluster.Interface
-	{
-		c := guestcluster.Config{
-			CertsSearcher: certsSearcher,
-			Logger:        config.Logger,
-
-			CertID: certs.APICert,
-		}
-
-		guestCluster, err = guestcluster.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	//var guestCluster guestcluster.Interface
+	//{
+	//	c := guestcluster.Config{
+	//		CertsSearcher: certsSearcher,
+	//		Logger:        config.Logger,
+	//
+	//		CertID: certs.APICert,
+	//	}
+	//
+	//	guestCluster, err = guestcluster.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var randomkeysSearcher *randomkeys.Searcher
 	{
@@ -116,24 +114,24 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var statusResource controller.Resource
-	{
-		c := statusresource.Config{
-			ClusterEndpointFunc:      key.ToClusterEndpoint,
-			ClusterIDFunc:            key.ToClusterID,
-			ClusterStatusFunc:        key.ToClusterStatus,
-			GuestCluster:             guestCluster,
-			NodeCountFunc:            key.ToNodeCount,
-			Logger:                   config.Logger,
-			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
-			VersionBundleVersionFunc: key.ToVersionBundleVersion,
-		}
-
-		statusResource, err = statusresource.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	//var statusResource controller.Resource
+	//{
+	//	c := statusresource.Config{
+	//		ClusterEndpointFunc:      key.ToClusterEndpoint,
+	//		ClusterIDFunc:            key.ToClusterID,
+	//		ClusterStatusFunc:        key.ToClusterStatus,
+	//		GuestCluster:             guestCluster,
+	//		NodeCountFunc:            key.ToNodeCount,
+	//		Logger:                   config.Logger,
+	//		RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
+	//		VersionBundleVersionFunc: key.ToVersionBundleVersion,
+	//	}
+	//
+	//	statusResource, err = statusresource.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var resourceGroupResource controller.Resource
 	{
@@ -278,7 +276,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []controller.Resource{
-		statusResource,
+		//statusResource,
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
