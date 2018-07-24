@@ -108,10 +108,11 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 	}
 
 	params := k8scloudconfig.Params{
-		APIServerEncryptionKey:   apiserverEncryptionKey,
-		Cluster:                  customObject.Spec.Cluster,
-		DisableCalico:            true,
-		DisableIngressController: true,
+		APIServerEncryptionKey:          apiserverEncryptionKey,
+		Cluster:                         customObject.Spec.Cluster,
+		DisableCalico:                   true,
+		DisableIngressController:        true,
+		DisableIngressControllerService: true,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{
