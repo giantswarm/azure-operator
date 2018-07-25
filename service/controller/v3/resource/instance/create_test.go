@@ -17,7 +17,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		Name                      string
 		CustomObject              providerv1alpha1.AzureConfig
 		Instances                 []compute.VirtualMachineScaleSetVM
-		NodeConfigs               []corev1alpha1.NodeConfig
+		DrainerConfigs            []corev1alpha1.DrainerConfig
 		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) string
 		VersionValue              map[string]string
 		ExpectedInstanceToUpdate  *compute.VirtualMachineScaleSetVM
@@ -29,7 +29,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			Name:                      "case 0: empty input results in no action",
 			CustomObject:              providerv1alpha1.AzureConfig{},
 			Instances:                 nil,
-			NodeConfigs:               nil,
+			DrainerConfigs:            nil,
 			InstanceNameFunc:          key.WorkerInstanceName,
 			VersionValue:              nil,
 			ExpectedInstanceToUpdate:  nil,
@@ -58,8 +58,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -98,8 +98,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -132,8 +132,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -178,8 +178,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -225,8 +225,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -272,8 +272,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -319,8 +319,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000002"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000002"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -366,8 +366,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -407,8 +407,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newFinalNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -448,8 +448,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newIdleNodeConfigForID("al9qy-worker-000001"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newIdleDrainerConfigForID("al9qy-worker-000001"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -495,8 +495,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					},
 				},
 			},
-			NodeConfigs: []corev1alpha1.NodeConfig{
-				newIdleNodeConfigForID("al9qy-worker-000002"),
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newIdleDrainerConfigForID("al9qy-worker-000002"),
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
@@ -518,7 +518,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			instanceToUpdate, instanceToDrain, instanceToReimage, err := findActionableInstance(tc.CustomObject, tc.Instances, tc.NodeConfigs, tc.InstanceNameFunc, tc.VersionValue)
+			instanceToUpdate, instanceToDrain, instanceToReimage, err := findActionableInstance(tc.CustomObject, tc.Instances, tc.DrainerConfigs, tc.InstanceNameFunc, tc.VersionValue)
 
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:
@@ -544,208 +544,29 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 	}
 }
 
-func Test_Resource_Instance_newVersionParameterValue(t *testing.T) {
-	testCases := []struct {
-		Name                 string
-		Instances            []compute.VirtualMachineScaleSetVM
-		Instance             *compute.VirtualMachineScaleSetVM
-		Version              string
-		VersionValue         map[string]string
-		ExpectedVersionValue map[string]string
-		ErrorMatcher         func(err error) bool
-	}{
-		{
-			Name:                 "case 0: empty input results in an empty JSON blob",
-			Instances:            nil,
-			Instance:             nil,
-			Version:              "",
-			VersionValue:         nil,
-			ExpectedVersionValue: map[string]string{},
-			ErrorMatcher:         nil,
-		},
-		{
-			Name: "case 1: having an empty version bundle version blob and an instance and a version bundle version given results in a JSON blob with the instance ID and its version bundle version",
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("1"),
-				},
-			},
-			Instance:     nil,
-			Version:      "0.1.0",
-			VersionValue: map[string]string{},
-			ExpectedVersionValue: map[string]string{
-				"1": "0.1.0",
-			},
-			ErrorMatcher: nil,
-		},
-		{
-			Name: "case 2: having an empty version bundle version blob and instances and a version bundle version given results in a JSON blob with instance IDs and their version bundle version",
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("1"),
-				},
-				{
-					InstanceID: to.StringPtr("2"),
-				},
-				{
-					InstanceID: to.StringPtr("3"),
-				},
-			},
-			Instance:     nil,
-			Version:      "0.1.0",
-			VersionValue: map[string]string{},
-			ExpectedVersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
-				"3": "0.1.0",
-			},
-			ErrorMatcher: nil,
-		},
-		{
-			Name: "case 3: having a version bundle version blob and instances and a version bundle version given results in an updated JSON blob",
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("1"),
-				},
-				{
-					InstanceID: to.StringPtr("2"),
-				},
-				{
-					InstanceID: to.StringPtr("3"),
-				},
-			},
-			Instance: &compute.VirtualMachineScaleSetVM{
-				InstanceID: to.StringPtr("1"),
-			},
-			Version: "0.2.0",
-			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
-				"3": "0.1.0",
-			},
-			ExpectedVersionValue: map[string]string{
-				"1": "0.2.0",
-				"2": "0.1.0",
-				"3": "0.1.0",
-			},
-			ErrorMatcher: nil,
-		},
-		{
-			Name: "case 4: like 3 but with another instance and version",
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("1"),
-				},
-				{
-					InstanceID: to.StringPtr("2"),
-				},
-				{
-					InstanceID: to.StringPtr("3"),
-				},
-			},
-			Instance: &compute.VirtualMachineScaleSetVM{
-				InstanceID: to.StringPtr("3"),
-			},
-			Version: "1.0.0",
-			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
-				"3": "0.1.0",
-			},
-			ExpectedVersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
-				"3": "1.0.0",
-			},
-			ErrorMatcher: nil,
-		},
-		{
-			Name: "case 5: instances being tracked in the version blob get removed when the instances do not exist anymore",
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("2"),
-				},
-			},
-			Instance: nil,
-			Version:  "1.0.0",
-			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
-				"3": "0.1.0",
-			},
-			ExpectedVersionValue: map[string]string{
-				"2": "0.1.0",
-			},
-			ErrorMatcher: nil,
-		},
-		{
-			Name: "case 6: instance removal and instance update works at the same time",
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("2"),
-				},
-			},
-			Instance: &compute.VirtualMachineScaleSetVM{
-				InstanceID: to.StringPtr("2"),
-			},
-			Version: "1.0.0",
-			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
-				"3": "0.1.0",
-			},
-			ExpectedVersionValue: map[string]string{
-				"2": "1.0.0",
-			},
-			ErrorMatcher: nil,
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			versionValue, err := newVersionParameterValue(tc.Instances, tc.Instance, tc.Version, tc.VersionValue)
-
-			switch {
-			case err == nil && tc.ErrorMatcher == nil:
-				// fall through
-			case err != nil && tc.ErrorMatcher == nil:
-				t.Fatalf("expected %#v got %#v", nil, err)
-			case err == nil && tc.ErrorMatcher != nil:
-				t.Fatalf("expected %#v got %#v", "error", nil)
-			case !tc.ErrorMatcher(err):
-				t.Fatalf("expected %#v got %#v", true, false)
-			}
-
-			if !reflect.DeepEqual(versionValue, tc.ExpectedVersionValue) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedVersionValue, versionValue)
-			}
-		})
-	}
-}
-
-func newFinalNodeConfigForID(id string) corev1alpha1.NodeConfig {
-	return corev1alpha1.NodeConfig{
+func newFinalDrainerConfigForID(id string) corev1alpha1.DrainerConfig {
+	return corev1alpha1.DrainerConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: id,
 		},
-		Status: corev1alpha1.NodeConfigStatus{
-			Conditions: []corev1alpha1.NodeConfigStatusCondition{
+		Status: corev1alpha1.DrainerConfigStatus{
+			Conditions: []corev1alpha1.DrainerConfigStatusCondition{
 				{
-					Status: corev1alpha1.NodeConfigStatusStatusTrue,
-					Type:   corev1alpha1.NodeConfigStatusTypeDrained,
+					Status: corev1alpha1.DrainerConfigStatusStatusTrue,
+					Type:   corev1alpha1.DrainerConfigStatusTypeDrained,
 				},
 			},
 		},
 	}
 }
 
-func newIdleNodeConfigForID(id string) corev1alpha1.NodeConfig {
-	return corev1alpha1.NodeConfig{
+func newIdleDrainerConfigForID(id string) corev1alpha1.DrainerConfig {
+	return corev1alpha1.DrainerConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: id,
 		},
-		Status: corev1alpha1.NodeConfigStatus{
-			Conditions: []corev1alpha1.NodeConfigStatusCondition{},
+		Status: corev1alpha1.DrainerConfigStatus{
+			Conditions: []corev1alpha1.DrainerConfigStatusCondition{},
 		},
 	}
 }

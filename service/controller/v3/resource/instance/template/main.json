@@ -41,12 +41,6 @@
         "description":"Output value of the master subnet ID as referenced from the virtual network setup."
       }
     },
-    "masterVersionBundleVersions":{
-      "type":"object",
-      "metadata":{
-        "description":"JSON blob of key-value pairs mapping master VMSS instance names to their applied version bundle versions."
-      }
-    },
     "templatesBaseURI":{
       "type":"string",
       "metadata":{
@@ -74,12 +68,6 @@
       "metadata":{
         "description":"Output value of the worker subnet ID as referenced from the virtual network setup."
       }
-    },
-    "workerVersionBundleVersions":{
-      "type":"object",
-      "metadata":{
-        "description":"JSON blob of key-value pairs mapping worker VMSS instance names to their applied version bundle versions."
-      }
     }
   },
   "variables":{
@@ -103,9 +91,6 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "versionBundleVersions":{
-            "value":"[parameters('masterVersionBundleVersions')]"
           },
           "vmssName":{
             "value":"[concat(parameters('clusterID'), '-master')]"
@@ -190,9 +175,6 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "versionBundleVersions":{
-            "value":"[parameters('workerVersionBundleVersions')]"
           },
           "vmssName":{
             "value":"[concat(parameters('clusterID'), '-worker')]"

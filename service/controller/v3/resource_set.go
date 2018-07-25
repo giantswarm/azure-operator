@@ -7,6 +7,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/certs"
+	"github.com/giantswarm/guestcluster"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
@@ -75,20 +76,20 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	//var guestCluster guestcluster.Interface
-	//{
-	//	c := guestcluster.Config{
-	//		CertsSearcher: certsSearcher,
-	//		Logger:        config.Logger,
-	//
-	//		CertID: certs.APICert,
-	//	}
-	//
-	//	guestCluster, err = guestcluster.New(c)
-	//	if err != nil {
-	//		return nil, microerror.Mask(err)
-	//	}
-	//}
+	var guestCluster guestcluster.Interface
+	{
+		c := guestcluster.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+
+			CertID: certs.APICert,
+		}
+
+		guestCluster, err = guestcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var newDebugger *debugger.Debugger
 	{
@@ -218,8 +219,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource controller.Resource
 	{
 		c := instance.Config{
-			G8sClient: config.G8sClient,
-			Logger:    config.Logger,
+			G8sClient:    config.G8sClient,
+			GuestCluster: guestCluster,
+			Logger:       config.Logger,
 
 			Azure:           config.Azure,
 			TemplateVersion: config.TemplateVersion,
