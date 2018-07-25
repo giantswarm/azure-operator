@@ -38,7 +38,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		err = cc.Validate()
 		if err != nil {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 			return nil
 		}
 	}
@@ -54,7 +55,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 			if !key.IsFinalProvisioningState(s) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 				return nil
 			}
 		}
