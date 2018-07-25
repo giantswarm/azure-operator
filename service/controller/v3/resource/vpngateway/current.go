@@ -34,7 +34,8 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		if provisioningState := *hostVPNGatewayConnection.ProvisioningState; !key.IsFinalProvisioningState(provisioningState) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway connection is in state '%s'", provisioningState))
 			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 			return connections{}, nil
 		}
 	}
@@ -58,7 +59,8 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		if provisioningState := *guestVPNGatewayConnection.ProvisioningState; !key.IsFinalProvisioningState(provisioningState) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway connection is in state '%s'", provisioningState))
 			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 			return result, nil
 		}
 	}

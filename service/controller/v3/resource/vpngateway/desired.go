@@ -42,7 +42,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			if IsVPNGatewayNotFound(err) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "guest vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 				return connections{}, nil
 			} else if err != nil {
 				return connections{}, microerror.Mask(err)
@@ -51,7 +52,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			if provisioningState := *guestVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway is in state '%s'", provisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 				return connections{}, nil
 			}
 		}
@@ -64,7 +66,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			if IsVPNGatewayNotFound(err) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 				return connections{}, nil
 			} else if err != nil {
 				return connections{}, microerror.Mask(err)
@@ -73,7 +76,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			if provisioningState := *hostVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 				return connections{}, nil
 			}
 		}
