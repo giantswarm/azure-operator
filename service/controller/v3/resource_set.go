@@ -3,6 +3,7 @@ package v3
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/certs"
@@ -12,13 +13,13 @@ import (
 	"github.com/giantswarm/operatorkit/controller/resource/metricsresource"
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
-	"github.com/giantswarm/statusresource"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
 	"github.com/giantswarm/azure-operator/service/controller/v3/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 	"github.com/giantswarm/azure-operator/service/controller/v3/network"
@@ -38,12 +39,12 @@ type ResourceSetConfig struct {
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
-	Azure            setting.Azure
-	HostAzureConfig  client.AzureClientSetConfig
-	InstallationName string
-	ProjectName      string
-	OIDC             setting.OIDC
-	SSOPublicKey     string
+	Azure                    setting.Azure
+	HostAzureClientSetConfig client.AzureClientSetConfig
+	InstallationName         string
+	ProjectName              string
+	OIDC                     setting.OIDC
+	SSOPublicKey             string
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
 	TemplateVersion string
@@ -59,11 +60,13 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var err error
 
-	var certsSearcher *certs.Searcher
+	var certsSearcher certs.Interface
 	{
 		c := certs.Config{
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
 		}
 
 		certsSearcher, err = certs.NewSearcher(c)
@@ -71,6 +74,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 	}
+
+	//var guestCluster guestcluster.Interface
+	//{
+	//	c := guestcluster.Config{
+	//		CertsSearcher: certsSearcher,
+	//		Logger:        config.Logger,
+	//
+	//		CertID: certs.APICert,
+	//	}
+	//
+	//	guestCluster, err = guestcluster.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var newDebugger *debugger.Debugger
 	{
@@ -97,20 +115,24 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var statusResource controller.Resource
-	{
-		c := statusresource.Config{
-			ClusterStatusFunc:        key.ToClusterStatus,
-			Logger:                   config.Logger,
-			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
-			VersionBundleVersionFunc: key.ToVersionBundleVersion,
-		}
-
-		statusResource, err = statusresource.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	//var statusResource controller.Resource
+	//{
+	//	c := statusresource.Config{
+	//		ClusterEndpointFunc:      key.ToClusterEndpoint,
+	//		ClusterIDFunc:            key.ToClusterID,
+	//		ClusterStatusFunc:        key.ToClusterStatus,
+	//		GuestCluster:             guestCluster,
+	//		NodeCountFunc:            key.ToNodeCount,
+	//		Logger:                   config.Logger,
+	//		RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
+	//		VersionBundleVersionFunc: key.ToVersionBundleVersion,
+	//	}
+	//
+	//	statusResource, err = statusresource.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var migrationResource controller.Resource
 	{
@@ -161,7 +183,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := dnsrecord.Config{
 			Logger: config.Logger,
 
-			HostAzureConfig: config.HostAzureConfig,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -250,8 +272,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := vpngateway.Config{
 			Logger: config.Logger,
 
-			Azure:           config.Azure,
-			HostAzureConfig: config.HostAzureConfig,
+			Azure: config.Azure,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
 		ops, err := vpngateway.New(c)
@@ -266,7 +288,18 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []controller.Resource{
-		statusResource,
+		// TODO our host clusters are in quite inconsistent states. Status sub
+		// resources do not seem to be enabled everywhere. This results in
+		// unpredictable behaviour across the board. For now we disable the status
+		// resource to not make the situation worse. Above some dependencies are
+		// prepared but also commented. Later we can easily enable this again but
+		// this needs more extensive testing.
+		//
+		//     https://github.com/giantswarm/giantswarm/issues/3822
+		//
+
+		//statusResource,
+
 		migrationResource,
 		namespaceResource,
 		serviceResource,
@@ -325,7 +358,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSet(config.HostAzureConfig)
+		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		azureClients, err := client.NewAzureClientSet(*guestAzureClientSetConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -338,7 +376,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				RandomkeysSearcher: randomkeysSearcher,
 
 				Azure:        config.Azure,
-				AzureConfig:  config.HostAzureConfig,
+				AzureConfig:  *guestAzureClientSetConfig,
 				AzureNetwork: *subnets,
 				OIDC:         config.OIDC,
 				SSOPublicKey: config.SSOPublicKey,

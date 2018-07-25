@@ -16,16 +16,16 @@ const (
 type Config struct {
 	Logger micrologger.Logger
 
-	Azure           setting.Azure
-	HostAzureConfig client.AzureClientSetConfig
+	Azure                    setting.Azure
+	HostAzureClientSetConfig client.AzureClientSetConfig
 }
 
 // Resource manages Azure virtual network peering.
 type Resource struct {
 	logger micrologger.Logger
 
-	azure           setting.Azure
-	hostAzureConfig client.AzureClientSetConfig
+	azure                    setting.Azure
+	hostAzureClientSetConfig client.AzureClientSetConfig
 }
 
 func New(config Config) (*Resource, error) {
@@ -33,8 +33,8 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	if err := config.HostAzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.HostAzureConfig.%s", config, err)
+	if err := config.HostAzureClientSetConfig.Validate(); err != nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.HostAzureClientSetConfig.%s", config, err)
 	}
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
@@ -43,8 +43,8 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		logger: config.Logger,
 
-		azure:           config.Azure,
-		hostAzureConfig: config.HostAzureConfig,
+		azure: config.Azure,
+		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
 	}
 
 	return r, nil

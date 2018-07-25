@@ -24,9 +24,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	// Deleting the K8s namespace will take care of cleaning the endpoints.
 	if key.IsDeleted(customObject) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting responsibility of deletion of endpoints to namespace termination")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting deletion to namespace termination")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 		return nil, nil
 	}
@@ -49,7 +49,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		if IsNetworkInterfacesNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the network interfaces in the Azure API")
 			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 			return nil, nil
 		} else if err != nil {

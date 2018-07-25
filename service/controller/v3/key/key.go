@@ -76,7 +76,7 @@ func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Cluster.Etcd.Domain
+	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, customObject.Spec.Cluster.Etcd.Port)
 }
 
 // ClusterID returns the unique ID for this cluster.
@@ -239,6 +239,24 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
+func ToClusterEndpoint(v interface{}) (string, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return customObject.Spec.Cluster.Kubernetes.API.Domain, nil
+}
+
+func ToClusterID(v interface{}) (string, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return ClusterID(customObject), nil
+}
+
 func ToClusterStatus(v interface{}) (providerv1alpha1.StatusCluster, error) {
 	customObject, err := ToCustomObject(v)
 	if err != nil {
@@ -278,6 +296,17 @@ func ToMap(v interface{}) (map[string]interface{}, error) {
 	}
 
 	return m, nil
+}
+
+func ToNodeCount(v interface{}) (int, error) {
+	customObject, err := ToCustomObject(v)
+	if err != nil {
+		return 0, microerror.Mask(err)
+	}
+
+	nodeCount := len(customObject.Spec.Cluster.Masters) + len(customObject.Spec.Cluster.Workers)
+
+	return nodeCount, nil
 }
 
 // ToParameters merges the input maps and converts the result into the
@@ -334,7 +363,7 @@ func ToVersionBundleVersion(v interface{}) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	return customObject.Spec.VersionBundle.Version, nil
+	return VersionBundleVersion(customObject), nil
 }
 
 func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {

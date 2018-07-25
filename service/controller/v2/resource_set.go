@@ -2,6 +2,7 @@ package v2
 
 import (
 	"fmt"
+	"time"
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
@@ -12,7 +13,6 @@ import (
 	"github.com/giantswarm/operatorkit/controller/resource/metricsresource"
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
-	"github.com/giantswarm/statusresource"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -53,11 +53,13 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var err error
 
-	var certsSearcher *certs.Searcher
+	var certsSearcher certs.Interface
 	{
 		c := certs.Config{
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
 		}
 
 		certsSearcher, err = certs.NewSearcher(c)
@@ -65,6 +67,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 	}
+
+	//var guestCluster guestcluster.Interface
+	//{
+	//	c := guestcluster.Config{
+	//		CertsSearcher: certsSearcher,
+	//		Logger:        config.Logger,
+	//
+	//		CertID: certs.APICert,
+	//	}
+	//
+	//	guestCluster, err = guestcluster.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var randomkeysSearcher *randomkeys.Searcher
 	{
@@ -97,20 +114,24 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var statusResource controller.Resource
-	{
-		c := statusresource.Config{
-			ClusterStatusFunc:        key.ToClusterStatus,
-			Logger:                   config.Logger,
-			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
-			VersionBundleVersionFunc: key.ToVersionBundleVersion,
-		}
-
-		statusResource, err = statusresource.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	//var statusResource controller.Resource
+	//{
+	//	c := statusresource.Config{
+	//		ClusterEndpointFunc:      key.ToClusterEndpoint,
+	//		ClusterIDFunc:            key.ToClusterID,
+	//		ClusterStatusFunc:        key.ToClusterStatus,
+	//		GuestCluster:             guestCluster,
+	//		NodeCountFunc:            key.ToNodeCount,
+	//		Logger:                   config.Logger,
+	//		RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
+	//		VersionBundleVersionFunc: key.ToVersionBundleVersion,
+	//	}
+	//
+	//	statusResource, err = statusresource.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var resourceGroupResource controller.Resource
 	{
@@ -255,7 +276,18 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []controller.Resource{
-		statusResource,
+		// TODO our host clusters are in quite inconsistent states. Status sub
+		// resources do not seem to be enabled everywhere. This results in
+		// unpredictable behaviour across the board. For now we disable the status
+		// resource to not make the situation worse. Above some dependencies are
+		// prepared but also commented. Later we can easily enable this again but
+		// this needs more extensive testing.
+		//
+		//     https://github.com/giantswarm/giantswarm/issues/3822
+		//
+
+		//statusResource,
+
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,

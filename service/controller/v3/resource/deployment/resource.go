@@ -99,7 +99,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if !key.IsFinalProvisioningState(*d.Properties.ProvisioningState) {
 			r.debugger.LogFailedDeployment(ctx, d)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 			return nil
 		}
