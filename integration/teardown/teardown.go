@@ -32,6 +32,10 @@ func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) e
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		err = framework.HelmCmd("delete node-operator --purge")
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	{
