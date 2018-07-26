@@ -19,10 +19,7 @@ import (
 )
 
 const (
-	masterVersionsKey  = "masterVersionBundleVersions"
-	versionsKey        = "versionBundleVersions"
 	vmssDeploymentName = "cluster-vmss-template"
-	workerVersionsKey  = "workerVersionBundleVersions"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
