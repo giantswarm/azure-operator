@@ -84,10 +84,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		o := metav1.ListOptions{}
 		list, err := k8sClient.CoreV1().Nodes().List(o)
 		if guest.IsAPINotAvailable(err) {
+			// fall through
 			r.logger.LogCtx(ctx, "level", "debug", "message", "guest API is not available to fetch node versions")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-
-			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
@@ -370,7 +368,6 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 			// parameters of the guest cluster's VMSS deployment. In this case we must
 			// not select an instance to be reimaged because we would roll a node that
 			// just got created and is already up to date.
-			r.logger.LogCtx(ctx, "level", "debug", "message", "version blob still empty")
 			return nil, nil, nil, nil
 		} else if err != nil {
 			return nil, nil, nil, microerror.Mask(err)
