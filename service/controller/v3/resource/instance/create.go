@@ -68,8 +68,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	//
 	// Issue: https://github.com/giantswarm/giantswarm/issues/3822
 	//
-	var masterVersionsValue map[string]string
-	var workerVersionsValue map[string]string
+	masterVersionsValue := map[string]string{}
+	workerVersionsValue := map[string]string{}
 	{
 		var k8sClient kubernetes.Interface
 		{
