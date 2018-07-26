@@ -485,7 +485,7 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	if instanceToUpdate == nil {
-		instanceToReimage, err = firstInstanceToReimage(customObject, instances, versionValue)
+		instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
 		if err != nil {
 			return nil, nil, nil, microerror.Mask(err)
 		}
@@ -521,14 +521,14 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
+func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
 	if versionValue == nil {
 		return nil, microerror.Mask(versionBlobEmptyError)
 	}
 
 	for _, v := range list {
 		desiredVersion := key.VersionBundleVersion(customObject)
-		instanceVersion, ok := versionValue[*v.InstanceID]
+		instanceVersion, ok := versionValue[instanceNameFunc(customObject, *v.InstanceID)]
 		if !ok {
 			return nil, microerror.Mask(versionBlobEmptyError)
 		}
