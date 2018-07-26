@@ -63,7 +63,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
+				"al9qy-worker-000001": "0.1.0",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
@@ -103,8 +103,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
+				"al9qy-worker-000001": "0.1.0",
+				"al9qy-worker-000002": "0.1.0",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
@@ -137,7 +137,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
+				"al9qy-worker-000001": "0.1.0",
 			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("1"),
@@ -183,8 +183,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
+				"al9qy-worker-000001": "0.1.0",
+				"al9qy-worker-000002": "0.1.0",
 			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("1"),
@@ -230,8 +230,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.1.0",
+				"al9qy-worker-000001": "0.1.0",
+				"al9qy-worker-000002": "0.1.0",
 			},
 			ExpectedInstanceToUpdate: &compute.VirtualMachineScaleSetVM{
 				InstanceID: to.StringPtr("2"),
@@ -277,8 +277,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.0.1",
-				"2": "0.0.1",
+				"al9qy-worker-000001": "0.0.1",
+				"al9qy-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToDrain:  nil,
@@ -324,8 +324,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.0.1",
+				"al9qy-worker-000001": "0.1.0",
+				"al9qy-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToDrain:  nil,
@@ -371,8 +371,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.0.1",
-				"2": "0.0.1",
+				"al9qy-worker-000001": "0.0.1",
+				"al9qy-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
@@ -412,8 +412,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.0.1",
+				"al9qy-worker-000001": "0.1.0",
+				"al9qy-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
@@ -453,8 +453,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.0.1",
-				"2": "0.0.1",
+				"al9qy-worker-000001": "0.0.1",
+				"al9qy-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToDrain: &compute.VirtualMachineScaleSetVM{
@@ -500,8 +500,8 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			InstanceNameFunc: key.WorkerInstanceName,
 			VersionValue: map[string]string{
-				"1": "0.1.0",
-				"2": "0.0.1",
+				"al9qy-worker-000001": "0.1.0",
+				"al9qy-worker-000002": "0.0.1",
 			},
 			ExpectedInstanceToUpdate: nil,
 			ExpectedInstanceToDrain: &compute.VirtualMachineScaleSetVM{
