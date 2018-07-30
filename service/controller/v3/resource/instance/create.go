@@ -112,9 +112,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				}
 			}
 		}
-
-		fmt.Printf("masterVersionsValue: %#v\n", masterVersionsValue)
-		fmt.Printf("workerVersionsValue: %#v\n", workerVersionsValue)
 	}
 
 	var nodeConfigs []corev1alpha1.DrainerConfig
@@ -222,15 +219,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
 		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
-		if err != nil {
+		if controllercontext.IsInvalidContext(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "not ensuring deployment")
+		} else if err != nil {
 			return microerror.Mask(err)
-		}
-		_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		} else {
+			_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+		}
 	}
 
 	return nil
