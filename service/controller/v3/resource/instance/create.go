@@ -524,7 +524,7 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 		fmt.Printf("4\n")
 		if !ok {
 			fmt.Printf("5\n")
-			return nil, microerror.Mask(versionBlobEmptyError)
+			continue
 		}
 		if desiredVersion == instanceVersion {
 			continue
