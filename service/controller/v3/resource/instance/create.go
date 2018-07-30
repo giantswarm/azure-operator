@@ -355,7 +355,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 			// parameters of the guest cluster's VMSS deployment. In this case we must
 			// not select an instance to be reimaged because we would roll a node that
 			// just got created and is already up to date.
-			fmt.Printf("version blob empty\n")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged")
 			return nil, nil, nil, nil
 		} else if err != nil {
 			return nil, nil, nil, microerror.Mask(err)
@@ -453,10 +453,6 @@ func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
-	fmt.Printf("\n")
-	fmt.Printf("%#v\n", versionValue)
-	fmt.Printf("\n")
-
 	var err error
 
 	instanceInProgress := firstInstanceInProgress(customObject, instances)
@@ -511,30 +507,23 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
 func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
-	fmt.Printf("1\n")
 	if versionValue == nil {
-		fmt.Printf("2\n")
 		return nil, microerror.Mask(versionBlobEmptyError)
 	}
 
-	fmt.Printf("3\n")
 	for _, v := range list {
 		desiredVersion := key.VersionBundleVersion(customObject)
 		instanceVersion, ok := versionValue[instanceNameFunc(customObject, *v.InstanceID)]
-		fmt.Printf("4\n")
 		if !ok {
-			fmt.Printf("5\n")
 			continue
 		}
 		if desiredVersion == instanceVersion {
 			continue
 		}
 
-		fmt.Printf("6\n")
 		return &v, nil
 	}
 
-	fmt.Printf("7\n")
 	return nil, nil
 }
 
