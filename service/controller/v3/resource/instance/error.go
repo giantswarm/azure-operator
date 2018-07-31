@@ -38,6 +38,13 @@ func IsDeploymentNotFound(err error) bool {
 	return false
 }
 
+var missingLabelError = microerror.New("missing label")
+
+// IsMissingLabel asserts missingLabelError.
+func IsMissingLabel(err error) bool {
+	return microerror.Cause(err) == missingLabelError
+}
+
 var scaleSetNotFoundError = microerror.New("scale set not found")
 
 // IsScaleSetNotFound asserts scaleSetNotFoundError.

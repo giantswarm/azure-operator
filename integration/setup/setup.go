@@ -75,12 +75,15 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 	var err error
 
 	{
+		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 		err = h.InstallStableOperator("cert-operator", "certconfig", e2etemplates.CertOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
+		err = h.InstallStableOperator("node-operator", "drainerconfig", e2etemplates.NodeOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
