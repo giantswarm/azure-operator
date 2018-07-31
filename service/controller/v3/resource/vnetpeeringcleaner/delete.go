@@ -9,30 +9,11 @@ import (
 	"github.com/giantswarm/operatorkit/controller"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
-// NewDeletePatch provide a controller.Patch holding the network.VirtualNetworkPeering to be deleted.
+// NewDeletePatch is noop.
 func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
-	a, err := key.ToCustomObject(azureConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	c, err := toVnetPeering(current)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	d, err := toVnetPeering(desired)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	patch, err := r.newDeletePatch(ctx, a, c, d)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return patch, nil
+	return nil, nil
 }
 
 // newDeletePatch use desired as delete patch since it is mostly static and more likely to be present than current.
@@ -42,22 +23,8 @@ func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alp
 	return patch, nil
 }
 
-// ApplyDeleteChange perform deletion of the change virtual network peering against azure.
+// ApplyDeleteChange is noop.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change interface{}) error {
-	a, err := key.ToCustomObject(azureConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	c, err := toVnetPeering(change)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.applyDeleteChange(ctx, a, c)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	return nil
 }
 

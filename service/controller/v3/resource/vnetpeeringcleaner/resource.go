@@ -55,17 +55,6 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-// getVirtualNetworksClient return an azure client to interact with
-// VirtualNetworks resources.
-func (r *Resource) getVirtualNetworksClient() (*network.VirtualNetworksClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.azureConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return azureClients.VirtualNetworkClient, nil
-}
-
 // getVnetPeeringClient return an azure client to interact with
 // VirtualNetworkPeering resources.
 func (r *Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
