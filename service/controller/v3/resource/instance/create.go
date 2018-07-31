@@ -71,7 +71,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		list, err := k8sClient.CoreV1().Nodes().List(o)
 		if guest.IsAPINotAvailable(err) {
 			// fall through
-			r.logger.LogCtx(ctx, "level", "debug", "message", "guest API is not available to fetch node versions")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "not fetching node versions")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "guest API is not available")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
@@ -335,8 +336,8 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 //     loop 1: worker 1 update
 //     loop 2: worker 2 update
 //     loop 3: worker 1 drained
-//     loop 4: worker 2 drained
-//     loop 5: worker 1 reimage
+//     loop 4: worker 1 reimage
+//     loop 5: worker 2 drained
 //     loop 6: worker 2 reimage
 //
 func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
