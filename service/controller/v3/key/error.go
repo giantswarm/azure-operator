@@ -2,14 +2,18 @@ package key
 
 import "github.com/giantswarm/microerror"
 
-var missingOutputValueError = microerror.New("missing output value")
+var missingOutputValueError = &microerror.Error{
+	Kind: "missingOutputValueError",
+}
 
 // IsMissingOutputValue asserts missingOutputValueError.
 func IsMissingOutputValue(err error) bool {
 	return microerror.Cause(err) == missingOutputValueError
 }
 
-var wrongTypeError = microerror.New("wrong type")
+var wrongTypeError = &microerror.Error{
+	Kind: "wrongTypeError",
+}
 
 // IsWrongTypeError asserts wrongTypeError.
 func IsWrongTypeError(err error) bool {
