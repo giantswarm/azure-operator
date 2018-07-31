@@ -5,14 +5,18 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var invalidConfigError = microerror.New("invalid config")
+var invalidConfigError = &microerror.Error{
+	Kind: "invalidConfigError",
+}
 
 // IsInvalidConfig asserts invalidConfigError.
 func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-var scaleSetNotFoundError = microerror.New("scale set not found")
+var scaleSetNotFoundError = &microerror.Error{
+	Kind: "scaleSetNotFoundError",
+}
 
 // IsScaleSetNotFound asserts scaleSetNotFoundError.
 func IsScaleSetNotFound(err error) bool {

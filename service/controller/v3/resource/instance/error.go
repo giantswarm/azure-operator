@@ -5,14 +5,18 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var invalidConfigError = microerror.New("invalid config")
+var invalidConfigError = &microerror.Error{
+	Kind: "invalidConfigError",
+}
 
 // IsInvalidConfig asserts invalidConfigError.
 func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-var deploymentNotFoundError = microerror.New("not found")
+var deploymentNotFoundError = &microerror.Error{
+	Kind: "deploymentNotFoundError",
+}
 
 // IsDeploymentNotFound asserts deploymentNotFoundError.
 func IsDeploymentNotFound(err error) bool {
@@ -38,14 +42,18 @@ func IsDeploymentNotFound(err error) bool {
 	return false
 }
 
-var missingLabelError = microerror.New("missing label")
+var missingLabelError = &microerror.Error{
+	Kind: "missingLabelError",
+}
 
 // IsMissingLabel asserts missingLabelError.
 func IsMissingLabel(err error) bool {
 	return microerror.Cause(err) == missingLabelError
 }
 
-var scaleSetNotFoundError = microerror.New("scale set not found")
+var scaleSetNotFoundError = &microerror.Error{
+	Kind: "scaleSetNotFoundError",
+}
 
 // IsScaleSetNotFound asserts scaleSetNotFoundError.
 func IsScaleSetNotFound(err error) bool {
@@ -71,7 +79,9 @@ func IsScaleSetNotFound(err error) bool {
 	return false
 }
 
-var versionBlobEmptyError = microerror.New("version blob empty")
+var versionBlobEmptyError = &microerror.Error{
+	Kind: "versionBlobEmptyError",
+}
 
 // IsVersionBlobEmpty asserts versionBlobEmptyError.
 func IsVersionBlobEmpty(err error) bool {
