@@ -5,21 +5,27 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var timeoutError = microerror.New("timeout")
+var timeoutError = &microerror.Error{
+	Kind: "timeoutError",
+}
 
 // IsTimeoutError asserts createTimeoutError.
 func IsTimeoutError(err error) bool {
 	return microerror.Cause(err) == timeoutError
 }
 
-var invalidConfigError = microerror.New("invalid config")
+var invalidConfigError = &microerror.Error{
+	Kind: "invalidConfigError",
+}
 
 // IsInvalidConfig asserts invalidConfigError.
 func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-var notFoundError = microerror.New("not found")
+var notFoundError = &microerror.Error{
+	Kind: "notFoundError",
+}
 
 // IsNotFound asserts notFoundError.
 func IsNotFound(err error) bool {
@@ -45,14 +51,18 @@ func IsNotFound(err error) bool {
 	return false
 }
 
-var missingOutputValueError = microerror.New("missing output value")
+var missingOutputValueError = &microerror.Error{
+	Kind: "missingOutputValueError",
+}
 
 // IsMissingOutputValue asserts missingOutputValueError.
 func IsMissingOutputValue(err error) bool {
 	return microerror.Cause(err) == missingOutputValueError
 }
 
-var wrongTypeError = microerror.New("wrong type")
+var wrongTypeError = &microerror.Error{
+	Kind: "wrongTypeError",
+}
 
 // IsWrongTypeError asserts wrongTypeError.
 func IsWrongTypeError(err error) bool {

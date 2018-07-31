@@ -5,21 +5,27 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var invalidConfigError = microerror.New("invalid config")
+var invalidConfigError = &microerror.Error{
+	Kind: "invalidConfigError",
+}
 
 // IsInvalidConfig asserts invalidConfigError.
 func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-var wrongTypeError = microerror.New("wrong type")
+var wrongTypeError = &microerror.Error{
+	Kind: "wrongTypeError",
+}
 
 // IsWrongTypeError asserts wrongTypeError.
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
 }
 
-var vpnGatewayNotFoundError = microerror.New("vpn gateway not found")
+var vpnGatewayNotFoundError = &microerror.Error{
+	Kind: "vpnGatewayNotFoundError",
+}
 
 // IsVPNGatewayNotFound asserts vpnGatewayNotFoundError.
 func IsVPNGatewayNotFound(err error) bool {
@@ -45,7 +51,9 @@ func IsVPNGatewayNotFound(err error) bool {
 	return false
 }
 
-var vpnGatewayConnectionNotFoundError = microerror.New("vpn gateway connection not found")
+var vpnGatewayConnectionNotFoundError = &microerror.Error{
+	Kind: "vpnGatewayConnectionNotFoundError",
+}
 
 // IsVPNGatewayConnectionNotFound asserts vpnGatewayConnectionNotFoundError.
 func IsVPNGatewayConnectionNotFound(err error) bool {

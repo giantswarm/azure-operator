@@ -39,6 +39,10 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
+	err = cc.Validate()
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
 
 	masterCloudConfig, err := cc.CloudConfig.NewMasterCloudConfig(obj)
 	if err != nil {

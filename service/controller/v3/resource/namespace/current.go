@@ -37,7 +37,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	if namespace != nil && namespace.Status.Phase == "Terminating" {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "namespace is in state 'Terminating'")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 		return nil, nil
 	}

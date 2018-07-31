@@ -10,6 +10,12 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - core.giantswarm.io
+    resources:
+      - drainerconfigs
+    verbs:
+      - "*"
+  - apiGroups:
       - provider.giantswarm.io
     resources:
       - azureconfigs

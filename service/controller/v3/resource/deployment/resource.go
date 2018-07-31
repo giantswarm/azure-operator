@@ -97,10 +97,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	} else {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", *d.Properties.ProvisioningState))
 
-		if !key.IsFinalProvisioningState(*d.Properties.ProvisioningState) {
+		if !key.IsSucceededProvisioningState(*d.Properties.ProvisioningState) {
 			r.debugger.LogFailedDeployment(ctx, d)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
-
+		}
+		if !key.IsFinalProvisioningState(*d.Properties.ProvisioningState) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 
