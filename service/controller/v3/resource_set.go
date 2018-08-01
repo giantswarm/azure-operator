@@ -32,6 +32,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/service"
+	"github.com/giantswarm/azure-operator/service/controller/v3/resource/vnetpeeringcleaner"
 	"github.com/giantswarm/azure-operator/service/controller/v3/resource/vpngateway"
 )
 
@@ -289,6 +290,26 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var vnetPeeringCleanerResource controller.Resource
+	{
+		c := vnetpeeringcleaner.Config{
+			Logger: config.Logger,
+
+			Azure:       config.Azure,
+			AzureConfig: config.HostAzureClientSetConfig,
+		}
+
+		ops, err := vnetpeeringcleaner.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		vnetPeeringCleanerResource, err = toCRUDResource(config.Logger, ops)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []controller.Resource{
 		// TODO our host clusters are in quite inconsistent states. Status sub
 		// resources do not seem to be enabled everywhere. This results in
@@ -311,6 +332,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		endpointsResource,
 		dnsrecordResource,
 		vpnGatewayResource,
+		vnetPeeringCleanerResource,
 	}
 
 	{
