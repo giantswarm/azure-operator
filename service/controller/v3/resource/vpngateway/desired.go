@@ -2,7 +2,6 @@ package vpngateway
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -48,14 +47,6 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			} else if err != nil {
 				return connections{}, microerror.Mask(err)
 			}
-
-			if provisioningState := *guestVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway is in state '%s'", provisioningState))
-				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-
-				return connections{}, nil
-			}
 		}
 
 		{
@@ -71,14 +62,6 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 				return connections{}, nil
 			} else if err != nil {
 				return connections{}, microerror.Mask(err)
-			}
-
-			if provisioningState := *hostVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState))
-				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-
-				return connections{}, nil
 			}
 		}
 	}
