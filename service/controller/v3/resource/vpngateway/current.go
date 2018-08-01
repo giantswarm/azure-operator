@@ -2,8 +2,10 @@ package vpngateway
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
@@ -29,6 +31,15 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		} else if err != nil {
 			return connections{}, microerror.Mask(err)
 		}
+
+		if provisioningState := *h.ProvisioningState; !key.IsFinalProvisioningState(provisioningState) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway connection is in state '%s'", provisioningState))
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
+			return connections{}, nil
+		}
+
 		c.Host = *h
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "found host vpn gateway connection")
@@ -47,6 +58,15 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		} else if err != nil {
 			return c, microerror.Mask(err)
 		}
+
+		if provisioningState := *g.ProvisioningState; !key.IsFinalProvisioningState(provisioningState) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway connection is in state '%s'", provisioningState))
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
+			return c, nil
+		}
+
 		c.Guest = *g
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "found guest vpn gateway connection")
