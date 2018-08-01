@@ -23,10 +23,14 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+      - provider.giantswarm.io
+    resources:
+      - azureconfigs/status
+    verbs:
       - create
-      - update
       - patch
-      - delete
+      - update
   - apiGroups:
       - ""
     resources:
