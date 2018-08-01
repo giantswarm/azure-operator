@@ -21,6 +21,8 @@ import (
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+
 	// We process the status updates within its own backoff here to gurantee its
 	// execution independent of any eventual retries via the retry resource. It
 	// might happen that the reconciled object is not the latest version so any
@@ -81,7 +83,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if modified {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
 		reconciliationcanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation for custom object")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not patch CR status")
 	}
 
 	return nil
