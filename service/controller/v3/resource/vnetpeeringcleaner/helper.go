@@ -1,4 +1,4 @@
-package vnetpeering
+package vnetpeeringcleaner
 
 import (
 	"github.com/giantswarm/microerror"

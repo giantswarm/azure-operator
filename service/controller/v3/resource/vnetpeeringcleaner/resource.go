@@ -1,4 +1,4 @@
-package vnetpeering
+package vnetpeeringcleaner
 
 import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
