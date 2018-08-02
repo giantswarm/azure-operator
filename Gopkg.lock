@@ -74,8 +74,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "cc03a15b82ef2c52a4fd94c92655aecb70160a48"
-  version = "v1.15.3"
+  revision = "d1f87361dea69f086010bc3d03c120a602320b97"
+  version = "v1.15.4"
 
 [[projects]]
   branch = "master"
@@ -247,7 +247,7 @@
   branch = "master"
   name = "github.com/giantswarm/errors"
   packages = ["guest"]
-  revision = "2b68497b52129c0b5befe81abee57e766a81da7d"
+  revision = "51a7ca6b403dc133497da26a0a30684a5df56752"
 
 [[projects]]
   branch = "master"
@@ -364,10 +364,10 @@
   revision = "8c249db3ebb52660916c620688b96ff0b345da13"
 
 [[projects]]
-  branch = "master"
+  branch = "deletion"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "5d95c771c4418aafa95ba5f2fb451d647c5de568"
+  revision = "4c0a5607c2cb29bcd7be16980ad48b41f5cb2b06"
 
 [[projects]]
   branch = "master"
@@ -735,7 +735,7 @@
     "unix",
     "windows"
   ]
-  revision = "3dc4335d56c789b04b0ba99b7a37249d9b614314"
+  revision = "0ffbfd41fbef8ffcf9b62b0b0aa3a5873ed7a4fe"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -1337,6 +1337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14c1208d905fc6d63c9da88093e456f8f0dd829da229bdcef0e2e07152fc8e98"
+  inputs-digest = "657c689d6c2acacba4234b66b63ad1cc4b2fedcf32c28af620bd77bc3b4b5dd6"
   solver-name = "gps-cdcl"
   solver-version = 1
