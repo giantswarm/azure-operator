@@ -22,11 +22,17 @@ rules:
     verbs:
       - get
       - list
-      - watch
-      - create
-      - update
       - patch
-      - delete
+      - update
+      - watch
+  - apiGroups:
+      - provider.giantswarm.io
+    resources:
+      - azureconfigs/status
+    verbs:
+      - create
+      - patch
+      - update
   - apiGroups:
       - ""
     resources:

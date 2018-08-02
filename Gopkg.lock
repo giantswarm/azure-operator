@@ -74,8 +74,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "123c8c8326730972861f45fe2e6e7b1d64b4d487"
-  version = "v1.15.1"
+  revision = "cc03a15b82ef2c52a4fd94c92655aecb70160a48"
+  version = "v1.15.3"
 
 [[projects]]
   branch = "master"
@@ -224,13 +224,13 @@
     "aws",
     "azure"
   ]
-  revision = "a5cd49efce41a33fe79729984116f2026ad67cb0"
+  revision = "1eb793c222c9392676ec08c368708763b02f746c"
 
 [[projects]]
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
-  revision = "b6c06a28674e73c7e266202c50a4c8a12b16b255"
+  revision = "1821f8412803da8b658cdaf101d24a00f770b684"
 
 [[projects]]
   branch = "master"
@@ -241,7 +241,7 @@
     "scaling",
     "scaling/provider"
   ]
-  revision = "e087f8cfb8a483310a909546a72cf8dc5bbd28d7"
+  revision = "7e8790fdbcfa8b83e2c7587e01f4a4081265f2ae"
 
 [[projects]]
   branch = "master"
@@ -275,7 +275,7 @@
     "v_3_3_4",
     "v_3_4_0"
   ]
-  revision = "fa0193c7d6833775c652d3e0267e6603e472484f"
+  revision = "7af5ffb050b04243bc841cb2490dd916bb3cca6b"
 
 [[projects]]
   branch = "master"
@@ -327,7 +327,7 @@
     "loggermeta",
     "microloggertest"
   ]
-  revision = "39f8cfb7c2583edb28552d9e4b12193e5bddaf60"
+  revision = "d757f42e4a3efca1fe82e633579b28c586e08698"
 
 [[projects]]
   branch = "master"
@@ -361,7 +361,13 @@
     ".",
     "randomkeystest"
   ]
-  revision = "32106653e4aa60bef71a2b6d62154b923660412e"
+  revision = "8c249db3ebb52660916c620688b96ff0b345da13"
+
+[[projects]]
+  branch = "master"
+  name = "github.com/giantswarm/statusresource"
+  packages = ["."]
+  revision = "efb00ced28324db5dea056f85fe016e411730764"
 
 [[projects]]
   branch = "master"
@@ -455,7 +461,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "32c30013be0212dd7246d50d79172453d1fd2472"
+  revision = "7161710a6e17f60dd044570a59c5e11a3a5200d6"
 
 [[projects]]
   branch = "master"
@@ -629,7 +635,7 @@
     "internal/bitbucket.org/ww/goautoneg",
     "model"
   ]
-  revision = "7600349dcfe1abd18d72d3a1770870d9800a7801"
+  revision = "c7de2306084e37d54b8be01f3541a8464345e9a5"
 
 [[projects]]
   branch = "master"
@@ -705,7 +711,7 @@
     "publicsuffix",
     "trace"
   ]
-  revision = "a0f8a16cb08c06df97cbdf9c47f4731ba548c33c"
+  revision = "f4c29de78a2a91c00474a2e689954305c350adf9"
 
 [[projects]]
   branch = "master"
@@ -729,7 +735,7 @@
     "unix",
     "windows"
   ]
-  revision = "bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e"
+  revision = "3dc4335d56c789b04b0ba99b7a37249d9b614314"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -782,7 +788,7 @@
   branch = "master"
   name = "google.golang.org/genproto"
   packages = ["googleapis/rpc/status"]
-  revision = "2a72893556e4d1f6c795a4c039314c9fa751eedb"
+  revision = "daca94659cb50e9f37c1b834680f2e46358f10b0"
 
 [[projects]]
   name = "google.golang.org/grpc"
@@ -801,7 +807,9 @@
     "internal",
     "internal/backoff",
     "internal/channelz",
+    "internal/envconfig",
     "internal/grpcrand",
+    "internal/transport",
     "keepalive",
     "metadata",
     "naming",
@@ -811,11 +819,10 @@
     "resolver/passthrough",
     "stats",
     "status",
-    "tap",
-    "transport"
+    "tap"
   ]
-  revision = "168a6198bcb0ef175f7dacec0b8691fc141dc9b8"
-  version = "v1.13.0"
+  revision = "32fb0ac620c32ba40a4626ddf94d90d12cce3455"
+  version = "v1.14.0"
 
 [[projects]]
   name = "gopkg.in/inf.v0"
@@ -1154,7 +1161,7 @@
   branch = "master"
   name = "k8s.io/kube-openapi"
   packages = ["pkg/util/proto"]
-  revision = "d8ea2fe547a448256204cfc68dfee7b26c720acb"
+  revision = "e3762e86a74c878ffed47484592986685639c2cd"
 
 [[projects]]
   name = "k8s.io/kubernetes"
@@ -1319,7 +1326,7 @@
   branch = "master"
   name = "k8s.io/utils"
   packages = ["exec"]
-  revision = "66066c83e385e385ccc3c964b44fd7dcd413d0ed"
+  revision = "045dc31ee5c40e8240241ce28dc24d7b56130373"
 
 [[projects]]
   branch = "master"
@@ -1330,6 +1337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f2fa185bb7faff85f646ea644ec36cb48457781f4bb3acfd7294b1bf27a2d13e"
+  inputs-digest = "14c1208d905fc6d63c9da88093e456f8f0dd829da229bdcef0e2e07152fc8e98"
   solver-name = "gps-cdcl"
   solver-version = 1
