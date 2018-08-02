@@ -268,14 +268,14 @@
   revision = "9f5e82f904b3f54b19ac8cb58cbbadb59d50eb89"
 
 [[projects]]
-  branch = "ingress-service-param"
+  branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "v_3_2_5",
     "v_3_3_4",
     "v_3_5_0"
   ]
-  revision = "27faa383eb6c155f1b39427613f38bf882605658"
+  revision = "f40dfaefc463529f418c9177e0983f4955505a13"
 
 [[projects]]
   branch = "master"
@@ -1330,6 +1330,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "b45e25abc69dea92d770850b856b8edf22fae9e24e6e39eb569b9e1ba8579bd5"
+  inputs-digest = "d8b65b95df31c6a696ccade9f705fb9b1b03378178266147876d257ff9317b1a"
   solver-name = "gps-cdcl"
   solver-version = 1
