@@ -116,12 +116,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		nodeConfigs = list.Items
 	}
 
-	var allMasterInstances []compute.VirtualMachineScaleSetVM
-	var drainedMasterInstance *compute.VirtualMachineScaleSetVM
-	var reimagedMasterInstance *compute.VirtualMachineScaleSetVM
-	var updatedMasterInstance *compute.VirtualMachineScaleSetVM
+	var masterInstanceToDrain *compute.VirtualMachineScaleSetVM
+	var masterInstanceToReimage *compute.VirtualMachineScaleSetVM
+	var masterInstanceToUpdate *compute.VirtualMachineScaleSetVM
 	{
-		allMasterInstances, err = r.allInstances(ctx, customObject, key.MasterVMSSName)
+		allMasterInstances, err := r.allInstances(ctx, customObject, key.MasterVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(customObject)))
 		} else if err != nil {
@@ -129,23 +128,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			updatedMasterInstance, drainedMasterInstance, reimagedMasterInstance, err = r.nextInstance(ctx, customObject, allMasterInstances, nodeConfigs, key.MasterInstanceName, masterVersionsValue)
+			masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err = r.nextInstance(ctx, customObject, allMasterInstances, nodeConfigs, key.MasterInstanceName, masterVersionsValue)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.updateInstance(ctx, customObject, updatedMasterInstance, key.MasterVMSSName, key.MasterInstanceName)
+			err = r.updateInstance(ctx, customObject, masterInstanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.createDrainerConfig(ctx, customObject, drainedMasterInstance, key.MasterInstanceName)
+			err = r.createDrainerConfig(ctx, customObject, masterInstanceToDrain, key.MasterInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.reimageInstance(ctx, customObject, reimagedMasterInstance, key.MasterVMSSName, key.MasterInstanceName)
+			err = r.reimageInstance(ctx, customObject, masterInstanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.deleteDrainerConfig(ctx, customObject, reimagedMasterInstance, key.MasterInstanceName, nodeConfigs)
+			err = r.deleteDrainerConfig(ctx, customObject, masterInstanceToReimage, key.MasterInstanceName, nodeConfigs)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -154,10 +153,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	var allWorkerInstances []compute.VirtualMachineScaleSetVM
-	var drainedWorkerInstance *compute.VirtualMachineScaleSetVM
-	var reimagedWorkerInstance *compute.VirtualMachineScaleSetVM
-	var updatedWorkerInstance *compute.VirtualMachineScaleSetVM
 	// In case the master instance is being updated we want to prevent any
 	// other updates on the workers. This is because the update process
 	// involves the draining of the updated node and if the master is being
@@ -166,8 +161,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// worker instance selected to be reimaged in order to not update its
 	// version information. The next reconciliation loop will catch up here
 	// and instruct the worker instance to be reimaged again.
-	if drainedMasterInstance == nil && reimagedMasterInstance == nil {
-		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
+	if masterInstanceToDrain == nil && masterInstanceToReimage == nil {
+		allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
 		} else if err != nil {
@@ -175,23 +170,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-			updatedWorkerInstance, drainedWorkerInstance, reimagedWorkerInstance, err = r.nextInstance(ctx, customObject, allWorkerInstances, nodeConfigs, key.WorkerInstanceName, workerVersionsValue)
+			workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, nodeConfigs, key.WorkerInstanceName, workerVersionsValue)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.updateInstance(ctx, customObject, updatedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
+			err = r.updateInstance(ctx, customObject, workerInstanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.createDrainerConfig(ctx, customObject, drainedWorkerInstance, key.WorkerInstanceName)
+			err = r.createDrainerConfig(ctx, customObject, workerInstanceToDrain, key.WorkerInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.reimageInstance(ctx, customObject, reimagedWorkerInstance, key.WorkerVMSSName, key.WorkerInstanceName)
+			err = r.reimageInstance(ctx, customObject, workerInstanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			err = r.deleteDrainerConfig(ctx, customObject, reimagedWorkerInstance, key.WorkerInstanceName, nodeConfigs)
+			err = r.deleteDrainerConfig(ctx, customObject, workerInstanceToReimage, key.WorkerInstanceName, nodeConfigs)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -462,25 +457,21 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances
 	}
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
-	if instanceInProgress == nil {
-		instanceToUpdate = firstInstanceToUpdate(customObject, instances)
-		if instanceToUpdate != nil {
-			return instanceToUpdate, nil, nil, nil
-		}
+	instanceToUpdate = firstInstanceToUpdate(customObject, instances)
+	if instanceToUpdate != nil {
+		return instanceToUpdate, nil, nil, nil
 	}
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
-	if instanceToUpdate == nil {
-		instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
-		if err != nil {
-			return nil, nil, nil, microerror.Mask(err)
-		}
-		if instanceToReimage != nil {
-			if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instanceToReimage.InstanceID)) {
-				return nil, nil, instanceToReimage, nil
-			} else {
-				return nil, instanceToReimage, nil, nil
-			}
+	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
+	if err != nil {
+		return nil, nil, nil, microerror.Mask(err)
+	}
+	if instanceToReimage != nil {
+		if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instanceToReimage.InstanceID)) {
+			return nil, nil, instanceToReimage, nil
+		} else {
+			return nil, instanceToReimage, nil, nil
 		}
 	}
 
