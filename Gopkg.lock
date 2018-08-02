@@ -215,7 +215,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "fff26fea7e8d05a87c62cc477b197c0186d038f2"
+  revision = "dda8f253e8fd3ce8fae3f1b2b70d29a43a674b1e"
 
 [[projects]]
   branch = "master"
@@ -275,7 +275,7 @@
     "v_3_3_4",
     "v_3_4_0"
   ]
-  revision = "7af5ffb050b04243bc841cb2490dd916bb3cca6b"
+  revision = "f40dfaefc463529f418c9177e0983f4955505a13"
 
 [[projects]]
   branch = "master"
@@ -298,7 +298,7 @@
   branch = "master"
   name = "github.com/giantswarm/microerror"
   packages = ["."]
-  revision = "a8d5d4f526c526b4b773062958847fe7e0b7f449"
+  revision = "a767567285d6db85cf9f08322fe49351aa385109"
 
 [[projects]]
   branch = "master"
@@ -364,10 +364,10 @@
   revision = "8c249db3ebb52660916c620688b96ff0b345da13"
 
 [[projects]]
-  branch = "master"
+  branch = "default"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "efb00ced28324db5dea056f85fe016e411730764"
+  revision = "77e613749d11f43902d44f8b72f4b18205a51d78"
 
 [[projects]]
   branch = "master"
@@ -1337,6 +1337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14c1208d905fc6d63c9da88093e456f8f0dd829da229bdcef0e2e07152fc8e98"
+  inputs-digest = "2c6c9cad73108c1754a414e4a0085ae5cbb5f21e636f37b4ddb2445a39d29e99"
   solver-name = "gps-cdcl"
   solver-version = 1

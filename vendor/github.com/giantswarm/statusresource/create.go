@@ -142,17 +142,39 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 	// might be other properties managed by external authorities who have to
 	// manage their own initialization.
 	{
-		if clusterStatus.Conditions == nil && clusterStatus.Versions == nil {
+		conditionsEmpty := clusterStatus.Conditions == nil
+		nodesEmpty := clusterStatus.Nodes == nil
+		versionsEmpty := clusterStatus.Versions == nil
+
+		if conditionsEmpty && nodesEmpty && versionsEmpty {
 			patches = append(patches, Patch{
-				Op:   "add",
-				Path: "/status",
-				Value: Status{
-					Cluster: providerv1alpha1.StatusCluster{
-						Conditions: []providerv1alpha1.StatusClusterCondition{},
-						Nodes:      []providerv1alpha1.StatusClusterNode{},
-						Versions:   []providerv1alpha1.StatusClusterVersion{},
-					},
-				},
+				Op:    "add",
+				Path:  "/status",
+				Value: Status{},
+			})
+		}
+
+		if conditionsEmpty {
+			patches = append(patches, Patch{
+				Op:    "replace",
+				Path:  "/status/cluster/conditions",
+				Value: []providerv1alpha1.StatusClusterCondition{},
+			})
+		}
+
+		if nodesEmpty {
+			patches = append(patches, Patch{
+				Op:    "replace",
+				Path:  "/status/cluster/nodes",
+				Value: []providerv1alpha1.StatusClusterNode{},
+			})
+		}
+
+		if versionsEmpty {
+			patches = append(patches, Patch{
+				Op:    "replace",
+				Path:  "/status/cluster/versions",
+				Value: []providerv1alpha1.StatusClusterVersion{},
 			})
 		}
 	}
@@ -263,6 +285,7 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 
 	// TODO emit metrics when update did not complete within a certain timeframe
 	// TODO update status condition when guest cluster is migrating from creating to created status
+	// TODO update status condition to Deleting during delete event when guest cluster is being deleted
 
 	return patches, nil
 }
