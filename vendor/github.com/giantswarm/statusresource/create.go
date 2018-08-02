@@ -156,7 +156,7 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 
 		if conditionsEmpty {
 			patches = append(patches, Patch{
-				Op:    "replace",
+				Op:    "add",
 				Path:  "/status/cluster/conditions",
 				Value: []providerv1alpha1.StatusClusterCondition{},
 			})
@@ -164,7 +164,7 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 
 		if nodesEmpty {
 			patches = append(patches, Patch{
-				Op:    "replace",
+				Op:    "add",
 				Path:  "/status/cluster/nodes",
 				Value: []providerv1alpha1.StatusClusterNode{},
 			})
@@ -172,7 +172,7 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 
 		if versionsEmpty {
 			patches = append(patches, Patch{
-				Op:    "replace",
+				Op:    "add",
 				Path:  "/status/cluster/versions",
 				Value: []providerv1alpha1.StatusClusterVersion{},
 			})
