@@ -249,7 +249,7 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 				})
 			}
 
-			nodesDiffer := !reflect.DeepEqual(clusterStatus.Nodes, nodes)
+			nodesDiffer := nodes != nil && !reflect.DeepEqual(clusterStatus.Nodes, nodes)
 
 			if nodesDiffer {
 				patches = append(patches, Patch{

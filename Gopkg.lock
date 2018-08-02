@@ -74,8 +74,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "e3f7540480e3b9a733845f9fa5d35d7484bac3cd"
-  version = "v1.15.2"
+  revision = "cc03a15b82ef2c52a4fd94c92655aecb70160a48"
+  version = "v1.15.3"
 
 [[projects]]
   branch = "master"
@@ -224,7 +224,7 @@
     "aws",
     "azure"
   ]
-  revision = "22602aef5435658b5829806219a15ec3af8c59c6"
+  revision = "1eb793c222c9392676ec08c368708763b02f746c"
 
 [[projects]]
   branch = "master"
@@ -364,10 +364,10 @@
   revision = "8c249db3ebb52660916c620688b96ff0b345da13"
 
 [[projects]]
-  branch = "master"
+  branch = "nil"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "4b6d9fd587d6f9d2c6c5b58aad21a78af43784a8"
+  revision = "2bb6ae2bd27805c8d9da65ffcfeb249055a19c01"
 
 [[projects]]
   branch = "master"
@@ -461,7 +461,7 @@
   branch = "master"
   name = "github.com/google/go-github"
   packages = ["github"]
-  revision = "b50a4aab93702d0dc74b27cc0221585cebd94c98"
+  revision = "7161710a6e17f60dd044570a59c5e11a3a5200d6"
 
 [[projects]]
   branch = "master"
@@ -711,7 +711,7 @@
     "publicsuffix",
     "trace"
   ]
-  revision = "49c15d80dfbc983ea25246ee959d970efe09ec09"
+  revision = "f4c29de78a2a91c00474a2e689954305c350adf9"
 
 [[projects]]
   branch = "master"
@@ -735,7 +735,7 @@
     "unix",
     "windows"
   ]
-  revision = "bd9dbc187b6e1dacfdd2722a87e83093c2d7bd6e"
+  revision = "3dc4335d56c789b04b0ba99b7a37249d9b614314"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -1326,7 +1326,7 @@
   branch = "master"
   name = "k8s.io/utils"
   packages = ["exec"]
-  revision = "66066c83e385e385ccc3c964b44fd7dcd413d0ed"
+  revision = "045dc31ee5c40e8240241ce28dc24d7b56130373"
 
 [[projects]]
   branch = "master"
@@ -1337,6 +1337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14c1208d905fc6d63c9da88093e456f8f0dd829da229bdcef0e2e07152fc8e98"
+  inputs-digest = "61e2ff92eeadbaec50af5dbeb85b28b7b58eb035c87d12e2b7e756de9cdd8310"
   solver-name = "gps-cdcl"
   solver-version = 1
