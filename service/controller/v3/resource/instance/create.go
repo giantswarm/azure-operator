@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/errors/guest"
 	"github.com/giantswarm/microerror"
 	"k8s.io/api/core/v1"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
@@ -275,11 +276,14 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 	}
 
 	_, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Create(c)
-	if err != nil {
+	if errors.IsAlreadyExists(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create node config for guest cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "node config for guest cluster node does already exist")
+	} else if err != nil {
 		return microerror.Mask(err)
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "created node config for guest cluster node")
 	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "created node config for guest cluster node")
 
 	return nil
 }
@@ -305,11 +309,14 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 		o := &metav1.DeleteOptions{}
 
 		err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Delete(i, o)
-		if err != nil {
+		if errors.IsNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete node config for guest cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "node config for guest cluster node does not exist")
+		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted node config for guest cluster node")
 		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted node config for guest cluster node")
 	} else {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting node config for guest cluster node due to undrained node")
 	}
