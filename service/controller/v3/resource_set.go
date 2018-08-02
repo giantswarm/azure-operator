@@ -328,11 +328,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		serviceResource,
 		resourceGroupResource,
 		deploymentResource,
+		vnetPeeringCleanerResource,
 		instanceResource,
 		endpointsResource,
 		dnsrecordResource,
 		vpnGatewayResource,
-		vnetPeeringCleanerResource,
 	}
 
 	{

@@ -30,6 +30,8 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
+	config.Logger.Log("level", "debug", "message", "new")
+
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -48,6 +50,7 @@ func New(config Config) (*Resource, error) {
 		azureConfig: config.AzureConfig,
 	}
 
+	r.logger.Log("level", "debug", "message", "new: done")
 	return r, nil
 }
 
