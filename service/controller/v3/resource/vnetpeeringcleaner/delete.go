@@ -13,7 +13,7 @@ import (
 
 // NewDeletePatch is noop.
 func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
-	r.logger.Log("level", "debug", "message", "NewDeletePatch")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "NewDeletePatch")
 	return nil, nil
 }
 
@@ -26,7 +26,7 @@ func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alp
 
 // ApplyDeleteChange is noop.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change interface{}) error {
-	r.logger.Log("level", "debug", "message", "ApplyDeleteChange")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ApplyDeleteChange")
 	return nil
 }
 
