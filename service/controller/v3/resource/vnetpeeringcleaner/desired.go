@@ -14,7 +14,6 @@ import (
 // GetDesiredState return desired peering for host cluster virtual network.
 // Peering resource is named after guest cluster's resource group and targeting its virtual network.
 func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
-	r.logger.Log("level", "debug", "message", "GetDesiredState")
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return network.VirtualNetworkPeering{}, microerror.Mask(err)
@@ -25,7 +24,6 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 		return network.VirtualNetworkPeering{}, microerror.Mask(err)
 	}
 
-	r.logger.Log("level", "debug", "message", "GetDesiredState", "desired", vnetPeering)
 	return vnetPeering, nil
 }
 
