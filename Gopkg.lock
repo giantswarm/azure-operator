@@ -352,7 +352,7 @@
     "controller/resource/retryresource",
     "informer"
   ]
-  revision = "6cc3caa2831a7d1fca262962d5690a6d3408b60c"
+  revision = "d30ebc35b980dfcd4abd7b01683c21cc5e840b78"
 
 [[projects]]
   branch = "master"
@@ -1337,6 +1337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14c1208d905fc6d63c9da88093e456f8f0dd829da229bdcef0e2e07152fc8e98"
+  inputs-digest = "a56a215c9b554e09db8cdd9c63a944019c34174d8a0e468b0796483e7c17bdc2"
   solver-name = "gps-cdcl"
   solver-version = 1
