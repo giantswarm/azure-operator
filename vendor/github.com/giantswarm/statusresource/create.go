@@ -186,6 +186,23 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 		}
 	}
 
+	// When we notice the current and the desired guest cluster version differs,
+	// an update is about to be processed. So we set the status condition
+	// indicating the guest cluster is updating now.
+	{
+		isCreated := clusterStatus.HasCreatedCondition()
+		notUpdating := !clusterStatus.HasUpdatingCondition()
+		versionDiffers := currentVersion != "" && currentVersion != desiredVersion
+
+		if isCreated && notUpdating && versionDiffers {
+			patches = append(patches, Patch{
+				Op:    "replace",
+				Path:  "/status/cluster/conditions",
+				Value: clusterStatus.WithUpdatingCondition(),
+			})
+		}
+	}
+
 	// Set the status cluster condition to updated when an update successfully
 	// took place. Precondition for this is the guest cluster is updating and all
 	// nodes being known and all nodes having the same versions.
@@ -200,23 +217,6 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 				Op:    "replace",
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithUpdatedCondition(),
-			})
-		}
-	}
-
-	// When we notice the current and the desired guest cluster version differs,
-	// an update is about to be processed. So we set the status condition
-	// indicating the guest cluster is updating now.
-	{
-		isCreated := clusterStatus.HasCreatedCondition()
-		notUpdating := !clusterStatus.HasUpdatingCondition()
-		versionDiffers := currentVersion != desiredVersion
-
-		if isCreated && notUpdating && versionDiffers {
-			patches = append(patches, Patch{
-				Op:    "replace",
-				Path:  "/status/cluster/conditions",
-				Value: clusterStatus.WithUpdatingCondition(),
 			})
 		}
 	}

@@ -230,7 +230,7 @@
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
-  revision = "e2d7e2d462a035e97005bcb1f105aab2f65cdcda"
+  revision = "fa85e487f49b50f99921c80ce508d110827b2f9d"
 
 [[projects]]
   branch = "master"
@@ -367,7 +367,7 @@
   branch = "creation"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "d76fed0b4537f3f4f25d32769726e19239eedae9"
+  revision = "b1af855345f69488a232f132f40519d897e3bde1"
 
 [[projects]]
   branch = "master"
