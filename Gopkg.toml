@@ -87,7 +87,7 @@ required = [
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
-  branch = "creation"
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
 
 [[constraint]]
