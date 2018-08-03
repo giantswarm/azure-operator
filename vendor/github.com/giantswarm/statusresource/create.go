@@ -53,7 +53,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			patches, err := r.computePatches(ctx, newAccessor, newObj)
+			patches, err := r.computeCreateEventPatches(ctx, newAccessor, newObj)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -116,7 +116,7 @@ func (r *Resource) applyPatches(ctx context.Context, accessor metav1.Object, pat
 	return nil
 }
 
-func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, obj interface{}) ([]Patch, error) {
+func (r *Resource) computeCreateEventPatches(ctx context.Context, accessor metav1.Object, obj interface{}) ([]Patch, error) {
 	clusterStatus, err := r.clusterStatusFunc(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -285,7 +285,6 @@ func (r *Resource) computePatches(ctx context.Context, accessor metav1.Object, o
 
 	// TODO emit metrics when update did not complete within a certain timeframe
 	// TODO update status condition when guest cluster is migrating from creating to created status
-	// TODO update status condition to Deleting during delete event when guest cluster is being deleted
 
 	return patches, nil
 }
