@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 )
 
@@ -36,7 +37,9 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			}
 
 			newObj, err := r.restClient.Get().AbsPath(accessor.GetSelfLink()).Do().Get()
-			if err != nil {
+			if errors.IsNotFound(err) {
+				return backoff.Permanent(microerror.Mask(err))
+			} else if err != nil {
 				return microerror.Mask(err)
 			}
 
@@ -67,7 +70,9 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		}
 
 		err := backoff.RetryNotify(o, b, n)
-		if err != nil {
+		if errors.IsNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
