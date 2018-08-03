@@ -38,6 +38,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if controllercontext.IsInvalidContext(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "not ensuring deployment")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
@@ -52,7 +54,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	{
 		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
-		if err != nil {
+		if IsDeploymentNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
