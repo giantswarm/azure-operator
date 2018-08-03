@@ -179,7 +179,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "deletion"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -191,7 +191,7 @@
     "pkg/clientset/versioned/typed/example/v1alpha1",
     "pkg/clientset/versioned/typed/provider/v1alpha1"
   ]
-  revision = "1a04e4f8d3986aec9fd3934a9372a4b8263946bd"
+  revision = "b404baf4b6f26764ad1356d8a639daec7c97138b"
 
 [[projects]]
   branch = "master"
@@ -364,10 +364,10 @@
   revision = "8c249db3ebb52660916c620688b96ff0b345da13"
 
 [[projects]]
-  branch = "deletion"
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "4c0a5607c2cb29bcd7be16980ad48b41f5cb2b06"
+  revision = "b753510dd804a693e848c58e9b1a7247eb77ca07"
 
 [[projects]]
   branch = "master"
@@ -695,7 +695,7 @@
     "ed25519/internal/edwards25519",
     "ssh/terminal"
   ]
-  revision = "c126467f60eb25f8f27e5a981f32a87e3965053f"
+  revision = "56440b844dfe139a8ac053f4ecac0b20b79058f4"
 
 [[projects]]
   branch = "master"
@@ -1337,6 +1337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "1cbcec4a9ddc74ae3991b1bcba6c3d98a1be281c2c0cb8d2b7cd7f58c987285a"
+  inputs-digest = "14c1208d905fc6d63c9da88093e456f8f0dd829da229bdcef0e2e07152fc8e98"
   solver-name = "gps-cdcl"
   solver-version = 1

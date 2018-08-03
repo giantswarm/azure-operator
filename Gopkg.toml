@@ -38,8 +38,8 @@ required = [
   branch = "master"
   name = "github.com/docker/distribution"
 
-[[override]]
-  branch = "deletion"
+[[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
@@ -87,7 +87,7 @@ required = [
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
-  branch = "deletion"
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
 
 [[constraint]]
