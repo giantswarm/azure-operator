@@ -230,7 +230,7 @@
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
-  revision = "1821f8412803da8b658cdaf101d24a00f770b684"
+  revision = "a62cf1d1e7fd27982b51673e041703630914c92e"
 
 [[projects]]
   branch = "master"
@@ -364,10 +364,10 @@
   revision = "8c249db3ebb52660916c620688b96ff0b345da13"
 
 [[projects]]
-  branch = "master"
+  branch = "creation"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "b753510dd804a693e848c58e9b1a7247eb77ca07"
+  revision = "c76f74b2017865cd97fdf067679279e8de07f841"
 
 [[projects]]
   branch = "master"
@@ -1337,6 +1337,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "14c1208d905fc6d63c9da88093e456f8f0dd829da229bdcef0e2e07152fc8e98"
+  inputs-digest = "1ab78573c9d3e03fe267e6c5778557b08dd46296700469d17ae8c42a2729319a"
   solver-name = "gps-cdcl"
   solver-version = 1

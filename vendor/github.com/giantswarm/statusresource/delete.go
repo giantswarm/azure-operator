@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/apimachinery/pkg/api/meta"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
@@ -46,7 +45,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			patches, err := r.computeDeleteEventPatches(ctx, newAccessor, newObj)
+			patches, err := r.computeDeleteEventPatches(ctx, newObj)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -88,7 +87,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) computeDeleteEventPatches(ctx context.Context, accessor metav1.Object, obj interface{}) ([]Patch, error) {
+func (r *Resource) computeDeleteEventPatches(ctx context.Context, obj interface{}) ([]Patch, error) {
 	clusterStatus, err := r.clusterStatusFunc(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)

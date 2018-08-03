@@ -2,10 +2,8 @@ package statusresource
 
 import (
 	"context"
-	"encoding/json"
 	"fmt"
 	"reflect"
-	"strings"
 	"time"
 
 	"github.com/cenkalti/backoff"
@@ -13,10 +11,8 @@ import (
 	"github.com/giantswarm/errors/guest"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -53,7 +49,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			patches, err := r.computeCreateEventPatches(ctx, newAccessor, newObj)
+			patches, err := r.computeCreateEventPatches(ctx, newObj)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -91,32 +87,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) applyPatches(ctx context.Context, accessor metav1.Object, patches []Patch) error {
-	patches = append(patches, Patch{
-		Op:    "test",
-		Value: accessor.GetResourceVersion(),
-		Path:  "/metadata/resourceVersion",
-	})
-
-	b, err := json.Marshal(patches)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	p := ensureSelfLink(accessor.GetSelfLink())
-
-	err = r.restClient.Patch(types.JSONPatchType).AbsPath(p).Body(b).Do().Error()
-	if errors.IsConflict(err) {
-		return microerror.Mask(err)
-	} else if errors.IsResourceExpired(err) {
-		return microerror.Mask(err)
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func (r *Resource) computeCreateEventPatches(ctx context.Context, accessor metav1.Object, obj interface{}) ([]Patch, error) {
+func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{}) ([]Patch, error) {
 	clusterStatus, err := r.clusterStatusFunc(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -179,25 +150,56 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, accessor metav
 		}
 	}
 
-	// Check all node versions held by the cluster status and add the version the
-	// guest cluster successfully migrated to, to the historical list of versions.
-	// The implication here is that an update successfully took place. This means
-	// we can also add a status condition expressing the guest cluster is updated.
+	// After initialization the most likely implication is the guest cluster being
+	// in a creation status. In case no other conditions are given and no nodes
+	// are known and no versions are set, we set the guest cluster status to a
+	// creating condition.
 	{
-		isNotUpdated := !clusterStatus.HasUpdatedCondition()
+		notCreating := !clusterStatus.HasCreatingCondition()
+		conditionsEmpty := len(clusterStatus.Conditions) == 0
+		nodesEmpty := len(clusterStatus.Nodes) == 0
+		versionsEmpty := len(clusterStatus.Versions) == 0
+
+		if notCreating && conditionsEmpty && nodesEmpty && versionsEmpty {
+			patches = append(patches, Patch{
+				Op:    "replace",
+				Path:  "/status/cluster/conditions",
+				Value: clusterStatus.WithCreatingCondition(),
+			})
+		}
+	}
+
+	// Once the guest cluster is created we set the according status condition so
+	// the cluster status reflects the transitioning from creating to created.
+	{
+		isCreating := clusterStatus.HasCreatingCondition()
+		notCreated := !clusterStatus.HasCreatedCondition()
 		sameCount := currentNodeCount != 0 && currentNodeCount == desiredNodeCount
 		sameVersion := allNodesHaveVersion(clusterStatus.Nodes, desiredVersion)
 
-		if isNotUpdated && sameCount && sameVersion {
+		if isCreating && notCreated && sameCount && sameVersion {
+			patches = append(patches, Patch{
+				Op:    "replace",
+				Path:  "/status/cluster/conditions",
+				Value: clusterStatus.WithCreatedCondition(),
+			})
+		}
+	}
+
+	// Set the status cluster condition to updated when an update successfully
+	// took place. Precondition for this is the guest cluster is updating and all
+	// nodes being known and all nodes having the same versions.
+	{
+		isUpdating := clusterStatus.HasUpdatingCondition()
+		notUpdated := !clusterStatus.HasUpdatedCondition()
+		sameCount := currentNodeCount != 0 && currentNodeCount == desiredNodeCount
+		sameVersion := allNodesHaveVersion(clusterStatus.Nodes, desiredVersion)
+
+		if isUpdating && notUpdated && sameCount && sameVersion {
 			patches = append(patches, Patch{
 				Op:    "replace",
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithUpdatedCondition(),
-			})
-			patches = append(patches, Patch{
-				Op:    "replace",
-				Path:  "/status/cluster/versions",
-				Value: clusterStatus.WithNewVersion(desiredVersion),
 			})
 		}
 	}
@@ -206,15 +208,31 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, accessor metav
 	// an update is about to be processed. So we set the status condition
 	// indicating the guest cluster is updating now.
 	{
-		isNotEmpty := currentVersion != ""
-		isNotUpdating := !clusterStatus.HasUpdatingCondition()
+		isCreated := clusterStatus.HasCreatedCondition()
+		notUpdating := !clusterStatus.HasUpdatingCondition()
 		versionDiffers := currentVersion != desiredVersion
 
-		if isNotEmpty && isNotUpdating && versionDiffers {
+		if isCreated && notUpdating && versionDiffers {
 			patches = append(patches, Patch{
 				Op:    "replace",
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithUpdatingCondition(),
+			})
+		}
+	}
+
+	// Check all node versions held by the cluster status and add the version the
+	// guest cluster successfully migrated to, to the historical list of versions.
+	{
+		isUpdated := clusterStatus.HasUpdatedCondition()
+		sameCount := currentNodeCount != 0 && currentNodeCount == desiredNodeCount
+		sameVersion := allNodesHaveVersion(clusterStatus.Nodes, desiredVersion)
+
+		if isUpdated && sameCount && sameVersion {
+			patches = append(patches, Patch{
+				Op:    "replace",
+				Path:  "/status/cluster/versions",
+				Value: clusterStatus.WithNewVersion(desiredVersion),
 			})
 		}
 	}
@@ -284,7 +302,6 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, accessor metav
 	}
 
 	// TODO emit metrics when update did not complete within a certain timeframe
-	// TODO update status condition when guest cluster is migrating from creating to created status
 
 	return patches, nil
 }
@@ -301,12 +318,4 @@ func allNodesHaveVersion(nodes []providerv1alpha1.StatusClusterNode, version str
 	}
 
 	return true
-}
-
-func ensureSelfLink(p string) string {
-	if strings.HasSuffix(p, "/status") {
-		return p
-	}
-
-	return p + "/status"
 }
