@@ -17,6 +17,11 @@ const (
 )
 
 const (
+	StatusClusterTypeDeleted  = "Deleted"
+	StatusClusterTypeDeleting = "Deleting"
+)
+
+const (
 	StatusClusterTypeUpdated  = "Updated"
 	StatusClusterTypeUpdating = "Updating"
 )
@@ -42,7 +47,7 @@ type StatusClusterCondition struct {
 	// Status may be True, False or Unknown.
 	Status string `json:"status" yaml:"status"`
 	// Type may be Creating, Created, Scaling, Scaled, Draining, Drained,
-	// Deleting, Deleted.
+	// Updating, Updated, Deleting, Deleted.
 	Type string `json:"type" yaml:"type"`
 }
 
