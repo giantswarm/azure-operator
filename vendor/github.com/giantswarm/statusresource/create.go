@@ -224,12 +224,12 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 	// Check all node versions held by the cluster status and add the version the
 	// guest cluster successfully migrated to, to the historical list of versions.
 	{
-		isUpdated := clusterStatus.HasUpdatedCondition()
+		hasTransitioned := clusterStatus.HasCreatedCondition() || clusterStatus.HasUpdatedCondition()
 		notSet := !clusterStatus.HasVersion(desiredVersion)
 		sameCount := currentNodeCount != 0 && currentNodeCount == desiredNodeCount
 		sameVersion := allNodesHaveVersion(clusterStatus.Nodes, desiredVersion)
 
-		if isUpdated && notSet && sameCount && sameVersion {
+		if hasTransitioned && notSet && sameCount && sameVersion {
 			patches = append(patches, Patch{
 				Op:    "replace",
 				Path:  "/status/cluster/versions",
