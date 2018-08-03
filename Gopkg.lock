@@ -215,7 +215,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "fff26fea7e8d05a87c62cc477b197c0186d038f2"
+  revision = "dda8f253e8fd3ce8fae3f1b2b70d29a43a674b1e"
 
 [[projects]]
   branch = "master"
@@ -298,7 +298,7 @@
   branch = "master"
   name = "github.com/giantswarm/microerror"
   packages = ["."]
-  revision = "a8d5d4f526c526b4b773062958847fe7e0b7f449"
+  revision = "a767567285d6db85cf9f08322fe49351aa385109"
 
 [[projects]]
   branch = "master"
@@ -367,7 +367,7 @@
   branch = "master"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
-  revision = "efb00ced28324db5dea056f85fe016e411730764"
+  revision = "5d95c771c4418aafa95ba5f2fb451d647c5de568"
 
 [[projects]]
   branch = "master"
