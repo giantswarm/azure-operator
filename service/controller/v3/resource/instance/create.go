@@ -32,19 +32,36 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
-		if IsDeploymentNotFound(err) {
-			// fall through
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
+
+		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
+		if controllercontext.IsInvalidContext(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "not ensuring deployment")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			s := *d.Properties.ProvisioningState
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
-
-			if !key.IsFinalProvisioningState(s) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-				return nil
+			_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
 			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+		}
+	}
+
+	{
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		s := *d.Properties.ProvisioningState
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+
+		if !key.IsFinalProvisioningState(s) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
 		}
 	}
 
@@ -149,25 +166,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	} else {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "not processing worker VMSSs due to master VMSSs processing")
-	}
-
-	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
-
-		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
-		if controllercontext.IsInvalidContext(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "not ensuring deployment")
-		} else if err != nil {
-			return microerror.Mask(err)
-		} else {
-			_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
-		}
 	}
 
 	return nil
