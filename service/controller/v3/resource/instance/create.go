@@ -8,12 +8,10 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/errors/guest"
 	"github.com/giantswarm/microerror"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
@@ -50,55 +48,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	// TODO this is a hack we have to fix as soon as the statusresource works and
-	// is enabled.
-	//
-	// Issue: https://github.com/giantswarm/giantswarm/issues/3822
-	//
-	masterVersionsValue := map[string]string{}
-	workerVersionsValue := map[string]string{}
+	versionValue := map[string]string{}
 	{
-		var k8sClient kubernetes.Interface
-		{
-			i := key.ClusterID(customObject)
-			e := key.ClusterAPIEndpoint(customObject)
-			k8sClient, err = r.guestCluster.NewK8sClient(ctx, i, e)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-
-		o := metav1.ListOptions{}
-		list, err := k8sClient.CoreV1().Nodes().List(o)
-		if guest.IsAPINotAvailable(err) {
-			// fall through
-			r.logger.LogCtx(ctx, "level", "debug", "message", "not fetching node versions")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "guest API is not available")
-		} else if err != nil {
-			return microerror.Mask(err)
-		} else {
-			for _, node := range list.Items {
-				l := node.GetLabels()
-				n := node.GetName()
-
-				labelProvider := "giantswarm.io/provider"
-				p, ok := l[labelProvider]
-				if !ok {
-					return microerror.Maskf(missingLabelError, labelProvider)
-				}
-				labelVersion := p + "-operator.giantswarm.io/version"
-				v, ok := l[labelVersion]
-				if !ok {
-					return microerror.Maskf(missingLabelError, labelProvider)
-				}
-
-				role, ok := l["role"]
-				if ok && role == "master" {
-					masterVersionsValue[n] = v
-				} else {
-					workerVersionsValue[n] = v
-				}
-			}
+		for _, node := range customObject.Status.Cluster.Nodes {
+			versionValue[node.Name] = node.Version
 		}
 	}
 
@@ -129,7 +82,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err = r.nextInstance(ctx, customObject, allMasterInstances, nodeConfigs, key.MasterInstanceName, masterVersionsValue)
+			masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err = r.nextInstance(ctx, customObject, allMasterInstances, nodeConfigs, key.MasterInstanceName, versionValue)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -171,7 +124,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-			workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, nodeConfigs, key.WorkerInstanceName, workerVersionsValue)
+			workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, nodeConfigs, key.WorkerInstanceName, versionValue)
 			if err != nil {
 				return microerror.Mask(err)
 			}
