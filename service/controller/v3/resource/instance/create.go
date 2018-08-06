@@ -343,34 +343,12 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 }
 
 func (r *Resource) deleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
-	var resourceStatus providerv1alpha1.StatusClusterResource
-	{
-		resourceStatus.Name = Name
+	customObject = computeForDeleteResourceStatus(customObject, t, s)
 
-		for i, r := range customObject.Status.Cluster.Resources {
-			if r.Name != Name {
-				continue
-			}
-
-			for _, c := range r.Conditions {
-				if c.Type == t && c.Status == s {
-					continue
-				}
-				resourceStatus.Conditions = append(resourceStatus.Conditions, c)
-			}
-
-			customObject.Status.Cluster.Resources[i] = resourceStatus
-
-			break
-		}
-	}
-
-	{
-		n := customObject.GetNamespace()
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	n := customObject.GetNamespace()
+	_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
@@ -538,6 +516,51 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceNameFunc(customObject, *instance.InstanceID)))
 
 	return nil
+}
+
+// TODO write unit tests
+func computeForDeleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) providerv1alpha1.AzureConfig {
+	var cleanup bool
+	{
+		resourceStatus := providerv1alpha1.StatusClusterResource{
+			Conditions: nil,
+			Name:       Name,
+		}
+
+		for i, r := range customObject.Status.Cluster.Resources {
+			if r.Name != Name {
+				continue
+			}
+
+			for _, c := range r.Conditions {
+				if c.Type == t && c.Status == s {
+					continue
+				}
+				resourceStatus.Conditions = append(resourceStatus.Conditions, c)
+			}
+
+			if len(resourceStatus.Conditions) > 0 {
+				customObject.Status.Cluster.Resources[i] = resourceStatus
+			} else {
+				cleanup = true
+			}
+
+			break
+		}
+	}
+
+	if cleanup {
+		var list []providerv1alpha1.StatusClusterResource
+		for _, r := range customObject.Status.Cluster.Resources {
+			if r.Name == Name {
+				continue
+			}
+			list = append(list, r)
+		}
+		customObject.Status.Cluster.Resources = list
+	}
+
+	return customObject
 }
 
 func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool {
