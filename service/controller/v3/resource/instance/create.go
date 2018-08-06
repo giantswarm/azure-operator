@@ -219,14 +219,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if !masterUpgraded && !workerUpgraded {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "neither masters nor workers upgraded")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "removing resource status 'Stage/InstancesUpgrading'")
 
 			err := r.deleteResourceStatus(customObject, "Stage", "InstancesUpgrading")
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "removed resource status 'Stage/InstancesUpgrading'")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
