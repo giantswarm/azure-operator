@@ -514,7 +514,6 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	return nil
 }
 
-// TODO write unit tests
 func computeForDeleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) providerv1alpha1.AzureConfig {
 	var cleanup bool
 	{
