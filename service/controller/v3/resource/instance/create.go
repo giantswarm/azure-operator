@@ -424,8 +424,6 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 		Name: Name,
 	}
 
-	fmt.Printf("resourceStatus: %#v\n", resourceStatus)
-
 	var set bool
 	for i, r := range customObject.Status.Cluster.Resources {
 		if r.Name != Name {
@@ -442,10 +440,8 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 		customObject.Status.Cluster.Resources[i] = resourceStatus
 		set = true
 	}
-	fmt.Printf("resourceStatus: %#v\n", resourceStatus)
 
 	if !set {
-		fmt.Printf("set\n")
 		customObject.Status.Cluster.Resources = append(customObject.Status.Cluster.Resources, resourceStatus)
 	}
 
@@ -578,41 +574,30 @@ func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool
 func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	var err error
 
-	fmt.Printf("1\n")
 	instanceInProgress := firstInstanceInProgress(customObject, instances)
 	if instanceInProgress != nil {
-		fmt.Printf("2\n")
 		return nil, nil, nil, nil
 	}
 
-	fmt.Printf("3\n")
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
 	instanceToUpdate = firstInstanceToUpdate(customObject, instances)
 	if instanceToUpdate != nil {
-		fmt.Printf("4\n")
 		return instanceToUpdate, nil, nil, nil
 	}
 
-	fmt.Printf("5\n")
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
 	if err != nil {
-		fmt.Printf("6\n")
 		return nil, nil, nil, microerror.Mask(err)
 	}
-	fmt.Printf("7\n")
 	if instanceToReimage != nil {
-		fmt.Printf("8\n")
 		if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instanceToReimage.InstanceID)) {
-			fmt.Printf("9\n")
 			return nil, nil, instanceToReimage, nil
 		} else {
-			fmt.Printf("10\n")
 			return nil, instanceToReimage, nil, nil
 		}
 	}
 
-	fmt.Printf("11\n")
 	return nil, nil, nil, nil
 }
 
@@ -643,18 +628,14 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 
 	for _, v := range list {
 		desiredVersion := key.VersionBundleVersion(customObject)
-		fmt.Printf("instance name: %#v\n", instanceNameFunc(customObject, *v.InstanceID))
 		instanceVersion, ok := versionValue[instanceNameFunc(customObject, *v.InstanceID)]
 		if !ok {
-			fmt.Printf("not found\n")
 			continue
 		}
 		if desiredVersion == instanceVersion {
-			fmt.Printf("desired version\n")
 			continue
 		}
 
-		fmt.Printf("has to be reimaged\n")
 		return &v, nil
 	}
 
@@ -666,13 +647,10 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 // applied. In case all instances are updated firstInstanceToUpdate return nil.
 func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
-		fmt.Printf("instance id: %#v\n", *v.InstanceID)
 		if *v.LatestModelApplied {
-			fmt.Printf("latest model\n")
 			continue
 		}
 
-		fmt.Printf("NOT latest model\n")
 		return &v
 	}
 
