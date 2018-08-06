@@ -31,212 +31,200 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	{
-		isStageOne := !hasResourceStatus(customObject, "Stage", "ProvisioningSuccessful") && !hasResourceStatus(customObject, "Stage", "InstancesUpgrading")
+	if !resourceStatusExists(customObject, "Stage") {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-		if isStageOne {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
-
-			computedDeployment, err := r.newDeployment(ctx, customObject, nil)
-			if controllercontext.IsInvalidContext(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "not ensuring deployment")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-				return nil
-			} else if err != nil {
-				return microerror.Mask(err)
-			} else {
-				_, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-
-				r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
-
-				err = r.setResourceStatus(customObject, "Stage", "DeploymentInitialized")
-				if err != nil {
-					return microerror.Mask(err)
-				}
-
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-				return nil
-			}
-		}
-	}
-
-	{
-		isStageTwo := !hasResourceStatus(customObject, "Stage", "InstancesUpgrading")
-
-		if isStageTwo {
-			d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
-			if IsDeploymentNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-				return nil
-			} else if err != nil {
+		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
+		if controllercontext.IsInvalidContext(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "not ensuring deployment")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else {
+			_, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			s := *d.Properties.ProvisioningState
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
 
-			if key.IsSucceededProvisioningState(s) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
-
-				err := r.setResourceStatus(customObject, "Stage", "ProvisioningSuccessful")
-				if err != nil {
-					return microerror.Mask(err)
-				}
-
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-				return nil
+			err = r.setResourceStatus(customObject, "Stage", "DeploymentInitialized")
+			if err != nil {
+				return microerror.Mask(err)
 			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
 		}
 	}
 
-	{
-		isStageThree := hasResourceStatus(customObject, "Stage", "ProvisioningSuccessful") || hasResourceStatus(customObject, "Stage", "InstancesUpgrading")
+	if hasResourceStatus(customObject, "Stage", "DeploymentInitialized") {
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
+		if IsDeploymentNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
 
-		if isStageThree {
-			if !hasResourceStatus(customObject, "Stage", "InstancesUpgrading") {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+		s := *d.Properties.ProvisioningState
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
-				err := r.setResourceStatus(customObject, "Stage", "InstancesUpgrading")
-				if err != nil {
-					return microerror.Mask(err)
-				}
+		if key.IsSucceededProvisioningState(s) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
 
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-				return nil
+			err := r.setResourceStatus(customObject, "Stage", "ProvisioningSuccessful")
+			if err != nil {
+				return microerror.Mask(err)
 			}
 
-			versionValue := map[string]string{}
-			{
-				for _, node := range customObject.Status.Cluster.Nodes {
-					versionValue[node.Name] = node.Version
-				}
+			r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		}
+	}
+
+	if hasResourceStatus(customObject, "Stage", "ProvisioningSuccessful") {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+
+		err := r.setResourceStatus(customObject, "Stage", "InstancesUpgrading")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil
+	}
+
+	if hasResourceStatus(customObject, "Stage", "InstancesUpgrading") {
+		versionValue := map[string]string{}
+		{
+			for _, node := range customObject.Status.Cluster.Nodes {
+				versionValue[node.Name] = node.Version
+			}
+		}
+
+		var nodeConfigs []corev1alpha1.DrainerConfig
+		{
+			n := v1.NamespaceAll
+			o := metav1.ListOptions{
+				LabelSelector: fmt.Sprintf("%s=%s", key.ClusterIDLabel, key.ClusterID(customObject)),
 			}
 
-			var nodeConfigs []corev1alpha1.DrainerConfig
-			{
-				n := v1.NamespaceAll
-				o := metav1.ListOptions{
-					LabelSelector: fmt.Sprintf("%s=%s", key.ClusterIDLabel, key.ClusterID(customObject)),
-				}
-
-				list, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-
-				nodeConfigs = list.Items
+			list, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
+			if err != nil {
+				return microerror.Mask(err)
 			}
 
-			var masterUpgraded bool
-			{
-				allMasterInstances, err := r.allInstances(ctx, customObject, key.MasterVMSSName)
-				if IsScaleSetNotFound(err) {
-					r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(customObject)))
-				} else if err != nil {
-					return microerror.Mask(err)
-				} else {
-					r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
+			nodeConfigs = list.Items
+		}
 
-					masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, nodeConfigs, key.MasterInstanceName, versionValue)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.updateInstance(ctx, customObject, masterInstanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.createDrainerConfig(ctx, customObject, masterInstanceToDrain, key.MasterInstanceName)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.reimageInstance(ctx, customObject, masterInstanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.deleteDrainerConfig(ctx, customObject, masterInstanceToReimage, key.MasterInstanceName, nodeConfigs)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-
-					if masterInstanceToUpdate != nil || masterInstanceToDrain != nil || masterInstanceToReimage != nil {
-						masterUpgraded = true
-					}
-
-					r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
-				}
-			}
-
-			// In case the master instance is being updated we want to prevent any
-			// other updates on the workers. This is because the update process
-			// involves the draining of the updated node and if the master is being
-			// updated at the same time the guest cluster's Kubernetes API is not
-			// available in order to drain nodes. As consequence we have to reset the
-			// worker instance selected to be reimaged in order to not update its
-			// version information. The next reconciliation loop will catch up here
-			// and instruct the worker instance to be reimaged again.
-			var workerUpgraded bool
-			if !masterUpgraded {
-				allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
-				if IsScaleSetNotFound(err) {
-					r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
-				} else if err != nil {
-					return microerror.Mask(err)
-				} else {
-					r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
-
-					workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, nodeConfigs, key.WorkerInstanceName, versionValue)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.updateInstance(ctx, customObject, workerInstanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.createDrainerConfig(ctx, customObject, workerInstanceToDrain, key.WorkerInstanceName)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.reimageInstance(ctx, customObject, workerInstanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-					err = r.deleteDrainerConfig(ctx, customObject, workerInstanceToReimage, key.WorkerInstanceName, nodeConfigs)
-					if err != nil {
-						return microerror.Mask(err)
-					}
-
-					if workerInstanceToUpdate != nil || workerInstanceToDrain != nil || workerInstanceToReimage != nil {
-						workerUpgraded = true
-					}
-
-					r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
-				}
+		var masterUpgraded bool
+		{
+			allMasterInstances, err := r.allInstances(ctx, customObject, key.MasterVMSSName)
+			if IsScaleSetNotFound(err) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(customObject)))
+			} else if err != nil {
+				return microerror.Mask(err)
 			} else {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "not processing worker VMSSs due to master VMSSs processing")
-			}
+				r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			if !masterUpgraded && !workerUpgraded {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
-
-				err := r.deleteResourceStatus(customObject, "Stage", "InstancesUpgrading")
+				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, nodeConfigs, key.MasterInstanceName, versionValue)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.updateInstance(ctx, customObject, masterInstanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.createDrainerConfig(ctx, customObject, masterInstanceToDrain, key.MasterInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.reimageInstance(ctx, customObject, masterInstanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.deleteDrainerConfig(ctx, customObject, masterInstanceToReimage, key.MasterInstanceName, nodeConfigs)
 				if err != nil {
 					return microerror.Mask(err)
 				}
 
-				r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-				return nil
+				if masterInstanceToUpdate != nil || masterInstanceToDrain != nil || masterInstanceToReimage != nil {
+					masterUpgraded = true
+				}
+
+				r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
 			}
+		}
+
+		// In case the master instance is being updated we want to prevent any
+		// other updates on the workers. This is because the update process
+		// involves the draining of the updated node and if the master is being
+		// updated at the same time the guest cluster's Kubernetes API is not
+		// available in order to drain nodes. As consequence we have to reset the
+		// worker instance selected to be reimaged in order to not update its
+		// version information. The next reconciliation loop will catch up here
+		// and instruct the worker instance to be reimaged again.
+		var workerUpgraded bool
+		if !masterUpgraded {
+			allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
+			if IsScaleSetNotFound(err) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
+			} else if err != nil {
+				return microerror.Mask(err)
+			} else {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
+
+				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, nodeConfigs, key.WorkerInstanceName, versionValue)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.updateInstance(ctx, customObject, workerInstanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.createDrainerConfig(ctx, customObject, workerInstanceToDrain, key.WorkerInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.reimageInstance(ctx, customObject, workerInstanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				err = r.deleteDrainerConfig(ctx, customObject, workerInstanceToReimage, key.WorkerInstanceName, nodeConfigs)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				if workerInstanceToUpdate != nil || workerInstanceToDrain != nil || workerInstanceToReimage != nil {
+					workerUpgraded = true
+				}
+
+				r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
+			}
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "not processing worker VMSSs due to master VMSSs processing")
+		}
+
+		if !masterUpgraded && !workerUpgraded {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+
+			err := r.deleteResourceStatus(customObject, "Stage", "InstancesUpgrading")
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
 		}
 	}
 
@@ -443,36 +431,39 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 }
 
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
-	var resourceStatus providerv1alpha1.StatusClusterResource
-	{
-		resourceStatus.Name = Name
+	resourceStatus := providerv1alpha1.StatusClusterResource{
+		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+			{
+				Status: s,
+				Type:   t,
+			},
+		},
+		Name: Name,
+	}
 
-		for i, r := range customObject.Status.Cluster.Resources {
-			if r.Name != Name {
+	fmt.Printf("resourceStatus: %#v\n", resourceStatus)
+
+	var set bool
+	for i, r := range customObject.Status.Cluster.Resources {
+		if r.Name != Name {
+			continue
+		}
+
+		for _, c := range r.Conditions {
+			if c.Type == t {
 				continue
 			}
-
-			var set bool
-			for j, c := range r.Conditions {
-				if c.Type == t {
-					r.Conditions[j] = providerv1alpha1.StatusClusterResourceCondition{
-						Status: s,
-						Type:   t,
-					}
-					set = true
-				}
-			}
-			if !set {
-				resourceStatus.Conditions = append(resourceStatus.Conditions, providerv1alpha1.StatusClusterResourceCondition{
-					Status: s,
-					Type:   t,
-				})
-			}
-
-			customObject.Status.Cluster.Resources[i] = resourceStatus
-
-			break
+			resourceStatus.Conditions = append(resourceStatus.Conditions, c)
 		}
+
+		customObject.Status.Cluster.Resources[i] = resourceStatus
+		set = true
+	}
+	fmt.Printf("resourceStatus: %#v\n", resourceStatus)
+
+	if !set {
+		fmt.Printf("set\n")
+		customObject.Status.Cluster.Resources = append(customObject.Status.Cluster.Resources, resourceStatus)
 	}
 
 	{
@@ -668,6 +659,22 @@ func hasResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s st
 
 		for _, c := range r.Conditions {
 			if c.Type == t && c.Status == s {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
+func resourceStatusExists(customObject providerv1alpha1.AzureConfig, t string) bool {
+	for _, r := range customObject.Status.Cluster.Resources {
+		if r.Name != Name {
+			continue
+		}
+
+		for _, c := range r.Conditions {
+			if c.Type == t {
 				return true
 			}
 		}
