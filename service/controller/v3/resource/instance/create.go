@@ -49,14 +49,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "setting resource status to 'Stage/DeploymentInitialized'")
 
 			err = r.setResourceStatus(customObject, "Stage", "DeploymentInitialized")
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "set resource status to 'Stage/DeploymentInitialized'")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
@@ -77,28 +77,32 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 		if key.IsSucceededProvisioningState(s) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "setting resource status to 'Stage/ProvisioningSuccessful'")
 
 			err := r.setResourceStatus(customObject, "Stage", "ProvisioningSuccessful")
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "set resource status to 'Stage/ProvisioningSuccessful'")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 	}
 
 	if hasResourceStatus(customObject, "Stage", "ProvisioningSuccessful") {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "patching CR status")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "vmss deployment successful")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "setting resource status to 'Stage/InstancesUpgrading'")
 
 		err := r.setResourceStatus(customObject, "Stage", "InstancesUpgrading")
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "patched CR status")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "set resource status to 'Stage/InstancesUpgrading'")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	}
