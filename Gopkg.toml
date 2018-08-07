@@ -34,6 +34,10 @@ required = [
   name = "github.com/Azure/azure-sdk-for-go"
   version = "v15.3.0"
 
+[[override]]
+  version = "2.0.0"
+  name = "github.com/cenkalti/backoff"
+
 [[constraint]]
   branch = "master"
   name = "github.com/docker/distribution"
@@ -58,8 +62,8 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
 
-[[constraint]]
-  branch = "master"
+[[override]]
+  branch = "updates"
   name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
