@@ -18,6 +18,16 @@ import (
 )
 
 const (
+	Stage = "Stage"
+)
+
+const (
+	DeploymentInitialized  = "DeploymentInitialized"
+	InstancesUpgrading     = "InstancesUpgrading"
+	ProvisioningSuccessful = "ProvisioningSuccessful"
+)
+
+const (
 	vmssDeploymentName = "cluster-vmss-template"
 )
 
@@ -31,7 +41,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	if !resourceStatusExists(customObject, "Stage") {
+	if !resourceStatusExists(customObject, Stage) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
 		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
@@ -49,20 +59,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "setting resource status to 'Stage/DeploymentInitialized'")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, DeploymentInitialized))
 
-			err = r.setResourceStatus(customObject, "Stage", "DeploymentInitialized")
+			err = r.setResourceStatus(customObject, Stage, DeploymentInitialized)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "set resource status to 'Stage/DeploymentInitialized'")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, DeploymentInitialized))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 	}
 
-	if hasResourceStatus(customObject, "Stage", "DeploymentInitialized") {
+	if hasResourceStatus(customObject, Stage, DeploymentInitialized) {
 		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
 		if IsDeploymentNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
@@ -77,14 +87,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 		if key.IsSucceededProvisioningState(s) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "setting resource status to 'Stage/ProvisioningSuccessful'")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, ProvisioningSuccessful))
 
-			err := r.setResourceStatus(customObject, "Stage", "ProvisioningSuccessful")
+			err := r.setResourceStatus(customObject, Stage, ProvisioningSuccessful)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "set resource status to 'Stage/ProvisioningSuccessful'")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, ProvisioningSuccessful))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		} else {
@@ -93,21 +103,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	if hasResourceStatus(customObject, "Stage", "ProvisioningSuccessful") {
+	if hasResourceStatus(customObject, Stage, ProvisioningSuccessful) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "vmss deployment successful")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "setting resource status to 'Stage/InstancesUpgrading'")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, InstancesUpgrading))
 
-		err := r.setResourceStatus(customObject, "Stage", "InstancesUpgrading")
+		err := r.setResourceStatus(customObject, Stage, InstancesUpgrading)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "set resource status to 'Stage/InstancesUpgrading'")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, InstancesUpgrading))
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	}
 
-	if hasResourceStatus(customObject, "Stage", "InstancesUpgrading") {
+	if hasResourceStatus(customObject, Stage, InstancesUpgrading) {
 		versionValue := map[string]string{}
 		{
 			for _, node := range customObject.Status.Cluster.Nodes {
@@ -220,14 +230,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if !masterUpgraded && !workerUpgraded {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "neither masters nor workers upgraded")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "removing resource status 'Stage/InstancesUpgrading'")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removing resource status '%s/%s'", Stage, InstancesUpgrading))
 
-			err := r.deleteResourceStatus(customObject, "Stage", "InstancesUpgrading")
+			err := r.deleteResourceStatus(customObject, Stage, InstancesUpgrading)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "removed resource status 'Stage/InstancesUpgrading'")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, InstancesUpgrading))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
