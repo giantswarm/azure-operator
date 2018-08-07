@@ -589,7 +589,7 @@ After=format-etcd-disk.service
 Before=etcd3.service
 
 [Mount]
-What=/dev/{{ .DiskName }}
+What=/dev/disk/by-label/etcd
 Where=/var/lib/etcd
 Type=ext4
 
@@ -599,14 +599,14 @@ WantedBy=multi-user.target
 	etcdDiskFormatUnitName     = "format-etcd-disk.service"
 	etcdDiskFormatUnitTemplate = `[Unit]
 Description=Formats the disk drive
-Requires=dev-{{ .DiskName }}.device
-After=dev-{{ .DiskName }}.device
+Requires=dev-disk-azure-scsi1-lun{{ .LUNID }}.device
+After=dev-disk-azure-scsi1-lun{{ .LUNID }}.device
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 Environment="LABEL=etcd"
-Environment="DEV=/dev/{{ .DiskName }}"
+Environment="DEV=/dev/disk/azure/scsi1/lun{{ .LUNID }}"
 # Do not wipe the disk if it's already being used, so the etcd data is persistent across reboot.
 ExecStart=-/bin/bash -c "if ! findfs LABEL=$LABEL > /tmp/label.$LABEL; then wipefs -a -f $DEV && mkfs.ext4 -T news -F -L $LABEL $DEV && echo wiped; fi"
 
@@ -621,7 +621,7 @@ After=format-docker-disk.service
 Before=docker.service
 
 [Mount]
-What=/dev/{{ .DiskName }}
+What=/dev/disk/by-label/docker
 Where=/var/lib/docker
 Type=xfs
 
@@ -631,16 +631,15 @@ WantedBy=multi-user.target
 	dockerDiskFormatUnitName     = "format-docker-disk.service"
 	dockerDiskFormatUnitTemplate = `[Unit]
 Description=Formats the disk drive
-Requires=dev-{{ .DiskName }}.device
-After=dev-{{ .DiskName }}.device
+Requires=dev-disk-azure-scsi1-lun{{ .LUNID }}.device
+After=dev-disk-azure-scsi1-lun{{ .LUNID }}.device
 
 [Service]
 Type=oneshot
 RemainAfterExit=yes
 Environment="LABEL=docker"
-Environment="DEV=/dev/{{ .DiskName }}"
-# Do not wipe the disk if it's already being used.
-ExecStart=-/bin/bash -c "if ! findfs LABEL=$LABEL > /tmp/label.$LABEL; then wipefs -a -f $DEV && mkfs.xfs -L $LABEL $DEV && echo formatted; fi"
+Environment="DEV=/dev/disk/azure/scsi1/lun{{ .LUNID }}"
+ExecStart=-/bin/bash -c "wipefs -a -f $DEV && mkfs.xfs -L $LABEL $DEV"
 
 [Install]
 WantedBy=multi-user.target

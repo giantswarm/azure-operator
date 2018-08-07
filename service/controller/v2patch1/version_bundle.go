@@ -9,7 +9,7 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "azure-operator",
-				Description: "foo",
+				Description: "Fixed Azure disk mounting.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},

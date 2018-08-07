@@ -123,7 +123,9 @@ func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, 
 	return file, nil
 }
 
-func renderEtcdMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+func renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
+	params := struct{}{}
+
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: etcdMountUnitTemplate,
 		Name:         etcdMountUnitName,
@@ -165,7 +167,9 @@ func renderEtcdDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, erro
 	return asset, nil
 }
 
-func renderDockerMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+func renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
+	params := struct{}{}
+
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: dockerMountUnitTemplate,
 		Name:         dockerMountUnitName,

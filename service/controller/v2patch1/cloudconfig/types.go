@@ -57,7 +57,7 @@ func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.Azur
 }
 
 type diskParams struct {
-	DiskName string
+	LUNID string
 }
 
 type ingressLBFileParams struct {
