@@ -35,6 +35,9 @@ type StatusCluster struct {
 	// Nodes is a list of guest cluster node information reflecting the current
 	// state of the guest cluster nodes.
 	Nodes []StatusClusterNode `json:"nodes" yaml:"nodes"`
+	// Resources is a list of arbitrary conditions of operatorkit resource
+	// implementations.
+	Resources []StatusClusterResource `json:"resources" yaml:"resources"`
 	// Versions is a list that acts like a historical track record of versions a
 	// guest cluster went through. A version is only added to the list as soon as
 	// the guest cluster successfully migrated to the version added here.
@@ -61,6 +64,25 @@ type StatusClusterNetwork struct {
 type StatusClusterNode struct {
 	Name    string `json:"name" yaml:"name"`
 	Version string `json:"version" yaml:"version"`
+}
+
+// Resource is structure holding arbitrary conditions of operatorkit resource
+// implementations. Imagine an operator implements an instance resource. This
+// resource may operates sequentially but has to operate based on a certain
+// system state it manages. So it tracks the status as needed here specific to
+// its own implementation and means in order to fulfil its premise.
+type StatusClusterResource struct {
+	Conditions []StatusClusterResourceCondition `json:"conditions" yaml:"conditions"`
+	Name       string                           `json:"status" yaml:"status"`
+}
+
+// StatusClusterResourceCondition expresses the conditions in which an
+// operatorkit resource may is.
+type StatusClusterResourceCondition struct {
+	// Status may be True, False or Unknown.
+	Status string `json:"status" yaml:"status"`
+	// Type may be anything an operatorkit resource may define.
+	Type string `json:"type" yaml:"type"`
 }
 
 // StatusClusterVersion expresses the versions in which a guest cluster was and
