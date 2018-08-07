@@ -31,6 +31,14 @@ const (
 	vmssDeploymentName = "cluster-vmss-template"
 )
 
+// EnsureCreated operates in 3 different stages which are executed sequentially.
+// The first stage is for uploading ARM templates and is represented by stage
+// DeploymentInitialized. The second stage is for waiting for ARM templates to
+// be applied and is represented by stage ProvisioningSuccessful. the third
+// stage is for draining and upgrading the VMSS instances and is represented by
+// stage InstancesUpgrading. The stages are executed one after another and the
+// instance resource cycles through them reliably until all necessary upgrade
+// steps are successfully processed.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
