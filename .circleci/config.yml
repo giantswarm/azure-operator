@@ -68,6 +68,8 @@ jobs:
       TEST_DIR: "integration/test/ready"
     <<: *e2eTest
 
+
+
 #  e2eTestCurMasterScaling:
 #    environment:
 #      TESTED_VERSION: "current"
@@ -91,6 +93,22 @@ jobs:
 
 
 
+  # Note we only have update tests for the current version because it anyway
+  # tests one version transition. Having the same tests for WIP only runs the
+  # same test twice and we can simply safe resources by not doing so.
+  e2eTestCurMasterUpdate:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/update"
+    <<: *e2eTest
+  e2eTestCurPRUpdate:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/update"
+    <<: *e2eTest
+
+
+
 workflows:
   version: 2
   build_and_e2eTest:
@@ -103,6 +121,7 @@ workflows:
               ignore: master
           requires:
           - build
+
 
 
 #      - e2eTestCurPRClusterState:
@@ -125,15 +144,18 @@ workflows:
           - build
 
 
-      - e2eTestCurPRReady:
-          requires:
-          - hold
+
       - e2eTestCurMasterReady:
           filters:
             branches:
               only: master
           requires:
           - build
+      - e2eTestCurPRReady:
+          requires:
+          - hold
+
+
 
 #      - e2eTestCurPRScaling:
 #          requires:
@@ -153,3 +175,15 @@ workflows:
               only: master
           requires:
           - build
+
+
+
+      - e2eTestCurMasterUpdate:
+          filters:
+            branches:
+              only: master
+          requires:
+          - build
+      - e2eTestCurPRUpdate:
+          requires:
+          - hold
