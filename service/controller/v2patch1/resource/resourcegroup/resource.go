@@ -12,12 +12,12 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v2patch1/key"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "resourcegroupv2"
+	Name = "resourcegroupv2patch1"
 
 	managedBy = "azure-operator"
 )

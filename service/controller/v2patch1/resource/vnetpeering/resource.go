@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Name = "vnetpeeringv2"
+	Name = "vnetpeeringv2patch1"
 )
 
 // Config is the configuration required by Resource.

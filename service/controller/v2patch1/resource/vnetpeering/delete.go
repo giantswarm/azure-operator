@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v2patch1/key"
 )
 
 // NewDeletePatch provide a controller.Patch holding the network.VirtualNetworkPeering to be deleted.
