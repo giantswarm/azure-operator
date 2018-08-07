@@ -299,12 +299,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			AzureConfig: config.HostAzureClientSetConfig,
 		}
 
-		ops, err := vnetpeeringcleaner.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		vnetPeeringCleanerResource, err = toCRUDResource(config.Logger, ops)
+		vnetPeeringCleanerResource, err = vnetpeeringcleaner.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

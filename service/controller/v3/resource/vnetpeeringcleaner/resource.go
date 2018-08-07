@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Name = "vnetpeeringv3"
+	Name = "vnetpeeringcleanerv3"
 )
 
 // Config is the configuration required by Resource.
@@ -33,7 +33,6 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
 	if err := config.AzureConfig.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
