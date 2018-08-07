@@ -12,13 +12,13 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v2/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v2patch1/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v2patch1/key"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "deploymentv2"
+	Name = "deploymentv2patch1"
 )
 
 const (
