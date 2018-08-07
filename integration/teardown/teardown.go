@@ -15,7 +15,11 @@ func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) e
 	var err error
 
 	{
-		// TODO the deletion detection should rather happen based on the cluster status or even based on the CR being gone
+		// TODO the deletion detection should rather happen based on the cluster
+		// status or even based on the CR being gone.
+		//
+		//     https://github.com/giantswarm/giantswarm/issues/3839
+		//
 		h.DeleteGuestCluster("azure-operator", "azureconfig", "removed finalizer 'operatorkit.giantswarm.io/azure-operator'")
 
 		// only do full teardown when not on CI
