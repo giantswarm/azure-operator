@@ -74,8 +74,8 @@
     "service/ec2",
     "service/sts"
   ]
-  revision = "e2b22a3b42bdad95d52bf59f477bdcd57f38191d"
-  version = "v1.15.6"
+  revision = "f9728bfcd31e85d264b4ab20299bbbba241c00ca"
+  version = "v1.15.7"
 
 [[projects]]
   branch = "master"
@@ -114,7 +114,7 @@
     "digestset",
     "reference"
   ]
-  revision = "dc53e37d983dc082828bc31cf8cdafebef3961de"
+  revision = "003aa051b44e5fda9a4e65db4febae04bdbbbbd1"
 
 [[projects]]
   name = "github.com/docker/docker"
@@ -200,10 +200,10 @@
   revision = "30620a9d0ecdb133f82257768ece76ebc1b6f8ef"
 
 [[projects]]
-  branch = "master"
+  branch = "max-retries"
   name = "github.com/giantswarm/backoff"
   packages = ["."]
-  revision = "15d3a36d54b75f81d1de1efd935d0cea11f946cf"
+  revision = "bc4d9412ae3859320b41747d65c0ceb451e76c36"
 
 [[projects]]
   branch = "master"
@@ -344,7 +344,7 @@
   revision = "4411a6307c6b844b7f9e68aaba37407b41b1c4d7"
 
 [[projects]]
-  branch = "master"
+  branch = "backoff"
   name = "github.com/giantswarm/operatorkit"
   packages = [
     "client/k8scrdclient",
@@ -360,7 +360,7 @@
     "controller/resource/retryresource",
     "informer"
   ]
-  revision = "d30ebc35b980dfcd4abd7b01683c21cc5e840b78"
+  revision = "85b3121492091ae49282d8d8392957189a81152f"
 
 [[projects]]
   branch = "master"
@@ -627,7 +627,7 @@
     "prometheus",
     "prometheus/promhttp"
   ]
-  revision = "bcbbc08eb2ddff3af83bbf11e7ec13b4fd730b6e"
+  revision = "420e2efa8fb00cb997efcac409d1af4b33161573"
 
 [[projects]]
   branch = "master"
@@ -743,7 +743,7 @@
     "unix",
     "windows"
   ]
-  revision = "90887a55d6e495d6cf02a7f2400e404c16caab1c"
+  revision = "acbc56fc7007d2a01796d5bde54f39e3b3e95945"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -1345,6 +1345,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "3bcbbf0dcaea0533c64987b1633d9108b79147299c838e4519654128fba5eddd"
+  inputs-digest = "3a9b5521b73b5009fa8e9301aadfe2816205e8562cc7b2ce59d4e42e234a4a01"
   solver-name = "gps-cdcl"
   solver-version = 1
