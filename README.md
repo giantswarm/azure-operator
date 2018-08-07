@@ -18,10 +18,10 @@ go build github.com/giantswarm/azure-operator
 
 ## Running azure-operator
 
-Create an azure-operator role (replace SUBSCRIPTION_ID):
+Create an azure-operator role using [guest.tmpl.json](policies/guest.tmpl.json) role definition (replace SUBSCRIPTION_ID):
 
 ```bash
-az role definition create --role-definition '{"Name":"azure-operator","Description":"Role for github.com/giantswarm/azure-operator","Actions":["*"],"NotActions":["Microsoft.Authorization/elevateAccess/Action"],"AssignableScopes":["/subscriptions/${SUBSCRIPTION_ID}"]}'
+az role definition create --role-definition @guest.tmpl.json
 ```
 
 If you have a service proivder you want to reuse add the azure-operator role
