@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/v3/key"
 )
 
@@ -32,12 +33,14 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	// DeleteResponder ensure that response body is closed.
-	_, err = vnetPeeringClient.DeleteResponder(respFuture.Response())
-	if err != nil {
+	res, err := vnetPeeringClient.DeleteResponder(respFuture.Response())
+	if client.ResponseWasNotFound(res) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured delete host vnetpeering")
+	} else if err != nil {
 		return microerror.Mask(err)
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured delete host vnetpeering")
 	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured delete host vnetpeering")
 
 	return nil
 }
