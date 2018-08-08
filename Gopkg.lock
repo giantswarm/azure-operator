@@ -249,7 +249,7 @@
     "update",
     "update/provider"
   ]
-  revision = "ea32b215052178a446bef8380317cdb5ba6eeee5"
+  revision = "558b36ba388bc26fd0d2e63342c4dba37c2365bb"
 
 [[projects]]
   branch = "master"

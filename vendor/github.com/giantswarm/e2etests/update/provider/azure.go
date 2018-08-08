@@ -1,14 +1,12 @@
 package provider
 
 import (
-	"encoding/json"
 	"fmt"
 
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type AzureConfig struct {
@@ -106,29 +104,20 @@ func (a *Azure) NextVersion() (string, error) {
 }
 
 func (a *Azure) UpdateVersion(nextVersion string) error {
-	patches := []Patch{
-		{
-			Op:    "replace",
-			Path:  "/spec/versionBundle/version",
-			Value: nextVersion,
-		},
-	}
-
-	b, err := json.Marshal(patches)
+	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	// TODO remove
-	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return microerror.Mask(err)
-	}
 	fmt.Printf("\n")
 	fmt.Printf("customObject: %#v\n", customObject)
 	fmt.Printf("\n")
 
-	_, err = a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(a.clusterID, types.JSONPatchType, b)
+	customObject.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(customObject.Spec.Cluster.Kubernetes.Kubelet.Labels, "azure-operator.giantswarm.io/version", nextVersion)
+	customObject.Spec.VersionBundle.Version = nextVersion
+
+	_, err = a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Update(customObject)
 	if err != nil {
 		return microerror.Mask(err)
 	}

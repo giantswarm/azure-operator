@@ -1,13 +1,10 @@
 package provider
 
 import (
-	"encoding/json"
-
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type KVMConfig struct {
@@ -52,11 +49,11 @@ func NewKVM(config KVMConfig) (*KVM, error) {
 	return k, nil
 }
 
-func (a *KVM) CurrentVersion() (string, error) {
+func (k *KVM) CurrentVersion() (string, error) {
 	p := &framework.VBVParams{
 		Component: "kvm-operator",
 		Provider:  "kvm",
-		Token:     a.githubToken,
+		Token:     k.githubToken,
 		VType:     "current",
 	}
 	v, err := framework.GetVersionBundleVersion(p)
@@ -80,11 +77,11 @@ func (k *KVM) IsUpdated() (bool, error) {
 	return customObject.Status.Cluster.HasUpdatedCondition(), nil
 }
 
-func (a *KVM) NextVersion() (string, error) {
+func (k *KVM) NextVersion() (string, error) {
 	p := &framework.VBVParams{
 		Component: "kvm-operator",
 		Provider:  "kvm",
-		Token:     a.githubToken,
+		Token:     k.githubToken,
 		VType:     "wip",
 	}
 	v, err := framework.GetVersionBundleVersion(p)
@@ -100,20 +97,15 @@ func (a *KVM) NextVersion() (string, error) {
 }
 
 func (k *KVM) UpdateVersion(nextVersion string) error {
-	patches := []Patch{
-		{
-			Op:    "replace",
-			Path:  "/spec/versionBundle/version",
-			Value: nextVersion,
-		},
-	}
-
-	b, err := json.Marshal(patches)
+	customObject, err := k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Get(k.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	_, err = k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Patch(k.clusterID, types.JSONPatchType, b)
+	customObject.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(customObject.Spec.Cluster.Kubernetes.Kubelet.Labels, "kvm-operator.giantswarm.io/version", nextVersion)
+	customObject.Spec.VersionBundle.Version = nextVersion
+
+	_, err = k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Update(customObject)
 	if err != nil {
 		return microerror.Mask(err)
 	}

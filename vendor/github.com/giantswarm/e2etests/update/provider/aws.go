@@ -1,13 +1,10 @@
 package provider
 
 import (
-	"encoding/json"
-
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
 )
 
 type AWSConfig struct {
@@ -100,20 +97,15 @@ func (a *AWS) NextVersion() (string, error) {
 }
 
 func (a *AWS) UpdateVersion(nextVersion string) error {
-	patches := []Patch{
-		{
-			Op:    "replace",
-			Path:  "/spec/versionBundle/version",
-			Value: nextVersion,
-		},
-	}
-
-	b, err := json.Marshal(patches)
+	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Get(a.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	_, err = a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Patch(a.clusterID, types.JSONPatchType, b)
+	customObject.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(customObject.Spec.Cluster.Kubernetes.Kubelet.Labels, "aws-operator.giantswarm.io/version", nextVersion)
+	customObject.Spec.VersionBundle.Version = nextVersion
+
+	_, err = a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Update(customObject)
 	if err != nil {
 		return microerror.Mask(err)
 	}
