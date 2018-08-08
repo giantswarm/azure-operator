@@ -95,7 +95,7 @@ jobs:
 
   # Note we only have update tests for the current version because it anyway
   # tests one version transition. Having the same tests for WIP only runs the
-  # same test twice and we can simply safe resources by not doing so.
+  # same test twice and we can simply save resources by not doing so.
   e2eTestCurMasterUpdate:
     environment:
       TESTED_VERSION: "current"
