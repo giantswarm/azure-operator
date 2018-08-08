@@ -78,9 +78,9 @@ func (a *Azure) IsUpdated() (bool, error) {
 		return false, microerror.Mask(err)
 	}
 
+	// TODO remove
 	fmt.Printf("\n")
-	fmt.Printf("customObject.Status: %#v\n", customObject.Status)
-	fmt.Printf("customObject.Status.Cluster.HasUpdatedCondition(): %#v\n", customObject.Status.Cluster.HasUpdatedCondition())
+	fmt.Printf("customObject: %#v\n", customObject)
 	fmt.Printf("\n")
 
 	return customObject.Status.Cluster.HasUpdatedCondition(), nil
@@ -119,10 +119,28 @@ func (a *Azure) UpdateVersion(nextVersion string) error {
 		return microerror.Mask(err)
 	}
 
+	// TODO remove
+	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Printf("\n")
+	fmt.Printf("customObject: %#v\n", customObject)
+	fmt.Printf("\n")
+
 	_, err = a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(a.clusterID, types.JSONPatchType, b)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	// TODO remove
+	customObject, err = a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	fmt.Printf("\n")
+	fmt.Printf("customObject: %#v\n", customObject)
+	fmt.Printf("\n")
 
 	return nil
 }

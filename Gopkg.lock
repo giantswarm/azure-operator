@@ -221,7 +221,7 @@
     "pkg/framework",
     "pkg/harness"
   ]
-  revision = "aa24cb69cdf338a783fd0fb7af6d93442f149956"
+  revision = "4f23f3d8219a1899872645514e152ac345933e56"
 
 [[projects]]
   branch = "master"
@@ -249,7 +249,7 @@
     "update",
     "update/provider"
   ]
-  revision = "302d82f87091188d4ba6347b149c44f5b041474f"
+  revision = "ea32b215052178a446bef8380317cdb5ba6eeee5"
 
 [[projects]]
   branch = "master"

@@ -15,11 +15,15 @@ import (
 type Config struct {
 	Logger   micrologger.Logger
 	Provider provider.Interface
+
+	MaxWait time.Duration
 }
 
 type Update struct {
 	logger   micrologger.Logger
 	provider provider.Interface
+
+	maxWait time.Duration
 }
 
 func New(config Config) (*Update, error) {
@@ -30,9 +34,15 @@ func New(config Config) (*Update, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Provider must not be empty", config)
 	}
 
+	if config.MaxWait == 0 {
+		config.MaxWait = 60 * time.Minute
+	}
+
 	u := &Update{
 		logger:   config.Logger,
 		provider: config.Provider,
+
+		maxWait: config.MaxWait,
 	}
 
 	return u, nil
@@ -98,7 +108,7 @@ func (u *Update) Test(ctx context.Context) error {
 
 			return microerror.Mask(notUpdatedError)
 		}
-		b := backoff.NewConstant(60*time.Minute, 5*time.Minute)
+		b := backoff.NewConstant(u.maxWait, 5*time.Minute)
 		n := backoff.NewNotifier(u.logger, ctx)
 
 		err := backoff.RetryNotify(o, b, n)

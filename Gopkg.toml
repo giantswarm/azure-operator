@@ -42,10 +42,6 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
-#[[override]]
-#  branch = "max-retries"
-#  name = "github.com/giantswarm/backoff"
-
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/certs"
