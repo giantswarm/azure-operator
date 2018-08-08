@@ -4,6 +4,7 @@ package update
 
 import (
 	"testing"
+	"time"
 
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/e2etests/update"
@@ -83,6 +84,8 @@ func init() {
 		c := update.Config{
 			Logger:   logger,
 			Provider: p,
+
+			MaxWait: 90 * time.Minute,
 		}
 
 		u, err = update.New(c)
