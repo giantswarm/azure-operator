@@ -85,7 +85,7 @@ func (u *Update) Test(ctx context.Context) error {
 	}
 
 	{
-		u.logger.LogCtx(ctx, "level", "debug", "message", "updating the guest cluster with the new version bundle version")
+		u.logger.LogCtx(ctx, "level", "debug", "message", "waiting for the guest cluster to be updated")
 
 		o := func() error {
 			isUpdated, err := u.provider.IsUpdated()
@@ -93,10 +93,10 @@ func (u *Update) Test(ctx context.Context) error {
 				return microerror.Mask(err)
 			}
 			if isUpdated {
-				return backoff.Permanent(alreadyUpdatedError)
+				return backoff.Permanent(microerror.Mask(alreadyUpdatedError))
 			}
 
-			return nil
+			return microerror.Mask(notUpdatedError)
 		}
 		b := backoff.NewConstant(60*time.Minute, 5*time.Minute)
 		n := backoff.NewNotifier(u.logger, ctx)
@@ -108,7 +108,7 @@ func (u *Update) Test(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 
-		u.logger.LogCtx(ctx, "level", "debug", "message", "updated the guest cluster with the new version bundle version")
+		u.logger.LogCtx(ctx, "level", "debug", "message", "waited for the guest cluster to be updated")
 	}
 
 	return nil

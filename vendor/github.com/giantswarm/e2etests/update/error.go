@@ -11,6 +11,15 @@ func IsAlreadyUpdated(err error) bool {
 	return microerror.Cause(err) == alreadyUpdatedError
 }
 
+var notUpdatedError = &microerror.Error{
+	Kind: "notUpdatedError",
+}
+
+// IsNotUpdated asserts notUpdatedError.
+func IsNotUpdated(err error) bool {
+	return microerror.Cause(err) == notUpdatedError
+}
+
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }

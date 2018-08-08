@@ -2,6 +2,7 @@ package provider
 
 import (
 	"encoding/json"
+	"fmt"
 
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
@@ -76,6 +77,11 @@ func (a *Azure) IsUpdated() (bool, error) {
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
+
+	fmt.Printf("\n")
+	fmt.Printf("customObject.Status: %#v\n", customObject.Status)
+	fmt.Printf("customObject.Status.Cluster.HasUpdatedCondition(): %#v\n", customObject.Status.Cluster.HasUpdatedCondition())
+	fmt.Printf("\n")
 
 	return customObject.Status.Cluster.HasUpdatedCondition(), nil
 }
