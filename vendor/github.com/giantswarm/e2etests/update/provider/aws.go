@@ -68,6 +68,15 @@ func (a *AWS) CurrentVersion() (string, error) {
 	return v, nil
 }
 
+func (a *AWS) IsCreated() (bool, error) {
+	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Get(a.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	return customObject.Status.Cluster.HasCreatedCondition(), nil
+}
+
 func (a *AWS) IsUpdated() (bool, error) {
 	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Get(a.clusterID, metav1.GetOptions{})
 	if err != nil {

@@ -68,6 +68,15 @@ func (k *KVM) CurrentVersion() (string, error) {
 	return v, nil
 }
 
+func (k *KVM) IsCreated() (bool, error) {
+	customObject, err := k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Get(k.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	return customObject.Status.Cluster.HasCreatedCondition(), nil
+}
+
 func (k *KVM) IsUpdated() (bool, error) {
 	customObject, err := k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Get(k.clusterID, metav1.GetOptions{})
 	if err != nil {

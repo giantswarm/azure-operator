@@ -70,13 +70,23 @@ func (a *Azure) CurrentVersion() (string, error) {
 	return v, nil
 }
 
+func (a *Azure) IsCreated() (bool, error) {
+	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+	fmt.Printf("\n")
+	fmt.Printf("customObject: %#v\n", customObject)
+	fmt.Printf("\n")
+
+	return customObject.Status.Cluster.HasCreatedCondition(), nil
+}
+
 func (a *Azure) IsUpdated() (bool, error) {
 	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
-
-	// TODO remove
 	fmt.Printf("\n")
 	fmt.Printf("customObject: %#v\n", customObject)
 	fmt.Printf("\n")
@@ -109,11 +119,6 @@ func (a *Azure) UpdateVersion(nextVersion string) error {
 		return microerror.Mask(err)
 	}
 
-	// TODO remove
-	fmt.Printf("\n")
-	fmt.Printf("customObject: %#v\n", customObject)
-	fmt.Printf("\n")
-
 	customObject.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(customObject.Spec.Cluster.Kubernetes.Kubelet.Labels, "azure-operator.giantswarm.io/version", nextVersion)
 	customObject.Spec.VersionBundle.Version = nextVersion
 
@@ -121,15 +126,6 @@ func (a *Azure) UpdateVersion(nextVersion string) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	// TODO remove
-	customObject, err = a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	fmt.Printf("\n")
-	fmt.Printf("customObject: %#v\n", customObject)
-	fmt.Printf("\n")
 
 	return nil
 }

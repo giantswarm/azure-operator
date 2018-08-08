@@ -51,6 +51,40 @@ func New(config Config) (*Update, error) {
 func (u *Update) Test(ctx context.Context) error {
 	var err error
 
+	// TODO the check for the created status condition is a hack for now because
+	// e2e-hareness does not yet consider the CR status. This has to be fixed and
+	// then we can remove the first check here. For now we go with this to not be
+	// blocked.
+	//
+	//     https://github.com/giantswarm/giantswarm/issues/3937
+	//
+	{
+		u.logger.LogCtx(ctx, "level", "debug", "message", "waiting for the guest cluster to be created")
+
+		o := func() error {
+			isCreated, err := u.provider.IsCreated()
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if isCreated {
+				return backoff.Permanent(microerror.Mask(alreadyCreatedError))
+			}
+
+			return microerror.Mask(notCreatedError)
+		}
+		b := backoff.NewConstant(u.maxWait, 5*time.Minute)
+		n := backoff.NewNotifier(u.logger, ctx)
+
+		err := backoff.RetryNotify(o, b, n)
+		if IsAlreadyCreated(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		u.logger.LogCtx(ctx, "level", "debug", "message", "waited for the guest cluster to be created")
+	}
+
 	var currentVersion string
 	{
 		u.logger.LogCtx(ctx, "level", "debug", "message", "looking for the current version bundle version")
