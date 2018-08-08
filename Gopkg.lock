@@ -239,7 +239,7 @@
   revision = "fa85e487f49b50f99921c80ce508d110827b2f9d"
 
 [[projects]]
-  branch = "updates"
+  branch = "master"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
@@ -249,7 +249,7 @@
     "update",
     "update/provider"
   ]
-  revision = "af1594992c6c840651da23aeec01a3314440254b"
+  revision = "fe7475e753b0a4afec21f427de52206f3316424d"
 
 [[projects]]
   branch = "master"
@@ -743,7 +743,7 @@
     "unix",
     "windows"
   ]
-  revision = "acbc56fc7007d2a01796d5bde54f39e3b3e95945"
+  revision = "904bdc257025c7b3f43c19360ad3ab85783fad78"
 
 [[projects]]
   name = "golang.org/x/text"
@@ -1345,6 +1345,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "509a614b97445f0b80ba0137a97aadc5e6674e627d33bd16e05b722534ff2e05"
+  inputs-digest = "4a5fb8d87f88ff56bacaa64bb27a146232d52d891b1368b5fbbb30c945fe13fc"
   solver-name = "gps-cdcl"
   solver-version = 1
