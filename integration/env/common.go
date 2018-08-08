@@ -163,7 +163,7 @@ func KeepResources() string {
 }
 
 func TargetNamespace() string {
-	return "giantswarm"
+	return "default"
 }
 
 func TestedVersion() string {
