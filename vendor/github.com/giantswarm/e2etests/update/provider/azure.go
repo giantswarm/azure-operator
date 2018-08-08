@@ -1,8 +1,7 @@
 package provider
 
 import (
-	"fmt"
-
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -51,6 +50,15 @@ func NewAzure(config AzureConfig) (*Azure, error) {
 	return a, nil
 }
 
+func (a *Azure) CurrentStatus() (v1alpha1.StatusCluster, error) {
+	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return v1alpha1.StatusCluster{}, microerror.Mask(err)
+	}
+
+	return customObject.Status.Cluster, nil
+}
+
 func (a *Azure) CurrentVersion() (string, error) {
 	p := &framework.VBVParams{
 		Component: "azure-operator",
@@ -68,30 +76,6 @@ func (a *Azure) CurrentVersion() (string, error) {
 	}
 
 	return v, nil
-}
-
-func (a *Azure) IsCreated() (bool, error) {
-	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-	fmt.Printf("\n")
-	fmt.Printf("customObject: %#v\n", customObject)
-	fmt.Printf("\n")
-
-	return customObject.Status.Cluster.HasCreatedCondition(), nil
-}
-
-func (a *Azure) IsUpdated() (bool, error) {
-	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(a.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-	fmt.Printf("\n")
-	fmt.Printf("customObject: %#v\n", customObject)
-	fmt.Printf("\n")
-
-	return customObject.Status.Cluster.HasUpdatedCondition(), nil
 }
 
 func (a *Azure) NextVersion() (string, error) {

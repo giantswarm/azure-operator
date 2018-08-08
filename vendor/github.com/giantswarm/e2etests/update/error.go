@@ -2,40 +2,13 @@ package update
 
 import "github.com/giantswarm/microerror"
 
-var alreadyCreatedError = &microerror.Error{
-	Kind: "alreadyCreatedError",
+var hasDesiredStatusError = &microerror.Error{
+	Kind: "hasDesiredStatusError",
 }
 
-// IsAlreadyCreated asserts alreadyCreatedError.
-func IsAlreadyCreated(err error) bool {
-	return microerror.Cause(err) == alreadyCreatedError
-}
-
-var alreadyUpdatedError = &microerror.Error{
-	Kind: "alreadyUpdatedError",
-}
-
-// IsAlreadyUpdated asserts alreadyUpdatedError.
-func IsAlreadyUpdated(err error) bool {
-	return microerror.Cause(err) == alreadyUpdatedError
-}
-
-var notCreatedError = &microerror.Error{
-	Kind: "notCreatedError",
-}
-
-// IsNotCreated asserts notCreatedError.
-func IsNotCreated(err error) bool {
-	return microerror.Cause(err) == notCreatedError
-}
-
-var notUpdatedError = &microerror.Error{
-	Kind: "notUpdatedError",
-}
-
-// IsNotUpdated asserts notUpdatedError.
-func IsNotUpdated(err error) bool {
-	return microerror.Cause(err) == notUpdatedError
+// IsHasDesiredStatus asserts hasDesiredStatusError.
+func IsHasDesiredStatus(err error) bool {
+	return microerror.Cause(err) == hasDesiredStatusError
 }
 
 var invalidConfigError = &microerror.Error{
@@ -45,4 +18,13 @@ var invalidConfigError = &microerror.Error{
 // IsInvalidConfig asserts invalidConfigError.
 func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
+}
+
+var missesDesiredStatusError = &microerror.Error{
+	Kind: "missesDesiredStatusError",
+}
+
+// IsMissesDesiredStatus asserts missesDesiredStatusError.
+func IsMissesDesiredStatus(err error) bool {
+	return microerror.Cause(err) == missesDesiredStatusError
 }

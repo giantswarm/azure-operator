@@ -31,8 +31,9 @@ type HostConfig struct {
 	Backoff backoff.Interface
 	Logger  micrologger.Logger
 
-	ClusterID  string
-	VaultToken string
+	ClusterID       string
+	TargetNamespace string
+	VaultToken      string
 }
 
 type Host struct {
@@ -43,8 +44,9 @@ type Host struct {
 	k8sClient  kubernetes.Interface
 	restConfig *rest.Config
 
-	clusterID  string
-	vaultToken string
+	clusterID       string
+	targetNamespace string
+	vaultToken      string
 }
 
 func NewHost(c HostConfig) (*Host, error) {
@@ -57,6 +59,9 @@ func NewHost(c HostConfig) (*Host, error) {
 
 	if c.ClusterID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", c)
+	}
+	if c.TargetNamespace == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.TargetNamespace must not be empty", c)
 	}
 	if c.VaultToken == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VaultToken must not be empty", c)
@@ -83,8 +88,9 @@ func NewHost(c HostConfig) (*Host, error) {
 		k8sClient:  k8sClient,
 		restConfig: restConfig,
 
-		clusterID:  c.ClusterID,
-		vaultToken: c.VaultToken,
+		clusterID:       c.ClusterID,
+		targetNamespace: c.TargetNamespace,
+		vaultToken:      c.VaultToken,
 	}
 
 	return h, nil
@@ -239,7 +245,7 @@ func (h *Host) InstallResource(name, values, version string, conditions ...func(
 	}
 
 	{
-		installCmd := fmt.Sprintf("registry install quay.io/giantswarm/%[1]s-chart%[2]s -- -n %[1]s --values %[3]s", name, version, tmpfile.Name())
+		installCmd := fmt.Sprintf("registry install quay.io/giantswarm/%[1]s-chart%[2]s -- -n %[1]s --namespace %[4]s --values %[3]s --set namespace=%[4]s", name, version, tmpfile.Name(), h.targetNamespace)
 		deleteCmd := fmt.Sprintf("delete --purge %s", name)
 		o := func() error {
 			// NOTE we ignore errors here because we cannot get really useful error
@@ -282,7 +288,7 @@ func (h *Host) InstallCertResource() error {
 			// the helm client lib. Then error handling will be better.
 			HelmCmd("delete --purge cert-config-e2e")
 
-			cmdStr := fmt.Sprintf("registry install quay.io/giantswarm/apiextensions-cert-config-e2e-chart:stable -- -n cert-config-e2e --set commonDomain=${COMMON_DOMAIN} --set clusterName=%s", h.clusterID)
+			cmdStr := fmt.Sprintf("registry install quay.io/giantswarm/apiextensions-cert-config-e2e-chart:stable -- -n cert-config-e2e --set commonDomain=${COMMON_DOMAIN} --set clusterName=%[1]s --set namespace=%[2]s --namespace %[2]s", h.clusterID, h.targetNamespace)
 			err := HelmCmd(cmdStr)
 			if err != nil {
 				return microerror.Mask(err)

@@ -51,32 +51,25 @@ func New(config Config) (*Update, error) {
 func (u *Update) Test(ctx context.Context) error {
 	var err error
 
-	// TODO the check for the created status condition is a hack for now because
-	// e2e-hareness does not yet consider the CR status. This has to be fixed and
-	// then we can remove the first check here. For now we go with this to not be
-	// blocked.
-	//
-	//     https://github.com/giantswarm/giantswarm/issues/3937
-	//
 	{
 		u.logger.LogCtx(ctx, "level", "debug", "message", "waiting for the guest cluster to be created")
 
 		o := func() error {
-			isCreated, err := u.provider.IsCreated()
+			s, err := u.provider.CurrentStatus()
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			if isCreated {
-				return backoff.Permanent(microerror.Mask(alreadyCreatedError))
+			if s.HasCreatedCondition() {
+				return backoff.Permanent(microerror.Mask(hasDesiredStatusError))
 			}
 
-			return microerror.Mask(notCreatedError)
+			return microerror.Mask(missesDesiredStatusError)
 		}
-		b := backoff.NewConstant(u.maxWait, 5*time.Minute)
+		b := backoff.NewConstant(10*time.Minute, 2*time.Minute)
 		n := backoff.NewNotifier(u.logger, ctx)
 
 		err := backoff.RetryNotify(o, b, n)
-		if IsAlreadyCreated(err) {
+		if IsHasDesiredStatus(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
@@ -129,24 +122,51 @@ func (u *Update) Test(ctx context.Context) error {
 	}
 
 	{
-		u.logger.LogCtx(ctx, "level", "debug", "message", "waiting for the guest cluster to be updated")
+		u.logger.LogCtx(ctx, "level", "debug", "message", "waiting for the guest cluster to be updating")
 
 		o := func() error {
-			isUpdated, err := u.provider.IsUpdated()
+			s, err := u.provider.CurrentStatus()
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			if isUpdated {
-				return backoff.Permanent(microerror.Mask(alreadyUpdatedError))
+			if s.HasUpdatingCondition() {
+				return backoff.Permanent(microerror.Mask(hasDesiredStatusError))
 			}
 
-			return microerror.Mask(notUpdatedError)
+			return microerror.Mask(missesDesiredStatusError)
+		}
+		b := backoff.NewConstant(10*time.Minute, 2*time.Minute)
+		n := backoff.NewNotifier(u.logger, ctx)
+
+		err := backoff.RetryNotify(o, b, n)
+		if IsHasDesiredStatus(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		u.logger.LogCtx(ctx, "level", "debug", "message", "waited for the guest cluster to be updating")
+	}
+
+	{
+		u.logger.LogCtx(ctx, "level", "debug", "message", "waiting for the guest cluster to be updated")
+
+		o := func() error {
+			s, err := u.provider.CurrentStatus()
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			if s.HasUpdatedCondition() {
+				return backoff.Permanent(microerror.Mask(hasDesiredStatusError))
+			}
+
+			return microerror.Mask(missesDesiredStatusError)
 		}
 		b := backoff.NewConstant(u.maxWait, 5*time.Minute)
 		n := backoff.NewNotifier(u.logger, ctx)
 
 		err := backoff.RetryNotify(o, b, n)
-		if IsAlreadyUpdated(err) {
+		if IsHasDesiredStatus(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)

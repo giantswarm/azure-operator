@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -49,6 +50,15 @@ func NewAWS(config AWSConfig) (*AWS, error) {
 	return a, nil
 }
 
+func (a *AWS) CurrentStatus() (v1alpha1.StatusCluster, error) {
+	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Get(a.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return v1alpha1.StatusCluster{}, microerror.Mask(err)
+	}
+
+	return customObject.Status.Cluster, nil
+}
+
 func (a *AWS) CurrentVersion() (string, error) {
 	p := &framework.VBVParams{
 		Component: "aws-operator",
@@ -66,24 +76,6 @@ func (a *AWS) CurrentVersion() (string, error) {
 	}
 
 	return v, nil
-}
-
-func (a *AWS) IsCreated() (bool, error) {
-	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Get(a.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return customObject.Status.Cluster.HasCreatedCondition(), nil
-}
-
-func (a *AWS) IsUpdated() (bool, error) {
-	customObject, err := a.hostFramework.G8sClient().ProviderV1alpha1().AWSConfigs("default").Get(a.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return customObject.Status.Cluster.HasUpdatedCondition(), nil
 }
 
 func (a *AWS) NextVersion() (string, error) {

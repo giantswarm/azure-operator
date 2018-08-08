@@ -1,6 +1,7 @@
 package provider
 
 import (
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -49,6 +50,15 @@ func NewKVM(config KVMConfig) (*KVM, error) {
 	return k, nil
 }
 
+func (k *KVM) CurrentStatus() (v1alpha1.StatusCluster, error) {
+	customObject, err := k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Get(k.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return v1alpha1.StatusCluster{}, microerror.Mask(err)
+	}
+
+	return customObject.Status.Cluster, nil
+}
+
 func (k *KVM) CurrentVersion() (string, error) {
 	p := &framework.VBVParams{
 		Component: "kvm-operator",
@@ -66,24 +76,6 @@ func (k *KVM) CurrentVersion() (string, error) {
 	}
 
 	return v, nil
-}
-
-func (k *KVM) IsCreated() (bool, error) {
-	customObject, err := k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Get(k.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return customObject.Status.Cluster.HasCreatedCondition(), nil
-}
-
-func (k *KVM) IsUpdated() (bool, error) {
-	customObject, err := k.hostFramework.G8sClient().ProviderV1alpha1().KVMConfigs("default").Get(k.clusterID, metav1.GetOptions{})
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return customObject.Status.Cluster.HasUpdatedCondition(), nil
 }
 
 func (k *KVM) NextVersion() (string, error) {
