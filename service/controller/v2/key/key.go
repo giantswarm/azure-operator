@@ -233,7 +233,7 @@ func ToNodeCount(v interface{}) (int, error) {
 		return 0, microerror.Mask(err)
 	}
 
-	nodeCount := len(customObject.Spec.Cluster.Masters) + len(customObject.Spec.Cluster.Workers)
+	nodeCount := len(customObject.Spec.Azure.Masters) + len(customObject.Spec.Azure.Workers)
 
 	return nodeCount, nil
 }
