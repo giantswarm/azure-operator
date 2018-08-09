@@ -272,7 +272,7 @@
   revision = "7cc3f26ba2196a4ddbbb3fb995f28c2dca678364"
 
 [[projects]]
-  branch = "bump"
+  branch = "master"
   digest = "1:b38f5b8b06e943c8cbdd64afae8c11d54780de49b55711bb3a5a57261ee9434c"
   name = "github.com/giantswarm/e2eclients"
   packages = [
@@ -280,7 +280,7 @@
     "azure",
   ]
   pruneopts = "UT"
-  revision = "e244a9f258654d05da903e18811f3615ebadb37e"
+  revision = "425207429a641c7e43d409680d54ae78f049e04e"
 
 [[projects]]
   branch = "master"
@@ -291,8 +291,8 @@
   revision = "cb44aefe3ea5b72262e2342cc6172297a5856c0c"
 
 [[projects]]
-  branch = "bump"
-  digest = "1:96d5fdf0697d8fc474db8c7f56eedd876fb13f21c23ae18d5d31e1dca1811464"
+  branch = "master"
+  digest = "1:9074841a2de8bfcc96152f97e81ad7d7077877becec1a6c9c38913386e721089"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
@@ -303,7 +303,7 @@
     "update/provider",
   ]
   pruneopts = "UT"
-  revision = "39f0c0197e99adfc98038badb19f8da4022a4003"
+  revision = "41054d9e07cf3d8552b8094140e56a7da24cbf61"
 
 [[projects]]
   branch = "master"

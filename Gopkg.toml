@@ -51,7 +51,7 @@ required = [
   name = "github.com/giantswarm/e2e-harness"
 
 [[override]]
-  branch = "bump"
+  branch = "master"
   name = "github.com/giantswarm/e2eclients"
 
 [[constraint]]
@@ -59,7 +59,7 @@ required = [
   name = "github.com/giantswarm/e2etemplates"
 
 [[constraint]]
-  branch = "bump"
+  branch = "master"
   name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
