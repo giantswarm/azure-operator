@@ -162,10 +162,6 @@ func KeepResources() string {
 	return keepResources
 }
 
-func TargetNamespace() string {
-	return "default"
-}
-
 func TestedVersion() string {
 	return testedVersion
 }
