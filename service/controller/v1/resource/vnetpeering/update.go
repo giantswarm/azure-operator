@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 )
 
 // NewUpdatePatch provide a controller.Patch holding the needed network.VirtualNetworkPeering update to have current comply with desired.

@@ -30,8 +30,6 @@ const (
 	TopResultCount = 1
 )
 
-const ()
-
 // Config represents the configuration used to create a healthz service.
 type Config struct {
 	AzureConfig client.AzureClientSetConfig
