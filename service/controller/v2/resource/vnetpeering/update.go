@@ -84,7 +84,7 @@ func needUpdate(current, desired network.VirtualNetworkPeering) bool {
 		return true
 	}
 
-	if current.VirtualNetworkPeeringPropertiesFormat.PeeringState == network.Disconnected {
+	if current.VirtualNetworkPeeringPropertiesFormat.PeeringState == network.VirtualNetworkPeeringStateDisconnected {
 		return true
 	}
 

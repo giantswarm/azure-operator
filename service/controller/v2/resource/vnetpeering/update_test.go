@@ -45,7 +45,7 @@ func TestNeedUpdate(t *testing.T) {
 							"10.0.0.0/16",
 						},
 					},
-					PeeringState:      network.Connected,
+					PeeringState:      network.VirtualNetworkPeeringStateConnected,
 					ProvisioningState: to.StringPtr("some provisioning state"),
 				},
 			},
@@ -135,7 +135,7 @@ func TestNeedUpdate(t *testing.T) {
 					RemoteVirtualNetwork: &network.SubResource{
 						ID: to.StringPtr("some ID"),
 					},
-					PeeringState: network.Disconnected,
+					PeeringState: network.VirtualNetworkPeeringStateDisconnected,
 				},
 			},
 			network.VirtualNetworkPeering{
