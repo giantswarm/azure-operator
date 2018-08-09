@@ -3,7 +3,7 @@ package vnetpeering
 import (
 	"github.com/giantswarm/microerror"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 )
 
 // toVnePeering convert v to network.VirtualNetworkPeering.
