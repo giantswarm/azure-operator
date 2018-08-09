@@ -60,7 +60,7 @@ func (u *Update) Test(ctx context.Context) error {
 				return microerror.Mask(err)
 			}
 			if s.HasCreatedCondition() {
-				return backoff.Permanent(microerror.Mask(hasDesiredStatusError))
+				return nil
 			}
 
 			return microerror.Mask(missesDesiredStatusError)
@@ -69,9 +69,7 @@ func (u *Update) Test(ctx context.Context) error {
 		n := backoff.NewNotifier(u.logger, ctx)
 
 		err := backoff.RetryNotify(o, b, n)
-		if IsHasDesiredStatus(err) {
-			// fall through
-		} else if err != nil {
+		if err != nil {
 			return microerror.Mask(err)
 		}
 
@@ -130,7 +128,7 @@ func (u *Update) Test(ctx context.Context) error {
 				return microerror.Mask(err)
 			}
 			if s.HasUpdatingCondition() {
-				return backoff.Permanent(microerror.Mask(hasDesiredStatusError))
+				return nil
 			}
 
 			return microerror.Mask(missesDesiredStatusError)
@@ -139,9 +137,7 @@ func (u *Update) Test(ctx context.Context) error {
 		n := backoff.NewNotifier(u.logger, ctx)
 
 		err := backoff.RetryNotify(o, b, n)
-		if IsHasDesiredStatus(err) {
-			// fall through
-		} else if err != nil {
+		if err != nil {
 			return microerror.Mask(err)
 		}
 
@@ -157,7 +153,7 @@ func (u *Update) Test(ctx context.Context) error {
 				return microerror.Mask(err)
 			}
 			if s.HasUpdatedCondition() {
-				return backoff.Permanent(microerror.Mask(hasDesiredStatusError))
+				return nil
 			}
 
 			return microerror.Mask(missesDesiredStatusError)
@@ -166,9 +162,7 @@ func (u *Update) Test(ctx context.Context) error {
 		n := backoff.NewNotifier(u.logger, ctx)
 
 		err := backoff.RetryNotify(o, b, n)
-		if IsHasDesiredStatus(err) {
-			// fall through
-		} else if err != nil {
+		if err != nil {
 			return microerror.Mask(err)
 		}
 
