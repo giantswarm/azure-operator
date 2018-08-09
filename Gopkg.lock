@@ -2,10 +2,9 @@
 
 
 [[projects]]
-  digest = "1:f8595ed84936cd2a04c6bdf8466b2a402f1df6f50d623ad2e42d26a8f73403fb"
+  digest = "1:801d2aafbdfb8e6237009f6c594a2ed195281928e55aa3180220b18700bcb68e"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
-    "services/compute/mgmt/2018-04-01/compute",
     "services/compute/mgmt/2018-06-01/compute",
     "services/dns/mgmt/2017-10-01/dns",
     "services/network/mgmt/2018-06-01/network",
@@ -292,8 +291,8 @@
   revision = "cb44aefe3ea5b72262e2342cc6172297a5856c0c"
 
 [[projects]]
-  branch = "master"
-  digest = "1:c2ff5545229a429a7e5f38c8f509ac3c1517c08df1960df0139b5092fd61b2d7"
+  branch = "bump"
+  digest = "1:96d5fdf0697d8fc474db8c7f56eedd876fb13f21c23ae18d5d31e1dca1811464"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
@@ -304,7 +303,7 @@
     "update/provider",
   ]
   pruneopts = "UT"
-  revision = "be3a134ea48a62878bba3034d91a18597851cc37"
+  revision = "39f0c0197e99adfc98038badb19f8da4022a4003"
 
 [[projects]]
   branch = "master"
