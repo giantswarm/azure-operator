@@ -71,130 +71,6 @@ func PossibleComponentNamesValues() []ComponentNames {
 	return []ComponentNames{MicrosoftWindowsShellSetup}
 }
 
-// ContainerServiceOrchestratorTypes enumerates the values for container service orchestrator types.
-type ContainerServiceOrchestratorTypes string
-
-const (
-	// Custom ...
-	Custom ContainerServiceOrchestratorTypes = "Custom"
-	// DCOS ...
-	DCOS ContainerServiceOrchestratorTypes = "DCOS"
-	// Kubernetes ...
-	Kubernetes ContainerServiceOrchestratorTypes = "Kubernetes"
-	// Swarm ...
-	Swarm ContainerServiceOrchestratorTypes = "Swarm"
-)
-
-// PossibleContainerServiceOrchestratorTypesValues returns an array of possible values for the ContainerServiceOrchestratorTypes const type.
-func PossibleContainerServiceOrchestratorTypesValues() []ContainerServiceOrchestratorTypes {
-	return []ContainerServiceOrchestratorTypes{Custom, DCOS, Kubernetes, Swarm}
-}
-
-// ContainerServiceVMSizeTypes enumerates the values for container service vm size types.
-type ContainerServiceVMSizeTypes string
-
-const (
-	// StandardA0 ...
-	StandardA0 ContainerServiceVMSizeTypes = "Standard_A0"
-	// StandardA1 ...
-	StandardA1 ContainerServiceVMSizeTypes = "Standard_A1"
-	// StandardA10 ...
-	StandardA10 ContainerServiceVMSizeTypes = "Standard_A10"
-	// StandardA11 ...
-	StandardA11 ContainerServiceVMSizeTypes = "Standard_A11"
-	// StandardA2 ...
-	StandardA2 ContainerServiceVMSizeTypes = "Standard_A2"
-	// StandardA3 ...
-	StandardA3 ContainerServiceVMSizeTypes = "Standard_A3"
-	// StandardA4 ...
-	StandardA4 ContainerServiceVMSizeTypes = "Standard_A4"
-	// StandardA5 ...
-	StandardA5 ContainerServiceVMSizeTypes = "Standard_A5"
-	// StandardA6 ...
-	StandardA6 ContainerServiceVMSizeTypes = "Standard_A6"
-	// StandardA7 ...
-	StandardA7 ContainerServiceVMSizeTypes = "Standard_A7"
-	// StandardA8 ...
-	StandardA8 ContainerServiceVMSizeTypes = "Standard_A8"
-	// StandardA9 ...
-	StandardA9 ContainerServiceVMSizeTypes = "Standard_A9"
-	// StandardD1 ...
-	StandardD1 ContainerServiceVMSizeTypes = "Standard_D1"
-	// StandardD11 ...
-	StandardD11 ContainerServiceVMSizeTypes = "Standard_D11"
-	// StandardD11V2 ...
-	StandardD11V2 ContainerServiceVMSizeTypes = "Standard_D11_v2"
-	// StandardD12 ...
-	StandardD12 ContainerServiceVMSizeTypes = "Standard_D12"
-	// StandardD12V2 ...
-	StandardD12V2 ContainerServiceVMSizeTypes = "Standard_D12_v2"
-	// StandardD13 ...
-	StandardD13 ContainerServiceVMSizeTypes = "Standard_D13"
-	// StandardD13V2 ...
-	StandardD13V2 ContainerServiceVMSizeTypes = "Standard_D13_v2"
-	// StandardD14 ...
-	StandardD14 ContainerServiceVMSizeTypes = "Standard_D14"
-	// StandardD14V2 ...
-	StandardD14V2 ContainerServiceVMSizeTypes = "Standard_D14_v2"
-	// StandardD1V2 ...
-	StandardD1V2 ContainerServiceVMSizeTypes = "Standard_D1_v2"
-	// StandardD2 ...
-	StandardD2 ContainerServiceVMSizeTypes = "Standard_D2"
-	// StandardD2V2 ...
-	StandardD2V2 ContainerServiceVMSizeTypes = "Standard_D2_v2"
-	// StandardD3 ...
-	StandardD3 ContainerServiceVMSizeTypes = "Standard_D3"
-	// StandardD3V2 ...
-	StandardD3V2 ContainerServiceVMSizeTypes = "Standard_D3_v2"
-	// StandardD4 ...
-	StandardD4 ContainerServiceVMSizeTypes = "Standard_D4"
-	// StandardD4V2 ...
-	StandardD4V2 ContainerServiceVMSizeTypes = "Standard_D4_v2"
-	// StandardD5V2 ...
-	StandardD5V2 ContainerServiceVMSizeTypes = "Standard_D5_v2"
-	// StandardDS1 ...
-	StandardDS1 ContainerServiceVMSizeTypes = "Standard_DS1"
-	// StandardDS11 ...
-	StandardDS11 ContainerServiceVMSizeTypes = "Standard_DS11"
-	// StandardDS12 ...
-	StandardDS12 ContainerServiceVMSizeTypes = "Standard_DS12"
-	// StandardDS13 ...
-	StandardDS13 ContainerServiceVMSizeTypes = "Standard_DS13"
-	// StandardDS14 ...
-	StandardDS14 ContainerServiceVMSizeTypes = "Standard_DS14"
-	// StandardDS2 ...
-	StandardDS2 ContainerServiceVMSizeTypes = "Standard_DS2"
-	// StandardDS3 ...
-	StandardDS3 ContainerServiceVMSizeTypes = "Standard_DS3"
-	// StandardDS4 ...
-	StandardDS4 ContainerServiceVMSizeTypes = "Standard_DS4"
-	// StandardG1 ...
-	StandardG1 ContainerServiceVMSizeTypes = "Standard_G1"
-	// StandardG2 ...
-	StandardG2 ContainerServiceVMSizeTypes = "Standard_G2"
-	// StandardG3 ...
-	StandardG3 ContainerServiceVMSizeTypes = "Standard_G3"
-	// StandardG4 ...
-	StandardG4 ContainerServiceVMSizeTypes = "Standard_G4"
-	// StandardG5 ...
-	StandardG5 ContainerServiceVMSizeTypes = "Standard_G5"
-	// StandardGS1 ...
-	StandardGS1 ContainerServiceVMSizeTypes = "Standard_GS1"
-	// StandardGS2 ...
-	StandardGS2 ContainerServiceVMSizeTypes = "Standard_GS2"
-	// StandardGS3 ...
-	StandardGS3 ContainerServiceVMSizeTypes = "Standard_GS3"
-	// StandardGS4 ...
-	StandardGS4 ContainerServiceVMSizeTypes = "Standard_GS4"
-	// StandardGS5 ...
-	StandardGS5 ContainerServiceVMSizeTypes = "Standard_GS5"
-)
-
-// PossibleContainerServiceVMSizeTypesValues returns an array of possible values for the ContainerServiceVMSizeTypes const type.
-func PossibleContainerServiceVMSizeTypesValues() []ContainerServiceVMSizeTypes {
-	return []ContainerServiceVMSizeTypes{StandardA0, StandardA1, StandardA10, StandardA11, StandardA2, StandardA3, StandardA4, StandardA5, StandardA6, StandardA7, StandardA8, StandardA9, StandardD1, StandardD11, StandardD11V2, StandardD12, StandardD12V2, StandardD13, StandardD13V2, StandardD14, StandardD14V2, StandardD1V2, StandardD2, StandardD2V2, StandardD3, StandardD3V2, StandardD4, StandardD4V2, StandardD5V2, StandardDS1, StandardDS11, StandardDS12, StandardDS13, StandardDS14, StandardDS2, StandardDS3, StandardDS4, StandardG1, StandardG2, StandardG3, StandardG4, StandardG5, StandardGS1, StandardGS2, StandardGS3, StandardGS4, StandardGS5}
-}
-
 // DiskCreateOption enumerates the values for disk create option.
 type DiskCreateOption string
 
@@ -378,53 +254,6 @@ func PossibleResourceIdentityTypeValues() []ResourceIdentityType {
 	return []ResourceIdentityType{ResourceIdentityTypeNone, ResourceIdentityTypeSystemAssigned, ResourceIdentityTypeSystemAssignedUserAssigned, ResourceIdentityTypeUserAssigned}
 }
 
-// ResourceSkuCapacityScaleType enumerates the values for resource sku capacity scale type.
-type ResourceSkuCapacityScaleType string
-
-const (
-	// ResourceSkuCapacityScaleTypeAutomatic ...
-	ResourceSkuCapacityScaleTypeAutomatic ResourceSkuCapacityScaleType = "Automatic"
-	// ResourceSkuCapacityScaleTypeManual ...
-	ResourceSkuCapacityScaleTypeManual ResourceSkuCapacityScaleType = "Manual"
-	// ResourceSkuCapacityScaleTypeNone ...
-	ResourceSkuCapacityScaleTypeNone ResourceSkuCapacityScaleType = "None"
-)
-
-// PossibleResourceSkuCapacityScaleTypeValues returns an array of possible values for the ResourceSkuCapacityScaleType const type.
-func PossibleResourceSkuCapacityScaleTypeValues() []ResourceSkuCapacityScaleType {
-	return []ResourceSkuCapacityScaleType{ResourceSkuCapacityScaleTypeAutomatic, ResourceSkuCapacityScaleTypeManual, ResourceSkuCapacityScaleTypeNone}
-}
-
-// ResourceSkuRestrictionsReasonCode enumerates the values for resource sku restrictions reason code.
-type ResourceSkuRestrictionsReasonCode string
-
-const (
-	// NotAvailableForSubscription ...
-	NotAvailableForSubscription ResourceSkuRestrictionsReasonCode = "NotAvailableForSubscription"
-	// QuotaID ...
-	QuotaID ResourceSkuRestrictionsReasonCode = "QuotaId"
-)
-
-// PossibleResourceSkuRestrictionsReasonCodeValues returns an array of possible values for the ResourceSkuRestrictionsReasonCode const type.
-func PossibleResourceSkuRestrictionsReasonCodeValues() []ResourceSkuRestrictionsReasonCode {
-	return []ResourceSkuRestrictionsReasonCode{NotAvailableForSubscription, QuotaID}
-}
-
-// ResourceSkuRestrictionsType enumerates the values for resource sku restrictions type.
-type ResourceSkuRestrictionsType string
-
-const (
-	// Location ...
-	Location ResourceSkuRestrictionsType = "Location"
-	// Zone ...
-	Zone ResourceSkuRestrictionsType = "Zone"
-)
-
-// PossibleResourceSkuRestrictionsTypeValues returns an array of possible values for the ResourceSkuRestrictionsType const type.
-func PossibleResourceSkuRestrictionsTypeValues() []ResourceSkuRestrictionsType {
-	return []ResourceSkuRestrictionsType{Location, Zone}
-}
-
 // RollingUpgradeActionType enumerates the values for rolling upgrade action type.
 type RollingUpgradeActionType string
 
@@ -516,11 +345,13 @@ const (
 	StorageAccountTypesPremiumLRS StorageAccountTypes = "Premium_LRS"
 	// StorageAccountTypesStandardLRS ...
 	StorageAccountTypesStandardLRS StorageAccountTypes = "Standard_LRS"
+	// StorageAccountTypesStandardSSDLRS ...
+	StorageAccountTypesStandardSSDLRS StorageAccountTypes = "StandardSSD_LRS"
 )
 
 // PossibleStorageAccountTypesValues returns an array of possible values for the StorageAccountTypes const type.
 func PossibleStorageAccountTypesValues() []StorageAccountTypes {
-	return []StorageAccountTypes{StorageAccountTypesPremiumLRS, StorageAccountTypesStandardLRS}
+	return []StorageAccountTypes{StorageAccountTypesPremiumLRS, StorageAccountTypesStandardLRS, StorageAccountTypesStandardSSDLRS}
 }
 
 // UpgradeMode enumerates the values for upgrade mode.
@@ -538,6 +369,57 @@ const (
 // PossibleUpgradeModeValues returns an array of possible values for the UpgradeMode const type.
 func PossibleUpgradeModeValues() []UpgradeMode {
 	return []UpgradeMode{Automatic, Manual, Rolling}
+}
+
+// UpgradeOperationInvoker enumerates the values for upgrade operation invoker.
+type UpgradeOperationInvoker string
+
+const (
+	// Platform ...
+	Platform UpgradeOperationInvoker = "Platform"
+	// Unknown ...
+	Unknown UpgradeOperationInvoker = "Unknown"
+	// User ...
+	User UpgradeOperationInvoker = "User"
+)
+
+// PossibleUpgradeOperationInvokerValues returns an array of possible values for the UpgradeOperationInvoker const type.
+func PossibleUpgradeOperationInvokerValues() []UpgradeOperationInvoker {
+	return []UpgradeOperationInvoker{Platform, Unknown, User}
+}
+
+// UpgradeState enumerates the values for upgrade state.
+type UpgradeState string
+
+const (
+	// UpgradeStateCancelled ...
+	UpgradeStateCancelled UpgradeState = "Cancelled"
+	// UpgradeStateCompleted ...
+	UpgradeStateCompleted UpgradeState = "Completed"
+	// UpgradeStateFaulted ...
+	UpgradeStateFaulted UpgradeState = "Faulted"
+	// UpgradeStateRollingForward ...
+	UpgradeStateRollingForward UpgradeState = "RollingForward"
+)
+
+// PossibleUpgradeStateValues returns an array of possible values for the UpgradeState const type.
+func PossibleUpgradeStateValues() []UpgradeState {
+	return []UpgradeState{UpgradeStateCancelled, UpgradeStateCompleted, UpgradeStateFaulted, UpgradeStateRollingForward}
+}
+
+// VirtualMachineEvictionPolicyTypes enumerates the values for virtual machine eviction policy types.
+type VirtualMachineEvictionPolicyTypes string
+
+const (
+	// Deallocate ...
+	Deallocate VirtualMachineEvictionPolicyTypes = "Deallocate"
+	// Delete ...
+	Delete VirtualMachineEvictionPolicyTypes = "Delete"
+)
+
+// PossibleVirtualMachineEvictionPolicyTypesValues returns an array of possible values for the VirtualMachineEvictionPolicyTypes const type.
+func PossibleVirtualMachineEvictionPolicyTypesValues() []VirtualMachineEvictionPolicyTypes {
+	return []VirtualMachineEvictionPolicyTypes{Deallocate, Delete}
 }
 
 // VirtualMachinePriorityTypes enumerates the values for virtual machine priority types.
@@ -574,343 +456,343 @@ func PossibleVirtualMachineScaleSetSkuScaleTypeValues() []VirtualMachineScaleSet
 type VirtualMachineSizeTypes string
 
 const (
-	// VirtualMachineSizeTypesBasicA0 ...
-	VirtualMachineSizeTypesBasicA0 VirtualMachineSizeTypes = "Basic_A0"
-	// VirtualMachineSizeTypesBasicA1 ...
-	VirtualMachineSizeTypesBasicA1 VirtualMachineSizeTypes = "Basic_A1"
-	// VirtualMachineSizeTypesBasicA2 ...
-	VirtualMachineSizeTypesBasicA2 VirtualMachineSizeTypes = "Basic_A2"
-	// VirtualMachineSizeTypesBasicA3 ...
-	VirtualMachineSizeTypesBasicA3 VirtualMachineSizeTypes = "Basic_A3"
-	// VirtualMachineSizeTypesBasicA4 ...
-	VirtualMachineSizeTypesBasicA4 VirtualMachineSizeTypes = "Basic_A4"
-	// VirtualMachineSizeTypesStandardA0 ...
-	VirtualMachineSizeTypesStandardA0 VirtualMachineSizeTypes = "Standard_A0"
-	// VirtualMachineSizeTypesStandardA1 ...
-	VirtualMachineSizeTypesStandardA1 VirtualMachineSizeTypes = "Standard_A1"
-	// VirtualMachineSizeTypesStandardA10 ...
-	VirtualMachineSizeTypesStandardA10 VirtualMachineSizeTypes = "Standard_A10"
-	// VirtualMachineSizeTypesStandardA11 ...
-	VirtualMachineSizeTypesStandardA11 VirtualMachineSizeTypes = "Standard_A11"
-	// VirtualMachineSizeTypesStandardA1V2 ...
-	VirtualMachineSizeTypesStandardA1V2 VirtualMachineSizeTypes = "Standard_A1_v2"
-	// VirtualMachineSizeTypesStandardA2 ...
-	VirtualMachineSizeTypesStandardA2 VirtualMachineSizeTypes = "Standard_A2"
-	// VirtualMachineSizeTypesStandardA2mV2 ...
-	VirtualMachineSizeTypesStandardA2mV2 VirtualMachineSizeTypes = "Standard_A2m_v2"
-	// VirtualMachineSizeTypesStandardA2V2 ...
-	VirtualMachineSizeTypesStandardA2V2 VirtualMachineSizeTypes = "Standard_A2_v2"
-	// VirtualMachineSizeTypesStandardA3 ...
-	VirtualMachineSizeTypesStandardA3 VirtualMachineSizeTypes = "Standard_A3"
-	// VirtualMachineSizeTypesStandardA4 ...
-	VirtualMachineSizeTypesStandardA4 VirtualMachineSizeTypes = "Standard_A4"
-	// VirtualMachineSizeTypesStandardA4mV2 ...
-	VirtualMachineSizeTypesStandardA4mV2 VirtualMachineSizeTypes = "Standard_A4m_v2"
-	// VirtualMachineSizeTypesStandardA4V2 ...
-	VirtualMachineSizeTypesStandardA4V2 VirtualMachineSizeTypes = "Standard_A4_v2"
-	// VirtualMachineSizeTypesStandardA5 ...
-	VirtualMachineSizeTypesStandardA5 VirtualMachineSizeTypes = "Standard_A5"
-	// VirtualMachineSizeTypesStandardA6 ...
-	VirtualMachineSizeTypesStandardA6 VirtualMachineSizeTypes = "Standard_A6"
-	// VirtualMachineSizeTypesStandardA7 ...
-	VirtualMachineSizeTypesStandardA7 VirtualMachineSizeTypes = "Standard_A7"
-	// VirtualMachineSizeTypesStandardA8 ...
-	VirtualMachineSizeTypesStandardA8 VirtualMachineSizeTypes = "Standard_A8"
-	// VirtualMachineSizeTypesStandardA8mV2 ...
-	VirtualMachineSizeTypesStandardA8mV2 VirtualMachineSizeTypes = "Standard_A8m_v2"
-	// VirtualMachineSizeTypesStandardA8V2 ...
-	VirtualMachineSizeTypesStandardA8V2 VirtualMachineSizeTypes = "Standard_A8_v2"
-	// VirtualMachineSizeTypesStandardA9 ...
-	VirtualMachineSizeTypesStandardA9 VirtualMachineSizeTypes = "Standard_A9"
-	// VirtualMachineSizeTypesStandardB1ms ...
-	VirtualMachineSizeTypesStandardB1ms VirtualMachineSizeTypes = "Standard_B1ms"
-	// VirtualMachineSizeTypesStandardB1s ...
-	VirtualMachineSizeTypesStandardB1s VirtualMachineSizeTypes = "Standard_B1s"
-	// VirtualMachineSizeTypesStandardB2ms ...
-	VirtualMachineSizeTypesStandardB2ms VirtualMachineSizeTypes = "Standard_B2ms"
-	// VirtualMachineSizeTypesStandardB2s ...
-	VirtualMachineSizeTypesStandardB2s VirtualMachineSizeTypes = "Standard_B2s"
-	// VirtualMachineSizeTypesStandardB4ms ...
-	VirtualMachineSizeTypesStandardB4ms VirtualMachineSizeTypes = "Standard_B4ms"
-	// VirtualMachineSizeTypesStandardB8ms ...
-	VirtualMachineSizeTypesStandardB8ms VirtualMachineSizeTypes = "Standard_B8ms"
-	// VirtualMachineSizeTypesStandardD1 ...
-	VirtualMachineSizeTypesStandardD1 VirtualMachineSizeTypes = "Standard_D1"
-	// VirtualMachineSizeTypesStandardD11 ...
-	VirtualMachineSizeTypesStandardD11 VirtualMachineSizeTypes = "Standard_D11"
-	// VirtualMachineSizeTypesStandardD11V2 ...
-	VirtualMachineSizeTypesStandardD11V2 VirtualMachineSizeTypes = "Standard_D11_v2"
-	// VirtualMachineSizeTypesStandardD12 ...
-	VirtualMachineSizeTypesStandardD12 VirtualMachineSizeTypes = "Standard_D12"
-	// VirtualMachineSizeTypesStandardD12V2 ...
-	VirtualMachineSizeTypesStandardD12V2 VirtualMachineSizeTypes = "Standard_D12_v2"
-	// VirtualMachineSizeTypesStandardD13 ...
-	VirtualMachineSizeTypesStandardD13 VirtualMachineSizeTypes = "Standard_D13"
-	// VirtualMachineSizeTypesStandardD13V2 ...
-	VirtualMachineSizeTypesStandardD13V2 VirtualMachineSizeTypes = "Standard_D13_v2"
-	// VirtualMachineSizeTypesStandardD14 ...
-	VirtualMachineSizeTypesStandardD14 VirtualMachineSizeTypes = "Standard_D14"
-	// VirtualMachineSizeTypesStandardD14V2 ...
-	VirtualMachineSizeTypesStandardD14V2 VirtualMachineSizeTypes = "Standard_D14_v2"
-	// VirtualMachineSizeTypesStandardD15V2 ...
-	VirtualMachineSizeTypesStandardD15V2 VirtualMachineSizeTypes = "Standard_D15_v2"
-	// VirtualMachineSizeTypesStandardD16sV3 ...
-	VirtualMachineSizeTypesStandardD16sV3 VirtualMachineSizeTypes = "Standard_D16s_v3"
-	// VirtualMachineSizeTypesStandardD16V3 ...
-	VirtualMachineSizeTypesStandardD16V3 VirtualMachineSizeTypes = "Standard_D16_v3"
-	// VirtualMachineSizeTypesStandardD1V2 ...
-	VirtualMachineSizeTypesStandardD1V2 VirtualMachineSizeTypes = "Standard_D1_v2"
-	// VirtualMachineSizeTypesStandardD2 ...
-	VirtualMachineSizeTypesStandardD2 VirtualMachineSizeTypes = "Standard_D2"
-	// VirtualMachineSizeTypesStandardD2sV3 ...
-	VirtualMachineSizeTypesStandardD2sV3 VirtualMachineSizeTypes = "Standard_D2s_v3"
-	// VirtualMachineSizeTypesStandardD2V2 ...
-	VirtualMachineSizeTypesStandardD2V2 VirtualMachineSizeTypes = "Standard_D2_v2"
-	// VirtualMachineSizeTypesStandardD2V3 ...
-	VirtualMachineSizeTypesStandardD2V3 VirtualMachineSizeTypes = "Standard_D2_v3"
-	// VirtualMachineSizeTypesStandardD3 ...
-	VirtualMachineSizeTypesStandardD3 VirtualMachineSizeTypes = "Standard_D3"
-	// VirtualMachineSizeTypesStandardD32sV3 ...
-	VirtualMachineSizeTypesStandardD32sV3 VirtualMachineSizeTypes = "Standard_D32s_v3"
-	// VirtualMachineSizeTypesStandardD32V3 ...
-	VirtualMachineSizeTypesStandardD32V3 VirtualMachineSizeTypes = "Standard_D32_v3"
-	// VirtualMachineSizeTypesStandardD3V2 ...
-	VirtualMachineSizeTypesStandardD3V2 VirtualMachineSizeTypes = "Standard_D3_v2"
-	// VirtualMachineSizeTypesStandardD4 ...
-	VirtualMachineSizeTypesStandardD4 VirtualMachineSizeTypes = "Standard_D4"
-	// VirtualMachineSizeTypesStandardD4sV3 ...
-	VirtualMachineSizeTypesStandardD4sV3 VirtualMachineSizeTypes = "Standard_D4s_v3"
-	// VirtualMachineSizeTypesStandardD4V2 ...
-	VirtualMachineSizeTypesStandardD4V2 VirtualMachineSizeTypes = "Standard_D4_v2"
-	// VirtualMachineSizeTypesStandardD4V3 ...
-	VirtualMachineSizeTypesStandardD4V3 VirtualMachineSizeTypes = "Standard_D4_v3"
-	// VirtualMachineSizeTypesStandardD5V2 ...
-	VirtualMachineSizeTypesStandardD5V2 VirtualMachineSizeTypes = "Standard_D5_v2"
-	// VirtualMachineSizeTypesStandardD64sV3 ...
-	VirtualMachineSizeTypesStandardD64sV3 VirtualMachineSizeTypes = "Standard_D64s_v3"
-	// VirtualMachineSizeTypesStandardD64V3 ...
-	VirtualMachineSizeTypesStandardD64V3 VirtualMachineSizeTypes = "Standard_D64_v3"
-	// VirtualMachineSizeTypesStandardD8sV3 ...
-	VirtualMachineSizeTypesStandardD8sV3 VirtualMachineSizeTypes = "Standard_D8s_v3"
-	// VirtualMachineSizeTypesStandardD8V3 ...
-	VirtualMachineSizeTypesStandardD8V3 VirtualMachineSizeTypes = "Standard_D8_v3"
-	// VirtualMachineSizeTypesStandardDS1 ...
-	VirtualMachineSizeTypesStandardDS1 VirtualMachineSizeTypes = "Standard_DS1"
-	// VirtualMachineSizeTypesStandardDS11 ...
-	VirtualMachineSizeTypesStandardDS11 VirtualMachineSizeTypes = "Standard_DS11"
-	// VirtualMachineSizeTypesStandardDS11V2 ...
-	VirtualMachineSizeTypesStandardDS11V2 VirtualMachineSizeTypes = "Standard_DS11_v2"
-	// VirtualMachineSizeTypesStandardDS12 ...
-	VirtualMachineSizeTypesStandardDS12 VirtualMachineSizeTypes = "Standard_DS12"
-	// VirtualMachineSizeTypesStandardDS12V2 ...
-	VirtualMachineSizeTypesStandardDS12V2 VirtualMachineSizeTypes = "Standard_DS12_v2"
-	// VirtualMachineSizeTypesStandardDS13 ...
-	VirtualMachineSizeTypesStandardDS13 VirtualMachineSizeTypes = "Standard_DS13"
-	// VirtualMachineSizeTypesStandardDS132V2 ...
-	VirtualMachineSizeTypesStandardDS132V2 VirtualMachineSizeTypes = "Standard_DS13-2_v2"
-	// VirtualMachineSizeTypesStandardDS134V2 ...
-	VirtualMachineSizeTypesStandardDS134V2 VirtualMachineSizeTypes = "Standard_DS13-4_v2"
-	// VirtualMachineSizeTypesStandardDS13V2 ...
-	VirtualMachineSizeTypesStandardDS13V2 VirtualMachineSizeTypes = "Standard_DS13_v2"
-	// VirtualMachineSizeTypesStandardDS14 ...
-	VirtualMachineSizeTypesStandardDS14 VirtualMachineSizeTypes = "Standard_DS14"
-	// VirtualMachineSizeTypesStandardDS144V2 ...
-	VirtualMachineSizeTypesStandardDS144V2 VirtualMachineSizeTypes = "Standard_DS14-4_v2"
-	// VirtualMachineSizeTypesStandardDS148V2 ...
-	VirtualMachineSizeTypesStandardDS148V2 VirtualMachineSizeTypes = "Standard_DS14-8_v2"
-	// VirtualMachineSizeTypesStandardDS14V2 ...
-	VirtualMachineSizeTypesStandardDS14V2 VirtualMachineSizeTypes = "Standard_DS14_v2"
-	// VirtualMachineSizeTypesStandardDS15V2 ...
-	VirtualMachineSizeTypesStandardDS15V2 VirtualMachineSizeTypes = "Standard_DS15_v2"
-	// VirtualMachineSizeTypesStandardDS1V2 ...
-	VirtualMachineSizeTypesStandardDS1V2 VirtualMachineSizeTypes = "Standard_DS1_v2"
-	// VirtualMachineSizeTypesStandardDS2 ...
-	VirtualMachineSizeTypesStandardDS2 VirtualMachineSizeTypes = "Standard_DS2"
-	// VirtualMachineSizeTypesStandardDS2V2 ...
-	VirtualMachineSizeTypesStandardDS2V2 VirtualMachineSizeTypes = "Standard_DS2_v2"
-	// VirtualMachineSizeTypesStandardDS3 ...
-	VirtualMachineSizeTypesStandardDS3 VirtualMachineSizeTypes = "Standard_DS3"
-	// VirtualMachineSizeTypesStandardDS3V2 ...
-	VirtualMachineSizeTypesStandardDS3V2 VirtualMachineSizeTypes = "Standard_DS3_v2"
-	// VirtualMachineSizeTypesStandardDS4 ...
-	VirtualMachineSizeTypesStandardDS4 VirtualMachineSizeTypes = "Standard_DS4"
-	// VirtualMachineSizeTypesStandardDS4V2 ...
-	VirtualMachineSizeTypesStandardDS4V2 VirtualMachineSizeTypes = "Standard_DS4_v2"
-	// VirtualMachineSizeTypesStandardDS5V2 ...
-	VirtualMachineSizeTypesStandardDS5V2 VirtualMachineSizeTypes = "Standard_DS5_v2"
-	// VirtualMachineSizeTypesStandardE16sV3 ...
-	VirtualMachineSizeTypesStandardE16sV3 VirtualMachineSizeTypes = "Standard_E16s_v3"
-	// VirtualMachineSizeTypesStandardE16V3 ...
-	VirtualMachineSizeTypesStandardE16V3 VirtualMachineSizeTypes = "Standard_E16_v3"
-	// VirtualMachineSizeTypesStandardE2sV3 ...
-	VirtualMachineSizeTypesStandardE2sV3 VirtualMachineSizeTypes = "Standard_E2s_v3"
-	// VirtualMachineSizeTypesStandardE2V3 ...
-	VirtualMachineSizeTypesStandardE2V3 VirtualMachineSizeTypes = "Standard_E2_v3"
-	// VirtualMachineSizeTypesStandardE3216V3 ...
-	VirtualMachineSizeTypesStandardE3216V3 VirtualMachineSizeTypes = "Standard_E32-16_v3"
-	// VirtualMachineSizeTypesStandardE328sV3 ...
-	VirtualMachineSizeTypesStandardE328sV3 VirtualMachineSizeTypes = "Standard_E32-8s_v3"
-	// VirtualMachineSizeTypesStandardE32sV3 ...
-	VirtualMachineSizeTypesStandardE32sV3 VirtualMachineSizeTypes = "Standard_E32s_v3"
-	// VirtualMachineSizeTypesStandardE32V3 ...
-	VirtualMachineSizeTypesStandardE32V3 VirtualMachineSizeTypes = "Standard_E32_v3"
-	// VirtualMachineSizeTypesStandardE4sV3 ...
-	VirtualMachineSizeTypesStandardE4sV3 VirtualMachineSizeTypes = "Standard_E4s_v3"
-	// VirtualMachineSizeTypesStandardE4V3 ...
-	VirtualMachineSizeTypesStandardE4V3 VirtualMachineSizeTypes = "Standard_E4_v3"
-	// VirtualMachineSizeTypesStandardE6416sV3 ...
-	VirtualMachineSizeTypesStandardE6416sV3 VirtualMachineSizeTypes = "Standard_E64-16s_v3"
-	// VirtualMachineSizeTypesStandardE6432sV3 ...
-	VirtualMachineSizeTypesStandardE6432sV3 VirtualMachineSizeTypes = "Standard_E64-32s_v3"
-	// VirtualMachineSizeTypesStandardE64sV3 ...
-	VirtualMachineSizeTypesStandardE64sV3 VirtualMachineSizeTypes = "Standard_E64s_v3"
-	// VirtualMachineSizeTypesStandardE64V3 ...
-	VirtualMachineSizeTypesStandardE64V3 VirtualMachineSizeTypes = "Standard_E64_v3"
-	// VirtualMachineSizeTypesStandardE8sV3 ...
-	VirtualMachineSizeTypesStandardE8sV3 VirtualMachineSizeTypes = "Standard_E8s_v3"
-	// VirtualMachineSizeTypesStandardE8V3 ...
-	VirtualMachineSizeTypesStandardE8V3 VirtualMachineSizeTypes = "Standard_E8_v3"
-	// VirtualMachineSizeTypesStandardF1 ...
-	VirtualMachineSizeTypesStandardF1 VirtualMachineSizeTypes = "Standard_F1"
-	// VirtualMachineSizeTypesStandardF16 ...
-	VirtualMachineSizeTypesStandardF16 VirtualMachineSizeTypes = "Standard_F16"
-	// VirtualMachineSizeTypesStandardF16s ...
-	VirtualMachineSizeTypesStandardF16s VirtualMachineSizeTypes = "Standard_F16s"
-	// VirtualMachineSizeTypesStandardF16sV2 ...
-	VirtualMachineSizeTypesStandardF16sV2 VirtualMachineSizeTypes = "Standard_F16s_v2"
-	// VirtualMachineSizeTypesStandardF1s ...
-	VirtualMachineSizeTypesStandardF1s VirtualMachineSizeTypes = "Standard_F1s"
-	// VirtualMachineSizeTypesStandardF2 ...
-	VirtualMachineSizeTypesStandardF2 VirtualMachineSizeTypes = "Standard_F2"
-	// VirtualMachineSizeTypesStandardF2s ...
-	VirtualMachineSizeTypesStandardF2s VirtualMachineSizeTypes = "Standard_F2s"
-	// VirtualMachineSizeTypesStandardF2sV2 ...
-	VirtualMachineSizeTypesStandardF2sV2 VirtualMachineSizeTypes = "Standard_F2s_v2"
-	// VirtualMachineSizeTypesStandardF32sV2 ...
-	VirtualMachineSizeTypesStandardF32sV2 VirtualMachineSizeTypes = "Standard_F32s_v2"
-	// VirtualMachineSizeTypesStandardF4 ...
-	VirtualMachineSizeTypesStandardF4 VirtualMachineSizeTypes = "Standard_F4"
-	// VirtualMachineSizeTypesStandardF4s ...
-	VirtualMachineSizeTypesStandardF4s VirtualMachineSizeTypes = "Standard_F4s"
-	// VirtualMachineSizeTypesStandardF4sV2 ...
-	VirtualMachineSizeTypesStandardF4sV2 VirtualMachineSizeTypes = "Standard_F4s_v2"
-	// VirtualMachineSizeTypesStandardF64sV2 ...
-	VirtualMachineSizeTypesStandardF64sV2 VirtualMachineSizeTypes = "Standard_F64s_v2"
-	// VirtualMachineSizeTypesStandardF72sV2 ...
-	VirtualMachineSizeTypesStandardF72sV2 VirtualMachineSizeTypes = "Standard_F72s_v2"
-	// VirtualMachineSizeTypesStandardF8 ...
-	VirtualMachineSizeTypesStandardF8 VirtualMachineSizeTypes = "Standard_F8"
-	// VirtualMachineSizeTypesStandardF8s ...
-	VirtualMachineSizeTypesStandardF8s VirtualMachineSizeTypes = "Standard_F8s"
-	// VirtualMachineSizeTypesStandardF8sV2 ...
-	VirtualMachineSizeTypesStandardF8sV2 VirtualMachineSizeTypes = "Standard_F8s_v2"
-	// VirtualMachineSizeTypesStandardG1 ...
-	VirtualMachineSizeTypesStandardG1 VirtualMachineSizeTypes = "Standard_G1"
-	// VirtualMachineSizeTypesStandardG2 ...
-	VirtualMachineSizeTypesStandardG2 VirtualMachineSizeTypes = "Standard_G2"
-	// VirtualMachineSizeTypesStandardG3 ...
-	VirtualMachineSizeTypesStandardG3 VirtualMachineSizeTypes = "Standard_G3"
-	// VirtualMachineSizeTypesStandardG4 ...
-	VirtualMachineSizeTypesStandardG4 VirtualMachineSizeTypes = "Standard_G4"
-	// VirtualMachineSizeTypesStandardG5 ...
-	VirtualMachineSizeTypesStandardG5 VirtualMachineSizeTypes = "Standard_G5"
-	// VirtualMachineSizeTypesStandardGS1 ...
-	VirtualMachineSizeTypesStandardGS1 VirtualMachineSizeTypes = "Standard_GS1"
-	// VirtualMachineSizeTypesStandardGS2 ...
-	VirtualMachineSizeTypesStandardGS2 VirtualMachineSizeTypes = "Standard_GS2"
-	// VirtualMachineSizeTypesStandardGS3 ...
-	VirtualMachineSizeTypesStandardGS3 VirtualMachineSizeTypes = "Standard_GS3"
-	// VirtualMachineSizeTypesStandardGS4 ...
-	VirtualMachineSizeTypesStandardGS4 VirtualMachineSizeTypes = "Standard_GS4"
-	// VirtualMachineSizeTypesStandardGS44 ...
-	VirtualMachineSizeTypesStandardGS44 VirtualMachineSizeTypes = "Standard_GS4-4"
-	// VirtualMachineSizeTypesStandardGS48 ...
-	VirtualMachineSizeTypesStandardGS48 VirtualMachineSizeTypes = "Standard_GS4-8"
-	// VirtualMachineSizeTypesStandardGS5 ...
-	VirtualMachineSizeTypesStandardGS5 VirtualMachineSizeTypes = "Standard_GS5"
-	// VirtualMachineSizeTypesStandardGS516 ...
-	VirtualMachineSizeTypesStandardGS516 VirtualMachineSizeTypes = "Standard_GS5-16"
-	// VirtualMachineSizeTypesStandardGS58 ...
-	VirtualMachineSizeTypesStandardGS58 VirtualMachineSizeTypes = "Standard_GS5-8"
-	// VirtualMachineSizeTypesStandardH16 ...
-	VirtualMachineSizeTypesStandardH16 VirtualMachineSizeTypes = "Standard_H16"
-	// VirtualMachineSizeTypesStandardH16m ...
-	VirtualMachineSizeTypesStandardH16m VirtualMachineSizeTypes = "Standard_H16m"
-	// VirtualMachineSizeTypesStandardH16mr ...
-	VirtualMachineSizeTypesStandardH16mr VirtualMachineSizeTypes = "Standard_H16mr"
-	// VirtualMachineSizeTypesStandardH16r ...
-	VirtualMachineSizeTypesStandardH16r VirtualMachineSizeTypes = "Standard_H16r"
-	// VirtualMachineSizeTypesStandardH8 ...
-	VirtualMachineSizeTypesStandardH8 VirtualMachineSizeTypes = "Standard_H8"
-	// VirtualMachineSizeTypesStandardH8m ...
-	VirtualMachineSizeTypesStandardH8m VirtualMachineSizeTypes = "Standard_H8m"
-	// VirtualMachineSizeTypesStandardL16s ...
-	VirtualMachineSizeTypesStandardL16s VirtualMachineSizeTypes = "Standard_L16s"
-	// VirtualMachineSizeTypesStandardL32s ...
-	VirtualMachineSizeTypesStandardL32s VirtualMachineSizeTypes = "Standard_L32s"
-	// VirtualMachineSizeTypesStandardL4s ...
-	VirtualMachineSizeTypesStandardL4s VirtualMachineSizeTypes = "Standard_L4s"
-	// VirtualMachineSizeTypesStandardL8s ...
-	VirtualMachineSizeTypesStandardL8s VirtualMachineSizeTypes = "Standard_L8s"
-	// VirtualMachineSizeTypesStandardM12832ms ...
-	VirtualMachineSizeTypesStandardM12832ms VirtualMachineSizeTypes = "Standard_M128-32ms"
-	// VirtualMachineSizeTypesStandardM12864ms ...
-	VirtualMachineSizeTypesStandardM12864ms VirtualMachineSizeTypes = "Standard_M128-64ms"
-	// VirtualMachineSizeTypesStandardM128ms ...
-	VirtualMachineSizeTypesStandardM128ms VirtualMachineSizeTypes = "Standard_M128ms"
-	// VirtualMachineSizeTypesStandardM128s ...
-	VirtualMachineSizeTypesStandardM128s VirtualMachineSizeTypes = "Standard_M128s"
-	// VirtualMachineSizeTypesStandardM6416ms ...
-	VirtualMachineSizeTypesStandardM6416ms VirtualMachineSizeTypes = "Standard_M64-16ms"
-	// VirtualMachineSizeTypesStandardM6432ms ...
-	VirtualMachineSizeTypesStandardM6432ms VirtualMachineSizeTypes = "Standard_M64-32ms"
-	// VirtualMachineSizeTypesStandardM64ms ...
-	VirtualMachineSizeTypesStandardM64ms VirtualMachineSizeTypes = "Standard_M64ms"
-	// VirtualMachineSizeTypesStandardM64s ...
-	VirtualMachineSizeTypesStandardM64s VirtualMachineSizeTypes = "Standard_M64s"
-	// VirtualMachineSizeTypesStandardNC12 ...
-	VirtualMachineSizeTypesStandardNC12 VirtualMachineSizeTypes = "Standard_NC12"
-	// VirtualMachineSizeTypesStandardNC12sV2 ...
-	VirtualMachineSizeTypesStandardNC12sV2 VirtualMachineSizeTypes = "Standard_NC12s_v2"
-	// VirtualMachineSizeTypesStandardNC12sV3 ...
-	VirtualMachineSizeTypesStandardNC12sV3 VirtualMachineSizeTypes = "Standard_NC12s_v3"
-	// VirtualMachineSizeTypesStandardNC24 ...
-	VirtualMachineSizeTypesStandardNC24 VirtualMachineSizeTypes = "Standard_NC24"
-	// VirtualMachineSizeTypesStandardNC24r ...
-	VirtualMachineSizeTypesStandardNC24r VirtualMachineSizeTypes = "Standard_NC24r"
-	// VirtualMachineSizeTypesStandardNC24rsV2 ...
-	VirtualMachineSizeTypesStandardNC24rsV2 VirtualMachineSizeTypes = "Standard_NC24rs_v2"
-	// VirtualMachineSizeTypesStandardNC24rsV3 ...
-	VirtualMachineSizeTypesStandardNC24rsV3 VirtualMachineSizeTypes = "Standard_NC24rs_v3"
-	// VirtualMachineSizeTypesStandardNC24sV2 ...
-	VirtualMachineSizeTypesStandardNC24sV2 VirtualMachineSizeTypes = "Standard_NC24s_v2"
-	// VirtualMachineSizeTypesStandardNC24sV3 ...
-	VirtualMachineSizeTypesStandardNC24sV3 VirtualMachineSizeTypes = "Standard_NC24s_v3"
-	// VirtualMachineSizeTypesStandardNC6 ...
-	VirtualMachineSizeTypesStandardNC6 VirtualMachineSizeTypes = "Standard_NC6"
-	// VirtualMachineSizeTypesStandardNC6sV2 ...
-	VirtualMachineSizeTypesStandardNC6sV2 VirtualMachineSizeTypes = "Standard_NC6s_v2"
-	// VirtualMachineSizeTypesStandardNC6sV3 ...
-	VirtualMachineSizeTypesStandardNC6sV3 VirtualMachineSizeTypes = "Standard_NC6s_v3"
-	// VirtualMachineSizeTypesStandardND12s ...
-	VirtualMachineSizeTypesStandardND12s VirtualMachineSizeTypes = "Standard_ND12s"
-	// VirtualMachineSizeTypesStandardND24rs ...
-	VirtualMachineSizeTypesStandardND24rs VirtualMachineSizeTypes = "Standard_ND24rs"
-	// VirtualMachineSizeTypesStandardND24s ...
-	VirtualMachineSizeTypesStandardND24s VirtualMachineSizeTypes = "Standard_ND24s"
-	// VirtualMachineSizeTypesStandardND6s ...
-	VirtualMachineSizeTypesStandardND6s VirtualMachineSizeTypes = "Standard_ND6s"
-	// VirtualMachineSizeTypesStandardNV12 ...
-	VirtualMachineSizeTypesStandardNV12 VirtualMachineSizeTypes = "Standard_NV12"
-	// VirtualMachineSizeTypesStandardNV24 ...
-	VirtualMachineSizeTypesStandardNV24 VirtualMachineSizeTypes = "Standard_NV24"
-	// VirtualMachineSizeTypesStandardNV6 ...
-	VirtualMachineSizeTypesStandardNV6 VirtualMachineSizeTypes = "Standard_NV6"
+	// BasicA0 ...
+	BasicA0 VirtualMachineSizeTypes = "Basic_A0"
+	// BasicA1 ...
+	BasicA1 VirtualMachineSizeTypes = "Basic_A1"
+	// BasicA2 ...
+	BasicA2 VirtualMachineSizeTypes = "Basic_A2"
+	// BasicA3 ...
+	BasicA3 VirtualMachineSizeTypes = "Basic_A3"
+	// BasicA4 ...
+	BasicA4 VirtualMachineSizeTypes = "Basic_A4"
+	// StandardA0 ...
+	StandardA0 VirtualMachineSizeTypes = "Standard_A0"
+	// StandardA1 ...
+	StandardA1 VirtualMachineSizeTypes = "Standard_A1"
+	// StandardA10 ...
+	StandardA10 VirtualMachineSizeTypes = "Standard_A10"
+	// StandardA11 ...
+	StandardA11 VirtualMachineSizeTypes = "Standard_A11"
+	// StandardA1V2 ...
+	StandardA1V2 VirtualMachineSizeTypes = "Standard_A1_v2"
+	// StandardA2 ...
+	StandardA2 VirtualMachineSizeTypes = "Standard_A2"
+	// StandardA2mV2 ...
+	StandardA2mV2 VirtualMachineSizeTypes = "Standard_A2m_v2"
+	// StandardA2V2 ...
+	StandardA2V2 VirtualMachineSizeTypes = "Standard_A2_v2"
+	// StandardA3 ...
+	StandardA3 VirtualMachineSizeTypes = "Standard_A3"
+	// StandardA4 ...
+	StandardA4 VirtualMachineSizeTypes = "Standard_A4"
+	// StandardA4mV2 ...
+	StandardA4mV2 VirtualMachineSizeTypes = "Standard_A4m_v2"
+	// StandardA4V2 ...
+	StandardA4V2 VirtualMachineSizeTypes = "Standard_A4_v2"
+	// StandardA5 ...
+	StandardA5 VirtualMachineSizeTypes = "Standard_A5"
+	// StandardA6 ...
+	StandardA6 VirtualMachineSizeTypes = "Standard_A6"
+	// StandardA7 ...
+	StandardA7 VirtualMachineSizeTypes = "Standard_A7"
+	// StandardA8 ...
+	StandardA8 VirtualMachineSizeTypes = "Standard_A8"
+	// StandardA8mV2 ...
+	StandardA8mV2 VirtualMachineSizeTypes = "Standard_A8m_v2"
+	// StandardA8V2 ...
+	StandardA8V2 VirtualMachineSizeTypes = "Standard_A8_v2"
+	// StandardA9 ...
+	StandardA9 VirtualMachineSizeTypes = "Standard_A9"
+	// StandardB1ms ...
+	StandardB1ms VirtualMachineSizeTypes = "Standard_B1ms"
+	// StandardB1s ...
+	StandardB1s VirtualMachineSizeTypes = "Standard_B1s"
+	// StandardB2ms ...
+	StandardB2ms VirtualMachineSizeTypes = "Standard_B2ms"
+	// StandardB2s ...
+	StandardB2s VirtualMachineSizeTypes = "Standard_B2s"
+	// StandardB4ms ...
+	StandardB4ms VirtualMachineSizeTypes = "Standard_B4ms"
+	// StandardB8ms ...
+	StandardB8ms VirtualMachineSizeTypes = "Standard_B8ms"
+	// StandardD1 ...
+	StandardD1 VirtualMachineSizeTypes = "Standard_D1"
+	// StandardD11 ...
+	StandardD11 VirtualMachineSizeTypes = "Standard_D11"
+	// StandardD11V2 ...
+	StandardD11V2 VirtualMachineSizeTypes = "Standard_D11_v2"
+	// StandardD12 ...
+	StandardD12 VirtualMachineSizeTypes = "Standard_D12"
+	// StandardD12V2 ...
+	StandardD12V2 VirtualMachineSizeTypes = "Standard_D12_v2"
+	// StandardD13 ...
+	StandardD13 VirtualMachineSizeTypes = "Standard_D13"
+	// StandardD13V2 ...
+	StandardD13V2 VirtualMachineSizeTypes = "Standard_D13_v2"
+	// StandardD14 ...
+	StandardD14 VirtualMachineSizeTypes = "Standard_D14"
+	// StandardD14V2 ...
+	StandardD14V2 VirtualMachineSizeTypes = "Standard_D14_v2"
+	// StandardD15V2 ...
+	StandardD15V2 VirtualMachineSizeTypes = "Standard_D15_v2"
+	// StandardD16sV3 ...
+	StandardD16sV3 VirtualMachineSizeTypes = "Standard_D16s_v3"
+	// StandardD16V3 ...
+	StandardD16V3 VirtualMachineSizeTypes = "Standard_D16_v3"
+	// StandardD1V2 ...
+	StandardD1V2 VirtualMachineSizeTypes = "Standard_D1_v2"
+	// StandardD2 ...
+	StandardD2 VirtualMachineSizeTypes = "Standard_D2"
+	// StandardD2sV3 ...
+	StandardD2sV3 VirtualMachineSizeTypes = "Standard_D2s_v3"
+	// StandardD2V2 ...
+	StandardD2V2 VirtualMachineSizeTypes = "Standard_D2_v2"
+	// StandardD2V3 ...
+	StandardD2V3 VirtualMachineSizeTypes = "Standard_D2_v3"
+	// StandardD3 ...
+	StandardD3 VirtualMachineSizeTypes = "Standard_D3"
+	// StandardD32sV3 ...
+	StandardD32sV3 VirtualMachineSizeTypes = "Standard_D32s_v3"
+	// StandardD32V3 ...
+	StandardD32V3 VirtualMachineSizeTypes = "Standard_D32_v3"
+	// StandardD3V2 ...
+	StandardD3V2 VirtualMachineSizeTypes = "Standard_D3_v2"
+	// StandardD4 ...
+	StandardD4 VirtualMachineSizeTypes = "Standard_D4"
+	// StandardD4sV3 ...
+	StandardD4sV3 VirtualMachineSizeTypes = "Standard_D4s_v3"
+	// StandardD4V2 ...
+	StandardD4V2 VirtualMachineSizeTypes = "Standard_D4_v2"
+	// StandardD4V3 ...
+	StandardD4V3 VirtualMachineSizeTypes = "Standard_D4_v3"
+	// StandardD5V2 ...
+	StandardD5V2 VirtualMachineSizeTypes = "Standard_D5_v2"
+	// StandardD64sV3 ...
+	StandardD64sV3 VirtualMachineSizeTypes = "Standard_D64s_v3"
+	// StandardD64V3 ...
+	StandardD64V3 VirtualMachineSizeTypes = "Standard_D64_v3"
+	// StandardD8sV3 ...
+	StandardD8sV3 VirtualMachineSizeTypes = "Standard_D8s_v3"
+	// StandardD8V3 ...
+	StandardD8V3 VirtualMachineSizeTypes = "Standard_D8_v3"
+	// StandardDS1 ...
+	StandardDS1 VirtualMachineSizeTypes = "Standard_DS1"
+	// StandardDS11 ...
+	StandardDS11 VirtualMachineSizeTypes = "Standard_DS11"
+	// StandardDS11V2 ...
+	StandardDS11V2 VirtualMachineSizeTypes = "Standard_DS11_v2"
+	// StandardDS12 ...
+	StandardDS12 VirtualMachineSizeTypes = "Standard_DS12"
+	// StandardDS12V2 ...
+	StandardDS12V2 VirtualMachineSizeTypes = "Standard_DS12_v2"
+	// StandardDS13 ...
+	StandardDS13 VirtualMachineSizeTypes = "Standard_DS13"
+	// StandardDS132V2 ...
+	StandardDS132V2 VirtualMachineSizeTypes = "Standard_DS13-2_v2"
+	// StandardDS134V2 ...
+	StandardDS134V2 VirtualMachineSizeTypes = "Standard_DS13-4_v2"
+	// StandardDS13V2 ...
+	StandardDS13V2 VirtualMachineSizeTypes = "Standard_DS13_v2"
+	// StandardDS14 ...
+	StandardDS14 VirtualMachineSizeTypes = "Standard_DS14"
+	// StandardDS144V2 ...
+	StandardDS144V2 VirtualMachineSizeTypes = "Standard_DS14-4_v2"
+	// StandardDS148V2 ...
+	StandardDS148V2 VirtualMachineSizeTypes = "Standard_DS14-8_v2"
+	// StandardDS14V2 ...
+	StandardDS14V2 VirtualMachineSizeTypes = "Standard_DS14_v2"
+	// StandardDS15V2 ...
+	StandardDS15V2 VirtualMachineSizeTypes = "Standard_DS15_v2"
+	// StandardDS1V2 ...
+	StandardDS1V2 VirtualMachineSizeTypes = "Standard_DS1_v2"
+	// StandardDS2 ...
+	StandardDS2 VirtualMachineSizeTypes = "Standard_DS2"
+	// StandardDS2V2 ...
+	StandardDS2V2 VirtualMachineSizeTypes = "Standard_DS2_v2"
+	// StandardDS3 ...
+	StandardDS3 VirtualMachineSizeTypes = "Standard_DS3"
+	// StandardDS3V2 ...
+	StandardDS3V2 VirtualMachineSizeTypes = "Standard_DS3_v2"
+	// StandardDS4 ...
+	StandardDS4 VirtualMachineSizeTypes = "Standard_DS4"
+	// StandardDS4V2 ...
+	StandardDS4V2 VirtualMachineSizeTypes = "Standard_DS4_v2"
+	// StandardDS5V2 ...
+	StandardDS5V2 VirtualMachineSizeTypes = "Standard_DS5_v2"
+	// StandardE16sV3 ...
+	StandardE16sV3 VirtualMachineSizeTypes = "Standard_E16s_v3"
+	// StandardE16V3 ...
+	StandardE16V3 VirtualMachineSizeTypes = "Standard_E16_v3"
+	// StandardE2sV3 ...
+	StandardE2sV3 VirtualMachineSizeTypes = "Standard_E2s_v3"
+	// StandardE2V3 ...
+	StandardE2V3 VirtualMachineSizeTypes = "Standard_E2_v3"
+	// StandardE3216V3 ...
+	StandardE3216V3 VirtualMachineSizeTypes = "Standard_E32-16_v3"
+	// StandardE328sV3 ...
+	StandardE328sV3 VirtualMachineSizeTypes = "Standard_E32-8s_v3"
+	// StandardE32sV3 ...
+	StandardE32sV3 VirtualMachineSizeTypes = "Standard_E32s_v3"
+	// StandardE32V3 ...
+	StandardE32V3 VirtualMachineSizeTypes = "Standard_E32_v3"
+	// StandardE4sV3 ...
+	StandardE4sV3 VirtualMachineSizeTypes = "Standard_E4s_v3"
+	// StandardE4V3 ...
+	StandardE4V3 VirtualMachineSizeTypes = "Standard_E4_v3"
+	// StandardE6416sV3 ...
+	StandardE6416sV3 VirtualMachineSizeTypes = "Standard_E64-16s_v3"
+	// StandardE6432sV3 ...
+	StandardE6432sV3 VirtualMachineSizeTypes = "Standard_E64-32s_v3"
+	// StandardE64sV3 ...
+	StandardE64sV3 VirtualMachineSizeTypes = "Standard_E64s_v3"
+	// StandardE64V3 ...
+	StandardE64V3 VirtualMachineSizeTypes = "Standard_E64_v3"
+	// StandardE8sV3 ...
+	StandardE8sV3 VirtualMachineSizeTypes = "Standard_E8s_v3"
+	// StandardE8V3 ...
+	StandardE8V3 VirtualMachineSizeTypes = "Standard_E8_v3"
+	// StandardF1 ...
+	StandardF1 VirtualMachineSizeTypes = "Standard_F1"
+	// StandardF16 ...
+	StandardF16 VirtualMachineSizeTypes = "Standard_F16"
+	// StandardF16s ...
+	StandardF16s VirtualMachineSizeTypes = "Standard_F16s"
+	// StandardF16sV2 ...
+	StandardF16sV2 VirtualMachineSizeTypes = "Standard_F16s_v2"
+	// StandardF1s ...
+	StandardF1s VirtualMachineSizeTypes = "Standard_F1s"
+	// StandardF2 ...
+	StandardF2 VirtualMachineSizeTypes = "Standard_F2"
+	// StandardF2s ...
+	StandardF2s VirtualMachineSizeTypes = "Standard_F2s"
+	// StandardF2sV2 ...
+	StandardF2sV2 VirtualMachineSizeTypes = "Standard_F2s_v2"
+	// StandardF32sV2 ...
+	StandardF32sV2 VirtualMachineSizeTypes = "Standard_F32s_v2"
+	// StandardF4 ...
+	StandardF4 VirtualMachineSizeTypes = "Standard_F4"
+	// StandardF4s ...
+	StandardF4s VirtualMachineSizeTypes = "Standard_F4s"
+	// StandardF4sV2 ...
+	StandardF4sV2 VirtualMachineSizeTypes = "Standard_F4s_v2"
+	// StandardF64sV2 ...
+	StandardF64sV2 VirtualMachineSizeTypes = "Standard_F64s_v2"
+	// StandardF72sV2 ...
+	StandardF72sV2 VirtualMachineSizeTypes = "Standard_F72s_v2"
+	// StandardF8 ...
+	StandardF8 VirtualMachineSizeTypes = "Standard_F8"
+	// StandardF8s ...
+	StandardF8s VirtualMachineSizeTypes = "Standard_F8s"
+	// StandardF8sV2 ...
+	StandardF8sV2 VirtualMachineSizeTypes = "Standard_F8s_v2"
+	// StandardG1 ...
+	StandardG1 VirtualMachineSizeTypes = "Standard_G1"
+	// StandardG2 ...
+	StandardG2 VirtualMachineSizeTypes = "Standard_G2"
+	// StandardG3 ...
+	StandardG3 VirtualMachineSizeTypes = "Standard_G3"
+	// StandardG4 ...
+	StandardG4 VirtualMachineSizeTypes = "Standard_G4"
+	// StandardG5 ...
+	StandardG5 VirtualMachineSizeTypes = "Standard_G5"
+	// StandardGS1 ...
+	StandardGS1 VirtualMachineSizeTypes = "Standard_GS1"
+	// StandardGS2 ...
+	StandardGS2 VirtualMachineSizeTypes = "Standard_GS2"
+	// StandardGS3 ...
+	StandardGS3 VirtualMachineSizeTypes = "Standard_GS3"
+	// StandardGS4 ...
+	StandardGS4 VirtualMachineSizeTypes = "Standard_GS4"
+	// StandardGS44 ...
+	StandardGS44 VirtualMachineSizeTypes = "Standard_GS4-4"
+	// StandardGS48 ...
+	StandardGS48 VirtualMachineSizeTypes = "Standard_GS4-8"
+	// StandardGS5 ...
+	StandardGS5 VirtualMachineSizeTypes = "Standard_GS5"
+	// StandardGS516 ...
+	StandardGS516 VirtualMachineSizeTypes = "Standard_GS5-16"
+	// StandardGS58 ...
+	StandardGS58 VirtualMachineSizeTypes = "Standard_GS5-8"
+	// StandardH16 ...
+	StandardH16 VirtualMachineSizeTypes = "Standard_H16"
+	// StandardH16m ...
+	StandardH16m VirtualMachineSizeTypes = "Standard_H16m"
+	// StandardH16mr ...
+	StandardH16mr VirtualMachineSizeTypes = "Standard_H16mr"
+	// StandardH16r ...
+	StandardH16r VirtualMachineSizeTypes = "Standard_H16r"
+	// StandardH8 ...
+	StandardH8 VirtualMachineSizeTypes = "Standard_H8"
+	// StandardH8m ...
+	StandardH8m VirtualMachineSizeTypes = "Standard_H8m"
+	// StandardL16s ...
+	StandardL16s VirtualMachineSizeTypes = "Standard_L16s"
+	// StandardL32s ...
+	StandardL32s VirtualMachineSizeTypes = "Standard_L32s"
+	// StandardL4s ...
+	StandardL4s VirtualMachineSizeTypes = "Standard_L4s"
+	// StandardL8s ...
+	StandardL8s VirtualMachineSizeTypes = "Standard_L8s"
+	// StandardM12832ms ...
+	StandardM12832ms VirtualMachineSizeTypes = "Standard_M128-32ms"
+	// StandardM12864ms ...
+	StandardM12864ms VirtualMachineSizeTypes = "Standard_M128-64ms"
+	// StandardM128ms ...
+	StandardM128ms VirtualMachineSizeTypes = "Standard_M128ms"
+	// StandardM128s ...
+	StandardM128s VirtualMachineSizeTypes = "Standard_M128s"
+	// StandardM6416ms ...
+	StandardM6416ms VirtualMachineSizeTypes = "Standard_M64-16ms"
+	// StandardM6432ms ...
+	StandardM6432ms VirtualMachineSizeTypes = "Standard_M64-32ms"
+	// StandardM64ms ...
+	StandardM64ms VirtualMachineSizeTypes = "Standard_M64ms"
+	// StandardM64s ...
+	StandardM64s VirtualMachineSizeTypes = "Standard_M64s"
+	// StandardNC12 ...
+	StandardNC12 VirtualMachineSizeTypes = "Standard_NC12"
+	// StandardNC12sV2 ...
+	StandardNC12sV2 VirtualMachineSizeTypes = "Standard_NC12s_v2"
+	// StandardNC12sV3 ...
+	StandardNC12sV3 VirtualMachineSizeTypes = "Standard_NC12s_v3"
+	// StandardNC24 ...
+	StandardNC24 VirtualMachineSizeTypes = "Standard_NC24"
+	// StandardNC24r ...
+	StandardNC24r VirtualMachineSizeTypes = "Standard_NC24r"
+	// StandardNC24rsV2 ...
+	StandardNC24rsV2 VirtualMachineSizeTypes = "Standard_NC24rs_v2"
+	// StandardNC24rsV3 ...
+	StandardNC24rsV3 VirtualMachineSizeTypes = "Standard_NC24rs_v3"
+	// StandardNC24sV2 ...
+	StandardNC24sV2 VirtualMachineSizeTypes = "Standard_NC24s_v2"
+	// StandardNC24sV3 ...
+	StandardNC24sV3 VirtualMachineSizeTypes = "Standard_NC24s_v3"
+	// StandardNC6 ...
+	StandardNC6 VirtualMachineSizeTypes = "Standard_NC6"
+	// StandardNC6sV2 ...
+	StandardNC6sV2 VirtualMachineSizeTypes = "Standard_NC6s_v2"
+	// StandardNC6sV3 ...
+	StandardNC6sV3 VirtualMachineSizeTypes = "Standard_NC6s_v3"
+	// StandardND12s ...
+	StandardND12s VirtualMachineSizeTypes = "Standard_ND12s"
+	// StandardND24rs ...
+	StandardND24rs VirtualMachineSizeTypes = "Standard_ND24rs"
+	// StandardND24s ...
+	StandardND24s VirtualMachineSizeTypes = "Standard_ND24s"
+	// StandardND6s ...
+	StandardND6s VirtualMachineSizeTypes = "Standard_ND6s"
+	// StandardNV12 ...
+	StandardNV12 VirtualMachineSizeTypes = "Standard_NV12"
+	// StandardNV24 ...
+	StandardNV24 VirtualMachineSizeTypes = "Standard_NV24"
+	// StandardNV6 ...
+	StandardNV6 VirtualMachineSizeTypes = "Standard_NV6"
 )
 
 // PossibleVirtualMachineSizeTypesValues returns an array of possible values for the VirtualMachineSizeTypes const type.
 func PossibleVirtualMachineSizeTypesValues() []VirtualMachineSizeTypes {
-	return []VirtualMachineSizeTypes{VirtualMachineSizeTypesBasicA0, VirtualMachineSizeTypesBasicA1, VirtualMachineSizeTypesBasicA2, VirtualMachineSizeTypesBasicA3, VirtualMachineSizeTypesBasicA4, VirtualMachineSizeTypesStandardA0, VirtualMachineSizeTypesStandardA1, VirtualMachineSizeTypesStandardA10, VirtualMachineSizeTypesStandardA11, VirtualMachineSizeTypesStandardA1V2, VirtualMachineSizeTypesStandardA2, VirtualMachineSizeTypesStandardA2mV2, VirtualMachineSizeTypesStandardA2V2, VirtualMachineSizeTypesStandardA3, VirtualMachineSizeTypesStandardA4, VirtualMachineSizeTypesStandardA4mV2, VirtualMachineSizeTypesStandardA4V2, VirtualMachineSizeTypesStandardA5, VirtualMachineSizeTypesStandardA6, VirtualMachineSizeTypesStandardA7, VirtualMachineSizeTypesStandardA8, VirtualMachineSizeTypesStandardA8mV2, VirtualMachineSizeTypesStandardA8V2, VirtualMachineSizeTypesStandardA9, VirtualMachineSizeTypesStandardB1ms, VirtualMachineSizeTypesStandardB1s, VirtualMachineSizeTypesStandardB2ms, VirtualMachineSizeTypesStandardB2s, VirtualMachineSizeTypesStandardB4ms, VirtualMachineSizeTypesStandardB8ms, VirtualMachineSizeTypesStandardD1, VirtualMachineSizeTypesStandardD11, VirtualMachineSizeTypesStandardD11V2, VirtualMachineSizeTypesStandardD12, VirtualMachineSizeTypesStandardD12V2, VirtualMachineSizeTypesStandardD13, VirtualMachineSizeTypesStandardD13V2, VirtualMachineSizeTypesStandardD14, VirtualMachineSizeTypesStandardD14V2, VirtualMachineSizeTypesStandardD15V2, VirtualMachineSizeTypesStandardD16sV3, VirtualMachineSizeTypesStandardD16V3, VirtualMachineSizeTypesStandardD1V2, VirtualMachineSizeTypesStandardD2, VirtualMachineSizeTypesStandardD2sV3, VirtualMachineSizeTypesStandardD2V2, VirtualMachineSizeTypesStandardD2V3, VirtualMachineSizeTypesStandardD3, VirtualMachineSizeTypesStandardD32sV3, VirtualMachineSizeTypesStandardD32V3, VirtualMachineSizeTypesStandardD3V2, VirtualMachineSizeTypesStandardD4, VirtualMachineSizeTypesStandardD4sV3, VirtualMachineSizeTypesStandardD4V2, VirtualMachineSizeTypesStandardD4V3, VirtualMachineSizeTypesStandardD5V2, VirtualMachineSizeTypesStandardD64sV3, VirtualMachineSizeTypesStandardD64V3, VirtualMachineSizeTypesStandardD8sV3, VirtualMachineSizeTypesStandardD8V3, VirtualMachineSizeTypesStandardDS1, VirtualMachineSizeTypesStandardDS11, VirtualMachineSizeTypesStandardDS11V2, VirtualMachineSizeTypesStandardDS12, VirtualMachineSizeTypesStandardDS12V2, VirtualMachineSizeTypesStandardDS13, VirtualMachineSizeTypesStandardDS132V2, VirtualMachineSizeTypesStandardDS134V2, VirtualMachineSizeTypesStandardDS13V2, VirtualMachineSizeTypesStandardDS14, VirtualMachineSizeTypesStandardDS144V2, VirtualMachineSizeTypesStandardDS148V2, VirtualMachineSizeTypesStandardDS14V2, VirtualMachineSizeTypesStandardDS15V2, VirtualMachineSizeTypesStandardDS1V2, VirtualMachineSizeTypesStandardDS2, VirtualMachineSizeTypesStandardDS2V2, VirtualMachineSizeTypesStandardDS3, VirtualMachineSizeTypesStandardDS3V2, VirtualMachineSizeTypesStandardDS4, VirtualMachineSizeTypesStandardDS4V2, VirtualMachineSizeTypesStandardDS5V2, VirtualMachineSizeTypesStandardE16sV3, VirtualMachineSizeTypesStandardE16V3, VirtualMachineSizeTypesStandardE2sV3, VirtualMachineSizeTypesStandardE2V3, VirtualMachineSizeTypesStandardE3216V3, VirtualMachineSizeTypesStandardE328sV3, VirtualMachineSizeTypesStandardE32sV3, VirtualMachineSizeTypesStandardE32V3, VirtualMachineSizeTypesStandardE4sV3, VirtualMachineSizeTypesStandardE4V3, VirtualMachineSizeTypesStandardE6416sV3, VirtualMachineSizeTypesStandardE6432sV3, VirtualMachineSizeTypesStandardE64sV3, VirtualMachineSizeTypesStandardE64V3, VirtualMachineSizeTypesStandardE8sV3, VirtualMachineSizeTypesStandardE8V3, VirtualMachineSizeTypesStandardF1, VirtualMachineSizeTypesStandardF16, VirtualMachineSizeTypesStandardF16s, VirtualMachineSizeTypesStandardF16sV2, VirtualMachineSizeTypesStandardF1s, VirtualMachineSizeTypesStandardF2, VirtualMachineSizeTypesStandardF2s, VirtualMachineSizeTypesStandardF2sV2, VirtualMachineSizeTypesStandardF32sV2, VirtualMachineSizeTypesStandardF4, VirtualMachineSizeTypesStandardF4s, VirtualMachineSizeTypesStandardF4sV2, VirtualMachineSizeTypesStandardF64sV2, VirtualMachineSizeTypesStandardF72sV2, VirtualMachineSizeTypesStandardF8, VirtualMachineSizeTypesStandardF8s, VirtualMachineSizeTypesStandardF8sV2, VirtualMachineSizeTypesStandardG1, VirtualMachineSizeTypesStandardG2, VirtualMachineSizeTypesStandardG3, VirtualMachineSizeTypesStandardG4, VirtualMachineSizeTypesStandardG5, VirtualMachineSizeTypesStandardGS1, VirtualMachineSizeTypesStandardGS2, VirtualMachineSizeTypesStandardGS3, VirtualMachineSizeTypesStandardGS4, VirtualMachineSizeTypesStandardGS44, VirtualMachineSizeTypesStandardGS48, VirtualMachineSizeTypesStandardGS5, VirtualMachineSizeTypesStandardGS516, VirtualMachineSizeTypesStandardGS58, VirtualMachineSizeTypesStandardH16, VirtualMachineSizeTypesStandardH16m, VirtualMachineSizeTypesStandardH16mr, VirtualMachineSizeTypesStandardH16r, VirtualMachineSizeTypesStandardH8, VirtualMachineSizeTypesStandardH8m, VirtualMachineSizeTypesStandardL16s, VirtualMachineSizeTypesStandardL32s, VirtualMachineSizeTypesStandardL4s, VirtualMachineSizeTypesStandardL8s, VirtualMachineSizeTypesStandardM12832ms, VirtualMachineSizeTypesStandardM12864ms, VirtualMachineSizeTypesStandardM128ms, VirtualMachineSizeTypesStandardM128s, VirtualMachineSizeTypesStandardM6416ms, VirtualMachineSizeTypesStandardM6432ms, VirtualMachineSizeTypesStandardM64ms, VirtualMachineSizeTypesStandardM64s, VirtualMachineSizeTypesStandardNC12, VirtualMachineSizeTypesStandardNC12sV2, VirtualMachineSizeTypesStandardNC12sV3, VirtualMachineSizeTypesStandardNC24, VirtualMachineSizeTypesStandardNC24r, VirtualMachineSizeTypesStandardNC24rsV2, VirtualMachineSizeTypesStandardNC24rsV3, VirtualMachineSizeTypesStandardNC24sV2, VirtualMachineSizeTypesStandardNC24sV3, VirtualMachineSizeTypesStandardNC6, VirtualMachineSizeTypesStandardNC6sV2, VirtualMachineSizeTypesStandardNC6sV3, VirtualMachineSizeTypesStandardND12s, VirtualMachineSizeTypesStandardND24rs, VirtualMachineSizeTypesStandardND24s, VirtualMachineSizeTypesStandardND6s, VirtualMachineSizeTypesStandardNV12, VirtualMachineSizeTypesStandardNV24, VirtualMachineSizeTypesStandardNV6}
+	return []VirtualMachineSizeTypes{BasicA0, BasicA1, BasicA2, BasicA3, BasicA4, StandardA0, StandardA1, StandardA10, StandardA11, StandardA1V2, StandardA2, StandardA2mV2, StandardA2V2, StandardA3, StandardA4, StandardA4mV2, StandardA4V2, StandardA5, StandardA6, StandardA7, StandardA8, StandardA8mV2, StandardA8V2, StandardA9, StandardB1ms, StandardB1s, StandardB2ms, StandardB2s, StandardB4ms, StandardB8ms, StandardD1, StandardD11, StandardD11V2, StandardD12, StandardD12V2, StandardD13, StandardD13V2, StandardD14, StandardD14V2, StandardD15V2, StandardD16sV3, StandardD16V3, StandardD1V2, StandardD2, StandardD2sV3, StandardD2V2, StandardD2V3, StandardD3, StandardD32sV3, StandardD32V3, StandardD3V2, StandardD4, StandardD4sV3, StandardD4V2, StandardD4V3, StandardD5V2, StandardD64sV3, StandardD64V3, StandardD8sV3, StandardD8V3, StandardDS1, StandardDS11, StandardDS11V2, StandardDS12, StandardDS12V2, StandardDS13, StandardDS132V2, StandardDS134V2, StandardDS13V2, StandardDS14, StandardDS144V2, StandardDS148V2, StandardDS14V2, StandardDS15V2, StandardDS1V2, StandardDS2, StandardDS2V2, StandardDS3, StandardDS3V2, StandardDS4, StandardDS4V2, StandardDS5V2, StandardE16sV3, StandardE16V3, StandardE2sV3, StandardE2V3, StandardE3216V3, StandardE328sV3, StandardE32sV3, StandardE32V3, StandardE4sV3, StandardE4V3, StandardE6416sV3, StandardE6432sV3, StandardE64sV3, StandardE64V3, StandardE8sV3, StandardE8V3, StandardF1, StandardF16, StandardF16s, StandardF16sV2, StandardF1s, StandardF2, StandardF2s, StandardF2sV2, StandardF32sV2, StandardF4, StandardF4s, StandardF4sV2, StandardF64sV2, StandardF72sV2, StandardF8, StandardF8s, StandardF8sV2, StandardG1, StandardG2, StandardG3, StandardG4, StandardG5, StandardGS1, StandardGS2, StandardGS3, StandardGS4, StandardGS44, StandardGS48, StandardGS5, StandardGS516, StandardGS58, StandardH16, StandardH16m, StandardH16mr, StandardH16r, StandardH8, StandardH8m, StandardL16s, StandardL32s, StandardL4s, StandardL8s, StandardM12832ms, StandardM12864ms, StandardM128ms, StandardM128s, StandardM6416ms, StandardM6432ms, StandardM64ms, StandardM64s, StandardNC12, StandardNC12sV2, StandardNC12sV3, StandardNC24, StandardNC24r, StandardNC24rsV2, StandardNC24rsV3, StandardNC24sV2, StandardNC24sV3, StandardNC6, StandardNC6sV2, StandardNC6sV3, StandardND12s, StandardND24rs, StandardND24s, StandardND6s, StandardNV12, StandardNV24, StandardNV6}
 }
 
 // AccessURI a disk access SAS uri.
@@ -992,7 +874,7 @@ func (auo *AccessURIOutput) UnmarshalJSON(body []byte) error {
 	return nil
 }
 
-// AccessURIRaw this object gets 'bubbled up' through flattening.
+// AccessURIRaw a disk access SAS uri.
 type AccessURIRaw struct {
 	// AccessSAS - A SAS uri for accessing a disk.
 	AccessSAS *string `json:"accessSAS,omitempty"`
@@ -1040,6 +922,12 @@ type APIErrorBase struct {
 	Target *string `json:"target,omitempty"`
 	// Message - The error message.
 	Message *string `json:"message,omitempty"`
+}
+
+// AutoOSUpgradePolicy the configuration parameters used for performing automatic OS upgrade.
+type AutoOSUpgradePolicy struct {
+	// DisableAutoRollback - Whether OS image rollback feature should be disabled. Default value is false.
+	DisableAutoRollback *bool `json:"disableAutoRollback,omitempty"`
 }
 
 // AvailabilitySet specifies information about the availability set that the virtual machine should be assigned to.
@@ -1177,6 +1065,101 @@ type AvailabilitySetListResult struct {
 	autorest.Response `json:"-"`
 	// Value - The list of availability sets
 	Value *[]AvailabilitySet `json:"value,omitempty"`
+	// NextLink - The URI to fetch the next page of AvailabilitySets. Call ListNext() with this URI to fetch the next page of AvailabilitySets.
+	NextLink *string `json:"nextLink,omitempty"`
+}
+
+// AvailabilitySetListResultIterator provides access to a complete listing of AvailabilitySet values.
+type AvailabilitySetListResultIterator struct {
+	i    int
+	page AvailabilitySetListResultPage
+}
+
+// Next advances to the next value.  If there was an error making
+// the request the iterator does not advance and the error is returned.
+func (iter *AvailabilitySetListResultIterator) Next() error {
+	iter.i++
+	if iter.i < len(iter.page.Values()) {
+		return nil
+	}
+	err := iter.page.Next()
+	if err != nil {
+		iter.i--
+		return err
+	}
+	iter.i = 0
+	return nil
+}
+
+// NotDone returns true if the enumeration should be started or is not yet complete.
+func (iter AvailabilitySetListResultIterator) NotDone() bool {
+	return iter.page.NotDone() && iter.i < len(iter.page.Values())
+}
+
+// Response returns the raw server response from the last page request.
+func (iter AvailabilitySetListResultIterator) Response() AvailabilitySetListResult {
+	return iter.page.Response()
+}
+
+// Value returns the current value or a zero-initialized value if the
+// iterator has advanced beyond the end of the collection.
+func (iter AvailabilitySetListResultIterator) Value() AvailabilitySet {
+	if !iter.page.NotDone() {
+		return AvailabilitySet{}
+	}
+	return iter.page.Values()[iter.i]
+}
+
+// IsEmpty returns true if the ListResult contains no values.
+func (aslr AvailabilitySetListResult) IsEmpty() bool {
+	return aslr.Value == nil || len(*aslr.Value) == 0
+}
+
+// availabilitySetListResultPreparer prepares a request to retrieve the next set of results.
+// It returns nil if no more results exist.
+func (aslr AvailabilitySetListResult) availabilitySetListResultPreparer() (*http.Request, error) {
+	if aslr.NextLink == nil || len(to.String(aslr.NextLink)) < 1 {
+		return nil, nil
+	}
+	return autorest.Prepare(&http.Request{},
+		autorest.AsJSON(),
+		autorest.AsGet(),
+		autorest.WithBaseURL(to.String(aslr.NextLink)))
+}
+
+// AvailabilitySetListResultPage contains a page of AvailabilitySet values.
+type AvailabilitySetListResultPage struct {
+	fn   func(AvailabilitySetListResult) (AvailabilitySetListResult, error)
+	aslr AvailabilitySetListResult
+}
+
+// Next advances to the next page of values.  If there was an error making
+// the request the page does not advance and the error is returned.
+func (page *AvailabilitySetListResultPage) Next() error {
+	next, err := page.fn(page.aslr)
+	if err != nil {
+		return err
+	}
+	page.aslr = next
+	return nil
+}
+
+// NotDone returns true if the page enumeration should be started or is not yet complete.
+func (page AvailabilitySetListResultPage) NotDone() bool {
+	return !page.aslr.IsEmpty()
+}
+
+// Response returns the raw server response from the last page request.
+func (page AvailabilitySetListResultPage) Response() AvailabilitySetListResult {
+	return page.aslr
+}
+
+// Values returns the slice of values for the current page or nil if there are no values.
+func (page AvailabilitySetListResultPage) Values() []AvailabilitySet {
+	if page.aslr.IsEmpty() {
+		return nil
+	}
+	return *page.aslr.Value
 }
 
 // AvailabilitySetProperties the instance view of a resource.
@@ -1192,13 +1175,7 @@ type AvailabilitySetProperties struct {
 }
 
 // AvailabilitySetUpdate specifies information about the availability set that the virtual machine should be
-// assigned to. Virtual machines specified in the same availability set are allocated to different nodes to
-// maximize availability. For more information about availability sets, see [Manage the availability of virtual
-// machines](https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-manage-availability?toc=%2fazure%2fvirtual-machines%2fwindows%2ftoc.json).
-// <br><br> For more information on Azure planned maintainance, see [Planned maintenance for virtual machines in
-// Azure](https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-planned-maintenance?toc=%2fazure%2fvirtual-machines%2fwindows%2ftoc.json)
-// <br><br> Currently, a VM can only be added to availability set at creation time. An existing VM cannot be added
-// to an availability set.
+// assigned to. Only tags may be updated.
 type AvailabilitySetUpdate struct {
 	*AvailabilitySetProperties `json:"properties,omitempty"`
 	// Sku - Sku of the availability set
@@ -1281,424 +1258,6 @@ type BootDiagnosticsInstanceView struct {
 	ConsoleScreenshotBlobURI *string `json:"consoleScreenshotBlobUri,omitempty"`
 	// SerialConsoleLogBlobURI - The Linux serial console log blob Uri.
 	SerialConsoleLogBlobURI *string `json:"serialConsoleLogBlobUri,omitempty"`
-}
-
-// ContainerService container service.
-type ContainerService struct {
-	autorest.Response           `json:"-"`
-	*ContainerServiceProperties `json:"properties,omitempty"`
-	// ID - Resource Id
-	ID *string `json:"id,omitempty"`
-	// Name - Resource name
-	Name *string `json:"name,omitempty"`
-	// Type - Resource type
-	Type *string `json:"type,omitempty"`
-	// Location - Resource location
-	Location *string `json:"location,omitempty"`
-	// Tags - Resource tags
-	Tags map[string]*string `json:"tags"`
-}
-
-// MarshalJSON is the custom marshaler for ContainerService.
-func (cs ContainerService) MarshalJSON() ([]byte, error) {
-	objectMap := make(map[string]interface{})
-	if cs.ContainerServiceProperties != nil {
-		objectMap["properties"] = cs.ContainerServiceProperties
-	}
-	if cs.ID != nil {
-		objectMap["id"] = cs.ID
-	}
-	if cs.Name != nil {
-		objectMap["name"] = cs.Name
-	}
-	if cs.Type != nil {
-		objectMap["type"] = cs.Type
-	}
-	if cs.Location != nil {
-		objectMap["location"] = cs.Location
-	}
-	if cs.Tags != nil {
-		objectMap["tags"] = cs.Tags
-	}
-	return json.Marshal(objectMap)
-}
-
-// UnmarshalJSON is the custom unmarshaler for ContainerService struct.
-func (cs *ContainerService) UnmarshalJSON(body []byte) error {
-	var m map[string]*json.RawMessage
-	err := json.Unmarshal(body, &m)
-	if err != nil {
-		return err
-	}
-	for k, v := range m {
-		switch k {
-		case "properties":
-			if v != nil {
-				var containerServiceProperties ContainerServiceProperties
-				err = json.Unmarshal(*v, &containerServiceProperties)
-				if err != nil {
-					return err
-				}
-				cs.ContainerServiceProperties = &containerServiceProperties
-			}
-		case "id":
-			if v != nil {
-				var ID string
-				err = json.Unmarshal(*v, &ID)
-				if err != nil {
-					return err
-				}
-				cs.ID = &ID
-			}
-		case "name":
-			if v != nil {
-				var name string
-				err = json.Unmarshal(*v, &name)
-				if err != nil {
-					return err
-				}
-				cs.Name = &name
-			}
-		case "type":
-			if v != nil {
-				var typeVar string
-				err = json.Unmarshal(*v, &typeVar)
-				if err != nil {
-					return err
-				}
-				cs.Type = &typeVar
-			}
-		case "location":
-			if v != nil {
-				var location string
-				err = json.Unmarshal(*v, &location)
-				if err != nil {
-					return err
-				}
-				cs.Location = &location
-			}
-		case "tags":
-			if v != nil {
-				var tags map[string]*string
-				err = json.Unmarshal(*v, &tags)
-				if err != nil {
-					return err
-				}
-				cs.Tags = tags
-			}
-		}
-	}
-
-	return nil
-}
-
-// ContainerServiceAgentPoolProfile profile for the container service agent pool.
-type ContainerServiceAgentPoolProfile struct {
-	// Name - Unique name of the agent pool profile in the context of the subscription and resource group.
-	Name *string `json:"name,omitempty"`
-	// Count - Number of agents (VMs) to host docker containers. Allowed values must be in the range of 1 to 100 (inclusive). The default value is 1.
-	Count *int32 `json:"count,omitempty"`
-	// VMSize - Size of agent VMs. Possible values include: 'StandardA0', 'StandardA1', 'StandardA2', 'StandardA3', 'StandardA4', 'StandardA5', 'StandardA6', 'StandardA7', 'StandardA8', 'StandardA9', 'StandardA10', 'StandardA11', 'StandardD1', 'StandardD2', 'StandardD3', 'StandardD4', 'StandardD11', 'StandardD12', 'StandardD13', 'StandardD14', 'StandardD1V2', 'StandardD2V2', 'StandardD3V2', 'StandardD4V2', 'StandardD5V2', 'StandardD11V2', 'StandardD12V2', 'StandardD13V2', 'StandardD14V2', 'StandardG1', 'StandardG2', 'StandardG3', 'StandardG4', 'StandardG5', 'StandardDS1', 'StandardDS2', 'StandardDS3', 'StandardDS4', 'StandardDS11', 'StandardDS12', 'StandardDS13', 'StandardDS14', 'StandardGS1', 'StandardGS2', 'StandardGS3', 'StandardGS4', 'StandardGS5'
-	VMSize ContainerServiceVMSizeTypes `json:"vmSize,omitempty"`
-	// DNSPrefix - DNS prefix to be used to create the FQDN for the agent pool.
-	DNSPrefix *string `json:"dnsPrefix,omitempty"`
-	// Fqdn - FDQN for the agent pool.
-	Fqdn *string `json:"fqdn,omitempty"`
-}
-
-// ContainerServiceCustomProfile properties to configure a custom container service cluster.
-type ContainerServiceCustomProfile struct {
-	// Orchestrator - The name of the custom orchestrator to use.
-	Orchestrator *string `json:"orchestrator,omitempty"`
-}
-
-// ContainerServiceDiagnosticsProfile ...
-type ContainerServiceDiagnosticsProfile struct {
-	// VMDiagnostics - Profile for the container service VM diagnostic agent.
-	VMDiagnostics *ContainerServiceVMDiagnostics `json:"vmDiagnostics,omitempty"`
-}
-
-// ContainerServiceLinuxProfile profile for Linux VMs in the container service cluster.
-type ContainerServiceLinuxProfile struct {
-	// AdminUsername - The administrator username to use for Linux VMs.
-	AdminUsername *string `json:"adminUsername,omitempty"`
-	// SSH - The ssh key configuration for Linux VMs.
-	SSH *ContainerServiceSSHConfiguration `json:"ssh,omitempty"`
-}
-
-// ContainerServiceListResult the response from the List Container Services operation.
-type ContainerServiceListResult struct {
-	autorest.Response `json:"-"`
-	// Value - the list of container services.
-	Value *[]ContainerService `json:"value,omitempty"`
-	// NextLink - The URL to get the next set of container service results.
-	NextLink *string `json:"nextLink,omitempty"`
-}
-
-// ContainerServiceListResultIterator provides access to a complete listing of ContainerService values.
-type ContainerServiceListResultIterator struct {
-	i    int
-	page ContainerServiceListResultPage
-}
-
-// Next advances to the next value.  If there was an error making
-// the request the iterator does not advance and the error is returned.
-func (iter *ContainerServiceListResultIterator) Next() error {
-	iter.i++
-	if iter.i < len(iter.page.Values()) {
-		return nil
-	}
-	err := iter.page.Next()
-	if err != nil {
-		iter.i--
-		return err
-	}
-	iter.i = 0
-	return nil
-}
-
-// NotDone returns true if the enumeration should be started or is not yet complete.
-func (iter ContainerServiceListResultIterator) NotDone() bool {
-	return iter.page.NotDone() && iter.i < len(iter.page.Values())
-}
-
-// Response returns the raw server response from the last page request.
-func (iter ContainerServiceListResultIterator) Response() ContainerServiceListResult {
-	return iter.page.Response()
-}
-
-// Value returns the current value or a zero-initialized value if the
-// iterator has advanced beyond the end of the collection.
-func (iter ContainerServiceListResultIterator) Value() ContainerService {
-	if !iter.page.NotDone() {
-		return ContainerService{}
-	}
-	return iter.page.Values()[iter.i]
-}
-
-// IsEmpty returns true if the ListResult contains no values.
-func (cslr ContainerServiceListResult) IsEmpty() bool {
-	return cslr.Value == nil || len(*cslr.Value) == 0
-}
-
-// containerServiceListResultPreparer prepares a request to retrieve the next set of results.
-// It returns nil if no more results exist.
-func (cslr ContainerServiceListResult) containerServiceListResultPreparer() (*http.Request, error) {
-	if cslr.NextLink == nil || len(to.String(cslr.NextLink)) < 1 {
-		return nil, nil
-	}
-	return autorest.Prepare(&http.Request{},
-		autorest.AsJSON(),
-		autorest.AsGet(),
-		autorest.WithBaseURL(to.String(cslr.NextLink)))
-}
-
-// ContainerServiceListResultPage contains a page of ContainerService values.
-type ContainerServiceListResultPage struct {
-	fn   func(ContainerServiceListResult) (ContainerServiceListResult, error)
-	cslr ContainerServiceListResult
-}
-
-// Next advances to the next page of values.  If there was an error making
-// the request the page does not advance and the error is returned.
-func (page *ContainerServiceListResultPage) Next() error {
-	next, err := page.fn(page.cslr)
-	if err != nil {
-		return err
-	}
-	page.cslr = next
-	return nil
-}
-
-// NotDone returns true if the page enumeration should be started or is not yet complete.
-func (page ContainerServiceListResultPage) NotDone() bool {
-	return !page.cslr.IsEmpty()
-}
-
-// Response returns the raw server response from the last page request.
-func (page ContainerServiceListResultPage) Response() ContainerServiceListResult {
-	return page.cslr
-}
-
-// Values returns the slice of values for the current page or nil if there are no values.
-func (page ContainerServiceListResultPage) Values() []ContainerService {
-	if page.cslr.IsEmpty() {
-		return nil
-	}
-	return *page.cslr.Value
-}
-
-// ContainerServiceMasterProfile profile for the container service master.
-type ContainerServiceMasterProfile struct {
-	// Count - Number of masters (VMs) in the container service cluster. Allowed values are 1, 3, and 5. The default value is 1.
-	Count *int32 `json:"count,omitempty"`
-	// DNSPrefix - DNS prefix to be used to create the FQDN for master.
-	DNSPrefix *string `json:"dnsPrefix,omitempty"`
-	// Fqdn - FDQN for the master.
-	Fqdn *string `json:"fqdn,omitempty"`
-}
-
-// ContainerServiceOrchestratorProfile profile for the container service orchestrator.
-type ContainerServiceOrchestratorProfile struct {
-	// OrchestratorType - The orchestrator to use to manage container service cluster resources. Valid values are Swarm, DCOS, and Custom. Possible values include: 'Swarm', 'DCOS', 'Custom', 'Kubernetes'
-	OrchestratorType ContainerServiceOrchestratorTypes `json:"orchestratorType,omitempty"`
-}
-
-// ContainerServiceProperties properties of the container service.
-type ContainerServiceProperties struct {
-	// ProvisioningState - the current deployment or provisioning state, which only appears in the response.
-	ProvisioningState *string `json:"provisioningState,omitempty"`
-	// OrchestratorProfile - Properties of the orchestrator.
-	OrchestratorProfile *ContainerServiceOrchestratorProfile `json:"orchestratorProfile,omitempty"`
-	// CustomProfile - Properties for custom clusters.
-	CustomProfile *ContainerServiceCustomProfile `json:"customProfile,omitempty"`
-	// ServicePrincipalProfile - Properties for cluster service principals.
-	ServicePrincipalProfile *ContainerServiceServicePrincipalProfile `json:"servicePrincipalProfile,omitempty"`
-	// MasterProfile - Properties of master agents.
-	MasterProfile *ContainerServiceMasterProfile `json:"masterProfile,omitempty"`
-	// AgentPoolProfiles - Properties of the agent pool.
-	AgentPoolProfiles *[]ContainerServiceAgentPoolProfile `json:"agentPoolProfiles,omitempty"`
-	// WindowsProfile - Properties of Windows VMs.
-	WindowsProfile *ContainerServiceWindowsProfile `json:"windowsProfile,omitempty"`
-	// LinuxProfile - Properties of Linux VMs.
-	LinuxProfile *ContainerServiceLinuxProfile `json:"linuxProfile,omitempty"`
-	// DiagnosticsProfile - Properties of the diagnostic agent.
-	DiagnosticsProfile *ContainerServiceDiagnosticsProfile `json:"diagnosticsProfile,omitempty"`
-}
-
-// ContainerServicesCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a long-running
-// operation.
-type ContainerServicesCreateOrUpdateFuture struct {
-	azure.Future
-	req *http.Request
-}
-
-// Result returns the result of the asynchronous operation.
-// If the operation has not completed it will return an error.
-func (future ContainerServicesCreateOrUpdateFuture) Result(client ContainerServicesClient) (cs ContainerService, err error) {
-	var done bool
-	done, err = future.Done(client)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ContainerServicesCreateOrUpdateFuture", "Result", future.Response(), "Polling failure")
-		return
-	}
-	if !done {
-		return cs, azure.NewAsyncOpIncompleteError("compute.ContainerServicesCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		cs, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.ContainerServicesCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
-		return
-	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ContainerServicesCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	cs, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ContainerServicesCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
-	}
-	return
-}
-
-// ContainerServicesDeleteFuture an abstraction for monitoring and retrieving the results of a long-running
-// operation.
-type ContainerServicesDeleteFuture struct {
-	azure.Future
-	req *http.Request
-}
-
-// Result returns the result of the asynchronous operation.
-// If the operation has not completed it will return an error.
-func (future ContainerServicesDeleteFuture) Result(client ContainerServicesClient) (ar autorest.Response, err error) {
-	var done bool
-	done, err = future.Done(client)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ContainerServicesDeleteFuture", "Result", future.Response(), "Polling failure")
-		return
-	}
-	if !done {
-		return ar, azure.NewAsyncOpIncompleteError("compute.ContainerServicesDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		ar, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.ContainerServicesDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
-		return
-	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ContainerServicesDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	ar, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ContainerServicesDeleteFuture", "Result", resp, "Failure responding to request")
-	}
-	return
-}
-
-// ContainerServiceServicePrincipalProfile information about a service principal identity for the cluster to use
-// for manipulating Azure APIs.
-type ContainerServiceServicePrincipalProfile struct {
-	// ClientID - The ID for the service principal.
-	ClientID *string `json:"clientId,omitempty"`
-	// Secret - The secret password associated with the service principal.
-	Secret *string `json:"secret,omitempty"`
-}
-
-// ContainerServiceSSHConfiguration SSH configuration for Linux-based VMs running on Azure.
-type ContainerServiceSSHConfiguration struct {
-	// PublicKeys - the list of SSH public keys used to authenticate with Linux-based VMs.
-	PublicKeys *[]ContainerServiceSSHPublicKey `json:"publicKeys,omitempty"`
-}
-
-// ContainerServiceSSHPublicKey contains information about SSH certificate public key data.
-type ContainerServiceSSHPublicKey struct {
-	// KeyData - Certificate public key used to authenticate with VMs through SSH. The certificate must be in PEM format with or without headers.
-	KeyData *string `json:"keyData,omitempty"`
-}
-
-// ContainerServiceVMDiagnostics profile for diagnostics on the container service VMs.
-type ContainerServiceVMDiagnostics struct {
-	// Enabled - Whether the VM diagnostic agent is provisioned on the VM.
-	Enabled *bool `json:"enabled,omitempty"`
-	// StorageURI - The URI of the storage account where diagnostics are stored.
-	StorageURI *string `json:"storageUri,omitempty"`
-}
-
-// ContainerServiceWindowsProfile profile for Windows VMs in the container service cluster.
-type ContainerServiceWindowsProfile struct {
-	// AdminUsername - The administrator username to use for Windows VMs.
-	AdminUsername *string `json:"adminUsername,omitempty"`
-	// AdminPassword - The administrator password to use for Windows VMs.
-	AdminPassword *string `json:"adminPassword,omitempty"`
 }
 
 // CreationData data used when creating a disk.
@@ -2040,12 +1599,11 @@ type DiskProperties struct {
 // DisksCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type DisksCreateOrUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future DisksCreateOrUpdateFuture) Result(client DisksClient) (d Disk, err error) {
+func (future *DisksCreateOrUpdateFuture) Result(client DisksClient) (d Disk, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2053,34 +1611,15 @@ func (future DisksCreateOrUpdateFuture) Result(client DisksClient) (d Disk, err 
 		return
 	}
 	if !done {
-		return d, azure.NewAsyncOpIncompleteError("compute.DisksCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		d, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.DisksCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.DisksCreateOrUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if d.Response.Response, err = future.GetResult(sender); err == nil && d.Response.Response.StatusCode != http.StatusNoContent {
+		d, err = client.CreateOrUpdateResponder(d.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.DisksCreateOrUpdateFuture", "Result", d.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	d, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -2088,12 +1627,11 @@ func (future DisksCreateOrUpdateFuture) Result(client DisksClient) (d Disk, err 
 // DisksDeleteFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type DisksDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future DisksDeleteFuture) Result(client DisksClient) (osr OperationStatusResponse, err error) {
+func (future *DisksDeleteFuture) Result(client DisksClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2101,47 +1639,21 @@ func (future DisksDeleteFuture) Result(client DisksClient) (osr OperationStatusR
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.DisksDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.DisksDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.DisksDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
 // DisksGrantAccessFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type DisksGrantAccessFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future DisksGrantAccessFuture) Result(client DisksClient) (au AccessURI, err error) {
+func (future *DisksGrantAccessFuture) Result(client DisksClient) (au AccessURI, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2149,41 +1661,22 @@ func (future DisksGrantAccessFuture) Result(client DisksClient) (au AccessURI, e
 		return
 	}
 	if !done {
-		return au, azure.NewAsyncOpIncompleteError("compute.DisksGrantAccessFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		au, err = client.GrantAccessResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.DisksGrantAccessFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.DisksGrantAccessFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if au.Response.Response, err = future.GetResult(sender); err == nil && au.Response.Response.StatusCode != http.StatusNoContent {
+		au, err = client.GrantAccessResponder(au.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.DisksGrantAccessFuture", "Result", au.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksGrantAccessFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	au, err = client.GrantAccessResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksGrantAccessFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
 
-// DiskSku the disks sku name. Can be Standard_LRS or Premium_LRS.
+// DiskSku the disks sku name. Can be Standard_LRS, Premium_LRS, or StandardSSD_LRS.
 type DiskSku struct {
-	// Name - The sku name. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS'
+	// Name - The sku name. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS', 'StorageAccountTypesStandardSSDLRS'
 	Name StorageAccountTypes `json:"name,omitempty"`
 	// Tier - The sku tier.
 	Tier *string `json:"tier,omitempty"`
@@ -2192,12 +1685,11 @@ type DiskSku struct {
 // DisksRevokeAccessFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type DisksRevokeAccessFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future DisksRevokeAccessFuture) Result(client DisksClient) (osr OperationStatusResponse, err error) {
+func (future *DisksRevokeAccessFuture) Result(client DisksClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2205,47 +1697,21 @@ func (future DisksRevokeAccessFuture) Result(client DisksClient) (osr OperationS
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.DisksRevokeAccessFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RevokeAccessResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.DisksRevokeAccessFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.DisksRevokeAccessFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksRevokeAccessFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.RevokeAccessResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksRevokeAccessFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
 // DisksUpdateFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type DisksUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future DisksUpdateFuture) Result(client DisksClient) (d Disk, err error) {
+func (future *DisksUpdateFuture) Result(client DisksClient) (d Disk, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2253,34 +1719,15 @@ func (future DisksUpdateFuture) Result(client DisksClient) (d Disk, err error) {
 		return
 	}
 	if !done {
-		return d, azure.NewAsyncOpIncompleteError("compute.DisksUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		d, err = client.UpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.DisksUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.DisksUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if d.Response.Response, err = future.GetResult(sender); err == nil && d.Response.Response.StatusCode != http.StatusNoContent {
+		d, err = client.UpdateResponder(d.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.DisksUpdateFuture", "Result", d.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	d, err = client.UpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.DisksUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -2380,7 +1827,7 @@ type GrantAccessData struct {
 
 // HardwareProfile specifies the hardware settings for the virtual machine.
 type HardwareProfile struct {
-	// VMSize - Specifies the size of the virtual machine. For more information about virtual machine sizes, see [Sizes for virtual machines](https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-sizes?toc=%2fazure%2fvirtual-machines%2fwindows%2ftoc.json). <br><br> The available VM sizes depend on region and availability set. For a list of available sizes use these APIs:  <br><br> [List all available virtual machine sizes in an availability set](https://docs.microsoft.com/rest/api/compute/availabilitysets/listavailablesizes) <br><br> [List all available virtual machine sizes in a region](https://docs.microsoft.com/rest/api/compute/virtualmachinesizes/list) <br><br> [List all available virtual machine sizes for resizing](https://docs.microsoft.com/rest/api/compute/virtualmachines/listavailablesizes). Possible values include: 'VirtualMachineSizeTypesBasicA0', 'VirtualMachineSizeTypesBasicA1', 'VirtualMachineSizeTypesBasicA2', 'VirtualMachineSizeTypesBasicA3', 'VirtualMachineSizeTypesBasicA4', 'VirtualMachineSizeTypesStandardA0', 'VirtualMachineSizeTypesStandardA1', 'VirtualMachineSizeTypesStandardA2', 'VirtualMachineSizeTypesStandardA3', 'VirtualMachineSizeTypesStandardA4', 'VirtualMachineSizeTypesStandardA5', 'VirtualMachineSizeTypesStandardA6', 'VirtualMachineSizeTypesStandardA7', 'VirtualMachineSizeTypesStandardA8', 'VirtualMachineSizeTypesStandardA9', 'VirtualMachineSizeTypesStandardA10', 'VirtualMachineSizeTypesStandardA11', 'VirtualMachineSizeTypesStandardA1V2', 'VirtualMachineSizeTypesStandardA2V2', 'VirtualMachineSizeTypesStandardA4V2', 'VirtualMachineSizeTypesStandardA8V2', 'VirtualMachineSizeTypesStandardA2mV2', 'VirtualMachineSizeTypesStandardA4mV2', 'VirtualMachineSizeTypesStandardA8mV2', 'VirtualMachineSizeTypesStandardB1s', 'VirtualMachineSizeTypesStandardB1ms', 'VirtualMachineSizeTypesStandardB2s', 'VirtualMachineSizeTypesStandardB2ms', 'VirtualMachineSizeTypesStandardB4ms', 'VirtualMachineSizeTypesStandardB8ms', 'VirtualMachineSizeTypesStandardD1', 'VirtualMachineSizeTypesStandardD2', 'VirtualMachineSizeTypesStandardD3', 'VirtualMachineSizeTypesStandardD4', 'VirtualMachineSizeTypesStandardD11', 'VirtualMachineSizeTypesStandardD12', 'VirtualMachineSizeTypesStandardD13', 'VirtualMachineSizeTypesStandardD14', 'VirtualMachineSizeTypesStandardD1V2', 'VirtualMachineSizeTypesStandardD2V2', 'VirtualMachineSizeTypesStandardD3V2', 'VirtualMachineSizeTypesStandardD4V2', 'VirtualMachineSizeTypesStandardD5V2', 'VirtualMachineSizeTypesStandardD2V3', 'VirtualMachineSizeTypesStandardD4V3', 'VirtualMachineSizeTypesStandardD8V3', 'VirtualMachineSizeTypesStandardD16V3', 'VirtualMachineSizeTypesStandardD32V3', 'VirtualMachineSizeTypesStandardD64V3', 'VirtualMachineSizeTypesStandardD2sV3', 'VirtualMachineSizeTypesStandardD4sV3', 'VirtualMachineSizeTypesStandardD8sV3', 'VirtualMachineSizeTypesStandardD16sV3', 'VirtualMachineSizeTypesStandardD32sV3', 'VirtualMachineSizeTypesStandardD64sV3', 'VirtualMachineSizeTypesStandardD11V2', 'VirtualMachineSizeTypesStandardD12V2', 'VirtualMachineSizeTypesStandardD13V2', 'VirtualMachineSizeTypesStandardD14V2', 'VirtualMachineSizeTypesStandardD15V2', 'VirtualMachineSizeTypesStandardDS1', 'VirtualMachineSizeTypesStandardDS2', 'VirtualMachineSizeTypesStandardDS3', 'VirtualMachineSizeTypesStandardDS4', 'VirtualMachineSizeTypesStandardDS11', 'VirtualMachineSizeTypesStandardDS12', 'VirtualMachineSizeTypesStandardDS13', 'VirtualMachineSizeTypesStandardDS14', 'VirtualMachineSizeTypesStandardDS1V2', 'VirtualMachineSizeTypesStandardDS2V2', 'VirtualMachineSizeTypesStandardDS3V2', 'VirtualMachineSizeTypesStandardDS4V2', 'VirtualMachineSizeTypesStandardDS5V2', 'VirtualMachineSizeTypesStandardDS11V2', 'VirtualMachineSizeTypesStandardDS12V2', 'VirtualMachineSizeTypesStandardDS13V2', 'VirtualMachineSizeTypesStandardDS14V2', 'VirtualMachineSizeTypesStandardDS15V2', 'VirtualMachineSizeTypesStandardDS134V2', 'VirtualMachineSizeTypesStandardDS132V2', 'VirtualMachineSizeTypesStandardDS148V2', 'VirtualMachineSizeTypesStandardDS144V2', 'VirtualMachineSizeTypesStandardE2V3', 'VirtualMachineSizeTypesStandardE4V3', 'VirtualMachineSizeTypesStandardE8V3', 'VirtualMachineSizeTypesStandardE16V3', 'VirtualMachineSizeTypesStandardE32V3', 'VirtualMachineSizeTypesStandardE64V3', 'VirtualMachineSizeTypesStandardE2sV3', 'VirtualMachineSizeTypesStandardE4sV3', 'VirtualMachineSizeTypesStandardE8sV3', 'VirtualMachineSizeTypesStandardE16sV3', 'VirtualMachineSizeTypesStandardE32sV3', 'VirtualMachineSizeTypesStandardE64sV3', 'VirtualMachineSizeTypesStandardE3216V3', 'VirtualMachineSizeTypesStandardE328sV3', 'VirtualMachineSizeTypesStandardE6432sV3', 'VirtualMachineSizeTypesStandardE6416sV3', 'VirtualMachineSizeTypesStandardF1', 'VirtualMachineSizeTypesStandardF2', 'VirtualMachineSizeTypesStandardF4', 'VirtualMachineSizeTypesStandardF8', 'VirtualMachineSizeTypesStandardF16', 'VirtualMachineSizeTypesStandardF1s', 'VirtualMachineSizeTypesStandardF2s', 'VirtualMachineSizeTypesStandardF4s', 'VirtualMachineSizeTypesStandardF8s', 'VirtualMachineSizeTypesStandardF16s', 'VirtualMachineSizeTypesStandardF2sV2', 'VirtualMachineSizeTypesStandardF4sV2', 'VirtualMachineSizeTypesStandardF8sV2', 'VirtualMachineSizeTypesStandardF16sV2', 'VirtualMachineSizeTypesStandardF32sV2', 'VirtualMachineSizeTypesStandardF64sV2', 'VirtualMachineSizeTypesStandardF72sV2', 'VirtualMachineSizeTypesStandardG1', 'VirtualMachineSizeTypesStandardG2', 'VirtualMachineSizeTypesStandardG3', 'VirtualMachineSizeTypesStandardG4', 'VirtualMachineSizeTypesStandardG5', 'VirtualMachineSizeTypesStandardGS1', 'VirtualMachineSizeTypesStandardGS2', 'VirtualMachineSizeTypesStandardGS3', 'VirtualMachineSizeTypesStandardGS4', 'VirtualMachineSizeTypesStandardGS5', 'VirtualMachineSizeTypesStandardGS48', 'VirtualMachineSizeTypesStandardGS44', 'VirtualMachineSizeTypesStandardGS516', 'VirtualMachineSizeTypesStandardGS58', 'VirtualMachineSizeTypesStandardH8', 'VirtualMachineSizeTypesStandardH16', 'VirtualMachineSizeTypesStandardH8m', 'VirtualMachineSizeTypesStandardH16m', 'VirtualMachineSizeTypesStandardH16r', 'VirtualMachineSizeTypesStandardH16mr', 'VirtualMachineSizeTypesStandardL4s', 'VirtualMachineSizeTypesStandardL8s', 'VirtualMachineSizeTypesStandardL16s', 'VirtualMachineSizeTypesStandardL32s', 'VirtualMachineSizeTypesStandardM64s', 'VirtualMachineSizeTypesStandardM64ms', 'VirtualMachineSizeTypesStandardM128s', 'VirtualMachineSizeTypesStandardM128ms', 'VirtualMachineSizeTypesStandardM6432ms', 'VirtualMachineSizeTypesStandardM6416ms', 'VirtualMachineSizeTypesStandardM12864ms', 'VirtualMachineSizeTypesStandardM12832ms', 'VirtualMachineSizeTypesStandardNC6', 'VirtualMachineSizeTypesStandardNC12', 'VirtualMachineSizeTypesStandardNC24', 'VirtualMachineSizeTypesStandardNC24r', 'VirtualMachineSizeTypesStandardNC6sV2', 'VirtualMachineSizeTypesStandardNC12sV2', 'VirtualMachineSizeTypesStandardNC24sV2', 'VirtualMachineSizeTypesStandardNC24rsV2', 'VirtualMachineSizeTypesStandardNC6sV3', 'VirtualMachineSizeTypesStandardNC12sV3', 'VirtualMachineSizeTypesStandardNC24sV3', 'VirtualMachineSizeTypesStandardNC24rsV3', 'VirtualMachineSizeTypesStandardND6s', 'VirtualMachineSizeTypesStandardND12s', 'VirtualMachineSizeTypesStandardND24s', 'VirtualMachineSizeTypesStandardND24rs', 'VirtualMachineSizeTypesStandardNV6', 'VirtualMachineSizeTypesStandardNV12', 'VirtualMachineSizeTypesStandardNV24'
+	// VMSize - Specifies the size of the virtual machine. For more information about virtual machine sizes, see [Sizes for virtual machines](https://docs.microsoft.com/azure/virtual-machines/virtual-machines-windows-sizes?toc=%2fazure%2fvirtual-machines%2fwindows%2ftoc.json). <br><br> The available VM sizes depend on region and availability set. For a list of available sizes use these APIs:  <br><br> [List all available virtual machine sizes in an availability set](https://docs.microsoft.com/rest/api/compute/availabilitysets/listavailablesizes) <br><br> [List all available virtual machine sizes in a region](https://docs.microsoft.com/rest/api/compute/virtualmachinesizes/list) <br><br> [List all available virtual machine sizes for resizing](https://docs.microsoft.com/rest/api/compute/virtualmachines/listavailablesizes). Possible values include: 'BasicA0', 'BasicA1', 'BasicA2', 'BasicA3', 'BasicA4', 'StandardA0', 'StandardA1', 'StandardA2', 'StandardA3', 'StandardA4', 'StandardA5', 'StandardA6', 'StandardA7', 'StandardA8', 'StandardA9', 'StandardA10', 'StandardA11', 'StandardA1V2', 'StandardA2V2', 'StandardA4V2', 'StandardA8V2', 'StandardA2mV2', 'StandardA4mV2', 'StandardA8mV2', 'StandardB1s', 'StandardB1ms', 'StandardB2s', 'StandardB2ms', 'StandardB4ms', 'StandardB8ms', 'StandardD1', 'StandardD2', 'StandardD3', 'StandardD4', 'StandardD11', 'StandardD12', 'StandardD13', 'StandardD14', 'StandardD1V2', 'StandardD2V2', 'StandardD3V2', 'StandardD4V2', 'StandardD5V2', 'StandardD2V3', 'StandardD4V3', 'StandardD8V3', 'StandardD16V3', 'StandardD32V3', 'StandardD64V3', 'StandardD2sV3', 'StandardD4sV3', 'StandardD8sV3', 'StandardD16sV3', 'StandardD32sV3', 'StandardD64sV3', 'StandardD11V2', 'StandardD12V2', 'StandardD13V2', 'StandardD14V2', 'StandardD15V2', 'StandardDS1', 'StandardDS2', 'StandardDS3', 'StandardDS4', 'StandardDS11', 'StandardDS12', 'StandardDS13', 'StandardDS14', 'StandardDS1V2', 'StandardDS2V2', 'StandardDS3V2', 'StandardDS4V2', 'StandardDS5V2', 'StandardDS11V2', 'StandardDS12V2', 'StandardDS13V2', 'StandardDS14V2', 'StandardDS15V2', 'StandardDS134V2', 'StandardDS132V2', 'StandardDS148V2', 'StandardDS144V2', 'StandardE2V3', 'StandardE4V3', 'StandardE8V3', 'StandardE16V3', 'StandardE32V3', 'StandardE64V3', 'StandardE2sV3', 'StandardE4sV3', 'StandardE8sV3', 'StandardE16sV3', 'StandardE32sV3', 'StandardE64sV3', 'StandardE3216V3', 'StandardE328sV3', 'StandardE6432sV3', 'StandardE6416sV3', 'StandardF1', 'StandardF2', 'StandardF4', 'StandardF8', 'StandardF16', 'StandardF1s', 'StandardF2s', 'StandardF4s', 'StandardF8s', 'StandardF16s', 'StandardF2sV2', 'StandardF4sV2', 'StandardF8sV2', 'StandardF16sV2', 'StandardF32sV2', 'StandardF64sV2', 'StandardF72sV2', 'StandardG1', 'StandardG2', 'StandardG3', 'StandardG4', 'StandardG5', 'StandardGS1', 'StandardGS2', 'StandardGS3', 'StandardGS4', 'StandardGS5', 'StandardGS48', 'StandardGS44', 'StandardGS516', 'StandardGS58', 'StandardH8', 'StandardH16', 'StandardH8m', 'StandardH16m', 'StandardH16r', 'StandardH16mr', 'StandardL4s', 'StandardL8s', 'StandardL16s', 'StandardL32s', 'StandardM64s', 'StandardM64ms', 'StandardM128s', 'StandardM128ms', 'StandardM6432ms', 'StandardM6416ms', 'StandardM12864ms', 'StandardM12832ms', 'StandardNC6', 'StandardNC12', 'StandardNC24', 'StandardNC24r', 'StandardNC6sV2', 'StandardNC12sV2', 'StandardNC24sV2', 'StandardNC24rsV2', 'StandardNC6sV3', 'StandardNC12sV3', 'StandardNC24sV3', 'StandardNC24rsV3', 'StandardND6s', 'StandardND12s', 'StandardND24s', 'StandardND24rs', 'StandardNV6', 'StandardNV12', 'StandardNV24'
 	VMSize VirtualMachineSizeTypes `json:"vmSize,omitempty"`
 }
 
@@ -2508,7 +1955,7 @@ type ImageDataDisk struct {
 	Caching CachingTypes `json:"caching,omitempty"`
 	// DiskSizeGB - Specifies the size of empty data disks in gigabytes. This element can be used to overwrite the name of the disk in a virtual machine image. <br><br> This value cannot be larger than 1023 GB
 	DiskSizeGB *int32 `json:"diskSizeGB,omitempty"`
-	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS or Premium_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS'
+	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS, Premium_LRS, and StandardSSD_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS', 'StorageAccountTypesStandardSSDLRS'
 	StorageAccountType StorageAccountTypes `json:"storageAccountType,omitempty"`
 }
 
@@ -2638,7 +2085,7 @@ type ImageOSDisk struct {
 	Caching CachingTypes `json:"caching,omitempty"`
 	// DiskSizeGB - Specifies the size of empty data disks in gigabytes. This element can be used to overwrite the name of the disk in a virtual machine image. <br><br> This value cannot be larger than 1023 GB
 	DiskSizeGB *int32 `json:"diskSizeGB,omitempty"`
-	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS or Premium_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS'
+	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS, Premium_LRS, and StandardSSD_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS', 'StorageAccountTypesStandardSSDLRS'
 	StorageAccountType StorageAccountTypes `json:"storageAccountType,omitempty"`
 }
 
@@ -2671,12 +2118,11 @@ type ImageReference struct {
 // ImagesCreateOrUpdateFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type ImagesCreateOrUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future ImagesCreateOrUpdateFuture) Result(client ImagesClient) (i Image, err error) {
+func (future *ImagesCreateOrUpdateFuture) Result(client ImagesClient) (i Image, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2684,34 +2130,15 @@ func (future ImagesCreateOrUpdateFuture) Result(client ImagesClient) (i Image, e
 		return
 	}
 	if !done {
-		return i, azure.NewAsyncOpIncompleteError("compute.ImagesCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		i, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.ImagesCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.ImagesCreateOrUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if i.Response.Response, err = future.GetResult(sender); err == nil && i.Response.Response.StatusCode != http.StatusNoContent {
+		i, err = client.CreateOrUpdateResponder(i.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.ImagesCreateOrUpdateFuture", "Result", i.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ImagesCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	i, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ImagesCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -2719,12 +2146,11 @@ func (future ImagesCreateOrUpdateFuture) Result(client ImagesClient) (i Image, e
 // ImagesDeleteFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type ImagesDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future ImagesDeleteFuture) Result(client ImagesClient) (osr OperationStatusResponse, err error) {
+func (future *ImagesDeleteFuture) Result(client ImagesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2732,35 +2158,10 @@ func (future ImagesDeleteFuture) Result(client ImagesClient) (osr OperationStatu
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.ImagesDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.ImagesDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.ImagesDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ImagesDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ImagesDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -2777,12 +2178,11 @@ type ImageStorageProfile struct {
 // ImagesUpdateFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type ImagesUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future ImagesUpdateFuture) Result(client ImagesClient) (i Image, err error) {
+func (future *ImagesUpdateFuture) Result(client ImagesClient) (i Image, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -2790,40 +2190,20 @@ func (future ImagesUpdateFuture) Result(client ImagesClient) (i Image, err error
 		return
 	}
 	if !done {
-		return i, azure.NewAsyncOpIncompleteError("compute.ImagesUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		i, err = client.UpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.ImagesUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.ImagesUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if i.Response.Response, err = future.GetResult(sender); err == nil && i.Response.Response.StatusCode != http.StatusNoContent {
+		i, err = client.UpdateResponder(i.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.ImagesUpdateFuture", "Result", i.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ImagesUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	i, err = client.UpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.ImagesUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
 
-// ImageUpdate the source user image virtual hard disk. The virtual hard disk will be copied before being attached
-// to the virtual machine. If SourceImage is provided, the destination virtual hard drive must not exist.
+// ImageUpdate the source user image virtual hard disk. Only tags may be updated.
 type ImageUpdate struct {
 	*ImageProperties `json:"properties,omitempty"`
 	// Tags - Resource tags
@@ -3060,12 +2440,11 @@ type ListVirtualMachineImageResource struct {
 // long-running operation.
 type LogAnalyticsExportRequestRateByIntervalFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future LogAnalyticsExportRequestRateByIntervalFuture) Result(client LogAnalyticsClient) (laor LogAnalyticsOperationResult, err error) {
+func (future *LogAnalyticsExportRequestRateByIntervalFuture) Result(client LogAnalyticsClient) (laor LogAnalyticsOperationResult, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -3073,34 +2452,15 @@ func (future LogAnalyticsExportRequestRateByIntervalFuture) Result(client LogAna
 		return
 	}
 	if !done {
-		return laor, azure.NewAsyncOpIncompleteError("compute.LogAnalyticsExportRequestRateByIntervalFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		laor, err = client.ExportRequestRateByIntervalResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportRequestRateByIntervalFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.LogAnalyticsExportRequestRateByIntervalFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if laor.Response.Response, err = future.GetResult(sender); err == nil && laor.Response.Response.StatusCode != http.StatusNoContent {
+		laor, err = client.ExportRequestRateByIntervalResponder(laor.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportRequestRateByIntervalFuture", "Result", laor.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportRequestRateByIntervalFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	laor, err = client.ExportRequestRateByIntervalResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportRequestRateByIntervalFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -3109,12 +2469,11 @@ func (future LogAnalyticsExportRequestRateByIntervalFuture) Result(client LogAna
 // long-running operation.
 type LogAnalyticsExportThrottledRequestsFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future LogAnalyticsExportThrottledRequestsFuture) Result(client LogAnalyticsClient) (laor LogAnalyticsOperationResult, err error) {
+func (future *LogAnalyticsExportThrottledRequestsFuture) Result(client LogAnalyticsClient) (laor LogAnalyticsOperationResult, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -3122,34 +2481,15 @@ func (future LogAnalyticsExportThrottledRequestsFuture) Result(client LogAnalyti
 		return
 	}
 	if !done {
-		return laor, azure.NewAsyncOpIncompleteError("compute.LogAnalyticsExportThrottledRequestsFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		laor, err = client.ExportThrottledRequestsResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportThrottledRequestsFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.LogAnalyticsExportThrottledRequestsFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if laor.Response.Response, err = future.GetResult(sender); err == nil && laor.Response.Response.StatusCode != http.StatusNoContent {
+		laor, err = client.ExportThrottledRequestsResponder(laor.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportThrottledRequestsFuture", "Result", laor.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportThrottledRequestsFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	laor, err = client.ExportThrottledRequestsResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.LogAnalyticsExportThrottledRequestsFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -3175,28 +2515,12 @@ type LogAnalyticsOperationResult struct {
 	autorest.Response `json:"-"`
 	// Properties - LogAnalyticsOutput
 	Properties *LogAnalyticsOutput `json:"properties,omitempty"`
-	// Name - Operation ID
-	Name *string `json:"name,omitempty"`
-	// Status - Operation status
-	Status *string `json:"status,omitempty"`
-	// StartTime - Start time of the operation
-	StartTime *date.Time `json:"startTime,omitempty"`
-	// EndTime - End time of the operation
-	EndTime *date.Time `json:"endTime,omitempty"`
-	// Error - Api error
-	Error *APIError `json:"error,omitempty"`
 }
 
 // LogAnalyticsOutput logAnalytics output properties
 type LogAnalyticsOutput struct {
 	// Output - Output file Uri path to blob container.
 	Output *string `json:"output,omitempty"`
-}
-
-// LongRunningOperationProperties compute-specific operation properties, including output
-type LongRunningOperationProperties struct {
-	// Output - Operation output data (raw JSON)
-	Output interface{} `json:"output,omitempty"`
 }
 
 // MaintenanceRedeployStatus maintenance Operation Status.
@@ -3219,7 +2543,7 @@ type MaintenanceRedeployStatus struct {
 
 // ManagedDiskParameters the parameters of a managed disk.
 type ManagedDiskParameters struct {
-	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS or Premium_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS'
+	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS, Premium_LRS, and StandardSSD_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS', 'StorageAccountTypesStandardSSDLRS'
 	StorageAccountType StorageAccountTypes `json:"storageAccountType,omitempty"`
 	// ID - Resource Id
 	ID *string `json:"id,omitempty"`
@@ -3294,21 +2618,6 @@ type OperationListResult struct {
 	autorest.Response `json:"-"`
 	// Value - The list of compute operations
 	Value *[]OperationValue `json:"value,omitempty"`
-}
-
-// OperationStatusResponse operation status response
-type OperationStatusResponse struct {
-	autorest.Response `json:"-"`
-	// Name - Operation ID
-	Name *string `json:"name,omitempty"`
-	// Status - Operation status
-	Status *string `json:"status,omitempty"`
-	// StartTime - Start time of the operation
-	StartTime *date.Time `json:"startTime,omitempty"`
-	// EndTime - End time of the operation
-	EndTime *date.Time `json:"endTime,omitempty"`
-	// Error - Api error
-	Error *APIError `json:"error,omitempty"`
 }
 
 // OperationValue describes the properties of a Compute Operation value.
@@ -3526,213 +2835,14 @@ func (r Resource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(objectMap)
 }
 
-// ResourceSku describes an available Compute SKU.
-type ResourceSku struct {
-	// ResourceType - The type of resource the SKU applies to.
-	ResourceType *string `json:"resourceType,omitempty"`
-	// Name - The name of SKU.
-	Name *string `json:"name,omitempty"`
-	// Tier - Specifies the tier of virtual machines in a scale set.<br /><br /> Possible Values:<br /><br /> **Standard**<br /><br /> **Basic**
-	Tier *string `json:"tier,omitempty"`
-	// Size - The Size of the SKU.
-	Size *string `json:"size,omitempty"`
-	// Family - The Family of this particular SKU.
-	Family *string `json:"family,omitempty"`
-	// Kind - The Kind of resources that are supported in this SKU.
-	Kind *string `json:"kind,omitempty"`
-	// Capacity - Specifies the number of virtual machines in the scale set.
-	Capacity *ResourceSkuCapacity `json:"capacity,omitempty"`
-	// Locations - The set of locations that the SKU is available.
-	Locations *[]string `json:"locations,omitempty"`
-	// LocationInfo - A list of locations and availability zones in those locations where the SKU is available.
-	LocationInfo *[]ResourceSkuLocationInfo `json:"locationInfo,omitempty"`
-	// APIVersions - The api versions that support this SKU.
-	APIVersions *[]string `json:"apiVersions,omitempty"`
-	// Costs - Metadata for retrieving price info.
-	Costs *[]ResourceSkuCosts `json:"costs,omitempty"`
-	// Capabilities - A name value pair to describe the capability.
-	Capabilities *[]ResourceSkuCapabilities `json:"capabilities,omitempty"`
-	// Restrictions - The restrictions because of which SKU cannot be used. This is empty if there are no restrictions.
-	Restrictions *[]ResourceSkuRestrictions `json:"restrictions,omitempty"`
-}
-
-// ResourceSkuCapabilities describes The SKU capabilites object.
-type ResourceSkuCapabilities struct {
-	// Name - An invariant to describe the feature.
-	Name *string `json:"name,omitempty"`
-	// Value - An invariant if the feature is measured by quantity.
-	Value *string `json:"value,omitempty"`
-}
-
-// ResourceSkuCapacity describes scaling information of a SKU.
-type ResourceSkuCapacity struct {
-	// Minimum - The minimum capacity.
-	Minimum *int64 `json:"minimum,omitempty"`
-	// Maximum - The maximum capacity that can be set.
-	Maximum *int64 `json:"maximum,omitempty"`
-	// Default - The default capacity.
-	Default *int64 `json:"default,omitempty"`
-	// ScaleType - The scale type applicable to the sku. Possible values include: 'ResourceSkuCapacityScaleTypeAutomatic', 'ResourceSkuCapacityScaleTypeManual', 'ResourceSkuCapacityScaleTypeNone'
-	ScaleType ResourceSkuCapacityScaleType `json:"scaleType,omitempty"`
-}
-
-// ResourceSkuCosts describes metadata for retrieving price info.
-type ResourceSkuCosts struct {
-	// MeterID - Used for querying price from commerce.
-	MeterID *string `json:"meterID,omitempty"`
-	// Quantity - The multiplier is needed to extend the base metered cost.
-	Quantity *int64 `json:"quantity,omitempty"`
-	// ExtendedUnit - An invariant to show the extended unit.
-	ExtendedUnit *string `json:"extendedUnit,omitempty"`
-}
-
-// ResourceSkuLocationInfo ...
-type ResourceSkuLocationInfo struct {
-	// Location - Location of the SKU
-	Location *string `json:"location,omitempty"`
-	// Zones - List of availability zones where the SKU is supported.
-	Zones *[]string `json:"zones,omitempty"`
-}
-
-// ResourceSkuRestrictionInfo ...
-type ResourceSkuRestrictionInfo struct {
-	// Locations - Locations where the SKU is restricted
-	Locations *[]string `json:"locations,omitempty"`
-	// Zones - List of availability zones where the SKU is restricted.
-	Zones *[]string `json:"zones,omitempty"`
-}
-
-// ResourceSkuRestrictions describes scaling information of a SKU.
-type ResourceSkuRestrictions struct {
-	// Type - The type of restrictions. Possible values include: 'Location', 'Zone'
-	Type ResourceSkuRestrictionsType `json:"type,omitempty"`
-	// Values - The value of restrictions. If the restriction type is set to location. This would be different locations where the SKU is restricted.
-	Values *[]string `json:"values,omitempty"`
-	// RestrictionInfo - The information about the restriction where the SKU cannot be used.
-	RestrictionInfo *ResourceSkuRestrictionInfo `json:"restrictionInfo,omitempty"`
-	// ReasonCode - The reason for restriction. Possible values include: 'QuotaID', 'NotAvailableForSubscription'
-	ReasonCode ResourceSkuRestrictionsReasonCode `json:"reasonCode,omitempty"`
-}
-
-// ResourceSkusResult the Compute List Skus operation response.
-type ResourceSkusResult struct {
-	autorest.Response `json:"-"`
-	// Value - The list of skus available for the subscription.
-	Value *[]ResourceSku `json:"value,omitempty"`
-	// NextLink - The uri to fetch the next page of Compute Skus. Call ListNext() with this to fetch the next page of VMSS Skus.
-	NextLink *string `json:"nextLink,omitempty"`
-}
-
-// ResourceSkusResultIterator provides access to a complete listing of ResourceSku values.
-type ResourceSkusResultIterator struct {
-	i    int
-	page ResourceSkusResultPage
-}
-
-// Next advances to the next value.  If there was an error making
-// the request the iterator does not advance and the error is returned.
-func (iter *ResourceSkusResultIterator) Next() error {
-	iter.i++
-	if iter.i < len(iter.page.Values()) {
-		return nil
-	}
-	err := iter.page.Next()
-	if err != nil {
-		iter.i--
-		return err
-	}
-	iter.i = 0
-	return nil
-}
-
-// NotDone returns true if the enumeration should be started or is not yet complete.
-func (iter ResourceSkusResultIterator) NotDone() bool {
-	return iter.page.NotDone() && iter.i < len(iter.page.Values())
-}
-
-// Response returns the raw server response from the last page request.
-func (iter ResourceSkusResultIterator) Response() ResourceSkusResult {
-	return iter.page.Response()
-}
-
-// Value returns the current value or a zero-initialized value if the
-// iterator has advanced beyond the end of the collection.
-func (iter ResourceSkusResultIterator) Value() ResourceSku {
-	if !iter.page.NotDone() {
-		return ResourceSku{}
-	}
-	return iter.page.Values()[iter.i]
-}
-
-// IsEmpty returns true if the ListResult contains no values.
-func (rsr ResourceSkusResult) IsEmpty() bool {
-	return rsr.Value == nil || len(*rsr.Value) == 0
-}
-
-// resourceSkusResultPreparer prepares a request to retrieve the next set of results.
-// It returns nil if no more results exist.
-func (rsr ResourceSkusResult) resourceSkusResultPreparer() (*http.Request, error) {
-	if rsr.NextLink == nil || len(to.String(rsr.NextLink)) < 1 {
-		return nil, nil
-	}
-	return autorest.Prepare(&http.Request{},
-		autorest.AsJSON(),
-		autorest.AsGet(),
-		autorest.WithBaseURL(to.String(rsr.NextLink)))
-}
-
-// ResourceSkusResultPage contains a page of ResourceSku values.
-type ResourceSkusResultPage struct {
-	fn  func(ResourceSkusResult) (ResourceSkusResult, error)
-	rsr ResourceSkusResult
-}
-
-// Next advances to the next page of values.  If there was an error making
-// the request the page does not advance and the error is returned.
-func (page *ResourceSkusResultPage) Next() error {
-	next, err := page.fn(page.rsr)
-	if err != nil {
-		return err
-	}
-	page.rsr = next
-	return nil
-}
-
-// NotDone returns true if the page enumeration should be started or is not yet complete.
-func (page ResourceSkusResultPage) NotDone() bool {
-	return !page.rsr.IsEmpty()
-}
-
-// Response returns the raw server response from the last page request.
-func (page ResourceSkusResultPage) Response() ResourceSkusResult {
-	return page.rsr
-}
-
-// Values returns the slice of values for the current page or nil if there are no values.
-func (page ResourceSkusResultPage) Values() []ResourceSku {
-	if page.rsr.IsEmpty() {
-		return nil
-	}
-	return *page.rsr.Value
-}
-
-// ResourceUpdate the Resource model definition.
-type ResourceUpdate struct {
-	// Tags - Resource tags
-	Tags map[string]*string `json:"tags"`
-	Sku  *DiskSku           `json:"sku,omitempty"`
-}
-
-// MarshalJSON is the custom marshaler for ResourceUpdate.
-func (ru ResourceUpdate) MarshalJSON() ([]byte, error) {
-	objectMap := make(map[string]interface{})
-	if ru.Tags != nil {
-		objectMap["tags"] = ru.Tags
-	}
-	if ru.Sku != nil {
-		objectMap["sku"] = ru.Sku
-	}
-	return json.Marshal(objectMap)
+// RollbackStatusInfo information about rollback on failed VM instances after a OS Upgrade operation.
+type RollbackStatusInfo struct {
+	// SuccessfullyRolledbackInstanceCount - The number of instances which have been successfully rolled back.
+	SuccessfullyRolledbackInstanceCount *int32 `json:"successfullyRolledbackInstanceCount,omitempty"`
+	// FailedRolledbackInstanceCount - The number of instances which failed to rollback.
+	FailedRolledbackInstanceCount *int32 `json:"failedRolledbackInstanceCount,omitempty"`
+	// RollbackError - Error details if OS rollback failed.
+	RollbackError *APIError `json:"rollbackError,omitempty"`
 }
 
 // RollingUpgradePolicy the configuration parameters used while performing a rolling upgrade.
@@ -4057,119 +3167,11 @@ type RunCommandParameterDefinition struct {
 	Required *bool `json:"required,omitempty"`
 }
 
-// RunCommandResult run command operation response.
+// RunCommandResult ...
 type RunCommandResult struct {
-	autorest.Response           `json:"-"`
-	*RunCommandResultProperties `json:"properties,omitempty"`
-	// Name - Operation ID
-	Name *string `json:"name,omitempty"`
-	// Status - Operation status
-	Status *string `json:"status,omitempty"`
-	// StartTime - Start time of the operation
-	StartTime *date.Time `json:"startTime,omitempty"`
-	// EndTime - End time of the operation
-	EndTime *date.Time `json:"endTime,omitempty"`
-	// Error - Api error
-	Error *APIError `json:"error,omitempty"`
-}
-
-// MarshalJSON is the custom marshaler for RunCommandResult.
-func (rcr RunCommandResult) MarshalJSON() ([]byte, error) {
-	objectMap := make(map[string]interface{})
-	if rcr.RunCommandResultProperties != nil {
-		objectMap["properties"] = rcr.RunCommandResultProperties
-	}
-	if rcr.Name != nil {
-		objectMap["name"] = rcr.Name
-	}
-	if rcr.Status != nil {
-		objectMap["status"] = rcr.Status
-	}
-	if rcr.StartTime != nil {
-		objectMap["startTime"] = rcr.StartTime
-	}
-	if rcr.EndTime != nil {
-		objectMap["endTime"] = rcr.EndTime
-	}
-	if rcr.Error != nil {
-		objectMap["error"] = rcr.Error
-	}
-	return json.Marshal(objectMap)
-}
-
-// UnmarshalJSON is the custom unmarshaler for RunCommandResult struct.
-func (rcr *RunCommandResult) UnmarshalJSON(body []byte) error {
-	var m map[string]*json.RawMessage
-	err := json.Unmarshal(body, &m)
-	if err != nil {
-		return err
-	}
-	for k, v := range m {
-		switch k {
-		case "properties":
-			if v != nil {
-				var runCommandResultProperties RunCommandResultProperties
-				err = json.Unmarshal(*v, &runCommandResultProperties)
-				if err != nil {
-					return err
-				}
-				rcr.RunCommandResultProperties = &runCommandResultProperties
-			}
-		case "name":
-			if v != nil {
-				var name string
-				err = json.Unmarshal(*v, &name)
-				if err != nil {
-					return err
-				}
-				rcr.Name = &name
-			}
-		case "status":
-			if v != nil {
-				var status string
-				err = json.Unmarshal(*v, &status)
-				if err != nil {
-					return err
-				}
-				rcr.Status = &status
-			}
-		case "startTime":
-			if v != nil {
-				var startTime date.Time
-				err = json.Unmarshal(*v, &startTime)
-				if err != nil {
-					return err
-				}
-				rcr.StartTime = &startTime
-			}
-		case "endTime":
-			if v != nil {
-				var endTime date.Time
-				err = json.Unmarshal(*v, &endTime)
-				if err != nil {
-					return err
-				}
-				rcr.EndTime = &endTime
-			}
-		case "error":
-			if v != nil {
-				var errorVar APIError
-				err = json.Unmarshal(*v, &errorVar)
-				if err != nil {
-					return err
-				}
-				rcr.Error = &errorVar
-			}
-		}
-	}
-
-	return nil
-}
-
-// RunCommandResultProperties compute-specific operation properties, including output
-type RunCommandResultProperties struct {
-	// Output - Operation output data (raw JSON)
-	Output interface{} `json:"output,omitempty"`
+	autorest.Response `json:"-"`
+	// Value - Run command operation response.
+	Value *[]InstanceViewStatus `json:"value,omitempty"`
 }
 
 // Sku describes a virtual machine scale set sku.
@@ -4424,12 +3426,11 @@ func (page SnapshotListPage) Values() []Snapshot {
 // operation.
 type SnapshotsCreateOrUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future SnapshotsCreateOrUpdateFuture) Result(client SnapshotsClient) (s Snapshot, err error) {
+func (future *SnapshotsCreateOrUpdateFuture) Result(client SnapshotsClient) (s Snapshot, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -4437,34 +3438,15 @@ func (future SnapshotsCreateOrUpdateFuture) Result(client SnapshotsClient) (s Sn
 		return
 	}
 	if !done {
-		return s, azure.NewAsyncOpIncompleteError("compute.SnapshotsCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		s, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.SnapshotsCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.SnapshotsCreateOrUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if s.Response.Response, err = future.GetResult(sender); err == nil && s.Response.Response.StatusCode != http.StatusNoContent {
+		s, err = client.CreateOrUpdateResponder(s.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.SnapshotsCreateOrUpdateFuture", "Result", s.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	s, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -4472,12 +3454,11 @@ func (future SnapshotsCreateOrUpdateFuture) Result(client SnapshotsClient) (s Sn
 // SnapshotsDeleteFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type SnapshotsDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future SnapshotsDeleteFuture) Result(client SnapshotsClient) (osr OperationStatusResponse, err error) {
+func (future *SnapshotsDeleteFuture) Result(client SnapshotsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -4485,47 +3466,21 @@ func (future SnapshotsDeleteFuture) Result(client SnapshotsClient) (osr Operatio
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.SnapshotsDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.SnapshotsDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.SnapshotsDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
 // SnapshotsGrantAccessFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type SnapshotsGrantAccessFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future SnapshotsGrantAccessFuture) Result(client SnapshotsClient) (au AccessURI, err error) {
+func (future *SnapshotsGrantAccessFuture) Result(client SnapshotsClient) (au AccessURI, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -4533,34 +3488,15 @@ func (future SnapshotsGrantAccessFuture) Result(client SnapshotsClient) (au Acce
 		return
 	}
 	if !done {
-		return au, azure.NewAsyncOpIncompleteError("compute.SnapshotsGrantAccessFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		au, err = client.GrantAccessResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.SnapshotsGrantAccessFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.SnapshotsGrantAccessFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if au.Response.Response, err = future.GetResult(sender); err == nil && au.Response.Response.StatusCode != http.StatusNoContent {
+		au, err = client.GrantAccessResponder(au.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.SnapshotsGrantAccessFuture", "Result", au.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsGrantAccessFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	au, err = client.GrantAccessResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsGrantAccessFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -4577,12 +3513,11 @@ type SnapshotSku struct {
 // operation.
 type SnapshotsRevokeAccessFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future SnapshotsRevokeAccessFuture) Result(client SnapshotsClient) (osr OperationStatusResponse, err error) {
+func (future *SnapshotsRevokeAccessFuture) Result(client SnapshotsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -4590,47 +3525,21 @@ func (future SnapshotsRevokeAccessFuture) Result(client SnapshotsClient) (osr Op
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.SnapshotsRevokeAccessFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RevokeAccessResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.SnapshotsRevokeAccessFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.SnapshotsRevokeAccessFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsRevokeAccessFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.RevokeAccessResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsRevokeAccessFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
 // SnapshotsUpdateFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type SnapshotsUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future SnapshotsUpdateFuture) Result(client SnapshotsClient) (s Snapshot, err error) {
+func (future *SnapshotsUpdateFuture) Result(client SnapshotsClient) (s Snapshot, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -4638,34 +3547,15 @@ func (future SnapshotsUpdateFuture) Result(client SnapshotsClient) (s Snapshot, 
 		return
 	}
 	if !done {
-		return s, azure.NewAsyncOpIncompleteError("compute.SnapshotsUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		s, err = client.UpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.SnapshotsUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.SnapshotsUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if s.Response.Response, err = future.GetResult(sender); err == nil && s.Response.Response.StatusCode != http.StatusNoContent {
+		s, err = client.UpdateResponder(s.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.SnapshotsUpdateFuture", "Result", s.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	s, err = client.UpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.SnapshotsUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -4675,7 +3565,7 @@ type SnapshotUpdate struct {
 	*DiskUpdateProperties `json:"properties,omitempty"`
 	// Tags - Resource tags
 	Tags map[string]*string `json:"tags"`
-	Sku  *DiskSku           `json:"sku,omitempty"`
+	Sku  *SnapshotSku       `json:"sku,omitempty"`
 }
 
 // MarshalJSON is the custom marshaler for SnapshotUpdate.
@@ -4722,7 +3612,7 @@ func (su *SnapshotUpdate) UnmarshalJSON(body []byte) error {
 			}
 		case "sku":
 			if v != nil {
-				var sku DiskSku
+				var sku SnapshotSku
 				err = json.Unmarshal(*v, &sku)
 				if err != nil {
 					return err
@@ -4810,6 +3700,42 @@ func (ur UpdateResource) MarshalJSON() ([]byte, error) {
 	return json.Marshal(objectMap)
 }
 
+// UpgradeOperationHistoricalStatusInfo virtual Machine Scale Set OS Upgrade History operation response.
+type UpgradeOperationHistoricalStatusInfo struct {
+	// Properties - Information about the properties of the upgrade operation.
+	Properties *UpgradeOperationHistoricalStatusInfoProperties `json:"properties,omitempty"`
+	// Type - Resource type
+	Type *string `json:"type,omitempty"`
+	// Location - Resource location
+	Location *string `json:"location,omitempty"`
+}
+
+// UpgradeOperationHistoricalStatusInfoProperties describes each OS upgrade on the Virtual Machine Scale Set.
+type UpgradeOperationHistoricalStatusInfoProperties struct {
+	// RunningStatus - Information about the overall status of the upgrade operation.
+	RunningStatus *UpgradeOperationHistoryStatus `json:"runningStatus,omitempty"`
+	// Progress - Counts of the VM's in each state.
+	Progress *RollingUpgradeProgressInfo `json:"progress,omitempty"`
+	// Error - Error Details for this upgrade if there are any.
+	Error *APIError `json:"error,omitempty"`
+	// StartedBy - Invoker of the Upgrade Operation. Possible values include: 'Unknown', 'User', 'Platform'
+	StartedBy UpgradeOperationInvoker `json:"startedBy,omitempty"`
+	// TargetImageReference - Image Reference details
+	TargetImageReference *ImageReference `json:"targetImageReference,omitempty"`
+	// RollbackInfo - Information about OS rollback if performed
+	RollbackInfo *RollbackStatusInfo `json:"rollbackInfo,omitempty"`
+}
+
+// UpgradeOperationHistoryStatus information about the current running state of the overall upgrade.
+type UpgradeOperationHistoryStatus struct {
+	// Code - Code indicating the current status of the upgrade. Possible values include: 'UpgradeStateRollingForward', 'UpgradeStateCancelled', 'UpgradeStateCompleted', 'UpgradeStateFaulted'
+	Code UpgradeState `json:"code,omitempty"`
+	// StartTime - Start time of the upgrade.
+	StartTime *date.Time `json:"startTime,omitempty"`
+	// EndTime - End time of the upgrade.
+	EndTime *date.Time `json:"endTime,omitempty"`
+}
+
 // UpgradePolicy describes an upgrade policy - automatic, manual, or rolling.
 type UpgradePolicy struct {
 	// Mode - Specifies the mode of an upgrade to virtual machines in the scale set.<br /><br /> Possible values are:<br /><br /> **Manual** - You  control the application of updates to virtual machines in the scale set. You do this by using the manualUpgrade action.<br /><br /> **Automatic** - All virtual machines in the scale set are  automatically updated at the same time. Possible values include: 'Automatic', 'Manual', 'Rolling'
@@ -4818,6 +3744,8 @@ type UpgradePolicy struct {
 	RollingUpgradePolicy *RollingUpgradePolicy `json:"rollingUpgradePolicy,omitempty"`
 	// AutomaticOSUpgrade - Whether OS upgrades should automatically be applied to scale set instances in a rolling fashion when a newer version of the image becomes available.
 	AutomaticOSUpgrade *bool `json:"automaticOSUpgrade,omitempty"`
+	// AutoOSUpgradePolicy - Configuration parameters used for performing automatic OS Upgrade.
+	AutoOSUpgradePolicy *AutoOSUpgradePolicy `json:"autoOSUpgradePolicy,omitempty"`
 }
 
 // Usage describes Compute Resource Usage.
@@ -5048,63 +3976,19 @@ type VirtualMachineCaptureParameters struct {
 	OverwriteVhds *bool `json:"overwriteVhds,omitempty"`
 }
 
-// VirtualMachineCaptureResult resource Id.
+// VirtualMachineCaptureResult output of virtual machine capture operation.
 type VirtualMachineCaptureResult struct {
-	autorest.Response                      `json:"-"`
-	*VirtualMachineCaptureResultProperties `json:"properties,omitempty"`
+	autorest.Response `json:"-"`
+	// Schema - the schema of the captured virtual machine
+	Schema *string `json:"$schema,omitempty"`
+	// ContentVersion - the version of the content
+	ContentVersion *string `json:"contentVersion,omitempty"`
+	// Parameters - parameters of the captured virtual machine
+	Parameters interface{} `json:"parameters,omitempty"`
+	// Resources - a list of resource items of the captured virtual machine
+	Resources *[]interface{} `json:"resources,omitempty"`
 	// ID - Resource Id
 	ID *string `json:"id,omitempty"`
-}
-
-// MarshalJSON is the custom marshaler for VirtualMachineCaptureResult.
-func (vmcr VirtualMachineCaptureResult) MarshalJSON() ([]byte, error) {
-	objectMap := make(map[string]interface{})
-	if vmcr.VirtualMachineCaptureResultProperties != nil {
-		objectMap["properties"] = vmcr.VirtualMachineCaptureResultProperties
-	}
-	if vmcr.ID != nil {
-		objectMap["id"] = vmcr.ID
-	}
-	return json.Marshal(objectMap)
-}
-
-// UnmarshalJSON is the custom unmarshaler for VirtualMachineCaptureResult struct.
-func (vmcr *VirtualMachineCaptureResult) UnmarshalJSON(body []byte) error {
-	var m map[string]*json.RawMessage
-	err := json.Unmarshal(body, &m)
-	if err != nil {
-		return err
-	}
-	for k, v := range m {
-		switch k {
-		case "properties":
-			if v != nil {
-				var virtualMachineCaptureResultProperties VirtualMachineCaptureResultProperties
-				err = json.Unmarshal(*v, &virtualMachineCaptureResultProperties)
-				if err != nil {
-					return err
-				}
-				vmcr.VirtualMachineCaptureResultProperties = &virtualMachineCaptureResultProperties
-			}
-		case "id":
-			if v != nil {
-				var ID string
-				err = json.Unmarshal(*v, &ID)
-				if err != nil {
-					return err
-				}
-				vmcr.ID = &ID
-			}
-		}
-	}
-
-	return nil
-}
-
-// VirtualMachineCaptureResultProperties compute-specific operation properties, including output
-type VirtualMachineCaptureResultProperties struct {
-	// Output - Operation output data (raw JSON)
-	Output interface{} `json:"output,omitempty"`
 }
 
 // VirtualMachineExtension describes a Virtual Machine Extension.
@@ -5389,12 +4273,11 @@ type VirtualMachineExtensionProperties struct {
 // long-running operation.
 type VirtualMachineExtensionsCreateOrUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineExtensionsCreateOrUpdateFuture) Result(client VirtualMachineExtensionsClient) (vme VirtualMachineExtension, err error) {
+func (future *VirtualMachineExtensionsCreateOrUpdateFuture) Result(client VirtualMachineExtensionsClient) (vme VirtualMachineExtension, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -5402,34 +4285,15 @@ func (future VirtualMachineExtensionsCreateOrUpdateFuture) Result(client Virtual
 		return
 	}
 	if !done {
-		return vme, azure.NewAsyncOpIncompleteError("compute.VirtualMachineExtensionsCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		vme, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineExtensionsCreateOrUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if vme.Response.Response, err = future.GetResult(sender); err == nil && vme.Response.Response.StatusCode != http.StatusNoContent {
+		vme, err = client.CreateOrUpdateResponder(vme.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsCreateOrUpdateFuture", "Result", vme.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	vme, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -5438,12 +4302,11 @@ func (future VirtualMachineExtensionsCreateOrUpdateFuture) Result(client Virtual
 // operation.
 type VirtualMachineExtensionsDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineExtensionsDeleteFuture) Result(client VirtualMachineExtensionsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineExtensionsDeleteFuture) Result(client VirtualMachineExtensionsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -5451,35 +4314,10 @@ func (future VirtualMachineExtensionsDeleteFuture) Result(client VirtualMachineE
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineExtensionsDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineExtensionsDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -5494,12 +4332,11 @@ type VirtualMachineExtensionsListResult struct {
 // operation.
 type VirtualMachineExtensionsUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineExtensionsUpdateFuture) Result(client VirtualMachineExtensionsClient) (vme VirtualMachineExtension, err error) {
+func (future *VirtualMachineExtensionsUpdateFuture) Result(client VirtualMachineExtensionsClient) (vme VirtualMachineExtension, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -5507,34 +4344,15 @@ func (future VirtualMachineExtensionsUpdateFuture) Result(client VirtualMachineE
 		return
 	}
 	if !done {
-		return vme, azure.NewAsyncOpIncompleteError("compute.VirtualMachineExtensionsUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		vme, err = client.UpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineExtensionsUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if vme.Response.Response, err = future.GetResult(sender); err == nil && vme.Response.Response.StatusCode != http.StatusNoContent {
+		vme, err = client.UpdateResponder(vme.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsUpdateFuture", "Result", vme.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	vme, err = client.UpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineExtensionsUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -6091,7 +4909,7 @@ type VirtualMachineScaleSetDataDisk struct {
 	WriteAcceleratorEnabled *bool `json:"writeAcceleratorEnabled,omitempty"`
 	// CreateOption - The create option. Possible values include: 'DiskCreateOptionTypesFromImage', 'DiskCreateOptionTypesEmpty', 'DiskCreateOptionTypesAttach'
 	CreateOption DiskCreateOptionTypes `json:"createOption,omitempty"`
-	// DiskSizeGB - Specifies the size of an empty data disk in gigabytes. This element can be used to overwrite the name of the disk in a virtual machine image. <br><br> This value cannot be larger than 1023 GB
+	// DiskSizeGB - Specifies the size of an empty data disk in gigabytes. This element can be used to overwrite the size of the disk in a virtual machine image. <br><br> This value cannot be larger than 1023 GB
 	DiskSizeGB *int32 `json:"diskSizeGB,omitempty"`
 	// ManagedDisk - The managed disk parameters.
 	ManagedDisk *VirtualMachineScaleSetManagedDiskParameters `json:"managedDisk,omitempty"`
@@ -6297,12 +5115,11 @@ type VirtualMachineScaleSetExtensionProperties struct {
 // a long-running operation.
 type VirtualMachineScaleSetExtensionsCreateOrUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetExtensionsCreateOrUpdateFuture) Result(client VirtualMachineScaleSetExtensionsClient) (vmsse VirtualMachineScaleSetExtension, err error) {
+func (future *VirtualMachineScaleSetExtensionsCreateOrUpdateFuture) Result(client VirtualMachineScaleSetExtensionsClient) (vmsse VirtualMachineScaleSetExtension, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -6310,34 +5127,15 @@ func (future VirtualMachineScaleSetExtensionsCreateOrUpdateFuture) Result(client
 		return
 	}
 	if !done {
-		return vmsse, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetExtensionsCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		vmsse, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetExtensionsCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetExtensionsCreateOrUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if vmsse.Response.Response, err = future.GetResult(sender); err == nil && vmsse.Response.Response.StatusCode != http.StatusNoContent {
+		vmsse, err = client.CreateOrUpdateResponder(vmsse.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetExtensionsCreateOrUpdateFuture", "Result", vmsse.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetExtensionsCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	vmsse, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetExtensionsCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -6346,12 +5144,11 @@ func (future VirtualMachineScaleSetExtensionsCreateOrUpdateFuture) Result(client
 // long-running operation.
 type VirtualMachineScaleSetExtensionsDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetExtensionsDeleteFuture) Result(client VirtualMachineScaleSetExtensionsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetExtensionsDeleteFuture) Result(client VirtualMachineScaleSetExtensionsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -6359,35 +5156,10 @@ func (future VirtualMachineScaleSetExtensionsDeleteFuture) Result(client Virtual
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetExtensionsDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetExtensionsDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetExtensionsDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetExtensionsDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetExtensionsDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -6504,6 +5276,118 @@ type VirtualMachineScaleSetIPConfigurationProperties struct {
 	LoadBalancerBackendAddressPools *[]SubResource `json:"loadBalancerBackendAddressPools,omitempty"`
 	// LoadBalancerInboundNatPools - Specifies an array of references to inbound Nat pools of the load balancers. A scale set can reference inbound nat pools of one public and one internal load balancer. Multiple scale sets cannot use the same load balancer
 	LoadBalancerInboundNatPools *[]SubResource `json:"loadBalancerInboundNatPools,omitempty"`
+}
+
+// VirtualMachineScaleSetIPTag contains the IP tag associated with the public IP address.
+type VirtualMachineScaleSetIPTag struct {
+	// IPTagType - IP tag type. Example: FirstPartyUsage.
+	IPTagType *string `json:"ipTagType,omitempty"`
+	// Tag - IP tag associated with the public IP. Example: SQL, Storage etc.
+	Tag *string `json:"tag,omitempty"`
+}
+
+// VirtualMachineScaleSetListOSUpgradeHistory list of Virtual Machine Scale Set OS Upgrade History operation
+// response.
+type VirtualMachineScaleSetListOSUpgradeHistory struct {
+	autorest.Response `json:"-"`
+	// Value - The list of OS upgrades performed on the virtual machine scale set.
+	Value *[]UpgradeOperationHistoricalStatusInfo `json:"value,omitempty"`
+	// NextLink - The uri to fetch the next page of OS Upgrade History. Call ListNext() with this to fetch the next page of history of upgrades.
+	NextLink *string `json:"nextLink,omitempty"`
+}
+
+// VirtualMachineScaleSetListOSUpgradeHistoryIterator provides access to a complete listing of
+// UpgradeOperationHistoricalStatusInfo values.
+type VirtualMachineScaleSetListOSUpgradeHistoryIterator struct {
+	i    int
+	page VirtualMachineScaleSetListOSUpgradeHistoryPage
+}
+
+// Next advances to the next value.  If there was an error making
+// the request the iterator does not advance and the error is returned.
+func (iter *VirtualMachineScaleSetListOSUpgradeHistoryIterator) Next() error {
+	iter.i++
+	if iter.i < len(iter.page.Values()) {
+		return nil
+	}
+	err := iter.page.Next()
+	if err != nil {
+		iter.i--
+		return err
+	}
+	iter.i = 0
+	return nil
+}
+
+// NotDone returns true if the enumeration should be started or is not yet complete.
+func (iter VirtualMachineScaleSetListOSUpgradeHistoryIterator) NotDone() bool {
+	return iter.page.NotDone() && iter.i < len(iter.page.Values())
+}
+
+// Response returns the raw server response from the last page request.
+func (iter VirtualMachineScaleSetListOSUpgradeHistoryIterator) Response() VirtualMachineScaleSetListOSUpgradeHistory {
+	return iter.page.Response()
+}
+
+// Value returns the current value or a zero-initialized value if the
+// iterator has advanced beyond the end of the collection.
+func (iter VirtualMachineScaleSetListOSUpgradeHistoryIterator) Value() UpgradeOperationHistoricalStatusInfo {
+	if !iter.page.NotDone() {
+		return UpgradeOperationHistoricalStatusInfo{}
+	}
+	return iter.page.Values()[iter.i]
+}
+
+// IsEmpty returns true if the ListResult contains no values.
+func (vmsslouh VirtualMachineScaleSetListOSUpgradeHistory) IsEmpty() bool {
+	return vmsslouh.Value == nil || len(*vmsslouh.Value) == 0
+}
+
+// virtualMachineScaleSetListOSUpgradeHistoryPreparer prepares a request to retrieve the next set of results.
+// It returns nil if no more results exist.
+func (vmsslouh VirtualMachineScaleSetListOSUpgradeHistory) virtualMachineScaleSetListOSUpgradeHistoryPreparer() (*http.Request, error) {
+	if vmsslouh.NextLink == nil || len(to.String(vmsslouh.NextLink)) < 1 {
+		return nil, nil
+	}
+	return autorest.Prepare(&http.Request{},
+		autorest.AsJSON(),
+		autorest.AsGet(),
+		autorest.WithBaseURL(to.String(vmsslouh.NextLink)))
+}
+
+// VirtualMachineScaleSetListOSUpgradeHistoryPage contains a page of UpgradeOperationHistoricalStatusInfo values.
+type VirtualMachineScaleSetListOSUpgradeHistoryPage struct {
+	fn       func(VirtualMachineScaleSetListOSUpgradeHistory) (VirtualMachineScaleSetListOSUpgradeHistory, error)
+	vmsslouh VirtualMachineScaleSetListOSUpgradeHistory
+}
+
+// Next advances to the next page of values.  If there was an error making
+// the request the page does not advance and the error is returned.
+func (page *VirtualMachineScaleSetListOSUpgradeHistoryPage) Next() error {
+	next, err := page.fn(page.vmsslouh)
+	if err != nil {
+		return err
+	}
+	page.vmsslouh = next
+	return nil
+}
+
+// NotDone returns true if the page enumeration should be started or is not yet complete.
+func (page VirtualMachineScaleSetListOSUpgradeHistoryPage) NotDone() bool {
+	return !page.vmsslouh.IsEmpty()
+}
+
+// Response returns the raw server response from the last page request.
+func (page VirtualMachineScaleSetListOSUpgradeHistoryPage) Response() VirtualMachineScaleSetListOSUpgradeHistory {
+	return page.vmsslouh
+}
+
+// Values returns the slice of values for the current page or nil if there are no values.
+func (page VirtualMachineScaleSetListOSUpgradeHistoryPage) Values() []UpgradeOperationHistoricalStatusInfo {
+	if page.vmsslouh.IsEmpty() {
+		return nil
+	}
+	return *page.vmsslouh.Value
 }
 
 // VirtualMachineScaleSetListResult the List Virtual Machine operation response.
@@ -6816,7 +5700,7 @@ func (page VirtualMachineScaleSetListWithLinkResultPage) Values() []VirtualMachi
 
 // VirtualMachineScaleSetManagedDiskParameters describes the parameters of a ScaleSet managed disk.
 type VirtualMachineScaleSetManagedDiskParameters struct {
-	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS or Premium_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS'
+	// StorageAccountType - Specifies the storage account type for the managed disk. Possible values are: Standard_LRS, Premium_LRS, and StandardSSD_LRS. Possible values include: 'StorageAccountTypesStandardLRS', 'StorageAccountTypesPremiumLRS', 'StorageAccountTypesStandardSSDLRS'
 	StorageAccountType StorageAccountTypes `json:"storageAccountType,omitempty"`
 }
 
@@ -6929,6 +5813,8 @@ type VirtualMachineScaleSetOSDisk struct {
 	WriteAcceleratorEnabled *bool `json:"writeAcceleratorEnabled,omitempty"`
 	// CreateOption - Specifies how the virtual machines in the scale set should be created.<br><br> The only allowed value is: **FromImage** \u2013 This value is used when you are using an image to create the virtual machine. If you are using a platform image, you also use the imageReference element described above. If you are using a marketplace image, you  also use the plan element previously described. Possible values include: 'DiskCreateOptionTypesFromImage', 'DiskCreateOptionTypesEmpty', 'DiskCreateOptionTypesAttach'
 	CreateOption DiskCreateOptionTypes `json:"createOption,omitempty"`
+	// DiskSizeGB - Specifies the size of the operating system disk in gigabytes. This element can be used to overwrite the size of the disk in a virtual machine image. <br><br> This value cannot be larger than 1023 GB
+	DiskSizeGB *int32 `json:"diskSizeGB,omitempty"`
 	// OsType - This property allows you to specify the type of the OS that is included in the disk if creating a VM from user-image or a specialized VHD. <br><br> Possible values are: <br><br> **Windows** <br><br> **Linux**. Possible values include: 'Windows', 'Linux'
 	OsType OperatingSystemTypes `json:"osType,omitempty"`
 	// Image - Specifies information about the unmanaged user image to base the scale set on.
@@ -7044,18 +5930,19 @@ type VirtualMachineScaleSetPublicIPAddressConfigurationProperties struct {
 	IdleTimeoutInMinutes *int32 `json:"idleTimeoutInMinutes,omitempty"`
 	// DNSSettings - The dns settings to be applied on the publicIP addresses .
 	DNSSettings *VirtualMachineScaleSetPublicIPAddressConfigurationDNSSettings `json:"dnsSettings,omitempty"`
+	// IPTags - The list of IP tags associated with the public IP address.
+	IPTags *[]VirtualMachineScaleSetIPTag `json:"ipTags,omitempty"`
 }
 
 // VirtualMachineScaleSetRollingUpgradesCancelFuture an abstraction for monitoring and retrieving the results of a
 // long-running operation.
 type VirtualMachineScaleSetRollingUpgradesCancelFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetRollingUpgradesCancelFuture) Result(client VirtualMachineScaleSetRollingUpgradesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetRollingUpgradesCancelFuture) Result(client VirtualMachineScaleSetRollingUpgradesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7063,35 +5950,10 @@ func (future VirtualMachineScaleSetRollingUpgradesCancelFuture) Result(client Vi
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetRollingUpgradesCancelFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.CancelResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetRollingUpgradesCancelFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetRollingUpgradesCancelFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetRollingUpgradesCancelFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.CancelResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetRollingUpgradesCancelFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7099,12 +5961,11 @@ func (future VirtualMachineScaleSetRollingUpgradesCancelFuture) Result(client Vi
 // results of a long-running operation.
 type VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture) Result(client VirtualMachineScaleSetRollingUpgradesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture) Result(client VirtualMachineScaleSetRollingUpgradesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7112,35 +5973,10 @@ func (future VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture) Result(c
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.StartOSUpgradeResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.StartOSUpgradeResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7148,12 +5984,11 @@ func (future VirtualMachineScaleSetRollingUpgradesStartOSUpgradeFuture) Result(c
 // long-running operation.
 type VirtualMachineScaleSetsCreateOrUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsCreateOrUpdateFuture) Result(client VirtualMachineScaleSetsClient) (vmss VirtualMachineScaleSet, err error) {
+func (future *VirtualMachineScaleSetsCreateOrUpdateFuture) Result(client VirtualMachineScaleSetsClient) (vmss VirtualMachineScaleSet, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7161,34 +5996,15 @@ func (future VirtualMachineScaleSetsCreateOrUpdateFuture) Result(client VirtualM
 		return
 	}
 	if !done {
-		return vmss, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		vmss, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsCreateOrUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if vmss.Response.Response, err = future.GetResult(sender); err == nil && vmss.Response.Response.StatusCode != http.StatusNoContent {
+		vmss, err = client.CreateOrUpdateResponder(vmss.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsCreateOrUpdateFuture", "Result", vmss.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	vmss, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -7197,12 +6013,11 @@ func (future VirtualMachineScaleSetsCreateOrUpdateFuture) Result(client VirtualM
 // long-running operation.
 type VirtualMachineScaleSetsDeallocateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsDeallocateFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsDeallocateFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7210,35 +6025,10 @@ func (future VirtualMachineScaleSetsDeallocateFuture) Result(client VirtualMachi
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsDeallocateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeallocateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeallocateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsDeallocateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeallocateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeallocateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeallocateFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7246,12 +6036,11 @@ func (future VirtualMachineScaleSetsDeallocateFuture) Result(client VirtualMachi
 // operation.
 type VirtualMachineScaleSetsDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsDeleteFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsDeleteFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7259,35 +6048,10 @@ func (future VirtualMachineScaleSetsDeleteFuture) Result(client VirtualMachineSc
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7295,12 +6059,11 @@ func (future VirtualMachineScaleSetsDeleteFuture) Result(client VirtualMachineSc
 // long-running operation.
 type VirtualMachineScaleSetsDeleteInstancesFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsDeleteInstancesFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsDeleteInstancesFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7308,35 +6071,10 @@ func (future VirtualMachineScaleSetsDeleteInstancesFuture) Result(client Virtual
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsDeleteInstancesFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteInstancesResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeleteInstancesFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsDeleteInstancesFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeleteInstancesFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteInstancesResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsDeleteInstancesFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7366,12 +6104,11 @@ type VirtualMachineScaleSetSkuCapacity struct {
 // long-running operation.
 type VirtualMachineScaleSetsPerformMaintenanceFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsPerformMaintenanceFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsPerformMaintenanceFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7379,35 +6116,10 @@ func (future VirtualMachineScaleSetsPerformMaintenanceFuture) Result(client Virt
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsPerformMaintenanceFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.PerformMaintenanceResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsPerformMaintenanceFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsPerformMaintenanceFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsPerformMaintenanceFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.PerformMaintenanceResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsPerformMaintenanceFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7415,12 +6127,11 @@ func (future VirtualMachineScaleSetsPerformMaintenanceFuture) Result(client Virt
 // operation.
 type VirtualMachineScaleSetsPowerOffFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsPowerOffFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsPowerOffFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7428,35 +6139,10 @@ func (future VirtualMachineScaleSetsPowerOffFuture) Result(client VirtualMachine
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsPowerOffFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.PowerOffResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsPowerOffFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsPowerOffFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsPowerOffFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.PowerOffResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsPowerOffFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7464,12 +6150,11 @@ func (future VirtualMachineScaleSetsPowerOffFuture) Result(client VirtualMachine
 // operation.
 type VirtualMachineScaleSetsRedeployFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsRedeployFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsRedeployFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7477,35 +6162,10 @@ func (future VirtualMachineScaleSetsRedeployFuture) Result(client VirtualMachine
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsRedeployFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RedeployResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsRedeployFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsRedeployFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsRedeployFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.RedeployResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsRedeployFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7513,12 +6173,11 @@ func (future VirtualMachineScaleSetsRedeployFuture) Result(client VirtualMachine
 // long-running operation.
 type VirtualMachineScaleSetsReimageAllFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsReimageAllFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsReimageAllFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7526,35 +6185,10 @@ func (future VirtualMachineScaleSetsReimageAllFuture) Result(client VirtualMachi
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsReimageAllFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.ReimageAllResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsReimageAllFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsReimageAllFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsReimageAllFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.ReimageAllResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsReimageAllFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7562,12 +6196,11 @@ func (future VirtualMachineScaleSetsReimageAllFuture) Result(client VirtualMachi
 // operation.
 type VirtualMachineScaleSetsReimageFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsReimageFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsReimageFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7575,35 +6208,10 @@ func (future VirtualMachineScaleSetsReimageFuture) Result(client VirtualMachineS
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsReimageFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.ReimageResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsReimageFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsReimageFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsReimageFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.ReimageResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsReimageFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7611,12 +6219,11 @@ func (future VirtualMachineScaleSetsReimageFuture) Result(client VirtualMachineS
 // operation.
 type VirtualMachineScaleSetsRestartFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsRestartFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsRestartFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7624,35 +6231,10 @@ func (future VirtualMachineScaleSetsRestartFuture) Result(client VirtualMachineS
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsRestartFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RestartResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsRestartFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsRestartFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsRestartFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.RestartResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsRestartFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7660,12 +6242,11 @@ func (future VirtualMachineScaleSetsRestartFuture) Result(client VirtualMachineS
 // operation.
 type VirtualMachineScaleSetsStartFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsStartFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsStartFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7673,35 +6254,10 @@ func (future VirtualMachineScaleSetsStartFuture) Result(client VirtualMachineSca
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsStartFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.StartResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsStartFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsStartFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsStartFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.StartResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsStartFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -7719,12 +6275,11 @@ type VirtualMachineScaleSetStorageProfile struct {
 // operation.
 type VirtualMachineScaleSetsUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsUpdateFuture) Result(client VirtualMachineScaleSetsClient) (vmss VirtualMachineScaleSet, err error) {
+func (future *VirtualMachineScaleSetsUpdateFuture) Result(client VirtualMachineScaleSetsClient) (vmss VirtualMachineScaleSet, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7732,34 +6287,15 @@ func (future VirtualMachineScaleSetsUpdateFuture) Result(client VirtualMachineSc
 		return
 	}
 	if !done {
-		return vmss, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		vmss, err = client.UpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if vmss.Response.Response, err = future.GetResult(sender); err == nil && vmss.Response.Response.StatusCode != http.StatusNoContent {
+		vmss, err = client.UpdateResponder(vmss.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsUpdateFuture", "Result", vmss.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	vmss, err = client.UpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -7768,12 +6304,11 @@ func (future VirtualMachineScaleSetsUpdateFuture) Result(client VirtualMachineSc
 // long-running operation.
 type VirtualMachineScaleSetsUpdateInstancesFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetsUpdateInstancesFuture) Result(client VirtualMachineScaleSetsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetsUpdateInstancesFuture) Result(client VirtualMachineScaleSetsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -7781,35 +6316,10 @@ func (future VirtualMachineScaleSetsUpdateInstancesFuture) Result(client Virtual
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsUpdateInstancesFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.UpdateInstancesResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsUpdateInstancesFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetsUpdateInstancesFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsUpdateInstancesFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.UpdateInstancesResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetsUpdateInstancesFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8090,6 +6600,8 @@ type VirtualMachineScaleSetUpdateOSDisk struct {
 	Caching CachingTypes `json:"caching,omitempty"`
 	// WriteAcceleratorEnabled - Specifies whether writeAccelerator should be enabled or disabled on the disk.
 	WriteAcceleratorEnabled *bool `json:"writeAcceleratorEnabled,omitempty"`
+	// DiskSizeGB - Specifies the size of the operating system disk in gigabytes. This element can be used to overwrite the size of the disk in a virtual machine image. <br><br> This value cannot be larger than 1023 GB
+	DiskSizeGB *int32 `json:"diskSizeGB,omitempty"`
 	// Image - The Source User Image VirtualHardDisk. This VirtualHardDisk will be copied before using it to attach to the Virtual Machine. If SourceImage is provided, the destination VirtualHardDisk should not exist.
 	Image *VirtualHardDisk `json:"image,omitempty"`
 	// VhdContainers - The list of virtual hard disk container uris.
@@ -8222,6 +6734,8 @@ type VirtualMachineScaleSetVM struct {
 	Plan *Plan `json:"plan,omitempty"`
 	// Resources - The virtual machine child extension resources.
 	Resources *[]VirtualMachineExtension `json:"resources,omitempty"`
+	// Zones - The virtual machine zones.
+	Zones *[]string `json:"zones,omitempty"`
 	// ID - Resource Id
 	ID *string `json:"id,omitempty"`
 	// Name - Resource name
@@ -8251,6 +6765,9 @@ func (vmssv VirtualMachineScaleSetVM) MarshalJSON() ([]byte, error) {
 	}
 	if vmssv.Resources != nil {
 		objectMap["resources"] = vmssv.Resources
+	}
+	if vmssv.Zones != nil {
+		objectMap["zones"] = vmssv.Zones
 	}
 	if vmssv.ID != nil {
 		objectMap["id"] = vmssv.ID
@@ -8323,6 +6840,15 @@ func (vmssv *VirtualMachineScaleSetVM) UnmarshalJSON(body []byte) error {
 					return err
 				}
 				vmssv.Resources = &resources
+			}
+		case "zones":
+			if v != nil {
+				var zones []string
+				err = json.Unmarshal(*v, &zones)
+				if err != nil {
+					return err
+				}
+				vmssv.Zones = &zones
 			}
 		case "id":
 			if v != nil {
@@ -8543,6 +7069,8 @@ type VirtualMachineScaleSetVMProfile struct {
 	LicenseType *string `json:"licenseType,omitempty"`
 	// Priority - Specifies the priority for the virtual machines in the scale set. <br><br>Minimum api-version: 2017-10-30-preview. Possible values include: 'Regular', 'Low'
 	Priority VirtualMachinePriorityTypes `json:"priority,omitempty"`
+	// EvictionPolicy - Specifies the eviction policy for virtual machines in a low priority scale set. <br><br>Minimum api-version: 2017-10-30-preview. Possible values include: 'Deallocate', 'Delete'
+	EvictionPolicy VirtualMachineEvictionPolicyTypes `json:"evictionPolicy,omitempty"`
 }
 
 // VirtualMachineScaleSetVMProperties describes the properties of a virtual machine scale set virtual machine.
@@ -8552,7 +7080,7 @@ type VirtualMachineScaleSetVMProperties struct {
 	// VMID - Azure VM unique ID.
 	VMID *string `json:"vmId,omitempty"`
 	// InstanceView - The virtual machine instance view.
-	InstanceView *VirtualMachineInstanceView `json:"instanceView,omitempty"`
+	InstanceView *VirtualMachineScaleSetVMInstanceView `json:"instanceView,omitempty"`
 	// HardwareProfile - Specifies the hardware settings for the virtual machine.
 	HardwareProfile *HardwareProfile `json:"hardwareProfile,omitempty"`
 	// StorageProfile - Specifies the storage settings for the virtual machine disks.
@@ -8575,12 +7103,11 @@ type VirtualMachineScaleSetVMProperties struct {
 // long-running operation.
 type VirtualMachineScaleSetVMsDeallocateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsDeallocateFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsDeallocateFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8588,35 +7115,10 @@ func (future VirtualMachineScaleSetVMsDeallocateFuture) Result(client VirtualMac
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsDeallocateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeallocateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsDeallocateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsDeallocateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsDeallocateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeallocateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsDeallocateFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8624,12 +7126,11 @@ func (future VirtualMachineScaleSetVMsDeallocateFuture) Result(client VirtualMac
 // operation.
 type VirtualMachineScaleSetVMsDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsDeleteFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsDeleteFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8637,35 +7138,10 @@ func (future VirtualMachineScaleSetVMsDeleteFuture) Result(client VirtualMachine
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8673,12 +7149,11 @@ func (future VirtualMachineScaleSetVMsDeleteFuture) Result(client VirtualMachine
 // long-running operation.
 type VirtualMachineScaleSetVMsPerformMaintenanceFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsPerformMaintenanceFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsPerformMaintenanceFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8686,35 +7161,10 @@ func (future VirtualMachineScaleSetVMsPerformMaintenanceFuture) Result(client Vi
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsPerformMaintenanceFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.PerformMaintenanceResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsPerformMaintenanceFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsPerformMaintenanceFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsPerformMaintenanceFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.PerformMaintenanceResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsPerformMaintenanceFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8722,12 +7172,11 @@ func (future VirtualMachineScaleSetVMsPerformMaintenanceFuture) Result(client Vi
 // long-running operation.
 type VirtualMachineScaleSetVMsPowerOffFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsPowerOffFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsPowerOffFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8735,35 +7184,10 @@ func (future VirtualMachineScaleSetVMsPowerOffFuture) Result(client VirtualMachi
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsPowerOffFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.PowerOffResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsPowerOffFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsPowerOffFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsPowerOffFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.PowerOffResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsPowerOffFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8771,12 +7195,11 @@ func (future VirtualMachineScaleSetVMsPowerOffFuture) Result(client VirtualMachi
 // long-running operation.
 type VirtualMachineScaleSetVMsRedeployFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsRedeployFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsRedeployFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8784,35 +7207,10 @@ func (future VirtualMachineScaleSetVMsRedeployFuture) Result(client VirtualMachi
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsRedeployFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RedeployResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRedeployFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsRedeployFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRedeployFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.RedeployResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRedeployFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8820,12 +7218,11 @@ func (future VirtualMachineScaleSetVMsRedeployFuture) Result(client VirtualMachi
 // long-running operation.
 type VirtualMachineScaleSetVMsReimageAllFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsReimageAllFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsReimageAllFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8833,35 +7230,10 @@ func (future VirtualMachineScaleSetVMsReimageAllFuture) Result(client VirtualMac
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsReimageAllFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.ReimageAllResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsReimageAllFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsReimageAllFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsReimageAllFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.ReimageAllResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsReimageAllFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8869,12 +7241,11 @@ func (future VirtualMachineScaleSetVMsReimageAllFuture) Result(client VirtualMac
 // long-running operation.
 type VirtualMachineScaleSetVMsReimageFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsReimageFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsReimageFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8882,35 +7253,10 @@ func (future VirtualMachineScaleSetVMsReimageFuture) Result(client VirtualMachin
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsReimageFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.ReimageResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsReimageFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsReimageFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsReimageFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.ReimageResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsReimageFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -8918,12 +7264,11 @@ func (future VirtualMachineScaleSetVMsReimageFuture) Result(client VirtualMachin
 // long-running operation.
 type VirtualMachineScaleSetVMsRestartFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsRestartFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsRestartFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8931,34 +7276,38 @@ func (future VirtualMachineScaleSetVMsRestartFuture) Result(client VirtualMachin
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsRestartFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RestartResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRestartFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsRestartFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	ar.Response = future.Response()
+	return
+}
+
+// VirtualMachineScaleSetVMsRunCommandFuture an abstraction for monitoring and retrieving the results of a
+// long-running operation.
+type VirtualMachineScaleSetVMsRunCommandFuture struct {
+	azure.Future
+}
+
+// Result returns the result of the asynchronous operation.
+// If the operation has not completed it will return an error.
+func (future *VirtualMachineScaleSetVMsRunCommandFuture) Result(client VirtualMachineScaleSetVMsClient) (rcr RunCommandResult, err error) {
+	var done bool
+	done, err = future.Done(client)
 	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRestartFuture", "Result", resp, "Failure sending request")
+		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRunCommandFuture", "Result", future.Response(), "Polling failure")
 		return
 	}
-	osr, err = client.RestartResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRestartFuture", "Result", resp, "Failure responding to request")
+	if !done {
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsRunCommandFuture")
+		return
+	}
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if rcr.Response.Response, err = future.GetResult(sender); err == nil && rcr.Response.Response.StatusCode != http.StatusNoContent {
+		rcr, err = client.RunCommandResponder(rcr.Response.Response)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsRunCommandFuture", "Result", rcr.Response.Response, "Failure responding to request")
+		}
 	}
 	return
 }
@@ -8967,12 +7316,11 @@ func (future VirtualMachineScaleSetVMsRestartFuture) Result(client VirtualMachin
 // operation.
 type VirtualMachineScaleSetVMsStartFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsStartFuture) Result(client VirtualMachineScaleSetVMsClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachineScaleSetVMsStartFuture) Result(client VirtualMachineScaleSetVMsClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -8980,35 +7328,10 @@ func (future VirtualMachineScaleSetVMsStartFuture) Result(client VirtualMachineS
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsStartFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.StartResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsStartFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsStartFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsStartFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.StartResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsStartFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9016,12 +7339,11 @@ func (future VirtualMachineScaleSetVMsStartFuture) Result(client VirtualMachineS
 // operation.
 type VirtualMachineScaleSetVMsUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachineScaleSetVMsUpdateFuture) Result(client VirtualMachineScaleSetVMsClient) (vmssv VirtualMachineScaleSetVM, err error) {
+func (future *VirtualMachineScaleSetVMsUpdateFuture) Result(client VirtualMachineScaleSetVMsClient) (vmssv VirtualMachineScaleSetVM, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9029,34 +7351,15 @@ func (future VirtualMachineScaleSetVMsUpdateFuture) Result(client VirtualMachine
 		return
 	}
 	if !done {
-		return vmssv, azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		vmssv, err = client.UpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachineScaleSetVMsUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if vmssv.Response.Response, err = future.GetResult(sender); err == nil && vmssv.Response.Response.StatusCode != http.StatusNoContent {
+		vmssv, err = client.UpdateResponder(vmssv.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsUpdateFuture", "Result", vmssv.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	vmssv, err = client.UpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachineScaleSetVMsUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -9065,12 +7368,11 @@ func (future VirtualMachineScaleSetVMsUpdateFuture) Result(client VirtualMachine
 // operation.
 type VirtualMachinesCaptureFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesCaptureFuture) Result(client VirtualMachinesClient) (vmcr VirtualMachineCaptureResult, err error) {
+func (future *VirtualMachinesCaptureFuture) Result(client VirtualMachinesClient) (vmcr VirtualMachineCaptureResult, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9078,34 +7380,15 @@ func (future VirtualMachinesCaptureFuture) Result(client VirtualMachinesClient) 
 		return
 	}
 	if !done {
-		return vmcr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesCaptureFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		vmcr, err = client.CaptureResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCaptureFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesCaptureFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if vmcr.Response.Response, err = future.GetResult(sender); err == nil && vmcr.Response.Response.StatusCode != http.StatusNoContent {
+		vmcr, err = client.CaptureResponder(vmcr.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCaptureFuture", "Result", vmcr.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCaptureFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	vmcr, err = client.CaptureResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCaptureFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -9114,12 +7397,11 @@ func (future VirtualMachinesCaptureFuture) Result(client VirtualMachinesClient) 
 // long-running operation.
 type VirtualMachinesConvertToManagedDisksFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesConvertToManagedDisksFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesConvertToManagedDisksFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9127,35 +7409,10 @@ func (future VirtualMachinesConvertToManagedDisksFuture) Result(client VirtualMa
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesConvertToManagedDisksFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.ConvertToManagedDisksResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesConvertToManagedDisksFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesConvertToManagedDisksFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesConvertToManagedDisksFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.ConvertToManagedDisksResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesConvertToManagedDisksFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9163,12 +7420,11 @@ func (future VirtualMachinesConvertToManagedDisksFuture) Result(client VirtualMa
 // operation.
 type VirtualMachinesCreateOrUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesCreateOrUpdateFuture) Result(client VirtualMachinesClient) (VM VirtualMachine, err error) {
+func (future *VirtualMachinesCreateOrUpdateFuture) Result(client VirtualMachinesClient) (VM VirtualMachine, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9176,34 +7432,15 @@ func (future VirtualMachinesCreateOrUpdateFuture) Result(client VirtualMachinesC
 		return
 	}
 	if !done {
-		return VM, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesCreateOrUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		VM, err = client.CreateOrUpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCreateOrUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesCreateOrUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if VM.Response.Response, err = future.GetResult(sender); err == nil && VM.Response.Response.StatusCode != http.StatusNoContent {
+		VM, err = client.CreateOrUpdateResponder(VM.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCreateOrUpdateFuture", "Result", VM.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCreateOrUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	VM, err = client.CreateOrUpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesCreateOrUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -9212,12 +7449,11 @@ func (future VirtualMachinesCreateOrUpdateFuture) Result(client VirtualMachinesC
 // operation.
 type VirtualMachinesDeallocateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesDeallocateFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesDeallocateFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9225,35 +7461,10 @@ func (future VirtualMachinesDeallocateFuture) Result(client VirtualMachinesClien
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesDeallocateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeallocateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesDeallocateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesDeallocateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesDeallocateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeallocateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesDeallocateFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9261,12 +7472,11 @@ func (future VirtualMachinesDeallocateFuture) Result(client VirtualMachinesClien
 // operation.
 type VirtualMachinesDeleteFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesDeleteFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesDeleteFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9274,35 +7484,10 @@ func (future VirtualMachinesDeleteFuture) Result(client VirtualMachinesClient) (
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesDeleteFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.DeleteResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesDeleteFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesDeleteFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesDeleteFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.DeleteResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesDeleteFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9333,12 +7518,11 @@ type VirtualMachineSizeListResult struct {
 // long-running operation.
 type VirtualMachinesPerformMaintenanceFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesPerformMaintenanceFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesPerformMaintenanceFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9346,35 +7530,10 @@ func (future VirtualMachinesPerformMaintenanceFuture) Result(client VirtualMachi
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesPerformMaintenanceFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.PerformMaintenanceResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesPerformMaintenanceFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesPerformMaintenanceFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesPerformMaintenanceFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.PerformMaintenanceResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesPerformMaintenanceFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9382,12 +7541,11 @@ func (future VirtualMachinesPerformMaintenanceFuture) Result(client VirtualMachi
 // operation.
 type VirtualMachinesPowerOffFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesPowerOffFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesPowerOffFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9395,35 +7553,10 @@ func (future VirtualMachinesPowerOffFuture) Result(client VirtualMachinesClient)
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesPowerOffFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.PowerOffResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesPowerOffFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesPowerOffFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesPowerOffFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.PowerOffResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesPowerOffFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9431,12 +7564,11 @@ func (future VirtualMachinesPowerOffFuture) Result(client VirtualMachinesClient)
 // operation.
 type VirtualMachinesRedeployFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesRedeployFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesRedeployFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9444,35 +7576,10 @@ func (future VirtualMachinesRedeployFuture) Result(client VirtualMachinesClient)
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesRedeployFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RedeployResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRedeployFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesRedeployFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRedeployFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.RedeployResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRedeployFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9480,12 +7587,11 @@ func (future VirtualMachinesRedeployFuture) Result(client VirtualMachinesClient)
 // operation.
 type VirtualMachinesRestartFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesRestartFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesRestartFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9493,35 +7599,10 @@ func (future VirtualMachinesRestartFuture) Result(client VirtualMachinesClient) 
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesRestartFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.RestartResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRestartFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesRestartFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRestartFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.RestartResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRestartFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9529,12 +7610,11 @@ func (future VirtualMachinesRestartFuture) Result(client VirtualMachinesClient) 
 // operation.
 type VirtualMachinesRunCommandFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesRunCommandFuture) Result(client VirtualMachinesClient) (rcr RunCommandResult, err error) {
+func (future *VirtualMachinesRunCommandFuture) Result(client VirtualMachinesClient) (rcr RunCommandResult, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9542,34 +7622,15 @@ func (future VirtualMachinesRunCommandFuture) Result(client VirtualMachinesClien
 		return
 	}
 	if !done {
-		return rcr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesRunCommandFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		rcr, err = client.RunCommandResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRunCommandFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesRunCommandFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if rcr.Response.Response, err = future.GetResult(sender); err == nil && rcr.Response.Response.StatusCode != http.StatusNoContent {
+		rcr, err = client.RunCommandResponder(rcr.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRunCommandFuture", "Result", rcr.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRunCommandFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	rcr, err = client.RunCommandResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesRunCommandFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
@@ -9577,12 +7638,11 @@ func (future VirtualMachinesRunCommandFuture) Result(client VirtualMachinesClien
 // VirtualMachinesStartFuture an abstraction for monitoring and retrieving the results of a long-running operation.
 type VirtualMachinesStartFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesStartFuture) Result(client VirtualMachinesClient) (osr OperationStatusResponse, err error) {
+func (future *VirtualMachinesStartFuture) Result(client VirtualMachinesClient) (ar autorest.Response, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9590,35 +7650,10 @@ func (future VirtualMachinesStartFuture) Result(client VirtualMachinesClient) (o
 		return
 	}
 	if !done {
-		return osr, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesStartFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		osr, err = client.StartResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesStartFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesStartFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
-		if err != nil {
-			return
-		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesStartFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	osr, err = client.StartResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesStartFuture", "Result", resp, "Failure responding to request")
-	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -9635,12 +7670,11 @@ type VirtualMachineStatusCodeCount struct {
 // operation.
 type VirtualMachinesUpdateFuture struct {
 	azure.Future
-	req *http.Request
 }
 
 // Result returns the result of the asynchronous operation.
 // If the operation has not completed it will return an error.
-func (future VirtualMachinesUpdateFuture) Result(client VirtualMachinesClient) (VM VirtualMachine, err error) {
+func (future *VirtualMachinesUpdateFuture) Result(client VirtualMachinesClient) (VM VirtualMachine, err error) {
 	var done bool
 	done, err = future.Done(client)
 	if err != nil {
@@ -9648,39 +7682,20 @@ func (future VirtualMachinesUpdateFuture) Result(client VirtualMachinesClient) (
 		return
 	}
 	if !done {
-		return VM, azure.NewAsyncOpIncompleteError("compute.VirtualMachinesUpdateFuture")
-	}
-	if future.PollingMethod() == azure.PollingLocation {
-		VM, err = client.UpdateResponder(future.Response())
-		if err != nil {
-			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesUpdateFuture", "Result", future.Response(), "Failure responding to request")
-		}
+		err = azure.NewAsyncOpIncompleteError("compute.VirtualMachinesUpdateFuture")
 		return
 	}
-	var req *http.Request
-	var resp *http.Response
-	if future.PollingURL() != "" {
-		req, err = http.NewRequest(http.MethodGet, future.PollingURL(), nil)
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if VM.Response.Response, err = future.GetResult(sender); err == nil && VM.Response.Response.StatusCode != http.StatusNoContent {
+		VM, err = client.UpdateResponder(VM.Response.Response)
 		if err != nil {
-			return
+			err = autorest.NewErrorWithError(err, "compute.VirtualMachinesUpdateFuture", "Result", VM.Response.Response, "Failure responding to request")
 		}
-	} else {
-		req = autorest.ChangeToGet(future.req)
-	}
-	resp, err = autorest.SendWithSender(client, req,
-		autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesUpdateFuture", "Result", resp, "Failure sending request")
-		return
-	}
-	VM, err = client.UpdateResponder(resp)
-	if err != nil {
-		err = autorest.NewErrorWithError(err, "compute.VirtualMachinesUpdateFuture", "Result", resp, "Failure responding to request")
 	}
 	return
 }
 
-// VirtualMachineUpdate describes a Virtual Machine.
+// VirtualMachineUpdate describes a Virtual Machine Update.
 type VirtualMachineUpdate struct {
 	// Plan - Specifies information about the marketplace image used to create the virtual machine. This element is only used for marketplace images. Before you can use a marketplace image from an API, you must enable the image for programmatic use.  In the Azure portal, find the marketplace image that you want to use and then click **Want to deploy programmatically, Get Started ->**. Enter any required information and then click **Save**.
 	Plan                      *Plan `json:"plan,omitempty"`

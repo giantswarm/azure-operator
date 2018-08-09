@@ -2,18 +2,19 @@
 
 
 [[projects]]
-  digest = "1:7827ead01409a6beaffe5ba06d33bf8dc87ced6e95494bf8dd0d0392cdff85eb"
+  digest = "1:f8595ed84936cd2a04c6bdf8466b2a402f1df6f50d623ad2e42d26a8f73403fb"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/compute/mgmt/2018-04-01/compute",
-    "services/dns/mgmt/2017-09-01/dns",
-    "services/network/mgmt/2017-09-01/network",
-    "services/resources/mgmt/2018-02-01/resources",
+    "services/compute/mgmt/2018-06-01/compute",
+    "services/dns/mgmt/2017-10-01/dns",
+    "services/network/mgmt/2018-06-01/network",
+    "services/resources/mgmt/2018-05-01/resources",
     "version",
   ]
   pruneopts = "UT"
-  revision = "fad8443a79b0e755c18c3bec29a8d2bedab0b421"
-  version = "v15.3.0"
+  revision = "4e8cbbfb1aeab140cd0fa97fd16b64ee18c3ca6a"
+  version = "v19.1.0"
 
 [[projects]]
   digest = "1:e37f563b93009102b29dc79fda0d58f87c99caa90555c3d0cac9c234bab46714"
@@ -272,15 +273,15 @@
   revision = "7cc3f26ba2196a4ddbbb3fb995f28c2dca678364"
 
 [[projects]]
-  branch = "master"
-  digest = "1:885419a4c48fa76cea615a30e6938c7df2c8c942247c58db62ba547f57f6a84d"
+  branch = "bump"
+  digest = "1:b38f5b8b06e943c8cbdd64afae8c11d54780de49b55711bb3a5a57261ee9434c"
   name = "github.com/giantswarm/e2eclients"
   packages = [
     "aws",
     "azure",
   ]
   pruneopts = "UT"
-  revision = "1eb793c222c9392676ec08c368708763b02f746c"
+  revision = "e244a9f258654d05da903e18811f3615ebadb37e"
 
 [[projects]]
   branch = "master"
@@ -850,12 +851,12 @@
   revision = "7c0cea34c8ece3fbeb2b27ab9b59511d360fb394"
 
 [[projects]]
-  digest = "1:9424f440bba8f7508b69414634aef3b2b3a877e522d8a4624692412805407bb7"
+  digest = "1:dab83a1bbc7ad3d7a6ba1a1cc1760f25ac38cdf7d96a5cdd55cd915a4f5ceaf9"
   name = "github.com/spf13/pflag"
   packages = ["."]
   pruneopts = "UT"
-  revision = "583c0c0531f06d5278b7d917446061adc344b5cd"
-  version = "v1.0.1"
+  revision = "9a97c102cda95a86cec2345a6f09f55a939babf5"
+  version = "v1.0.2"
 
 [[projects]]
   digest = "1:4fc8a61287ccfb4286e1ca5ad2ce3b0b301d746053bf44ac38cf34e40ae10372"
@@ -1563,10 +1564,10 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute",
-    "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-09-01/dns",
-    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network",
-    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources",
+    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute",
+    "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
+    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network",
+    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
     "github.com/Azure/go-autorest/autorest",
     "github.com/Azure/go-autorest/autorest/adal",
     "github.com/Azure/go-autorest/autorest/azure",
