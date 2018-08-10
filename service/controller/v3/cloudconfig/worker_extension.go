@@ -91,11 +91,7 @@ func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 }
 
 func (we *workerExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		DiskName: "sdc",
-	}
-
-	asset, err := renderDockerMountUnit(params)
+	asset, err := renderDockerMountUnit()
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
@@ -105,7 +101,7 @@ func (we *workerExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, er
 
 func (we *workerExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
 	params := diskParams{
-		DiskName: "sdc",
+		LUNID: "0",
 	}
 
 	asset, err := renderDockerDiskFormatUnit(params)

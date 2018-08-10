@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-04-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -539,6 +539,138 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			}
 			if !reflect.DeepEqual(instanceToReimage, tc.ExpectedInstanceToReimage) {
 				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, instanceToReimage)
+			}
+		})
+	}
+}
+
+func Test_Resource_Instance_computeForDeleteResourceStatus(t *testing.T) {
+	testCases := []struct {
+		Name                 string
+		CustomObject         providerv1alpha1.AzureConfig
+		Type                 string
+		Status               string
+		ExpectedCustomObject providerv1alpha1.AzureConfig
+	}{
+		{
+			Name: "case 0",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Status: providerv1alpha1.AzureConfigStatus{
+					Cluster: providerv1alpha1.StatusCluster{
+						Resources: []providerv1alpha1.StatusClusterResource{
+							{
+								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+									{
+										Type:   "Stage",
+										Status: "InstancesUpgrading",
+									},
+								},
+								Name: Name,
+							},
+						},
+					},
+				},
+			},
+			Type:   "Stage",
+			Status: "InstancesUpgrading",
+			ExpectedCustomObject: providerv1alpha1.AzureConfig{
+				Status: providerv1alpha1.AzureConfigStatus{
+					Cluster: providerv1alpha1.StatusCluster{
+						Resources: nil,
+					},
+				},
+			},
+		},
+		{
+			Name: "case 1",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Status: providerv1alpha1.AzureConfigStatus{
+					Cluster: providerv1alpha1.StatusCluster{
+						Resources: []providerv1alpha1.StatusClusterResource{
+							{
+								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+									{
+										Type:   "Stage",
+										Status: "DeploymentInitialized",
+									},
+								},
+								Name: Name,
+							},
+						},
+					},
+				},
+			},
+			Type:   "Stage",
+			Status: "InstancesUpgrading",
+			ExpectedCustomObject: providerv1alpha1.AzureConfig{
+				Status: providerv1alpha1.AzureConfigStatus{
+					Cluster: providerv1alpha1.StatusCluster{
+						Resources: []providerv1alpha1.StatusClusterResource{
+							{
+								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+									{
+										Type:   "Stage",
+										Status: "DeploymentInitialized",
+									},
+								},
+								Name: Name,
+							},
+						},
+					},
+				},
+			},
+		},
+		{
+			Name: "case 2",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Status: providerv1alpha1.AzureConfigStatus{
+					Cluster: providerv1alpha1.StatusCluster{
+						Resources: []providerv1alpha1.StatusClusterResource{
+							{
+								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+									{
+										Type:   "Stage",
+										Status: "DeploymentInitialized",
+									},
+									{
+										Type:   "Stage",
+										Status: "InstancesUpgrading",
+									},
+								},
+								Name: Name,
+							},
+						},
+					},
+				},
+			},
+			Type:   "Stage",
+			Status: "InstancesUpgrading",
+			ExpectedCustomObject: providerv1alpha1.AzureConfig{
+				Status: providerv1alpha1.AzureConfigStatus{
+					Cluster: providerv1alpha1.StatusCluster{
+						Resources: []providerv1alpha1.StatusClusterResource{
+							{
+								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+									{
+										Type:   "Stage",
+										Status: "DeploymentInitialized",
+									},
+								},
+								Name: Name,
+							},
+						},
+					},
+				},
+			},
+		},
+	}
+
+	for _, tc := range testCases {
+		t.Run(tc.Name, func(t *testing.T) {
+			customObject := computeForDeleteResourceStatus(tc.CustomObject, tc.Type, tc.Status)
+
+			if !reflect.DeepEqual(customObject, tc.ExpectedCustomObject) {
+				t.Fatalf("expected %#v got %#v", tc.ExpectedCustomObject, customObject)
 			}
 		})
 	}

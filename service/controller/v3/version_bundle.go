@@ -22,6 +22,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Added support for etcd monitoring.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Fixed Azure disk mounting.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{

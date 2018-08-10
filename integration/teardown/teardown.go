@@ -3,6 +3,8 @@
 package teardown
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 
@@ -15,7 +17,12 @@ func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) e
 	var err error
 
 	{
-		h.DeleteGuestCluster("azure-operator", "azureconfig", "removing finalizer from runtime object")
+		// TODO the deletion detection should rather happen based on the cluster
+		// status or even based on the CR being gone.
+		//
+		//     https://github.com/giantswarm/giantswarm/issues/3839
+		//
+		h.DeleteGuestCluster("azure-operator", "azureconfig", "removed finalizer 'operatorkit.giantswarm.io/azure-operator'")
 
 		// only do full teardown when not on CI
 		if env.CircleCI() == "true" {
@@ -24,26 +31,26 @@ func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) e
 	}
 
 	{
-		err = framework.HelmCmd("delete azure-operator --purge")
+		err = framework.HelmCmd(fmt.Sprintf("delete %s-azure-operator --purge", h.TargetNamespace()))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = framework.HelmCmd("delete cert-operator --purge")
+		err = framework.HelmCmd(fmt.Sprintf("delete %s-cert-operator --purge", h.TargetNamespace()))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = framework.HelmCmd("delete node-operator --purge")
+		err = framework.HelmCmd(fmt.Sprintf("delete %s-node-operator --purge", h.TargetNamespace()))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		err = framework.HelmCmd("delete cert-config-e2e --purge")
+		err = framework.HelmCmd(fmt.Sprintf("delete %s-cert-config-e2e --purge", h.TargetNamespace()))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = framework.HelmCmd("delete apiextensions-azure-config-e2e --purge")
+		err = framework.HelmCmd(fmt.Sprintf("delete %s-apiextensions-azure-config-e2e --purge", h.TargetNamespace()))
 		if err != nil {
 			return microerror.Mask(err)
 		}

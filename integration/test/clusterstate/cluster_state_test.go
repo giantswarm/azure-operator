@@ -7,7 +7,7 @@ import (
 	"testing"
 )
 
-func Test_Cluster_State(t *testing.T) {
+func Test_ClusterState(t *testing.T) {
 	err := cs.Test(context.Background())
 	if err != nil {
 		t.Fatalf("%#v", err)

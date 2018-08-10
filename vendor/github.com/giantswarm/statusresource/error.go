@@ -21,3 +21,12 @@ var missingLabelError = &microerror.Error{
 func IsMissingLabel(err error) bool {
 	return microerror.Cause(err) == missingLabelError
 }
+
+var notFoundError = &microerror.Error{
+	Kind: "notFoundError",
+}
+
+// IsNotFound asserts notFoundError.
+func IsNotFound(err error) bool {
+	return microerror.Cause(err) == notFoundError
+}

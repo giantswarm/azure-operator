@@ -162,11 +162,7 @@ func (me *masterExtension) renderIngressLBFile() (k8scloudconfig.FileAsset, erro
 }
 
 func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		DiskName: "sdc",
-	}
-
-	asset, err := renderEtcdMountUnit(params)
+	asset, err := renderEtcdMountUnit()
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
@@ -176,7 +172,7 @@ func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, erro
 
 func (me *masterExtension) renderEtcdDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
 	params := diskParams{
-		DiskName: "sdc",
+		LUNID: "0",
 	}
 
 	asset, err := renderEtcdDiskFormatUnit(params)
@@ -188,11 +184,7 @@ func (me *masterExtension) renderEtcdDiskFormatUnit() (k8scloudconfig.UnitAsset,
 }
 
 func (me *masterExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		DiskName: "sdd",
-	}
-
-	asset, err := renderDockerMountUnit(params)
+	asset, err := renderDockerMountUnit()
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
@@ -202,7 +194,7 @@ func (me *masterExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, er
 
 func (me *masterExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
 	params := diskParams{
-		DiskName: "sdd",
+		LUNID: "1",
 	}
 
 	asset, err := renderDockerDiskFormatUnit(params)

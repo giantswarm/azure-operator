@@ -164,6 +164,14 @@ func (a *App) GetName() string {
 	return *a.Name
 }
 
+// GetNodeID returns the NodeID field if it's non-nil, zero value otherwise.
+func (a *App) GetNodeID() string {
+	if a == nil || a.NodeID == nil {
+		return ""
+	}
+	return *a.NodeID
+}
+
 // GetOwner returns the Owner field.
 func (a *App) GetOwner() *User {
 	if a == nil {
@@ -3357,9 +3365,9 @@ func (i *Installation) GetAppID() int64 {
 }
 
 // GetCreatedAt returns the CreatedAt field if it's non-nil, zero value otherwise.
-func (i *Installation) GetCreatedAt() time.Time {
+func (i *Installation) GetCreatedAt() Timestamp {
 	if i == nil || i.CreatedAt == nil {
-		return time.Time{}
+		return Timestamp{}
 	}
 	return *i.CreatedAt
 }
@@ -3429,9 +3437,9 @@ func (i *Installation) GetTargetType() string {
 }
 
 // GetUpdatedAt returns the UpdatedAt field if it's non-nil, zero value otherwise.
-func (i *Installation) GetUpdatedAt() time.Time {
+func (i *Installation) GetUpdatedAt() Timestamp {
 	if i == nil || i.UpdatedAt == nil {
-		return time.Time{}
+		return Timestamp{}
 	}
 	return *i.UpdatedAt
 }
@@ -7900,6 +7908,14 @@ func (p *PushEventRepository) GetName() string {
 	return *p.Name
 }
 
+// GetNodeID returns the NodeID field if it's non-nil, zero value otherwise.
+func (p *PushEventRepository) GetNodeID() string {
+	if p == nil || p.NodeID == nil {
+		return ""
+	}
+	return *p.NodeID
+}
+
 // GetOpenIssuesCount returns the OpenIssuesCount field if it's non-nil, zero value otherwise.
 func (p *PushEventRepository) GetOpenIssuesCount() int {
 	if p == nil || p.OpenIssuesCount == nil {
@@ -8770,6 +8786,14 @@ func (r *Repository) GetNetworkCount() int {
 		return 0
 	}
 	return *r.NetworkCount
+}
+
+// GetNodeID returns the NodeID field if it's non-nil, zero value otherwise.
+func (r *Repository) GetNodeID() string {
+	if r == nil || r.NodeID == nil {
+		return ""
+	}
+	return *r.NodeID
 }
 
 // GetNotificationsURL returns the NotificationsURL field if it's non-nil, zero value otherwise.
@@ -11146,6 +11170,14 @@ func (u *User) GetName() string {
 		return ""
 	}
 	return *u.Name
+}
+
+// GetNodeID returns the NodeID field if it's non-nil, zero value otherwise.
+func (u *User) GetNodeID() string {
+	if u == nil || u.NodeID == nil {
+		return ""
+	}
+	return *u.NodeID
 }
 
 // GetOrganizationsURL returns the OrganizationsURL field if it's non-nil, zero value otherwise.
