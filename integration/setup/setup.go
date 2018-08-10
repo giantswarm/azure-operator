@@ -100,7 +100,7 @@ func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) 
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallResource("apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
+		err = h.InstallResource(h.TargetNamespace()+"-apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
 		if err != nil {
 			return microerror.Mask(err)
 		}
