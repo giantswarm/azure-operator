@@ -1,12 +1,15 @@
 package vnetpeeringcleaner
 
 import (
+	"context"
+
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
 )
 
 const (
@@ -54,13 +57,24 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-// getVnetPeeringClient return an azure client to interact with
-// VirtualNetworkPeering resources.
-func (r *Resource) getVnetPeeringClient() (*network.VirtualNetworkPeeringsClient, error) {
+// getVnetPeeringHostClient return an azure client to interact with
+// VirtualNetworkPeering resources in the host cluster account.
+func (r *Resource) getVnetPeeringHostClient() (*network.VirtualNetworkPeeringsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	return azureClients.VnetPeeringClient, nil
+}
+
+// getVnetPeeringGuestClient return an azure client to interact with
+// VirtualNetworkPeering resources in the guest cluster account.
+func (r *Resource) getVnetPeeringGuestClient(ctx context.Context) (*network.VirtualNetworkPeeringsClient, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cc.AzureClientSet.VnetPeeringClient, nil
 }
