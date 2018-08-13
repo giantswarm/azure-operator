@@ -1,4 +1,4 @@
-package v_3_4_0
+package v_3_5_0
 
 const MasterTemplate = `#cloud-config
 users:
@@ -606,6 +606,9 @@ write_files:
       server-name-hash-max-size: "1024"
       server-tokens: "false"
       worker-processes: "4"
+      # Disables setting a 'Strict-Transport-Security' header, which can be harmful.
+      # See https://github.com/kubernetes/ingress-nginx/issues/549#issuecomment-291894246
+      hsts: "false"
 - path: /srv/ingress-controller-dep.yml
   owner: root
   permissions: 0644
@@ -700,6 +703,8 @@ write_files:
               hostPort: 80
             - containerPort: 443
               hostPort: 443
+{{- end }}
+{{- if not .DisableIngressControllerService }}
 - path: /srv/ingress-controller-svc.yml
   owner: root
   permissions: 0644
@@ -1437,6 +1442,8 @@ write_files:
       MANIFESTS="${MANIFESTS} default-backend-svc.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-cm.yml"
       MANIFESTS="${MANIFESTS} ingress-controller-dep.yml"
+      {{ end -}}
+      {{ if not .DisableIngressControllerService -}}
       MANIFESTS="${MANIFESTS} ingress-controller-svc.yml"
       {{ end -}}
 
