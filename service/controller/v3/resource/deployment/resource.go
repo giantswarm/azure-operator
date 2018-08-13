@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -95,12 +95,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", *d.Properties.ProvisioningState))
+		s := *d.Properties.ProvisioningState
 
-		if !key.IsSucceededProvisioningState(*d.Properties.ProvisioningState) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+
+		if !key.IsSucceededProvisioningState(s) {
 			r.debugger.LogFailedDeployment(ctx, d)
 		}
-		if !key.IsFinalProvisioningState(*d.Properties.ProvisioningState) {
+		if !key.IsFinalProvisioningState(s) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
@@ -198,6 +200,13 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), deploymentName)
 	if err != nil {
 		return "", microerror.Mask(err)
+	}
+
+	if d.Properties.Outputs == nil {
+		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("cannot get output value '%s' of deployment '%s'", outputName, deploymentName))
+		r.logger.LogCtx(ctx, "level", "warning", "message", "assuming deployment is in failed state")
+		r.logger.LogCtx(ctx, "level", "warning", "message", "canceling controller context enrichment")
+		return "", nil
 	}
 
 	m, err := key.ToMap(d.Properties.Outputs)

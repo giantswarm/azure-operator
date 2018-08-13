@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_4_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_5_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -91,11 +91,7 @@ func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 }
 
 func (we *workerExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		DiskName: "sdc",
-	}
-
-	asset, err := renderDockerMountUnit(params)
+	asset, err := renderDockerMountUnit()
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
@@ -105,7 +101,7 @@ func (we *workerExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, er
 
 func (we *workerExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
 	params := diskParams{
-		DiskName: "sdc",
+		LUNID: "0",
 	}
 
 	asset, err := renderDockerDiskFormatUnit(params)

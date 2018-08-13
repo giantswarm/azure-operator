@@ -8,7 +8,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/cenkalti/backoff"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/e2etemplates/pkg/e2etemplates"
 	"github.com/giantswarm/microerror"
@@ -135,7 +135,7 @@ func installCredential(h *framework.Host) error {
 
 		return nil
 	}
-	b := framework.NewExponentialBackoff(framework.ShortMaxWait, framework.ShortMaxInterval)
+	b := backoff.NewExponential(framework.ShortMaxWait, framework.ShortMaxInterval)
 	n := func(err error, delay time.Duration) {
 		log.Println("level", "debug", "message", err.Error())
 	}

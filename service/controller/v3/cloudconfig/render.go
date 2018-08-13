@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_4_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_5_0"
 	"github.com/giantswarm/microerror"
 )
 
@@ -123,7 +123,9 @@ func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, 
 	return file, nil
 }
 
-func renderEtcdMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+func renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
+	params := struct{}{}
+
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: etcdMountUnitTemplate,
 		Name:         etcdMountUnitName,
@@ -165,7 +167,9 @@ func renderEtcdDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, erro
 	return asset, nil
 }
 
-func renderDockerMountUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
+func renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
+	params := struct{}{}
+
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: dockerMountUnitTemplate,
 		Name:         dockerMountUnitName,

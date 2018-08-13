@@ -3,7 +3,7 @@ package vpngateway
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
@@ -49,17 +49,17 @@ func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alp
 func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) connections {
 	var change connections
 
-	if needUpdate(current.Host, desired.Host) {
+	if needsUpdate(current.Host, desired.Host) {
 		change = desired
 	}
-	if needUpdate(current.Guest, desired.Guest) {
+	if needsUpdate(current.Guest, desired.Guest) {
 		change = desired
 	}
 
 	return change
 }
 
-// needUpdate determine if current needs to be updated in order to comply with
+// needsUpdate determine if current needs to be updated in order to comply with
 // desired. Following properties are examined:
 //
 //     Name
@@ -68,7 +68,7 @@ func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1al
 //     VirtualNetworkGatewayConnectionPropertiesFormat.ConnectionType
 //     VirtualNetworkGatewayConnectionPropertiesFormat.ConnectionStatus
 //
-func needUpdate(current, desired network.VirtualNetworkGatewayConnection) bool {
+func needsUpdate(current, desired network.VirtualNetworkGatewayConnection) bool {
 	if desired.Name == nil ||
 		desired.VirtualNetworkGatewayConnectionPropertiesFormat == nil ||
 		desired.VirtualNetworkGatewayConnectionPropertiesFormat.VirtualNetworkGateway1 == nil ||

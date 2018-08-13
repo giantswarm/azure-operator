@@ -3,11 +3,11 @@ package vpngateway
 import (
 	"testing"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2017-09-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 )
 
-func TestNeedUpdate(t *testing.T) {
+func Test_Resource_VPNGateway_needsUpdate(t *testing.T) {
 	testCases := []struct {
 		description      string
 		current, desired network.VirtualNetworkGatewayConnection
@@ -241,7 +241,7 @@ func TestNeedUpdate(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			ok := needUpdate(tc.current, tc.desired)
+			ok := needsUpdate(tc.current, tc.desired)
 			if ok != tc.expected {
 				t.Errorf("expected %t, got %t", tc.expected, ok)
 			}
