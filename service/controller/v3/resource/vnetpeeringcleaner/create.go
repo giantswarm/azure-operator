@@ -13,7 +13,7 @@ import (
 // EnsureCreated ensure that vnetpeering resource are deleted,
 // since they are no longer in use in this version.
 func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deletion of vnetpeerings")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deletion of host vnetpeering")
 
 	azureConfig, err := key.ToCustomObject(obj)
 	if err != nil {
@@ -34,6 +34,8 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured delete host vnetpeering")
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deletion of guest vnetpeering")
 
 	vnetPeeringGuestClient, err := r.getVnetPeeringGuestClient(ctx)
 	if err != nil {
