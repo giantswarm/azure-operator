@@ -33,7 +33,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured delete host vnetpeering")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deletion of host vnetpeering")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deletion of guest vnetpeering")
 
@@ -50,7 +50,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured delete guest vnetpeering")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deletion of guest vnetpeering")
 
 	return nil
 }
