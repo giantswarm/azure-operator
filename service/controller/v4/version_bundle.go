@@ -55,6 +55,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "1.1.0",
+		Version: "1.2.0",
 	}
 }
