@@ -3,6 +3,7 @@ package vnetpeeringcleaner
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -19,7 +20,7 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	vnetPeeringClient, err := r.getVnetPeeringClient()
+	vnetPeeringHostClient, err := r.getVnetPeeringHostClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -27,6 +28,34 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	resourceGroupName := r.azure.HostCluster.ResourceGroup
 	vnetName := r.azure.HostCluster.ResourceGroup
 	peeringName := key.ResourceGroupName(azureConfig)
+	err = deletePeering(ctx, vnetPeeringHostClient, resourceGroupName, vnetName, peeringName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deletion of host vnetpeering")
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deletion of guest vnetpeering")
+
+	vnetPeeringGuestClient, err := r.getVnetPeeringGuestClient(ctx)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	resourceGroupName = key.ResourceGroupName(azureConfig)
+	vnetName = key.VnetName(azureConfig)
+	peeringName = r.azure.HostCluster.ResourceGroup
+	err = deletePeering(ctx, vnetPeeringGuestClient, resourceGroupName, vnetName, peeringName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deletion of guest vnetpeering")
+
+	return nil
+}
+
+func deletePeering(ctx context.Context, vnetPeeringClient *network.VirtualNetworkPeeringsClient, resourceGroupName, vnetName, peeringName string) error {
 	respFuture, err := vnetPeeringClient.Delete(ctx, resourceGroupName, vnetName, peeringName)
 	if err != nil {
 		return microerror.Mask(err)
@@ -39,8 +68,6 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured delete host vnetpeering")
 
 	return nil
 }
