@@ -1,4 +1,4 @@
-package v3
+package v4
 
 import (
 	"context"
@@ -19,22 +19,22 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v3/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
-	"github.com/giantswarm/azure-operator/service/controller/v3/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/v3/key"
-	"github.com/giantswarm/azure-operator/service/controller/v3/network"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/endpoints"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/instance"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/migration"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/namespace"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/resourcegroup"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/service"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/vnetpeeringcleaner"
-	"github.com/giantswarm/azure-operator/service/controller/v3/resource/vpngateway"
+	"github.com/giantswarm/azure-operator/service/controller/v4/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v4/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v4/credential"
+	"github.com/giantswarm/azure-operator/service/controller/v4/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/v4/key"
+	"github.com/giantswarm/azure-operator/service/controller/v4/network"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/deployment"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/endpoints"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/instance"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/migration"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/namespace"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/service"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vnetpeeringcleaner"
+	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vpngateway"
 )
 
 type ResourceSetConfig struct {

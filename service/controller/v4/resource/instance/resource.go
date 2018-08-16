@@ -11,11 +11,11 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v3/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v4/controllercontext"
 )
 
 const (
-	Name = "instancev3"
+	Name = "instancev4"
 )
 
 type Config struct {
