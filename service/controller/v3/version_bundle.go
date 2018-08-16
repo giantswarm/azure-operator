@@ -27,6 +27,16 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Fixed Azure disk mounting.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Removed Azure Virtual network peering.",
+				Kind:        versionbundle.KindRemoved,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Added Azure VPN Gateway.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
