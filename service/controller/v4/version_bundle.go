@@ -9,22 +9,7 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "azure-operator",
-				Description: "Added CA public key into trusted user keys for SSO ssh.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Added support for status subresources for CRDs.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "azure-operator",
-				Description: "Added support for etcd monitoring.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "azure-operator",
-				Description: "Fixed Azure disk mounting.",
+				Description: "Add your changes here.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
@@ -55,6 +40,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "1.1.0",
+		Version: "1.2.0",
 	}
 }
