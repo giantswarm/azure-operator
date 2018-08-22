@@ -37,9 +37,13 @@ required = [
   branch = "master"
   name = "github.com/docker/distribution"
 
+[[override]]
+  branch = "getter"
+  name = "github.com/giantswarm/apiextensions"
+
 [[constraint]]
   branch = "master"
-  name = "github.com/giantswarm/apiextensions"
+  name = "github.com/giantswarm/backoff"
 
 [[override]]
   branch = "master"

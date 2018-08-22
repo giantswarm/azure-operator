@@ -123,8 +123,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:94d6e751bc99771396bf9e8693bbeb7eb84d6f6ae847af14b903f50f4c3ffe8a"
+  branch = "getter"
+  digest = "1:2e92e2543a4613c39b4c1092a98f9234dfe49e5b2fd8e9313d5029d6052328d1"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -137,7 +137,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "430b742e17c02f925ef9bc762499431309ec5407"
+  revision = "17ba075a2d9f8b136978b0a352666b87e0a61c4c"
 
 [[projects]]
   branch = "master"
@@ -189,11 +189,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4614e75da04b8ae8d3fa7a8b46ccfd1f6ed6bacfd49f43eae52e83392b81bd7f"
+  digest = "1:f7ae60209ba785a98a5b27ed43ec9778f74e6c7623b5ff3d86f900f66c86fac1"
   name = "github.com/giantswarm/microerror"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5e90ca360be950271aab9e13e45dd75293932580"
+  revision = "5f43dec2d9e50a4c7c869d17a8f0a9dba2edc177"
 
 [[projects]]
   branch = "master"
@@ -1083,9 +1083,9 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/cenkalti/backoff",
     "github.com/docker/distribution/reference",
     "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1",
+    "github.com/giantswarm/backoff",
     "github.com/giantswarm/errors/guest",
     "github.com/giantswarm/guestcluster",
     "github.com/giantswarm/microerror",
@@ -1097,6 +1097,7 @@
     "k8s.io/apimachinery/pkg/api/meta",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/types",
+    "k8s.io/apimachinery/pkg/watch",
     "k8s.io/apiserver/pkg/endpoints/request",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",

@@ -4,16 +4,16 @@ import (
 	"context"
 	"encoding/json"
 	"strings"
+	"time"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/guestcluster"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 )
 
@@ -21,7 +21,8 @@ const (
 	Name = "status"
 )
 
-type Config struct {
+type ResourceConfig struct {
+	BackOffFactory      func() backoff.Interface
 	ClusterEndpointFunc func(v interface{}) (string, error)
 	ClusterIDFunc       func(v interface{}) (string, error)
 	ClusterStatusFunc   func(v interface{}) (providerv1alpha1.StatusCluster, error)
@@ -46,10 +47,10 @@ type Config struct {
 	//
 	RESTClient               rest.Interface
 	VersionBundleVersionFunc func(v interface{}) (string, error)
-	Watcher                  func(opts metav1.ListOptions) (watch.Interface, error)
 }
 
 type Resource struct {
+	backOffFactory           func() backoff.Interface
 	clusterEndpointFunc      func(v interface{}) (string, error)
 	clusterIDFunc            func(v interface{}) (string, error)
 	clusterStatusFunc        func(v interface{}) (providerv1alpha1.StatusCluster, error)
@@ -58,10 +59,12 @@ type Resource struct {
 	nodeCountFunc            func(v interface{}) (int, error)
 	restClient               rest.Interface
 	versionBundleVersionFunc func(v interface{}) (string, error)
-	watcher                  func(opts metav1.ListOptions) (watch.Interface, error)
 }
 
-func New(config Config) (*Resource, error) {
+func NewResource(config ResourceConfig) (*Resource, error) {
+	if config.BackOffFactory == nil {
+		config.BackOffFactory = func() backoff.Interface { return backoff.NewMaxRetries(3, 1*time.Second) }
+	}
 	if config.ClusterEndpointFunc == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterEndpointFunc must not be empty", config)
 	}
@@ -86,11 +89,9 @@ func New(config Config) (*Resource, error) {
 	if config.VersionBundleVersionFunc == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VersionBundleVersionFunc must not be empty", config)
 	}
-	if config.Watcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Watcher must not be empty", config)
-	}
 
 	r := &Resource{
+		backOffFactory:           config.BackOffFactory,
 		clusterEndpointFunc:      config.ClusterEndpointFunc,
 		clusterIDFunc:            config.ClusterIDFunc,
 		clusterStatusFunc:        config.ClusterStatusFunc,
@@ -99,20 +100,6 @@ func New(config Config) (*Resource, error) {
 		nodeCountFunc:            config.NodeCountFunc,
 		restClient:               config.RESTClient,
 		versionBundleVersionFunc: config.VersionBundleVersionFunc,
-		watcher:                  config.Watcher,
-	}
-
-	{
-		r.logger.Log("level", "debug", "message", "registering collector")
-
-		err := prometheus.Register(prometheus.Collector(r))
-		if IsAlreadyRegisteredError(err) {
-			r.logger.Log("level", "debug", "message", "collector already registered")
-		} else if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		r.logger.Log("level", "debug", "message", "registered collector")
 	}
 
 	return r, nil

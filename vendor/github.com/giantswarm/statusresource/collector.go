@@ -1,12 +1,17 @@
 package statusresource
 
 import (
+	"context"
 	"fmt"
+	"sync"
 	"time"
 
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/watch"
 )
 
 var (
@@ -21,12 +26,57 @@ var (
 	)
 )
 
-func (r *Resource) Collect(ch chan<- prometheus.Metric) {
-	r.logger.Log("level", "debug", "message", "start collecting metrics")
+type CollectorConfig struct {
+	Logger  micrologger.Logger
+	Watcher func(opts metav1.ListOptions) (watch.Interface, error)
+}
 
-	watcher, err := r.watcher(metav1.ListOptions{})
+type Collector struct {
+	logger  micrologger.Logger
+	watcher func(opts metav1.ListOptions) (watch.Interface, error)
+
+	bootOnce sync.Once
+}
+
+func NewCollector(config CollectorConfig) (*Collector, error) {
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.Watcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Watcher must not be empty", config)
+	}
+
+	c := &Collector{
+		logger:  config.Logger,
+		watcher: config.Watcher,
+
+		bootOnce: sync.Once{},
+	}
+
+	return c, nil
+}
+
+func (c *Collector) Boot(ctx context.Context) {
+	c.bootOnce.Do(func() {
+		c.logger.LogCtx(ctx, "level", "debug", "message", "registering collector")
+
+		err := prometheus.Register(prometheus.Collector(c))
+		if IsAlreadyRegisteredError(err) {
+			c.logger.LogCtx(ctx, "level", "debug", "message", "collector already registered")
+		} else if err != nil {
+			c.logger.Log("level", "error", "message", "registering collector failed", "stack", fmt.Sprintf("%#v", err))
+		} else {
+			c.logger.LogCtx(ctx, "level", "debug", "message", "registered collector")
+		}
+	})
+}
+
+func (c *Collector) Collect(ch chan<- prometheus.Metric) {
+	c.logger.Log("level", "debug", "message", "start collecting metrics")
+
+	watcher, err := c.watcher(metav1.ListOptions{})
 	if err != nil {
-		r.logger.Log("level", "error", "message", "watching CRs failed", "stack", fmt.Sprintf("%#v", err))
+		c.logger.Log("level", "error", "message", "watching CRs failed", "stack", fmt.Sprintf("%#v", err))
 		return
 	}
 	defer watcher.Stop()
@@ -38,64 +88,60 @@ func (r *Resource) Collect(ch chan<- prometheus.Metric) {
 				continue
 			}
 
-			fmt.Printf("\n")
-			fmt.Printf("%#v\n", event.Object)
-			fmt.Printf("\n")
-
 			m, err := meta.Accessor(event.Object)
 			if err != nil {
-				r.logger.Log("level", "error", "message", "getting meta accessor failed", "stack", fmt.Sprintf("%#v", err))
+				c.logger.Log("level", "error", "message", "getting meta accessor failed", "stack", fmt.Sprintf("%#v", err))
 				break
 			}
-			s, err := r.clusterStatusFunc(event.Object)
-			if err != nil {
-				r.logger.Log("level", "error", "message", "getting cluster status failed", "stack", fmt.Sprintf("%#v", err))
+			p, ok := event.Object.(Provider)
+			if !ok {
+				c.logger.Log("level", "error", "message", "asserting Provider interface failed")
 				break
 			}
 
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
-				float64(boolToInt(s.HasCreatingCondition())),
+				float64(boolToInt(p.ClusterStatus().HasCreatingCondition())),
 				m.GetName(),
 				"Creating",
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
-				float64(boolToInt(s.HasCreatedCondition())),
+				float64(boolToInt(p.ClusterStatus().HasCreatedCondition())),
 				m.GetName(),
 				"Created",
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
-				float64(boolToInt(s.HasUpdatingCondition())),
+				float64(boolToInt(p.ClusterStatus().HasUpdatingCondition())),
 				m.GetName(),
 				"Updating",
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
-				float64(boolToInt(s.HasUpdatedCondition())),
+				float64(boolToInt(p.ClusterStatus().HasUpdatedCondition())),
 				m.GetName(),
 				"Updated",
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
-				float64(boolToInt(s.HasDeletingCondition())),
+				float64(boolToInt(p.ClusterStatus().HasDeletingCondition())),
 				m.GetName(),
 				"Deleting",
 			)
 		case <-time.After(time.Second):
-			r.logger.Log("level", "debug", "message", "finished collecting metrics")
+			c.logger.Log("level", "debug", "message", "finished collecting metrics")
 			return
 		}
 	}
 }
 
-func (r *Resource) Describe(ch chan<- *prometheus.Desc) {
+func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- clusterStatusDescription
 }
 
