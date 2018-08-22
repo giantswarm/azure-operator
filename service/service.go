@@ -216,6 +216,6 @@ func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		s.clusterController.Boot()
 
-		s.statusResourceCollector.Boot()
+		s.statusResourceCollector.Boot(ctx)
 	})
 }
