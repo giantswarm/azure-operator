@@ -166,6 +166,8 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithCreatingCondition(),
 			})
+
+			r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("setting %#q status condition", providerv1alpha1.StatusClusterTypeCreating))
 		}
 	}
 
@@ -183,6 +185,8 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithCreatedCondition(),
 			})
+
+			r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("setting %#q status condition", providerv1alpha1.StatusClusterTypeCreated))
 		}
 	}
 
@@ -200,6 +204,8 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithUpdatingCondition(),
 			})
+
+			r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("setting %#q status condition", providerv1alpha1.StatusClusterTypeUpdating))
 		}
 	}
 
@@ -218,6 +224,8 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithUpdatedCondition(),
 			})
+
+			r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("setting %#q status condition", providerv1alpha1.StatusClusterTypeUpdated))
 		}
 	}
 

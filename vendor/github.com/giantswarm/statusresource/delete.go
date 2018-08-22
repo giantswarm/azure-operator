@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/cenkalti/backoff"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
@@ -110,6 +111,8 @@ func (r *Resource) computeDeleteEventPatches(ctx context.Context, obj interface{
 				Path:  "/status/cluster/conditions",
 				Value: clusterStatus.WithDeletingCondition(),
 			})
+
+			r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("setting %#q status condition", providerv1alpha1.StatusClusterTypeDeleting))
 		}
 	}
 

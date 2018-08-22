@@ -3,12 +3,14 @@ package statusresource
 import (
 	"context"
 	"encoding/json"
+	"fmt"
 	"strings"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/guestcluster"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
@@ -94,6 +96,19 @@ func New(config Config) (*Resource, error) {
 		versionBundleVersionFunc: config.VersionBundleVersionFunc,
 	}
 
+	{
+		r.logger.Log("level", "debug", "message", "registering collector")
+
+		err := prometheus.Register(prometheus.Collector(r))
+		if IsAlreadyRegisteredError(err) {
+			r.logger.Log("level", "debug", "message", "collector already registered")
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		r.logger.Log("level", "debug", "message", "registered collector")
+	}
+
 	return r, nil
 }
 
@@ -113,6 +128,12 @@ func (r *Resource) applyPatches(ctx context.Context, accessor metav1.Object, pat
 		return microerror.Mask(err)
 	}
 	p := ensureSelfLink(accessor.GetSelfLink())
+
+	fmt.Printf("\n")
+	fmt.Printf("%#v\n", p)
+	fmt.Printf("%#v\n", r.restClient.APIVersion())
+	fmt.Printf("%#v\n", r.restClient.Patch(types.JSONPatchType).AbsPath(p).URL())
+	fmt.Printf("\n")
 
 	err = r.restClient.Patch(types.JSONPatchType).AbsPath(p).Body(b).Do().Error()
 	if errors.IsConflict(err) {

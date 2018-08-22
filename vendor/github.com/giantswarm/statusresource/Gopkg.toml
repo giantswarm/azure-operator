@@ -58,6 +58,10 @@ required = [
   name = "github.com/giantswarm/micrologger"
 
 [[constraint]]
+  branch = "master"
+  name = "github.com/prometheus/client_golang"
+
+[[constraint]]
   name = "k8s.io/apiserver"
   version = "kubernetes-1.10.4"
 
