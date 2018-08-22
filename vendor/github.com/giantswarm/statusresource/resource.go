@@ -3,7 +3,6 @@ package statusresource
 import (
 	"context"
 	"encoding/json"
-	"fmt"
 	"strings"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -14,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/rest"
 )
 
@@ -46,6 +46,7 @@ type Config struct {
 	//
 	RESTClient               rest.Interface
 	VersionBundleVersionFunc func(v interface{}) (string, error)
+	Watcher                  func(opts metav1.ListOptions) (watch.Interface, error)
 }
 
 type Resource struct {
@@ -57,6 +58,7 @@ type Resource struct {
 	nodeCountFunc            func(v interface{}) (int, error)
 	restClient               rest.Interface
 	versionBundleVersionFunc func(v interface{}) (string, error)
+	watcher                  func(opts metav1.ListOptions) (watch.Interface, error)
 }
 
 func New(config Config) (*Resource, error) {
@@ -84,6 +86,9 @@ func New(config Config) (*Resource, error) {
 	if config.VersionBundleVersionFunc == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.VersionBundleVersionFunc must not be empty", config)
 	}
+	if config.Watcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Watcher must not be empty", config)
+	}
 
 	r := &Resource{
 		clusterEndpointFunc:      config.ClusterEndpointFunc,
@@ -94,6 +99,7 @@ func New(config Config) (*Resource, error) {
 		nodeCountFunc:            config.NodeCountFunc,
 		restClient:               config.RESTClient,
 		versionBundleVersionFunc: config.VersionBundleVersionFunc,
+		watcher:                  config.Watcher,
 	}
 
 	{
@@ -128,12 +134,6 @@ func (r *Resource) applyPatches(ctx context.Context, accessor metav1.Object, pat
 		return microerror.Mask(err)
 	}
 	p := ensureSelfLink(accessor.GetSelfLink())
-
-	fmt.Printf("\n")
-	fmt.Printf("%#v\n", p)
-	fmt.Printf("%#v\n", r.restClient.APIVersion())
-	fmt.Printf("%#v\n", r.restClient.Patch(types.JSONPatchType).AbsPath(p).URL())
-	fmt.Printf("\n")
 
 	err = r.restClient.Patch(types.JSONPatchType).AbsPath(p).Body(b).Do().Error()
 	if errors.IsConflict(err) {

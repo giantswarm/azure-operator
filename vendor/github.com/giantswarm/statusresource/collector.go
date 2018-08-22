@@ -6,6 +6,7 @@ import (
 
 	"github.com/prometheus/client_golang/prometheus"
 	"k8s.io/apimachinery/pkg/api/meta"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 var (
@@ -23,7 +24,7 @@ var (
 func (r *Resource) Collect(ch chan<- prometheus.Metric) {
 	r.logger.Log("level", "debug", "message", "start collecting metrics")
 
-	watcher, err := r.restClient.Get().Watch()
+	watcher, err := r.watcher(metav1.ListOptions{})
 	if err != nil {
 		r.logger.Log("level", "error", "message", "watching CRs failed", "stack", fmt.Sprintf("%#v", err))
 		return
