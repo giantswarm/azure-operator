@@ -214,8 +214,8 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		s.clusterController.Boot()
+		go s.clusterController.Boot()
 
-		s.statusResourceCollector.Boot(ctx)
+		go s.statusResourceCollector.Boot(ctx)
 	})
 }
