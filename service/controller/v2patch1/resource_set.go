@@ -127,7 +127,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:                   config.Logger,
 			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
 			VersionBundleVersionFunc: key.ToVersionBundleVersion,
-			Watcher:                  config.G8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
 		}
 
 		statusResource, err = statusresource.New(c)

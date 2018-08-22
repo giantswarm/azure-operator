@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8srestconfig"
+	"github.com/giantswarm/statusresource"
 	"github.com/spf13/viper"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
@@ -38,8 +39,9 @@ type Service struct {
 	Healthz *healthz.Service
 	Version *version.Service
 
-	bootOnce          sync.Once
-	clusterController *controller.Cluster
+	bootOnce                sync.Once
+	clusterController       *controller.Cluster
+	statusResourceCollector *statusresource.Collector
 }
 
 // New creates a new configured service object.
@@ -169,18 +171,32 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var statusResourceCollector *statusresource.Collector
+	{
+		c := statusresource.CollectorConfig{
+			Logger:  config.Logger,
+			Watcher: g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
+		}
+
+		statusResourceCollector, err = statusresource.NewCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var versionService *version.Service
 	{
-		versionConfig := version.DefaultConfig()
-		versionConfig.Description = config.Description
-		versionConfig.GitCommit = config.GitCommit
-		versionConfig.Name = config.ProjectName
-		versionConfig.Source = config.Source
-		versionConfig.VersionBundles = NewVersionBundles()
+		c := version.Config{
+			Description:    config.Description,
+			GitCommit:      config.GitCommit,
+			Name:           config.ProjectName,
+			Source:         config.Source,
+			VersionBundles: NewVersionBundles(),
+		}
 
-		versionService, err = version.New(versionConfig)
+		versionService, err = version.New(c)
 		if err != nil {
-			return nil, microerror.Maskf(err, "version.New")
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -188,8 +204,9 @@ func New(config Config) (*Service, error) {
 		Healthz: healthzService,
 		Version: versionService,
 
-		bootOnce:          sync.Once{},
-		clusterController: clusterController,
+		bootOnce:                sync.Once{},
+		clusterController:       clusterController,
+		statusResourceCollector: statusResourceCollector,
 	}
 
 	return newService, nil
@@ -198,5 +215,7 @@ func New(config Config) (*Service, error) {
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		s.clusterController.Boot()
+
+		s.statusResourceCollector.Boot()
 	})
 }
