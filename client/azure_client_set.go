@@ -192,7 +192,7 @@ func newVirtualMachineScaleSetsClient(config *clientConfig) *compute.VirtualMach
 }
 
 func newVirtualMachineScaleSetVMsClient(config *clientConfig) *compute.VirtualMachineScaleSetVMsClient {
-	c := compute.NewVirtualMachineScaleSetVMsClient(config.subscriptionID)
+	c := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &c
