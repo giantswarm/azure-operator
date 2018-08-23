@@ -123,7 +123,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "getter"
+  branch = "master"
   digest = "1:2e92e2543a4613c39b4c1092a98f9234dfe49e5b2fd8e9313d5029d6052328d1"
   name = "github.com/giantswarm/apiextensions"
   packages = [
@@ -137,7 +137,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "17ba075a2d9f8b136978b0a352666b87e0a61c4c"
+  revision = "427166f178767c667affce0e68a88c0f77df4972"
 
 [[projects]]
   branch = "master"
@@ -405,11 +405,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fc92ffba85459d43915ec30fd7e19d34405eead6aaa1080b6d8722aebc385489"
+  digest = "1:807c9fe0be3321781b6922b6659ad7f938864b475d581c802f46de981ad48e3b"
   name = "github.com/prometheus/client_golang"
   packages = ["prometheus"]
   pruneopts = "UT"
-  revision = "29e6500a95d6ab373cae935d8615527ca38be74f"
+  revision = "ebce7d0078c0109cbb4de5d50a2b799920b0f0d0"
 
 [[projects]]
   branch = "master"

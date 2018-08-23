@@ -6,6 +6,7 @@ import (
 	"sync"
 	"time"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
@@ -104,35 +105,35 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 				prometheus.GaugeValue,
 				float64(boolToInt(p.ClusterStatus().HasCreatingCondition())),
 				m.GetName(),
-				"Creating",
+				providerv1alpha1.StatusClusterTypeCreating,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
 				float64(boolToInt(p.ClusterStatus().HasCreatedCondition())),
 				m.GetName(),
-				"Created",
+				providerv1alpha1.StatusClusterTypeCreated,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
 				float64(boolToInt(p.ClusterStatus().HasUpdatingCondition())),
 				m.GetName(),
-				"Updating",
+				providerv1alpha1.StatusClusterTypeUpdating,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
 				float64(boolToInt(p.ClusterStatus().HasUpdatedCondition())),
 				m.GetName(),
-				"Updated",
+				providerv1alpha1.StatusClusterTypeUpdated,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				clusterStatusDescription,
 				prometheus.GaugeValue,
 				float64(boolToInt(p.ClusterStatus().HasDeletingCondition())),
 				m.GetName(),
-				"Deleting",
+				providerv1alpha1.StatusClusterTypeDeleting,
 			)
 		case <-time.After(time.Second):
 			c.logger.Log("level", "debug", "message", "finished collecting metrics")

@@ -49,7 +49,7 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:ef75d3a21f98cf695e2aed8fdfda5164e9d58088f464e6955089475d899c0c4f"
+  digest = "1:4b8c5a44e60eb19bde17b695055e3db83636a5f17c5d33f7a6288c4670f9f381"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -84,8 +84,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "505514fea21d88b799f6fbef79fb0c0b108e3437"
-  version = "v1.15.17"
+  revision = "e21dfa909e14ce93f88f1f3505764bc4952a11be"
+  version = "v1.15.18"
 
 [[projects]]
   branch = "master"
@@ -217,7 +217,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "getter"
+  branch = "master"
   digest = "1:2e92e2543a4613c39b4c1092a98f9234dfe49e5b2fd8e9313d5029d6052328d1"
   name = "github.com/giantswarm/apiextensions"
   packages = [
@@ -231,7 +231,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "17ba075a2d9f8b136978b0a352666b87e0a61c4c"
+  revision = "427166f178767c667affce0e68a88c0f77df4972"
 
 [[projects]]
   branch = "master"
@@ -453,12 +453,12 @@
   revision = "8c249db3ebb52660916c620688b96ff0b345da13"
 
 [[projects]]
-  branch = "metrics"
-  digest = "1:3eedda0275a188dcb1e7ba83ea0369caa428375203aa1af06ff90500e20b0730"
+  branch = "master"
+  digest = "1:78533689c8c1876d8d4805e0f8da2cdeeaeec2aa8295b7ac8d6713a3130fb76e"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
   pruneopts = "UT"
-  revision = "f08eeadbdbf0ff80d84371513a33812e9378f249"
+  revision = "a11d285a88c64543d7c6c227e42f81cdb5a91ee6"
 
 [[projects]]
   branch = "master"
@@ -469,12 +469,12 @@
   revision = "57f08180f2122ea89e07d16e841f83020ef07577"
 
 [[projects]]
-  digest = "1:fe8a03a8222d5b913f256972933d26d24ad7c8286692a42943bc01633cc8fce3"
+  digest = "1:5abd6a22805b1919f6a6bca0ae58b13cef1f3412812f38569978f43ef02743d4"
   name = "github.com/go-ini/ini"
   packages = ["."]
   pruneopts = "UT"
-  revision = "358ee7663966325963d4e8b2e1fbd570c5195153"
-  version = "v1.38.1"
+  revision = "5cf292cae48347c2490ac1a58fe36735fb78df7e"
+  version = "v1.38.2"
 
 [[projects]]
   digest = "1:83a37f3bd4ccd13469775ef771e943e6c7cfaba6926decff6c83135e56512f08"
@@ -773,14 +773,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:ed1a64bcb3238906389a41812d4a1dc7b0e7774eecbfc675e9f524dabce32e5c"
+  digest = "1:39a12a429383c8ec9d13c762d386825f84ff4c981aef416cf598923a510756c8"
   name = "github.com/prometheus/client_golang"
   packages = [
     "prometheus",
     "prometheus/promhttp",
   ]
   pruneopts = "UT"
-  revision = "29e6500a95d6ab373cae935d8615527ca38be74f"
+  revision = "ebce7d0078c0109cbb4de5d50a2b799920b0f0d0"
 
 [[projects]]
   branch = "master"
