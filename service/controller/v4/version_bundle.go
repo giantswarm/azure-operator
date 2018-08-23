@@ -8,8 +8,8 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "cloudconfig",
-				Description: "Kubernetes (hyperkube) updated with version 1.11.1.",
+				Component:   "kubernetes",
+				Description: "Updated to 1.11.1.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
@@ -40,6 +40,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "1.2.0",
+		Version: "2.0.0",
 	}
 }
