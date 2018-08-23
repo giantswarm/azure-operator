@@ -307,7 +307,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []controller.Resource{
-		//statusResource,
+		statusResource,
 		migrationResource,
 		namespaceResource,
 		serviceResource,
