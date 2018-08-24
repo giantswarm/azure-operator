@@ -18,19 +18,6 @@ type Config struct {
 func New(config Config) (*Endpoint, error) {
 	var err error
 
-	var versionEndpoint *versionendpoint.Endpoint
-	{
-		c := versionendpoint.Config{
-			Logger:  config.Logger,
-			Service: config.Service.Version,
-		}
-
-		versionEndpoint, err = versionendpoint.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var healthzEndpoint *healthz.Endpoint
 	{
 		c := healthz.Config{
@@ -41,6 +28,19 @@ func New(config Config) (*Endpoint, error) {
 		}
 
 		healthzEndpoint, err = healthz.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var versionEndpoint *versionendpoint.Endpoint
+	{
+		c := versionendpoint.Config{
+			Logger:  config.Logger,
+			Service: config.Service.Version,
+		}
+
+		versionEndpoint, err = versionendpoint.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
