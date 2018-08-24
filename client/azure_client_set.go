@@ -2,6 +2,7 @@ package client
 
 import (
 	"errors"
+	"fmt"
 	"net/http"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
@@ -227,6 +228,7 @@ func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
 		env = azure.PublicCloud
 	} else {
 		env, err = azure.EnvironmentFromName(cloudName)
+		fmt.Printf("Management URL: %s", env.ManagementPortalURL)
 		if err != nil {
 			return env, microerror.Maskf(err, "parsing Azure environment")
 		}
