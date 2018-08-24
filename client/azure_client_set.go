@@ -228,7 +228,7 @@ func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
 		env = azure.PublicCloud
 	} else {
 		env, err = azure.EnvironmentFromName(cloudName)
-		fmt.Printf("Management URL: %s", env.ManagementPortalURL)
+		fmt.Printf("Management Env: %v", env)
 		if err != nil {
 			return env, microerror.Maskf(err, "parsing Azure environment")
 		}
