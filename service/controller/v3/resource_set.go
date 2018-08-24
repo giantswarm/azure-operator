@@ -371,6 +371,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+		guestAzureClientSetConfig.Cloud = config.Azure.Cloud
 
 		azureClients, err := client.NewAzureClientSet(*guestAzureClientSetConfig)
 		if err != nil {
