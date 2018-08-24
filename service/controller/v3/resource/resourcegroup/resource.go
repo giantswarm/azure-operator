@@ -2,6 +2,7 @@ package resourcegroup
 
 import (
 	"context"
+	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -102,6 +103,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion")
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("BaseURI: %s", groupsClient.BaseURI))
 
 	_, err = groupsClient.Get(ctx, key.ClusterID(customObject))
 	if IsNotFound(err) {
