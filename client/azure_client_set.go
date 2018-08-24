@@ -138,6 +138,7 @@ func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
 func newGroupsClient(config *clientConfig) *resources.GroupsClient {
 	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c.BaseURI = config.resourceManagerEndpoint
 
 	return &c
 }
