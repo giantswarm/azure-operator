@@ -189,7 +189,7 @@
         "capacity":"[int(parameters('vmssVmCount'))]"
       },
       "identity":{
-        "type":"systemAssigned"
+        "type": "[if(parameters('vmssMSIEnabled'), 'systemAssigned', 'None')]"
       },
       "properties":{
         "overprovision":"[parameters('vmssOverprovision')]",
