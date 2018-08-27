@@ -2,6 +2,7 @@ package vnetpeeringcleaner
 
 import (
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
 )
 
@@ -31,10 +32,13 @@ func IsNotFound(err error) bool {
 	}
 
 	{
-		dErr, ok := c.(autorest.DetailedError)
+		dErr, ok := err.(autorest.DetailedError)
 		if ok {
-			if dErr.StatusCode == 404 {
-				return true
+			rErr, ok := (dErr.Original).(*azure.RequestError)
+			if ok {
+				if rErr.ServiceError.Code == "ResourceNotFound" {
+					return true
+				}
 			}
 		}
 	}

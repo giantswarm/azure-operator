@@ -5,8 +5,6 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
-	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -61,19 +59,10 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 func (r Resource) deletePeering(ctx context.Context, vnetPeeringClient *network.VirtualNetworkPeeringsClient, resourceGroupName, vnetName, peeringName string) error {
 	respFuture, err := vnetPeeringClient.Delete(ctx, resourceGroupName, vnetName, peeringName)
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting", "error", fmt.Sprintf("%#v", err))
-	if err != nil {
-		dErr, ok := err.(autorest.DetailedError)
-		if ok {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "IsNotFound", "dErr", fmt.Sprintf("%#v", dErr))
-			rErr, ok := dErr.Original.(azure.RequestError)
-			if ok {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "IsNotFound", "rErr", fmt.Sprintf("%#v", rErr))
-				if rErr.StatusCode == 404 {
-					r.logger.LogCtx(ctx, "level", "debug", "message", "IsNotFound")
-				}
-			}
-		}
-
+	if IsNotFound(err) {
+		// fall through
+		r.logger.LogCtx(ctx, "level", "debug", "message", "IsNotFound", "error", fmt.Sprintf("%#v", err))
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
