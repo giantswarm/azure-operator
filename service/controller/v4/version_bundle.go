@@ -12,6 +12,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Updated to 1.11.1.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "cloudconfig",
+				Description: "Calico updated to version 3.2.0",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{

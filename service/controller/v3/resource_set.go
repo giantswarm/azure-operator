@@ -120,7 +120,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var statusResource controller.Resource
 	{
-		c := statusresource.Config{
+		c := statusresource.ResourceConfig{
 			ClusterEndpointFunc:      key.ToClusterEndpoint,
 			ClusterIDFunc:            key.ToClusterID,
 			ClusterStatusFunc:        key.ToClusterStatus,
@@ -131,7 +131,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			VersionBundleVersionFunc: key.ToVersionBundleVersion,
 		}
 
-		statusResource, err = statusresource.New(c)
+		statusResource, err = statusresource.NewResource(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -371,6 +371,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		guestAzureClientSetConfig.Cloud = config.Azure.Cloud
 
 		azureClients, err := client.NewAzureClientSet(*guestAzureClientSetConfig)
 		if err != nil {
