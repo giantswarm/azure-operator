@@ -206,8 +206,6 @@ func (c *ClusterState) InstallTestApp() error {
 
 	// Install the e2e app chart in the guest cluster.
 	{
-		c.logger.Log("level", "debug", "message", "installing e2e-app for testing")
-
 		tarballPath, err := apprClient.PullChartTarball(ChartName, ChartChannel)
 		if err != nil {
 			return microerror.Mask(err)

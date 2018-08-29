@@ -56,8 +56,14 @@ func (f *Forwarder) ForwardPort(config TunnelConfig) (*Tunnel, error) {
 		Name(config.PodName).
 		SubResource("portforward").URL()
 
+	fmt.Printf("30\n")
+	fmt.Printf("%#v\n", u)
+	fmt.Printf("%#v\n", config.Namespace)
+	fmt.Printf("%#v\n", config.PodName)
+
 	transport, upgrader, err := spdy.RoundTripperFor(f.restConfig)
 	if err != nil {
+		fmt.Printf("31\n")
 		return nil, microerror.Mask(err)
 	}
 
@@ -65,8 +71,10 @@ func (f *Forwarder) ForwardPort(config TunnelConfig) (*Tunnel, error) {
 
 	tunnel, err := newTunnel(dialer, config)
 	if err != nil {
+		fmt.Printf("32\n")
 		return nil, microerror.Mask(err)
 	}
+	fmt.Printf("33\n")
 	return tunnel, err
 }
 
@@ -91,11 +99,15 @@ func (t *Tunnel) Close() error {
 }
 
 func newTunnel(dialer httpstream.Dialer, config TunnelConfig) (*Tunnel, error) {
+	fmt.Printf("33\n")
 	local, err := getAvailablePort()
 	if err != nil {
+		fmt.Printf("34\n")
 		return nil, microerror.Mask(err)
 	}
 
+	fmt.Printf("34\n")
+	fmt.Printf("%#v\n", local)
 	tunnel := &Tunnel{
 		TunnelConfig: config,
 		Local:        local,
@@ -113,9 +125,11 @@ func newTunnel(dialer httpstream.Dialer, config TunnelConfig) (*Tunnel, error) {
 	flag.CommandLine.Parse([]string{})
 	pf, err := portforward.New(dialer, ports, tunnel.stopChan, readyChan, out, out)
 	if err != nil {
+		fmt.Printf("35\n")
 		return nil, microerror.Mask(err)
 	}
 
+	fmt.Printf("36\n")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	errChan := make(chan error)
@@ -128,8 +142,10 @@ func newTunnel(dialer httpstream.Dialer, config TunnelConfig) (*Tunnel, error) {
 
 	select {
 	case err = <-errChan:
+		fmt.Printf("37\n")
 		return nil, microerror.Mask(err)
 	case <-pf.Ready:
+		fmt.Printf("38\n")
 		return tunnel, nil
 	}
 }
