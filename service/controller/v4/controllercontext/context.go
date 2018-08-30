@@ -7,7 +7,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/v4/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/v4/network"
+	"github.com/giantswarm/azure-operator/service/network"
 )
 
 type contextKey string
