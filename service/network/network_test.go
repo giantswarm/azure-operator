@@ -1,14 +1,11 @@
 package network
 
 import (
-	"context"
 	"fmt"
 	"net"
 	"testing"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/ipam"
-	"github.com/giantswarm/microerror"
 )
 
 func TestComputeSubnets(t *testing.T) {
@@ -36,36 +33,22 @@ func TestComputeSubnets(t *testing.T) {
 			Subnets{},
 			ipam.IsSpaceExhausted,
 		},
-		{
-			"cidr invalid",
-			"",
-			Subnets{},
-			func(e error) bool { _, ok := microerror.Cause(e).(*net.ParseError); return ok },
-		},
 	}
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			cr := providerv1alpha1.AzureConfig{
-				Spec: providerv1alpha1.AzureConfigSpec{
-					Azure: providerv1alpha1.AzureConfigSpecAzure{
-						VirtualNetwork: providerv1alpha1.AzureConfigSpecAzureVirtualNetwork{
-							CIDR: tc.cidr,
-						},
-					},
-				},
+			_, vnet, err := net.ParseCIDR(tc.cidr)
+			if err != nil {
+				t.Fatalf("expected %#v got %#v", nil, err)
 			}
-
-			ctx := context.TODO()
-			subnets, err := ComputeFromCR(ctx, cr)
-
+			subnets, err := Compute(*vnet)
 			if tc.errorMatcher != nil {
 				if !tc.errorMatcher(err) {
-					t.Fatalf("error does not match > %v", err)
+					t.Fatalf("expected %#v got %#v", true, false)
 				}
 			} else {
 				if err != nil {
-					t.Fatalf("unexpected error > %v", err)
+					t.Fatalf("expected %#v got %#v", nil, err)
 				}
 
 				printSubnets := func(s Subnets) string {
