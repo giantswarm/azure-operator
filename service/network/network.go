@@ -1,14 +1,10 @@
 package network
 
 import (
-	"context"
 	"net"
 
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
-
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v4/key"
 )
 
 const (
@@ -18,22 +14,6 @@ const (
 
 	ipv4MaskSize = 32
 )
-
-// ComputeFromCR computes subnets using network found in CR.
-func ComputeFromCR(ctx context.Context, azureConfig providerv1alpha1.AzureConfig) (*Subnets, error) {
-	vnetCIDR := key.VnetCIDR(azureConfig)
-	_, vnet, err := net.ParseCIDR(vnetCIDR)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	subnets, err := Compute(*vnet)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return subnets, nil
-}
 
 // Compute computes subnets within network.
 //
