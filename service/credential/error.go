@@ -10,3 +10,12 @@ var invalidConfig = &microerror.Error{
 func IsInvalidConfigFoundError(err error) bool {
 	return microerror.Cause(err) == invalidConfig
 }
+
+var missingValueError = &microerror.Error{
+	Kind: "missingValueError",
+}
+
+// IsMissingValue asserts missingValueError.
+func IsMissingValue(err error) bool {
+	return microerror.Cause(err) == missingValueError
+}
