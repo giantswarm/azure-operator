@@ -17,6 +17,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
+	"github.com/giantswarm/azure-operator/service/collector"
 	"github.com/giantswarm/azure-operator/service/controller"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/healthz"
@@ -41,6 +42,7 @@ type Service struct {
 
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
+	operatorCollector       *collector.Collector
 	statusResourceCollector *statusresource.Collector
 }
 
@@ -171,6 +173,19 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var operatorCollector *collector.Collector
+	{
+		c := collector.Config{
+			Logger:  config.Logger,
+			Watcher: g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
+		}
+
+		operatorCollector, err = collector.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var statusResourceCollector *statusresource.Collector
 	{
 		c := statusresource.CollectorConfig{
@@ -200,22 +215,24 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	newService := &Service{
+	s := &Service{
 		Healthz: healthzService,
 		Version: versionService,
 
 		bootOnce:                sync.Once{},
 		clusterController:       clusterController,
+		operatorCollector:       operatorCollector,
 		statusResourceCollector: statusResourceCollector,
 	}
 
-	return newService, nil
+	return s, nil
 }
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		go s.clusterController.Boot()
 
+		go s.operatorCollector.Boot(ctx)
 		go s.statusResourceCollector.Boot(ctx)
 	})
 }
