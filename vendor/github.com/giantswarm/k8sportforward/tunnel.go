@@ -6,7 +6,6 @@ import (
 	"fmt"
 	"io/ioutil"
 	"net"
-	"net/http"
 	"strconv"
 
 	"github.com/giantswarm/microerror"
@@ -16,120 +15,43 @@ import (
 	"k8s.io/apimachinery/pkg/util/httpstream"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/portforward"
-	"k8s.io/client-go/transport/spdy"
 )
 
-type Config struct {
-	RestConfig *rest.Config
-}
+type tunnelConfig struct {
+	Dialer httpstream.Dialer
 
-type Forwarder struct {
-	k8sClient  rest.Interface
-	restConfig *rest.Config
-}
-
-func New(config Config) (*Forwarder, error) {
-	if config.RestConfig == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.RestConfig must not be empty")
-	}
-
-	setConfigDefaults(config.RestConfig)
-
-	k8sClient, err := rest.RESTClientFor(config.RestConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return &Forwarder{
-		k8sClient:  k8sClient,
-		restConfig: config.RestConfig,
-	}, nil
-}
-
-// ForwardPort opens a tunnel to a kubernetes pod.
-func (f *Forwarder) ForwardPort(config TunnelConfig) (*Tunnel, error) {
-	// Build a url to the portforward endpoint.
-	// Example: http://localhost:8080/api/v1/namespaces/helm/pods/tiller-deploy-9itlq/portforward
-	u := f.k8sClient.Post().
-		Resource("pods").
-		Namespace(config.Namespace).
-		Name(config.PodName).
-		SubResource("portforward").URL()
-
-	fmt.Printf("30\n")
-	fmt.Printf("%#v\n", u)
-	fmt.Printf("%#v\n", config.Namespace)
-	fmt.Printf("%#v\n", config.PodName)
-
-	transport, upgrader, err := spdy.RoundTripperFor(f.restConfig)
-	if err != nil {
-		fmt.Printf("31\n")
-		return nil, microerror.Mask(err)
-	}
-
-	dialer := spdy.NewDialer(upgrader, &http.Client{Transport: transport}, "POST", u)
-
-	tunnel, err := newTunnel(dialer, config)
-	if err != nil {
-		fmt.Printf("32\n")
-		return nil, microerror.Mask(err)
-	}
-	fmt.Printf("33\n")
-	return tunnel, err
-}
-
-type TunnelConfig struct {
-	Remote    int
-	Namespace string
-	PodName   string
+	RemotePort int
 }
 
 type Tunnel struct {
-	TunnelConfig
-	Local int
-
-	stopChan chan struct{}
+	localPort int
+	stopChan  chan struct{}
 }
 
-// Close disconnects a tunnel connection. It always returns nil error to fulfil
-// io.Closer interface.
-func (t *Tunnel) Close() error {
-	close(t.stopChan)
-	return nil
-}
-
-func newTunnel(dialer httpstream.Dialer, config TunnelConfig) (*Tunnel, error) {
-	fmt.Printf("33\n")
-	local, err := getAvailablePort()
+func newTunnel(config tunnelConfig) (*Tunnel, error) {
+	p, err := getAvailablePort()
 	if err != nil {
-		fmt.Printf("34\n")
 		return nil, microerror.Mask(err)
 	}
 
-	fmt.Printf("34\n")
-	fmt.Printf("%#v\n", local)
-	tunnel := &Tunnel{
-		TunnelConfig: config,
-		Local:        local,
-
-		stopChan: make(chan struct{}, 1),
+	t := &Tunnel{
+		localPort: p,
+		stopChan:  make(chan struct{}, 1),
 	}
 
 	out := ioutil.Discard
-	ports := []string{fmt.Sprintf("%d:%d", tunnel.Local, tunnel.Remote)}
+	ports := []string{fmt.Sprintf("%d:%d", t.localPort, config.RemotePort)}
 	readyChan := make(chan struct{}, 1)
 
 	// next line will prevent `ERROR: logging before flag.Parse:` errors from
 	// glog (used by k8s' apimachinery package) see
 	// https://github.com/kubernetes/kubernetes/issues/17162#issuecomment-225596212
 	flag.CommandLine.Parse([]string{})
-	pf, err := portforward.New(dialer, ports, tunnel.stopChan, readyChan, out, out)
+	pf, err := portforward.New(config.Dialer, ports, t.stopChan, readyChan, out, out)
 	if err != nil {
-		fmt.Printf("35\n")
 		return nil, microerror.Mask(err)
 	}
 
-	fmt.Printf("36\n")
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
 	errChan := make(chan error)
@@ -142,12 +64,21 @@ func newTunnel(dialer httpstream.Dialer, config TunnelConfig) (*Tunnel, error) {
 
 	select {
 	case err = <-errChan:
-		fmt.Printf("37\n")
 		return nil, microerror.Mask(err)
 	case <-pf.Ready:
-		fmt.Printf("38\n")
-		return tunnel, nil
+		return t, nil
 	}
+}
+
+// Close disconnects a tunnel connection. It always returns nil error to fulfil
+// io.Closer interface.
+func (t *Tunnel) Close() error {
+	close(t.stopChan)
+	return nil
+}
+
+func (t *Tunnel) LocalAddress() string {
+	return fmt.Sprintf("127.0.0.1:%d", t.localPort)
 }
 
 func getAvailablePort() (int, error) {
@@ -165,10 +96,12 @@ func getAvailablePort() (int, error) {
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
-	return port, microerror.Mask(err)
+
+	return port, nil
 }
 
 // setConfigDefaults is copied and adjusted from client-go core/v1.
+// TODO what is different here? Why do we need it at all?
 func setConfigDefaults(config *rest.Config) error {
 	if config.GroupVersion == nil {
 		config.GroupVersion = &schema.GroupVersion{Group: "", Version: "v1"}

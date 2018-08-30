@@ -117,16 +117,13 @@ func (c *Client) DeleteRelease(releaseName string, options ...helmclient.DeleteO
 // As a first step, it checks if Tiller is already ready, in which case it
 // returns early.
 func (c *Client) EnsureTillerInstalled() error {
-	fmt.Printf("1\n")
 	// Check if Tiller is already present and return early if so.
 	{
 		t, err := c.newTunnel()
+		defer c.closeTunnel(t)
 		if err != nil {
-			fmt.Printf("2\n")
 			// fall through, we may need to create Tiller.
 		} else {
-			defer c.closeTunnel(t)
-			fmt.Printf("3\n")
 			err = c.newHelmClientFromTunnel(t).PingTiller()
 			if err == nil {
 				return nil
@@ -149,19 +146,15 @@ func (c *Client) EnsureTillerInstalled() error {
 
 		_, err := c.k8sClient.CoreV1().ServiceAccounts(n).Create(i)
 		if errors.IsAlreadyExists(err) {
-			fmt.Printf("4\n")
 			c.logger.Log("level", "debug", "message", fmt.Sprintf("serviceaccount %s creation failed", tillerPodName), "stack", fmt.Sprintf("%#v", err))
 			// fall through
 		} else if guest.IsAPINotAvailable(err) {
-			fmt.Printf("5\n")
 			return microerror.Maskf(guest.APINotAvailableError, err.Error())
 		} else if err != nil {
-			fmt.Printf("6\n")
 			return microerror.Mask(err)
 		}
 	}
 
-	fmt.Printf("7\n")
 	// Create the cluster role binding for tiller so it is allowed to do its job.
 	{
 		i := &rbacv1.ClusterRoleBinding{
@@ -188,11 +181,9 @@ func (c *Client) EnsureTillerInstalled() error {
 
 		_, err := c.k8sClient.RbacV1().ClusterRoleBindings().Create(i)
 		if errors.IsAlreadyExists(err) {
-			fmt.Printf("8\n")
 			c.logger.Log("level", "debug", "message", fmt.Sprintf("clusterrolebinding %s creation failed", tillerPodName), "stack", fmt.Sprintf("%#v", err))
 			// fall through
 		} else if err != nil {
-			fmt.Printf("9\n")
 			return microerror.Mask(err)
 		}
 	}
@@ -201,17 +192,16 @@ func (c *Client) EnsureTillerInstalled() error {
 	{
 		o := &installer.Options{
 			ImageSpec:      tillerImageSpec,
+			MaxHistory:     defaultMaxHistory,
 			Namespace:      c.tillerNamespace,
 			ServiceAccount: tillerPodName,
 		}
 
 		err := installer.Install(c.k8sClient, o)
 		if errors.IsAlreadyExists(err) {
-			fmt.Printf("10\n")
 			c.logger.Log("level", "debug", "message", "tiller deployment installation failed", "stack", fmt.Sprintf("%#v", err))
 			// fall through
 		} else if err != nil {
-			fmt.Printf("11\n")
 			return microerror.Mask(err)
 		}
 	}
@@ -225,44 +215,35 @@ func (c *Client) EnsureTillerInstalled() error {
 		var i int
 
 		o := func() error {
-			fmt.Printf("12\n")
 			t, err := c.newTunnel()
 			if err != nil {
-				fmt.Printf("13\n")
 				return microerror.Mask(err)
 			}
 			defer c.closeTunnel(t)
 
 			err = c.newHelmClientFromTunnel(t).PingTiller()
 			if err != nil {
-				fmt.Printf("14\n")
-				fmt.Printf("resetting error counter\n")
 				i = 0
 				return microerror.Mask(err)
 			}
 
 			i++
 			if i < 3 {
-				fmt.Printf("15\n")
-				fmt.Printf("error counter not sufficient\n")
 				return microerror.Maskf(executionFailedError, "failed pinging tiller")
 			}
 
 			return nil
 		}
-		b := backoff.NewExponential(1*time.Hour, 1*time.Minute)
+		b := backoff.NewExponential(2*time.Minute, 5*time.Second)
 		n := func(err error, delay time.Duration) {
-			fmt.Printf("16\n")
 			c.logger.Log("level", "debug", "message", "failed pinging tiller", "stack", fmt.Sprintf("%#v", err))
 		}
 
 		err := backoff.RetryNotify(o, b, n)
 		if err != nil {
-			fmt.Printf("17\n")
 			return microerror.Maskf(tillerInstallationFailedError, err.Error())
 		}
 
-		fmt.Printf("18\n")
 		c.logger.Log("level", "debug", "message", "succeeded pinging tiller")
 	}
 
@@ -537,7 +518,7 @@ func (c *Client) newHelmClientFromTunnel(t *k8sportforward.Tunnel) helmclient.In
 	}
 
 	return helmclient.NewClient(
-		helmclient.Host(newTunnelAddress(t)),
+		helmclient.Host(t.LocalAddress()),
 		helmclient.ConnectTimeout(5),
 	)
 }
@@ -545,47 +526,35 @@ func (c *Client) newHelmClientFromTunnel(t *k8sportforward.Tunnel) helmclient.In
 func (c *Client) newTunnel() (*k8sportforward.Tunnel, error) {
 	// In case a helm client is configured we do not need to create any port
 	// forwarding.
-	fmt.Printf("20\n")
 	if c.helmClient != nil {
-		fmt.Printf("21\n")
 		return nil, nil
 	}
 
 	podName, err := getPodName(c.k8sClient, tillerLabelSelector, c.tillerNamespace)
 	if err != nil {
-		fmt.Printf("22\n")
 		return nil, microerror.Mask(err)
 	}
 
-	fmt.Printf("23\n")
 	var forwarder *k8sportforward.Forwarder
 	{
-		c := k8sportforward.Config{
+		c := k8sportforward.ForwarderConfig{
 			RestConfig: c.restConfig,
 		}
-		forwarder, err = k8sportforward.New(c)
+
+		forwarder, err = k8sportforward.NewForwarder(c)
 		if err != nil {
-			fmt.Printf("24\n")
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	var tunnel *k8sportforward.Tunnel
 	{
-		c := k8sportforward.TunnelConfig{
-			Remote:    tillerPort,
-			Namespace: c.tillerNamespace,
-			PodName:   podName,
-		}
-
-		tunnel, err = forwarder.ForwardPort(c)
+		tunnel, err = forwarder.ForwardPort(c.tillerNamespace, podName, tillerPort)
 		if err != nil {
-			fmt.Printf("25\n")
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	fmt.Printf("26\n")
 	return tunnel, nil
 }
 
@@ -607,9 +576,4 @@ func getPodName(client kubernetes.Interface, labelSelector, namespace string) (s
 	pod := pods.Items[0]
 
 	return pod.Name, nil
-}
-
-// TODO remove when k8sportforward.Tunnel.Address() got implemented.
-func newTunnelAddress(t *k8sportforward.Tunnel) string {
-	return fmt.Sprintf("127.0.0.1:%d", t.Local)
 }
