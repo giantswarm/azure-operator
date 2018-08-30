@@ -22,7 +22,6 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v4/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v4/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v4/credential"
 	"github.com/giantswarm/azure-operator/service/controller/v4/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v4/key"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/deployment"
@@ -35,6 +34,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/service"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vnetpeeringcleaner"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vpngateway"
+	"github.com/giantswarm/azure-operator/service/credential"
 	"github.com/giantswarm/azure-operator/service/network"
 )
 
@@ -372,7 +372,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
+		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient, key.CredentialName(azureConfig), key.CredentialNamespace(azureConfig))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
