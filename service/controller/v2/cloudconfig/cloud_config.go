@@ -27,6 +27,7 @@ type Config struct {
 	Azure setting.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig client.AzureClientSetConfig
+	OIDC        setting.OIDC
 }
 
 type CloudConfig struct {
@@ -36,6 +37,7 @@ type CloudConfig struct {
 
 	azure       setting.Azure
 	azureConfig client.AzureClientSetConfig
+	OIDC        setting.OIDC
 }
 
 func New(config Config) (*CloudConfig, error) {
@@ -63,6 +65,7 @@ func New(config Config) (*CloudConfig, error) {
 
 		azure:       config.Azure,
 		azureConfig: config.AzureConfig,
+		OIDC:        config.OIDC,
 	}
 
 	return c, nil
@@ -79,6 +82,24 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 	// On Azure only master nodes access etcd, so it is locked down.
 	customObject.Spec.Cluster.Etcd.Domain = "127.0.0.1"
 
+	var k8sAPIExtraArgs []string
+	{
+		k8sAPIExtraArgs = append(k8sAPIExtraArgs, "--cloud-config=/etc/kubernetes/config/azure.yaml")
+
+		if c.OIDC.ClientID != "" {
+			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-client-id=%s", c.OIDC.ClientID))
+		}
+		if c.OIDC.IssuerURL != "" {
+			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-issuer-url=%s", c.OIDC.IssuerURL))
+		}
+		if c.OIDC.UsernameClaim != "" {
+			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-username-claim=%s", c.OIDC.UsernameClaim))
+		}
+		if c.OIDC.GroupsClaim != "" {
+			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-groups-claim=%s", c.OIDC.GroupsClaim))
+		}
+	}
+
 	params := k8scloudconfig.Params{
 		APIServerEncryptionKey:   apiserverEncryptionKey,
 		Cluster:                  customObject.Spec.Cluster,
@@ -88,26 +109,24 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{
 					HyperkubePodHostExtraMounts: []k8scloudconfig.HyperkubePodHostMount{
-						k8scloudconfig.HyperkubePodHostMount{
+						{
 							Name:     "k8s-config",
 							Path:     "/etc/kubernetes/config/",
 							ReadOnly: true,
 						},
-						k8scloudconfig.HyperkubePodHostMount{
+						{
 							Name:     "identity-settings",
 							Path:     "/var/lib/waagent/",
 							ReadOnly: true,
 						},
 					},
-					CommandExtraArgs: []string{
-						"--cloud-config=/etc/kubernetes/config/azure.yaml",
-					},
+					CommandExtraArgs: k8sAPIExtraArgs,
 				},
 			},
 			ControllerManager: k8scloudconfig.HyperkubeControllerManager{
 				Pod: k8scloudconfig.HyperkubePod{
 					HyperkubePodHostExtraMounts: []k8scloudconfig.HyperkubePodHostMount{
-						k8scloudconfig.HyperkubePodHostMount{
+						{
 							Name:     "identity-settings",
 							Path:     "/var/lib/waagent/",
 							ReadOnly: true,

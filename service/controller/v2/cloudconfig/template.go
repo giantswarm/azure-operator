@@ -4,8 +4,8 @@ const (
 	calicoAzureFileName       = "/srv/calico-azure.yaml"
 	calicoAzureFileOwner      = "root:root"
 	calicoAzureFilePermission = 0600
-	calicoAzureFileTemplate   = `# Calico Version v3.0.5
-# https://docs.projectcalico.org/v3.0/releases#v3.0.5
+	calicoAzureFileTemplate   = `# Calico Version v3.0.8
+# https://docs.projectcalico.org/v3.0/releases#v3.0.8
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
@@ -34,11 +34,6 @@ rules:
   - apiGroups: [""]
     resources:
       - services
-    verbs:
-      - get
-  - apiGroups: [""]
-    resources:
-      - endpoints
     verbs:
       - get
   - apiGroups: [""]
@@ -91,11 +86,11 @@ subjects:
 
 ---
 
-# Calico Version v3.0.5
-# https://docs.projectcalico.org/v3.0/releases#v3.0.5
+# Calico Version v3.0.8
+# https://docs.projectcalico.org/v3.0/releases#v3.0.8
 # This manifest includes the following component versions:
-#   calico/node:v3.0.5
-#   calico/cni:v2.0.4
+#   calico/node:v3.0.8
+#   calico/cni:v2.0.6
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -200,7 +195,7 @@ spec:
       hostNetwork: true
       serviceAccountName: calico-node
       containers:
-      - image: quay.io/calico/typha:v0.6.3
+      - image: quay.io/giantswarm/typha:v0.6.6
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -290,7 +285,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/calico/node:v3.0.5
+          image: quay.io/giantswarm/node:v3.0.8
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -321,7 +316,7 @@ spec:
               value: "{{ .CalicoCIDR }}"
             # Enable IPIP
             - name: CALICO_IPV4POOL_IPIP
-              value: "off"
+              value: "Always"
             # Typha support: controlled by the ConfigMap.
             - name: FELIX_TYPHAK8SSERVICENAME
               valueFrom:
@@ -365,7 +360,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/calico/cni:v2.0.4
+          image: quay.io/giantswarm/cni:v2.0.6
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -528,13 +523,17 @@ tenantId: {{ .TenantID }}
 subscriptionId: {{ .SubscriptionID }}
 resourceGroup: {{ .ResourceGroup }}
 location: {{ .Location }}
+{{- if not .UseManagedIdentityExtension }}
+aadClientId: {{ .AADClientID }}
+aadClientSecret: {{ .AADClientSecret }}
+{{- end}}
 primaryScaleSetName: {{ .PrimaryScaleSetName }}
 subnetName: {{ .SubnetName }}
 securityGroupName: {{ .SecurityGroupName }}
 vnetName: {{ .VnetName }}
 vmType: vmss
 routeTableName: {{ .RouteTableName }}
-useManagedIdentityExtension: true
+useManagedIdentityExtension: {{ .UseManagedIdentityExtension }}
 `
 )
 
@@ -672,16 +671,13 @@ spec:
   selector:
     k8s-app: nginx-ingress-controller
 `
-	ingressLBUnitName     = "k8s-ingress-loadbalancer.service"
+	ingressLBUnitName     = "k8s-addons-ingress-loadbalancer.service"
 	ingressLBUnitTemplate = `[Unit]
-Description=Script to create Kubernetes load balancer
-Wants=k8s-addons.service
-After=k8s-addons.service
+Description=Add Kubernetes load balancer manifest to addons
+ConditionPathExists=!/srv/k8s-ingress-loadbalancer.yaml.lock
 [Service]
 Type=oneshot
-Environment="KUBECTL=quay.io/giantswarm/docker-kubectl:8cabd75bacbcdad7ac5d85efc3ca90c2fabf023b"
-Environment="KUBECONFIG=/etc/kubernetes/config/addons-kubeconfig.yml"
-ExecStart=/bin/sh -c "/usr/bin/docker run -e KUBECONFIG=${KUBECONFIG} --net=host --rm -v /srv:/srv -v /etc/kubernetes:/etc/kubernetes $KUBECTL apply -f /srv/k8s-ingress-loadbalancer.yaml"
+ExecStart=/bin/sh -c "sed -i '/MANIFESTS=\"\"/a MANIFESTS=\"\$\{MANIFESTS\}\ k8s-ingress-loadbalancer.yaml\"' /opt/k8s-addons && touch /srv/k8s-ingress-loadbalancer.yaml.lock"
 [Install]
 WantedBy=multi-user.target
 `

@@ -4,8 +4,9 @@ import (
 	"context"
 	"fmt"
 
-	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-02-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -18,6 +19,12 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "deploymentv2"
+)
+
+const (
+	mainDeploymentName = "cluster-main-template"
+	masterVersionsKey  = "masterVersionBundleVersions"
+	workerVersionsKey  = "workerVersionBundleVersions"
 )
 
 type Config struct {
@@ -83,25 +90,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-	resourceGroupName := key.ClusterID(customObject)
-	mainDeployment, err := r.newMainDeployment(customObject)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	newDeployment := azureresource.Deployment{
-		Properties: &azureresource.DeploymentProperties{
-			Mode:       azureresource.Incremental,
-			Parameters: &mainDeployment.Parameters,
-			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(mainDeployment.TemplateURI),
-				ContentVersion: to.StringPtr(mainDeployment.TemplateContentVersion),
-			},
-		},
-	}
+	var deployment azureresource.Deployment
 
-	d, err := deploymentsClient.Get(ctx, resourceGroupName, mainDeployment.Name)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), mainDeploymentName)
 	if IsNotFound(err) {
-		// fall through
+		params := map[string]interface{}{
+			"initialProvisioning": "Yes",
+		}
+		deployment, err = r.newDeployment(customObject, params)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
@@ -113,9 +112,36 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			return nil
 		}
+
+		params := map[string]interface{}{
+			"initialProvisioning": "No",
+		}
+
+		allMasterInstances, err := r.allInstances(ctx, customObject, key.MasterVMSSName)
+		if IsScaleSetNotFound(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else {
+			params[masterVersionsKey] = toVersionValue(allMasterInstances, key.VersionBundleVersion(customObject))
+		}
+
+		allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
+		if IsScaleSetNotFound(err) {
+			// fall through
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else {
+			params[workerVersionsKey] = toVersionValue(allWorkerInstances, key.VersionBundleVersion(customObject))
+		}
+
+		deployment, err = r.newDeployment(customObject, params)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	_, err = deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeployment.Name, newDeployment)
+	_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -136,6 +162,30 @@ func (r *Resource) Name() string {
 	return Name
 }
 
+func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
+
+	c, err := r.getVMsClient()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	g := key.ResourceGroupName(customObject)
+	s := deploymentNameFunc(customObject)
+	result, err := c.List(ctx, g, s, "", "", "")
+	if IsScaleSetNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", deploymentNameFunc(customObject)))
+
+		return nil, microerror.Mask(scaleSetNotFoundError)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
+
+	return result.Values(), nil
+}
+
 func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
@@ -145,56 +195,21 @@ func (r *Resource) getDeploymentsClient() (*azureresource.DeploymentsClient, err
 	return azureClients.DeploymentsClient, nil
 }
 
-func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) ([]deployment, error) {
-	currentDeployments, err := toDeployments(currentState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	desiredDeployments, err := toDeployments(desiredState)
+func (r *Resource) getVMsClient() (*compute.VirtualMachineScaleSetVMsClient, error) {
+	cs, err := client.NewAzureClientSet(r.azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	var deploymentsToCreate []deployment
-
-	for _, desiredDeployment := range desiredDeployments {
-		if !existsDeploymentByName(currentDeployments, desiredDeployment.Name) {
-			deploymentsToCreate = append(deploymentsToCreate, desiredDeployment)
-		}
-	}
-
-	return deploymentsToCreate, nil
+	return cs.VirtualMachineScaleSetVMsClient, nil
 }
 
-func existsDeploymentByName(list []deployment, name string) bool {
-	for _, d := range list {
-		if d.Name == name {
-			return true
-		}
+func toVersionValue(list []compute.VirtualMachineScaleSetVM, version string) map[string]string {
+	m := map[string]string{}
+
+	for _, v := range list {
+		m[*v.InstanceID] = version
 	}
 
-	return false
-}
-
-func getDeploymentByName(list []deployment, name string) (deployment, error) {
-	for _, d := range list {
-		if d.Name == name {
-			return d, nil
-		}
-	}
-
-	return deployment{}, microerror.Maskf(notFoundError, name)
-}
-
-func toDeployments(v interface{}) ([]deployment, error) {
-	if v == nil {
-		return []deployment{}, nil
-	}
-
-	deployments, ok := v.([]deployment)
-	if !ok {
-		return []deployment{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", []deployment{}, v)
-	}
-
-	return deployments, nil
+	return m
 }

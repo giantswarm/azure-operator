@@ -1,11 +1,11 @@
 package framework
 
 import (
-	"os"
+	"fmt"
 	"time"
 
-	"github.com/cenkalti/backoff"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"k8s.io/api/core/v1"
@@ -25,6 +25,9 @@ const (
 
 type GuestConfig struct {
 	Logger micrologger.Logger
+
+	ClusterID    string
+	CommonDomain string
 }
 
 type Guest struct {
@@ -33,11 +36,21 @@ type Guest struct {
 	g8sClient  versioned.Interface
 	k8sClient  kubernetes.Interface
 	restConfig *rest.Config
+
+	clusterID    string
+	commonDomain string
 }
 
 func NewGuest(config GuestConfig) (*Guest, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
+	if config.ClusterID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", config)
+	}
+	if config.CommonDomain == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CommonDomain must not be empty", config)
 	}
 
 	g := &Guest{
@@ -46,6 +59,9 @@ func NewGuest(config GuestConfig) (*Guest, error) {
 		g8sClient:  nil,
 		k8sClient:  nil,
 		restConfig: nil,
+
+		clusterID:    config.ClusterID,
+		commonDomain: config.CommonDomain,
 	}
 
 	return g, nil
@@ -90,14 +106,14 @@ func (g *Guest) Initialize() error {
 	var guestK8sClient kubernetes.Interface
 	var guestRestConfig *rest.Config
 	{
-		n := os.ExpandEnv("${CLUSTER_NAME}-api")
+		n := fmt.Sprintf("%s-api", g.clusterID)
 		s, err := hostK8sClient.CoreV1().Secrets("default").Get(n, metav1.GetOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
 		guestRestConfig = &rest.Config{
-			Host: os.ExpandEnv("https://api.${CLUSTER_NAME}.k8s.${COMMON_DOMAIN}"),
+			Host: fmt.Sprintf("https://api.%s.k8s.%s", g.clusterID, g.commonDomain),
 			TLSClientConfig: rest.TLSClientConfig{
 				CAData:   s.Data["ca"],
 				CertData: s.Data["crt"],
@@ -155,7 +171,7 @@ func (g *Guest) WaitForAPIDown() error {
 
 		return microerror.Maskf(waitError, "k8s API is still up")
 	}
-	b := NewExponentialBackoff(ShortMaxWait, ShortMaxInterval)
+	b := backoff.NewConstant(LongMaxWait, ShortMaxInterval)
 	n := func(err error, delay time.Duration) {
 		g.logger.Log("level", "debug", "message", err.Error())
 	}
@@ -181,7 +197,7 @@ func (g *Guest) WaitForAPIUp() error {
 
 		return nil
 	}
-	b := NewExponentialBackoff(LongMaxWait, LongMaxInterval)
+	b := backoff.NewConstant(LongMaxWait, LongMaxInterval)
 	n := func(err error, delay time.Duration) {
 		g.logger.Log("level", "debug", "message", err.Error())
 	}
@@ -235,7 +251,7 @@ func (g *Guest) WaitForNodesUp(numberOfNodes int) error {
 
 		return nil
 	}
-	b := NewExponentialBackoff(LongMaxWait, LongMaxInterval)
+	b := backoff.NewConstant(LongMaxWait, LongMaxInterval)
 	n := func(err error, delay time.Duration) {
 		g.logger.Log("level", "debug", "message", err.Error())
 	}

@@ -3,7 +3,6 @@ package v1
 import (
 	"fmt"
 
-	"github.com/cenkalti/backoff"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/client-go/kubernetes"
 
@@ -26,10 +25,6 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/service"
 	"github.com/giantswarm/azure-operator/service/controller/v1/resource/vnetpeering"
-)
-
-const (
-	ResourceRetries uint64 = 3
 )
 
 type ResourceSetConfig struct {
@@ -264,8 +259,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	{
 		c := retryresource.WrapConfig{
-			BackOffFactory: func() backoff.BackOff { return backoff.WithMaxTries(backoff.NewExponentialBackOff(), ResourceRetries) },
-			Logger:         config.Logger,
+			Logger: config.Logger,
 		}
 
 		resources, err = retryresource.Wrap(resources, c)

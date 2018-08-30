@@ -1,6 +1,8 @@
 package controller
 
 import (
+	"time"
+
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -15,6 +17,9 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v1"
 	"github.com/giantswarm/azure-operator/service/controller/v2"
+	"github.com/giantswarm/azure-operator/service/controller/v2patch1"
+	"github.com/giantswarm/azure-operator/service/controller/v3"
+	"github.com/giantswarm/azure-operator/service/controller/v4"
 )
 
 type ClusterConfig struct {
@@ -27,6 +32,8 @@ type ClusterConfig struct {
 	Azure           setting.Azure
 	AzureConfig     client.AzureClientSetConfig
 	ProjectName     string
+	OIDC            setting.OIDC
+	SSOPublicKey    string
 	TemplateVersion string
 }
 
@@ -61,7 +68,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Watcher: config.G8sClient.ProviderV1alpha1().AzureConfigs(""),
 
 			RateWait:     informer.DefaultRateWait,
-			ResyncPeriod: informer.DefaultResyncPeriod,
+			ResyncPeriod: 3 * time.Minute,
 		}
 
 		newInformer, err = informer.New(c)
@@ -93,6 +100,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var v2ResourceSet *controller.ResourceSet
 	{
 		c := v2.ResourceSetConfig{
+			G8sClient: config.G8sClient,
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
@@ -100,6 +108,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			AzureConfig:      config.AzureConfig,
 			InstallationName: config.InstallationName,
 			ProjectName:      config.ProjectName,
+			OIDC:             config.OIDC,
 			TemplateVersion:  config.TemplateVersion,
 		}
 
@@ -109,18 +118,66 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var resourceRouter *controller.ResourceRouter
+	var v2Patch1ResourceSet *controller.ResourceSet
 	{
-		c := controller.ResourceRouterConfig{
-			Logger: config.Logger,
+		c := v2patch1.ResourceSetConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
 
-			ResourceSets: []*controller.ResourceSet{
-				v1ResourceSet,
-				v2ResourceSet,
-			},
+			Azure:            config.Azure,
+			AzureConfig:      config.AzureConfig,
+			InstallationName: config.InstallationName,
+			ProjectName:      config.ProjectName,
+			OIDC:             config.OIDC,
+			TemplateVersion:  config.TemplateVersion,
 		}
 
-		resourceRouter, err = controller.NewResourceRouter(c)
+		v2Patch1ResourceSet, err = v2patch1.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var v3ResourceSet *controller.ResourceSet
+	{
+		c := v3.ResourceSetConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			Azure: config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v3ResourceSet, err = v3.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var v4ResourceSet *controller.ResourceSet
+	{
+		c := v4.ResourceSetConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			Azure: config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v4ResourceSet, err = v4.NewResourceSet(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -129,12 +186,18 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var operatorkitController *controller.Controller
 	{
 		c := controller.Config{
-			CRD:            v1alpha1.NewAzureConfigCRD(),
-			CRDClient:      crdClient,
-			Informer:       newInformer,
-			Logger:         config.Logger,
-			ResourceRouter: resourceRouter,
-			RESTClient:     config.G8sClient.ProviderV1alpha1().RESTClient(),
+			CRD:       v1alpha1.NewAzureConfigCRD(),
+			CRDClient: crdClient,
+			Informer:  newInformer,
+			Logger:    config.Logger,
+			ResourceSets: []*controller.ResourceSet{
+				v1ResourceSet,
+				v2ResourceSet,
+				v2Patch1ResourceSet,
+				v3ResourceSet,
+				v4ResourceSet,
+			},
+			RESTClient: config.G8sClient.ProviderV1alpha1().RESTClient(),
 
 			Name: config.ProjectName,
 		}

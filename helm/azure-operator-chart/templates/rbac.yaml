@@ -10,17 +10,29 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - core.giantswarm.io
+    resources:
+      - drainerconfigs
+    verbs:
+      - "*"
+  - apiGroups:
       - provider.giantswarm.io
     resources:
       - azureconfigs
     verbs:
       - get
       - list
-      - watch
-      - create
-      - update
       - patch
-      - delete
+      - update
+      - watch
+  - apiGroups:
+      - provider.giantswarm.io
+    resources:
+      - azureconfigs/status
+    verbs:
+      - create
+      - patch
+      - update
   - apiGroups:
       - ""
     resources:

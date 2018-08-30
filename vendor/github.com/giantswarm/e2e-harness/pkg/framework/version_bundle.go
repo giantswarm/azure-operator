@@ -18,11 +18,21 @@ const (
 	defaultRepo  = "installations"
 )
 
+// VBVParams holds information which we can use to query  versionbundle
+// version information from the installations repository.
 type VBVParams struct {
+	// Component is the name of an authority inside a versionbundle IndexRelease.
+	// e.g. aws-operator
 	Component string
-	Provider  string
-	Token     string
-	VType     string
+	// Provider is the provider of a versionbundle IndexRelease.
+	// This can be aws, azure or kvm.
+	Provider string
+	// Token is a Github token which is authorized to read from the installations
+	// repository.
+	Token string
+	// VType is the version type of a versionbundle IndexRelease which can be
+	// either wip or active.
+	VType string
 }
 
 var logger micrologger.Logger
@@ -36,7 +46,6 @@ func GetVersionBundleVersion(params *VBVParams) (string, error) {
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	logger.Log("level", "debug", "message", fmt.Sprintf("Tested version %q", params.VType))
 
 	content, err := getContent(params.Provider, params.Token)
 	if err != nil {
@@ -48,7 +57,9 @@ func GetVersionBundleVersion(params *VBVParams) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	logger.Log("level", "debug", fmt.Sprintf("Version Bundle Version %q", output))
+	logger.Log("level", "debug", "message", fmt.Sprintf("tested version '%s'", params.VType))
+	logger.Log("level", "debug", "message", fmt.Sprintf("version bundle version '%s'", output))
+
 	return output, nil
 }
 
@@ -57,7 +68,7 @@ func GetAuthorities(params *VBVParams) ([]versionbundle.Authority, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	logger.Log("level", "debug", "message", fmt.Sprintf("Tested version %q", params.VType))
+	logger.Log("level", "debug", "message", fmt.Sprintf("tested version '%s'", params.VType))
 
 	content, err := getContent(params.Provider, params.Token)
 	if err != nil {
@@ -68,6 +79,7 @@ func GetAuthorities(params *VBVParams) ([]versionbundle.Authority, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+
 	return authorities, nil
 }
 
@@ -107,7 +119,7 @@ func checkType(vType string) error {
 		}
 	}
 	if !isValid {
-		return fmt.Errorf("%q is not a valid version bundle version type", vType)
+		return fmt.Errorf("'%s' is not a valid version bundle version type", vType)
 	}
 
 	return nil

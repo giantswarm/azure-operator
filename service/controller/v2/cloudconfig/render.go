@@ -213,7 +213,7 @@ func renderIngressLBUnit() (k8scloudconfig.UnitAsset, error) {
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: ingressLBUnitTemplate,
 		Name:         ingressLBUnitName,
-		Enable:       true,
+		Enable:       false,
 		Command:      "start",
 	}
 

@@ -5,6 +5,8 @@ package template
 var AzureOperatorChartValues = `Installation:
   V1:
     Guest:
+      SSH:
+        SSOPublicKey: 'test'
       Kubernetes:
         API:
           Auth:
@@ -22,6 +24,9 @@ var AzureOperatorChartValues = `Installation:
           CIDR: "10.0.0.0/16"
           ResourceGroup: "godsmack"
           VirtualNetwork: "godsmack"
+          VirtualNetworkGateway: "godsmack-vpn-gateway"
+        MSI:
+          Enabled: true
         Location: ${AZURE_LOCATION}
     Secret:
       AzureOperator:

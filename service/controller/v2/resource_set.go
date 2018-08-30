@@ -2,15 +2,19 @@ package v2
 
 import (
 	"fmt"
+	"time"
 
+	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/certs"
+	"github.com/giantswarm/guestcluster"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
 	"github.com/giantswarm/operatorkit/controller/resource/metricsresource"
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
+	"github.com/giantswarm/statusresource"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -27,6 +31,7 @@ import (
 )
 
 type ResourceSetConfig struct {
+	G8sClient versioned.Interface
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
@@ -34,26 +39,47 @@ type ResourceSetConfig struct {
 	AzureConfig      client.AzureClientSetConfig
 	InstallationName string
 	ProjectName      string
+	OIDC             setting.OIDC
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
 	TemplateVersion string
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
 	var err error
 
-	var certsSearcher *certs.Searcher
+	var certsSearcher certs.Interface
 	{
 		c := certs.Config{
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
 		}
 
 		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var guestCluster guestcluster.Interface
+	{
+		c := guestcluster.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+
+			CertID: certs.APICert,
+		}
+
+		guestCluster, err = guestcluster.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -81,9 +107,29 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:       config.Azure,
 			AzureConfig: config.AzureConfig,
+			OIDC:        config.OIDC,
 		}
 
 		cloudConfig, err = cloudconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var statusResource controller.Resource
+	{
+		c := statusresource.ResourceConfig{
+			ClusterEndpointFunc:      key.ToClusterEndpoint,
+			ClusterIDFunc:            key.ToClusterID,
+			ClusterStatusFunc:        key.ToClusterStatus,
+			GuestCluster:             guestCluster,
+			NodeCountFunc:            key.ToNodeCount,
+			Logger:                   config.Logger,
+			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
+			VersionBundleVersionFunc: key.ToVersionBundleVersion,
+		}
+
+		statusResource, err = statusresource.NewResource(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -232,6 +278,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []controller.Resource{
+		statusResource,
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,

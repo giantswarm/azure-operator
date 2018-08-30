@@ -18,9 +18,10 @@ import (
 var testAzure = setting.Azure{
 	Cloud: "AZUREPUBLICCLOUD",
 	HostCluster: setting.AzureHostCluster{
-		CIDR:           "10.0.0.0/8",
-		ResourceGroup:  "test-group",
-		VirtualNetwork: "test-vnet",
+		CIDR:                  "10.0.0.0/8",
+		ResourceGroup:         "test-group",
+		VirtualNetwork:        "test-vnet",
+		VirtualNetworkGateway: "test-vnet-gateway",
 	},
 	Location: "westeurope",
 }
@@ -34,7 +35,7 @@ func Test_Resource_Deployment_GetDesiredState(t *testing.T) {
 		},
 	}
 	expectedDeployments := []deployment{
-		deployment{
+		{
 			Name:          "cluster-main-template",
 			ResourceGroup: "5xchu",
 		},
@@ -115,12 +116,12 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 			},
 			Cur: []deployment{},
 			Des: []deployment{
-				deployment{
+				{
 					Name: "cluster-setup",
 				},
 			},
 			ExpectedDeployments: []deployment{
-				deployment{
+				{
 					Name: "cluster-setup",
 				},
 			},
@@ -136,12 +137,12 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 				},
 			},
 			Cur: []deployment{
-				deployment{
+				{
 					Name: "cluster-setup",
 				},
 			},
 			Des: []deployment{
-				deployment{
+				{
 					Name: "cluster-setup",
 				},
 			},
@@ -158,20 +159,20 @@ func Test_Resource_Deployment_newCreateChange(t *testing.T) {
 				},
 			},
 			Cur: []deployment{
-				deployment{
+				{
 					Name: "cluster-setup",
 				},
 			},
 			Des: []deployment{
-				deployment{
+				{
 					Name: "cluster-setup",
 				},
-				deployment{
+				{
 					Name: "network-setup",
 				},
 			},
 			ExpectedDeployments: []deployment{
-				deployment{
+				{
 					Name: "network-setup",
 				},
 			},

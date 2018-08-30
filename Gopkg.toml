@@ -22,9 +22,21 @@
 
 
 
+required = [
+  "github.com/docker/distribution/reference",
+  "k8s.io/apiserver/pkg/endpoints/request",
+  "k8s.io/apiserver/pkg/authentication/authenticator"
+]
+
+
+
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
-  version = "v15.3.0"
+  version = "v19.1.0"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/docker/distribution"
 
 [[constraint]]
   branch = "master"
@@ -36,42 +48,58 @@
 
 [[constraint]]
   branch = "master"
+  name = "github.com/giantswarm/e2e-harness"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/e2eclients"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/e2etemplates"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/e2etests"
+
+[[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/microendpoint"
-  branch = "master"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/microerror"
-  branch = "master"
 
 [[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/microkit"
-  branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/micrologger"
   branch = "master"
+  name = "github.com/giantswarm/micrologger"
 
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
-  name = "github.com/giantswarm/versionbundle"
   branch = "master"
+  name = "github.com/giantswarm/statusresource"
+
+[[constraint]]
+  branch = "master"
+  name = "github.com/giantswarm/versionbundle"
+
+[[constraint]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.10.4"
 
 
 
 [prune]
-  unused-packages = true
   go-tests = true
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/giantswarm/e2e-harness"
-
-[[constraint]]
-  branch = "master"
-  name = "github.com/giantswarm/e2etemplates"
+  unused-packages = true
