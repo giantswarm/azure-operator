@@ -4,7 +4,10 @@ const (
 	calicoAzureFileName       = "/srv/calico-azure.yaml"
 	calicoAzureFileOwner      = "root:root"
 	calicoAzureFilePermission = 0600
-	calicoAzureFileTemplate   = `# Calico Version v3.2.0
+	calicoAzureFileTemplate   = `# Extra changes:
+#  - added "nodename_file_optional" set to true (can be removed on the next upgrade)
+#
+# Calico Version v3.2.0
 # https://docs.projectcalico.org/v3.2/releases#v3.2.0
 # This manifest includes the following component versions:
 #   calico/node:v3.2.0
@@ -34,6 +37,7 @@ data:
           "log_level": "info",
           "datastore_type": "kubernetes",
           "nodename": "__KUBERNETES_NODE_NAME__",
+          "nodename_file_optional": true,
           "mtu": 1500,
           "ipam": {
             "type": "host-local",
