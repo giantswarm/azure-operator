@@ -6,12 +6,18 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
+	"k8s.io/client-go/kubernetes"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/controller/v4/key"
+	"github.com/giantswarm/azure-operator/service/credential"
 )
 
 const (
@@ -34,18 +40,30 @@ var (
 )
 
 type Config struct {
-	Logger  micrologger.Logger
-	Watcher func(opts metav1.ListOptions) (watch.Interface, error)
+	K8sClient kubernetes.Interface
+	Logger    micrologger.Logger
+	Watcher   func(opts metav1.ListOptions) (watch.Interface, error)
+
+	// EnvironmentName is the name of the Azure environment used to compute the
+	// azure.Environment type. See also
+	// https://godoc.org/github.com/Azure/go-autorest/autorest/azure#Environment.
+	EnvironmentName string
 }
 
 type Collector struct {
-	logger  micrologger.Logger
-	watcher func(opts metav1.ListOptions) (watch.Interface, error)
+	k8sClient kubernetes.Interface
+	logger    micrologger.Logger
+	watcher   func(opts metav1.ListOptions) (watch.Interface, error)
 
 	bootOnce sync.Once
+
+	environmentName string
 }
 
 func New(config Config) (*Collector, error) {
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -53,11 +71,17 @@ func New(config Config) (*Collector, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Watcher must not be empty", config)
 	}
 
+	if config.EnvironmentName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.EnvironmentName must not be empty", config)
+	}
+
 	c := &Collector{
 		logger:  config.Logger,
 		watcher: config.Watcher,
 
 		bootOnce: sync.Once{},
+
+		environmentName: config.EnvironmentName,
 	}
 
 	return c, nil
@@ -95,42 +119,44 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 				continue
 			}
 
-			a, ok := event.Object.(*providerv1alpha1.AzureConfig)
+			customObject, ok := event.Object.(*providerv1alpha1.AzureConfig)
 			if !ok {
 				c.logger.Log("level", "error", "message", "asserting AzureConfig struct failed")
 				break
 			}
 
-			// TODO create azure clients
-			// TODO fetch deployment status
-			n := "worker_vmss"
-			s := ""
-			// TODO
+			{
+				n, s, err := c.getWorkerVMSSNameAndStatus(*customObject)
+				if err != nil {
+					c.logger.Log("level", "error", "message", "fetching worker VMSS name and status failed", "stack", fmt.Sprintf("%#v", err))
+					return
+				}
 
-			ch <- prometheus.MustNewConstMetric(
-				deploymentStatusDescription,
-				prometheus.GaugeValue,
-				float64(matchedStringToInt(statusCanceled, s)),
-				a.GetName(),
-				n,
-				statusCanceled,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				deploymentStatusDescription,
-				prometheus.GaugeValue,
-				float64(matchedStringToInt(statusFailed, s)),
-				a.GetName(),
-				n,
-				statusFailed,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				deploymentStatusDescription,
-				prometheus.GaugeValue,
-				float64(matchedStringToInt(statusSucceeded, s)),
-				a.GetName(),
-				n,
-				statusSucceeded,
-			)
+				ch <- prometheus.MustNewConstMetric(
+					deploymentStatusDescription,
+					prometheus.GaugeValue,
+					float64(matchedStringToInt(statusCanceled, s)),
+					customObject.GetName(),
+					n,
+					statusCanceled,
+				)
+				ch <- prometheus.MustNewConstMetric(
+					deploymentStatusDescription,
+					prometheus.GaugeValue,
+					float64(matchedStringToInt(statusFailed, s)),
+					customObject.GetName(),
+					n,
+					statusFailed,
+				)
+				ch <- prometheus.MustNewConstMetric(
+					deploymentStatusDescription,
+					prometheus.GaugeValue,
+					float64(matchedStringToInt(statusSucceeded, s)),
+					customObject.GetName(),
+					n,
+					statusSucceeded,
+				)
+			}
 		case <-time.After(time.Second):
 			c.logger.Log("level", "debug", "message", "finished collecting metrics")
 			return
@@ -140,6 +166,37 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 
 func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- deploymentStatusDescription
+}
+
+func (c *Collector) getWorkerVMSSNameAndStatus(customObject providerv1alpha1.AzureConfig) (string, string, error) {
+	var deploymentsClient *resources.DeploymentsClient
+	{
+		config, err := credential.GetAzureConfig(c.k8sClient, key.CredentialName(customObject), key.CredentialNamespace(customObject))
+		if err != nil {
+			return "", "", microerror.Mask(err)
+		}
+		config.Cloud = c.environmentName
+
+		azureClients, err := client.NewAzureClientSet(*config)
+		if err != nil {
+			return "", "", microerror.Mask(err)
+		}
+		deploymentsClient = azureClients.DeploymentsClient
+	}
+
+	var name string
+	var status string
+	{
+		d, err := deploymentsClient.Get(context.Background(), key.ClusterID(customObject), key.WorkerVMSSName(customObject))
+		if err != nil {
+			return "", "", microerror.Mask(err)
+		}
+
+		name = key.WorkerVMSSName(customObject)
+		status = *d.Properties.ProvisioningState
+	}
+
+	return name, status, nil
 }
 
 func matchedStringToInt(a, b string) int {
