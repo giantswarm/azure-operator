@@ -194,11 +194,6 @@ func (c *Collector) getWorkerVMSSNameAndStatus(customObject providerv1alpha1.Azu
 		g := key.ResourceGroupName(customObject)
 		n := key.WorkerVMSSName(customObject)
 
-		fmt.Printf("\n")
-		fmt.Printf("%#v\n", g)
-		fmt.Printf("%#v\n", n)
-		fmt.Printf("\n")
-
 		d, err := scaleSetsClient.Get(context.Background(), g, n)
 		if err != nil {
 			return "", "", "", microerror.Mask(err)
