@@ -6,7 +6,7 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -170,7 +170,7 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 }
 
 func (c *Collector) getWorkerVMSSNameAndStatus(customObject providerv1alpha1.AzureConfig) (string, string, error) {
-	var deploymentsClient *resources.DeploymentsClient
+	var scaleSetsClient *compute.VirtualMachineScaleSetsClient
 	{
 		config, err := credential.GetAzureConfig(c.k8sClient, key.CredentialName(customObject), key.CredentialNamespace(customObject))
 		if err != nil {
@@ -182,19 +182,19 @@ func (c *Collector) getWorkerVMSSNameAndStatus(customObject providerv1alpha1.Azu
 		if err != nil {
 			return "", "", microerror.Mask(err)
 		}
-		deploymentsClient = azureClients.DeploymentsClient
+		scaleSetsClient = azureClients.VirtualMachineScaleSetsClient
 	}
 
 	var name string
 	var status string
 	{
-		d, err := deploymentsClient.Get(context.Background(), key.ClusterID(customObject), key.WorkerVMSSName(customObject))
+		d, err := scaleSetsClient.Get(context.Background(), key.ResourceGroupName(customObject), key.WorkerVMSSName(customObject))
 		if err != nil {
 			return "", "", microerror.Mask(err)
 		}
 
 		name = key.WorkerVMSSName(customObject)
-		status = *d.Properties.ProvisioningState
+		status = *d.ProvisioningState
 	}
 
 	return name, status, nil
