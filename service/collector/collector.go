@@ -76,8 +76,9 @@ func New(config Config) (*Collector, error) {
 	}
 
 	c := &Collector{
-		logger:  config.Logger,
-		watcher: config.Watcher,
+		k8sClient: config.K8sClient,
+		logger:    config.Logger,
+		watcher:   config.Watcher,
 
 		bootOnce: sync.Once{},
 
@@ -131,11 +132,6 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 					c.logger.Log("level", "error", "message", "fetching worker VMSS name and status failed", "stack", fmt.Sprintf("%#v", err))
 					return
 				}
-
-				fmt.Printf("\n")
-				fmt.Printf("%#v\n", n)
-				fmt.Printf("%#v\n", s)
-				fmt.Printf("\n")
 
 				ch <- prometheus.MustNewConstMetric(
 					deploymentStatusDescription,
