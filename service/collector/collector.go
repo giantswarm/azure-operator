@@ -132,6 +132,11 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 					return
 				}
 
+				fmt.Printf("\n")
+				fmt.Printf("%#v\n", n)
+				fmt.Printf("%#v\n", s)
+				fmt.Printf("\n")
+
 				ch <- prometheus.MustNewConstMetric(
 					deploymentStatusDescription,
 					prometheus.GaugeValue,
