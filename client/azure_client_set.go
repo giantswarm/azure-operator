@@ -221,15 +221,14 @@ func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment
 
 // parseAzureEnvironment returns azure environment by name.
 func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
-	var env azure.Environment
-	var err error
 	if cloudName == "" {
-		env = azure.PublicCloud
-	} else {
-		env, err = azure.EnvironmentFromName(cloudName)
-		if err != nil {
-			return env, microerror.Maskf(err, "parsing Azure environment")
-		}
+		return azure.PublicCloud, nil
 	}
-	return env, microerror.Maskf(err, "parsing Azure environment")
+
+	env, err := azure.EnvironmentFromName(cloudName)
+	if err != nil {
+		return azure.Environment{}, microerror.Mask(err)
+	}
+
+	return env, nil
 }

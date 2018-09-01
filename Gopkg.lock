@@ -41,6 +41,10 @@
   version = "v1.4.2"
 
 [[projects]]
+<<<<<<< HEAD
+=======
+  digest = "1:733c4e89ba1201232b646e40eac18f292b213fd6e7c58de9421513220f2aa021"
+>>>>>>> master
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -74,8 +78,14 @@
     "service/ec2",
     "service/sts"
   ]
+<<<<<<< HEAD
   revision = "e21dfa909e14ce93f88f1f3505764bc4952a11be"
   version = "v1.15.18"
+=======
+  pruneopts = "UT"
+  revision = "7715ed93fca215da2c707088a0cca5646ad91543"
+  version = "v1.15.24"
+>>>>>>> master
 
 [[projects]]
   branch = "master"
@@ -319,6 +329,8 @@
     "command/daemon/flag",
     "command/daemon/flag/config",
     "command/daemon/flag/server",
+    "command/daemon/flag/server/enable",
+    "command/daemon/flag/server/enable/debug",
     "command/daemon/flag/server/listen",
     "command/daemon/flag/server/log",
     "command/daemon/flag/server/tls",

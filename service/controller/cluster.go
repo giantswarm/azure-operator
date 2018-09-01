@@ -15,7 +15,6 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v1"
 	"github.com/giantswarm/azure-operator/service/controller/v2"
 	"github.com/giantswarm/azure-operator/service/controller/v2patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v3"
@@ -72,26 +71,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 
 		newInformer, err = informer.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var v1ResourceSet *controller.ResourceSet
-	{
-		c := v1.ResourceSetConfig{
-			K8sClient:    config.K8sClient,
-			K8sExtClient: config.K8sExtClient,
-			Logger:       config.Logger,
-
-			Azure:            config.Azure,
-			AzureConfig:      config.AzureConfig,
-			InstallationName: config.InstallationName,
-			ProjectName:      config.ProjectName,
-			TemplateVersion:  config.TemplateVersion,
-		}
-
-		v1ResourceSet, err = v1.NewResourceSet(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -191,7 +170,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Informer:  newInformer,
 			Logger:    config.Logger,
 			ResourceSets: []*controller.ResourceSet{
-				v1ResourceSet,
 				v2ResourceSet,
 				v2Patch1ResourceSet,
 				v3ResourceSet,

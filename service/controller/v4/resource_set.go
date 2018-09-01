@@ -3,6 +3,7 @@ package v4
 import (
 	"context"
 	"fmt"
+	"net"
 	"time"
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
@@ -21,10 +22,8 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v4/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v4/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v4/credential"
 	"github.com/giantswarm/azure-operator/service/controller/v4/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v4/key"
-	"github.com/giantswarm/azure-operator/service/controller/v4/network"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/endpoints"
@@ -35,6 +34,8 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/service"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vnetpeeringcleaner"
 	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vpngateway"
+	"github.com/giantswarm/azure-operator/service/credential"
+	"github.com/giantswarm/azure-operator/service/network"
 )
 
 type ResourceSetConfig struct {
@@ -362,12 +363,16 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		subnets, err := network.ComputeFromCR(ctx, azureConfig)
+		_, vnet, err := net.ParseCIDR(key.VnetCIDR(azureConfig))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		subnets, err := network.Compute(*vnet)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient, obj)
+		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient, key.CredentialName(azureConfig), key.CredentialNamespace(azureConfig))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
