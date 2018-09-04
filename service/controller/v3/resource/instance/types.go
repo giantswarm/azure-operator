@@ -5,6 +5,8 @@ type node struct {
 	AdminUsername string `json:"adminUsername" yaml:"adminUsername"`
 	//  AdminSSHKeyData is the vm administrator ssh public key
 	AdminSSHKeyData string `json:"adminSSHKeyData" yaml:"adminSSHKeyData"`
+	// DockerVolumeSizeGB is the docker volume size.
+	DockerVolumeSizeGB int `json:"dockerVolumeSizeGB" yaml:"dockerVolumeSizeGB"`
 	// OSImage is the vm OS image object.
 	OSImage nodeOSImage `json:"osImage" yaml:"osImage"`
 	// VMSize is the master vm size (e.g. Standard_A1)
