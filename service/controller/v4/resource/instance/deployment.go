@@ -12,6 +12,10 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v4/key"
 )
 
+const (
+	defaultWorkerDockerVolumeSizeGB = 50
+)
+
 func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
@@ -24,13 +28,22 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		masterNodes = append(masterNodes, n)
 	}
 
+	workerDockerVolumeSizeGB, err := key.WorkerDockerVolumeSizeGB(obj)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+	if workerDockerVolumeSizeGB <= 0 {
+		workerDockerVolumeSizeGB = defaultWorkerDockerVolumeSizeGB
+	}
+
 	var workerNodes []node
 	for _, w := range obj.Spec.Azure.Workers {
 		n := node{
-			AdminUsername:   key.AdminUsername(obj),
-			AdminSSHKeyData: key.AdminSSHKeyData(obj),
-			OSImage:         newNodeOSImageCoreOS_1745_7_0(),
-			VMSize:          w.VMSize,
+			AdminUsername:      key.AdminUsername(obj),
+			AdminSSHKeyData:    key.AdminSSHKeyData(obj),
+			DockerVolumeSizeGB: workerDockerVolumeSizeGB,
+			OSImage:            newNodeOSImageCoreOS_1745_7_0(),
+			VMSize:             w.VMSize,
 		}
 		workerNodes = append(workerNodes, n)
 	}

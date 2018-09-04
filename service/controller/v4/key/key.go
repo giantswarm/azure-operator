@@ -2,6 +2,7 @@ package key
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -386,6 +387,23 @@ func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) st
 // VPNGatewayName returns name of the virtual network gateway.
 func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
+}
+
+// WorkerDockerVolumeSizeGB returns size of a docker volume configured for
+// worker nodes. If there are no workers in custom object, 0 is returned as
+// size.
+func WorkerDockerVolumeSizeGB(customObject providerv1alpha1.AzureConfig) (int, error) {
+	if len(customObject.Spec.Azure.Workers) <= 0 {
+		return 0, nil
+	}
+
+	v := customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB
+	sz, err := strconv.ParseUint(v, 10, 32)
+	if err != nil {
+		return 0, microerror.Mask(err)
+	}
+
+	return int(sz), nil
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
