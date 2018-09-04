@@ -1,4 +1,4 @@
-package v_3_2_5
+package filelogger
 
 import "github.com/giantswarm/microerror"
 
