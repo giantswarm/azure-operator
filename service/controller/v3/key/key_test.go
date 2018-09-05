@@ -3,12 +3,10 @@ package key
 import (
 	"fmt"
 	"reflect"
-	"strconv"
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/microerror"
 )
 
 func Test_ClusterID(t *testing.T) {
@@ -269,7 +267,6 @@ func Test_WorkerDockerVolumeSizeGB(t *testing.T) {
 		name         string
 		customObject providerv1alpha1.AzureConfig
 		expectedSize int
-		errorMatcher func(error) bool
 	}{
 		{
 			name: "case 0: worker with 350GB docker volume",
@@ -278,14 +275,13 @@ func Test_WorkerDockerVolumeSizeGB(t *testing.T) {
 					Azure: providerv1alpha1.AzureConfigSpecAzure{
 						Workers: []providerv1alpha1.AzureConfigSpecAzureNode{
 							{
-								DockerVolumeSizeGB: "350",
+								DockerVolumeSizeGB: 350,
 							},
 						},
 					},
 				},
 			},
 			expectedSize: 350,
-			errorMatcher: nil,
 		},
 		{
 			name: "case 1: no workers",
@@ -297,43 +293,12 @@ func Test_WorkerDockerVolumeSizeGB(t *testing.T) {
 				},
 			},
 			expectedSize: DefaultWorkerDockerVolumeSize,
-			errorMatcher: nil,
-		},
-		{
-			name: "case 2: invalid number",
-			customObject: providerv1alpha1.AzureConfig{
-				Spec: providerv1alpha1.AzureConfigSpec{
-					Azure: providerv1alpha1.AzureConfigSpecAzure{
-						Workers: []providerv1alpha1.AzureConfigSpecAzureNode{
-							{
-								DockerVolumeSizeGB: "foobar",
-							},
-						},
-					},
-				},
-			},
-			expectedSize: 0,
-			errorMatcher: func(err error) bool {
-				_, ok := microerror.Cause(err).(*strconv.NumError)
-				return ok
-			},
 		},
 	}
 
 	for _, tc := range tests {
 		t.Run(tc.name, func(t *testing.T) {
-			sz, err := WorkerDockerVolumeSizeGB(tc.customObject)
-
-			switch {
-			case err == nil && tc.errorMatcher == nil:
-				// correct; carry on
-			case err != nil && tc.errorMatcher == nil:
-				t.Fatalf("error == %#v, want nil", err)
-			case err == nil && tc.errorMatcher != nil:
-				t.Fatalf("error == nil, want non-nil")
-			case !tc.errorMatcher(err):
-				t.Fatalf("error == %#v, want matching", err)
-			}
+			sz := WorkerDockerVolumeSizeGB(tc.customObject)
 
 			if sz != tc.expectedSize {
 				t.Fatalf("Expected worker docker volume size  %d but was %d", tc.expectedSize, sz)

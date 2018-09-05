@@ -2,7 +2,6 @@ package key
 
 import (
 	"fmt"
-	"strconv"
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -393,18 +392,12 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 // WorkerDockerVolumeSizeGB returns size of a docker volume configured for
 // worker nodes. If there are no workers in custom object, 0 is returned as
 // size.
-func WorkerDockerVolumeSizeGB(customObject providerv1alpha1.AzureConfig) (int, error) {
+func WorkerDockerVolumeSizeGB(customObject providerv1alpha1.AzureConfig) int {
 	if len(customObject.Spec.Azure.Workers) <= 0 {
-		return DefaultWorkerDockerVolumeSize, nil
+		return DefaultWorkerDockerVolumeSize
 	}
 
-	v := customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB
-	sz, err := strconv.ParseUint(v, 10, 32)
-	if err != nil {
-		return 0, microerror.Mask(err)
-	}
-
-	return int(sz), nil
+	return customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {

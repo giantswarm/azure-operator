@@ -24,17 +24,12 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		masterNodes = append(masterNodes, n)
 	}
 
-	workerDockerVolumeSizeGB, err := key.WorkerDockerVolumeSizeGB(obj)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	var workerNodes []node
 	for _, w := range obj.Spec.Azure.Workers {
 		n := node{
 			AdminUsername:      key.AdminUsername(obj),
 			AdminSSHKeyData:    key.AdminSSHKeyData(obj),
-			DockerVolumeSizeGB: workerDockerVolumeSizeGB,
+			DockerVolumeSizeGB: key.WorkerDockerVolumeSizeGB(obj),
 			OSImage:            newNodeOSImageCoreOS_1745_7_0(),
 			VMSize:             w.VMSize,
 		}
