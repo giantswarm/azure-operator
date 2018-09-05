@@ -37,7 +37,8 @@ const (
 )
 
 const (
-	ClusterIDLabel = "giantswarm.io/cluster"
+	ClusterIDLabel                = "giantswarm.io/cluster"
+	DefaultWorkerDockerVolumeSize = 50
 )
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
@@ -394,7 +395,7 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 // size.
 func WorkerDockerVolumeSizeGB(customObject providerv1alpha1.AzureConfig) (int, error) {
 	if len(customObject.Spec.Azure.Workers) <= 0 {
-		return 0, nil
+		return DefaultWorkerDockerVolumeSize, nil
 	}
 
 	v := customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB

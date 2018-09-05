@@ -32,9 +32,6 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-	if workerDockerVolumeSizeGB <= 0 {
-		workerDockerVolumeSizeGB = defaultWorkerDockerVolumeSizeGB
-	}
 
 	var workerNodes []node
 	for _, w := range obj.Spec.Azure.Workers {

@@ -296,7 +296,7 @@ func Test_WorkerDockerVolumeSizeGB(t *testing.T) {
 					},
 				},
 			},
-			expectedSize: 0,
+			expectedSize: DefaultWorkerDockerVolumeSize,
 			errorMatcher: nil,
 		},
 		{
