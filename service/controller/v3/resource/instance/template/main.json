@@ -192,7 +192,7 @@
             "value":[
               {
                 "name":"DockerDisk",
-                "sizeGB":"paramters('workerNodes')[0].dockerVolumeSizeGB"
+                "sizeGB":"[parameters('workerNodes')[0].dockerVolumeSizeGB]"
               }
             ]
           },
