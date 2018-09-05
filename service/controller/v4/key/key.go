@@ -396,6 +396,9 @@ func WorkerDockerVolumeSizeGB(customObject providerv1alpha1.AzureConfig) int {
 	if len(customObject.Spec.Azure.Workers) <= 0 {
 		return DefaultWorkerDockerVolumeSize
 	}
+	if customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB <= 0 {
+		return DefaultWorkerDockerVolumeSize
+	}
 
 	return customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB
 }

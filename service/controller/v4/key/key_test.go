@@ -294,6 +294,21 @@ func Test_WorkerDockerVolumeSizeGB(t *testing.T) {
 			},
 			expectedSize: DefaultWorkerDockerVolumeSize,
 		},
+		{
+			name: "case 2: invalid number",
+			customObject: providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Azure: providerv1alpha1.AzureConfigSpecAzure{
+						Workers: []providerv1alpha1.AzureConfigSpecAzureNode{
+							{
+								DockerVolumeSizeGB: -1,
+							},
+						},
+					},
+				},
+			},
+			expectedSize: DefaultWorkerDockerVolumeSize,
+		},
 	}
 
 	for _, tc := range tests {
