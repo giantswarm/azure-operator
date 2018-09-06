@@ -56,6 +56,13 @@ func (r Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 func deletePeering(ctx context.Context, vnetPeeringClient *network.VirtualNetworkPeeringsClient, resourceGroupName, vnetName, peeringName string) error {
+	_, err := vnetPeeringClient.Get(ctx, resourceGroupName, vnetName, peeringName)
+	if IsNotFound(err) {
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
 	respFuture, err := vnetPeeringClient.Delete(ctx, resourceGroupName, vnetName, peeringName)
 	if IsNotFound(err) {
 		// fall through
