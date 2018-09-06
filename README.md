@@ -18,10 +18,10 @@ go build github.com/giantswarm/azure-operator
 
 ## Running azure-operator
 
-Create an azure-operator role using [guest.tmpl.json](policies/guest.tmpl.json) role definition (replace SUBSCRIPTION_ID):
+Create an azure-operator role using [tenant.tmpl.json](policies/tenant.tmpl.json) role definition (replace SUBSCRIPTION_ID):
 
 ```bash
-az role definition create --role-definition @guest.tmpl.json
+az role definition create --role-definition @tenant.tmpl.json
 ```
 
 If you have a service proivder you want to reuse add the azure-operator role
@@ -40,7 +40,7 @@ az ad sp create-for-rbac -n azure-operator-sp --role="azure-operator" --scopes="
 
 Follow [this guide][examples-local].
 
-[examples-local]: https://github.com/giantswarm/azure-operator/blob/master/examples/local
+[examples-local]: https://github.com/giantswarm/azure-operator/blob/master/examples/README.md
 
 ## Contact
 
