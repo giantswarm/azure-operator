@@ -134,7 +134,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 					return
 				}
 
-				r, err := deploymentsClient.ListByResourceGroup(context.Background(), key.ClusterID(customObject), "", to.Int32Ptr(0))
+				r, err := deploymentsClient.ListByResourceGroup(context.Background(), key.ClusterID(customObject), "", to.Int32Ptr(100))
 				if err != nil {
 					c.logger.Log("level", "error", "message", "listing deployments failed", "stack", fmt.Sprintf("%#v", err))
 					return
