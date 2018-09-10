@@ -169,6 +169,12 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 							statusSucceeded,
 						)
 					}
+
+					err := r.Next()
+					if err != nil {
+						c.logger.Log("level", "error", "message", "getting next page values failed", "stack", fmt.Sprintf("%#v", err))
+						return
+					}
 				}
 			}
 		case <-time.After(time.Second):
