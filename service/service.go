@@ -161,8 +161,11 @@ func New(config Config) (*Service, error) {
 	var operatorCollector *collector.Collector
 	{
 		c := collector.Config{
-			Logger:  config.Logger,
-			Watcher: g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			Watcher:   g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
+
+			EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.Cloud),
 		}
 
 		operatorCollector, err = collector.New(c)

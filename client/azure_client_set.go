@@ -19,7 +19,9 @@ type AzureClientSetConfig struct {
 	ClientID string
 	// ClientSecret is the secret of the Active Directory Service Principal.
 	ClientSecret string
-	// The cloud environment identifier. Takes values from https://github.com/Azure/go-autorest/blob/ec5f4903f77ed9927ac95b19ab8e44ada64c1356/autorest/azure/environments.go#L13
+	// The cloud environment identifier. Takes values from
+	// https://github.com/Azure/go-autorest/blob/ec5f4903f77ed9927ac95b19ab8e44ada64c1356/autorest/azure/environments.go#L13
+	// TODO rename to EnvironmentName. See https://github.com/giantswarm/giantswarm/issues/4124.
 	Cloud string
 	// SubscriptionID is the ID of the Azure subscription.
 	SubscriptionID string
