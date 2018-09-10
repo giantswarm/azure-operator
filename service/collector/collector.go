@@ -6,7 +6,8 @@ import (
 	"sync"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -120,45 +121,55 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 				continue
 			}
 
-			customObject, ok := event.Object.(*providerv1alpha1.AzureConfig)
-			if !ok {
-				c.logger.Log("level", "error", "message", "asserting AzureConfig struct failed")
+			customObject, err := key.ToCustomObject(event.Object)
+			if err != nil {
+				c.logger.Log("level", "error", "message", "asserting custom object failed", "stack", fmt.Sprintf("%#v", err))
 				break
 			}
 
 			{
-				group, name, status, err := c.getWorkerVMSSNameAndStatus(*customObject)
+				deploymentsClient, err := c.getDeploymentsClient(customObject)
 				if err != nil {
-					c.logger.Log("level", "error", "message", "fetching worker VMSS name and status failed", "stack", fmt.Sprintf("%#v", err))
+					c.logger.Log("level", "error", "message", "creating deployments client failed", "stack", fmt.Sprintf("%#v", err))
 					return
 				}
 
-				c.logger.Log("level", "debug", "message", fmt.Sprintf("deployment %#q in resource group %#q has status %#q", name, group, status))
+				r, err := deploymentsClient.ListByResourceGroup(context.Background(), key.ClusterID(customObject), "", to.Int32Ptr(0))
+				if err != nil {
+					c.logger.Log("level", "error", "message", "listing deployments failed", "stack", fmt.Sprintf("%#v", err))
+					return
+				}
 
-				ch <- prometheus.MustNewConstMetric(
-					deploymentStatusDescription,
-					prometheus.GaugeValue,
-					float64(matchedStringToInt(statusCanceled, status)),
-					customObject.GetName(),
-					name,
-					statusCanceled,
-				)
-				ch <- prometheus.MustNewConstMetric(
-					deploymentStatusDescription,
-					prometheus.GaugeValue,
-					float64(matchedStringToInt(statusFailed, status)),
-					customObject.GetName(),
-					name,
-					statusFailed,
-				)
-				ch <- prometheus.MustNewConstMetric(
-					deploymentStatusDescription,
-					prometheus.GaugeValue,
-					float64(matchedStringToInt(statusSucceeded, status)),
-					customObject.GetName(),
-					name,
-					statusSucceeded,
-				)
+				for r.NotDone() {
+					for _, v := range r.Values() {
+						c.logger.Log("level", "debug", "message", fmt.Sprintf("deployment %#q in resource group %#q has status %#q", *v.Name, key.ClusterID(customObject), *v.Properties.ProvisioningState))
+
+						ch <- prometheus.MustNewConstMetric(
+							deploymentStatusDescription,
+							prometheus.GaugeValue,
+							float64(matchedStringToInt(statusCanceled, *v.Properties.ProvisioningState)),
+							key.ClusterID(customObject),
+							*v.Name,
+							statusCanceled,
+						)
+						ch <- prometheus.MustNewConstMetric(
+							deploymentStatusDescription,
+							prometheus.GaugeValue,
+							float64(matchedStringToInt(statusFailed, *v.Properties.ProvisioningState)),
+							key.ClusterID(customObject),
+							*v.Name,
+							statusFailed,
+						)
+						ch <- prometheus.MustNewConstMetric(
+							deploymentStatusDescription,
+							prometheus.GaugeValue,
+							float64(matchedStringToInt(statusSucceeded, *v.Properties.ProvisioningState)),
+							key.ClusterID(customObject),
+							*v.Name,
+							statusSucceeded,
+						)
+					}
+				}
 			}
 		case <-time.After(time.Second):
 			c.logger.Log("level", "debug", "message", "finished collecting metrics")
@@ -171,40 +182,19 @@ func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
 	ch <- deploymentStatusDescription
 }
 
-func (c *Collector) getWorkerVMSSNameAndStatus(customObject providerv1alpha1.AzureConfig) (string, string, string, error) {
-	var scaleSetsClient *compute.VirtualMachineScaleSetsClient
-	{
-		config, err := credential.GetAzureConfig(c.k8sClient, key.CredentialName(customObject), key.CredentialNamespace(customObject))
-		if err != nil {
-			return "", "", "", microerror.Mask(err)
-		}
-		config.Cloud = c.environmentName
+func (c *Collector) getDeploymentsClient(customObject providerv1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
+	config, err := credential.GetAzureConfig(c.k8sClient, key.CredentialName(customObject), key.CredentialNamespace(customObject))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	config.Cloud = c.environmentName
 
-		azureClients, err := client.NewAzureClientSet(*config)
-		if err != nil {
-			return "", "", "", microerror.Mask(err)
-		}
-		scaleSetsClient = azureClients.VirtualMachineScaleSetsClient
+	azureClients, err := client.NewAzureClientSet(*config)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	var group string
-	var name string
-	var status string
-	{
-		g := key.ResourceGroupName(customObject)
-		n := key.WorkerVMSSName(customObject)
-
-		d, err := scaleSetsClient.Get(context.Background(), g, n)
-		if err != nil {
-			return "", "", "", microerror.Mask(err)
-		}
-
-		group = g
-		name = n
-		status = *d.ProvisioningState
-	}
-
-	return group, name, status, nil
+	return azureClients.DeploymentsClient, nil
 }
 
 func matchedStringToInt(a, b string) int {
