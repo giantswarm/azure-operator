@@ -10,6 +10,7 @@ data:
         address: 'http://0.0.0.0:8000'
     service:
       azure:
+        # TODO rename to EnvironmentName. See https://github.com/giantswarm/giantswarm/issues/4124.
         cloud: '{{ .Values.Installation.V1.Provider.Azure.Cloud }}'
         hostCluster:
           cidr: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.CIDR }}'

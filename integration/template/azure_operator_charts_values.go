@@ -19,6 +19,7 @@ var AzureOperatorChartValues = `Installation:
     Name: ci-azure-operator
     Provider:
       Azure:
+        # TODO rename to EnvironmentName. See https://github.com/giantswarm/giantswarm/issues/4124.
         Cloud: AZUREPUBLICCLOUD
         HostCluster:
           CIDR: "10.0.0.0/16"
