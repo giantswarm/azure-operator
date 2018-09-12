@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v3/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch1/key"
 )
 
 const (

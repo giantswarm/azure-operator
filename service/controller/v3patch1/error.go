@@ -1,4 +1,4 @@
-package v3
+package v3patch1
 
 import (
 	"github.com/giantswarm/microerror"
