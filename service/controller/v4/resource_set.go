@@ -222,6 +222,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource controller.Resource
 	{
 		c := instance.Config{
+			Debugger:     newDebugger,
 			G8sClient:    config.G8sClient,
 			GuestCluster: guestCluster,
 			Logger:       config.Logger,
