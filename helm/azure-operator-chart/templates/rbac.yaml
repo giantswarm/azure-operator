@@ -76,7 +76,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: azure-operator
-    namespace: giantswarm
+    namespace: {{ .Values.namespace }}
 roleRef:
   kind: ClusterRole
   name: azure-operator
@@ -103,7 +103,7 @@ metadata:
 subjects:
   - kind: ServiceAccount
     name: azure-operator
-    namespace: giantswarm
+    namespace: {{ .Values.namespace }}
 roleRef:
   kind: ClusterRole
   name: azure-operator-psp
