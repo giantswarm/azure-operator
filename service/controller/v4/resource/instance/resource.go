@@ -12,6 +12,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v4/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v4/debugger"
 )
 
 const (
@@ -19,6 +20,7 @@ const (
 )
 
 type Config struct {
+	Debugger     *debugger.Debugger
 	G8sClient    versioned.Interface
 	GuestCluster guestcluster.Interface
 	Logger       micrologger.Logger
@@ -28,6 +30,7 @@ type Config struct {
 }
 
 type Resource struct {
+	debugger     *debugger.Debugger
 	g8sClient    versioned.Interface
 	guestCluster guestcluster.Interface
 	logger       micrologger.Logger
@@ -37,6 +40,9 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
+	if config.Debugger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
+	}
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
@@ -55,6 +61,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
+		debugger:     config.Debugger,
 		g8sClient:    config.G8sClient,
 		guestCluster: config.GuestCluster,
 		logger:       config.Logger,
