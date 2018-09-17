@@ -8,33 +8,8 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "azure-operator",
-				Description: "Added CA public key into trusted user keys for SSO ssh.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
 				Component:   "cloudconfig",
-				Description: "Added support for status subresources for CRDs.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "azure-operator",
-				Description: "Added support for etcd monitoring.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "azure-operator",
-				Description: "Fixed Azure disk mounting.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "azure-operator",
-				Description: "Removed Azure Virtual network peering.",
-				Kind:        versionbundle.KindRemoved,
-			},
-			{
-				Component:   "azure-operator",
-				Description: "Added Azure VPN Gateway.",
+				Description: "Add kube-proxy configuration files, required for updating kube-proxy daemonset.",
 				Kind:        versionbundle.KindAdded,
 			},
 		},
@@ -65,6 +40,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "1.1.0",
+		Version: "1.1.1",
 	}
 }
