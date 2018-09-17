@@ -46,11 +46,17 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Maskf(err, "renderIngressLBFile")
 	}
 
+	kubeProxyConfigFile, err := me.renderKubeProxyConfigFile()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderIngressLBFile")
+	}
+
 	files := []k8scloudconfig.FileAsset{
 		calicoAzureFile,
 		cloudProviderConfFile,
 		defaultStorageClassFile,
 		ingressLBFile,
+		kubeProxyConfigFile,
 	}
 	files = append(files, certificateFiles...)
 
@@ -143,6 +149,15 @@ func (me *masterExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 
 func (me *masterExtension) renderDefaultStorageClassFile() (k8scloudconfig.FileAsset, error) {
 	asset, err := renderDefaultStorageClassFile()
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderKubeProxyConfigFile() (k8scloudconfig.FileAsset, error) {
+	asset, err := renderKubeProxyConfigFile()
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}

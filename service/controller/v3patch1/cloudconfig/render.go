@@ -123,6 +123,29 @@ func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, 
 	return file, nil
 }
 
+func renderKubeProxyConfigFile() (k8scloudconfig.FileAsset, error) {
+	params := struct{}{}
+
+	fileMeta := k8scloudconfig.FileMetadata{
+		AssetContent: KubeProxyConfig,
+		Path:         "/etc/kubernetes/config/proxy-config.yml",
+		Owner:        "root:root",
+		Permissions:  0644,
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	file := k8scloudconfig.FileAsset{
+		Metadata: fileMeta,
+		Content:  content,
+	}
+
+	return file, nil
+}
+
 func renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
 	params := struct{}{}
 

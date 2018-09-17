@@ -18,6 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2"
 	"github.com/giantswarm/azure-operator/service/controller/v2patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v3"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v4"
 )
 
@@ -140,6 +141,28 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
+	var v3Patch1ResourceSet *controller.ResourceSet
+	{
+		c := v3patch1.ResourceSetConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			Azure: config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v3Patch1ResourceSet, err = v3patch1.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var v4ResourceSet *controller.ResourceSet
 	{
 		c := v4.ResourceSetConfig{
@@ -173,6 +196,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 				v2ResourceSet,
 				v2Patch1ResourceSet,
 				v3ResourceSet,
+				v3Patch1ResourceSet,
 				v4ResourceSet,
 			},
 			RESTClient: config.G8sClient.ProviderV1alpha1().RESTClient(),

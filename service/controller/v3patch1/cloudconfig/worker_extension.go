@@ -30,8 +30,14 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	kubeProxyConfigFile, err := we.renderKubeProxyConfigFile()
+	if err != nil {
+		return nil, microerror.Maskf(err, "renderIngressLBFile")
+	}
+
 	files := []k8scloudconfig.FileAsset{
 		cloudProviderConfFile,
+		kubeProxyConfigFile,
 	}
 	files = append(files, certificateFiles...)
 
@@ -107,6 +113,15 @@ func (we *workerExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsse
 	asset, err := renderDockerDiskFormatUnit(params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (we *workerExtension) renderKubeProxyConfigFile() (k8scloudconfig.FileAsset, error) {
+	asset, err := renderKubeProxyConfigFile()
+	if err != nil {
+		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
 
 	return asset, nil
