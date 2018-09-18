@@ -2,7 +2,7 @@ apiVersion: extensions/v1beta1
 kind: Deployment
 metadata:
   name: azure-operator
-  namespace: giantswarm
+  namespace: {{ .Values.namespace }}
   labels:
     app: azure-operator
   annotations:
