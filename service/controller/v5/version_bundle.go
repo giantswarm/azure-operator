@@ -8,13 +8,8 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "kubernetes",
-				Description: "Updated to 1.11.1.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Calico updated to version 3.2.0",
+				Component:   "azure-operator",
+				Description: "Add your changes.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
