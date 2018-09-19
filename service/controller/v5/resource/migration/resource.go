@@ -12,11 +12,11 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
-	"github.com/giantswarm/azure-operator/service/controller/v4/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
 const (
-	name = "migrationv4"
+	name = "migrationv5"
 
 	azureConfigNamespace             = "default"
 	credentialSecretDefaultNamespace = "giantswarm"
