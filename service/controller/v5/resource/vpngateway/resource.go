@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Name = "vpngatewayv4"
+	Name = "vpngatewayv5"
 )
 
 // Config is the configuration required by Resource.
