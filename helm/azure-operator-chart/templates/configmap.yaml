@@ -33,7 +33,7 @@ data:
           kubernetes:
             api:
               auth:
-                provider:
+                provider: azure
                   oidc:
                     clientID: '{{ .Values.Installation.V1.Guest.Kubernetes.API.Auth.Provider.OIDC.ClientID }}'
                     issuerURL: '{{ .Values.Installation.V1.Guest.Kubernetes.API.Auth.Provider.OIDC.IssuerURL }}'
