@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v3"
 	"github.com/giantswarm/azure-operator/service/controller/v3patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v4"
+	"github.com/giantswarm/azure-operator/service/controller/v5"
 )
 
 type ClusterConfig struct {
@@ -185,6 +186,28 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
+	var v5ResourceSet *controller.ResourceSet
+	{
+		c := v5.ResourceSetConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			Azure: config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v5ResourceSet, err = v5.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorkitController *controller.Controller
 	{
 		c := controller.Config{
@@ -198,6 +221,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 				v3ResourceSet,
 				v3Patch1ResourceSet,
 				v4ResourceSet,
+				v5ResourceSet,
 			},
 			RESTClient: config.G8sClient.ProviderV1alpha1().RESTClient(),
 
