@@ -111,6 +111,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		APIServerEncryptionKey:          apiserverEncryptionKey,
 		Cluster:                         customObject.Spec.Cluster,
 		DisableCalico:                   true,
+		DisableCoreDNS:                  true,
 		DisableIngressController:        true,
 		DisableIngressControllerService: true,
 		Hyperkube: k8scloudconfig.Hyperkube{
