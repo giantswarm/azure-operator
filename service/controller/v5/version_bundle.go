@@ -8,19 +8,9 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "kubernetes",
-				Description: "Updated to 1.11.1.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Calico updated to version 3.2.0",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Removed CoreDNS related components (now managed by chart-operator).",
-				Kind:        versionbundle.KindRemoved,
+				Component:   "azure-operator",
+				Description: "Add your changes here.",
+				Kind:        versionbundle.KindAdded,
 			},
 		},
 		Components: []versionbundle.Component{
@@ -50,6 +40,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.0.0",
+		Version: "2.1.0",
 	}
 }
