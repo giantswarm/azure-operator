@@ -1,4 +1,4 @@
-package v4
+package v5
 
 import (
 	"context"
@@ -20,20 +20,20 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v4/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/v4/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v4/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/v4/key"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/endpoints"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/instance"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/migration"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/namespace"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/resourcegroup"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/service"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vnetpeeringcleaner"
-	"github.com/giantswarm/azure-operator/service/controller/v4/resource/vpngateway"
+	"github.com/giantswarm/azure-operator/service/controller/v5/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v5/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/v5/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/deployment"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/endpoints"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/instance"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/migration"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/namespace"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/service"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vnetpeeringcleaner"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vpngateway"
 	"github.com/giantswarm/azure-operator/service/credential"
 	"github.com/giantswarm/azure-operator/service/network"
 )
