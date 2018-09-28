@@ -17,6 +17,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Calico updated to version 3.2.0",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "cloudconfig",
+				Description: "Removed CoreDNS related components (now managed by chart-operator).",
+				Kind:        versionbundle.KindRemoved,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
