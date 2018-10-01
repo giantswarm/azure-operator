@@ -343,6 +343,7 @@
     "v_3_3_4",
     "v_3_5_0",
     "v_3_6_0",
+    "v_3_6_1"
   ]
   pruneopts = "T"
   revision = "f006b0a1fd85172bfb34fca24ad60b82de50eb75"

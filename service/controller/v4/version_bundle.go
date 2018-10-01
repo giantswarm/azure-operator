@@ -22,6 +22,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Removed CoreDNS related components (now managed by chart-operator).",
 				Kind:        versionbundle.KindRemoved,
 			},
+			{
+				Component:   "kubernetes",
+				Description: "Patched Kubernetes v1.11.1 with apimachinery fix to plug apiserver memory leak.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
