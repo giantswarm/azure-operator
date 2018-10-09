@@ -71,7 +71,7 @@
     "pkg/harness",
   ]
   pruneopts = "UT"
-  revision = "3f7f2bb45fd94485b71c7dbad03dc1d1b6cc3178"
+  revision = "52bca47e762aaa93c4e9742020f7719942263ada"
 
 [[projects]]
   branch = "master"
