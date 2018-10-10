@@ -15,7 +15,6 @@ import (
 	"k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/teardown"
 	"github.com/giantswarm/azure-operator/integration/template"
@@ -30,10 +29,10 @@ const (
 )
 
 // WrapTestMain setup and teardown e2e testing environment.
-func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Host, m *testing.M) {
+func WrapTestMain(g *framework.Guest, h *framework.Host, m *testing.M) {
 	var r int
 
-	err := Setup(c, g, h)
+	err := Setup(g, h)
 	if err != nil {
 		log.Printf("%#v\n", err)
 		r = 1
@@ -42,14 +41,14 @@ func WrapTestMain(c *client.AzureClientSet, g *framework.Guest, h *framework.Hos
 	}
 
 	if env.KeepResources() != "true" {
-		teardown.Teardown(c, g, h)
+		teardown.Teardown(g, h)
 	}
 
 	os.Exit(r)
 }
 
 // Setup e2e testing environment.
-func Setup(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
+func Setup(g *framework.Guest, h *framework.Host) error {
 	var err error
 
 	err = h.Setup()
@@ -57,7 +56,7 @@ func Setup(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) erro
 		return microerror.Mask(err)
 	}
 
-	err = Resources(c, g, h)
+	err = Resources(g, h)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -71,7 +70,7 @@ func Setup(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) erro
 }
 
 // Resources install required charts.
-func Resources(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
+func Resources(g *framework.Guest, h *framework.Host) error {
 	var err error
 
 	{

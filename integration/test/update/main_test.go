@@ -11,16 +11,14 @@ import (
 	"github.com/giantswarm/e2etests/update/provider"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/setup"
 )
 
 var (
-	c *client.AzureClientSet
-	u *update.Update
-	g *framework.Guest
-	h *framework.Host
+	updateTest *update.Update
+	g          *framework.Guest
+	h          *framework.Host
 )
 
 func init() {
@@ -88,21 +86,7 @@ func init() {
 			MaxWait: 90 * time.Minute,
 		}
 
-		u, err = update.New(c)
-		if err != nil {
-			panic(err.Error())
-		}
-	}
-
-	{
-		config := client.AzureClientSetConfig{
-			ClientID:       env.AzureClientID(),
-			ClientSecret:   env.AzureClientSecret(),
-			SubscriptionID: env.AzureSubscriptionID(),
-			TenantID:       env.AzureTenantID(),
-		}
-
-		c, err = client.NewAzureClientSet(config)
+		updateTest, err = update.New(c)
 		if err != nil {
 			panic(err.Error())
 		}
@@ -112,5 +96,5 @@ func init() {
 // TestMain allows us to have common setup and teardown steps that are run
 // once for all the tests https://golang.org/pkg/testing/#hdr-Main.
 func TestMain(m *testing.M) {
-	setup.WrapTestMain(c, g, h, m)
+	setup.WrapTestMain(g, h, m)
 }
