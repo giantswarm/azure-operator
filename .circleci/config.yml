@@ -42,16 +42,16 @@ jobs:
           fi
 
 
-#  e2eTestCurMasterClusterState:
-#    environment:
-#      TESTED_VERSION: "current"
-#      TEST_DIR: "integration/test/clusterstate"
-#    <<: *e2eTest
-#  e2eTestCurPRClusterState:
-#    environment:
-#      TESTED_VERSION: "current"
-#      TEST_DIR: "integration/test/clusterstate"
-#    <<: *e2eTest
+  e2eTestCurMasterClusterState:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/clusterstate"
+    <<: *e2eTest
+  e2eTestCurPRClusterState:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/clusterstate"
+    <<: *e2eTest
   e2eTestWIPMasterClusterState:
     environment:
       TESTED_VERSION: "wip"
@@ -64,29 +64,17 @@ jobs:
     <<: *e2eTest
 
 
-  e2eTestCurMasterReady:
+
+  e2eTestCurMasterScaling:
     environment:
       TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/ready"
+      TEST_DIR: "integration/test/scaling"
     <<: *e2eTest
-  e2eTestCurPRReady:
+  e2eTestCurPRScaling:
     environment:
       TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/ready"
+      TEST_DIR: "integration/test/scaling"
     <<: *e2eTest
-
-
-
-#  e2eTestCurMasterScaling:
-#    environment:
-#      TESTED_VERSION: "current"
-#      TEST_DIR: "integration/test/scaling"
-#    <<: *e2eTest
-#  e2eTestCurPRScaling:
-#    environment:
-#      TESTED_VERSION: "current"
-#      TEST_DIR: "integration/test/scaling"
-#    <<: *e2eTest
   e2eTestWIPMasterScaling:
     environment:
       TESTED_VERSION: "wip"
@@ -131,15 +119,15 @@ workflows:
 
 
 
-#      - e2eTestCurPRClusterState:
-#          requires:
-#          - hold
-#      - e2eTestCurMasterClusterState:
-#          filters:
-#            branches:
-#              only: master
-#          requires:
-#          - build
+      - e2eTestCurPRClusterState:
+          requires:
+          - hold
+      - e2eTestCurMasterClusterState:
+          filters:
+            branches:
+              only: master
+          requires:
+          - build
       - e2eTestWIPPRClusterState:
           requires:
           - hold
@@ -152,27 +140,15 @@ workflows:
 
 
 
-      - e2eTestCurMasterReady:
+      - e2eTestCurPRScaling:
+          requires:
+          - hold
+      - e2eTestCurMasterScaling:
           filters:
             branches:
               only: master
           requires:
           - build
-      - e2eTestCurPRReady:
-          requires:
-          - hold
-
-
-
-#      - e2eTestCurPRScaling:
-#          requires:
-#          - hold
-#      - e2eTestCurMasterScaling:
-#          filters:
-#            branches:
-#              only: master
-#          requires:
-#          - build
       - e2eTestWIPPRScaling:
           requires:
           - hold
