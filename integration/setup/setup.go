@@ -16,7 +16,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/teardown"
 	"github.com/giantswarm/azure-operator/integration/template"
 	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
 )
@@ -29,10 +28,10 @@ const (
 )
 
 // WrapTestMain setup and teardown e2e testing environment.
-func WrapTestMain(g *framework.Guest, h *framework.Host, m *testing.M) {
+func WrapTestMain(m *testing.M, c Config) {
 	var r int
 
-	err := Setup(g, h)
+	err := Setup(c)
 	if err != nil {
 		log.Printf("%#v\n", err)
 		r = 1
@@ -41,27 +40,27 @@ func WrapTestMain(g *framework.Guest, h *framework.Host, m *testing.M) {
 	}
 
 	if env.KeepResources() != "true" {
-		teardown.Teardown(g, h)
+		Teardown(c)
 	}
 
 	os.Exit(r)
 }
 
 // Setup e2e testing environment.
-func Setup(g *framework.Guest, h *framework.Host) error {
+func Setup(c Config) error {
 	var err error
 
-	err = h.Setup()
+	err = c.Host.Setup()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = Resources(g, h)
+	err = Resources(c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = g.Setup()
+	err = c.Guest.Setup()
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -70,36 +69,36 @@ func Setup(g *framework.Guest, h *framework.Host) error {
 }
 
 // Resources install required charts.
-func Resources(g *framework.Guest, h *framework.Host) error {
+func Resources(c Config) error {
 	var err error
 
 	{
-		err = h.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
+		err = c.Host.InstallBranchOperator("azure-operator", "azureconfig", template.AzureOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = h.InstallStableOperator("cert-operator", "certconfig", e2etemplates.CertOperatorChartValues)
+		err = c.Host.InstallStableOperator("cert-operator", "certconfig", e2etemplates.CertOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		err = h.InstallStableOperator("node-operator", "drainerconfig", e2etemplates.NodeOperatorChartValues)
+		err = c.Host.InstallStableOperator("node-operator", "drainerconfig", e2etemplates.NodeOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		err = h.InstallCertResource()
+		err = c.Host.InstallCertResource()
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = installCredential(h)
+		err = installCredential(c.Host)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = h.InstallResource("apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
+		err = c.Host.InstallResource("apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
 		if err != nil {
 			return microerror.Mask(err)
 		}
