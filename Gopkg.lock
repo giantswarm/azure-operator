@@ -49,7 +49,7 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:688108899dfc2273dbe7c19a1c77905b6c577e34d5a81ad09ff7b6e4a76ce40b"
+  digest = "1:d50338d61a75d0a704c5723c3c4a9ac30b1649db4ee9d166830d0c7f91d9609b"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -84,8 +84,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "dd947f47decb37a7c3bee72501bfc790701ab5ad"
-  version = "v1.15.50"
+  revision = "eee06b117565431c7f0002553e4e40f128858d17"
+  version = "v1.15.51"
 
 [[projects]]
   branch = "master"
@@ -235,11 +235,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c5f3894b999ae57c67280ff1c376ed699bee2f111525c18cea2df8417198d881"
+  digest = "1:2ea21304afc0ddc1caf3a21703c0277d883f3f9625d3ec8136308a94ac881c3d"
   name = "github.com/giantswarm/apprclient"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cb559dedc96d02988cc90b975f1d4ec1c3197de1"
+  revision = "36b0f79c508227cb5e122328f3faac6d55a2b64b"
 
 [[projects]]
   branch = "master"
@@ -259,7 +259,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:61741ecc81c082d51a448d70eefd55fc7c95b96df120f9cc4c912a086feee3a2"
+  digest = "1:94e630c2cf24f5c57b685089124dab32d1e02ab80c693e557195a3910c3b056a"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "pkg/framework",
@@ -267,7 +267,7 @@
     "pkg/harness",
   ]
   pruneopts = "UT"
-  revision = "52bca47e762aaa93c4e9742020f7719942263ada"
+  revision = "022462abab6f106d3b535b39122f74e5ba76bf1e"
 
 [[projects]]
   branch = "master"
@@ -286,7 +286,7 @@
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
   pruneopts = "UT"
-  revision = "1e4569c89a56aeb02b9ac57847b7cd8aaa9cc603"
+  revision = "e744d24a996c43754ccfb1650420c9daf4d59e45"
 
 [[projects]]
   branch = "master"
@@ -321,11 +321,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a7c5636a10a5693ab1df9c432704696085df0ef00fdc06fafbe6fff315ffffa5"
+  digest = "1:3228a56c6d429de153928f005709174e3606fc5d97ecfea612cf33413aa5ded6"
   name = "github.com/giantswarm/helmclient"
   packages = ["."]
   pruneopts = "UT"
-  revision = "8c3425d2c09be34df48ee947302b34bd76f75804"
+  revision = "cc5508a1d97cba484638bba1081a86a6f5a02ffa"
 
 [[projects]]
   branch = "master"
@@ -421,7 +421,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b8b40056c375b1e73808d7ca246aba85f974cceb0c061ac588e6383123e95f29"
+  digest = "1:acba487087dbf1c4f7ea19b0a695bbd65e1074ba48e21778d777884440d1ad25"
   name = "github.com/giantswarm/operatorkit"
   packages = [
     "client/k8scrdclient",
@@ -438,7 +438,7 @@
     "informer",
   ]
   pruneopts = "UT"
-  revision = "5c624728d9f58d3aebe2993e5c6c2091fd8d662c"
+  revision = "590c70603978ef27bc4574718b1374baea774133"
 
 [[projects]]
   branch = "master"
@@ -785,7 +785,7 @@
     "prometheus/promhttp",
   ]
   pruneopts = "UT"
-  revision = "0a8115f42e037a6e327f9a269a26ff6603fb8472"
+  revision = "7866eead363ec334628dbc56e32df590a05f4696"
 
 [[projects]]
   branch = "master"
@@ -882,7 +882,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "e3636079e1a4c1f337f212cc5cd2aca108f6c900"
+  revision = "7c1a557ab941a71c619514f229f0b27ccb0c27cf"
 
 [[projects]]
   branch = "master"

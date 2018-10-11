@@ -9,7 +9,6 @@ import (
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/integration/env"
 )
 
@@ -18,7 +17,7 @@ const (
 )
 
 // Teardown e2e testing environment.
-func Teardown(c *client.AzureClientSet, g *framework.Guest, h *framework.Host) error {
+func Teardown(g *framework.Guest, h *framework.Host) error {
 	ctx := context.Background()
 
 	var err error
