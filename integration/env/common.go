@@ -59,19 +59,19 @@ func init() {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarTestedVersion))
 	}
 
-	// TODO(xh3b4sd) this can be changed after the revamp of the e2e templates. I
-	// have this on my list.
-	clusterID := os.Getenv("CLUSTER_NAME")
-	if clusterID == "" {
-		os.Setenv("CLUSTER_NAME", ClusterID())
-	}
-
 	registryPullSecret = os.Getenv(EnvVarRegistryPullSecret)
 	if registryPullSecret == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarRegistryPullSecret))
 	}
 
 	testDir = os.Getenv(EnvVarTestDir)
+
+	// TODO(xh3b4sd) this can be changed after the revamp of the e2e templates. I
+	// have this on my list.
+	clusterID := os.Getenv("CLUSTER_NAME")
+	if clusterID == "" {
+		os.Setenv("CLUSTER_NAME", ClusterID())
+	}
 
 	params := &framework.VBVParams{
 		Component: component,
