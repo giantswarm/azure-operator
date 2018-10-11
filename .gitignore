@@ -6,3 +6,5 @@ TODO
 
 /examples/local/*.yaml
 !/examples/local/*.tmpl.yaml
+
+integration/test/**/*-e2e
