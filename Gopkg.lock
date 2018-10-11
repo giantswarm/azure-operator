@@ -49,7 +49,7 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:d50338d61a75d0a704c5723c3c4a9ac30b1649db4ee9d166830d0c7f91d9609b"
+  digest = "1:25cb3ccfa3aa6cd17dc2daa2c215499a2a38479db5a861253b5a554921dedbdd"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -84,8 +84,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "eee06b117565431c7f0002553e4e40f128858d17"
-  version = "v1.15.51"
+  revision = "46fe04784968cd7b54e859fcce45753456f736ac"
+  version = "v1.15.52"
 
 [[projects]]
   branch = "master"
@@ -218,7 +218,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:910fa8591d50ee561e953624cb1d777ba0f89f6c72d0db58dc85010130fa31ac"
+  digest = "1:469902eac56e2f314a632f201fe462c28fef756f750e859f9b3e81dd3031b677"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -231,7 +231,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "de2e518b9b9ce196838462ab602febb94e6dafdf"
+  revision = "6678373b1cf131ccf949c2bb8384bc8aea13d4ce"
 
 [[projects]]
   branch = "master"
@@ -259,12 +259,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:94e630c2cf24f5c57b685089124dab32d1e02ab80c693e557195a3910c3b056a"
+  digest = "1:4dbb9ba576bfefa3dba31343b3752963268f4756ad873ef223e807482c4b5690"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "pkg/framework",
     "pkg/framework/filelogger",
+    "pkg/framework/resource",
     "pkg/harness",
+    "pkg/release",
   ]
   pruneopts = "UT"
   revision = "022462abab6f106d3b535b39122f74e5ba76bf1e"
@@ -286,7 +288,7 @@
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
   pruneopts = "UT"
-  revision = "e744d24a996c43754ccfb1650420c9daf4d59e45"
+  revision = "e6b37fc42f44e46d2fdf30ba65c483bfadfe3bce"
 
 [[projects]]
   branch = "master"
@@ -1597,9 +1599,13 @@
     "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/clientset/versioned",
+    "github.com/giantswarm/apprclient",
     "github.com/giantswarm/backoff",
     "github.com/giantswarm/certs",
     "github.com/giantswarm/e2e-harness/pkg/framework",
+    "github.com/giantswarm/e2e-harness/pkg/framework/filelogger",
+    "github.com/giantswarm/e2e-harness/pkg/framework/resource",
+    "github.com/giantswarm/e2e-harness/pkg/release",
     "github.com/giantswarm/e2eclients/azure",
     "github.com/giantswarm/e2etemplates/pkg/e2etemplates",
     "github.com/giantswarm/e2etests/clusterstate",
@@ -1609,6 +1615,7 @@
     "github.com/giantswarm/e2etests/update",
     "github.com/giantswarm/e2etests/update/provider",
     "github.com/giantswarm/guestcluster",
+    "github.com/giantswarm/helmclient",
     "github.com/giantswarm/ipam",
     "github.com/giantswarm/k8scloudconfig/v_3_3_4",
     "github.com/giantswarm/k8scloudconfig/v_3_5_0",
