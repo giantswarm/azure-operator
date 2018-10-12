@@ -49,7 +49,7 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:25cb3ccfa3aa6cd17dc2daa2c215499a2a38479db5a861253b5a554921dedbdd"
+  digest = "1:c8be0e70a3e79f40f20bf2144902f809fd5ca04e31102a7800c7932a47034620"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -84,8 +84,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "46fe04784968cd7b54e859fcce45753456f736ac"
-  version = "v1.15.52"
+  revision = "4b4fb865e4e4a972645dba0b9677e623dd83a8a8"
+  version = "v1.15.53"
 
 [[projects]]
   branch = "master"
@@ -231,7 +231,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "6678373b1cf131ccf949c2bb8384bc8aea13d4ce"
+  revision = "6d0d8627368dd7e7c402ab5ab36cc01cfc82a7eb"
 
 [[projects]]
   branch = "master"
@@ -284,11 +284,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f6eb53c7787595a8e3bf6ea20b276390fc0306a7823f4ec7f6f50940decd62a6"
+  digest = "1:552d0476804f7d5b6a8e4bb61d71ae96e4ed3694abaf015d5d6147e123a84bdb"
   name = "github.com/giantswarm/e2etemplates"
-  packages = ["pkg/e2etemplates"]
+  packages = [
+    "internal/render",
+    "pkg/chartvalues",
+    "pkg/e2etemplates",
+  ]
   pruneopts = "UT"
-  revision = "e6b37fc42f44e46d2fdf30ba65c483bfadfe3bce"
+  revision = "3c83a2aea37d2241582e9b9ee4481b94299a5465"
 
 [[projects]]
   branch = "master"
@@ -339,7 +343,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:eb6cc81f52025c79845c781c55cd273787230177cc38c20e24c570e487d51d26"
+  digest = "1:9c6d2fa3cad1a8f86b10709b8ab5335054b98b9b3638a7e536c6c0fe7731f282"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "v_3_3_4",
@@ -347,7 +351,7 @@
     "v_3_6_1",
   ]
   pruneopts = "T"
-  revision = "509cd3028e75890b1ed82f506e4f25f31f046008"
+  revision = "5b87febc34e9d2582b09f438e220909f179af994"
 
 [[projects]]
   branch = "master"
@@ -570,11 +574,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:c42fb0b13261a9bcd08451ee1859e61bea33aa6743916a2e3fb61f33ff6b25c7"
+  digest = "1:477593f0f2a9b84788c777582342ef5aab4fbcc23a48606e63a508bd5adda3c0"
   name = "github.com/google/go-github"
   packages = ["github"]
   pruneopts = "UT"
-  revision = "dd29b543e14c33e6373773f2c5ea008b29aeac95"
+  revision = "a2b9279b52942e116e4b6a5c4c2290286e287068"
 
 [[projects]]
   digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
@@ -902,7 +906,7 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "146acd28ed5894421fb5aac80ca93bc1b1f46f87"
+  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
 
 [[projects]]
   branch = "master"
@@ -925,14 +929,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:850d28ab022512e2cd3cf511a77f363c29e22689b4031f2050871f5de47ae4a0"
+  digest = "1:f5aa274a0377f85735edc7fedfb0811d3cbc20af91633797cb359e29c3272271"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "4497e2df6f9e69048a54498c7affbbec3294ad47"
+  revision = "fa43e7bc11baaae89f3f902b2b4d832b68234844"
 
 [[projects]]
   digest = "1:e5a8511f063c38c51ab9ab80e718e9149f692652aeb4e393a8c020dd1bf38ca2"
@@ -1569,11 +1573,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:867d98a27033c52150eb4c01ca0f9be938d3010e9a4909ea3a881a83c3ac1b3f"
+  digest = "1:5f7c5c328fa635a57fa13cb90b90ab4892be3afd701fef8ec7425d7473eb9151"
   name = "k8s.io/utils"
   packages = ["exec"]
   pruneopts = "UT"
-  revision = "cd34563cd63c2bd7c6fe88a73c4dcf34ed8a67cb"
+  revision = "cd6a8f44fe799a6b69c6dbbb1a930994738a367c"
 
 [[projects]]
   branch = "master"
@@ -1607,6 +1611,7 @@
     "github.com/giantswarm/e2e-harness/pkg/framework/resource",
     "github.com/giantswarm/e2e-harness/pkg/release",
     "github.com/giantswarm/e2eclients/azure",
+    "github.com/giantswarm/e2etemplates/pkg/chartvalues",
     "github.com/giantswarm/e2etemplates/pkg/e2etemplates",
     "github.com/giantswarm/e2etests/clusterstate",
     "github.com/giantswarm/e2etests/clusterstate/provider",
