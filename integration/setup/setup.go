@@ -20,6 +20,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/integration/env"
+	"github.com/giantswarm/azure-operator/integration/key"
 	"github.com/giantswarm/azure-operator/integration/template"
 	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
 )
@@ -121,10 +122,38 @@ func Resources(config Config) error {
 	}
 
 	{
-		err = config.Host.InstallStableOperator("cert-operator", "certconfig", e2etemplates.CertOperatorChartValues)
+		c := chartvalues.CertOperatorConfig{
+			ClusterName: env.ClusterID(),
+			ClusterRole: chartvalues.CertOperatorClusterRole{
+				BindingName: key.ClusterRole("cert-operator"),
+				Name:        key.ClusterRole("cert-operator"),
+			},
+			ClusterRolePSP: chartvalues.CertOperatorClusterRole{
+				BindingName: key.ClusterRolePSP("cert-operator"),
+				Name:        key.ClusterRolePSP("cert-operator"),
+			},
+			CommonDomain: env.CommonDomain(),
+			PSP: chartvalues.CertOperatorPSP{
+				Name: key.PSPName("cert-operator"),
+			},
+			RegistryPullSecret: env.RegistryPullSecret(),
+			Vault: chartvalues.CertOperatorVault{
+				Token: env.VaultToken(),
+			},
+		}
+
+		values, err := chartvalues.NewCertOperator(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
+		err = config.Host.InstallStableOperator("cert-operator", "certconfig", values)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
 		err = config.Host.InstallStableOperator("node-operator", "drainerconfig", e2etemplates.NodeOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
