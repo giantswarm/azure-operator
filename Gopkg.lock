@@ -283,8 +283,8 @@
   revision = "d467639908a92260877d2158bdc747d412040db9"
 
 [[projects]]
-  branch = "master"
-  digest = "1:552d0476804f7d5b6a8e4bb61d71ae96e4ed3694abaf015d5d6147e123a84bdb"
+  branch = "add-k8s-template"
+  digest = "1:2350944048dedf20e13cb6d745c2c86738ae3e1eae5fdee8f2768f950240af66"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
     "internal/render",
@@ -292,7 +292,7 @@
     "pkg/e2etemplates",
   ]
   pruneopts = "UT"
-  revision = "3c83a2aea37d2241582e9b9ee4481b94299a5465"
+  revision = "510c532a8fe2b41f7a44a691b2d2a931184bae5d"
 
 [[projects]]
   branch = "master"

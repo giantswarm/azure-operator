@@ -54,8 +54,8 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/e2eclients"
 
-[[constraint]]
-  branch = "master"
+[[override]]
+  branch = "add-k8s-template"
   name = "github.com/giantswarm/e2etemplates"
 
 [[constraint]]
