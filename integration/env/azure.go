@@ -17,6 +17,7 @@ const (
 
 	EnvVarAzureClientID       = "AZURE_CLIENTID"
 	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
+	EnvVarAzureLocation       = "AZURE_LOCATION"
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
 
@@ -31,6 +32,7 @@ const (
 var (
 	azureClientID       string
 	azureClientSecret   string
+	azureClientLocation string
 	azureSubscriptionID string
 	azureTenantID       string
 
@@ -49,6 +51,11 @@ func init() {
 	azureClientSecret = os.Getenv(EnvVarAzureClientSecret)
 	if azureClientSecret == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureClientSecret))
+	}
+
+	azureClientLocation = os.Getenv(EnvVarAzureLocation)
+	if azureClientLocation == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureLocation))
 	}
 
 	azureSubscriptionID = os.Getenv(EnvVarAzureSubscriptionID)
@@ -122,6 +129,10 @@ func AzureClientID() string {
 
 func AzureClientSecret() string {
 	return azureClientSecret
+}
+
+func AzureClientLocation() string {
+	return azureClientLocation
 }
 
 func AzureSubscriptionID() string {

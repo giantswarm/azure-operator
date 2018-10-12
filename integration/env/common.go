@@ -11,38 +11,18 @@ import (
 )
 
 const (
-	// EnvVarCircleCI is the process environment variable representing the
-	// CIRCLECI env var.
-	EnvVarCircleCI = "CIRCLECI"
-	// EnvVarCircleSHA is the process environment variable representing the
-	// CIRCLE_SHA1 env var.
-	EnvVarCircleSHA = "CIRCLE_SHA1"
-	// EnvVarClusterID is the process environment variable representing the
-	// CLUSTER_NAME env var.
-	//
-	// TODO rename to CLUSTER_ID. Note this also had to be changed in the
-	// framework package of e2e-harness.
-	EnvVarClusterID = "CLUSTER_NAME"
-	// EnvVarCommonDomain is the process environment variable representing the
-	// COMMON_DOMAIN env var.
-	EnvVarCommonDomain = "COMMON_DOMAIN"
-	// EnvVarGithubBotToken is the process environment variable representing
-	// the GITHUB_BOT_TOKEN env var.
-	EnvVarGithubBotToken = "GITHUB_BOT_TOKEN"
-	// EnvVarKeepResources is the process environment variable representing the
-	// KEEP_RESOURCES env var.
-	EnvVarKeepResources = "KEEP_RESOURCES"
-	// EnvVarTestedVersion is the process environment variable representing the
-	// TESTED_VERSION env var.
-	EnvVarTestedVersion = "TESTED_VERSION"
-	// EnvVarTestDir is the process environment variable representing the
-	// TEST_DIR env var.
-	EnvVarTestDir = "TEST_DIR"
-	// EnvVaultToken is the process environment variable representing the
-	// VAULT_TOKEN env var.
-	EnvVaultToken = "VAULT_TOKEN"
-	// EnvVarVersionBundleVersion is the process environment variable representing
-	// the VERSION_BUNDLE_VERSION env var.
+	component = "azure-operator"
+	provider  = "azure"
+)
+
+const (
+	EnvVarCircleCI             = "CIRCLECI"
+	EnvVarCircleSHA            = "CIRCLE_SHA1"
+	EnvVarGithubBotToken       = "GITHUB_BOT_TOKEN"
+	EnvVarKeepResources        = "KEEP_RESOURCES"
+	EnvVarRegistryPullSecret   = "REGISTRY_PULL_SECRET"
+	EnvVarTestedVersion        = "TESTED_VERSION"
+	EnvVarTestDir              = "TEST_DIR"
 	EnvVarVersionBundleVersion = "VERSION_BUNDLE_VERSION"
 )
 
@@ -50,12 +30,11 @@ var (
 	circleCI             string
 	circleSHA            string
 	clusterID            string
-	commonDomain         string
+	registryPullSecret   string
 	githubToken          string
 	testDir              string
 	testedVersion        string
 	keepResources        string
-	vaultToken           string
 	versionBundleVersion string
 )
 
@@ -70,38 +49,33 @@ func init() {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCircleSHA))
 	}
 
-	testedVersion = os.Getenv(EnvVarTestedVersion)
-	if testedVersion == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarTestedVersion))
-	}
-
-	testDir = os.Getenv(EnvVarTestDir)
-
-	// NOTE that implications of changing the order of initialization here means
-	// breaking the initialization behaviour.
-	clusterID := os.Getenv(EnvVarClusterID)
-	if clusterID == "" {
-		os.Setenv(EnvVarClusterID, ClusterID())
-	}
-
-	commonDomain = os.Getenv(EnvVarCommonDomain)
-	if commonDomain == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomain))
-	}
-
-	vaultToken = os.Getenv(EnvVaultToken)
-	if vaultToken == "" {
-		panic(fmt.Sprintf("env var %q must not be empty", EnvVaultToken))
-	}
-
 	githubToken = os.Getenv(EnvVarGithubBotToken)
 	if githubToken == "" {
 		panic(fmt.Sprintf("env var %q must not be empty", EnvVarGithubBotToken))
 	}
 
+	testedVersion = os.Getenv(EnvVarTestedVersion)
+	if testedVersion == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarTestedVersion))
+	}
+
+	registryPullSecret = os.Getenv(EnvVarRegistryPullSecret)
+	if registryPullSecret == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarRegistryPullSecret))
+	}
+
+	testDir = os.Getenv(EnvVarTestDir)
+
+	// TODO(xh3b4sd) this can be changed after the revamp of the e2e templates. I
+	// have this on my list.
+	clusterID := os.Getenv("CLUSTER_NAME")
+	if clusterID == "" {
+		os.Setenv("CLUSTER_NAME", ClusterID())
+	}
+
 	params := &framework.VBVParams{
-		Component: "azure-operator",
-		Provider:  "azure",
+		Component: component,
+		Provider:  provider,
 		Token:     githubToken,
 		VType:     TestedVersion(),
 	}
@@ -132,7 +106,7 @@ func CircleSHA() string {
 // ClusterID returns a cluster ID unique to a run integration test. It might
 // look like ci-wip-3cc75-5e958.
 //
-//     ci is a static identifier stating a CI run of the aws-operator.
+//     ci is a static identifier stating a CI run of the azure-operator.
 //     wip is a version reference which can also be cur for the current version.
 //     3cc75 is the Git SHA.
 //     5e958 is a hash of the integration test dir, if any.
@@ -150,16 +124,16 @@ func ClusterID() string {
 	return strings.Join(parts, "-")
 }
 
-func CommonDomain() string {
-	return commonDomain
+func KeepResources() string {
+	return keepResources
 }
 
 func GithubToken() string {
 	return githubToken
 }
 
-func KeepResources() string {
-	return keepResources
+func RegistryPullSecret() string {
+	return registryPullSecret
 }
 
 func TestedVersion() string {
@@ -180,10 +154,6 @@ func TestHash() string {
 	s := fmt.Sprintf("%x", h.Sum(nil))[0:5]
 
 	return s
-}
-
-func VaultToken() string {
-	return vaultToken
 }
 
 func VersionBundleVersion() string {
