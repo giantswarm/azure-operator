@@ -217,7 +217,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "manage-last-transitioning-time"
+  branch = "master"
   digest = "1:f55dcaff59c0d38878326f5ad91c4094476ca3d259ece0a90dd2f2ed6320e287"
   name = "github.com/giantswarm/apiextensions"
   packages = [
@@ -231,7 +231,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "02309522a4a365588fcab6a0b352ffb253d64ed1"
+  revision = "644d27c78a5d808d6a5eb5fe031b259a9a954ef2"
 
 [[projects]]
   branch = "master"
@@ -288,7 +288,7 @@
   name = "github.com/giantswarm/e2etemplates"
   packages = ["pkg/e2etemplates"]
   pruneopts = "UT"
-  revision = "3c83a2aea37d2241582e9b9ee4481b94299a5465"
+  revision = "e40f2de4b4367cc705195aa7bcbf93c474207c7c"
 
 [[projects]]
   branch = "master"
@@ -884,7 +884,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "7c1a557ab941a71c619514f229f0b27ccb0c27cf"
+  revision = "a92615f3c49003920a58dedcf32cf55022cefb8d"
 
 [[projects]]
   branch = "master"
