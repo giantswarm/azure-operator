@@ -54,8 +54,8 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/e2eclients"
 
-[[constraint]]
-  branch = "master"
+[[override]]
+  branch = "azure-config-e2e"
   name = "github.com/giantswarm/e2etemplates"
 
 [[constraint]]

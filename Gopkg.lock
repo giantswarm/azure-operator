@@ -283,8 +283,8 @@
   revision = "d467639908a92260877d2158bdc747d412040db9"
 
 [[projects]]
-  branch = "master"
-  digest = "1:2350944048dedf20e13cb6d745c2c86738ae3e1eae5fdee8f2768f950240af66"
+  branch = "azure-config-e2e"
+  digest = "1:0a7837d5a0f2afa1e2cbed6458b7b966d31129df339d850dc85904e730f565c2"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
     "internal/render",
@@ -292,7 +292,7 @@
     "pkg/e2etemplates",
   ]
   pruneopts = "UT"
-  revision = "e40f2de4b4367cc705195aa7bcbf93c474207c7c"
+  revision = "b45746e7a6a3d5d91fd992562043ab41496eb01f"
 
 [[projects]]
   branch = "master"
