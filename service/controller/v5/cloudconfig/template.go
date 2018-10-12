@@ -6,12 +6,13 @@ const (
 	calicoAzureFilePermission = 0600
 	calicoAzureFileTemplate   = `# Extra changes:
 #  - added "nodename_file_optional" set to true (can be removed on the next upgrade)
+#  - added resource limits
 #
-# Calico Version v3.2.0
-# https://docs.projectcalico.org/v3.2/releases#v3.2.0
+# Calico Version v3.2.3
+# https://docs.projectcalico.org/v3.2/releases#v3.2.3
 # This manifest includes the following component versions:
-#   calico/node:v3.2.0
-#   calico/cni:v3.2.0
+#   calico/node:v3.2.3
+#   calico/cni:v3.2.3
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -119,7 +120,7 @@ spec:
       # as a host-networked pod.
       serviceAccountName: calico-node
       containers:
-      - image: quay.io/giantswarm/typha:v3.2.0
+      - image: quay.io/giantswarm/typha:v3.2.3
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -195,6 +196,8 @@ spec:
         # if it ever gets evicted.
         scheduler.alpha.kubernetes.io/critical-pod: ''
     spec:
+      nodeSelector:
+        beta.kubernetes.io/os: linux
       hostNetwork: true
       tolerations:
         # Make sure calico-node gets scheduled on all nodes.
@@ -214,7 +217,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/giantswarm/node:v3.2.0
+          image: quay.io/giantswarm/node:v3.2.3
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -263,6 +266,10 @@ spec:
           resources:
             requests:
               cpu: 250m
+              memory: 150Mi
+            limits:
+              cpu: 250m
+              memory: 150Mi
           livenessProbe:
             httpGet:
               path: /liveness
@@ -290,7 +297,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/giantswarm/cni:v3.2.0
+          image: quay.io/giantswarm/cni:v3.2.3
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -462,8 +469,8 @@ spec:
 
 ---
 
-# Calico Version v3.2.0
-# https://docs.projectcalico.org/v3.2/releases#v3.2.0
+# Calico Version v3.2.3
+# https://docs.projectcalico.org/v3.2/releases#v3.2.3
 kind: ClusterRole
 apiVersion: rbac.authorization.k8s.io/v1beta1
 metadata:
