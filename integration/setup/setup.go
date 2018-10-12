@@ -20,7 +20,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/template"
 	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
 )
 
@@ -158,8 +157,30 @@ func Resources(config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
 
-		err = config.Host.InstallResource("apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
+	{
+		c := chartvalues.APIExtensionsAzureConfigE2EConfig{
+			Azure: chartvalues.APIExtensionsAzureConfigE2EConfigAzure{
+				CalicoSubnetCIDR: env.AzureCalicoSubnetCIDR(),
+				CIDR:             env.AzureCIDR(),
+				Location:         env.AzureLocation(),
+				MasterSubnetCIDR: env.AzureMasterSubnetCIDR(),
+				VPNSubnetCIDR:    env.AzureVPNSubnetCIDR(),
+				WorkerSubnetCIDR: env.AzureWorkerSubnetCIDR(),
+			},
+			ClusterName:               env.ClusterID(),
+			CommonDomain:              env.CommonDomain(),
+			CommonDomainResourceGroup: "godsmack",
+			VersionBundleVersion:      env.VersionBundleVersion(),
+		}
+
+		values, err := chartvalues.NewAPIExtensionsAzureConfigE2E(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = config.Release.Install(context.Background(), "apiextensions-azure-config-e2e", release.NewStableVersion(), values)
 		if err != nil {
 			return microerror.Mask(err)
 		}
