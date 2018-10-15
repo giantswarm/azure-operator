@@ -26,7 +26,8 @@ const (
 	EnvVarAzureGuestSubscriptionID = "AZURE_GUEST_SUBSCRIPTIONID"
 	EnvVarAzureGuestTenantID       = "AZURE_GUEST_TENANTID"
 
-	EnvVarCircleBuildNumber = "CIRCLE_BUILD_NUM"
+	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
+	EnvVarCircleBuildNumber         = "CIRCLE_BUILD_NUM"
 )
 
 var (
@@ -46,6 +47,8 @@ var (
 	azureMasterSubnetCIDR string
 	azureVPNSubnetCIDR    string
 	azureWorkerSubnetCIDR string
+
+	commonDomainResourceGroup string
 )
 
 func init() {
@@ -92,6 +95,11 @@ func init() {
 	azureGuestTenantID = os.Getenv(EnvVarAzureGuestTenantID)
 	if azureGuestTenantID == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestTenantID))
+	}
+
+	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
+	if commonDomainResourceGroup == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomainResourceGroup))
 	}
 
 	// azureCDIR must be provided along with other CIDRs,
@@ -170,4 +178,8 @@ func AzureVPNSubnetCIDR() string {
 
 func AzureWorkerSubnetCIDR() string {
 	return azureWorkerSubnetCIDR
+}
+
+func CommonDomainResourceGroup() string {
+	return commonDomainResourceGroup
 }

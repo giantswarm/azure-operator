@@ -171,7 +171,7 @@ func Resources(config Config) error {
 			},
 			ClusterName:               env.ClusterID(),
 			CommonDomain:              env.CommonDomain(),
-			CommonDomainResourceGroup: "godsmack",
+			CommonDomainResourceGroup: env.CommonDomainResourceGroup(),
 			VersionBundleVersion:      env.VersionBundleVersion(),
 		}
 
