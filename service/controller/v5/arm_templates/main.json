@@ -407,7 +407,7 @@
       "properties":{
         "mode":"incremental",
         "templateLink":{
-          "uri":"[variables('ignitionContainerSetup')]",
+          "uri":"[variables('ignitionContainerSetupTemplateURI')]",
           "contentVersion":"1.0.0.0"
         },
         "parameters":{
@@ -425,7 +425,7 @@
       "name":"kubernetes_ingress_wildcard_dns_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
-        "mode":"incremental",
+       : "mode":"incremental",
         "templateLink":{
           "uri":"[variables('dnsCNAMESetupTemplateURI')]",
           "contentVersion":"1.0.0.0"
