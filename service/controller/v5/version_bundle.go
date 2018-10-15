@@ -8,13 +8,18 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "azure-operator",
-				Description: "Add your changes here.",
-				Kind:        versionbundle.KindAdded,
+				Component:   "cloudconfig",
+				Description: "Updated Calico to 3.2.3.",
+				Kind:        versionbundle.KindChanged,
 			},
 			{
 				Component:   "cloudconfig",
-				Description: "Calico updated to version 3.2.3",
+				Description: "Updated Calico manifest with resource limits.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "cloudconfig",
+				Description: "Enabled admission plugins: DefaultTolerationSeconds, MutatingAdmissionWebhook, ValidatingAdmissionWebhook.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},

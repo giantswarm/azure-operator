@@ -284,7 +284,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0a7837d5a0f2afa1e2cbed6458b7b966d31129df339d850dc85904e730f565c2"
+  digest = "1:7ccfb8d35ae2a568a20e6f8c7b84b8908f1bb0e65731446297abc675c11be3bb"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
     "internal/render",
@@ -292,7 +292,7 @@
     "pkg/e2etemplates",
   ]
   pruneopts = "UT"
-  revision = "199d79f25147166594f570865c54eaca99d9c37a"
+  revision = "c53cb2d19eddbf6c67aa642622927a8f3a9401d2"
 
 [[projects]]
   branch = "master"
@@ -349,6 +349,7 @@
     "v_3_3_4",
     "v_3_5_0",
     "v_3_6_1",
+    "v_3_6_2",
   ]
   pruneopts = "T"
   revision = "5b87febc34e9d2582b09f438e220909f179af994"
@@ -803,7 +804,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:63b68062b8968092eb86bedc4e68894bd096ea6b24920faca8b9dcf451f54bb5"
+  digest = "1:c0d39a0cad193ac49b6e24516e0f994b241d7c27142e5a58e8bd13defb2d9ac8"
   name = "github.com/prometheus/common"
   packages = [
     "expfmt",
@@ -811,7 +812,7 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "c7de2306084e37d54b8be01f3541a8464345e9a5"
+  revision = "bcb74de08d37a417cb6789eec1d6c810040f0470"
 
 [[projects]]
   branch = "master"
@@ -1625,6 +1626,7 @@
     "github.com/giantswarm/k8scloudconfig/v_3_3_4",
     "github.com/giantswarm/k8scloudconfig/v_3_5_0",
     "github.com/giantswarm/k8scloudconfig/v_3_6_1",
+    "github.com/giantswarm/k8scloudconfig/v_3_6_2",
     "github.com/giantswarm/microendpoint/endpoint/healthz",
     "github.com/giantswarm/microendpoint/endpoint/version",
     "github.com/giantswarm/microendpoint/service/version",
