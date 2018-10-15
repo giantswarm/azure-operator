@@ -54,7 +54,7 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/e2eclients"
 
-[[override]]
+[[constraint]]
   branch = "master"
   name = "github.com/giantswarm/e2etemplates"
 

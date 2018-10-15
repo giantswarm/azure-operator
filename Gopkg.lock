@@ -792,7 +792,7 @@
     "prometheus/promhttp",
   ]
   pruneopts = "UT"
-  revision = "7866eead363ec334628dbc56e32df590a05f4696"
+  revision = "1cafe34db7fdec6022e17e00e1c1ea501022f3e4"
 
 [[projects]]
   branch = "master"
