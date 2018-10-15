@@ -76,13 +76,19 @@ func Resources(config Config) error {
 			},
 			Secret: chartvalues.AzureOperatorConfigSecret{
 				AzureOperator: chartvalues.AzureOperatorConfigSecretAzureOperator{
+					CredentialDefault: chartvalues.AzureOperatorConfigSecretAzureOperatorCredentialDefault{
+						ClientID:       env.AzureClientID(),
+						ClientSecret:   env.AzureClientSecret(),
+						SubscriptionID: env.AzureSubscriptionID(),
+						TenantID:       env.AzureTenantID(),
+					},
 					SecretYaml: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYaml{
 						Service: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlService{
 							Azure: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzure{
-								ClientID:      env.AzureClientID(),
-								ClientSecret:  env.AzureClientSecret(),
-								SubsciptionID: env.AzureSubscriptionID(),
-								TenantID:      env.AzureTenantID(),
+								ClientID:       env.AzureClientID(),
+								ClientSecret:   env.AzureClientSecret(),
+								SubscriptionID: env.AzureSubscriptionID(),
+								TenantID:       env.AzureTenantID(),
 								Template: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplate{
 									URI: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplateURI{
 										Version: env.CircleSHA(),
