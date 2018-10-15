@@ -49,7 +49,7 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:c8be0e70a3e79f40f20bf2144902f809fd5ca04e31102a7800c7932a47034620"
+  digest = "1:83557798381dd59e83244e82549ed92a1e2c4c4dac9256b655e9fc5bf5d8082b"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -84,8 +84,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "4b4fb865e4e4a972645dba0b9677e623dd83a8a8"
-  version = "v1.15.53"
+  revision = "bf8067ceb6e7f51e150c218972dccfeeed892b85"
+  version = "v1.15.54"
 
 [[projects]]
   branch = "master"
@@ -231,7 +231,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "644d27c78a5d808d6a5eb5fe031b259a9a954ef2"
+  revision = "7cd02384d6dee74cf9932ce9e0d6d4a48e6fcdc3"
 
 [[projects]]
   branch = "master"
@@ -283,7 +283,7 @@
   revision = "d467639908a92260877d2158bdc747d412040db9"
 
 [[projects]]
-  branch = "azure-config-e2e"
+  branch = "master"
   digest = "1:0a7837d5a0f2afa1e2cbed6458b7b966d31129df339d850dc85904e730f565c2"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
@@ -292,7 +292,7 @@
     "pkg/e2etemplates",
   ]
   pruneopts = "UT"
-  revision = "b45746e7a6a3d5d91fd992562043ab41496eb01f"
+  revision = "199d79f25147166594f570865c54eaca99d9c37a"
 
 [[projects]]
   branch = "master"
@@ -471,12 +471,12 @@
   revision = "9a4f3249a5b5a080d13f1db2580cf09ba5d14ca1"
 
 [[projects]]
-  digest = "1:b98e7574fc27ec166fb31195ec72c3bd0bffd73926d3612eb4c929bc5236f75b"
+  digest = "1:15e27372d379b45b18ac917b9dafc45c45485239490ece18cca97a12f9591146"
   name = "github.com/go-ini/ini"
   packages = ["."]
   pruneopts = "UT"
-  revision = "7b294651033cd7d9e7f0d9ffa1b75ed1e198e737"
-  version = "v1.38.3"
+  revision = "9c8236e659b76e87bf02044d06fde8683008ff3e"
+  version = "v1.39.0"
 
 [[projects]]
   digest = "1:83a37f3bd4ccd13469775ef771e943e6c7cfaba6926decff6c83135e56512f08"
@@ -578,7 +578,7 @@
   name = "github.com/google/go-github"
   packages = ["github"]
   pruneopts = "UT"
-  revision = "a2b9279b52942e116e4b6a5c4c2290286e287068"
+  revision = "aa7423eb79707e88352b2af2ff5fa5a4493f88c6"
 
 [[projects]]
   digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
@@ -888,7 +888,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "a92615f3c49003920a58dedcf32cf55022cefb8d"
+  revision = "0c41d7ab0a0ee717d4590a44bcb987dfd9e183eb"
 
 [[projects]]
   branch = "master"
