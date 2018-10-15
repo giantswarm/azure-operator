@@ -68,6 +68,10 @@
       "type":"string",
       "defaultValue":"dns_cname_setup.json"
     },
+    "ignitionContainerSetupTemplateFile":{
+      "type":"string",
+      "defaultValue":"ignition_container_setup.json"
+    },
     "kubernetesLoadBalancerTemplateFile":{
       "type":"string",
       "defaultValue":"kubernetes_load_balancer_setup.json"
@@ -106,6 +110,7 @@
   "variables":{
     "dnsASetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
+    "ignitionContainerSetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('ignitionContainerSetupTemplateFile'))]",
     "kubernetesLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('kubernetesLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "privateLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
@@ -391,6 +396,26 @@
           },
           "ipAddress":{
             "value":"[reference('etcd_load_balancer_setup').outputs.ipAddress.value]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
+      "name":"ignition_container_setup",
+      "type":"Microsoft.Resources/deployments",
+      "properties":{
+        "mode":"incremental",
+        "templateLink":{
+          "uri":"[variables('ignitionContainerSetup')]",
+          "contentVersion":"1.0.0.0"
+        },
+        "parameters":{
+          "clusterID":{
+            "value":"[parameters('clusterID')]"
+          },
+          "GiantSwarmTags":{
+            "value":"[parameters('GiantSwarmTags')]"
           }
         }
       }

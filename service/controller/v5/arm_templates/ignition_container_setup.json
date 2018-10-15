@@ -1,0 +1,58 @@
+{
+    "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "clusterID":{
+          "type":"string"
+        },
+        "GiantSwarmTags":{
+          "type":"object",
+          "defaultValue":{
+            "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
+          }
+        },
+        "location": {
+            "type": "string"
+        }
+    },
+    "variables": {
+        "accessTier":"Cool",
+        "accountType":"Standard_RAGRS",
+        "ignitionBlobContainer":"[concat('GSBlobContainer',parameters('clusterID'))]",
+        "kind":"BlobStorage",
+        "storageAccountName":"[concat('GSStorageAccount',parameters('clusterID'))]",
+        "supportsHttpsTrafficOnly":true
+    },
+    "resources": [
+        {
+            "name": "[variables('storageAccountName')]",
+            "type": "Microsoft.Storage/storageAccounts",
+            "apiVersion": "2018-07-01",
+            "location": "[parameters('location')]",
+            "properties": {
+                "accessTier": "[variables('accessTier')]",
+                "accountType": "[variables('accountType')]",
+                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]"
+            },
+            "dependsOn": [],
+            "sku": {
+                "name": "[parameters('accountType')]"
+            },
+            "kind": "[parameters('kind')]",
+            "tags": {
+                "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+            },
+            "resources": [
+                {
+                "name": "[variables('ignitionBlobContainer')]",
+                "type": "blobServices/containers",
+                "apiVersion": "2018-07-01",
+                "dependsOn": [
+                    "[variables('storageAccountName')]"
+                ]
+                }
+            ]
+        }
+    ],
+    "outputs": {}
+}
