@@ -416,6 +416,12 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
+          },
+          "masterSubnetID":{
+            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
+          },
+          "workerSubnetID":{
+            "value":"[reference('virtual_network_setup').outputs.workerSubnetID.value]"
           }
         }
       }

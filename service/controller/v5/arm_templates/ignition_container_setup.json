@@ -18,6 +18,12 @@
             "defaultValue": "BlobStorage",
             "type": "string"
         },
+        "masterSubnetID": {
+            "type": "string"
+        },
+        "workerSubnetID" : {
+            "type": "string"
+        },
         "supportsHttpsTrafficOnly": {
             "defaultValue": true,
             "type": "bool"
@@ -42,11 +48,29 @@
             "apiVersion": "2018-07-01",
             "location":"[resourceGroup().location]",
             "properties": {
+                "networkAcls": {
+                    "bypass": "AzureServices",
+                    "virtualNetworkRules": [
+                        {
+                            "id": "[parameters('masterSubnetID')]",
+                            "action": "Allow"
+                        },
+                        {
+                            "id": "[parameters('workerSubnetID')]",
+                            "action": "Allow"
+                        }
+                    ],
+                    "ipRules": [],
+                    "defaultAction": "Deny"
+                },
                 "accessTier": "[parameters('accessTier')]",
                 "accountType": "[parameters('accountType')]",
                 "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]"
             },
-            "dependsOn": [],
+            "dependsOn": [
+                "[parameters('masterSubnetID')]",
+                "[parameters('workerSubnetID')]"
+            ],
             "sku": {
                 "name": "[parameters('accountType')]"
             },
@@ -56,7 +80,7 @@
             },
             "resources": [
                 {
-                "name": "[parameters('blobContainer')]",
+                "name": "[concat('default/',parameters('blobContainer'))]",
                 "type": "blobServices/containers",
                 "apiVersion": "2018-07-01",
                 "dependsOn": [
