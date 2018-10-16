@@ -8,10 +8,10 @@ import (
 	"os"
 	"testing"
 
+	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
-	"github.com/giantswarm/e2etemplates/pkg/e2etemplates"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/integration/env"
@@ -138,7 +138,16 @@ func Resources(config Config) error {
 	}
 
 	{
-		err = config.Host.InstallStableOperator("node-operator", "drainerconfig", e2etemplates.NodeOperatorChartValues)
+		c := chartvalues.NodeOperatorConfig{
+			RegistryPullSecret: env.RegistryPullSecret(),
+		}
+
+		values, err := chartvalues.NewNodeOperator(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = config.Release.InstallOperator(context.Background(), "node-operator", release.NewStableVersion(), values, corev1alpha1.NewNodeConfigCRD())
 		if err != nil {
 			return microerror.Mask(err)
 		}
