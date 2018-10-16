@@ -2,6 +2,26 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
+        "accessTier": {
+            "defaultValue": "Cool",
+            "type": "string"
+        },
+        "accountType": {
+            "defaultValue": "Standard_RAGRS",
+            "type": "string"
+        },
+        "blobContainer": {
+            "defaultValue": "ignition",
+            "type": "string"
+        },
+        "kind": {
+            "defaultValue": "BlobStorage",
+            "type": "string"
+        },
+        "supportsHttpsTrafficOnly": {
+            "defaultValue": true,
+            "type": "bool"
+        },
         "clusterID":{
           "type":"string"
         },
@@ -10,29 +30,21 @@
           "defaultValue":{
             "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
           }
-        },
-        "location": {
-            "type": "string"
         }
     },
     "variables": {
-        "accessTier":"Cool",
-        "accountType":"Standard_RAGRS",
-        "ignitionBlobContainer":"[concat('GSBlobContainer',parameters('clusterID'))]",
-        "kind":"BlobStorage",
-        "storageAccountName":"[concat('GSStorageAccount',parameters('clusterID'))]",
-        "supportsHttpsTrafficOnly":true
+        "storageAccountName":"[concat(parameters('clusterID'),'gsignitionaccount')]"
     },
     "resources": [
         {
             "name": "[variables('storageAccountName')]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2018-07-01",
-            "location": "[parameters('location')]",
+            "location":"[resourceGroup().location]",
             "properties": {
-                "accessTier": "[variables('accessTier')]",
-                "accountType": "[variables('accountType')]",
-                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]"
+                "accessTier": "[parameters('accessTier')]",
+                "accountType": "[parameters('accountType')]",
+                "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]"
             },
             "dependsOn": [],
             "sku": {
@@ -44,7 +56,7 @@
             },
             "resources": [
                 {
-                "name": "[variables('ignitionBlobContainer')]",
+                "name": "[parameters('blobContainer')]",
                 "type": "blobServices/containers",
                 "apiVersion": "2018-07-01",
                 "dependsOn": [
