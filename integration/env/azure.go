@@ -26,7 +26,8 @@ const (
 	EnvVarAzureGuestSubscriptionID = "AZURE_GUEST_SUBSCRIPTIONID"
 	EnvVarAzureGuestTenantID       = "AZURE_GUEST_TENANTID"
 
-	EnvVarCircleBuildNumber = "CIRCLE_BUILD_NUM"
+	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
+	EnvVarCircleBuildNumber         = "CIRCLE_BUILD_NUM"
 )
 
 var (
@@ -40,6 +41,14 @@ var (
 	azureGuestClientSecret   string
 	azureGuestSubscriptionID string
 	azureGuestTenantID       string
+
+	azureCIDR             string
+	azureCalicoSubnetCIDR string
+	azureMasterSubnetCIDR string
+	azureVPNSubnetCIDR    string
+	azureWorkerSubnetCIDR string
+
+	commonDomainResourceGroup string
 )
 
 func init() {
@@ -88,6 +97,11 @@ func init() {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestTenantID))
 	}
 
+	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
+	if commonDomainResourceGroup == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomainResourceGroup))
+	}
+
 	// azureCDIR must be provided along with other CIDRs,
 	// otherwise we compute CIDRs base on EnvVarCircleBuildNumber value.
 	azureCDIR := os.Getenv(EnvVarAzureCIDR)
@@ -102,25 +116,16 @@ func init() {
 			panic(err)
 		}
 
-		os.Setenv(EnvVarAzureCIDR, subnets.Parent.String())
-		os.Setenv(EnvVarAzureCalicoSubnetCIDR, subnets.Calico.String())
-		os.Setenv(EnvVarAzureMasterSubnetCIDR, subnets.Master.String())
-		os.Setenv(EnvVarAzureVPNSubnetCIDR, subnets.VPN.String())
-		os.Setenv(EnvVarAzureWorkerSubnetCIDR, subnets.Worker.String())
-	} else {
-		if os.Getenv(EnvVarAzureCalicoSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureCalicoSubnetCIDR))
-		}
-		if os.Getenv(EnvVarAzureMasterSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureMasterSubnetCIDR))
-		}
-		if os.Getenv(EnvVarAzureVPNSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureVPNSubnetCIDR))
-		}
-		if os.Getenv(EnvVarAzureWorkerSubnetCIDR) == "" {
-			panic(fmt.Sprintf("env var '%s' must not be empty when AZURE_CIDR is set", EnvVarAzureWorkerSubnetCIDR))
-		}
+		azureCIDR = subnets.Parent.String()
+		azureCalicoSubnetCIDR = subnets.Calico.String()
+		azureMasterSubnetCIDR = subnets.Master.String()
+		azureVPNSubnetCIDR = subnets.VPN.String()
+		azureWorkerSubnetCIDR = subnets.Worker.String()
 	}
+}
+
+func AzureCalicoSubnetCIDR() string {
+	return azureCalicoSubnetCIDR
 }
 
 func AzureClientID() string {
@@ -131,16 +136,8 @@ func AzureClientSecret() string {
 	return azureClientSecret
 }
 
-func AzureLocation() string {
-	return azureLocation
-}
-
-func AzureSubscriptionID() string {
-	return azureSubscriptionID
-}
-
-func AzureTenantID() string {
-	return azureTenantID
+func AzureCIDR() string {
+	return azureCIDR
 }
 
 func AzureGuestClientID() string {
@@ -157,4 +154,32 @@ func AzureGuestSubscriptionID() string {
 
 func AzureGuestTenantID() string {
 	return azureGuestTenantID
+}
+
+func AzureLocation() string {
+	return azureLocation
+}
+
+func AzureMasterSubnetCIDR() string {
+	return azureMasterSubnetCIDR
+}
+
+func AzureSubscriptionID() string {
+	return azureSubscriptionID
+}
+
+func AzureTenantID() string {
+	return azureTenantID
+}
+
+func AzureVPNSubnetCIDR() string {
+	return azureVPNSubnetCIDR
+}
+
+func AzureWorkerSubnetCIDR() string {
+	return azureWorkerSubnetCIDR
+}
+
+func CommonDomainResourceGroup() string {
+	return commonDomainResourceGroup
 }

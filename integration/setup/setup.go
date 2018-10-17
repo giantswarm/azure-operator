@@ -7,28 +7,18 @@ import (
 	"log"
 	"os"
 	"testing"
-	"time"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/e2etemplates/pkg/e2etemplates"
 	"github.com/giantswarm/microerror"
-	"k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/template"
-	"github.com/giantswarm/azure-operator/service/controller/v3/credential"
 )
 
 const (
 	azureResourceValuesFile = "/tmp/azure-operator-values.yaml"
-
-	credentialName      = "credential-default"
-	credentialNamespace = "giantswarm"
 )
 
 // WrapTestMain setup and teardown e2e testing environment.
@@ -85,13 +75,19 @@ func Resources(config Config) error {
 			},
 			Secret: chartvalues.AzureOperatorConfigSecret{
 				AzureOperator: chartvalues.AzureOperatorConfigSecretAzureOperator{
+					CredentialDefault: chartvalues.AzureOperatorConfigSecretAzureOperatorCredentialDefault{
+						ClientID:       env.AzureClientID(),
+						ClientSecret:   env.AzureClientSecret(),
+						SubscriptionID: env.AzureSubscriptionID(),
+						TenantID:       env.AzureTenantID(),
+					},
 					SecretYaml: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYaml{
 						Service: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlService{
 							Azure: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzure{
-								ClientID:      env.AzureClientID(),
-								ClientSecret:  env.AzureClientSecret(),
-								SubsciptionID: env.AzureSubscriptionID(),
-								TenantID:      env.AzureTenantID(),
+								ClientID:       env.AzureClientID(),
+								ClientSecret:   env.AzureClientSecret(),
+								SubscriptionID: env.AzureSubscriptionID(),
+								TenantID:       env.AzureTenantID(),
 								Template: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplate{
 									URI: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplateURI{
 										Version: env.CircleSHA(),
@@ -153,55 +149,33 @@ func Resources(config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		err = installCredential(config.Host)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = config.Host.InstallResource("apiextensions-azure-config-e2e", template.AzureConfigE2EChartValues, ":stable")
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
-	return nil
-}
-
-func installCredential(h *framework.Host) error {
-	o := func() error {
-		k8sClient := h.K8sClient()
-
-		k8sClient.CoreV1().Secrets(credentialNamespace).Delete(credentialName, &metav1.DeleteOptions{})
-
-		secret := &v1.Secret{
-			ObjectMeta: metav1.ObjectMeta{
-				Name: credentialName,
+	{
+		c := chartvalues.APIExtensionsAzureConfigE2EConfig{
+			Azure: chartvalues.APIExtensionsAzureConfigE2EConfigAzure{
+				CalicoSubnetCIDR: env.AzureCalicoSubnetCIDR(),
+				CIDR:             env.AzureCIDR(),
+				Location:         env.AzureLocation(),
+				MasterSubnetCIDR: env.AzureMasterSubnetCIDR(),
+				VPNSubnetCIDR:    env.AzureVPNSubnetCIDR(),
+				WorkerSubnetCIDR: env.AzureWorkerSubnetCIDR(),
 			},
-
-			Data: map[string][]byte{
-				credential.ClientIDKey:       []byte(env.AzureGuestClientID()),
-				credential.ClientSecretKey:   []byte(env.AzureGuestClientSecret()),
-				credential.SubscriptionIDKey: []byte(env.AzureGuestSubscriptionID()),
-				credential.TenantIDKey:       []byte(env.AzureGuestTenantID()),
-			},
+			ClusterName:               env.ClusterID(),
+			CommonDomain:              env.CommonDomain(),
+			CommonDomainResourceGroup: env.CommonDomainResourceGroup(),
+			VersionBundleVersion:      env.VersionBundleVersion(),
 		}
 
-		_, err := k8sClient.CoreV1().Secrets(credentialNamespace).Create(secret)
+		values, err := chartvalues.NewAPIExtensionsAzureConfigE2E(c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		return nil
-	}
-	b := backoff.NewExponential(backoff.ShortMaxWait, backoff.ShortMaxInterval)
-	n := func(err error, delay time.Duration) {
-		log.Println("level", "debug", "message", err.Error())
-	}
-
-	err := backoff.RetryNotify(o, b, n)
-	if err != nil {
-		return microerror.Mask(err)
+		err = config.Release.Install(context.Background(), "apiextensions-azure-config-e2e", release.NewStableVersion(), values)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
