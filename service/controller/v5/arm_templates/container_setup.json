@@ -2,25 +2,9 @@
     "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
     "contentVersion": "1.0.0.0",
     "parameters": {
-        "accessTier": {
-            "defaultValue": "Cool",
-            "type": "string"
-        },
-        "accountType": {
-            "defaultValue": "Standard_RAGRS",
-            "type": "string"
-        },
-        "blobContainer": {
+        "blobContainerName": {
             "defaultValue": "ignition",
             "type": "string"
-        },
-        "kind": {
-            "defaultValue": "BlobStorage",
-            "type": "string"
-        },
-        "supportsHttpsTrafficOnly": {
-            "defaultValue": true,
-            "type": "bool"
         },
         "clusterID":{
           "type":"string"
@@ -30,36 +14,42 @@
           "defaultValue":{
             "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
           }
+        },
+        "storageAccountName":{
+          "type":"string"
         }
     },
     "variables": {
-        "storageAccountName":"[concat(parameters('clusterID'),'gsignitionaccount')]"
+        "accessTier": "Cool",
+        "accountType": "Standard_RAGRS",
+        "kind": "BlobStorage",
+        "supportsHttpsTrafficOnly": true
     },
     "resources": [
         {
-            "name": "[variables('storageAccountName')]",
+            "name": "[parameters('storageAccountName')]",
             "type": "Microsoft.Storage/storageAccounts",
             "apiVersion": "2018-07-01",
             "location":"[resourceGroup().location]",
             "properties": {
-                "accessTier": "[parameters('accessTier')]",
-                "accountType": "[parameters('accountType')]",
-                "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]"
+                "accessTier": "[variables('accessTier')]",
+                "accountType": "[variables('accountType')]",
+                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]"
             },
             "sku": {
-                "name": "[parameters('accountType')]"
+                "name": "[variables('accountType')]"
             },
-            "kind": "[parameters('kind')]",
+            "kind": "[variables('kind')]",
             "tags": {
                 "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
             },
             "resources": [
                 {
-                "name": "[concat('default/',parameters('blobContainer'))]",
+                "name": "[concat('default/',parameters('blobContainerName'))]",
                 "type": "blobServices/containers",
                 "apiVersion": "2018-03-01-preview",
                 "dependsOn": [
-                    "[variables('storageAccountName')]"
+                    "[parameters('storageAccountName')]"
                 ]
                 }
             ]
