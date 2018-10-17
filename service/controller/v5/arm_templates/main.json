@@ -404,6 +404,9 @@
       "apiVersion":"2016-09-01",
       "name":"ignition_container_setup",
       "type":"Microsoft.Resources/deployments",
+      "dependsOn":[
+        "virtual_network_setup"
+      ],
       "properties":{
         "mode":"incremental",
         "templateLink":{

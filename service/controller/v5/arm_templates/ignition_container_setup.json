@@ -67,10 +67,6 @@
                 "accountType": "[parameters('accountType')]",
                 "supportsHttpsTrafficOnly": "[parameters('supportsHttpsTrafficOnly')]"
             },
-            "dependsOn": [
-                "[parameters('masterSubnetID')]",
-                "[parameters('workerSubnetID')]"
-            ],
             "sku": {
                 "name": "[parameters('accountType')]"
             },
