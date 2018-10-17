@@ -12,10 +12,6 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 )
 
-const (
-	provider = "azure"
-)
-
 // Teardown e2e testing environment.
 func Teardown(c Config) error {
 	ctx := context.Background()
@@ -28,7 +24,7 @@ func Teardown(c Config) error {
 		//
 		//     https://github.com/giantswarm/giantswarm/issues/3839
 		//
-		c.Host.DeleteGuestCluster(ctx, provider)
+		c.Host.DeleteGuestCluster(ctx, "azure")
 
 		// only do full teardown when not on CI
 		if env.CircleCI() == "true" {
