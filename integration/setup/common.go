@@ -12,6 +12,33 @@ import (
 )
 
 func common(config Config) error {
+	ctx := context.Background()
+
+	{
+		err := config.K8s.EnsureNamespace(ctx, namespace)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		c := chartvalues.E2ESetupVaultConfig{
+			Vault: chartvalues.E2ESetupVaultConfigVault{
+				Token: env.VaultToken(),
+			},
+		}
+
+		values, err := chartvalues.NewE2ESetupVault(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = config.Release.Install(ctx, "e2esetup-vault", release.NewStableVersion(), values, config.Release.Condition().PodExists(ctx, "default", "app=vault"))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	{
 		c := chartvalues.CertOperatorConfig{
 			ClusterName:        env.ClusterID(),
@@ -50,7 +77,7 @@ func common(config Config) error {
 			return microerror.Mask(err)
 		}
 
-		err = config.Release.InstallOperator(context.Background(), "node-operator", release.NewStableVersion(), values, corev1alpha1.NewNodeConfigCRD())
+		err = config.Release.InstallOperator(ctx, "node-operator", release.NewStableVersion(), values, corev1alpha1.NewNodeConfigCRD())
 		if err != nil {
 			return microerror.Mask(err)
 		}
