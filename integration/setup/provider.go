@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 )
 
-func Provider(config Config) error {
+func provider(config Config) error {
 	{
 		c := chartvalues.AzureOperatorConfig{
 			Provider: chartvalues.AzureOperatorConfigProvider{

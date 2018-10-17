@@ -44,12 +44,12 @@ func Setup(c Config) error {
 		return microerror.Mask(err)
 	}
 
-	err = Common(c)
+	err = common(c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = Provider(c)
+	err = provider(c)
 	if err != nil {
 		return microerror.Mask(err)
 	}

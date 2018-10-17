@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 )
 
-func Common(config Config) error {
+func common(config Config) error {
 	{
 		c := chartvalues.CertOperatorConfig{
 			ClusterName:        env.ClusterID(),
