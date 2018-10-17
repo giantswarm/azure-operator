@@ -259,7 +259,7 @@
 
 [[projects]]
   branch = "pod-exists"
-  digest = "1:85d375ab0d85293b095f8c36b7344f925120435405c105997291a3319b44c396"
+  digest = "1:df1dcb85e5fe77ce28644fd0f80000a55a2cf23f0c9eefca0a8f30c9769561f3"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "pkg/framework",
@@ -269,7 +269,7 @@
     "pkg/release",
   ]
   pruneopts = "UT"
-  revision = "2628f8c327b1eeff8513ca1edc10fd21733cac8c"
+  revision = "91a74ddab23764683a9907be2d38dc64fce400ad"
 
 [[projects]]
   branch = "master"
@@ -1585,7 +1585,7 @@
   name = "k8s.io/utils"
   packages = ["exec"]
   pruneopts = "UT"
-  revision = "14b61cea4a067d0af104cea47bbf51cf100c0253"
+  revision = "f024bbd3a09501e18d1973b22be7188c5c005014"
 
 [[projects]]
   branch = "master"
