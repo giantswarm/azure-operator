@@ -49,7 +49,7 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:c4199e777f8f126719b7ac497c2d342c9f7513b555325ff8a8e65c10a68de1bf"
+  digest = "1:ba7f08c462b666f977d28ba07223871ab1a2cd59381f68d0d23d9dba7b57acd7"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -84,8 +84,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "572272ee7c4503c8a32f79ec16b959c9e8a211c3"
-  version = "v1.15.55"
+  revision = "c35fe9d06b9f0cefe538ecdb7501c84603119dfb"
+  version = "v1.15.56"
 
 [[projects]]
   branch = "master"
@@ -218,7 +218,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f55dcaff59c0d38878326f5ad91c4094476ca3d259ece0a90dd2f2ed6320e287"
+  digest = "1:5325233f9acbdf0b9c8df26162fba627288f4b34f4c09d9cd9fb427aa0569a39"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -231,7 +231,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "7cd02384d6dee74cf9932ce9e0d6d4a48e6fcdc3"
+  revision = "09dd5007ce22b1a65db8dc1f14ce073e70d94e43"
 
 [[projects]]
   branch = "master"
@@ -258,8 +258,8 @@
   revision = "4bf2b99ebf79cb800cb21ec1a4541e6582e3a0b7"
 
 [[projects]]
-  branch = "master"
-  digest = "1:4dbb9ba576bfefa3dba31343b3752963268f4756ad873ef223e807482c4b5690"
+  branch = "pod-exists"
+  digest = "1:85d375ab0d85293b095f8c36b7344f925120435405c105997291a3319b44c396"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "pkg/framework",
@@ -269,7 +269,7 @@
     "pkg/release",
   ]
   pruneopts = "UT"
-  revision = "022462abab6f106d3b535b39122f74e5ba76bf1e"
+  revision = "2628f8c327b1eeff8513ca1edc10fd21733cac8c"
 
 [[projects]]
   branch = "master"
@@ -283,15 +283,23 @@
   revision = "d467639908a92260877d2158bdc747d412040db9"
 
 [[projects]]
+  branch = "k8s-namespace"
+  digest = "1:5ad5c525f99c4568ca9219e51708231cbe0710659ec3fd5a26d232139b840a82"
+  name = "github.com/giantswarm/e2esetup"
+  packages = ["k8s"]
+  pruneopts = "UT"
+  revision = "3f37f126d13b068265fb09e88bfe41f08a61a8ef"
+
+[[projects]]
   branch = "master"
-  digest = "1:23035af37988c3401f6a8f4b34b95c572878bfcc5b6a58cfad23ba033b6a927a"
+  digest = "1:edee3769b234f0928e7af1116290d3038dae42d2e6e4c11e87a4bcab547c74bd"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
     "internal/render",
     "pkg/chartvalues",
   ]
   pruneopts = "UT"
-  revision = "c53cb2d19eddbf6c67aa642622927a8f3a9401d2"
+  revision = "06c2c539a172dd6031805a93d4d645eef0266624"
 
 [[projects]]
   branch = "master"
@@ -342,7 +350,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9c6d2fa3cad1a8f86b10709b8ab5335054b98b9b3638a7e536c6c0fe7731f282"
+  digest = "1:3b4aad44e8bcbdaf69d854ef7bc6a75bc7877b19d4ead65dca5bebbb71cff9c9"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "v_3_3_4",
@@ -351,7 +359,7 @@
     "v_3_6_2",
   ]
   pruneopts = "T"
-  revision = "5b87febc34e9d2582b09f438e220909f179af994"
+  revision = "512daada5b2f737d03c81efd123079854dbaf133"
 
 [[projects]]
   branch = "master"
@@ -1611,6 +1619,7 @@
     "github.com/giantswarm/e2e-harness/pkg/framework/resource",
     "github.com/giantswarm/e2e-harness/pkg/release",
     "github.com/giantswarm/e2eclients/azure",
+    "github.com/giantswarm/e2esetup/k8s",
     "github.com/giantswarm/e2etemplates/pkg/chartvalues",
     "github.com/giantswarm/e2etests/clusterstate",
     "github.com/giantswarm/e2etests/clusterstate/provider",

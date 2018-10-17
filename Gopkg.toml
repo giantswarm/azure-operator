@@ -46,13 +46,17 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/certs"
 
-[[constraint]]
-  branch = "master"
+[[override]]
+  branch = "pod-exists"
   name = "github.com/giantswarm/e2e-harness"
 
 [[constraint]]
   branch = "master"
   name = "github.com/giantswarm/e2eclients"
+
+[[constraint]]
+  branch = "k8s-namespace"
+  name = "github.com/giantswarm/e2esetup"
 
 [[constraint]]
   branch = "master"
