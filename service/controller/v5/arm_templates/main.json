@@ -2,6 +2,12 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
+    "blobContainerName":{
+      "type":"string",
+      "metadata":{
+        "description":"Container name for the ignition."
+      }
+    },
     "clusterID":{
       "type":"string",
       "metadata":{
@@ -19,6 +25,12 @@
       "defaultValue":"Yes",
       "metadata":{
         "description":"Whether the deployment is provisioned the very first time."
+      }
+    },
+    "storageAccountName":{
+      "type":"string",
+      "metadata":{
+        "description":"Storage account name for the ignition."
       }
     },
     "virtualNetworkName":{
@@ -68,6 +80,10 @@
       "type":"string",
       "defaultValue":"dns_cname_setup.json"
     },
+    "containerSetupTemplateFile":{
+      "type":"string",
+      "defaultValue":"container_setup.json"
+    },
     "kubernetesLoadBalancerTemplateFile":{
       "type":"string",
       "defaultValue":"kubernetes_load_balancer_setup.json"
@@ -106,6 +122,7 @@
   "variables":{
     "dnsASetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
+    "containerSetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('containerSetupTemplateFile'))]",
     "kubernetesLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('kubernetesLoadBalancerTemplateFile'))]",
     "publicLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
     "privateLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
@@ -391,6 +408,32 @@
           },
           "ipAddress":{
             "value":"[reference('etcd_load_balancer_setup').outputs.ipAddress.value]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
+      "name":"container_setup",
+      "type":"Microsoft.Resources/deployments",
+      "properties":{
+        "mode":"incremental",
+        "templateLink":{
+          "uri":"[variables('containerSetupTemplateURI')]",
+          "contentVersion":"1.0.0.0"
+        },
+        "parameters":{
+          "blobContainerName":{
+            "value":"[parameters('blobContainerName')]"
+          },
+          "clusterID":{
+            "value":"[parameters('clusterID')]"
+          },
+          "GiantSwarmTags":{
+            "value":"[parameters('GiantSwarmTags')]"
+          },
+          "storageAcountName":{
+            "value":"[parameters('storageAccountName')]"
           }
         }
       }

@@ -13,6 +13,8 @@ const (
 	installationTagName = "GiantSwarmInstallation"
 	organizationTagName = "GiantSwarmOrganization"
 
+	blobContainerName         = "ignition"
+	storageAccountSuffix      = "gsstorageaccount"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
@@ -59,6 +61,10 @@ func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
 
 func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
+}
+
+func BlobContainerName() string {
+	return blobContainerName
 }
 
 func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
@@ -237,6 +243,11 @@ func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
 // RouteTableName returns name of the route table for this cluster.
 func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
+}
+
+// StorageAccountName returns name of the storage account for the ignition.
+func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s%s", ClusterID(customObject), storageAccountSuffix)
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {
