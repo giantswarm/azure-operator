@@ -3,7 +3,6 @@
     "contentVersion": "1.0.0.0",
     "parameters": {
         "blobContainerName": {
-            "defaultValue": "ignition",
             "type": "string"
         },
         "clusterID":{
