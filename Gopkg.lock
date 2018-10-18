@@ -49,7 +49,7 @@
   version = "v1.4.2"
 
 [[projects]]
-  digest = "1:ba7f08c462b666f977d28ba07223871ab1a2cd59381f68d0d23d9dba7b57acd7"
+  digest = "1:a24432934497c55a97ace9e39c5635bcd1f7d2e5b5f377b4616f33801047b529"
   name = "github.com/aws/aws-sdk-go"
   packages = [
     "aws",
@@ -84,8 +84,8 @@
     "service/sts",
   ]
   pruneopts = "UT"
-  revision = "c35fe9d06b9f0cefe538ecdb7501c84603119dfb"
-  version = "v1.15.56"
+  revision = "66832f7f150914a46ffbfc03210f3b9cb0e4c005"
+  version = "v1.15.57"
 
 [[projects]]
   branch = "master"
@@ -218,7 +218,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:5325233f9acbdf0b9c8df26162fba627288f4b34f4c09d9cd9fb427aa0569a39"
+  digest = "1:20f6609f14234e4cb8a8717488b149af12d2344f0e12815a1601ebd130a3587c"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/core/v1alpha1",
@@ -231,7 +231,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "09dd5007ce22b1a65db8dc1f14ce073e70d94e43"
+  revision = "1a11ac7c462d817d05222b1c7f83672b3f52a5a9"
 
 [[projects]]
   branch = "master"
@@ -258,8 +258,8 @@
   revision = "4bf2b99ebf79cb800cb21ec1a4541e6582e3a0b7"
 
 [[projects]]
-  branch = "pod-exists"
-  digest = "1:df1dcb85e5fe77ce28644fd0f80000a55a2cf23f0c9eefca0a8f30c9769561f3"
+  branch = "master"
+  digest = "1:388d013980329ddf136ac4be05146e1e0ad428b8146f980848a48c63b84d01a3"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "pkg/framework",
@@ -269,7 +269,7 @@
     "pkg/release",
   ]
   pruneopts = "UT"
-  revision = "91a74ddab23764683a9907be2d38dc64fce400ad"
+  revision = "3557509449cae022e9461ea164377f28e3ffaa70"
 
 [[projects]]
   branch = "master"
@@ -283,12 +283,12 @@
   revision = "d467639908a92260877d2158bdc747d412040db9"
 
 [[projects]]
-  branch = "k8s-namespace"
+  branch = "master"
   digest = "1:5ad5c525f99c4568ca9219e51708231cbe0710659ec3fd5a26d232139b840a82"
   name = "github.com/giantswarm/e2esetup"
   packages = ["k8s"]
   pruneopts = "UT"
-  revision = "3f37f126d13b068265fb09e88bfe41f08a61a8ef"
+  revision = "47891250152bdd807b032f78bb4f320a64c74149"
 
 [[projects]]
   branch = "master"
@@ -900,7 +900,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1e5a14e360f8d47cb1aadb7235bae7e8b965b841b9d1a3d639318733c47f5597"
+  digest = "1:e1755c1346c4d575b8d898a77d294ff88f128a0143cf83a2ecfb8a4f2d598fb9"
   name = "golang.org/x/net"
   packages = [
     "context",
@@ -914,18 +914,18 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "49bb7cea24b1df9410e1712aa6433dae904ff66a"
+  revision = "04a2e542c03f1d053ab3e4d6e5abcd4b66e2be8e"
 
 [[projects]]
   branch = "master"
-  digest = "1:28b360454e161aae382c007449bcb1296087b5b52b4f37623bba0f9f9d7207f4"
+  digest = "1:1bce229fad01cbad9bd00e70ca32afff25ac2cea3dd710d50f88c967c1c3df65"
   name = "golang.org/x/oauth2"
   packages = [
     ".",
     "internal",
   ]
   pruneopts = "UT"
-  revision = "c57b0facaced709681d9f90397429b9430a74754"
+  revision = "9dcd33a902f40452422c2367fefcb95b54f9f8f8"
 
 [[projects]]
   branch = "master"
@@ -1416,7 +1416,7 @@
   name = "k8s.io/kube-openapi"
   packages = ["pkg/util/proto"]
   pruneopts = "UT"
-  revision = "9dfdf9be683f61f82cda12362c44c784e0778b56"
+  revision = "5d05df014ac640f14b5e777958248251c2ef5e86"
 
 [[projects]]
   digest = "1:0cbc5b5dd9e675751a7f0b8cc4477f3900dbb31fed90c7793455a219d209ae25"
@@ -1585,7 +1585,7 @@
   name = "k8s.io/utils"
   packages = ["exec"]
   pruneopts = "UT"
-  revision = "f024bbd3a09501e18d1973b22be7188c5c005014"
+  revision = "a82851343d668ce8cdd50da9f8d565164fad6951"
 
 [[projects]]
   branch = "master"
