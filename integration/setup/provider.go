@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 )
 
+// provider installs the operator and tenant cluster CR.
 func provider(config Config) error {
 	{
 		c := chartvalues.AzureOperatorConfig{
