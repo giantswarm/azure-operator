@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 )
 
+// common installs components required to run the operator.
 func common(config Config) error {
 	ctx := context.Background()
 
