@@ -39,11 +39,6 @@ func WrapTestMain(m *testing.M, c Config) {
 func Setup(c Config) error {
 	var err error
 
-	err = c.Host.Setup()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	err = common(c)
 	if err != nil {
 		return microerror.Mask(err)
