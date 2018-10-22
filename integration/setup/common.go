@@ -4,11 +4,10 @@ import (
 	"context"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
-
-	"github.com/giantswarm/azure-operator/integration/env"
 )
 
 // common installs components required to run the operator.
@@ -16,7 +15,7 @@ func common(config Config) error {
 	ctx := context.Background()
 
 	{
-		err := config.K8s.EnsureNamespace(ctx, namespace)
+		err := config.K8s.EnsureNamespaceCreated(ctx, namespace)
 		if err != nil {
 			return microerror.Mask(err)
 		}
