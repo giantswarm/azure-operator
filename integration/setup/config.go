@@ -2,9 +2,8 @@ package setup
 
 import (
 	"github.com/giantswarm/apprclient"
-	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
-	"github.com/giantswarm/e2e-harness/pkg/framework/filelogger"
 	"github.com/giantswarm/e2e-harness/pkg/framework/resource"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
@@ -12,8 +11,6 @@ import (
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-
-	"github.com/giantswarm/azure-operator/integration/env"
 )
 
 const (
@@ -112,20 +109,6 @@ func NewConfig() (Config, error) {
 		}
 	}
 
-	var fileLogger *filelogger.FileLogger
-	{
-		fc := filelogger.Config{
-			Backoff:   backoff.NewExponential(backoff.ShortMaxWait, backoff.LongMaxInterval),
-			K8sClient: host.K8sClient(),
-			Logger:    logger,
-		}
-
-		fileLogger, err = filelogger.New(fc)
-		if err != nil {
-			return Config{}, microerror.Mask(err)
-		}
-	}
-
 	var helmClient *helmclient.Client
 	{
 		c := helmclient.Config{
@@ -146,7 +129,6 @@ func NewConfig() (Config, error) {
 		c := release.Config{
 			ApprClient: apprClient,
 			ExtClient:  host.ExtClient(),
-			FileLogger: fileLogger,
 			G8sClient:  host.G8sClient(),
 			HelmClient: helmClient,
 			K8sClient:  host.K8sClient(),
