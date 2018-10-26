@@ -5,8 +5,11 @@ const (
 	calicoAzureFileOwner      = "root:root"
 	calicoAzureFilePermission = 0600
 	calicoAzureFileTemplate   = `# Extra changes:
-#  - added "nodename_file_optional" set to true (can be removed on the next upgrade)
-#  - added resource limits
+#  - Added "nodename_file_optional" set to true (can be removed on the next upgrade).
+#    Tracked here: https://github.com/giantswarm/giantswarm/issues/4113
+#  - Added resource limits to calico-node.
+#  - Added resource limits to install-cni.
+#  - Made install-cni initContainer.
 #
 # Calico Version v3.2.3
 # https://docs.projectcalico.org/v3.2/releases#v3.2.3
@@ -294,6 +297,7 @@ spec:
             - mountPath: /var/lib/calico
               name: var-lib-calico
               readOnly: false
+      initContainers:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
@@ -314,6 +318,16 @@ spec:
                 configMapKeyRef:
                   name: calico-config
                   key: cni_network_config
+            # Prevents the container from sleeping forever.
+            - name: SLEEP
+              value: "false"
+          resources:
+            requests:
+              cpu: 50m
+              memory: 100Mi
+            limits:
+              cpu: 50m
+              memory: 100Mi
           volumeMounts:
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir
