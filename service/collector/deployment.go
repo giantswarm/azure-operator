@@ -2,8 +2,6 @@ package collector
 
 import (
 	"context"
-	"fmt"
-	"sync"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -28,7 +26,7 @@ const (
 )
 
 var (
-	deploymentStatusDescription *prometheus.Desc = prometheus.NewDesc(
+	deploymentDesc *prometheus.Desc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "deployment", "status"),
 		"Cluster status condition as provided by the CR status.",
 		[]string{
@@ -40,7 +38,7 @@ var (
 	)
 )
 
-type Config struct {
+type DeploymentConfig struct {
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 	Watcher   func(opts metav1.ListOptions) (watch.Interface, error)
@@ -51,17 +49,15 @@ type Config struct {
 	EnvironmentName string
 }
 
-type Collector struct {
+type Deployment struct {
 	k8sClient kubernetes.Interface
 	logger    micrologger.Logger
 	watcher   func(opts metav1.ListOptions) (watch.Interface, error)
 
-	bootOnce sync.Once
-
 	environmentName string
 }
 
-func New(config Config) (*Collector, error) {
+func NewDeployment(config DeploymentConfig) (*Deployment, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -76,41 +72,21 @@ func New(config Config) (*Collector, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.EnvironmentName must not be empty", config)
 	}
 
-	c := &Collector{
+	d := &Deployment{
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 		watcher:   config.Watcher,
 
-		bootOnce: sync.Once{},
-
 		environmentName: config.EnvironmentName,
 	}
 
-	return c, nil
+	return d, nil
 }
 
-func (c *Collector) Boot(ctx context.Context) {
-	c.bootOnce.Do(func() {
-		c.logger.LogCtx(ctx, "level", "debug", "message", "registering collector")
-
-		err := prometheus.Register(prometheus.Collector(c))
-		if IsAlreadyRegisteredError(err) {
-			c.logger.LogCtx(ctx, "level", "debug", "message", "collector already registered")
-		} else if err != nil {
-			c.logger.Log("level", "error", "message", "registering collector failed", "stack", fmt.Sprintf("%#v", err))
-		} else {
-			c.logger.LogCtx(ctx, "level", "debug", "message", "registered collector")
-		}
-	})
-}
-
-func (c *Collector) Collect(ch chan<- prometheus.Metric) {
-	c.logger.Log("level", "debug", "message", "start collecting metrics")
-
-	watcher, err := c.watcher(metav1.ListOptions{})
+func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
+	watcher, err := d.watcher(metav1.ListOptions{})
 	if err != nil {
-		c.logger.Log("level", "error", "message", "watching CRs failed", "stack", fmt.Sprintf("%#v", err))
-		return
+		return microerror.Mask(err)
 	}
 	defer watcher.Stop()
 
@@ -123,29 +99,24 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 
 			customObject, err := key.ToCustomObject(event.Object)
 			if err != nil {
-				c.logger.Log("level", "error", "message", "asserting custom object failed", "stack", fmt.Sprintf("%#v", err))
-				break
+				return microerror.Mask(err)
 			}
 
 			{
-				deploymentsClient, err := c.getDeploymentsClient(customObject)
+				deploymentsClient, err := d.getDeploymentsClient(customObject)
 				if err != nil {
-					c.logger.Log("level", "error", "message", "creating deployments client failed", "stack", fmt.Sprintf("%#v", err))
-					return
+					return microerror.Mask(err)
 				}
 
 				r, err := deploymentsClient.ListByResourceGroup(context.Background(), key.ClusterID(customObject), "", to.Int32Ptr(100))
 				if err != nil {
-					c.logger.Log("level", "error", "message", "listing deployments failed", "stack", fmt.Sprintf("%#v", err))
-					return
+					return microerror.Mask(err)
 				}
 
 				for r.NotDone() {
 					for _, v := range r.Values() {
-						c.logger.Log("level", "debug", "message", fmt.Sprintf("deployment %#q in resource group %#q has status %#q", *v.Name, key.ClusterID(customObject), *v.Properties.ProvisioningState))
-
 						ch <- prometheus.MustNewConstMetric(
-							deploymentStatusDescription,
+							deploymentDesc,
 							prometheus.GaugeValue,
 							float64(matchedStringToInt(statusCanceled, *v.Properties.ProvisioningState)),
 							key.ClusterID(customObject),
@@ -153,7 +124,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 							statusCanceled,
 						)
 						ch <- prometheus.MustNewConstMetric(
-							deploymentStatusDescription,
+							deploymentDesc,
 							prometheus.GaugeValue,
 							float64(matchedStringToInt(statusFailed, *v.Properties.ProvisioningState)),
 							key.ClusterID(customObject),
@@ -161,7 +132,7 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 							statusFailed,
 						)
 						ch <- prometheus.MustNewConstMetric(
-							deploymentStatusDescription,
+							deploymentDesc,
 							prometheus.GaugeValue,
 							float64(matchedStringToInt(statusSucceeded, *v.Properties.ProvisioningState)),
 							key.ClusterID(customObject),
@@ -172,28 +143,27 @@ func (c *Collector) Collect(ch chan<- prometheus.Metric) {
 
 					err := r.Next()
 					if err != nil {
-						c.logger.Log("level", "error", "message", "getting next page values failed", "stack", fmt.Sprintf("%#v", err))
-						return
+						return microerror.Mask(err)
 					}
 				}
 			}
 		case <-time.After(time.Second):
-			c.logger.Log("level", "debug", "message", "finished collecting metrics")
-			return
+			return nil
 		}
 	}
 }
 
-func (c *Collector) Describe(ch chan<- *prometheus.Desc) {
-	ch <- deploymentStatusDescription
+func (d *Deployment) Describe(ch chan<- *prometheus.Desc) error {
+	ch <- deploymentDesc
+	return nil
 }
 
-func (c *Collector) getDeploymentsClient(customObject providerv1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
-	config, err := credential.GetAzureConfig(c.k8sClient, key.CredentialName(customObject), key.CredentialNamespace(customObject))
+func (d *Deployment) getDeploymentsClient(customObject providerv1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
+	config, err := credential.GetAzureConfig(d.k8sClient, key.CredentialName(customObject), key.CredentialNamespace(customObject))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	config.Cloud = c.environmentName
+	config.Cloud = d.environmentName
 
 	azureClients, err := client.NewAzureClientSet(*config)
 	if err != nil {
