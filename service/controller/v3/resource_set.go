@@ -276,7 +276,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := vpngateway.Config{
 			Logger: config.Logger,
 
-			Azure: config.Azure,
+			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 

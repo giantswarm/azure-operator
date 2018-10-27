@@ -127,7 +127,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			Azure: config.Azure,
+			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
@@ -149,7 +149,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			Azure: config.Azure,
+			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
@@ -171,7 +171,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			Azure: config.Azure,
+			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
@@ -193,7 +193,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			Azure: config.Azure,
+			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
