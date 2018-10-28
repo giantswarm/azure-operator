@@ -43,7 +43,7 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		logger: config.Logger,
 
-		azure: config.Azure,
+		azure:                    config.Azure,
 		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
 	}
 
