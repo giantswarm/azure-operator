@@ -15,7 +15,10 @@ const (
 	installationTagName = "GiantSwarmInstallation"
 	organizationTagName = "GiantSwarmOrganization"
 
-	blobContainerName         = "ignition"
+	blobContainerName = "ignition"
+	// cloudConfigVersion used in blob object ignition name
+	cloudConfigVersion        = "v_4_0_0"
+	storageAccountSuffix      = "gsstorageaccount"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
@@ -82,6 +85,10 @@ func ARMTemplateURI(version, resource, template string) string {
 
 func BlobContainerName() string {
 	return blobContainerName
+}
+
+func BlobName(customObject v1alpha1.AWSConfig, role string) string {
+	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
 }
 
 func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
