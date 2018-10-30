@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/blobobject"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/endpoints"
@@ -161,6 +162,20 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		resourceGroupResource, err = resourcegroup.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var blobobjectResource controller.Resource
+	{
+		c := deployment.Config{
+			Logger: config.Logger,
+
+			Azure: config.Azure,
+		}
+
+		blobobjectResource, err = blobobject.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -329,6 +344,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
+		blobobjectResource,
 		deploymentResource,
 		vnetPeeringCleanerResource,
 		instanceResource,
