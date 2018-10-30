@@ -169,13 +169,18 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var blobobjectResource controller.Resource
 	{
-		c := deployment.Config{
+		c := blobobject.Config{
 			Logger: config.Logger,
 
-			Azure: config.Azure,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
-		blobobjectResource, err = blobobject.New(c)
+		ops, err := blobobject.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		blobobjectResource, err = toCRUDResource(config.Logger, ops)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

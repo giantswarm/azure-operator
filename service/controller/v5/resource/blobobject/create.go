@@ -55,3 +55,36 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 
 	return nil
 }
+
+func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+	currentContainerObject, err := toContainerObjectState(currentState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	desiredContainerObject, err := toContainerObjectState(desiredState)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the container objects should be created")
+
+	createState := map[string]ContainerObjectState{}
+
+	for key, containerObject := range desiredContainerObject {
+		_, ok := currentContainerObject[key]
+		if !ok {
+			// The desired object does not exist in the current state of the system,
+			// so we want to create it.
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be created", key))
+			createState[key] = containerObject
+		} else {
+			// The desired object exists in the current state of the system, so we do
+			// not want to create it. We do track it using an empty object reference
+			// though, in order to get some more useful logging in ApplyCreateChange.
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be created", key))
+			createState[key] = ContainerObjectState{}
+		}
+	}
+
+	return createState, nil
+}

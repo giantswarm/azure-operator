@@ -68,7 +68,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (c *StorageClient) blobExists(ctx context.Context, blobName string) (bool, error) {
+func (c *StorageClient) BlobExists(ctx context.Context, blobName string) (bool, error) {
 	blobURL := c.containerURL.NewBlockBlobURL(blobName)
 
 	_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
@@ -80,33 +80,6 @@ func (c *StorageClient) blobExists(ctx context.Context, blobName string) (bool, 
 	}
 
 	return true, nil
-}
-
-func (c *StorageClient) blobRequiresUpdate(ctx context.Context, blobName string, data string) (bool, error) {
-	blobURL := c.containerURL.NewBlockBlobURL(blobName)
-
-	response, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
-	if IsBlobNotFound(err) {
-		return false, nil
-	}
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	retryReaderOptions := azblob.RetryReaderOptions{
-		MaxRetryRequests: maxRetriesRequests,
-	}
-	defer response.Body(retryReaderOptions).Close()
-	body, err := ioutil.ReadAll(response.Body(retryReaderOptions))
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	if data != string(body) {
-		return true, nil
-	}
-
-	return false, nil
 }
 
 func (c *StorageClient) createBlockBlob(ctx context.Context, blobName string, payload string) (azblob.BlockBlobURL, error) {
