@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -55,6 +56,8 @@ func (c AzureClientSetConfig) Validate() error {
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
+	//AccountsClient manages blobs in storage containers.
+	AccountsClient *storage.AccountsClient
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
@@ -104,6 +107,7 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	}
 
 	clientSet := &AzureClientSet{
+		AccountsClient:                         newAccountsClient(c),
 		DeploymentsClient:                      newDeploymentsClient(c),
 		GroupsClient:                           newGroupsClient(c),
 		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
@@ -128,6 +132,12 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 	}
 
 	return false
+}
+
+func newAccountsClient(config *clientConfig) *storage.AccountsClient {
+	c := storage.NewAccountsClient(config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	return &c
 }
 
 func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
