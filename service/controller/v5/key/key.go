@@ -87,7 +87,7 @@ func BlobContainerName() string {
 	return blobContainerName
 }
 
-func BlobName(customObject v1alpha1.AWSConfig, role string) string {
+func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
 }
 
