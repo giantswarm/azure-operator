@@ -32,7 +32,22 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	storageAccountName := key.StorageAccountName(customObject)
 	containerName := key.BlobContainerName()
 
+	// if there is no storage account - return and wait for deployment to finish storage account operation.
+	_, err = sc.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
+	if IsStorageAccountNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
+		return nil
+	}
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// if there is no container account - return and wait for deployment to finish container operation.
 	containerURL, err := sc.getContainerURL(ctx, storageAccountName, groupName, containerName)
+	if IsContainerNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's container not found, no current objects present")
+		return nil
+	}
 	if err != nil {
 		return microerror.Mask(err)
 	}

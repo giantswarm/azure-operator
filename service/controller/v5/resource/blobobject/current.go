@@ -48,6 +48,8 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	}
 	sc.containerURL = containerURL
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found the blob container")
+
 	listBlobs, err := sc.listBlobs(ctx, containerName)
 	if err != nil {
 		return nil, microerror.Mask(err)
