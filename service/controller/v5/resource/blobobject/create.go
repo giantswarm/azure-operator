@@ -18,13 +18,13 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 		return microerror.Mask(err)
 	}
 
-	accountsClient, err := r.getAccountsClient()
+	storageAccountsClient, err := r.getAccountsClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	sc := &StorageClient{
-		accountsClient: accountsClient,
+	sc := &BlobClient{
+		storageAccountsClient: storageAccountsClient,
 	}
 
 	groupName := key.ClusterID(customObject)

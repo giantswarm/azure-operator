@@ -56,8 +56,8 @@ func (c AzureClientSetConfig) Validate() error {
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
-	//AccountsClient manages blobs in storage containers.
-	AccountsClient *storage.AccountsClient
+	//StorageAccountsClient manages blobs in storage containers.
+	StorageAccountsClient *storage.AccountsClient
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
@@ -107,7 +107,7 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	}
 
 	clientSet := &AzureClientSet{
-		AccountsClient:                         newAccountsClient(c),
+		StorageAccountsClient:                  newStorageAccountsClient(c),
 		DeploymentsClient:                      newDeploymentsClient(c),
 		GroupsClient:                           newGroupsClient(c),
 		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
@@ -134,7 +134,7 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 	return false
 }
 
-func newAccountsClient(config *clientConfig) *storage.AccountsClient {
+func newStorageAccountsClient(config *clientConfig) *storage.AccountsClient {
 	c := storage.NewAccountsClient(config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	return &c

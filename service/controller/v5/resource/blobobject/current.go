@@ -14,13 +14,13 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "looking for container objects")
 
-	accountsClient, err := r.getAccountsClient()
+	storageAccountsClient, err := r.getAccountsClient()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	sc := &StorageClient{
-		accountsClient: accountsClient,
+	sc := &BlobClient{
+		storageAccountsClient: storageAccountsClient,
 	}
 
 	groupName := key.ClusterID(customObject)
@@ -28,7 +28,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	containerName := key.BlobContainerName()
 
 	// if there is no storage account - return and wait for deployment to finish storage account operation.
-	_, err = sc.accountsClient.GetProperties(ctx, groupName, storageAccountName)
+	_, err = sc.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
 	if IsStorageAccountNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
 		return nil, nil
