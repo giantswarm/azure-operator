@@ -64,7 +64,7 @@ func IsStorageAccountNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound") && strings.Contains(microerror.Cause(err).Error(), "Microsoft.Storage/storageAccounts")
+	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound")
 }
 
 var wrongTypeError = &microerror.Error{
