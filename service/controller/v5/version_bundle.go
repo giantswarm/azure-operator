@@ -9,7 +9,7 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "Update Kubernetes to 1.12.1. More info here: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.12.md",
+				Description: "Update Kubernetes to 1.12.2. More info here: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.12.md",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -42,7 +42,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.12.1",
+				Version: "1.12.2",
 			},
 		},
 		Name:    "azure-operator",
