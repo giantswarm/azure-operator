@@ -18,7 +18,7 @@ type Context struct {
 	APILBBackendPoolID  string
 	AzureClientSet      *client.AzureClientSet
 	AzureNetwork        *network.Subnets
-	CloudConfig         *cloudconfig.CloudConfig
+	CloudConfig         cloudconfig.Interface
 	EtcdLBBackendPoolID string
 	MasterSubnetID      string
 	WorkerSubnetID      string
