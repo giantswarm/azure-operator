@@ -16,8 +16,8 @@ const (
 	organizationTagName = "GiantSwarmOrganization"
 
 	blobContainerName = "ignition"
-	// cloudConfigVersion used in blob object ignition name
-	cloudConfigVersion        = "v_4_0_0"
+	// cloudConfigVersion is used in blob object ignition name
+	cloudConfigVersion        = "v4.0.0"
 	storageAccountSuffix      = "gsstorageaccount"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"

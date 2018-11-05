@@ -1,8 +1,9 @@
-package blobobject
+package blobclient
 
 import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
+	"strings"
 )
 
 var invalidConfigError = &microerror.Error{
@@ -40,6 +41,30 @@ func IsNotFound(err error) bool {
 	}
 
 	return false
+}
+
+// IsBlobNotFound asserts blob not found error from upstream's API message.
+func IsBlobNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(microerror.Cause(err).Error(), "ServiceCode=BlobNotFound")
+}
+
+// IsContainerNotFound asserts container not found error from upstream's API message.
+func IsContainerNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(microerror.Cause(err).Error(), "ContainerNotFound")
+}
+
+// IsStorageAccountNotFound asserts storage account not found error from upstream's API message.
+func IsStorageAccountNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound")
 }
 
 var wrongTypeError = &microerror.Error{

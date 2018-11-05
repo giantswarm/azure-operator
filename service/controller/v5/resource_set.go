@@ -167,7 +167,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var blobobjectResource controller.Resource
+	var blobObjectResource controller.Resource
 	{
 		c := blobobject.Config{
 			Logger: config.Logger,
@@ -180,7 +180,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		blobobjectResource, err = toCRUDResource(config.Logger, ops)
+		blobObjectResource, err = toCRUDResource(config.Logger, ops)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -349,7 +349,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
-		blobobjectResource,
+		blobObjectResource,
 		deploymentResource,
 		vnetPeeringCleanerResource,
 		instanceResource,

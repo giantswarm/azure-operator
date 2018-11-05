@@ -2,6 +2,8 @@ package blobobject
 
 import (
 	"context"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	"github.com/giantswarm/microerror"
 )
@@ -19,45 +21,53 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	sc := &BlobClient{
-		storageAccountsClient: storageAccountsClient,
-	}
+	var blobClient *blobclient.BlobClient
+	{
+		c := blobclient.Config{
+			ContainerName:         key.BlobContainerName(),
+			GroupName:             key.ClusterID(customObject),
+			StorageAccountName:    key.StorageAccountName(customObject),
+			StorageAccountsClient: storageAccountsClient,
+		}
 
-	groupName := key.ClusterID(customObject)
-	storageAccountName := key.StorageAccountName(customObject)
-	containerName := key.BlobContainerName()
+		blobClient, err = blobclient.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	// if there is no storage account - return and wait for deployment to finish storage account operation.
-	_, err = sc.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
-	if IsStorageAccountNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
-		return nil, nil
-	}
+	storageAccountExists, err := blobClient.StorageAccountExists(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	if !storageAccountExists {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
+		return nil, nil
+	}
 
-	// if there is no container account - return and wait for deployment to finish container operation.
-	containerURL, err := sc.getContainerURL(ctx, storageAccountName, groupName, containerName)
-	if IsContainerNotFound(err) {
+	// if here is no container account - return and wait for deployment to finish container operation.
+	err = blobClient.Boot(ctx)
+	if blobclient.IsContainerNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's container not found, no current objects present")
 		return nil, nil
 	}
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	sc.containerURL = containerURL
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found the blob container")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found blob object's container")
 
-	listBlobs, err := sc.listBlobs(ctx, containerName)
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding container objects")
+
+	listBlobs, err := blobClient.ListBlobs(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	output := map[string]ContainerObjectState{}
 	for _, object := range listBlobs.Segment.BlobItems {
-		body, err := sc.getBlockBlob(ctx, object.Name)
+		body, err := blobClient.GetBlockBlob(ctx, object.Name)
 
 		if err != nil {
 			return output, microerror.Mask(err)
@@ -65,12 +75,13 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 		output[object.Name] = ContainerObjectState{
 			Body:               string(body),
-			ContainerName:      containerName,
+			ContainerName:      key.BlobContainerName(),
 			Key:                object.Name,
-			StorageAccountName: storageAccountName,
+			StorageAccountName: key.StorageAccountName(customObject),
 		}
 	}
 
-	return output, nil
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found container objects")
 
+	return output, nil
 }

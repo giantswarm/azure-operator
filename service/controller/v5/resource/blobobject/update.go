@@ -3,6 +3,8 @@ package blobobject
 import (
 	"context"
 	"fmt"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
@@ -24,40 +26,46 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 		return microerror.Mask(err)
 	}
 
-	sc := &BlobClient{
-		storageAccountsClient: storageAccountsClient,
-	}
+	var blobClient *blobclient.BlobClient
+	{
+		c := blobclient.Config{
+			ContainerName:         key.BlobContainerName(),
+			GroupName:             key.ClusterID(customObject),
+			StorageAccountName:    key.StorageAccountName(customObject),
+			StorageAccountsClient: storageAccountsClient,
+		}
 
-	groupName := key.ClusterID(customObject)
-	storageAccountName := key.StorageAccountName(customObject)
-	containerName := key.BlobContainerName()
+		blobClient, err = blobclient.New(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
 
 	// if there is no storage account - return and wait for deployment to finish storage account operation.
-	_, err = sc.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
-	if IsStorageAccountNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
-		return nil
-	}
+	storageAccountExists, err := blobClient.StorageAccountExists(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	if !storageAccountExists {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
+		return nil
+	}
 
-	// if there is no container account - return and wait for deployment to finish container operation.
-	containerURL, err := sc.getContainerURL(ctx, storageAccountName, groupName, containerName)
-	if IsContainerNotFound(err) {
+	// if here is no container account - return and wait for deployment to finish container operation.
+	err = blobClient.Boot(ctx)
+	if blobclient.IsContainerNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's container not found, no current objects present")
 		return nil
 	}
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	sc.containerURL = containerURL
 
 	for key, containerObject := range containerObjectToUpdate {
 		if containerObject.Key != "" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", key))
 
-			_, err := sc.createBlockBlob(ctx, key, containerObject.Body)
+			_, err := blobClient.CreateBlockBlob(ctx, key, containerObject.Body)
 			if err != nil {
 				return microerror.Mask(err)
 			}
