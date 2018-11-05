@@ -141,6 +141,10 @@ func (c *BlobClient) GetBlockBlob(ctx context.Context, blobName string) ([]byte,
 	return blobData, nil
 }
 
+func (c *BlobClient) GetBlobURL(ctx context.Context, blobName string) (string, error) {
+
+}
+
 func (c *BlobClient) ListBlobs(ctx context.Context) (*azblob.ListBlobsFlatSegmentResponse, error) {
 	var listBlobs *azblob.ListBlobsFlatSegmentResponse
 
@@ -175,8 +179,12 @@ func (c *BlobClient) StorageAccountExists(ctx context.Context) (bool, error) {
 
 func (c *BlobClient) getAccountPrimaryKey(ctx context.Context) (string, error) {
 	keys, err := c.storageAccountsClient.ListKeys(ctx, c.groupName, c.storageAccountName)
+	if len(keys.Keys) == 0 {
+		return "", microerror.Maskf(err, "storage account key's list is empty")
+	}
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+
 	return *(((*keys.Keys)[0]).Value), nil
 }
