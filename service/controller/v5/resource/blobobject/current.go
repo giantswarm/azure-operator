@@ -6,6 +6,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
@@ -43,6 +44,8 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	}
 	if !storageAccountExists {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
+		reconciliationcanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 		return nil, nil
 	}
 
@@ -50,6 +53,8 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	err = blobClient.Boot(ctx)
 	if blobclient.IsContainerNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's container not found, no current objects present")
+		reconciliationcanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 		return nil, nil
 	}
 	if err != nil {

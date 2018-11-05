@@ -41,22 +41,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 		}
 	}
 
-	// if there is no storage account - return and wait for deployment to finish storage account operation.
-	storageAccountExists, err := blobClient.StorageAccountExists(ctx)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	if !storageAccountExists {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's storage account not found, no current objects present")
-		return nil
-	}
-
-	// if here is no container account - return and wait for deployment to finish container operation.
 	err = blobClient.Boot(ctx)
-	if blobclient.IsContainerNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's container not found, no current objects present")
-		return nil
-	}
 	if err != nil {
 		return microerror.Mask(err)
 	}
