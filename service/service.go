@@ -40,7 +40,7 @@ type Service struct {
 
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
-	operatorCollector       *collector.Collector
+	operatorCollector       *collector.Set
 	statusResourceCollector *statusresource.Collector
 }
 
@@ -158,9 +158,9 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var operatorCollector *collector.Collector
+	var operatorCollector *collector.Set
 	{
-		c := collector.Config{
+		c := collector.SetConfig{
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 			Watcher:   g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
@@ -168,7 +168,7 @@ func New(config Config) (*Service, error) {
 			EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.Cloud),
 		}
 
-		operatorCollector, err = collector.New(c)
+		operatorCollector, err = collector.NewSet(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
