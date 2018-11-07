@@ -59,7 +59,7 @@ required = [
   name = "github.com/giantswarm/e2esetup"
 
 [[constraint]]
-  branch = "master"
+  branch = "optional-label-selector"
   name = "github.com/giantswarm/e2etemplates"
 
 [[constraint]]

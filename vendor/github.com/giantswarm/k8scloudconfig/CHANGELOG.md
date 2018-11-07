@@ -18,6 +18,19 @@ version directory, and then changes are introduced.
 - Updated Calico to 3.2.3
 - Updated Calico manifest with resource limits to get QoS policy guaranteed.
 
+## [v3.7.0]
+
+### Changed
+- Updated Kubernetes to 1.12.2
+- Updated etcd to 3.3.9
+- Kubernetes and etcd images are now held in one place
+- Updated audit policy version
+- Moved audit policy out of static pod path
+- Updated rbac resources to v1
+- Remove static pod path from worker nodes
+- Remove readonly port from kubelet
+- Add DBUS socket and ClusterCIDR to kube-proxy
+
 ## [v3.6.2]
 
 ### Changed
