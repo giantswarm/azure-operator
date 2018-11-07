@@ -41,7 +41,6 @@ func common(config Config) error {
 
 	{
 		c := chartvalues.CertOperatorConfig{
-			ClusterName:        env.ClusterID(),
 			CommonDomain:       env.CommonDomain(),
 			RegistryPullSecret: env.RegistryPullSecret(),
 			Vault: chartvalues.CertOperatorVault{
