@@ -77,6 +77,54 @@ func newAzureBuilder(config Config) (*azureBuilder, error) {
 }
 
 func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
+	azureCIDR := getEnvOptional(EnvVarAzureCIDR)
+	azureCalicoSubnetCIDR := getEnvOptional(EnvVarAzureCalicoSubnetCIDR)
+	azureMasterSubnetCIDR := getEnvOptional(EnvVarAzureMasterSubnetCIDR)
+	azureVPNSubnetCIDR := getEnvOptional(EnvVarAzureVPNSubnetCIDR)
+	azureWorkerSubnetCIDR := getEnvVarOptional(EnvVarAzureWorkerSubnetCIDR)
+
+	azureClientID, err := getEnvRequired(EnvVarAzureClientID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureClientSecret, err := getEnvRequired(EnvVarAzureClientSecret)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureLocation, err := getEnvRequired(EnvVarAzureLocation)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureSubscriptionID, err := getEnvRequired(EnvVarAzureSubscriptionID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureTenantID, err := getEnvRequired(EnvVarAzureTenantID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+
+	azureGuestClientID, err := getEnvRequired(EnvVarAzureGuestClientID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureGuestClientSecret, err := getEnvRequired(EnvVarAzureGuestClientSecret)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureGuestSubscriptionID, err := getEnvRequired(EnvVarAzureGuestSubscriptionID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureGuestTenantID, err := getEnvRequired(EnvVarAzureGuestTenantID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+
+	commonDomainResourceGroup, err := getEnvRequired(EnvVarCommonDomainResourceGroup)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
 	var (
 		azureCIDR             string
 		azureCalicoSubnetCIDR string
@@ -116,7 +164,7 @@ func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
 		getEnvRequired(EnvVarAzureGuestSubscriptionID, &azureGuestSubscriptionID),
 		getEnvRequired(EnvVarAzureGuestTenantID, &azureGuestTenantID),
 
-		getEnvRequired(EnvVarCommonDomainResourceGroup, commonDomainResourceGroup),
+		getEnvRequired(EnvVarCommonDomainResourceGroup, &commonDomainResourceGroup),
 	)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
