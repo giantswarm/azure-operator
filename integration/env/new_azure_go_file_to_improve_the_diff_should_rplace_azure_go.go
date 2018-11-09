@@ -8,31 +8,25 @@ import (
 	"github.com/giantswarm/micrologger"
 )
 
-// Variables below could be initialized in the `Build` method itself. But to
-// have a good overview what environment variables are read and which of them
-// are required/optional this sits here on the top of this file.
-var (
-	// TODO Consider if we need to pass it at all.
-	azureCIDR = getEnv("AZURE_CIDR")
-	// TODO Why do we still need all the subnets below?
-	azureCalicoSubnetCIDR = mustGetEnv("AZURE_CALICO_SUBNET_CIDR")
-	azureMasterSubnetCIDR = mustGetEnv("AZURE_MASTER_SUBNET_CIDR")
-	azureVPNSubnetCIDR    = mustGetEnv("AZURE_VPN_SUBNET_CIDR")
-	azureWorkerSubnetCIDR = mustGetEnv("AZURE_WORKER_SUBNET_CIDR")
+const (
+	EnvVarAzureCIDR             = "AZURE_CIDR"
+	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
+	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
+	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
+	EnvVarAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
 
-	azureClientID       = mustGetEnv("AZURE_CLIENTID")
-	azureClientSecret   = mustGetEnv("AZURE_CLIENTSECRET")
-	azureLocation       = mustGetEnv("AZURE_LOCATION")
-	azureSubscriptionID = mustGetEnv("AZURE_SUBSCRIPTIONID")
-	azureTenantID       = mustGetEnv("AZURE_TENANTID")
+	EnvVarAzureClientID       = "AZURE_CLIENTID"
+	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
+	EnvVarAzureLocation       = "AZURE_LOCATION"
+	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
+	EnvVarAzureTenantID       = "AZURE_TENANTID"
 
-	azureGuestClientID       = mustGetEnv("AZURE_GUEST_CLIENTID")
-	azureGuestClientSecret   = mustGetEnv("AZURE_GUEST_CLIENTSECRET")
-	azureGuestSubscriptionID = mustGetEnv("AZURE_GUEST_SUBSCRIPTIONID")
-	azureGuestTenantID       = mustGetEnv("AZURE_GUEST_TENANTID")
+	EnvVarAzureGuestClientID       = "AZURE_GUEST_CLIENTID"
+	EnvVarAzureGuestClientSecret   = "AZURE_GUEST_CLIENTSECRET"
+	EnvVarAzureGuestSubscriptionID = "AZURE_GUEST_SUBSCRIPTIONID"
+	EnvVarAzureGuestTenantID       = "AZURE_GUEST_TENANTID"
 
-	// TODO this should be prefixed with AZURE_.
-	commonDomainResourceGroup = mustGetEnv("COMMON_DOMAIN_RESOURCE_GROUP")
+	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
 )
 
 type Azure struct {
@@ -83,6 +77,51 @@ func newAzureBuilder(config Config) (*azureBuilder, error) {
 }
 
 func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
+	var (
+		azureCIDR             string
+		azureCalicoSubnetCIDR string
+		azureMasterSubnetCIDR string
+		azureVPNSubnetCIDR    string
+		azureWorkerSubnetCIDR string
+
+		azureClientID       string
+		azureClientSecret   string
+		azureLocation       string
+		azureSubscriptionID string
+		azureTenantID       string
+
+		azureGuestClientID       string
+		azureGuestClientSecret   string
+		azureGuestSubscriptionID string
+		azureGuestTenantID       string
+
+		commonDomainResourceGroup string
+	)
+
+	err := getEnvs(
+		getEnvOptional(EnvVarAzureCIDR, &azureCIDR),
+		getEnvOptional(EnvVarAzureCalicoSubnetCIDR, &azureCalicoSubnetCIDR),
+		getEnvOptional(EnvVarAzureMasterSubnetCIDR, &azureMasterSubnetCIDR),
+		getEnvOptional(EnvVarAzureVPNSubnetCIDR, &azureVPNSubnetCIDR),
+		getEnvOptional(EnvVarAzureWorkerSubnetCIDR, &azureWorkerSubnetCIDR),
+
+		getEnvRequired(EnvVarAzureClientID, &azureClientID),
+		getEnvRequired(EnvVarAzureClientSecret, &azureClientSecret),
+		getEnvRequired(EnvVarAzureLocation, &azureLocation),
+		getEnvRequired(EnvVarAzureSubscriptionID, &azureSubscriptionID),
+		getEnvRequired(EnvVarAzureTenantID, &azureTenantID),
+
+		getEnvRequired(EnvVarAzureGuestClientID, &azureGuestClientID),
+		getEnvRequired(EnvVarAzureGuestClientSecret, &azureGuestClientSecret),
+		getEnvRequired(EnvVarAzureGuestSubscriptionID, &azureGuestSubscriptionID),
+		getEnvRequired(EnvVarAzureGuestTenantID, &azureGuestTenantID),
+
+		getEnvRequired(EnvVarCommonDomainResourceGroup, commonDomainResourceGroup),
+	)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+
 	if azureCIDR == "" {
 		if err != nil {
 			return Azure{}, microerror.Mask(err)

@@ -1,17 +1,37 @@
 package env
 
 import (
-	"fmt"
 	"os"
+
+	"github.com/giantswarm/microerror"
 )
 
-func getEnv(name string) string {
-	return os.Getenv(name)
+type getEnvFunc func() (string, error)
+
+func getEnvs(getEnvFuncs ...getEnvFunc) error {
+	for _, f := range getEnvFuncs {
+		v, err := f()
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
 }
 
-func mustGetEnv(name string) string {
-	v := getEnv(name)
-	if v == "" {
-		panic(fmt.Sprintf("env var %#q must not be empty", name))
+func getEnvOptional(name string, v *string) getEnvFunc {
+	return func() (string, error) {
+		return os.Getenv(name), nil
+	}
+}
+
+func getEnvRequired(name string, v *string) getEnvFunc {
+	return func() (string, error) {
+		v := getEnv(name)
+		if v == "" {
+			return "", microerror.Maskf(executionFailedError, "env var %#q must not be empty", name)
+		}
+
+		return v, nil
 	}
 }
