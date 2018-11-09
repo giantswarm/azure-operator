@@ -1,6 +1,8 @@
 package env
 
 import (
+	"context"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
@@ -32,7 +34,7 @@ func NewBuilder(config BuilderConfig) (*Builder, error) {
 	return b, nil
 }
 
-func (b *Builder) Build() (Env, error) {
+func (b *Builder) Build(ctx context.Context) (Env, error) {
 	var common Common
 	{
 		// ...
@@ -56,7 +58,7 @@ func (b *Builder) Build() (Env, error) {
 			return Env{}, microerror.Mask(err)
 		}
 
-		azure, err = builder.Build()
+		azure, err = builder.Build(ctx)
 		if err != nil {
 			return Env{}, microerror.Mask(err)
 		}

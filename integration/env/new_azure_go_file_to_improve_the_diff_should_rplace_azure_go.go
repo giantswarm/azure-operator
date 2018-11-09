@@ -1,8 +1,7 @@
 package env
 
 import (
-	"os"
-	"strconv"
+	"context"
 
 	"github.com/giantswarm/azure-operator/integration/network"
 	"github.com/giantswarm/microerror"
@@ -57,13 +56,13 @@ type Azure struct {
 type azureBuilderConfig struct {
 	Logger micrologger.Logger
 
-	CircleBuildNumber int
+	CircleBuildNumber uint
 }
 
 type azureBuilder struct {
 	logger micrologger.Logger
 
-	circleBuildNumber int
+	circleBuildNumber uint
 }
 
 func newAzureBuilder(config Config) (*azureBuilder, error) {
@@ -80,14 +79,13 @@ func newAzureBuilder(config Config) (*azureBuilder, error) {
 	}
 }
 
-func (a *azureBuilder) Build() (Azure, error) {
+func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
 	if azureCIDR == "" {
-		buildNumber, err := strconv.ParseUint(os.Getenv(EnvVarCircleBuildNumber), 10, 32)
 		if err != nil {
 			return Azure{}, microerror.Mask(err)
 		}
 
-		subnets, err := network.ComputeSubnets(uint(buildNumber))
+		subnets, err := network.ComputeSubnets(a.circleBuildNumber)
 		if err != nil {
 			return Azure{}, microerror.Mask(err)
 		}
