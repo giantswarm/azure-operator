@@ -29,6 +29,7 @@ var (
 	azureGuestSubscriptionID = mustGetEnv("AZURE_GUEST_SUBSCRIPTIONID")
 	azureGuestTenantID       = mustGetEnv("AZURE_GUEST_TENANTID")
 
+	// TODO this should be prefixed with AZURE_.
 	commonDomainResourceGroup = mustGetEnv("COMMON_DOMAIN_RESOURCE_GROUP")
 )
 
@@ -50,7 +51,7 @@ type Azure struct {
 	GuestSubscriptionID string
 	GuestTenantID       string
 
-	commonDomainResourceGroup string
+	CommonDomainResourceGroup string
 }
 
 type azureBuilderConfig struct {
@@ -116,6 +117,8 @@ func (a *azureBuilder) Build() (Azure, error) {
 		GuestLocation:       azureGuestLocation,
 		GuestSubscriptionID: azureGuestSubscriptionID,
 		GuestTenantID:       azureGuestTenantID,
+
+		CommonDomainResourceGroup: azureCommonDomainResourceGroup,
 	}
 
 	return azure, nil
