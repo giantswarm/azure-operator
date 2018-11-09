@@ -54,7 +54,7 @@ func (c *BlobClient) Boot(ctx context.Context) error {
 	u, _ := url.Parse(fmt.Sprintf(blobFormatString, c.storageAccountName))
 	service := azblob.NewServiceURL(*u, p)
 	containerURL = service.NewContainerURL(c.containerName)
-	_, err = c.containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
+	_, err = containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
 	if IsContainerNotFound(err) {
 		return nil
 	}
