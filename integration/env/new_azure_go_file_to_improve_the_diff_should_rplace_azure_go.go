@@ -8,6 +8,9 @@ import (
 	"github.com/giantswarm/micrologger"
 )
 
+// Variables below could be initialized in the `Build` method itself. But to
+// have a good overview what environment variables are read and which of them
+// are required/optional this sits here on the top of this file.
 var (
 	// TODO Consider if we need to pass it at all.
 	azureCIDR = getEnv("AZURE_CIDR")
