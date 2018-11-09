@@ -1,185 +1,122 @@
 package env
 
 import (
-	"fmt"
 	"os"
 	"strconv"
 
 	"github.com/giantswarm/azure-operator/integration/network"
-)
-
-const (
-	EnvVarAzureCIDR             = "AZURE_CIDR"
-	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
-	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
-	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
-	EnvVarAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
-
-	EnvVarAzureClientID       = "AZURE_CLIENTID"
-	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
-	EnvVarAzureLocation       = "AZURE_LOCATION"
-	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
-	EnvVarAzureTenantID       = "AZURE_TENANTID"
-
-	EnvVarAzureGuestClientID       = "AZURE_GUEST_CLIENTID"
-	EnvVarAzureGuestClientSecret   = "AZURE_GUEST_CLIENTSECRET"
-	EnvVarAzureGuestSubscriptionID = "AZURE_GUEST_SUBSCRIPTIONID"
-	EnvVarAzureGuestTenantID       = "AZURE_GUEST_TENANTID"
-
-	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
-	EnvVarCircleBuildNumber         = "CIRCLE_BUILD_NUM"
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 )
 
 var (
-	azureClientID       string
-	azureClientSecret   string
-	azureLocation       string
-	azureSubscriptionID string
-	azureTenantID       string
+	// TODO Consider if we need to pass it at all.
+	azureCIDR = getEnv("AZURE_CIDR")
+	// TODO Why do we still need all the subnets below?
+	azureCalicoSubnetCIDR = mustGetEnv("AZURE_CALICO_SUBNET_CIDR")
+	azureMasterSubnetCIDR = mustGetEnv("AZURE_MASTER_SUBNET_CIDR")
+	azureVPNSubnetCIDR    = mustGetEnv("AZURE_VPN_SUBNET_CIDR")
+	azureWorkerSubnetCIDR = mustGetEnv("AZURE_WORKER_SUBNET_CIDR")
 
-	azureGuestClientID       string
-	azureGuestClientSecret   string
-	azureGuestSubscriptionID string
-	azureGuestTenantID       string
+	azureClientID       = mustGetEnv("AZURE_CLIENTID")
+	azureClientSecret   = mustGetEnv("AZURE_CLIENTSECRET")
+	azureLocation       = mustGetEnv("AZURE_LOCATION")
+	azureSubscriptionID = mustGetEnv("AZURE_SUBSCRIPTIONID")
+	azureTenantID       = mustGetEnv("AZURE_TENANTID")
 
-	azureCIDR             string
-	azureCalicoSubnetCIDR string
-	azureMasterSubnetCIDR string
-	azureVPNSubnetCIDR    string
-	azureWorkerSubnetCIDR string
+	azureGuestClientID       = mustGetEnv("AZURE_GUEST_CLIENTID")
+	azureGuestClientSecret   = mustGetEnv("AZURE_GUEST_CLIENTSECRET")
+	azureGuestSubscriptionID = mustGetEnv("AZURE_GUEST_SUBSCRIPTIONID")
+	azureGuestTenantID       = mustGetEnv("AZURE_GUEST_TENANTID")
 
-	commonDomainResourceGroup string
+	commonDomainResourceGroup = mustGetEnv("COMMON_DOMAIN_RESOURCE_GROUP")
 )
 
-func init() {
-	azureClientID = os.Getenv(EnvVarAzureClientID)
-	if azureClientID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureClientID))
+type Azure struct {
+	CIDR             string
+	CalicoSubnetCIDR string
+	MasterSubnetCIDR string
+	VPNSubnetCIDR    string
+	WorkerSubnetCIDR string
+
+	ClientID       string
+	ClientSecret   string
+	Location       string
+	SubscriptionID string
+	TenantID       string
+
+	GuestClientID       string
+	GuestClientSecret   string
+	GuestSubscriptionID string
+	GuestTenantID       string
+
+	commonDomainResourceGroup string
+}
+
+type azureBuilderConfig struct {
+	Logger micrologger.Logger
+
+	CircleBuildNumber int
+}
+
+type azureBuilder struct {
+	logger micrologger.Logger
+
+	circleBuildNumber int
+}
+
+func newAzureBuilder(config Config) (*azureBuilder, error) {
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	azureClientSecret = os.Getenv(EnvVarAzureClientSecret)
-	if azureClientSecret == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureClientSecret))
+	if config.CircleBuildNumber == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CircleBuildNumber must not be empty", config)
 	}
 
-	azureLocation = os.Getenv(EnvVarAzureLocation)
-	if azureLocation == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureLocation))
+	a := &azureBuilder{
+		logger: config.Logger,
 	}
+}
 
-	azureSubscriptionID = os.Getenv(EnvVarAzureSubscriptionID)
-	if azureSubscriptionID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureSubscriptionID))
-	}
-
-	azureTenantID = os.Getenv(EnvVarAzureTenantID)
-	if azureTenantID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureTenantID))
-	}
-
-	azureGuestClientID = os.Getenv(EnvVarAzureGuestClientID)
-	if azureGuestClientID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientID))
-	}
-
-	azureGuestClientSecret = os.Getenv(EnvVarAzureGuestClientSecret)
-	if azureGuestClientSecret == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientSecret))
-	}
-
-	azureGuestSubscriptionID = os.Getenv(EnvVarAzureGuestSubscriptionID)
-	if azureGuestSubscriptionID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestSubscriptionID))
-	}
-
-	azureGuestTenantID = os.Getenv(EnvVarAzureGuestTenantID)
-	if azureGuestTenantID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestTenantID))
-	}
-
-	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
-	if commonDomainResourceGroup == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomainResourceGroup))
-	}
-
-	// azureCDIR must be provided along with other CIDRs,
-	// otherwise we compute CIDRs base on EnvVarCircleBuildNumber value.
-	azureCDIR := os.Getenv(EnvVarAzureCIDR)
-	if azureCDIR == "" {
+func (a *azureBuilder) Build() (Azure, error) {
+	if azureCIDR == "" {
 		buildNumber, err := strconv.ParseUint(os.Getenv(EnvVarCircleBuildNumber), 10, 32)
 		if err != nil {
-			panic(err)
+			return Azure{}, microerror.Mask(err)
 		}
 
 		subnets, err := network.ComputeSubnets(uint(buildNumber))
 		if err != nil {
-			panic(err)
+			return Azure{}, microerror.Mask(err)
 		}
 
-		azureCIDR = subnets.Parent.String()
+		azureCidr = subnets.Parent.String()
 		azureCalicoSubnetCIDR = subnets.Calico.String()
 		azureMasterSubnetCIDR = subnets.Master.String()
 		azureVPNSubnetCIDR = subnets.VPN.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
 	}
-}
 
-func AzureCalicoSubnetCIDR() string {
-	return azureCalicoSubnetCIDR
-}
+	azure := Azure{
+		CIDR:             azureCIDR,
+		CalicoSubnetCIDR: azureCalicoSubnetCIDR,
+		MasterSubnetCIDR: azureMasterSubnetCIDR,
+		VPNSubnetCIDR:    azureVPNSubnetCIDR,
+		WorkerSubnetCIDR: azureWorkerSubnetCIDR,
 
-func AzureClientID() string {
-	return azureClientID
-}
+		ClientID:       azureClientID,
+		ClientSecret:   azureClientSecret,
+		Location:       azureLocation,
+		SubscriptionID: azureSubscriptionID,
+		TenantID:       azureTenantID,
 
-func AzureClientSecret() string {
-	return azureClientSecret
-}
+		GuestClientID:       azureGuestClientID,
+		GuestClientSecret:   azureGuestClientSecret,
+		GuestLocation:       azureGuestLocation,
+		GuestSubscriptionID: azureGuestSubscriptionID,
+		GuestTenantID:       azureGuestTenantID,
+	}
 
-func AzureCIDR() string {
-	return azureCIDR
-}
-
-func AzureGuestClientID() string {
-	return azureGuestClientID
-}
-
-func AzureGuestClientSecret() string {
-	return azureGuestClientSecret
-}
-
-func AzureGuestSubscriptionID() string {
-	return azureGuestSubscriptionID
-}
-
-func AzureGuestTenantID() string {
-	return azureGuestTenantID
-}
-
-func AzureLocation() string {
-	return azureLocation
-}
-
-func AzureMasterSubnetCIDR() string {
-	return azureMasterSubnetCIDR
-}
-
-func AzureSubscriptionID() string {
-	return azureSubscriptionID
-}
-
-func AzureTenantID() string {
-	return azureTenantID
-}
-
-func AzureVPNSubnetCIDR() string {
-	return azureVPNSubnetCIDR
-}
-
-func AzureWorkerSubnetCIDR() string {
-	return azureWorkerSubnetCIDR
-}
-
-func CommonDomainResourceGroup() string {
-	return commonDomainResourceGroup
+	return azure, nil
 }
