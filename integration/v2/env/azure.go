@@ -44,6 +44,7 @@ type Azure struct {
 
 	GuestClientID       string
 	GuestClientSecret   string
+	GuestLocation       string
 	GuestSubscriptionID string
 	GuestTenantID       string
 
@@ -74,6 +75,8 @@ func newAzureBuilder(config azureBuilderConfig) (*azureBuilder, error) {
 	a := &azureBuilder{
 		logger: config.Logger,
 	}
+
+	return a, nil
 }
 
 func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
@@ -98,45 +101,45 @@ func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
 		return Azure{}, microerror.Mask(err)
 	}
 
-	azureClientID, err := getEnvRequired(EnvVarAzureClientID)
+	azureClientID, err := getEnvVarRequired(EnvVarAzureClientID)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
 	}
-	azureClientSecret, err := getEnvRequired(EnvVarAzureClientSecret)
+	azureClientSecret, err := getEnvVarRequired(EnvVarAzureClientSecret)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
 	}
-	azureLocation, err := getEnvRequired(EnvVarAzureLocation)
+	azureLocation, err := getEnvVarRequired(EnvVarAzureLocation)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
 	}
-	azureSubscriptionID, err := getEnvRequired(EnvVarAzureSubscriptionID)
+	azureSubscriptionID, err := getEnvVarRequired(EnvVarAzureSubscriptionID)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
 	}
-	azureTenantID, err := getEnvRequired(EnvVarAzureTenantID)
-	if err != nil {
-		return Azure{}, microerror.Mask(err)
-	}
-
-	azureGuestClientID, err := getEnvRequired(EnvVarAzureGuestClientID)
-	if err != nil {
-		return Azure{}, microerror.Mask(err)
-	}
-	azureGuestClientSecret, err := getEnvRequired(EnvVarAzureGuestClientSecret)
-	if err != nil {
-		return Azure{}, microerror.Mask(err)
-	}
-	azureGuestSubscriptionID, err := getEnvRequired(EnvVarAzureGuestSubscriptionID)
-	if err != nil {
-		return Azure{}, microerror.Mask(err)
-	}
-	azureGuestTenantID, err := getEnvRequired(EnvVarAzureGuestTenantID)
+	azureTenantID, err := getEnvVarRequired(EnvVarAzureTenantID)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
 	}
 
-	commonDomainResourceGroup, err := getEnvRequired(EnvVarCommonDomainResourceGroup)
+	azureGuestClientID, err := getEnvVarRequired(EnvVarAzureGuestClientID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureGuestClientSecret, err := getEnvVarRequired(EnvVarAzureGuestClientSecret)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureGuestSubscriptionID, err := getEnvVarRequired(EnvVarAzureGuestSubscriptionID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureGuestTenantID, err := getEnvVarRequired(EnvVarAzureGuestTenantID)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+
+	commonDomainResourceGroup, err := getEnvVarRequired(EnvVarCommonDomainResourceGroup)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
 	}
@@ -151,7 +154,7 @@ func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
 			return Azure{}, microerror.Mask(err)
 		}
 
-		azureCidr = subnets.Parent.String()
+		azureCIDR = subnets.Parent.String()
 		azureCalicoSubnetCIDR = subnets.Calico.String()
 		azureMasterSubnetCIDR = subnets.Master.String()
 		azureVPNSubnetCIDR = subnets.VPN.String()
@@ -173,11 +176,11 @@ func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
 
 		GuestClientID:       azureGuestClientID,
 		GuestClientSecret:   azureGuestClientSecret,
-		GuestLocation:       azureGuestLocation,
+		GuestLocation:       azureLocation,
 		GuestSubscriptionID: azureGuestSubscriptionID,
 		GuestTenantID:       azureGuestTenantID,
 
-		CommonDomainResourceGroup: azureCommonDomainResourceGroup,
+		CommonDomainResourceGroup: commonDomainResourceGroup,
 	}
 
 	return azure, nil

@@ -27,7 +27,7 @@ func NewBuilder(config BuilderConfig) (*Builder, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	b := &Bilder{
+	b := &Builder{
 		logger: config.Logger,
 	}
 
@@ -55,7 +55,7 @@ func (b *Builder) Build(ctx context.Context) (Env, error) {
 	var version Version
 	{
 		c := versionBuilderConfig{
-			Logger: config.Logger,
+			Logger: b.logger,
 		}
 
 		builder, err := newVersionBuilder(c)
@@ -63,13 +63,13 @@ func (b *Builder) Build(ctx context.Context) (Env, error) {
 			return Env{}, microerror.Mask(err)
 		}
 
-		vesrion, err = builder.Build(ctx)
+		version, err = builder.Build(ctx)
 	}
 
 	var cluster Cluster
 	{
 		c := clusterBuilderConfig{
-			Logger: config.Logger,
+			Logger: b.logger,
 
 			CircleSHA:     common.CircleSHA,
 			TestDir:       common.TestDir,
@@ -89,7 +89,7 @@ func (b *Builder) Build(ctx context.Context) (Env, error) {
 		c := azureBuilderConfig{
 			Logger: b.logger,
 
-			CircleBuildNumber: common.Circle.BuildNumber,
+			CircleBuildNumber: common.CircleBuildNumber,
 		}
 
 		builder, err := newAzureBuilder(c)

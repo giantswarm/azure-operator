@@ -36,14 +36,14 @@ func newVersionBuilder(config versionBuilderConfig) (*versionBuilder, error) {
 	}
 
 	v := &versionBuilder{
-		Logger: config.Logger,
+		logger: config.Logger,
 	}
 
 	return v, nil
 }
 
-func (v *verionBuilder) Build(ctx context.Context) (Version, error) {
-	githubToken, err := getEnvVarRequired(EnvVarGithubToken)
+func (v *versionBuilder) Build(ctx context.Context) (Version, error) {
+	githubBotToken, err := getEnvVarRequired(EnvVarGithubBotToken)
 	if err != nil {
 		return Version{}, microerror.Mask(err)
 	}
@@ -56,8 +56,6 @@ func (v *verionBuilder) Build(ctx context.Context) (Version, error) {
 	// e2esetup. Most likely it will expose methods specific for an
 	// operator. Nothing to worry now.
 
-	var err error
-
 	// This code block is going to be replaced with releaseindex package of
 	// e2esetup in a follow up PR.
 	var vTestedVersion TestedVersion
@@ -68,7 +66,7 @@ func (v *verionBuilder) Build(ctx context.Context) (Version, error) {
 		case TestedVersionPrev.String(), "current":
 			vTestedVersion = TestedVersionPrev
 		default:
-			return microerr.Maskf(executionFailedError, "expected tested version to be %#q or %#q but got %#q", TestedVersionLast, TestedVersionPrev, testedVersion)
+			return Version{}, microerror.Maskf(executionFailedError, "expected tested version to be %#q or %#q but got %#q", TestedVersionLast, TestedVersionPrev, testedVersion)
 		}
 	}
 
@@ -79,10 +77,10 @@ func (v *verionBuilder) Build(ctx context.Context) (Version, error) {
 		params := &framework.VBVParams{
 			Component: "azure-operator",
 			Provider:  "azure",
-			Token:     githubToken,
+			Token:     githubBotToken,
 			VType:     testedVersion,
 		}
-		versionAzureOperator, err = framework.GetVersionBundleVersion(params)
+		vAzureOperator, err = framework.GetVersionBundleVersion(params)
 		if err != nil {
 			panic(err.Error())
 		}

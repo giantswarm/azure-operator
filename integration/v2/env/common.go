@@ -49,39 +49,39 @@ func newCommonBuilder(config commonBuilderConfig) (*commonBuilder, error) {
 	return c, nil
 }
 
-func (c *commonBuilder) Build(ctx context.Context) error {
+func (c *commonBuilder) Build(ctx context.Context) (Common, error) {
 	circleBuildNum, err := getEnvVarRequired(EnvVarCircleBuildNum)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return Common{}, microerror.Mask(err)
 	}
 	circleCI, err := getEnvVarOptional(EnvVarCircleCI)
 	if err != nil {
 		return Common{}, microerror.Mask(err)
 	}
-	circleSHA1, err := getEnvVarRequired(EnvVarCircleSHA)
+	circleSHA1, err := getEnvVarRequired(EnvVarCircleSHA1)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return Common{}, microerror.Mask(err)
 	}
 	registryPullSecret, err := getEnvVarRequired(EnvVarRegistryPullSecret)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return Common{}, microerror.Mask(err)
 	}
 	testDir, err := getEnvVarRequired(EnvVarTestDir)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return Common{}, microerror.Mask(err)
 	}
 
 	var cCircleBuildNumber uint
 	{
 		i, err := strconv.Atoi(circleBuildNum)
 		if err != nil {
-			return Common{}, microerror.Maskf(executionFailedError, "converting circle build number %#q to int", curcleBuildNum)
+			return Common{}, microerror.Maskf(executionFailedError, "converting circle build number %#q to int", circleBuildNum)
 		}
 		if i < 1 {
-			return Common{}, microerror.Maskf(executionFailedError, "circle build number must be a positive number but got %d", circleBuildNumber)
+			return Common{}, microerror.Maskf(executionFailedError, "circle build number must be a positive number but got %d", cCircleBuildNumber)
 		}
 
-		cCurcleBuildNumber = uint(i)
+		cCircleBuildNumber = uint(i)
 	}
 
 	var cCircleCI bool

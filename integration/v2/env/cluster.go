@@ -37,7 +37,7 @@ type clusterBuilder struct {
 
 	circleSHA     string
 	testDir       string
-	testedVersion string
+	testedVersion TestedVersion
 }
 
 func newClusterBuilder(config clusterBuilderConfig) (*clusterBuilder, error) {
@@ -74,7 +74,7 @@ func (c *clusterBuilder) Build(ctx context.Context) (Cluster, error) {
 	}
 	keepResources, err := getEnvVarOptional(EnvVarKeepResources)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return Cluster{}, microerror.Mask(err)
 	}
 	vaultToken, err := getEnvVarRequired(EnvVarVaultToken)
 	if err != nil {
@@ -86,9 +86,10 @@ func (c *clusterBuilder) Build(ctx context.Context) (Cluster, error) {
 		if clusterID != "" {
 			cID = clusterID
 		} else {
+			var parts []string
 			parts = append(parts, "ci")
-			parts = append(parts, c.testedVersion[0:3])
-			parts = append(parts, c.circleSHA()[0:5])
+			parts = append(parts, c.testedVersion.String())
+			parts = append(parts, c.circleSHA[0:5])
 			if c.testDir != "" {
 				h := sha1.New()
 				h.Write([]byte(c.testDir))
