@@ -62,7 +62,7 @@ type azureBuilder struct {
 	circleBuildNumber uint
 }
 
-func newAzureBuilder(config Config) (*azureBuilder, error) {
+func newAzureBuilder(config azureBuilderConfig) (*azureBuilder, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -77,11 +77,26 @@ func newAzureBuilder(config Config) (*azureBuilder, error) {
 }
 
 func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
-	azureCIDR := getEnvOptional(EnvVarAzureCIDR)
-	azureCalicoSubnetCIDR := getEnvOptional(EnvVarAzureCalicoSubnetCIDR)
-	azureMasterSubnetCIDR := getEnvOptional(EnvVarAzureMasterSubnetCIDR)
-	azureVPNSubnetCIDR := getEnvOptional(EnvVarAzureVPNSubnetCIDR)
-	azureWorkerSubnetCIDR := getEnvVarOptional(EnvVarAzureWorkerSubnetCIDR)
+	azureCIDR, err := getEnvVarOptional(EnvVarAzureCIDR)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureCalicoSubnetCIDR, err := getEnvVarOptional(EnvVarAzureCalicoSubnetCIDR)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureMasterSubnetCIDR, err := getEnvVarOptional(EnvVarAzureMasterSubnetCIDR)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureVPNSubnetCIDR, err := getEnvVarOptional(EnvVarAzureVPNSubnetCIDR)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
+	azureWorkerSubnetCIDR, err := getEnvVarOptional(EnvVarAzureWorkerSubnetCIDR)
+	if err != nil {
+		return Azure{}, microerror.Mask(err)
+	}
 
 	azureClientID, err := getEnvRequired(EnvVarAzureClientID)
 	if err != nil {
@@ -122,50 +137,6 @@ func (a *azureBuilder) Build(ctx context.Context) (Azure, error) {
 	}
 
 	commonDomainResourceGroup, err := getEnvRequired(EnvVarCommonDomainResourceGroup)
-	if err != nil {
-		return Azure{}, microerror.Mask(err)
-	}
-	var (
-		azureCIDR             string
-		azureCalicoSubnetCIDR string
-		azureMasterSubnetCIDR string
-		azureVPNSubnetCIDR    string
-		azureWorkerSubnetCIDR string
-
-		azureClientID       string
-		azureClientSecret   string
-		azureLocation       string
-		azureSubscriptionID string
-		azureTenantID       string
-
-		azureGuestClientID       string
-		azureGuestClientSecret   string
-		azureGuestSubscriptionID string
-		azureGuestTenantID       string
-
-		commonDomainResourceGroup string
-	)
-
-	err := getEnvs(
-		getEnvOptional(EnvVarAzureCIDR, &azureCIDR),
-		getEnvOptional(EnvVarAzureCalicoSubnetCIDR, &azureCalicoSubnetCIDR),
-		getEnvOptional(EnvVarAzureMasterSubnetCIDR, &azureMasterSubnetCIDR),
-		getEnvOptional(EnvVarAzureVPNSubnetCIDR, &azureVPNSubnetCIDR),
-		getEnvOptional(EnvVarAzureWorkerSubnetCIDR, &azureWorkerSubnetCIDR),
-
-		getEnvRequired(EnvVarAzureClientID, &azureClientID),
-		getEnvRequired(EnvVarAzureClientSecret, &azureClientSecret),
-		getEnvRequired(EnvVarAzureLocation, &azureLocation),
-		getEnvRequired(EnvVarAzureSubscriptionID, &azureSubscriptionID),
-		getEnvRequired(EnvVarAzureTenantID, &azureTenantID),
-
-		getEnvRequired(EnvVarAzureGuestClientID, &azureGuestClientID),
-		getEnvRequired(EnvVarAzureGuestClientSecret, &azureGuestClientSecret),
-		getEnvRequired(EnvVarAzureGuestSubscriptionID, &azureGuestSubscriptionID),
-		getEnvRequired(EnvVarAzureGuestTenantID, &azureGuestTenantID),
-
-		getEnvRequired(EnvVarCommonDomainResourceGroup, &commonDomainResourceGroup),
-	)
 	if err != nil {
 		return Azure{}, microerror.Mask(err)
 	}

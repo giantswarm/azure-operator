@@ -37,12 +37,51 @@ func NewBuilder(config BuilderConfig) (*Builder, error) {
 func (b *Builder) Build(ctx context.Context) (Env, error) {
 	var common Common
 	{
-		// ...
+		c := commonBuilderConfig{
+			Logger: b.logger,
+		}
+
+		builder, err := newCommonBuilder(c)
+		if err != nil {
+			return Env{}, microerror.Mask(err)
+		}
+
+		common, err = builder.Build(ctx)
+		if err != nil {
+			return Env{}, microerror.Mask(err)
+		}
+	}
+
+	var version Version
+	{
+		c := versionBuilderConfig{
+			Logger: config.Logger,
+		}
+
+		builder, err := newVersionBuilder(c)
+		if err != nil {
+			return Env{}, microerror.Mask(err)
+		}
+
+		vesrion, err = builder.Build(ctx)
 	}
 
 	var cluster Cluster
 	{
-		// ...
+		c := clusterBuilderConfig{
+			Logger: config.Logger,
+
+			CircleSHA:     common.CircleSHA,
+			TestDir:       common.TestDir,
+			TestedVersion: version.TestedVersion,
+		}
+
+		builder, err := newClusterBuilder(c)
+		if err != nil {
+			return Env{}, microerror.Mask(err)
+		}
+
+		cluster, err = builder.Build(ctx)
 	}
 
 	var azure Azure
