@@ -8,13 +8,12 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch1/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch1/key"
 	"github.com/giantswarm/microerror"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/giantswarm/azure-operator/service/controller/v3patch1/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v3patch1/key"
 )
 
 const (
@@ -658,6 +657,18 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 		desiredVersion := key.VersionBundleVersion(customObject)
 		instanceVersion, ok := versionValue[instanceNameFunc(customObject, *v.InstanceID)]
 		if !ok {
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("Instance %#q for ID %#q not found\n", instanceNameFunc(customObject, *v.InstanceID), *v.InstanceID)
+			fmt.Printf("%versionValue=#v\n", versionValue)
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
+			fmt.Printf("-------------------------------------------------------------------------------\n")
 			continue
 		}
 		if desiredVersion == instanceVersion {
