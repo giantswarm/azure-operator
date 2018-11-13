@@ -8,14 +8,13 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch1/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch1/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-
-	"github.com/giantswarm/azure-operator/service/controller/v3patch1/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v3patch1/key"
 )
 
 const (
@@ -441,9 +440,13 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	//	 the object has been modified; please apply your changes to the
 	//	 latest version and try again
 	//
-	customObject, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
-	if err != nil {
-		return microerror.Mask(err)
+	{
+		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		customObject = *c
 	}
 
 	resourceStatus := providerv1alpha1.StatusClusterResource{
