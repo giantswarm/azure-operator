@@ -443,7 +443,7 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	//	 the object has been modified; please apply your changes to the
 	//	 latest version and try again
 	//
-	customObject, err := r.g8sClient.ProviderV1alpha1().AWSConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+	customObject, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
