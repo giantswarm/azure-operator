@@ -274,9 +274,20 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 		return nil, microerror.Mask(err)
 	}
 
+	var instances []compute.VirtualMachineScaleSetVM
+
+	for result.NotDone() {
+		instances = append(instances, result.Values()...)
+
+		err := result.Next()
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
 
-	return result.Values(), nil
+	return instances, nil
 }
 
 func (r *Resource) createDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
