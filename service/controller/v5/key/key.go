@@ -413,6 +413,11 @@ func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 func vmssInstanceIDBase36(instanceID string) string {
 	i, err := strconv.ParseUint(instanceID, 10, 64)
 	if err != nil {
+		// TODO Avoid panic call below if feasible.
+		//
+		//	See https://github.com/giantswarm/giantswarm/issues/4674
+		//
+
 		// This must be an int according to the documentation linked below.
 		//
 		// We are panicking here to make the API nice. If this is not
