@@ -150,34 +150,46 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 
 	{
 		v, err := r.getDeploymentOutputValue(ctx, customObject, "api_load_balancer_setup", "backendPoolId")
-		if err != nil {
+		if IsNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			cc.APILBBackendPoolID = v
 		}
-		cc.APILBBackendPoolID = v
 	}
 
 	{
 		v, err := r.getDeploymentOutputValue(ctx, customObject, "etcd_load_balancer_setup", "backendPoolId")
-		if err != nil {
+		if IsNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			cc.EtcdLBBackendPoolID = v
 		}
-		cc.EtcdLBBackendPoolID = v
 	}
 
 	{
 		v, err := r.getDeploymentOutputValue(ctx, customObject, "virtual_network_setup", "masterSubnetID")
-		if err != nil {
+		if IsNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			cc.MasterSubnetID = v
 		}
-		cc.MasterSubnetID = v
 	}
 
 	{
 		v, err := r.getDeploymentOutputValue(ctx, customObject, "virtual_network_setup", "workerSubnetID")
-		if err != nil {
+		if IsNotFound(err) {
+			// fall through
+		} else if err != nil {
 			return microerror.Mask(err)
+		} else {
+			cc.WorkerSubnetID = v
 		}
-		cc.WorkerSubnetID = v
 	}
 
 	return nil
