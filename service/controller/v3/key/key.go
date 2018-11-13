@@ -2,6 +2,7 @@ package key
 
 import (
 	"fmt"
+	"strconv"
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -217,7 +218,8 @@ func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), instanceID)
+	idB36 := vmssInstanceIDBase36(instanceID)
+	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), idB36)
 }
 
 // MasterNICName returns name of the master NIC.
@@ -389,9 +391,27 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), instanceID)
+	idB36 := vmssInstanceIDBase36(instanceID)
+	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36)
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-worker", ClusterID(customObject))
+}
+
+func vmssInstanceIDBase36(instanceID string) string {
+	i, err := strconv.ParseUint(instanceID, 10, 64)
+	if err != nil {
+		// This must be an int according to the documentation linked below.
+		//
+		// We are panicking here to make the API nice. If this is not
+		// an int there is nothing we can really do and we need to
+		// redesign `instance` resource.
+		//
+		//	https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-instance-ids#scale-set-vm-computer-name
+		//
+		panic(fmt.Sprintf("expected VMSS instanceID to be a positive integer number but got %#q", instanceID))
+	}
+
+	return strconv.FormatUint(i, 36)
 }
