@@ -9,6 +9,7 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -75,7 +76,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, DeploymentInitialized))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		}
 	}
@@ -103,7 +105,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, ProvisioningSuccessful))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -121,7 +124,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, InstancesUpgrading))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		reconciliationcanceledcontext.SetCanceled(ctx)
 		return nil
 	}
 
@@ -432,6 +436,16 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 }
 
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
+	// Get the newest CR version. Otherwise status update may fail because of:
+	//
+	//	 the object has been modified; please apply your changes to the
+	//	 latest version and try again
+	//
+	customObject, err := r.g8sClient.ProviderV1alpha1().AWSConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	resourceStatus := providerv1alpha1.StatusClusterResource{
 		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
 			{
