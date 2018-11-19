@@ -282,12 +282,17 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 	return instances, nil
 }
 
-func (r *Resource) createDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+func (r *Resource) createDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)) error {
 	if instance == nil {
 		return nil
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating node config for guest cluster node")
+
+	instanceName, err := instanceNameFunc(customObject, *instance.InstanceID)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	n := key.ClusterID(customObject)
 	c := &corev1alpha1.DrainerConfig{
@@ -295,7 +300,7 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 			Labels: map[string]string{
 				key.ClusterIDLabel: key.ClusterID(customObject),
 			},
-			Name: instanceNameFunc(customObject, *instance.InstanceID),
+			Name: instanceName,
 		},
 		Spec: corev1alpha1.DrainerConfigSpec{
 			Guest: corev1alpha1.DrainerConfigSpecGuest{
@@ -306,7 +311,7 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 					ID: key.ClusterID(customObject),
 				},
 				Node: corev1alpha1.DrainerConfigSpecGuestNode{
-					Name: instanceNameFunc(customObject, *instance.InstanceID),
+					Name: instanceName,
 				},
 			},
 			VersionBundle: corev1alpha1.DrainerConfigSpecVersionBundle{
@@ -315,7 +320,7 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 		},
 	}
 
-	_, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Create(c)
+	_, err = r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Create(c)
 	if errors.IsAlreadyExists(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create node config for guest cluster node")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "node config for guest cluster node does already exist")
@@ -328,17 +333,22 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 	return nil
 }
 
-func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, nodeConfigs []corev1alpha1.DrainerConfig) error {
+func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), nodeConfigs []corev1alpha1.DrainerConfig) error {
 	if instance == nil {
 		return nil
 	}
 
-	if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instance.InstanceID)) {
+	instanceName, err := instanceNameFunc(customObject, *instance.InstanceID)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if isNodeDrained(nodeConfigs, instanceName) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting node config for guest cluster node")
 
 		var nodeConfigToRemove corev1alpha1.DrainerConfig
 		for _, n := range nodeConfigs {
-			if n.GetName() == instanceNameFunc(customObject, *instance.InstanceID) {
+			if n.GetName() == instanceName {
 				nodeConfigToRemove = n
 				break
 			}
@@ -382,7 +392,7 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 //     loop 5: worker 2 drained
 //     loop 6: worker 2 reimage
 //
-func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	var err error
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
@@ -412,25 +422,42 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 		}
 
 		if instanceToUpdate != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceNameFunc(customObject, *instanceToUpdate.InstanceID)))
+			instanceName, err := instanceNameFunc(customObject, *instanceToUpdate.InstanceID)
+			if err != nil {
+				return nil, nil, nil, microerror.Mask(err)
+			}
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceName))
 		}
 		if instanceToDrain != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be drained", instanceNameFunc(customObject, *instanceToDrain.InstanceID)))
+			instanceName, err := instanceNameFunc(customObject, *instanceToDrain.InstanceID)
+			if err != nil {
+				return nil, nil, nil, microerror.Mask(err)
+			}
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be drained", instanceName))
 		}
 		if instanceToReimage != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be reimaged", instanceNameFunc(customObject, *instanceToReimage.InstanceID)))
+			instanceName, err := instanceNameFunc(customObject, *instanceToReimage.InstanceID)
+			if err != nil {
+				return nil, nil, nil, microerror.Mask(err)
+			}
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be reimaged", instanceName))
 		}
 	}
 
 	return instanceToUpdate, instanceToDrain, instanceToReimage, nil
 }
 
-func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)) error {
 	if instance == nil {
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceNameFunc(customObject, *instance.InstanceID)))
+	instanceName, err := instanceNameFunc(customObject, *instance.InstanceID)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName))
 
 	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
@@ -449,17 +476,22 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceNameFunc(customObject, *instance.InstanceID)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName))
 
 	return nil
 }
 
-func (r *Resource) updateInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+func (r *Resource) updateInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)) error {
 	if instance == nil {
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceNameFunc(customObject, *instance.InstanceID)))
+	instanceName, err := instanceNameFunc(customObject, *instance.InstanceID)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
 
 	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
@@ -478,7 +510,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceNameFunc(customObject, *instance.InstanceID)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
 
 	return nil
 }
@@ -495,7 +527,7 @@ func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool
 
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
-func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	var err error
 
 	instanceInProgress := firstInstanceInProgress(customObject, instances)
@@ -515,7 +547,11 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances
 		return nil, nil, nil, microerror.Mask(err)
 	}
 	if instanceToReimage != nil {
-		if isNodeDrained(nodeConfigs, instanceNameFunc(customObject, *instanceToReimage.InstanceID)) {
+		instanceName, err := instanceNameFunc(customObject, *instanceToReimage.InstanceID)
+		if err != nil {
+			return nil, nil, nil, microerror.Mask(err)
+		}
+		if isNodeDrained(nodeConfigs, instanceName) {
 			return nil, nil, instanceToReimage, nil
 		} else {
 			return nil, instanceToReimage, nil, nil
@@ -545,14 +581,18 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
+func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
 	if versionValue == nil {
 		return nil, microerror.Mask(versionBlobEmptyError)
 	}
 
 	for _, v := range list {
 		desiredVersion := key.VersionBundleVersion(customObject)
-		instanceVersion, ok := versionValue[instanceNameFunc(customObject, *v.InstanceID)]
+		instanceName, err := instanceNameFunc(customObject, *v.InstanceID)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		instanceVersion, ok := versionValue[instanceName]
 		if !ok {
 			continue
 		}

@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -18,7 +18,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		CustomObject              providerv1alpha1.AzureConfig
 		Instances                 []compute.VirtualMachineScaleSetVM
 		DrainerConfigs            []corev1alpha1.DrainerConfig
-		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) string
+		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)
 		VersionValue              map[string]string
 		ExpectedInstanceToUpdate  *compute.VirtualMachineScaleSetVM
 		ExpectedInstanceToDrain   *compute.VirtualMachineScaleSetVM
