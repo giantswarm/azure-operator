@@ -223,9 +223,13 @@ func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
-func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	idB36 := vmssInstanceIDBase36(instanceID)
-	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), idB36)
+func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error) {
+	idB36, err := vmssInstanceIDBase36(instanceID)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), idB36), nil
 }
 
 // MasterNICName returns name of the master NIC.
@@ -401,16 +405,20 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
-func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	idB36 := vmssInstanceIDBase36(instanceID)
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36)
+func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error) {
+	idB36, err := vmssInstanceIDBase36(instanceID)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36), nil
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-worker", ClusterID(customObject))
 }
 
-func vmssInstanceIDBase36(instanceID string) string {
+func vmssInstanceIDBase36(instanceID string) (string, error) {
 	i, err := strconv.ParseUint(instanceID, 10, 64)
 	if err != nil {
 		// TODO Avoid panic call below if feasible.
@@ -426,8 +434,8 @@ func vmssInstanceIDBase36(instanceID string) string {
 		//
 		//	https://docs.microsoft.com/en-us/azure/virtual-machine-scale-sets/virtual-machine-scale-sets-instance-ids#scale-set-vm-computer-name
 		//
-		panic(fmt.Sprintf("expected VMSS instanceID to be a positive integer number but got %#q", instanceID))
+		return "", microerror.Maskf(executionFailedError, "expected VMSS instanceID to be a positive integer number but got %#q", instanceID)
 	}
 
-	return strconv.FormatUint(i, 36)
+	return strconv.FormatUint(i, 36), nil
 }
