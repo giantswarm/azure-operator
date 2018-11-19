@@ -6,6 +6,7 @@ const (
 	calicoAzureFilePermission = 0600
 	calicoAzureFileTemplate   = `# Extra changes:
 #  - added "nodename_file_optional" set to true (can be removed on the next upgrade)
+#  - Added 'priorityClassName: system-cluster-critical' to calico daemonset and calico typha deployment.
 #
 # Calico Version v3.2.0
 # https://docs.projectcalico.org/v3.2/releases#v3.2.0
@@ -118,6 +119,7 @@ spec:
       # Since Calico can't network a pod until Typha is up, we need to run Typha itself
       # as a host-networked pod.
       serviceAccountName: calico-node
+      priorityClassName: system-cluster-critical
       containers:
       - image: quay.io/giantswarm/typha:v3.2.0
         name: calico-typha
@@ -206,6 +208,7 @@ spec:
         - effect: NoExecute
           operator: Exists
       serviceAccountName: calico-node
+      priorityClassName: system-cluster-critical
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
