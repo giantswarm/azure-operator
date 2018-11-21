@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v2/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -18,7 +18,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		CustomObject              providerv1alpha1.AzureConfig
 		Instances                 []compute.VirtualMachineScaleSetVM
 		DrainerConfigs            []corev1alpha1.DrainerConfig
-		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) string
+		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)
 		VersionValue              map[string]string
 		ExpectedInstanceToUpdate  *compute.VirtualMachineScaleSetVM
 		ExpectedInstanceToDrain   *compute.VirtualMachineScaleSetVM
@@ -539,138 +539,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			}
 			if !reflect.DeepEqual(instanceToReimage, tc.ExpectedInstanceToReimage) {
 				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, instanceToReimage)
-			}
-		})
-	}
-}
-
-func Test_Resource_Instance_computeForDeleteResourceStatus(t *testing.T) {
-	testCases := []struct {
-		Name                 string
-		CustomObject         providerv1alpha1.AzureConfig
-		Type                 string
-		Status               string
-		ExpectedCustomObject providerv1alpha1.AzureConfig
-	}{
-		{
-			Name: "case 0",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Status: providerv1alpha1.AzureConfigStatus{
-					Cluster: providerv1alpha1.StatusCluster{
-						Resources: []providerv1alpha1.StatusClusterResource{
-							{
-								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
-									{
-										Type:   "Stage",
-										Status: "InstancesUpgrading",
-									},
-								},
-								Name: Name,
-							},
-						},
-					},
-				},
-			},
-			Type:   "Stage",
-			Status: "InstancesUpgrading",
-			ExpectedCustomObject: providerv1alpha1.AzureConfig{
-				Status: providerv1alpha1.AzureConfigStatus{
-					Cluster: providerv1alpha1.StatusCluster{
-						Resources: nil,
-					},
-				},
-			},
-		},
-		{
-			Name: "case 1",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Status: providerv1alpha1.AzureConfigStatus{
-					Cluster: providerv1alpha1.StatusCluster{
-						Resources: []providerv1alpha1.StatusClusterResource{
-							{
-								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
-									{
-										Type:   "Stage",
-										Status: "DeploymentInitialized",
-									},
-								},
-								Name: Name,
-							},
-						},
-					},
-				},
-			},
-			Type:   "Stage",
-			Status: "InstancesUpgrading",
-			ExpectedCustomObject: providerv1alpha1.AzureConfig{
-				Status: providerv1alpha1.AzureConfigStatus{
-					Cluster: providerv1alpha1.StatusCluster{
-						Resources: []providerv1alpha1.StatusClusterResource{
-							{
-								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
-									{
-										Type:   "Stage",
-										Status: "DeploymentInitialized",
-									},
-								},
-								Name: Name,
-							},
-						},
-					},
-				},
-			},
-		},
-		{
-			Name: "case 2",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Status: providerv1alpha1.AzureConfigStatus{
-					Cluster: providerv1alpha1.StatusCluster{
-						Resources: []providerv1alpha1.StatusClusterResource{
-							{
-								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
-									{
-										Type:   "Stage",
-										Status: "DeploymentInitialized",
-									},
-									{
-										Type:   "Stage",
-										Status: "InstancesUpgrading",
-									},
-								},
-								Name: Name,
-							},
-						},
-					},
-				},
-			},
-			Type:   "Stage",
-			Status: "InstancesUpgrading",
-			ExpectedCustomObject: providerv1alpha1.AzureConfig{
-				Status: providerv1alpha1.AzureConfigStatus{
-					Cluster: providerv1alpha1.StatusCluster{
-						Resources: []providerv1alpha1.StatusClusterResource{
-							{
-								Conditions: []providerv1alpha1.StatusClusterResourceCondition{
-									{
-										Type:   "Stage",
-										Status: "DeploymentInitialized",
-									},
-								},
-								Name: Name,
-							},
-						},
-					},
-				},
-			},
-		},
-	}
-
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
-			customObject := computeForDeleteResourceStatus(tc.CustomObject, tc.Type, tc.Status)
-
-			if !reflect.DeepEqual(customObject, tc.ExpectedCustomObject) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedCustomObject, customObject)
 			}
 		})
 	}
