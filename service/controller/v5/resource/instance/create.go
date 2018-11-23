@@ -476,7 +476,11 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 			*instance.InstanceID,
 		}),
 	}
-	_, err = c.Reimage(ctx, g, s, ids)
+	res, err := c.Reimage(ctx, g, s, ids)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	_, err = c.ReimageResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -510,7 +514,11 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 			*instance.InstanceID,
 		}),
 	}
-	_, err = c.UpdateInstances(ctx, g, s, ids)
+	res, err := c.UpdateInstances(ctx, g, s, ids)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	_, err = c.UpdateInstancesResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}
