@@ -51,7 +51,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			_, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			_, err = deploymentsClient.CreateOrUpdateResponder(res.Response())
 			if err != nil {
 				return microerror.Mask(err)
 			}
