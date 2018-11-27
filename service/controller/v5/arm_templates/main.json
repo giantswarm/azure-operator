@@ -432,7 +432,7 @@
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
           },
-          "storageAcountName":{
+          "storageAccountName":{
             "value":"[parameters('storageAccountName')]"
           }
         }
