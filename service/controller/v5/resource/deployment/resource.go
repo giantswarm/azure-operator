@@ -121,7 +121,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	_, err = deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
+	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, err = deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}
