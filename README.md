@@ -35,7 +35,7 @@ Otherwise create a service provider with the azure-operator role (replace
 SUBSCRIPTION_ID):
 
 ```bash
-export CODENAME=ghost
+export CODENAME=cluster1
 az ad sp create-for-rbac -n $CODENAME-azure-operator-sp --role="azure-operator" --scopes="/subscriptions/${SUBSCRIPTION_ID}" --years 10
 ```
 
