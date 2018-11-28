@@ -109,12 +109,17 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		_, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
+		res, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
+			_, err = groupsClient.DeleteResponder(res.Response())
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
 			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion in progress")
 			finalizerskeptcontext.SetKept(ctx)
 			reconciliationcanceledcontext.SetCanceled(ctx)

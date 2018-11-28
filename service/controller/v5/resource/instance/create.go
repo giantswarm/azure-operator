@@ -51,7 +51,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			_, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			_, err = deploymentsClient.CreateOrUpdateResponder(res.Response())
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -471,7 +476,11 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 			*instance.InstanceID,
 		}),
 	}
-	_, err = c.Reimage(ctx, g, s, ids)
+	res, err := c.Reimage(ctx, g, s, ids)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	_, err = c.ReimageResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -505,7 +514,11 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 			*instance.InstanceID,
 		}),
 	}
-	_, err = c.UpdateInstances(ctx, g, s, ids)
+	res, err := c.UpdateInstances(ctx, g, s, ids)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	_, err = c.UpdateInstancesResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}
