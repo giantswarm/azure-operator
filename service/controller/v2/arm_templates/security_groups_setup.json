@@ -12,6 +12,9 @@
     "clusterID": {
       "type": "string"
     },
+    "etcdPort":{
+      "type":"int"
+    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
@@ -52,7 +55,6 @@
     "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
 
     "cadvisorPort": "4194",
-    "etcdPort": "2379",
     "kubeletPort": "10250",
     "nodeExporterPort": "10300",
     "kubeStateMetricsPort": "10301"

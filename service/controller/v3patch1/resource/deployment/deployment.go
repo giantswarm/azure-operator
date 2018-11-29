@@ -22,6 +22,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"calicoSubnetCidr":        sc.AzureNetwork.Calico.String(),
 		"clusterID":               key.ClusterID(customObject),
 		"dnsZones":                key.DNSZones(customObject),
+		"etcdPort":                key.EtcdPort(),
 		"hostClusterCidr":         r.azure.HostCluster.CIDR,
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
 		"masterSubnetCidr":        sc.AzureNetwork.Master.String(),

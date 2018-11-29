@@ -57,6 +57,7 @@ func (r Resource) newDeployment(obj providerv1alpha1.AzureConfig, overwrites map
 		"virtualNetworkName":            key.VnetName(obj),
 		"virtualNetworkCidr":            key.VnetCIDR(obj),
 		"calicoSubnetCidr":              key.VnetCalicoSubnetCIDR(obj),
+		"etcdPort":                      key.EtcdPort(),
 		"masterSubnetCidr":              key.VnetMasterSubnetCIDR(obj),
 		"workerSubnetCidr":              key.VnetWorkerSubnetCIDR(obj),
 		"masterNodes":                   masterNodes,

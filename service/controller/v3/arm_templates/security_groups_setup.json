@@ -12,6 +12,9 @@
     "clusterID":{
       "type":"string"
     },
+    "etcdPort":{
+      "type":"int"
+    },
     "GiantSwarmTags":{
       "type":"object",
       "defaultValue":{

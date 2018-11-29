@@ -125,6 +125,10 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 	return customObject.Spec.Azure.DNSZones.Ingress.ResourceGroup
 }
 
+func EtcdPort() int {
+	return 2379
+}
+
 func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {
 	return customObject.GetDeletionTimestamp() != nil
 }
