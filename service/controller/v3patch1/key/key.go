@@ -77,7 +77,7 @@ func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, customObject.Spec.Cluster.Etcd.Port)
+	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, EtcdPort())
 }
 
 // ClusterID returns the unique ID for this cluster.
@@ -168,6 +168,10 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 
 func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureConfigSpecAzureDNSZones {
 	return customObject.Spec.Azure.DNSZones
+}
+
+func EtcdPort() int {
+	return 2379
 }
 
 func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {
