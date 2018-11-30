@@ -63,6 +63,9 @@
     "vpnGatewayName":{
       "type":"string"
     },
+    "etcdPort":{
+      "type":"int"
+    },
     "kubernetesAPISecurePort":{
       "type":"int"
     },
