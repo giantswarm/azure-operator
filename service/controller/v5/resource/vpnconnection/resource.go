@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	Name = "vpngatewayv5"
+	Name = "vpnconnectionv5"
 )
 
 // Config is the configuration required by Resource.
