@@ -9,22 +9,7 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "Updated to 1.11.1.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Calico updated to version 3.2.0",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "cloudconfig",
-				Description: "Removed CoreDNS related components (now managed by chart-operator).",
-				Kind:        versionbundle.KindRemoved,
-			},
-			{
-				Component:   "kubernetes",
-				Description: "Patched Kubernetes v1.11.1 with apimachinery fix to plug apiserver memory leak.",
+				Description: "Updated to 1.11.5.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
@@ -47,10 +32,10 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.11.1",
+				Version: "1.11.5",
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.0.0",
+		Version: "2.0.1",
 	}
 }
