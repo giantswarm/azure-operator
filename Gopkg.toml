@@ -94,8 +94,8 @@ required = [
   branch = "master"
   name = "github.com/giantswarm/operatorkit"
 
-[[override]]
-  branch = "use-tenant-lib"
+[[constraint]]
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
 
 [[constraint]]
