@@ -29,7 +29,6 @@ spec:
   cluster:
     calico:
       cidr: 16
-      domain: "calico.{{ .Values.clusterName }}.k8s.{{ .Values.commonDomain }}"
       mtu: 1500
     customer:
       id: "example-customer"
