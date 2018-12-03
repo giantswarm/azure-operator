@@ -8,7 +8,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v3patch1/key"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch2/key"
 )
 
 type masterExtension struct {
