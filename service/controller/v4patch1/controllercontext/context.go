@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v4/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v4patch1/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/network"
 )
 

@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
 
-	"github.com/giantswarm/azure-operator/service/controller/v4/key"
+	"github.com/giantswarm/azure-operator/service/controller/v4patch1/key"
 )
 
 // NewDeletePatch provide a controller.Patch holding connections to be deleted.

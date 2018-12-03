@@ -11,7 +11,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/v4/key"
+	"github.com/giantswarm/azure-operator/service/controller/v4patch1/key"
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {

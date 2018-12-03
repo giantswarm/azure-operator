@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
-	"github.com/giantswarm/azure-operator/service/controller/v4/key"
+	"github.com/giantswarm/azure-operator/service/controller/v4patch1/key"
 )
 
 // GetDesiredState return desired vpn gateway connections.

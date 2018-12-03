@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/v4/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v4patch1/controllercontext"
 )
 
 func (r *Resource) getHostVirtualNetworkGateway(ctx context.Context, resourceGroup, vpnGatewayName string) (*network.VirtualNetworkGateway, error) {
