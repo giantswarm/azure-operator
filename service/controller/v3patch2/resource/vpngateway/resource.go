@@ -9,7 +9,7 @@ import (
 )
 
 const (
-	Name = "vpngatewayv3patch1"
+	Name = "vpngatewayv3patch2"
 )
 
 // Config is the configuration required by Resource.
