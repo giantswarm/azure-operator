@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -90,6 +91,8 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 	}
 	defer watcher.Stop()
 
+	alreadyEmitted := map[string]bool{}
+
 	for {
 		select {
 		case event, ok := <-watcher.ResultChan():
@@ -102,43 +105,74 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 				return microerror.Mask(err)
 			}
 
+			clusterID := key.ClusterID(customObject)
+
 			{
 				deploymentsClient, err := d.getDeploymentsClient(customObject)
 				if err != nil {
 					return microerror.Mask(err)
 				}
 
-				r, err := deploymentsClient.ListByResourceGroup(context.Background(), key.ClusterID(customObject), "", to.Int32Ptr(100))
+				r, err := deploymentsClient.ListByResourceGroup(context.Background(), clusterID, "", to.Int32Ptr(100))
 				if err != nil {
 					return microerror.Mask(err)
 				}
 
 				for r.NotDone() {
 					for _, v := range r.Values() {
-						ch <- prometheus.MustNewConstMetric(
-							deploymentDesc,
-							prometheus.GaugeValue,
-							float64(matchedStringToInt(statusCanceled, *v.Properties.ProvisioningState)),
-							key.ClusterID(customObject),
-							*v.Name,
-							statusCanceled,
-						)
-						ch <- prometheus.MustNewConstMetric(
-							deploymentDesc,
-							prometheus.GaugeValue,
-							float64(matchedStringToInt(statusFailed, *v.Properties.ProvisioningState)),
-							key.ClusterID(customObject),
-							*v.Name,
-							statusFailed,
-						)
-						ch <- prometheus.MustNewConstMetric(
-							deploymentDesc,
-							prometheus.GaugeValue,
-							float64(matchedStringToInt(statusSucceeded, *v.Properties.ProvisioningState)),
-							key.ClusterID(customObject),
-							*v.Name,
-							statusSucceeded,
-						)
+						{
+							k := fmt.Sprintf("%s-%s-%s", clusterID, *v.Name, statusCanceled)
+							_, found := alreadyEmitted[k]
+							if found {
+								continue
+							}
+							alreadyEmitted[k] = true
+
+							ch <- prometheus.MustNewConstMetric(
+								deploymentDesc,
+								prometheus.GaugeValue,
+								float64(matchedStringToInt(statusCanceled, *v.Properties.ProvisioningState)),
+								clusterID,
+								*v.Name,
+								statusCanceled,
+							)
+						}
+
+						{
+							k := fmt.Sprintf("%s-%s-%s", clusterID, *v.Name, statusFailed)
+							_, found := alreadyEmitted[k]
+							if found {
+								continue
+							}
+							alreadyEmitted[k] = true
+
+							ch <- prometheus.MustNewConstMetric(
+								deploymentDesc,
+								prometheus.GaugeValue,
+								float64(matchedStringToInt(statusFailed, *v.Properties.ProvisioningState)),
+								clusterID,
+								*v.Name,
+								statusFailed,
+							)
+						}
+
+						{
+							k := fmt.Sprintf("%s-%s-%s", clusterID, *v.Name, statusSucceeded)
+							_, found := alreadyEmitted[k]
+							if found {
+								continue
+							}
+							alreadyEmitted[k] = true
+
+							ch <- prometheus.MustNewConstMetric(
+								deploymentDesc,
+								prometheus.GaugeValue,
+								float64(matchedStringToInt(statusSucceeded, *v.Properties.ProvisioningState)),
+								clusterID,
+								*v.Name,
+								statusSucceeded,
+							)
+						}
 					}
 
 					err := r.Next()
