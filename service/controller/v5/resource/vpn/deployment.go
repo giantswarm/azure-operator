@@ -1,7 +1,6 @@
 package vpn
 
 import (
-	"context"
 	"encoding/json"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
