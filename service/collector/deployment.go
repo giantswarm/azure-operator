@@ -91,7 +91,7 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 	}
 	defer watcher.Stop()
 
-	alreadyEmitted := map[string]bool{}
+	alreadyEmitted := map[string]struct{}{}
 
 	for {
 		select {
@@ -126,7 +126,7 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 							if found {
 								continue
 							}
-							alreadyEmitted[k] = true
+							alreadyEmitted[k] = struct{}{}
 
 							ch <- prometheus.MustNewConstMetric(
 								deploymentDesc,
@@ -144,7 +144,7 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 							if found {
 								continue
 							}
-							alreadyEmitted[k] = true
+							alreadyEmitted[k] = struct{}{}
 
 							ch <- prometheus.MustNewConstMetric(
 								deploymentDesc,
@@ -162,7 +162,7 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 							if found {
 								continue
 							}
-							alreadyEmitted[k] = true
+							alreadyEmitted[k] = struct{}{}
 
 							ch <- prometheus.MustNewConstMetric(
 								deploymentDesc,
