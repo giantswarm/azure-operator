@@ -107,13 +107,6 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		}
 	}
 
-	// NOTE in Azure we disable Calico right now. This is due to a transitioning
-	// phase. The k8scloudconfig templates require certain calico valus to be set
-	// nonetheless. So we set them here. Later when the Calico setup is
-	// straightened out we can improve the handling here.
-	customObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP
-	customObject.Spec.Cluster.Calico.CIDR = c.azureNetwork.Calico.Mask
-
 	params := k8scloudconfig.Params{
 		APIServerEncryptionKey:          apiserverEncryptionKey,
 		Cluster:                         customObject.Spec.Cluster,
@@ -185,13 +178,6 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
-	// NOTE in Azure we disable Calico right now. This is due to a transitioning
-	// phase. The k8scloudconfig templates require certain calico valus to be set
-	// nonetheless. So we set them here. Later when the Calico setup is
-	// straightened out we can improve the handling here.
-	customObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP
-	customObject.Spec.Cluster.Calico.CIDR = c.azureNetwork.Calico.Mask
-
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
 		Hyperkube: k8scloudconfig.Hyperkube{
