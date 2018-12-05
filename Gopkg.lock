@@ -357,7 +357,7 @@
     "v_3_5_2",
     "v_3_6_1",
     "v_3_6_3",
-    "v_3_7_0",
+    "v_3_7_3",
   ]
   pruneopts = "T"
   revision = "f95777dc57c1828518870f944f5dc45cd8e53b32"
@@ -1642,7 +1642,7 @@
     "github.com/giantswarm/k8scloudconfig/v_3_5_2",
     "github.com/giantswarm/k8scloudconfig/v_3_6_1",
     "github.com/giantswarm/k8scloudconfig/v_3_6_3",
-    "github.com/giantswarm/k8scloudconfig/v_3_7_0",
+    "github.com/giantswarm/k8scloudconfig/v_3_7_3",
     "github.com/giantswarm/microendpoint/endpoint/healthz",
     "github.com/giantswarm/microendpoint/endpoint/version",
     "github.com/giantswarm/microendpoint/service/version",
