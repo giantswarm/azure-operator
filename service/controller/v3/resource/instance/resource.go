@@ -6,7 +6,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
-	"github.com/giantswarm/guestcluster"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -19,18 +18,16 @@ const (
 )
 
 type Config struct {
-	G8sClient    versioned.Interface
-	GuestCluster guestcluster.Interface
-	Logger       micrologger.Logger
+	G8sClient versioned.Interface
+	Logger    micrologger.Logger
 
 	Azure           setting.Azure
 	TemplateVersion string
 }
 
 type Resource struct {
-	g8sClient    versioned.Interface
-	guestCluster guestcluster.Interface
-	logger       micrologger.Logger
+	g8sClient versioned.Interface
+	logger    micrologger.Logger
 
 	azure           setting.Azure
 	templateVersion string
@@ -39,9 +36,6 @@ type Resource struct {
 func New(config Config) (*Resource, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
-	}
-	if config.GuestCluster == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.GuestCluster must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -55,9 +49,8 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		g8sClient:    config.G8sClient,
-		guestCluster: config.GuestCluster,
-		logger:       config.Logger,
+		g8sClient: config.G8sClient,
+		logger:    config.Logger,
 
 		azure:           config.Azure,
 		templateVersion: config.TemplateVersion,

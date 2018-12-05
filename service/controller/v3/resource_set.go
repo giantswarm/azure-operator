@@ -7,7 +7,6 @@ import (
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/certs"
-	"github.com/giantswarm/guestcluster"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
@@ -15,6 +14,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
 	"github.com/giantswarm/statusresource"
+	"github.com/giantswarm/tenantcluster"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -78,21 +78,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var guestCluster guestcluster.Interface
-	{
-		c := guestcluster.Config{
-			CertsSearcher: certsSearcher,
-			Logger:        config.Logger,
-
-			CertID: certs.APICert,
-		}
-
-		guestCluster, err = guestcluster.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var newDebugger *debugger.Debugger
 	{
 		c := debugger.Config{
@@ -118,16 +103,31 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var tenantCluster tenantcluster.Interface
+	{
+		c := tenantcluster.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+
+			CertID: certs.APICert,
+		}
+
+		tenantCluster, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var statusResource controller.Resource
 	{
 		c := statusresource.ResourceConfig{
 			ClusterEndpointFunc:      key.ToClusterEndpoint,
 			ClusterIDFunc:            key.ToClusterID,
 			ClusterStatusFunc:        key.ToClusterStatus,
-			GuestCluster:             guestCluster,
 			NodeCountFunc:            key.ToNodeCount,
 			Logger:                   config.Logger,
 			RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
+			TenantCluster:            tenantCluster,
 			VersionBundleVersionFunc: key.ToVersionBundleVersion,
 		}
 
@@ -221,9 +221,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource controller.Resource
 	{
 		c := instance.Config{
-			G8sClient:    config.G8sClient,
-			GuestCluster: guestCluster,
-			Logger:       config.Logger,
+			G8sClient: config.G8sClient,
+			Logger:    config.Logger,
 
 			Azure:           config.Azure,
 			TemplateVersion: config.TemplateVersion,
