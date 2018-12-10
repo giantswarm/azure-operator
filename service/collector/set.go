@@ -47,11 +47,28 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
+	var vpnConnectionCollector *VPNConnection
+	{
+		c := VPNConnectionConfig{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			AzureSetting:             config.AzureSetting,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+		}
+
+		vpnConnectionCollector, err = NewVPNConnection(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var collectorSet *collector.Set
 	{
 		c := collector.SetConfig{
 			Collectors: []collector.Interface{
 				deploymentCollector,
+				vpnConnectionCollector,
 			},
 			Logger: config.Logger,
 		}
