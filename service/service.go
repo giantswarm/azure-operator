@@ -165,7 +165,7 @@ func New(config Config) (*Service, error) {
 			Logger:    config.Logger,
 			Watcher:   g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
 
-			EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.Cloud),
+			AzureSetting: azure,
 		}
 
 		operatorCollector, err = collector.NewSet(c)
