@@ -19,7 +19,9 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v2patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v3"
 	"github.com/giantswarm/azure-operator/service/controller/v3patch1"
+	"github.com/giantswarm/azure-operator/service/controller/v3patch2"
 	"github.com/giantswarm/azure-operator/service/controller/v4"
+	"github.com/giantswarm/azure-operator/service/controller/v4patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v5"
 )
 
@@ -164,6 +166,28 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
+	var v3Patch2ResourceSet *controller.ResourceSet
+	{
+		c := v3patch2.ResourceSetConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			Azure:                    config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v3Patch2ResourceSet, err = v3patch2.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var v4ResourceSet *controller.ResourceSet
 	{
 		c := v4.ResourceSetConfig{
@@ -181,6 +205,28 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 
 		v4ResourceSet, err = v4.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var v4Patch1ResourceSet *controller.ResourceSet
+	{
+		c := v4patch1.ResourceSetConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			Azure:                    config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v4Patch1ResourceSet, err = v4patch1.NewResourceSet(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -220,7 +266,9 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 				v2Patch1ResourceSet,
 				v3ResourceSet,
 				v3Patch1ResourceSet,
+				v3Patch2ResourceSet,
 				v4ResourceSet,
+				v4Patch1ResourceSet,
 				v5ResourceSet,
 			},
 			RESTClient: config.G8sClient.ProviderV1alpha1().RESTClient(),
