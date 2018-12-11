@@ -88,7 +88,7 @@ func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 	for connections.NotDone() {
 		connection := connections.Value()
 		ch <- prometheus.MustNewConstMetric(
-			deploymentDesc,
+			vpnConnectionDesc,
 			prometheus.GaugeValue,
 			1,
 			to.String(connection.ID),
