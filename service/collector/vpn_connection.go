@@ -62,7 +62,7 @@ func NewVPNConnection(config VPNConnectionConfig) (*VPNConnection, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.HostAzureClientSetConfig.%s", config, err)
 	}
 
-	d := &VPNConnection{
+	v := &VPNConnection{
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
@@ -70,17 +70,17 @@ func NewVPNConnection(config VPNConnectionConfig) (*VPNConnection, error) {
 		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
 	}
 
-	return d, nil
+	return v, nil
 }
 
-func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
-	vpnConnectionClient, err := r.getVPNConnectionsClient()
+func (v *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
+	vpnConnectionClient, err := v.getVPNConnectionsClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	ctx := context.Background()
-	resourceGroup := r.azureSetting.HostCluster.ResourceGroup
+	resourceGroup := v.azureSetting.HostCluster.ResourceGroup
 	connections, err := vpnConnectionClient.ListComplete(ctx, resourceGroup)
 	if err != nil {
 		return microerror.Mask(err)
@@ -127,13 +127,13 @@ func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 	return nil
 }
 
-func (r *VPNConnection) Describe(ch chan<- *prometheus.Desc) error {
+func (v *VPNConnection) Describe(ch chan<- *prometheus.Desc) error {
 	ch <- vpnConnectionDesc
 	return nil
 }
 
-func (r *VPNConnection) getVPNConnectionsClient() (*network.VirtualNetworkGatewayConnectionsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
+func (v *VPNConnection) getVPNConnectionsClient() (*network.VirtualNetworkGatewayConnectionsClient, error) {
+	azureClients, err := client.NewAzureClientSet(v.hostAzureClientSetConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
