@@ -165,7 +165,8 @@ func New(config Config) (*Service, error) {
 			Logger:    config.Logger,
 			Watcher:   g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
 
-			AzureSetting: azure,
+			AzureSetting:             azure,
+			HostAzureClientSetConfig: azureConfig,
 		}
 
 		operatorCollector, err = collector.NewSet(c)
