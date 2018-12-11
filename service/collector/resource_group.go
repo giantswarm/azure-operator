@@ -101,24 +101,23 @@ func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
 }
 
 func (r *ResourceGroup) collectForClientSet(ch chan<- prometheus.Metric, client *resources.GroupsClient) error {
-	resultsPage, err := client.List(context.Background(), "", nil)
+	resultsPage, err := client.ListComplete(context.Background(), "", nil)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	for resultsPage.NotDone() {
-		for _, group := range resultsPage.Values() {
-			ch <- prometheus.MustNewConstMetric(
-				resourceGroupDesc,
-				prometheus.GaugeValue,
-				gaugeValue,
-				getID(group),
-				getName(group),
-				getState(group),
-				getLocation(group),
-				getManagedBy(group),
-			)
-		}
+		group := resultsPage.Value()
+		ch <- prometheus.MustNewConstMetric(
+			resourceGroupDesc,
+			prometheus.GaugeValue,
+			gaugeValue,
+			getID(group),
+			getName(group),
+			getState(group),
+			getLocation(group),
+			getManagedBy(group),
+		)
 
 		if err := resultsPage.Next(); err != nil {
 			return microerror.Mask(err)
