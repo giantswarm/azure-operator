@@ -105,7 +105,7 @@ func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 			to.String(connection.ProvisioningState),
 		)
 
-		err := connections.Next()
+		err = connections.Next()
 		if err != nil {
 			return microerror.Mask(err)
 		}
