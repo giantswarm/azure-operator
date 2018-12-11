@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
@@ -112,11 +113,11 @@ func (r *ResourceGroup) collectForClientSet(ch chan<- prometheus.Metric, client 
 			resourceGroupDesc,
 			prometheus.GaugeValue,
 			gaugeValue,
-			getID(group),
-			getName(group),
+			to.String(group.ID),
+			to.String(group.Name),
 			getState(group),
-			getLocation(group),
-			getManagedBy(group),
+			to.String(group.Location),
+			to.String(group.ManagedBy),
 		)
 
 		if err := resultsPage.Next(); err != nil {
@@ -133,37 +134,10 @@ func (r *ResourceGroup) Describe(ch chan<- *prometheus.Desc) error {
 	return nil
 }
 
-func getID(group resources.Group) string {
-	if group.ID != nil {
-		return *group.ID
-	}
-	return ""
-}
-
-func getName(group resources.Group) string {
-	if group.Name != nil {
-		return *group.Name
-	}
-	return ""
-}
-
 func getState(group resources.Group) string {
-	if group.Properties != nil && group.Properties.ProvisioningState != nil {
-		return *group.Properties.ProvisioningState
+	if group.Properties != nil {
+		return to.String(group.Properties.ProvisioningState)
 	}
-	return ""
-}
 
-func getLocation(group resources.Group) string {
-	if group.Location != nil {
-		return *group.Location
-	}
-	return ""
-}
-
-func getManagedBy(group resources.Group) string {
-	if group.ManagedBy != nil {
-		return *group.ManagedBy
-	}
 	return ""
 }
