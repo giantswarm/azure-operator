@@ -87,6 +87,12 @@ func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 
 	for connections.NotDone() {
 		connection := connections.Value()
+
+		connectionDetails, err := vpnConnectionClient.Get(ctx, resourceGroup, to.String(connection.Name))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
 		ch <- prometheus.MustNewConstMetric(
 			vpnConnectionDesc,
 			prometheus.GaugeValue,
@@ -95,7 +101,7 @@ func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 			to.String(connection.Name),
 			to.String(connection.Location),
 			string(connection.ConnectionType),
-			string(connection.ConnectionStatus),
+			string(connectionDetails.ConnectionStatus),
 			to.String(connection.ProvisioningState),
 		)
 
