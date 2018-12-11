@@ -92,6 +92,8 @@ func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 		c := connections.Value()
 		connectionName := to.String(c.Name)
 
+		// ConnectionStatus returned by the API when listing connections is always empty.
+		// Details for each connection must be requested in order to get a value for ConnectionStatus.
 		g.Go(func() error {
 			connection, err := vpnConnectionClient.Get(ctx, resourceGroup, connectionName)
 			if err != nil {
