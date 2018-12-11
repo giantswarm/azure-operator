@@ -1,5 +1,7 @@
 package vpn
 
+//go:generate go run github.com/logrusorgru/textFileToGoConst -in virtual_network_gateway.json -c vpn_gateway_json
+
 import (
 	"encoding/json"
 
