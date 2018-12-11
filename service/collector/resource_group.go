@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
@@ -102,7 +101,7 @@ func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
 }
 
 func (r *ResourceGroup) collectForClientSet(ch chan<- prometheus.Metric, client *resources.GroupsClient) error {
-	resultsPage, err := client.List(context.Background(), "", to.Int32Ptr(100))
+	resultsPage, err := client.List(context.Background(), "", nil)
 	if err != nil {
 		return microerror.Mask(err)
 	}
