@@ -9,17 +9,17 @@ import (
 )
 
 const (
-	// kubernetesCredentialNamespace is the namespace in which we store credentials.
-	kubernetesCredentialNamespace = "giantswarm"
+	// credentialNamespace is the namespace in which we store credentials.
+	credentialNamespace = "giantswarm"
 
-	// kubernetesLabelSelector is the label selector we use to retrieve credentials.
-	kubernetesLabelSelector = "app=credentiald"
+	// credentialLabelSelector is the label selector we use to retrieve credentials.
+	credentialLabelSelector = "app=credentiald"
 )
 
 // getUniqueClientSets fetches all unique Azure clients.
 func getUniqueClientSets(k8sClient kubernetes.Interface, environmentName string) ([]*client.AzureClientSet, error) {
-	credentialList, err := k8sClient.CoreV1().Secrets(kubernetesCredentialNamespace).List(metav1.ListOptions{
-		LabelSelector: kubernetesLabelSelector,
+	credentialList, err := k8sClient.CoreV1().Secrets(credentialNamespace).List(metav1.ListOptions{
+		LabelSelector: credentialLabelSelector,
 	})
 	if err != nil {
 		return nil, microerror.Mask(err)
