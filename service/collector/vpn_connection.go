@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
+	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -85,30 +86,40 @@ func (r *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 		return microerror.Mask(err)
 	}
 
+	var g errgroup.Group
+
 	for connections.NotDone() {
-		connection := connections.Value()
+		c := connections.Value()
+		connectionName := to.String(c.Name)
 
-		connectionDetails, err := vpnConnectionClient.Get(ctx, resourceGroup, to.String(connection.Name))
-		if err != nil {
+		g.Go(func() error {
+			connection, err := vpnConnectionClient.Get(ctx, resourceGroup, connectionName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			ch <- prometheus.MustNewConstMetric(
+				vpnConnectionDesc,
+				prometheus.GaugeValue,
+				1,
+				to.String(connection.ID),
+				connectionName,
+				to.String(connection.Location),
+				string(connection.ConnectionType),
+				string(connection.ConnectionStatus),
+				to.String(connection.ProvisioningState),
+			)
+
+			return nil
+		})
+
+		if err := connections.Next(); err != nil {
 			return microerror.Mask(err)
 		}
+	}
 
-		ch <- prometheus.MustNewConstMetric(
-			vpnConnectionDesc,
-			prometheus.GaugeValue,
-			1,
-			to.String(connection.ID),
-			to.String(connection.Name),
-			to.String(connection.Location),
-			string(connection.ConnectionType),
-			string(connectionDetails.ConnectionStatus),
-			to.String(connection.ProvisioningState),
-		)
-
-		err = connections.Next()
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	if err := g.Wait(); err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
