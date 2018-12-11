@@ -16,8 +16,8 @@ const (
 	credentialLabelSelector = "app=credentiald"
 )
 
-// getUniqueClientSets fetches all unique Azure clients.
-func getUniqueClientSets(k8sClient kubernetes.Interface, environmentName string) ([]*client.AzureClientSet, error) {
+// getClientSets fetches all unique Azure clients.
+func getClientSets(k8sClient kubernetes.Interface, environmentName string) ([]*client.AzureClientSet, error) {
 	credentialList, err := k8sClient.CoreV1().Secrets(credentialNamespace).List(metav1.ListOptions{
 		LabelSelector: credentialLabelSelector,
 	})

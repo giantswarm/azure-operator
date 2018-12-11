@@ -74,7 +74,7 @@ func NewResourceGroup(config ResourceGroupConfig) (*ResourceGroup, error) {
 }
 
 func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
-	clientSets, err := getUniqueClientSets(r.k8sClient, r.environmentName)
+	clientSets, err := getClientSets(r.k8sClient, r.environmentName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
