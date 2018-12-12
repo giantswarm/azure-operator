@@ -3,6 +3,7 @@ package key
 import (
 	"fmt"
 	"strconv"
+	"strings"
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -15,13 +16,13 @@ const (
 	organizationTagName = "GiantSwarmOrganization"
 
 	blobContainerName         = "ignition"
-	storageAccountSuffix      = "gsstorageaccount"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
+	vpnGatewaySubnet          = "GatewaySubnet"
 	vpnGatewaySuffix          = "VPNGateway"
 
 	TemplateContentVersion = "1.0.0.0"
@@ -253,7 +254,12 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 
 // StorageAccountName returns name of the storage account for the ignition.
 func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s%s", ClusterID(customObject), storageAccountSuffix)
+	// In integration tests we use hyphens which are not allowed. We also
+	// need to keep the name globaly unique and within 24 character limit.
+	//
+	//	See https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions#storage
+	//
+	return strings.Replace(ClusterID(customObject), "-", "", -1)
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {
@@ -396,11 +402,16 @@ func VnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CIDR
 }
 
+// VNetGatewaySubnetName returns the name of the subnet for the vpn gateway.
+func VNetGatewaySubnetName() string {
+	return vpnGatewaySubnet
+}
+
 func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
 	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
 }
 
-// VPNGatewayName returns name of the virtual network gateway.
+// VPNGatewayName returns name of the vpn gateway.
 func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
