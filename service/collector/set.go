@@ -47,6 +47,21 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
+	var resourceGroupCollector *ResourceGroup
+	{
+		c := ResourceGroupConfig{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			EnvironmentName: config.AzureSetting.Cloud,
+		}
+
+		resourceGroupCollector, err = NewResourceGroup(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vpnConnectionCollector *VPNConnection
 	{
 		c := VPNConnectionConfig{
@@ -68,6 +83,7 @@ func NewSet(config SetConfig) (*Set, error) {
 		c := collector.SetConfig{
 			Collectors: []collector.Interface{
 				deploymentCollector,
+				resourceGroupCollector,
 				vpnConnectionCollector,
 			},
 			Logger: config.Logger,
