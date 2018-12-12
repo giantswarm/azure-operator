@@ -7,6 +7,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/controller/setting"
 )
 
 type SetConfig struct {
@@ -14,10 +17,8 @@ type SetConfig struct {
 	Logger    micrologger.Logger
 	Watcher   func(opts metav1.ListOptions) (watch.Interface, error)
 
-	// EnvironmentName is the name of the Azure environment used to compute the
-	// azure.Environment type. See also
-	// https://godoc.org/github.com/Azure/go-autorest/autorest/azure#Environment.
-	EnvironmentName string
+	AzureSetting             setting.Azure
+	HostAzureClientSetConfig client.AzureClientSetConfig
 }
 
 // Set is basically only a wrapper for the operator's collector implementations.
@@ -37,7 +38,7 @@ func NewSet(config SetConfig) (*Set, error) {
 			Logger:    config.Logger,
 			Watcher:   config.Watcher,
 
-			EnvironmentName: config.EnvironmentName,
+			EnvironmentName: config.AzureSetting.Cloud,
 		}
 
 		deploymentCollector, err = NewDeployment(c)
@@ -52,10 +53,26 @@ func NewSet(config SetConfig) (*Set, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			EnvironmentName: config.EnvironmentName,
+			EnvironmentName: config.AzureSetting.Cloud,
 		}
 
 		resourceGroupCollector, err = NewResourceGroup(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var vpnConnectionCollector *VPNConnection
+	{
+		c := VPNConnectionConfig{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			AzureSetting:             config.AzureSetting,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+		}
+
+		vpnConnectionCollector, err = NewVPNConnection(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -67,6 +84,7 @@ func NewSet(config SetConfig) (*Set, error) {
 			Collectors: []collector.Interface{
 				deploymentCollector,
 				resourceGroupCollector,
+				vpnConnectionCollector,
 			},
 			Logger: config.Logger,
 		}
