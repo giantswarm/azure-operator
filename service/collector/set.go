@@ -46,11 +46,27 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
+	var resourceGroupCollector *ResourceGroup
+	{
+		c := ResourceGroupConfig{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			EnvironmentName: config.EnvironmentName,
+		}
+
+		resourceGroupCollector, err = NewResourceGroup(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var collectorSet *collector.Set
 	{
 		c := collector.SetConfig{
 			Collectors: []collector.Interface{
 				deploymentCollector,
+				resourceGroupCollector,
 			},
 			Logger: config.Logger,
 		}
