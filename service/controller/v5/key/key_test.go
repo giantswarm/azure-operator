@@ -3,6 +3,7 @@ package key
 import (
 	"fmt"
 	"reflect"
+	"strings"
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/to"
@@ -258,5 +259,29 @@ func Test_MasterNICName(t *testing.T) {
 
 	if MasterNICName(customObject) != expectedMasterNICName {
 		t.Fatalf("Expected master nic name %s but was %s", expectedMasterNICName, MasterNICName(customObject))
+	}
+}
+
+func Test_TemplateURI(t *testing.T) {
+	uri := TemplateURI("dev", "deployment", "worker.json")
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v5/resource/deployment/template/worker.json"
+
+	if uri != euri {
+		t.Errorf("expected '%s' got '%s'", euri, uri)
+	}
+}
+
+func Test_BaseTemplateURI(t *testing.T) {
+	uri := BaseTemplateURI("master", "deployment")
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/controller/v5/resource/deployment/template/"
+
+	if uri != euri {
+		t.Errorf("expected '%s', got '%s'", euri, uri)
+	}
+
+	// Additionaly make sure base URI ends with slash. This is important.
+	// See main.json ARM template.
+	if !strings.HasSuffix(uri, "/") {
+		t.Errorf("expected '/' suffix, got '%s'", uri)
 	}
 }

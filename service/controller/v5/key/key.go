@@ -26,6 +26,7 @@ const (
 	vpnGatewaySuffix          = "VPNGateway"
 
 	TemplateContentVersion = "1.0.0.0"
+	templateURIFmt         = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v5/resource/%s/template/%s"
 
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
@@ -260,6 +261,14 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	//	See https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions#storage
 	//
 	return strings.Replace(ClusterID(customObject), "-", "", -1)
+}
+
+func TemplateURI(version, resource, template string) string {
+	return fmt.Sprintf(templateURIFmt, version, resource, template)
+}
+
+func BaseTemplateURI(version, resource string) string {
+	return TemplateURI(version, resource, "")
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {
