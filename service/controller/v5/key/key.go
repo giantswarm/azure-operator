@@ -263,12 +263,12 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	return strings.Replace(ClusterID(customObject), "-", "", -1)
 }
 
-func TemplateURI(version, resource, template string) string {
-	return fmt.Sprintf(templateURIFmt, version, resource, template)
+func TemplateBaseURI(version, resource string) string {
+	return TemplateURI(version, resource, "")
 }
 
-func BaseTemplateURI(version, resource string) string {
-	return TemplateURI(version, resource, "")
+func TemplateURI(version, resource, template string) string {
+	return fmt.Sprintf(templateURIFmt, version, resource, template)
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {

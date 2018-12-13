@@ -262,17 +262,8 @@ func Test_MasterNICName(t *testing.T) {
 	}
 }
 
-func Test_TemplateURI(t *testing.T) {
-	uri := TemplateURI("dev", "deployment", "worker.json")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v5/resource/deployment/template/worker.json"
-
-	if uri != euri {
-		t.Errorf("expected '%s' got '%s'", euri, uri)
-	}
-}
-
-func Test_BaseTemplateURI(t *testing.T) {
-	uri := BaseTemplateURI("master", "deployment")
+func Test_TemplateBaseURI(t *testing.T) {
+	uri := TemplateBaseURI("master", "deployment")
 	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/controller/v5/resource/deployment/template/"
 
 	if uri != euri {
@@ -283,5 +274,14 @@ func Test_BaseTemplateURI(t *testing.T) {
 	// See main.json ARM template.
 	if !strings.HasSuffix(uri, "/") {
 		t.Errorf("expected '/' suffix, got '%s'", uri)
+	}
+}
+
+func Test_TemplateURI(t *testing.T) {
+	uri := TemplateURI("dev", "deployment", "worker.json")
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v5/resource/deployment/template/worker.json"
+
+	if uri != euri {
+		t.Errorf("expected '%s' got '%s'", euri, uri)
 	}
 }
