@@ -12,10 +12,6 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
-const (
-	mainTemplate = "main.json"
-)
-
 func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	sc, err := controllercontext.FromContext(ctx)
 	if err != nil {
@@ -44,7 +40,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
 			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(key.TemplateURI(r.templateVersion, "deployment", mainTemplate)),
+				URI:            to.StringPtr(key.TemplateURI(r.templateVersion, "deployment", "main.json")),
 				ContentVersion: to.StringPtr(key.TemplateContentVersion),
 			},
 		},
