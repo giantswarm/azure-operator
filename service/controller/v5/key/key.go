@@ -66,6 +66,14 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
 }
 
+func ARMTemplateBaseURI(version, resource string) string {
+	return ARMTemplateURI(version, resource, "")
+}
+
+func ARMTemplateURI(version, resource, template string) string {
+	return fmt.Sprintf(templateURIFmt, version, resource, template)
+}
+
 func BlobContainerName() string {
 	return blobContainerName
 }
@@ -261,14 +269,6 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	//	See https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions#storage
 	//
 	return strings.Replace(ClusterID(customObject), "-", "", -1)
-}
-
-func ARMTemplateBaseURI(version, resource string) string {
-	return ARMTemplateURI(version, resource, "")
-}
-
-func ARMTemplateURI(version, resource, template string) string {
-	return fmt.Sprintf(templateURIFmt, version, resource, template)
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {

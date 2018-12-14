@@ -10,6 +10,30 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
+func Test_ARMTemplateBaseURI(t *testing.T) {
+	uri := ARMTemplateBaseURI("master", "deployment")
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/controller/v5/resource/deployment/template/"
+
+	if uri != euri {
+		t.Errorf("expected '%s', got '%s'", euri, uri)
+	}
+
+	// Additionaly make sure base URI ends with slash. This is important.
+	// See main.json ARM template.
+	if !strings.HasSuffix(uri, "/") {
+		t.Errorf("expected '/' suffix, got '%s'", uri)
+	}
+}
+
+func Test_ARMTemplateURI(t *testing.T) {
+	uri := ARMTemplateURI("dev", "deployment", "worker.json")
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v5/resource/deployment/template/worker.json"
+
+	if uri != euri {
+		t.Errorf("expected '%s' got '%s'", euri, uri)
+	}
+}
+
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
 
@@ -259,29 +283,5 @@ func Test_MasterNICName(t *testing.T) {
 
 	if MasterNICName(customObject) != expectedMasterNICName {
 		t.Fatalf("Expected master nic name %s but was %s", expectedMasterNICName, MasterNICName(customObject))
-	}
-}
-
-func Test_TemplateBaseURI(t *testing.T) {
-	uri := ARMTemplateBaseURI("master", "deployment")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/controller/v5/resource/deployment/template/"
-
-	if uri != euri {
-		t.Errorf("expected '%s', got '%s'", euri, uri)
-	}
-
-	// Additionaly make sure base URI ends with slash. This is important.
-	// See main.json ARM template.
-	if !strings.HasSuffix(uri, "/") {
-		t.Errorf("expected '/' suffix, got '%s'", uri)
-	}
-}
-
-func Test_TemplateURI(t *testing.T) {
-	uri := ARMTemplateURI("dev", "deployment", "worker.json")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v5/resource/deployment/template/worker.json"
-
-	if uri != euri {
-		t.Errorf("expected '%s' got '%s'", euri, uri)
 	}
 }
