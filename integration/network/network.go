@@ -4,7 +4,7 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/giantswarm/azure-operator/service/controller/v3/network"
+	"github.com/giantswarm/azure-operator/service/network"
 )
 
 const (
