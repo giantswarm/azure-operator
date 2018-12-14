@@ -40,7 +40,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
 			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(key.TemplateURI(r.templateVersion, "deployment", "main.json")),
+				URI:            to.StringPtr(key.ARMTemplateURI(r.templateVersion, "deployment", "main.json")),
 				ContentVersion: to.StringPtr(key.TemplateContentVersion),
 			},
 		},

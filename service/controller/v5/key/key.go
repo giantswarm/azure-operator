@@ -264,10 +264,10 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func TemplateBaseURI(version, resource string) string {
-	return TemplateURI(version, resource, "")
+	return ARMTemplateURI(version, resource, "")
 }
 
-func TemplateURI(version, resource, template string) string {
+func ARMTemplateURI(version, resource, template string) string {
 	return fmt.Sprintf(templateURIFmt, version, resource, template)
 }
 

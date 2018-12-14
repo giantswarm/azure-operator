@@ -278,7 +278,7 @@ func Test_TemplateBaseURI(t *testing.T) {
 }
 
 func Test_TemplateURI(t *testing.T) {
-	uri := TemplateURI("dev", "deployment", "worker.json")
+	uri := ARMTemplateURI("dev", "deployment", "worker.json")
 	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v5/resource/deployment/template/worker.json"
 
 	if uri != euri {
