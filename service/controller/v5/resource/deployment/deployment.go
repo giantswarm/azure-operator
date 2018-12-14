@@ -27,7 +27,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
 		"masterSubnetCidr":        sc.AzureNetwork.Master.String(),
 		"storageAccountName":      key.StorageAccountName(customObject),
-		"templatesBaseURI":        key.TemplateBaseURI(r.templateVersion, "deployment"),
+		"templatesBaseURI":        key.ARMTemplateBaseURI(r.templateVersion, "deployment"),
 		"virtualNetworkCidr":      key.VnetCIDR(customObject),
 		"virtualNetworkName":      key.VnetName(customObject),
 		"vpnGatewayName":          key.VPNGatewayName(customObject),

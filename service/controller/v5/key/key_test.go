@@ -263,7 +263,7 @@ func Test_MasterNICName(t *testing.T) {
 }
 
 func Test_TemplateBaseURI(t *testing.T) {
-	uri := TemplateBaseURI("master", "deployment")
+	uri := ARMTemplateBaseURI("master", "deployment")
 	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/controller/v5/resource/deployment/template/"
 
 	if uri != euri {

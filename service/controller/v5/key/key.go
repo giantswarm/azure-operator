@@ -263,7 +263,7 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	return strings.Replace(ClusterID(customObject), "-", "", -1)
 }
 
-func TemplateBaseURI(version, resource string) string {
+func ARMTemplateBaseURI(version, resource string) string {
 	return ARMTemplateURI(version, resource, "")
 }
 

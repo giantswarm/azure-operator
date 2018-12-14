@@ -61,7 +61,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"masterCloudConfigData": masterCloudConfig,
 		"masterNodes":           masterNodes,
 		"masterSubnetID":        cc.MasterSubnetID,
-		"templatesBaseURI":      key.TemplateBaseURI(r.templateVersion, "instance"),
+		"templatesBaseURI":      key.ARMTemplateBaseURI(r.templateVersion, "instance"),
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           workerNodes,
