@@ -48,7 +48,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 		if containerObject.Key != "" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", key))
 
-			_, err := blobClient.CreateBlockBlob(ctx, key, containerObject.Body)
+			_, err := blobClient.PutBlockBlob(ctx, key, containerObject.Body)
 			if err != nil {
 				return microerror.Mask(err)
 			}
