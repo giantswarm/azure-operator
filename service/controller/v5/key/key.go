@@ -26,7 +26,6 @@ const (
 	vpnGatewaySuffix          = "VPNGateway"
 
 	TemplateContentVersion = "1.0.0.0"
-	templateURIFmt         = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v5/resource/%s/template/%s"
 
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
@@ -81,7 +80,7 @@ func ARMTemplateBaseURI(version, resource string) string {
 //
 // e.g. ARMTemplateURI("master", "deployment", "main.json")
 func ARMTemplateURI(version, resource, template string) string {
-	return fmt.Sprintf(templateURIFmt, version, resource, template)
+	return fmt.Sprintf("https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v5/resource/%s/template/%s", version, resource, template)
 }
 
 func BlobContainerName() string {
