@@ -51,9 +51,9 @@ func (c *BlobClient) Boot(ctx context.Context) error {
 	}
 
 	p := azblob.NewPipeline(sc, azblob.PipelineOptions{})
-	u, _ := url.Parse(fmt.Sprintf(blobFormatString, c.storageAccountName))
-	service := azblob.NewServiceURL(*u, p)
-	containerURL = service.NewContainerURL(c.containerName)
+	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", c.storageAccountName))
+	serviceURL := azblob.NewServiceURL(*u, p)
+	containerURL = serviceURL.NewContainerURL(c.containerName)
 	_, err = containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
 	if IsContainerNotFound(err) {
 		return nil
@@ -105,7 +105,7 @@ func (c *BlobClient) BlobExists(ctx context.Context, blobName string) (bool, err
 	return true, nil
 }
 
-func (c *BlobClient) CreateBlockBlob(ctx context.Context, blobName string, payload string) (azblob.BlockBlobURL, error) {
+func (c *BlobClient) PutBlockBlob(ctx context.Context, blobName string, payload string) (azblob.BlockBlobURL, error) {
 	blob := c.containerURL.NewBlockBlobURL(blobName)
 
 	_, err := blob.Upload(
@@ -161,7 +161,6 @@ func (c *BlobClient) ListBlobs(ctx context.Context) (*azblob.ListBlobsFlatSegmen
 }
 
 func (c *BlobClient) StorageAccountExists(ctx context.Context) (bool, error) {
-
 	_, err := c.storageAccountsClient.GetProperties(ctx, c.groupName, c.storageAccountName)
 	if IsStorageAccountNotFound(err) {
 		return false, nil
