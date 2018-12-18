@@ -15,7 +15,6 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "looking for container objects")
 
 	storageAccountsClient, err := r.getAccountsClient()
 	if err != nil {
@@ -53,7 +52,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// if here is no container account - return and wait for deployment to finish container operation.
 	err = blobClient.Boot(ctx)
 	if blobclient.IsContainerNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "blob object's container not found, no current objects present")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find blob object's container")
 		resourcecanceledcontext.SetCanceled(ctx)
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
 		return nil, nil
@@ -64,6 +63,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found blob object's container")
 
+	 r.logger.LogCtx(ctx, "level", "debug", "message", "finding container objects")
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding container objects")
 
 	listBlobs, err := blobClient.ListBlobs(ctx)
@@ -87,7 +87,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		}
 	}
 
+	 r.logger.LogCtx(ctx, "level", "debug", "message", "found container objects")
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found container objects")
-
 	return output, nil
 }
