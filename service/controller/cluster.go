@@ -15,12 +15,6 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v2"
-	"github.com/giantswarm/azure-operator/service/controller/v2patch1"
-	"github.com/giantswarm/azure-operator/service/controller/v3"
-	"github.com/giantswarm/azure-operator/service/controller/v3patch1"
-	"github.com/giantswarm/azure-operator/service/controller/v3patch2"
-	"github.com/giantswarm/azure-operator/service/controller/v4"
 	"github.com/giantswarm/azure-operator/service/controller/v4patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v5"
 )
@@ -80,136 +74,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var v2ResourceSet *controller.ResourceSet
-	{
-		c := v2.ResourceSetConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			AzureConfig:      config.AzureConfig,
-			InstallationName: config.InstallationName,
-			ProjectName:      config.ProjectName,
-			OIDC:             config.OIDC,
-			TemplateVersion:  config.TemplateVersion,
-		}
-
-		v2ResourceSet, err = v2.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var v2Patch1ResourceSet *controller.ResourceSet
-	{
-		c := v2patch1.ResourceSetConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			AzureConfig:      config.AzureConfig,
-			InstallationName: config.InstallationName,
-			ProjectName:      config.ProjectName,
-			OIDC:             config.OIDC,
-			TemplateVersion:  config.TemplateVersion,
-		}
-
-		v2Patch1ResourceSet, err = v2patch1.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var v3ResourceSet *controller.ResourceSet
-	{
-		c := v3.ResourceSetConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
-		}
-
-		v3ResourceSet, err = v3.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var v3Patch1ResourceSet *controller.ResourceSet
-	{
-		c := v3patch1.ResourceSetConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
-		}
-
-		v3Patch1ResourceSet, err = v3patch1.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var v3Patch2ResourceSet *controller.ResourceSet
-	{
-		c := v3patch2.ResourceSetConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
-		}
-
-		v3Patch2ResourceSet, err = v3patch2.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var v4ResourceSet *controller.ResourceSet
-	{
-		c := v4.ResourceSetConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
-		}
-
-		v4ResourceSet, err = v4.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var v4Patch1ResourceSet *controller.ResourceSet
 	{
 		c := v4patch1.ResourceSetConfig{
@@ -262,12 +126,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Informer:  newInformer,
 			Logger:    config.Logger,
 			ResourceSets: []*controller.ResourceSet{
-				v2ResourceSet,
-				v2Patch1ResourceSet,
-				v3ResourceSet,
-				v3Patch1ResourceSet,
-				v3Patch2ResourceSet,
-				v4ResourceSet,
 				v4Patch1ResourceSet,
 				v5ResourceSet,
 			},

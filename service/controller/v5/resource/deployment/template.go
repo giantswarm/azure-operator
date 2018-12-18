@@ -3,7 +3,7 @@ package deployment
 import "fmt"
 
 const (
-	templateURIFmt = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v5/arm_templates/%s"
+	templateURIFmt = "https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v5/resource/deployment/template/%s"
 
 	mainTemplate = "main.json"
 )
