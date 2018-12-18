@@ -65,12 +65,6 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
 }
 
-// ARMTemplateBaseURI returns URI to a resource's template folder.
-// See ARMTemplateURI for more details.
-func ARMTemplateBaseURI(version, resource string) string {
-	return ARMTemplateURI(version, resource, "")
-}
-
 // ARMTemplateURI returns URI to a resource's template file.
 // The returned URI point to a file hosted on github in this repository
 // under a controller resource's template folder at:

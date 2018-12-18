@@ -3,27 +3,11 @@ package key
 import (
 	"fmt"
 	"reflect"
-	"strings"
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
-
-func Test_ARMTemplateBaseURI(t *testing.T) {
-	uri := ARMTemplateBaseURI("master", "deployment")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/master/service/controller/v5/resource/deployment/template/"
-
-	if uri != euri {
-		t.Errorf("expected '%s', got '%s'", euri, uri)
-	}
-
-	// Additionaly make sure base URI ends with slash. This is important.
-	// See main.json ARM template.
-	if !strings.HasSuffix(uri, "/") {
-		t.Errorf("expected '/' suffix, got '%s'", uri)
-	}
-}
 
 func Test_ARMTemplateURI(t *testing.T) {
 	uri := ARMTemplateURI("dev", "deployment", "worker.json")
