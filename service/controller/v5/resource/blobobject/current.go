@@ -49,6 +49,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, nil
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding blob object's container")
 	// if here is no container account - return and wait for deployment to finish container operation.
 	err = blobClient.Boot(ctx)
 	if blobclient.IsContainerNotFound(err) {
