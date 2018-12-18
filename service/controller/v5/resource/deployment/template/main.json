@@ -66,12 +66,6 @@
     "kubernetesAPISecurePort":{
       "type":"int"
     },
-    "templatesBaseURI":{
-      "type":"string",
-      "metadata":{
-        "description":"The base URI from which the templates will be fetched. Ends with a trailing '/'."
-      }
-    },
     "dnsASetupTemplateFile":{
       "type":"string",
       "defaultValue":"dns_a_setup.json"
@@ -120,16 +114,16 @@
     }
   },
   "variables":{
-    "dnsASetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('dnsASetupTemplateFile'))]",
-    "dnsCNAMESetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('dnsCNAMESetupTemplateFile'))]",
-    "containerSetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('containerSetupTemplateFile'))]",
-    "kubernetesLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('kubernetesLoadBalancerTemplateFile'))]",
-    "publicLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('publicLoadBalancerTemplateFile'))]",
-    "privateLoadBalancerTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('privateLoadBalancerTemplateFile'))]",
-    "routeTableTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('routeTableTemplateFile'))]",
-    "securityGroupsSetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('securityGroupsSetupTemplateFile'))]",
-    "virtualNetworkSetupTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('virtualNetworkSetupTemplateFile'))]",
-    "virtualNetworkGatewayTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('virtualNetworkGatewaySetupTemplateFile'))]",
+    "dnsASetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('dnsASetupTemplateFile'))]",
+    "dnsCNAMESetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('dnsCNAMESetupTemplateFile'))]",
+    "containerSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('containerSetupTemplateFile'))]",
+    "kubernetesLoadBalancerTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('kubernetesLoadBalancerTemplateFile'))]",
+    "publicLoadBalancerTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('publicLoadBalancerTemplateFile'))]",
+    "privateLoadBalancerTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('privateLoadBalancerTemplateFile'))]",
+    "routeTableTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('routeTableTemplateFile'))]",
+    "securityGroupsSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('securityGroupsSetupTemplateFile'))]",
+    "virtualNetworkSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('virtualNetworkSetupTemplateFile'))]",
+    "virtualNetworkGatewayTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('virtualNetworkGatewaySetupTemplateFile'))]",
     "vnetGatewaySubnetName":"GatewaySubnet",
     "masterPrefix":"Master",
     "workerPrefix":"Worker"

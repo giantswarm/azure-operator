@@ -41,12 +41,6 @@
         "description":"Output value of the master subnet ID as referenced from the virtual network setup."
       }
     },
-    "templatesBaseURI":{
-      "type":"string",
-      "metadata":{
-        "description":"The base URI from which the templates will be fetched. Ends with a trailing '/'."
-      }
-    },
     "vmssMSIEnabled":{
       "type":"bool"
     },
@@ -72,7 +66,7 @@
   },
   "variables":{
     "kubernetesLBBackendID":"[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
-    "vmssTemplateURI":"[concat(parameters('templatesBaseURI'), parameters('vmssTemplateFile'))]"
+    "vmssTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('vmssTemplateFile'))]"
   },
   "resources":[
     {
