@@ -65,6 +65,21 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
 }
 
+// ARMTemplateURI returns URI to a resource's template file.
+// The returned URI point to a file hosted on github in this repository
+// under a controller resource's template folder at:
+//
+// service/controller/v5/resource/<resource>/template/<template>
+//
+// version refers to a branch or commit.
+// resource refers to directory name of the resource.
+// template refers to filename under resource's template folder.
+//
+// e.g. ARMTemplateURI("master", "deployment", "main.json")
+func ARMTemplateURI(version, resource, template string) string {
+	return fmt.Sprintf("https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v5/resource/%s/template/%s", version, resource, template)
+}
+
 func BlobContainerName() string {
 	return blobContainerName
 }
