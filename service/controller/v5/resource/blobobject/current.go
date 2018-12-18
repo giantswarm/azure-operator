@@ -15,7 +15,6 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-
 	storageAccountsClient, err := r.getAccountsClient()
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -63,7 +62,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found blob object's container")
 
-	 r.logger.LogCtx(ctx, "level", "debug", "message", "finding container objects")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding container objects")
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding container objects")
 
 	listBlobs, err := blobClient.ListBlobs(ctx)
@@ -87,7 +86,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		}
 	}
 
-	 r.logger.LogCtx(ctx, "level", "debug", "message", "found container objects")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found container objects")
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found container objects")
 	return output, nil
 }

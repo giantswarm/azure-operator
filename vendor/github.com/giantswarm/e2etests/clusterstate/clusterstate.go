@@ -55,7 +55,7 @@ func (c *ClusterState) Test(ctx context.Context) error {
 	{
 		c.logger.LogCtx(ctx, "level", "debug", "message", "installing e2e-app")
 
-		err = c.InstallTestApp(ctx)
+		err = c.InstallTestApp()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -66,7 +66,7 @@ func (c *ClusterState) Test(ctx context.Context) error {
 	{
 		c.logger.LogCtx(ctx, "level", "debug", "message", "checking test app is installed")
 
-		err = c.CheckTestAppIsInstalled(ctx)
+		err = c.CheckTestAppIsInstalled()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -110,7 +110,7 @@ func (c *ClusterState) Test(ctx context.Context) error {
 	{
 		c.logger.LogCtx(ctx, "level", "debug", "message", "checking test app is installed")
 
-		err = c.CheckTestAppIsInstalled(ctx)
+		err = c.CheckTestAppIsInstalled()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -154,7 +154,7 @@ func (c *ClusterState) Test(ctx context.Context) error {
 	{
 		c.logger.LogCtx(ctx, "level", "debug", "message", "checking test app is installed")
 
-		err = c.CheckTestAppIsInstalled(ctx)
+		err = c.CheckTestAppIsInstalled()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -165,7 +165,7 @@ func (c *ClusterState) Test(ctx context.Context) error {
 	return nil
 }
 
-func (c *ClusterState) InstallTestApp(ctx context.Context) error {
+func (c *ClusterState) InstallTestApp() error {
 	var err error
 
 	var apprClient *apprclient.Client
@@ -198,7 +198,7 @@ func (c *ClusterState) InstallTestApp(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 
-		err = helmClient.EnsureTillerInstalled(ctx)
+		err = helmClient.EnsureTillerInstalled()
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -213,7 +213,7 @@ func (c *ClusterState) InstallTestApp(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 
-		err = helmClient.InstallReleaseFromTarball(ctx, tarballPath, ChartNamespace)
+		err = helmClient.InstallFromTarball(tarballPath, ChartNamespace)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -222,7 +222,7 @@ func (c *ClusterState) InstallTestApp(ctx context.Context) error {
 	return nil
 }
 
-func (c *ClusterState) CheckTestAppIsInstalled(ctx context.Context) error {
+func (c *ClusterState) CheckTestAppIsInstalled() error {
 	var podCount = 2
 
 	c.logger.Log("level", "debug", "message", fmt.Sprintf("waiting for %d pods of the e2e-app to be up", podCount))

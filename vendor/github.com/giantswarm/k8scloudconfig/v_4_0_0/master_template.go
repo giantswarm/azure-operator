@@ -267,6 +267,8 @@ systemd:
       ExecStopPost=-/usr/bin/docker rm -f $NAME
       [Install]
       WantedBy=multi-user.target
+      Requires=network-online.target
+      After=network-online.target
   - name: etcd2.service
     enabled: false
     mask: true
@@ -327,6 +329,18 @@ storage:
       contents:
         source: "data:text/plain;charset=utf-8;base64,{{  index .Files "k8s-resource/ingress-controller-svc.yaml" }}"
     {{- end }}
+
+    - path: /etc/kubernetes/config/proxy-config.yml
+      filesystem: root
+      mode: 0644
+      contents:
+        source: "data:text/plain;charset=utf-8;base64,{{  index .Files "config/kube-proxy.yaml" }}"
+
+    - path: /srv/kube-proxy-config.yaml
+      filesystem: root
+      mode: 0644
+      contents:
+        source: "data:text/plain;charset=utf-8;base64,{{  index .Files "config/kube-proxy.yaml" }}"
 
     - path: /etc/kubernetes/config/proxy-config.yml
       filesystem: root

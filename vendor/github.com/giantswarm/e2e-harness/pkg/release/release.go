@@ -189,22 +189,14 @@ func (r *Release) EnsureDeleted(ctx context.Context, name string, conditions ...
 // a "app=${name}" pod and streams it logs to the ./logs directory.
 //
 // NOTE: It does not update the release if it already exists.
-<<<<<<< HEAD
 func (r *Release) EnsureInstalled(ctx context.Context, name string, chartInfo ChartInfo, values string, conditions ...func() error) error {
-=======
-func (r *Release) EnsureInstalled(ctx context.Context, name string, version Version, values string, conditions ...func() error) error {
->>>>>>> Vendor changes
 	var err error
 	isOperator := strings.HasSuffix(name, "-operator")
 
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating release %#q", name))
 
-<<<<<<< HEAD
 		err := r.Install(ctx, name, chartInfo, values)
-=======
-		err := r.Install(ctx, name, version, values)
->>>>>>> Vendor changes
 		if IsReleaseAlreadyExists(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("release %#q already created", name))
 		} else if err != nil {
@@ -291,13 +283,8 @@ func (r *Release) Install(ctx context.Context, name string, chartInfo ChartInfo,
 //
 //	Issue https://github.com/giantswarm/giantswarm/issues/4355.
 //
-<<<<<<< HEAD
 func (r *Release) InstallOperator(ctx context.Context, name string, chartInfo ChartInfo, values string, crd *apiextensionsv1beta1.CustomResourceDefinition) error {
 	err := r.Install(ctx, name, chartInfo, values, r.condition.CRDExists(ctx, crd))
-=======
-func (r *Release) InstallOperator(ctx context.Context, name string, version Version, values string, crd *apiextensionsv1beta1.CustomResourceDefinition) error {
-	err := r.Install(ctx, name, version, values, r.condition.CRDExists(ctx, crd))
->>>>>>> Vendor changes
 	if err != nil {
 		return microerror.Mask(err)
 	}
