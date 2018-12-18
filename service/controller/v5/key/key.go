@@ -72,7 +72,10 @@ func ARMTemplateBaseURI(version, resource string) string {
 }
 
 // ARMTemplateURI returns URI to a resource's template file.
-// The returned URI point to file hosted on github in this repository.
+// The returned URI point to a file hosted on github in this repository
+// under a controller resource's template folder at:
+//
+// service/controller/v5/resource/<resource>/template/<template>
 //
 // version refers to a branch or commit.
 // resource refers to directory name of the resource.
