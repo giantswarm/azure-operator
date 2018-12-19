@@ -54,9 +54,6 @@ func (c *BlobClient) Boot(ctx context.Context) error {
 	serviceURL := azblob.NewServiceURL(*u, p)
 	containerURL = serviceURL.NewContainerURL(c.containerName)
 	_, err = containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
-	if IsContainerNotFound(err) {
-		return nil
-	}
 	if err != nil {
 		return microerror.Mask(err)
 	}
