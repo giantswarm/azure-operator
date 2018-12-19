@@ -177,7 +177,7 @@ func (c *BlobClient) getAccountPrimaryKey(ctx context.Context) (string, error) {
 		return "", microerror.Mask(err)
 	}
 	if len(*(keys.Keys)) == 0 {
-		return "", microerror.Maskf(err, "storage account key's list is empty")
+		return "", microerror.Maskf(executionFailedError, "storage account key's list is empty")
 	}
 
 	return *(((*keys.Keys)[0]).Value), nil
