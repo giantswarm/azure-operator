@@ -29,7 +29,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"storageAccountName":      key.StorageAccountName(customObject),
 		"virtualNetworkCidr":      key.VnetCIDR(customObject),
 		"virtualNetworkName":      key.VnetName(customObject),
-		"vpnGatewayName":          key.VPNGatewayName(customObject),
+		"vnetGatewaySubnetName":   key.VNetGatewaySubnetName(),
 		"vpnSubnetCidr":           sc.AzureNetwork.VPN.String(),
 		"workerSubnetCidr":        sc.AzureNetwork.Worker.String(),
 	}

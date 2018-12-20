@@ -45,6 +45,9 @@
         "description":"The main CIDR block reserved for this virtual network."
       }
     },
+    "vnetGatewaySubnetName": {
+      "type":"string"
+    },
     "calicoSubnetCidr":{
       "type":"string"
     },
@@ -116,7 +119,6 @@
     "routeTableTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('virtualNetworkSetupTemplateFile'))]",
-    "vnetGatewaySubnetName":"GatewaySubnet",
     "masterPrefix":"Master",
     "workerPrefix":"Worker"
   },
@@ -215,7 +217,7 @@
             "value":"[parameters('workerSubnetCidr')]"
           },
           "vnetGatewaySubnetName":{
-            "value":"[variables('vnetGatewaySubnetName')]"
+            "value":"[parameters('vnetGatewaySubnetName')]"
           },
           "vpnSubnetCidr":{
             "value":"[parameters('vpnSubnetCidr')]"
