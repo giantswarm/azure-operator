@@ -23,7 +23,8 @@ type Config struct {
 	Debugger *debugger.Debugger
 	Logger   micrologger.Logger
 
-	Azure setting.Azure
+	Azure           setting.Azure
+	TemplateVersion string
 }
 
 // Resource ensures Microsoft Virtual Network Gateways are running.
@@ -31,7 +32,8 @@ type Resource struct {
 	debugger *debugger.Debugger
 	logger   micrologger.Logger
 
-	azure setting.Azure
+	azure           setting.Azure
+	templateVersion string
 }
 
 // New validates Config and creates a new Resource with it.
@@ -45,12 +47,16 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
+	if config.TemplateVersion == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
+	}
 
 	r := &Resource{
 		debugger: config.Debugger,
 		logger:   config.Logger,
 
-		azure: config.Azure,
+		azure:           config.Azure,
+		templateVersion: config.TemplateVersion,
 	}
 
 	return r, nil
