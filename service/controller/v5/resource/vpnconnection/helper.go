@@ -1,4 +1,4 @@
-package vpngateway
+package vpnconnection
 
 import (
 	"math/rand"

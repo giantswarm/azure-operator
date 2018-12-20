@@ -1,4 +1,4 @@
-package vpngateway
+package vpnconnection
 
 import (
 	"github.com/Azure/go-autorest/autorest"
