@@ -12,7 +12,7 @@ import (
 )
 
 // provider installs the operator and tenant cluster CR.
-func provider(config Config) error {
+func provider(ctx context.Context, config Config) error {
 	{
 		c := chartvalues.AzureOperatorConfig{
 			Provider: chartvalues.AzureOperatorConfigProvider{
@@ -57,7 +57,7 @@ func provider(config Config) error {
 			return microerror.Mask(err)
 		}
 
-		err = config.Release.InstallOperator(context.Background(), "azure-operator", release.NewVersion(env.CircleSHA()), values, providerv1alpha1.NewAzureConfigCRD())
+		err = config.Release.InstallOperator(ctx, "azure-operator", release.NewVersion(env.CircleSHA()), values, providerv1alpha1.NewAzureConfigCRD())
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -84,7 +84,7 @@ func provider(config Config) error {
 			return microerror.Mask(err)
 		}
 
-		err = config.Release.Install(context.Background(), "apiextensions-azure-config-e2e", release.NewStableVersion(), values)
+		err = config.Release.Install(ctx, "apiextensions-azure-config-e2e", release.NewStableVersion(), values)
 		if err != nil {
 			return microerror.Mask(err)
 		}

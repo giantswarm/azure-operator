@@ -11,9 +11,7 @@ import (
 )
 
 // common installs components required to run the operator.
-func common(config Config) error {
-	ctx := context.Background()
-
+func common(ctx context.Context, config Config) error {
 	{
 		err := config.K8s.EnsureNamespaceCreated(ctx, namespace)
 		if err != nil {
