@@ -45,6 +45,9 @@
         "description":"The main CIDR block reserved for this virtual network."
       }
     },
+    "vnetGatewaySubnetName": {
+      "type":"string"
+    },
     "calicoSubnetCidr":{
       "type":"string"
     },
@@ -58,9 +61,6 @@
       "type":"string"
     },
     "hostClusterCidr":{
-      "type":"string"
-    },
-    "vpnGatewayName":{
       "type":"string"
     },
     "kubernetesAPISecurePort":{
@@ -102,10 +102,6 @@
       "type":"string",
       "defaultValue":"virtual_network_setup.json"
     },
-    "virtualNetworkGatewaySetupTemplateFile":{
-      "type":"string",
-      "defaultValue":"virtual_network_gateway.json"
-    },
     "dnsZones":{
       "type":"object",
       "metadata":{
@@ -123,8 +119,6 @@
     "routeTableTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('routeTableTemplateFile'))]",
     "securityGroupsSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('securityGroupsSetupTemplateFile'))]",
     "virtualNetworkSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('virtualNetworkSetupTemplateFile'))]",
-    "virtualNetworkGatewayTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('virtualNetworkGatewaySetupTemplateFile'))]",
-    "vnetGatewaySubnetName":"GatewaySubnet",
     "masterPrefix":"Master",
     "workerPrefix":"Worker"
   },
@@ -223,7 +217,7 @@
             "value":"[parameters('workerSubnetCidr')]"
           },
           "vnetGatewaySubnetName":{
-            "value":"[variables('vnetGatewaySubnetName')]"
+            "value":"[parameters('vnetGatewaySubnetName')]"
           },
           "vpnSubnetCidr":{
             "value":"[parameters('vpnSubnetCidr')]"
@@ -236,38 +230,6 @@
           },
           "routeTableID":{
             "value":"[reference('route_table_setup').outputs.id.value]"
-          }
-        }
-      }
-    },
-    {
-      "apiVersion":"2016-09-01",
-      "name":"virtual_network_gateway_setup",
-      "type":"Microsoft.Resources/deployments",
-      "dependsOn":[
-        "virtual_network_setup"
-      ],
-      "properties":{
-        "mode":"incremental",
-        "templateLink":{
-          "uri":"[variables('virtualNetworkGatewayTemplateURI')]",
-          "contentVersion":"1.0.0.0"
-        },
-        "parameters":{
-          "clusterID":{
-            "value":"[parameters('clusterID')]"
-          },
-          "GiantSwarmTags":{
-            "value":"[parameters('GiantSwarmTags')]"
-          },
-          "virtualNetworkName":{
-            "value":"[parameters('virtualNetworkName')]"
-          },
-          "vnetGatewaySubnetName":{
-            "value":"[variables('vnetGatewaySubnetName')]"
-          },
-          "vpnGatewayName":{
-            "value":"[parameters('vpnGatewayName')]"
           }
         }
       }

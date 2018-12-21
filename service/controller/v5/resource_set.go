@@ -22,6 +22,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/service"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vnetpeeringcleaner"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vpn"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vpnconnection"
 	"github.com/giantswarm/azure-operator/service/credential"
 	"github.com/giantswarm/azure-operator/service/network"
@@ -271,6 +272,22 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var vpnResource controller.Resource
+	{
+		c := vpn.Config{
+			Debugger: newDebugger,
+			Logger:   config.Logger,
+
+			Azure:           config.Azure,
+			TemplateVersion: config.TemplateVersion,
+		}
+
+		vpnResource, err = vpn.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vpnconnectionResource controller.Resource
 	{
 		c := vpnconnection.Config{
@@ -317,6 +334,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		instanceResource,
 		endpointsResource,
 		dnsrecordResource,
+		vpnResource,
 		vpnconnectionResource,
 	}
 
