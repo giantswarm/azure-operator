@@ -2,7 +2,6 @@ package collector
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -22,9 +21,8 @@ import (
 
 const (
 	statusCanceled  = "Canceled"
-	statusDeploying = "Deploying"
 	statusFailed    = "Failed"
-	statusUpdating  = "Updating"
+	statusRunning   = "Running"
 	statusSucceeded = "Succeeded"
 )
 
@@ -118,8 +116,6 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 
 				for r.NotDone() {
 					for _, v := range r.Values() {
-						fmt.Printf("*v.Properties.ProvisioningState: %#v\n", *v.Properties.ProvisioningState)
-
 						ch <- prometheus.MustNewConstMetric(
 							deploymentDesc,
 							prometheus.GaugeValue,
@@ -127,14 +123,6 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 							key.ClusterID(customObject),
 							*v.Name,
 							statusCanceled,
-						)
-						ch <- prometheus.MustNewConstMetric(
-							deploymentDesc,
-							prometheus.GaugeValue,
-							float64(matchedStringToInt(statusDeploying, *v.Properties.ProvisioningState)),
-							key.ClusterID(customObject),
-							*v.Name,
-							statusDeploying,
 						)
 						ch <- prometheus.MustNewConstMetric(
 							deploymentDesc,
@@ -147,10 +135,10 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 						ch <- prometheus.MustNewConstMetric(
 							deploymentDesc,
 							prometheus.GaugeValue,
-							float64(matchedStringToInt(statusUpdating, *v.Properties.ProvisioningState)),
+							float64(matchedStringToInt(statusRunning, *v.Properties.ProvisioningState)),
 							key.ClusterID(customObject),
 							*v.Name,
-							statusUpdating,
+							statusRunning,
 						)
 						ch <- prometheus.MustNewConstMetric(
 							deploymentDesc,
