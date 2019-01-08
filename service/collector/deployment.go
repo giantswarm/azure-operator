@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -117,6 +118,8 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 
 				for r.NotDone() {
 					for _, v := range r.Values() {
+						fmt.Printf("*v.Properties.ProvisioningState: %#v\n", *v.Properties.ProvisioningState)
+
 						ch <- prometheus.MustNewConstMetric(
 							deploymentDesc,
 							prometheus.GaugeValue,
