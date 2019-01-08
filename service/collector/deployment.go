@@ -22,6 +22,7 @@ import (
 const (
 	statusCanceled  = "Canceled"
 	statusFailed    = "Failed"
+	statusRunning   = "Running"
 	statusSucceeded = "Succeeded"
 )
 
@@ -130,6 +131,14 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 							key.ClusterID(customObject),
 							*v.Name,
 							statusFailed,
+						)
+						ch <- prometheus.MustNewConstMetric(
+							deploymentDesc,
+							prometheus.GaugeValue,
+							float64(matchedStringToInt(statusRunning, *v.Properties.ProvisioningState)),
+							key.ClusterID(customObject),
+							*v.Name,
+							statusRunning,
 						)
 						ch <- prometheus.MustNewConstMetric(
 							deploymentDesc,
