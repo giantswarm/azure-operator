@@ -5,8 +5,6 @@ const (
 	calicoAzureFileOwner      = "root:root"
 	calicoAzureFilePermission = 0600
 	calicoAzureFileTemplate   = `# Extra changes:
-#  - Added "nodename_file_optional" set to true (can be removed on the next upgrade).
-#    Tracked here: https://github.com/giantswarm/giantswarm/issues/4113
 #  - Added resource limits to calico-node.
 #  - Added resource limits to install-cni.
 #  - Made install-cni initContainer.
@@ -42,7 +40,6 @@ data:
           "log_level": "info",
           "datastore_type": "kubernetes",
           "nodename": "__KUBERNETES_NODE_NAME__",
-          "nodename_file_optional": true,
           "mtu": 1500,
           "ipam": {
             "type": "host-local",
