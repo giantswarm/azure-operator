@@ -219,13 +219,13 @@
   revision = "e55a4007948ed0e6e603e09843b3991b9c4aecf3"
 
 [[projects]]
-  branch = "azure-sdks"
+  branch = "kubernetes-1.13.2"
   name = "github.com/giantswarm/e2eclients"
   packages = [
     "aws",
     "azure"
   ]
-  revision = "d190b512b1d77abaaf1ee007d6b6d39a988a3a69"
+  revision = "b2a8532e11360baaf6f1ce4fbbe032e58a421bf4"
 
 [[projects]]
   branch = "kubernetes-1.13.2"
@@ -253,7 +253,7 @@
     "update",
     "update/provider"
   ]
-  revision = "99009ab9efb77ac6314e6bfe8dce7db6d7b18738"
+  revision = "a56fd09ed5ad9349336885f4efa376a7359eb84e"
 
 [[projects]]
   branch = "master"
@@ -1181,6 +1181,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "6134f0388d15d628b7948a178078c88b6678cae03a3161c0b72b3acb6169104d"
+  inputs-digest = "0da189d0431bf3730ddcce3ef6b7ef99eaac0dc2dbf14d29f2416c37bd12a024"
   solver-name = "gps-cdcl"
   solver-version = 1
