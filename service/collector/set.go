@@ -1,11 +1,10 @@
 package collector
 
 import (
+	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/exporterkit/collector"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/watch"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -13,9 +12,9 @@ import (
 )
 
 type SetConfig struct {
+	G8sClient versioned.Interface
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
-	Watcher   func(opts metav1.ListOptions) (watch.Interface, error)
 
 	AzureSetting             setting.Azure
 	HostAzureClientSetConfig client.AzureClientSetConfig
@@ -34,9 +33,9 @@ func NewSet(config SetConfig) (*Set, error) {
 	var deploymentCollector *Deployment
 	{
 		c := DeploymentConfig{
+			G8sClient: config.G8sClient,
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			Watcher:   config.Watcher,
 
 			EnvironmentName: config.AzureSetting.Cloud,
 		}
