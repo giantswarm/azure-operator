@@ -293,7 +293,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := vpnconnection.Config{
 			Logger: config.Logger,
 
-			Azure: config.Azure,
+			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
