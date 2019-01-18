@@ -99,10 +99,6 @@ func (client VirtualNetworkGatewaysClient) CreateOrUpdateSender(req *http.Reques
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusCreated))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -167,10 +163,6 @@ func (client VirtualNetworkGatewaysClient) DeleteSender(req *http.Request) (futu
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted, http.StatusNoContent))
 	if err != nil {
 		return
 	}
@@ -244,10 +236,6 @@ func (client VirtualNetworkGatewaysClient) GeneratevpnclientpackageSender(req *h
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -316,10 +304,6 @@ func (client VirtualNetworkGatewaysClient) GenerateVpnProfileSender(req *http.Re
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
 	if err != nil {
 		return
 	}
@@ -460,10 +444,6 @@ func (client VirtualNetworkGatewaysClient) GetAdvertisedRoutesSender(req *http.R
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -535,10 +515,6 @@ func (client VirtualNetworkGatewaysClient) GetBgpPeerStatusSender(req *http.Requ
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -604,10 +580,6 @@ func (client VirtualNetworkGatewaysClient) GetLearnedRoutesSender(req *http.Requ
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
 	if err != nil {
 		return
 	}
@@ -680,10 +652,6 @@ func (client VirtualNetworkGatewaysClient) GetVpnclientIpsecParametersSender(req
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -749,10 +717,6 @@ func (client VirtualNetworkGatewaysClient) GetVpnProfilePackageURLSender(req *ht
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
 	if err != nil {
 		return
 	}
@@ -1016,10 +980,6 @@ func (client VirtualNetworkGatewaysClient) ResetSender(req *http.Request) (futur
 	if err != nil {
 		return
 	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
-	if err != nil {
-		return
-	}
 	future.Future, err = azure.NewFutureFromResponse(resp)
 	return
 }
@@ -1034,6 +994,73 @@ func (client VirtualNetworkGatewaysClient) ResetResponder(resp *http.Response) (
 		autorest.ByUnmarshallingJSON(&result),
 		autorest.ByClosing())
 	result.Response = autorest.Response{Response: resp}
+	return
+}
+
+// ResetVpnClientSharedKey resets the VPN client shared key of the virtual network gateway in the specified resource
+// group.
+// Parameters:
+// resourceGroupName - the name of the resource group.
+// virtualNetworkGatewayName - the name of the virtual network gateway.
+func (client VirtualNetworkGatewaysClient) ResetVpnClientSharedKey(ctx context.Context, resourceGroupName string, virtualNetworkGatewayName string) (result VirtualNetworkGatewaysResetVpnClientSharedKeyFuture, err error) {
+	req, err := client.ResetVpnClientSharedKeyPreparer(ctx, resourceGroupName, virtualNetworkGatewayName)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewaysClient", "ResetVpnClientSharedKey", nil, "Failure preparing request")
+		return
+	}
+
+	result, err = client.ResetVpnClientSharedKeySender(req)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "network.VirtualNetworkGatewaysClient", "ResetVpnClientSharedKey", result.Response(), "Failure sending request")
+		return
+	}
+
+	return
+}
+
+// ResetVpnClientSharedKeyPreparer prepares the ResetVpnClientSharedKey request.
+func (client VirtualNetworkGatewaysClient) ResetVpnClientSharedKeyPreparer(ctx context.Context, resourceGroupName string, virtualNetworkGatewayName string) (*http.Request, error) {
+	pathParameters := map[string]interface{}{
+		"resourceGroupName":         autorest.Encode("path", resourceGroupName),
+		"subscriptionId":            autorest.Encode("path", client.SubscriptionID),
+		"virtualNetworkGatewayName": autorest.Encode("path", virtualNetworkGatewayName),
+	}
+
+	const APIVersion = "2018-06-01"
+	queryParameters := map[string]interface{}{
+		"api-version": APIVersion,
+	}
+
+	preparer := autorest.CreatePreparer(
+		autorest.AsPost(),
+		autorest.WithBaseURL(client.BaseURI),
+		autorest.WithPathParameters("/subscriptions/{subscriptionId}/resourceGroups/{resourceGroupName}/providers/Microsoft.Network/virtualNetworkGateways/{virtualNetworkGatewayName}/resetvpnclientsharedkey", pathParameters),
+		autorest.WithQueryParameters(queryParameters))
+	return preparer.Prepare((&http.Request{}).WithContext(ctx))
+}
+
+// ResetVpnClientSharedKeySender sends the ResetVpnClientSharedKey request. The method will close the
+// http.Response Body if it receives an error.
+func (client VirtualNetworkGatewaysClient) ResetVpnClientSharedKeySender(req *http.Request) (future VirtualNetworkGatewaysResetVpnClientSharedKeyFuture, err error) {
+	var resp *http.Response
+	resp, err = autorest.SendWithSender(client, req,
+		azure.DoRetryWithRegistration(client.Client))
+	if err != nil {
+		return
+	}
+	future.Future, err = azure.NewFutureFromResponse(resp)
+	return
+}
+
+// ResetVpnClientSharedKeyResponder handles the response to the ResetVpnClientSharedKey request. The method always
+// closes the http.Response Body.
+func (client VirtualNetworkGatewaysClient) ResetVpnClientSharedKeyResponder(resp *http.Response) (result autorest.Response, err error) {
+	err = autorest.Respond(
+		resp,
+		client.ByInspecting(),
+		azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted),
+		autorest.ByClosing())
+	result.Response = resp
 	return
 }
 
@@ -1096,10 +1123,6 @@ func (client VirtualNetworkGatewaysClient) SetVpnclientIpsecParametersSender(req
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK, http.StatusAccepted))
 	if err != nil {
 		return
 	}
@@ -1237,10 +1260,6 @@ func (client VirtualNetworkGatewaysClient) UpdateTagsSender(req *http.Request) (
 	var resp *http.Response
 	resp, err = autorest.SendWithSender(client, req,
 		azure.DoRetryWithRegistration(client.Client))
-	if err != nil {
-		return
-	}
-	err = autorest.Respond(resp, azure.WithErrorUnlessStatusCode(http.StatusOK))
 	if err != nil {
 		return
 	}
