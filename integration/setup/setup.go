@@ -3,6 +3,7 @@
 package setup
 
 import (
+	"context"
 	"log"
 	"os"
 	"testing"
@@ -20,7 +21,9 @@ const (
 func WrapTestMain(m *testing.M, c Config) {
 	var r int
 
-	err := Setup(c)
+	ctx := context.Background()
+
+	err := Setup(ctx, c)
 	if err != nil {
 		log.Printf("%#v\n", err)
 		r = 1
@@ -36,20 +39,20 @@ func WrapTestMain(m *testing.M, c Config) {
 }
 
 // Setup e2e testing environment.
-func Setup(c Config) error {
+func Setup(ctx context.Context, c Config) error {
 	var err error
 
-	err = common(c)
+	err = common(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = provider(c)
+	err = provider(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = c.Guest.Setup()
+	err = c.Guest.Setup(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}

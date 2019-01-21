@@ -75,7 +75,6 @@ write_files:
               "etcd_cert_file": "__ETCD_CERT_FILE__",
               "etcd_ca_cert_file": "__ETCD_CA_CERT_FILE__",
               "mtu": __CNI_MTU__,
-              "nodename_file_optional": true,
               "ipam": {
                   "type": "calico-ipam"
               },
@@ -2018,6 +2017,7 @@ write_files:
   owner: root
   permissions: 0600
   content: |
+    fs.inotify.max_user_watches = 16384
     kernel.kptr_restrict = 2
     kernel.sysrq = 0
     net.ipv4.conf.all.log_martians = 1

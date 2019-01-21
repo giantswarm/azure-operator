@@ -161,9 +161,9 @@ func New(config Config) (*Service, error) {
 	var operatorCollector *collector.Set
 	{
 		c := collector.SetConfig{
+			G8sClient: g8sClient,
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
-			Watcher:   g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
 
 			AzureSetting:             azure,
 			HostAzureClientSetConfig: azureConfig,
@@ -218,7 +218,7 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		go s.clusterController.Boot()
+		go s.clusterController.Boot(ctx)
 
 		go s.operatorCollector.Boot(ctx)
 		go s.statusResourceCollector.Boot(ctx)

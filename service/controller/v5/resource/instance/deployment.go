@@ -61,7 +61,6 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"masterCloudConfigData": masterCloudConfig,
 		"masterNodes":           masterNodes,
 		"masterSubnetID":        cc.MasterSubnetID,
-		"templatesBaseURI":      baseTemplateURI(r.templateVersion),
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           workerNodes,
@@ -73,7 +72,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
 			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(templateURI(r.templateVersion, mainTemplate)),
+				URI:            to.StringPtr(key.ARMTemplateURI(r.templateVersion, "instance", "main.json")),
 				ContentVersion: to.StringPtr(key.TemplateContentVersion),
 			},
 		},

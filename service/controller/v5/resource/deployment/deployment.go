@@ -27,10 +27,9 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
 		"masterSubnetCidr":        sc.AzureNetwork.Master.String(),
 		"storageAccountName":      key.StorageAccountName(customObject),
-		"templatesBaseURI":        baseTemplateURI(r.templateVersion),
 		"virtualNetworkCidr":      key.VnetCIDR(customObject),
 		"virtualNetworkName":      key.VnetName(customObject),
-		"vpnGatewayName":          key.VPNGatewayName(customObject),
+		"vnetGatewaySubnetName":   key.VNetGatewaySubnetName(),
 		"vpnSubnetCidr":           sc.AzureNetwork.VPN.String(),
 		"workerSubnetCidr":        sc.AzureNetwork.Worker.String(),
 	}
@@ -40,7 +39,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
 			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(templateURI(r.templateVersion, mainTemplate)),
+				URI:            to.StringPtr(key.ARMTemplateURI(r.templateVersion, "deployment", "main.json")),
 				ContentVersion: to.StringPtr(key.TemplateContentVersion),
 			},
 		},

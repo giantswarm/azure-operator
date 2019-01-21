@@ -22,7 +22,8 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/service"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vnetpeeringcleaner"
-	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vpngateway"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vpn"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/vpnconnection"
 	"github.com/giantswarm/azure-operator/service/credential"
 	"github.com/giantswarm/azure-operator/service/network"
 	"github.com/giantswarm/certs"
@@ -271,21 +272,37 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var vpnGatewayResource controller.Resource
+	var vpnResource controller.Resource
 	{
-		c := vpngateway.Config{
+		c := vpn.Config{
+			Debugger: newDebugger,
+			Logger:   config.Logger,
+
+			Azure:           config.Azure,
+			TemplateVersion: config.TemplateVersion,
+		}
+
+		vpnResource, err = vpn.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var vpnconnectionResource controller.Resource
+	{
+		c := vpnconnection.Config{
 			Logger: config.Logger,
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
-		ops, err := vpngateway.New(c)
+		ops, err := vpnconnection.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		vpnGatewayResource, err = toCRUDResource(config.Logger, ops)
+		vpnconnectionResource, err = toCRUDResource(config.Logger, ops)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -317,7 +334,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		instanceResource,
 		endpointsResource,
 		dnsrecordResource,
-		vpnGatewayResource,
+		vpnResource,
+		vpnconnectionResource,
 	}
 
 	{
@@ -332,10 +350,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	{
-		c := metricsresource.WrapConfig{
-			Name: config.ProjectName,
-		}
-
+		c := metricsresource.WrapConfig{}
 		resources, err = metricsresource.Wrap(resources, c)
 		if err != nil {
 			return nil, microerror.Mask(err)
