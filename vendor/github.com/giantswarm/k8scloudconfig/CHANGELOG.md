@@ -29,6 +29,8 @@ version directory, and then changes are introduced.
 ### Removed
 - Removed nodename_file_optional from calico configmap.
 
+## [v3.7.3]
+
 ### Changed
 - update kubernetes to 1.12.3 (CVE-2018-1002105)
 

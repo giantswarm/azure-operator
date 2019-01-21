@@ -27,7 +27,6 @@ write_files:
     # where X is the version of azure operator
     #
     # Extra changes:
-    #  - Added "nodename_file_optional" set to true (can be removed on the next upgrade).
     #  - Added resource limits to calico-node and calico-kube-controllers.
     #  - Added resource limits to install-cni.
     #  - Added 'priorityClassName: system-cluster-critical' to calico daemonset.

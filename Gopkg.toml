@@ -110,8 +110,6 @@ required = [
   name = "k8s.io/apiserver"
   version = "kubernetes-1.13.2"
 
-
-
 [prune]
   go-tests = true
   unused-packages = true
