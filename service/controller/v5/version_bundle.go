@@ -18,11 +18,6 @@ func VersionBundle() versionbundle.Bundle {
 				Kind:        versionbundle.KindChanged,
 			},
 			{
-				Component:   "azure-operator",
-				Description: ".",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
 				Component:   "kubernetes",
 				Description: "Enabled admission plugins: DefaultTolerationSeconds, MutatingAdmissionWebhook, ValidatingAdmissionWebhook.",
 				Kind:        versionbundle.KindChanged,
@@ -50,6 +45,11 @@ func VersionBundle() versionbundle.Bundle {
 			{
 				Component:   "cloudconfig",
 				Description: "Updated k8scloudconfig to 3.7.4",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "node-operator",
+				Description: "Improved node draining during updates and scaling.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
