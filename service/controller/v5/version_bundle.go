@@ -22,6 +22,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Enabled admission plugins: DefaultTolerationSeconds, MutatingAdmissionWebhook, ValidatingAdmissionWebhook.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "node-operator",
+				Description: "Improved node draining during updates and scaling.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
