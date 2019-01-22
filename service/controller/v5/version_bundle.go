@@ -49,7 +49,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "cloudconfig",
-				Description: "Updated k8scloudconfig to 3.7.1",
+				Description: "Updated k8scloudconfig to 3.7.4",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
