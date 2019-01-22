@@ -122,6 +122,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		DisableCoreDNS:                  true,
 		DisableIngressController:        true,
 		DisableIngressControllerService: true,
+		EtcdPort:                        customObject.Spec.Cluster.Etcd.Port,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{
