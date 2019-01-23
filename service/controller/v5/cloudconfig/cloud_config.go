@@ -9,7 +9,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_6_2"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_7_4"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -88,6 +88,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 
 	// On Azure only master nodes access etcd, so it is locked down.
 	customObject.Spec.Cluster.Etcd.Domain = "127.0.0.1"
+	customObject.Spec.Cluster.Etcd.Port = 2379
 
 	var k8sAPIExtraArgs []string
 	{
@@ -107,6 +108,13 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		}
 	}
 
+	// NOTE in Azure we disable Calico right now. This is due to a transitioning
+	// phase. The k8scloudconfig templates require certain calico valus to be set
+	// nonetheless. So we set them here. Later when the Calico setup is
+	// straightened out we can improve the handling here.
+	customObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
+	customObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
+
 	params := k8scloudconfig.Params{
 		APIServerEncryptionKey:          apiserverEncryptionKey,
 		Cluster:                         customObject.Spec.Cluster,
@@ -114,6 +122,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		DisableCoreDNS:                  true,
 		DisableIngressController:        true,
 		DisableIngressControllerService: true,
+		EtcdPort:                        customObject.Spec.Cluster.Etcd.Port,
 		Hyperkube: k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{
@@ -178,6 +187,13 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+	// NOTE in Azure we disable Calico right now. This is due to a transitioning
+	// phase. The k8scloudconfig templates require certain calico valus to be set
+	// nonetheless. So we set them here. Later when the Calico setup is
+	// straightened out we can improve the handling here.
+	customObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
+	customObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
+
 	params := k8scloudconfig.Params{
 		Cluster: customObject.Spec.Cluster,
 		Hyperkube: k8scloudconfig.Hyperkube{
