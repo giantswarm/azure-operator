@@ -33,14 +33,10 @@ required = [
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
   version = "v21.3.0"
-<<<<<<< HEAD
-=======
 
 [[constraint]]
   name = "github.com/Azure/azure-storage-blob-go"
-  version = "0.3.0"
-
->>>>>>> Vendor changes
+  version = "0.5.0"
 
 [[constraint]]
   branch = "master"
@@ -59,7 +55,7 @@ required = [
   name = "github.com/giantswarm/e2e-harness"
 
 [[constraint]]
-  branch = "azure_sdk_21.3.0"
+  branch = "master"
   name = "github.com/giantswarm/e2eclients"
 
 [[constraint]]
@@ -71,7 +67,7 @@ required = [
   name = "github.com/giantswarm/e2etemplates"
 
 [[constraint]]
-  branch = "aws_sdk_1.15.59"
+  branch = "master"
   name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
