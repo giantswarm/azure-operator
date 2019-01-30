@@ -133,7 +133,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 		}
 
-		var nodeConfigs []corev1alpha1.DrainerConfig
+		var drainerConfigs []corev1alpha1.DrainerConfig
 		{
 			n := v1.NamespaceAll
 			o := metav1.ListOptions{
@@ -145,7 +145,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			nodeConfigs = list.Items
+			drainerConfigs = list.Items
 		}
 
 		var masterUpgraded bool
@@ -158,7 +158,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, nodeConfigs, key.MasterInstanceName, versionValue)
+				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -174,7 +174,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.deleteDrainerConfig(ctx, customObject, masterInstanceToReimage, key.MasterInstanceName, nodeConfigs)
+				err = r.deleteDrainerConfig(ctx, customObject, masterInstanceToReimage, key.MasterInstanceName, drainerConfigs)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -205,7 +205,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, nodeConfigs, key.WorkerInstanceName, versionValue)
+				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -221,7 +221,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.deleteDrainerConfig(ctx, customObject, workerInstanceToReimage, key.WorkerInstanceName, nodeConfigs)
+				err = r.deleteDrainerConfig(ctx, customObject, workerInstanceToReimage, key.WorkerInstanceName, drainerConfigs)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -292,7 +292,7 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "creating node config for guest cluster node")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for guest cluster node")
 
 	instanceName, err := instanceNameFunc(customObject, *instance.InstanceID)
 	if err != nil {
@@ -327,18 +327,18 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 
 	_, err = r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Create(c)
 	if errors.IsAlreadyExists(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create node config for guest cluster node")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "node config for guest cluster node does already exist")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for guest cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for guest cluster node does already exist")
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "created node config for guest cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for guest cluster node")
 	}
 
 	return nil
 }
 
-func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), nodeConfigs []corev1alpha1.DrainerConfig) error {
+func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), drainerConfigs []corev1alpha1.DrainerConfig) error {
 	if instance == nil {
 		return nil
 	}
@@ -348,35 +348,35 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 		return microerror.Mask(err)
 	}
 
-	if isNodeDrained(nodeConfigs, instanceName) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting node config for guest cluster node")
+	if isNodeDrained(drainerConfigs, instanceName) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainer config for guest cluster node")
 
-		var nodeConfigToRemove corev1alpha1.DrainerConfig
-		for _, n := range nodeConfigs {
+		var drainerConfigToRemove corev1alpha1.DrainerConfig
+		for _, n := range drainerConfigs {
 			if n.GetName() == instanceName {
-				nodeConfigToRemove = n
+				drainerConfigToRemove = n
 				break
 			}
 		}
 
-		n := nodeConfigToRemove.GetNamespace()
-		i := nodeConfigToRemove.GetName()
+		n := drainerConfigToRemove.GetNamespace()
+		i := drainerConfigToRemove.GetName()
 		o := &metav1.DeleteOptions{}
 
 		err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Delete(i, o)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete node config for guest cluster node")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "node config for guest cluster node does not exist")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for guest cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for guest cluster node does not exist")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted node config for guest cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainer config for guest cluster node")
 		}
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting node config for guest cluster node due to undrained node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting drainer config for guest cluster node due to undrained node")
 	}
 
-	// TODO implement safety net to delete node configs that are over due for e.g. when node-operator fucks up
+	// TODO implement safety net to delete drainer configs that are over due for e.g. when node-operator fucks up
 
 	return nil
 }
@@ -397,7 +397,7 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 //     loop 5: worker 2 drained
 //     loop 6: worker 2 reimage
 //
-func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	var err error
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
@@ -406,7 +406,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated, drained or reimaged")
 
-		instanceToUpdate, instanceToDrain, instanceToReimage, err = findActionableInstance(customObject, instances, nodeConfigs, instanceNameFunc, versionValue)
+		instanceToUpdate, instanceToDrain, instanceToReimage, err = findActionableInstance(customObject, instances, drainerConfigs, instanceNameFunc, versionValue)
 		if IsVersionBlobEmpty(err) {
 			// When no version bundle version is found it means the cluster just got
 			// created and the version bundle versions are not yet tracked within the
@@ -540,7 +540,7 @@ func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool
 
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
-func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, nodeConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
 	var err error
 
 	instanceInProgress := firstInstanceInProgress(customObject, instances)
@@ -564,7 +564,7 @@ func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances
 		if err != nil {
 			return nil, nil, nil, microerror.Mask(err)
 		}
-		if isNodeDrained(nodeConfigs, instanceName) {
+		if isNodeDrained(drainerConfigs, instanceName) {
 			return nil, nil, instanceToReimage, nil
 		} else {
 			return nil, instanceToReimage, nil, nil
@@ -634,8 +634,8 @@ func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []com
 	return nil
 }
 
-func isNodeDrained(nodeConfigs []corev1alpha1.DrainerConfig, instanceName string) bool {
-	for _, n := range nodeConfigs {
+func isNodeDrained(drainerConfigs []corev1alpha1.DrainerConfig, instanceName string) bool {
+	for _, n := range drainerConfigs {
 		if n.GetName() != instanceName {
 			continue
 		}
