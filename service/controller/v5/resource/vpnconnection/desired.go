@@ -24,15 +24,14 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 		hostVPNGateway  *network.VirtualNetworkGateway
 		guestVPNGateway *network.VirtualNetworkGateway
 	)
-	// Do not check for vpn gateway when deleting.
-	// As we do not require guest cluster vpn gateway to be ready in order to
-	// delete connection from host cluster vpn gateway.
+	// Do not check for vpn gateway when deleting. As we do not require tenant
+	// cluster vpn gateway to be ready in order to delete connection from host
+	// cluster vpn gateway.
 	if !key.IsDeleted(customObject) {
-		// In order to make vpn gateway connection work we need 2 vpn gateway.
-		// One on the host cluster and one on the guest cluster.
-		// Here we check for vpn gateways readiness.
-		// In case one of the vpn gateway is not ready we cancel the resource
-		// and try again on the next resync period.
+		// In order to make vpn gateway connection work we need 2 vpn gateway. One
+		// on the host cluster and one on the tenant cluster. Here we check for vpn
+		// gateways readiness. In case one of the vpn gateway is not ready we cancel
+		// the resource and try again on the next resync period.
 		{
 
 			resourceGroup := key.ResourceGroupName(customObject)
@@ -40,7 +39,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 
 			guestVPNGateway, err = r.getGuestVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "guest vpn gateway was not found")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "tenant vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
@@ -50,7 +49,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			}
 
 			if provisioningState := *guestVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("guest vpn gateway is in state '%s'", provisioningState))
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tenant vpn gateway is in state '%s'", provisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 

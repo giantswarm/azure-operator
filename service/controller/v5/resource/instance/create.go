@@ -190,7 +190,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		// In case the master instance is being updated we want to prevent any
 		// other updates on the workers. This is because the update process
 		// involves the draining of the updated node and if the master is being
-		// updated at the same time the guest cluster's Kubernetes API is not
+		// updated at the same time the tenant cluster's Kubernetes API is not
 		// available in order to drain nodes. As consequence we have to reset the
 		// worker instance selected to be reimaged in order to not update its
 		// version information. The next reconciliation loop will catch up here
@@ -292,7 +292,7 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for guest cluster node")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
 
 	instanceName, err := instanceNameFunc(customObject, *instance.InstanceID)
 	if err != nil {
@@ -327,12 +327,12 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 
 	_, err = r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Create(c)
 	if errors.IsAlreadyExists(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for guest cluster node")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for guest cluster node does already exist")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for guest cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node")
 	}
 
 	return nil
@@ -349,7 +349,7 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 	}
 
 	if isNodeDrained(drainerConfigs, instanceName) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainer config for guest cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainer config for tenant cluster node")
 
 		var drainerConfigToRemove corev1alpha1.DrainerConfig
 		for _, n := range drainerConfigs {
@@ -365,15 +365,15 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 
 		err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Delete(i, o)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for guest cluster node")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for guest cluster node does not exist")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainer config for guest cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainer config for tenant cluster node")
 		}
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting drainer config for guest cluster node due to undrained node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting drainer config for tenant cluster node due to undrained node")
 	}
 
 	// TODO implement safety net to delete drainer configs that are over due for e.g. when node-operator fucks up
@@ -410,9 +410,9 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 		if IsVersionBlobEmpty(err) {
 			// When no version bundle version is found it means the cluster just got
 			// created and the version bundle versions are not yet tracked within the
-			// parameters of the guest cluster's VMSS deployment. In this case we must
-			// not select an instance to be reimaged because we would roll a node that
-			// just got created and is already up to date.
+			// parameters of the tenant cluster's VMSS deployment. In this case we
+			// must not select an instance to be reimaged because we would roll a node
+			// that just got created and is already up to date.
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged")
 			return nil, nil, nil, nil
 		} else if err != nil {
