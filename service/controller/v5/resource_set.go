@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/debugger"
@@ -169,18 +170,45 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var blobObjectResource controller.Resource
 	{
-		c := blobobject.Config{
-			Logger: config.Logger,
+		azureClients, err := client.NewAzureClientSet(config.HostAzureClientSetConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		storageAccountsClient := azureClients.StorageAccountsClient
 
-			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+		var blobClient blobclient.BlobClient
+		{
+			c := blobclient.Config{
+				ContainerName:          key.BlobContainerName(),
+				GroupNameFunc:          key.ToClusterID,
+				StorageAccountNameFunc: key.ToStorageAccountName,
+				StorageAccountsClient:  storageAccountsClient,
+			}
+
+			blobClient, err = blobclient.New(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		}
 
-		ops, err := blobobject.New(c)
+		ctx := context.TODO()
+		err = blobClient.Boot(ctx)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		blobObjectResource, err = toCRUDResource(config.Logger, ops)
+		c := blobobject.Config{
+			Logger: config.Logger,
+
+			BlobClient: blobClient,
+		}
+
+		blobObject, err := blobobject.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		blobObjectResource, err = toCRUDResource(config.Logger, blobObject)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

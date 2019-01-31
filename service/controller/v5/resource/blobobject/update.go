@@ -4,44 +4,12 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	containerObjectToUpdate, err := toContainerObjectState(updateChange)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	storageAccountsClient, err := r.getAccountsClient()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	var blobClient *blobclient.BlobClient
-	{
-		c := blobclient.Config{
-			ContainerName:         key.BlobContainerName(),
-			GroupName:             key.ClusterID(customObject),
-			StorageAccountName:    key.StorageAccountName(customObject),
-			StorageAccountsClient: storageAccountsClient,
-		}
-
-		blobClient, err = blobclient.New(c)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	err = blobClient.Boot(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -50,7 +18,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 		if containerObject.Key != "" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", key))
 
-			_, err := blobClient.PutBlockBlob(ctx, key, containerObject.Body)
+			_, err := r.blobClient.PutBlockBlob(ctx, key, containerObject.Body)
 			if err != nil {
 				return microerror.Mask(err)
 			}

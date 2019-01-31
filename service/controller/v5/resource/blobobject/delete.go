@@ -2,6 +2,7 @@ package blobobject
 
 import (
 	"context"
+
 	"github.com/giantswarm/operatorkit/controller"
 )
 

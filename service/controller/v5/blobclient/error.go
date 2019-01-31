@@ -1,9 +1,10 @@
 package blobclient
 
 import (
+	"strings"
+
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
-	"strings"
 )
 
 var executionFailedError = &microerror.Error{

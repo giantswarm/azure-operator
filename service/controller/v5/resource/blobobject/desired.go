@@ -2,9 +2,11 @@ package blobobject
 
 import (
 	"context"
+
+	"github.com/giantswarm/microerror"
+
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
-	"github.com/giantswarm/microerror"
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
@@ -18,7 +20,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	storageAccountName := key.StorageAccountName(customObject)
+	storageAccountName, err := key.ToStorageAccountName(customObject)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	containerName := key.BlobContainerName()
 
 	output := map[string]ContainerObjectState{}

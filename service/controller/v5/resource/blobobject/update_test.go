@@ -6,9 +6,10 @@ import (
 	"testing"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/micrologger/microloggertest"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 )
 
 const (
@@ -158,12 +159,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			{
 				c := Config{}
 				c.Logger = microloggertest.New()
-				c.HostAzureClientSetConfig = client.AzureClientSetConfig{
-					ClientID:       "clientid",
-					ClientSecret:   "clientsecret",
-					SubscriptionID: "subscriptionid",
-					TenantID:       "tenantid",
-				}
+				c.BlobClient = blobclient.BlobClient{}
 
 				newResource, err = New(c)
 				if err != nil {
