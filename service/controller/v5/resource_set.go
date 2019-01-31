@@ -191,12 +191,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			}
 		}
 
-		ctx := context.TODO()
-		err = blobClient.Boot(ctx)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
 		c := blobobject.Config{
 			Logger: config.Logger,
 
