@@ -1,10 +1,12 @@
 package blobobject
 
 import (
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
 const (
@@ -13,8 +15,8 @@ const (
 )
 
 type Config struct {
-	BlobClient blobclient.BlobClient
-	Logger     micrologger.Logger
+	Logger                micrologger.Logger
+	StorageAccountsClient *storage.AccountsClient
 }
 
 type Resource struct {
@@ -26,9 +28,24 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.StorageAccountsClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.StorageAccountsClient must not be empty", config)
+	}
+
+	c := blobclient.Config{
+		ContainerName:          key.BlobContainerName(),
+		GroupNameFunc:          key.ToClusterID,
+		StorageAccountNameFunc: key.ToStorageAccountName,
+		StorageAccountsClient:  config.StorageAccountsClient,
+	}
+
+	blobClient, err := blobclient.New(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	r := &Resource{
-		blobClient: config.BlobClient,
+		blobClient: blobClient,
 		logger:     config.Logger,
 	}
 

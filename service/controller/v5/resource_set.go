@@ -9,7 +9,6 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/debugger"
@@ -176,25 +175,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 		storageAccountsClient := azureClients.StorageAccountsClient
 
-		var blobClient blobclient.BlobClient
-		{
-			c := blobclient.Config{
-				ContainerName:          key.BlobContainerName(),
-				GroupNameFunc:          key.ToClusterID,
-				StorageAccountNameFunc: key.ToStorageAccountName,
-				StorageAccountsClient:  storageAccountsClient,
-			}
-
-			blobClient, err = blobclient.New(c)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		}
-
 		c := blobobject.Config{
-			Logger: config.Logger,
-
-			BlobClient: blobClient,
+			Logger:                config.Logger,
+			StorageAccountsClient: storageAccountsClient,
 		}
 
 		blobObject, err := blobobject.New(c)
