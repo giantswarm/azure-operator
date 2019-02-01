@@ -20,10 +20,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	storageAccountName, err := key.ToStorageAccountName(customObject)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	storageAccountName := key.StorageAccountName(customObject)
 
 	containerName := key.BlobContainerName()
 

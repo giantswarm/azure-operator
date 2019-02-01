@@ -25,12 +25,10 @@ type Config struct {
 }
 
 type BlobClient struct {
-	containerName          string
-	groupName              string
-	groupNameFunc          func(v interface{}) (string, error)
-	storageAccountName     string
-	storageAccountNameFunc func(v interface{}) (string, error)
-	storageAccountsClient  *storage.AccountsClient
+	containerName         string
+	groupName             string
+	storageAccountName    string
+	storageAccountsClient *storage.AccountsClient
 
 	// containerURL is configured separately from the default
 	// parameters.
@@ -43,32 +41,33 @@ func New(config Config) (BlobClient, error) {
 	}
 
 	blobClient := BlobClient{
-		containerName:          config.ContainerName,
-		groupNameFunc:          config.GroupNameFunc,
-		storageAccountNameFunc: config.StorageAccountNameFunc,
-		storageAccountsClient:  config.StorageAccountsClient,
+		storageAccountsClient: config.StorageAccountsClient,
 	}
 
 	return blobClient, nil
 }
 
-func (c *BlobClient) Boot(ctx context.Context) error {
+func (c *BlobClient) Boot(ctx context.Context, containerName, groupName, storageAccountName string) error {
 	var containerURL azblob.ContainerURL
+
+	c.containerName = containerName
+	c.groupName = groupName
+	c.storageAccountName = storageAccountName
 
 	key, err := c.getAccountPrimaryKey(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	sc, err := azblob.NewSharedKeyCredential(c.storageAccountName, key)
+	sc, err := azblob.NewSharedKeyCredential(storageAccountName, key)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	p := azblob.NewPipeline(sc, azblob.PipelineOptions{})
-	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", c.storageAccountName))
+	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", storageAccountName))
 	serviceURL := azblob.NewServiceURL(*u, p)
-	containerURL = serviceURL.NewContainerURL(c.containerName)
+	containerURL = serviceURL.NewContainerURL(containerName)
 	_, err = containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
 	if err != nil {
 		return microerror.Mask(err)
@@ -158,8 +157,8 @@ func (c *BlobClient) ListBlobs(ctx context.Context) (*azblob.ListBlobsFlatSegmen
 	return listBlobs, nil
 }
 
-func (c *BlobClient) StorageAccountExists(ctx context.Context) (bool, error) {
-	_, err := c.storageAccountsClient.GetProperties(ctx, c.groupName, c.storageAccountName)
+func (c *BlobClient) StorageAccountExists(ctx context.Context, groupName, storageAccountName string) (bool, error) {
+	_, err := c.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
 	if IsStorageAccountNotFound(err) {
 		return false, nil
 	} else if err != nil {

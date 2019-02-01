@@ -6,7 +6,6 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
 const (
@@ -33,10 +32,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	c := blobclient.Config{
-		ContainerName:          key.BlobContainerName(),
-		GroupNameFunc:          key.ToClusterID,
-		StorageAccountNameFunc: key.ToStorageAccountName,
-		StorageAccountsClient:  config.StorageAccountsClient,
+		StorageAccountsClient: config.StorageAccountsClient,
 	}
 
 	blobClient, err := blobclient.New(c)

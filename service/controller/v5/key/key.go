@@ -274,7 +274,6 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
-// StorageAccountName returns name of the storage account for the ignition.
 func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	// In integration tests we use hyphens which are not allowed. We also
 	// need to keep the name globaly unique and within 24 character limit.
@@ -373,20 +372,6 @@ func ToParameters(list ...map[string]interface{}) map[string]interface{} {
 	}
 
 	return allParams
-}
-
-func ToStorageAccountName(v interface{}) (string, error) {
-	customObject, err := ToCustomObject(v)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	// In integration tests we use hyphens which are not allowed. We also
-	// need to keep the name globaly unique and within 24 character limit.
-	//
-	//	See https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions#storage
-	//
-	return strings.Replace(ClusterID(customObject), "-", "", -1), nil
 }
 
 func ToString(v interface{}) (string, error) {

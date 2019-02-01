@@ -5,10 +5,10 @@ import (
 	"reflect"
 	"testing"
 
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 
-	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 )
 
@@ -159,7 +159,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			{
 				c := Config{}
 				c.Logger = microloggertest.New()
-				c.BlobClient = blobclient.BlobClient{}
+				c.StorageAccountsClient = &storage.AccountsClient{}
 
 				newResource, err = New(c)
 				if err != nil {
