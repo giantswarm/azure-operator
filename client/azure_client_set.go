@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -65,6 +66,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	//StorageAccountsClient manages blobs in storage containers.
+	StorageAccountsClient *storage.AccountsClient
 	// VirtualNetworkClient manages virtual networks.
 	VirtualNetworkClient *network.VirtualNetworksClient
 	// VirtualNetworkGatewayConnectionsClient manages virtual network gateway connections.
@@ -109,6 +112,7 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
 		DNSZonesClient:                         newDNSZonesClient(c),
 		InterfacesClient:                       newInterfacesClient(c),
+		StorageAccountsClient:                  newStorageAccountsClient(c),
 		VirtualNetworkClient:                   newVirtualNetworkClient(c),
 		VirtualNetworkGatewayConnectionsClient: newVirtualNetworkGatewayConnectionsClient(c),
 		VirtualNetworkGatewaysClient:           newVirtualNetworkGatewaysClient(c),
@@ -219,6 +223,12 @@ func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment
 	}
 
 	return token, nil
+}
+
+func newStorageAccountsClient(config *clientConfig) *storage.AccountsClient {
+	c := storage.NewAccountsClient(config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	return &c
 }
 
 // parseAzureEnvironment returns azure environment by name.
