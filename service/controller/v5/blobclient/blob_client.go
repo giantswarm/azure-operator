@@ -14,7 +14,7 @@ const (
 	maxRetriesRequests    = 3
 )
 
-func BlobExists(ctx context.Context, blobName string, containerURL azblob.ContainerURL) (bool, error) {
+func BlobExists(ctx context.Context, blobName string, containerURL *azblob.ContainerURL) (bool, error) {
 	blobURL := containerURL.NewBlockBlobURL(blobName)
 
 	_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
@@ -27,7 +27,7 @@ func BlobExists(ctx context.Context, blobName string, containerURL azblob.Contai
 	return true, nil
 }
 
-func ContainerExists(ctx context.Context, containerURL azblob.ContainerURL) (bool, error) {
+func ContainerExists(ctx context.Context, containerURL *azblob.ContainerURL) (bool, error) {
 	_, err := containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
 	if IsContainerNotFound(err) {
 		return false, nil
@@ -38,7 +38,7 @@ func ContainerExists(ctx context.Context, containerURL azblob.ContainerURL) (boo
 	return true, nil
 }
 
-func PutBlockBlob(ctx context.Context, blobName string, payload string, containerURL azblob.ContainerURL) (azblob.BlockBlobURL, error) {
+func PutBlockBlob(ctx context.Context, blobName string, payload string, containerURL *azblob.ContainerURL) (azblob.BlockBlobURL, error) {
 	blob := containerURL.NewBlockBlobURL(blobName)
 
 	_, err := blob.Upload(
@@ -54,7 +54,7 @@ func PutBlockBlob(ctx context.Context, blobName string, payload string, containe
 	return blob, err
 }
 
-func GetBlockBlob(ctx context.Context, blobName string, containerURL azblob.ContainerURL) ([]byte, error) {
+func GetBlockBlob(ctx context.Context, blobName string, containerURL *azblob.ContainerURL) ([]byte, error) {
 	blobURL := containerURL.NewBlockBlobURL(blobName)
 
 	response, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
@@ -74,7 +74,7 @@ func GetBlockBlob(ctx context.Context, blobName string, containerURL azblob.Cont
 	return blobData, nil
 }
 
-func ListBlobs(ctx context.Context, containerURL azblob.ContainerURL) (*azblob.ListBlobsFlatSegmentResponse, error) {
+func ListBlobs(ctx context.Context, containerURL *azblob.ContainerURL) (*azblob.ListBlobsFlatSegmentResponse, error) {
 	var listBlobs *azblob.ListBlobsFlatSegmentResponse
 
 	listBlobs, err := containerURL.ListBlobsFlatSegment(

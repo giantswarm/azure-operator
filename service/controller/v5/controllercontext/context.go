@@ -20,7 +20,7 @@ type Context struct {
 	AzureClientSet      *client.AzureClientSet
 	AzureNetwork        *network.Subnets
 	CloudConfig         cloudconfig.Interface
-	ContainerURL        azblob.ContainerURL
+	ContainerURL        *azblob.ContainerURL
 	EtcdLBBackendPoolID string
 	MasterSubnetID      string
 	WorkerSubnetID      string

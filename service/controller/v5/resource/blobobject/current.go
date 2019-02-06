@@ -22,6 +22,12 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
+	if cc.ContainerURL == nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "containerurl resource is not ready")
+		resourcecanceledcontext.SetCanceled(ctx)
+		return nil, nil
+	}
+
 	containerURL := cc.ContainerURL
 	containerName := key.BlobContainerName()
 	storageAccountName := key.StorageAccountName(customObject)
