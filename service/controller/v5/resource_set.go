@@ -190,15 +190,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var blobObjectResource controller.Resource
 	{
-		azureClients, err := client.NewAzureClientSet(config.HostAzureClientSetConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		storageAccountsClient := azureClients.StorageAccountsClient
-
 		c := blobobject.Config{
-			Logger:                config.Logger,
-			StorageAccountsClient: storageAccountsClient,
+			Logger: config.Logger,
 		}
 
 		blobObject, err := blobobject.New(c)

@@ -24,9 +24,6 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.StorageAccountsClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.StorageAccountsClient must not be empty", config)
-	}
 
 	r := &Resource{
 		logger: config.Logger,
