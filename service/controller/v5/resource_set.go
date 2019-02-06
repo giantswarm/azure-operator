@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/containerurl"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/endpoints"
@@ -164,6 +165,26 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+	}
+
+	var containerURLResource controller.Resource
+	{
+		azureClients, err := client.NewAzureClientSet(config.HostAzureClientSetConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		storageAccountsClient := azureClients.StorageAccountsClient
+
+		c := containerurl.Config{
+			Logger:                config.Logger,
+			StorageAccountsClient: storageAccountsClient,
+		}
+
+		containerURLResource, err = containerurl.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
 	}
 
 	var deploymentResource controller.Resource
@@ -329,6 +350,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
+		containerURLResource,
 		deploymentResource,
 		vnetPeeringCleanerResource,
 		instanceResource,
