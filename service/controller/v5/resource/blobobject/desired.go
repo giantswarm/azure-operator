@@ -24,7 +24,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	containerName := key.BlobContainerName()
 
-	output := map[string]ContainerObjectState{}
+	output := []ContainerObjectState{}
 
 	{
 		b, err := ctlCtx.CloudConfig.NewMasterCloudConfig(customObject)
@@ -32,12 +32,14 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			return nil, microerror.Mask(err)
 		}
 		k := key.BlobName(customObject, prefixMaster)
-		output[k] = ContainerObjectState{
+		containerObjectState := ContainerObjectState{
 			Body:               b,
 			ContainerName:      containerName,
 			Key:                k,
 			StorageAccountName: storageAccountName,
 		}
+
+		output = append(output, containerObjectState)
 	}
 
 	{
@@ -46,12 +48,14 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			return nil, microerror.Mask(err)
 		}
 		k := key.BlobName(customObject, prefixWorker)
-		output[k] = ContainerObjectState{
+		containerObjectState := ContainerObjectState{
 			Body:               b,
 			ContainerName:      containerName,
 			Key:                k,
 			StorageAccountName: storageAccountName,
 		}
+
+		output = append(output, containerObjectState)
 	}
 
 	return output, nil

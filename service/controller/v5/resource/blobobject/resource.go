@@ -4,8 +4,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-
-	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 )
 
 const (
@@ -19,8 +17,7 @@ type Config struct {
 }
 
 type Resource struct {
-	blobClient blobclient.BlobClient
-	logger     micrologger.Logger
+	logger micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
@@ -31,18 +28,8 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.StorageAccountsClient must not be empty", config)
 	}
 
-	c := blobclient.Config{
-		StorageAccountsClient: config.StorageAccountsClient,
-	}
-
-	blobClient, err := blobclient.New(c)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	r := &Resource{
-		blobClient: blobClient,
-		logger:     config.Logger,
+		logger: config.Logger,
 	}
 
 	return r, nil
@@ -53,12 +40,12 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func toContainerObjectState(v interface{}) (map[string]ContainerObjectState, error) {
+func toContainerObjectState(v interface{}) ([]ContainerObjectState, error) {
 	if v == nil {
 		return nil, nil
 	}
 
-	containerObjectState, ok := v.(map[string]ContainerObjectState)
+	containerObjectState, ok := v.([]ContainerObjectState)
 	if !ok {
 		return nil, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", containerObjectState, v)
 	}

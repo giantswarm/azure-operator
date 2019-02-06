@@ -30,77 +30,73 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 	testCases := []struct {
 		description   string
 		obj           providerv1alpha1.AzureConfig
-		currentState  map[string]ContainerObjectState
-		desiredState  map[string]ContainerObjectState
-		expectedState map[string]ContainerObjectState
+		currentState  []ContainerObjectState
+		desiredState  []ContainerObjectState
+		expectedState []ContainerObjectState
 	}{
 		{
 			description:   "current state empty, desired state empty, empty update change",
 			obj:           clusterTpo,
-			currentState:  map[string]ContainerObjectState{},
-			desiredState:  map[string]ContainerObjectState{},
-			expectedState: map[string]ContainerObjectState{},
+			currentState:  []ContainerObjectState{},
+			desiredState:  []ContainerObjectState{},
+			expectedState: []ContainerObjectState{},
 		},
 		{
 			description:  "current state empty, desired state not empty, not-empty update change",
 			obj:          clusterTpo,
-			currentState: map[string]ContainerObjectState{},
-			desiredState: map[string]ContainerObjectState{
-				"master": {
+			currentState: []ContainerObjectState{},
+			desiredState: []ContainerObjectState{
+				{
 					Body:               "master-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			expectedState: map[string]ContainerObjectState{
-				"master": {},
-			},
+			expectedState: []ContainerObjectState{},
 		},
 		{
 			description: "current state matches desired state, empty update change",
 			obj:         clusterTpo,
-			currentState: map[string]ContainerObjectState{
-				"master": {
+			currentState: []ContainerObjectState{
+				{
 					Body:               "master-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			desiredState: map[string]ContainerObjectState{
-				"master": {
+			desiredState: []ContainerObjectState{
+				{
 					Body:               "master-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			expectedState: map[string]ContainerObjectState{
-				"master": {},
-			},
+			expectedState: []ContainerObjectState{},
 		},
 		{
 			description: "current state does not match desired state, update container object",
 			obj:         clusterTpo,
-			currentState: map[string]ContainerObjectState{
-				"master": {
+			currentState: []ContainerObjectState{
+				{
 					Body:               "master-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			desiredState: map[string]ContainerObjectState{
-				"master": {
+			desiredState: []ContainerObjectState{
+				{
 					Body:               "master-new-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			expectedState: map[string]ContainerObjectState{
-				"master": {
+			expectedState: []ContainerObjectState{
+				{
 					Body:               "master-new-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
@@ -111,42 +107,41 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 		{
 			description: "current state does not match desired state, update container object",
 			obj:         clusterTpo,
-			currentState: map[string]ContainerObjectState{
-				"master": {
+			currentState: []ContainerObjectState{
+				{
 					Body:               "master-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
-				"worker": {
+				{
 					Body:               "worker-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixWorker,
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			desiredState: map[string]ContainerObjectState{
-				"master": {
+			desiredState: []ContainerObjectState{
+				{
 					Body:               "master-new-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
-				"worker": {
+				{
 					Body:               "worker-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixWorker,
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			expectedState: map[string]ContainerObjectState{
-				"master": {
+			expectedState: []ContainerObjectState{
+				{
 					Body:               "master-new-body",
 					ContainerName:      containerNameTest,
 					Key:                prefixMaster,
 					StorageAccountName: storageAccountNameTest,
 				},
-				"worker": {},
 			},
 		},
 	}
@@ -179,7 +174,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			if err != nil {
 				t.Errorf("expected '%v' got '%#v'", nil, err)
 			}
-			updateChange, ok := result.(map[string]ContainerObjectState)
+			updateChange, ok := result.([]ContainerObjectState)
 			if !ok {
 				t.Errorf("expected '%T', got '%T'", updateChange, result)
 			}

@@ -4,28 +4,37 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller"
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange interface{}) error {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	containerURL := cc.ContainerURL
+
 	containerObjectToUpdate, err := toContainerObjectState(updateChange)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	for key, containerObject := range containerObjectToUpdate {
+	for _, containerObject := range containerObjectToUpdate {
 		if containerObject.Key != "" {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", key))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", containerObject.Key))
 
-			_, err := r.blobClient.PutBlockBlob(ctx, key, containerObject.Body)
+			_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, containerURL)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created container object %#q", key))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created container object %#q", containerObject.Key))
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create container object %#q", key))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create container object %#q", containerObject.Key))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "container object already exists")
 		}
 	}
@@ -52,32 +61,27 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 }
 
 func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
-	currentContainerObject, err := toContainerObjectState(currentState)
+	currentContainerObjects, err := toContainerObjectState(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	desiredContainerObject, err := toContainerObjectState(desiredState)
+	desiredContainerObjects, err := toContainerObjectState(desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the container objects should be updated")
 
-	updateState := map[string]ContainerObjectState{}
+	updateState := []ContainerObjectState{}
 
-	for key, containerObject := range desiredContainerObject {
-		if _, ok := currentContainerObject[key]; !ok {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object '%s' should not be updated", key))
-			updateState[key] = ContainerObjectState{}
-		}
-
-		currentObject := currentContainerObject[key]
-		if currentObject.Body != "" && containerObject.Body != currentObject.Body {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", key))
-			updateState[key] = containerObject
-		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", key))
-			updateState[key] = ContainerObjectState{}
+	for _, desiredContainerObject := range desiredContainerObjects {
+		for _, currentContainerObject := range currentContainerObjects {
+			if currentContainerObject.Key == desiredContainerObject.Key && currentContainerObject.Body == desiredContainerObject.Body {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", currentContainerObject.Key))
+			} else if currentContainerObject.Key == desiredContainerObject.Key && currentContainerObject.Body != desiredContainerObject.Body {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", currentContainerObject.Key))
+				updateState = append(updateState, desiredContainerObject)
+			}
 		}
 	}
 

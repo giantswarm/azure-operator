@@ -2,12 +2,9 @@ package blobclient
 
 import (
 	"context"
-	"fmt"
 	"io/ioutil"
-	"net/url"
 	"strings"
 
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
 )
@@ -17,69 +14,8 @@ const (
 	maxRetriesRequests    = 3
 )
 
-type Config struct {
-	ContainerName          string
-	GroupNameFunc          func(v interface{}) (string, error)
-	StorageAccountNameFunc func(v interface{}) (string, error)
-	StorageAccountsClient  *storage.AccountsClient
-}
-
-type BlobClient struct {
-	containerName         string
-	groupName             string
-	storageAccountName    string
-	storageAccountsClient *storage.AccountsClient
-
-	// containerURL is configured separately from the default
-	// parameters.
-	containerURL azblob.ContainerURL
-}
-
-func New(config Config) (BlobClient, error) {
-	if config.StorageAccountsClient == nil {
-		return BlobClient{}, microerror.Maskf(invalidConfigError, "%T.StorageAccountsClient must not be empty", config)
-	}
-
-	blobClient := BlobClient{
-		storageAccountsClient: config.StorageAccountsClient,
-	}
-
-	return blobClient, nil
-}
-
-func (c *BlobClient) Boot(ctx context.Context, containerName, groupName, storageAccountName string) error {
-	var containerURL azblob.ContainerURL
-
-	c.containerName = containerName
-	c.groupName = groupName
-	c.storageAccountName = storageAccountName
-
-	key, err := c.getAccountPrimaryKey(ctx)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	sc, err := azblob.NewSharedKeyCredential(storageAccountName, key)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	p := azblob.NewPipeline(sc, azblob.PipelineOptions{})
-	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", storageAccountName))
-	serviceURL := azblob.NewServiceURL(*u, p)
-	containerURL = serviceURL.NewContainerURL(containerName)
-	_, err = containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	c.containerURL = containerURL
-
-	return nil
-}
-
-func (c *BlobClient) BlobExists(ctx context.Context, blobName string) (bool, error) {
-	blobURL := c.containerURL.NewBlockBlobURL(blobName)
+func BlobExists(ctx context.Context, blobName string, containerURL azblob.ContainerURL) (bool, error) {
+	blobURL := containerURL.NewBlockBlobURL(blobName)
 
 	_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
 	if IsBlobNotFound(err) {
@@ -91,8 +27,8 @@ func (c *BlobClient) BlobExists(ctx context.Context, blobName string) (bool, err
 	return true, nil
 }
 
-func (c *BlobClient) ContainerExists(ctx context.Context) (bool, error) {
-	_, err := c.containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
+func ContainerExists(ctx context.Context, containerURL azblob.ContainerURL) (bool, error) {
+	_, err := containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
 	if IsContainerNotFound(err) {
 		return false, nil
 	} else if err != nil {
@@ -102,8 +38,8 @@ func (c *BlobClient) ContainerExists(ctx context.Context) (bool, error) {
 	return true, nil
 }
 
-func (c *BlobClient) PutBlockBlob(ctx context.Context, blobName string, payload string) (azblob.BlockBlobURL, error) {
-	blob := c.containerURL.NewBlockBlobURL(blobName)
+func PutBlockBlob(ctx context.Context, blobName string, payload string, containerURL azblob.ContainerURL) (azblob.BlockBlobURL, error) {
+	blob := containerURL.NewBlockBlobURL(blobName)
 
 	_, err := blob.Upload(
 		ctx,
@@ -118,8 +54,8 @@ func (c *BlobClient) PutBlockBlob(ctx context.Context, blobName string, payload 
 	return blob, err
 }
 
-func (c *BlobClient) GetBlockBlob(ctx context.Context, blobName string) ([]byte, error) {
-	blobURL := c.containerURL.NewBlockBlobURL(blobName)
+func GetBlockBlob(ctx context.Context, blobName string, containerURL azblob.ContainerURL) ([]byte, error) {
+	blobURL := containerURL.NewBlockBlobURL(blobName)
 
 	response, err := blobURL.Download(ctx, 0, azblob.CountToEnd, azblob.BlobAccessConditions{}, false)
 	if err != nil {
@@ -138,10 +74,10 @@ func (c *BlobClient) GetBlockBlob(ctx context.Context, blobName string) ([]byte,
 	return blobData, nil
 }
 
-func (c *BlobClient) ListBlobs(ctx context.Context) (*azblob.ListBlobsFlatSegmentResponse, error) {
+func ListBlobs(ctx context.Context, containerURL azblob.ContainerURL) (*azblob.ListBlobsFlatSegmentResponse, error) {
 	var listBlobs *azblob.ListBlobsFlatSegmentResponse
 
-	listBlobs, err := c.containerURL.ListBlobsFlatSegment(
+	listBlobs, err := containerURL.ListBlobsFlatSegment(
 		ctx,
 		azblob.Marker{},
 		azblob.ListBlobsSegmentOptions{
@@ -155,27 +91,4 @@ func (c *BlobClient) ListBlobs(ctx context.Context) (*azblob.ListBlobsFlatSegmen
 	}
 
 	return listBlobs, nil
-}
-
-func (c *BlobClient) StorageAccountExists(ctx context.Context, groupName, storageAccountName string) (bool, error) {
-	_, err := c.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
-	if IsStorageAccountNotFound(err) {
-		return false, nil
-	} else if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return true, nil
-}
-
-func (c *BlobClient) getAccountPrimaryKey(ctx context.Context) (string, error) {
-	keys, err := c.storageAccountsClient.ListKeys(ctx, c.groupName, c.storageAccountName)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	if len(*(keys.Keys)) == 0 {
-		return "", microerror.Maskf(executionFailedError, "storage account key's list is empty")
-	}
-
-	return *(((*keys.Keys)[0]).Value), nil
 }
