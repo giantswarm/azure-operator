@@ -72,7 +72,7 @@ func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, 
 		return microerror.Mask(err)
 	}
 
-	cc.ContainerURL = containerURL
+	cc.ContainerURL = &containerURL
 
 	return nil
 }

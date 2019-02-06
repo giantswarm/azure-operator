@@ -3,6 +3,7 @@ package controllercontext
 import (
 	"context"
 
+	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -19,6 +20,7 @@ type Context struct {
 	AzureClientSet      *client.AzureClientSet
 	AzureNetwork        *network.Subnets
 	CloudConfig         *cloudconfig.CloudConfig
+	ContainerURL        *azblob.ContainerURL
 	EtcdLBBackendPoolID string
 	MasterSubnetID      string
 	WorkerSubnetID      string
