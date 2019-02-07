@@ -77,17 +77,6 @@ func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, 
 	return nil
 }
 
-func (r *Resource) storageAccountExists(ctx context.Context, groupName, storageAccountName string) (bool, error) {
-	_, err := r.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
-	if IsStorageAccountNotFound(err) {
-		return false, nil
-	} else if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return true, nil
-}
-
 func (r *Resource) getAccountPrimaryKey(ctx context.Context, groupName, storageAccountName string) (string, error) {
 	keys, err := r.storageAccountsClient.ListKeys(ctx, groupName, storageAccountName)
 	if err != nil {
@@ -98,4 +87,15 @@ func (r *Resource) getAccountPrimaryKey(ctx context.Context, groupName, storageA
 	}
 
 	return *(((*keys.Keys)[0]).Value), nil
+}
+
+func (r *Resource) storageAccountExists(ctx context.Context, groupName, storageAccountName string) (bool, error) {
+	_, err := r.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
+	if IsStorageAccountNotFound(err) {
+		return false, nil
+	} else if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	return true, nil
 }
