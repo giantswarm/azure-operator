@@ -22,19 +22,14 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 	}
 
 	for _, containerObject := range containerObjectToCreate {
-		if containerObject.Key != "" {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", containerObject.Key))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", containerObject.Key))
 
-			_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, cc.ContainerURL)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created container object %#q", containerObject.Key))
-		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create container object %#q", containerObject.Key))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "container object already exists")
+		_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, cc.ContainerURL)
+		if err != nil {
+			return microerror.Mask(err)
 		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created container object %#q", containerObject.Key))
 	}
 
 	return nil

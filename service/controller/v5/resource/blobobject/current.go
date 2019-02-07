@@ -25,6 +25,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	if cc.ContainerURL == nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "containerurl resource is not ready")
 		resourcecanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil, nil
 	}
 

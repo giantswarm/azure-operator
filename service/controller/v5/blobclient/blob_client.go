@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	maxRetriesRequests    = 3
+	maxRetriesRequests = 3
 )
 
 func BlobExists(ctx context.Context, blobName string, containerURL *azblob.ContainerURL) (bool, error) {
@@ -49,8 +49,11 @@ func PutBlockBlob(ctx context.Context, blobName string, payload string, containe
 		azblob.Metadata{},
 		azblob.BlobAccessConditions{},
 	)
+	if err != nil {
+		return azblob.BlockBlobURL{}, microerror.Mask(err)
+	}
 
-	return blob, err
+	return blob, nil
 }
 
 func GetBlockBlob(ctx context.Context, blobName string, containerURL *azblob.ContainerURL) ([]byte, error) {
