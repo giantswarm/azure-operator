@@ -7324,6 +7324,14 @@ func (p *PullRequest) GetPatchURL() string {
 	return *p.PatchURL
 }
 
+// GetReviewComments returns the ReviewComments field if it's non-nil, zero value otherwise.
+func (p *PullRequest) GetReviewComments() int {
+	if p == nil || p.ReviewComments == nil {
+		return 0
+	}
+	return *p.ReviewComments
+}
+
 // GetReviewCommentsURL returns the ReviewCommentsURL field if it's non-nil, zero value otherwise.
 func (p *PullRequest) GetReviewCommentsURL() string {
 	if p == nil || p.ReviewCommentsURL == nil {
@@ -10386,6 +10394,22 @@ func (s *Source) GetID() int64 {
 		return 0
 	}
 	return *s.ID
+}
+
+// GetIssue returns the Issue field.
+func (s *Source) GetIssue() *Issue {
+	if s == nil {
+		return nil
+	}
+	return s.Issue
+}
+
+// GetType returns the Type field if it's non-nil, zero value otherwise.
+func (s *Source) GetType() string {
+	if s == nil || s.Type == nil {
+		return ""
+	}
+	return *s.Type
 }
 
 // GetURL returns the URL field if it's non-nil, zero value otherwise.
