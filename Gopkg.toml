@@ -35,6 +35,10 @@ required = [
   version = "v21.3.0"
 
 [[constraint]]
+  name = "github.com/Azure/azure-storage-blob-go"
+  version = "0.5.0"
+
+[[constraint]]
   branch = "master"
   name = "github.com/docker/distribution"
 
