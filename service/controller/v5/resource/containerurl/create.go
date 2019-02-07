@@ -13,6 +13,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding storage account")
 
 	containerName := key.BlobContainerName()
 	groupName := key.ClusterID(customObject)
@@ -48,6 +49,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	primaryKey := *(((*keys.Keys)[0]).Value)
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account")
 	err = r.addContainerURLToContext(ctx, containerName, groupName, storageAccountName, primaryKey)
 	if err != nil {
 		return microerror.Mask(err)
