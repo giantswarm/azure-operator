@@ -31,7 +31,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.addContainerURLToContext(ctx, containerName, groupName, storageAccountName)
-	if err != nil {
+	if IsStorageAccountNotProvisioned(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "storage account not provisioned")
+		resourcecanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+		return nil
+
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
