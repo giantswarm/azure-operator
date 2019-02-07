@@ -49,3 +49,21 @@ func toContainerObjectState(v interface{}) ([]ContainerObjectState, error) {
 
 	return containerObjectState, nil
 }
+
+func objectInSliceByKey(obj ContainerObjectState, list []ContainerObjectState) bool {
+	for _, item := range list {
+		if obj.Key == item.Key {
+			return true
+		}
+	}
+	return false
+}
+
+func objectInSliceByKeyAndBody(obj ContainerObjectState, list []ContainerObjectState) bool {
+	for _, item := range list {
+		if obj.Key == item.Key && obj.Body == item.Body {
+			return true
+		}
+	}
+	return false
+}

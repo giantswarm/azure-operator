@@ -75,13 +75,11 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 	updateState := []ContainerObjectState{}
 
 	for _, desiredContainerObject := range desiredContainerObjects {
-		for _, currentContainerObject := range currentContainerObjects {
-			if currentContainerObject.Key == desiredContainerObject.Key && currentContainerObject.Body == desiredContainerObject.Body {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", currentContainerObject.Key))
-			} else if currentContainerObject.Key == desiredContainerObject.Key && currentContainerObject.Body != desiredContainerObject.Body {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", currentContainerObject.Key))
-				updateState = append(updateState, desiredContainerObject)
-			}
+		if objectInSliceByKeyAndBody(desiredContainerObject, currentContainerObjects) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", desiredContainerObject.Key))
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", desiredContainerObject.Key))
+			updateState = append(updateState, desiredContainerObject)
 		}
 	}
 

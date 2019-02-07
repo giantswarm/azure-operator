@@ -53,7 +53,14 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 					StorageAccountName: storageAccountNameTest,
 				},
 			},
-			expectedState: []ContainerObjectState{},
+			expectedState: []ContainerObjectState{
+				{
+					Body:               "master-body",
+					ContainerName:      containerNameTest,
+					Key:                prefixMaster,
+					StorageAccountName: storageAccountNameTest,
+				},
+			},
 		},
 		{
 			description: "current state matches desired state, empty update change",

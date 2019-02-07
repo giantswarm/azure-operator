@@ -57,20 +57,11 @@ func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desir
 	createState := []ContainerObjectState{}
 
 	for _, desiredContainerObject := range desiredContainerObjects {
-		for _, currentContainerObject := range currentContainerObjects {
-			if currentContainerObject.Key == desiredContainerObject.Key {
-				// The desired object exists in the current state of the system, so we do
-				// not want to create it. We do track it using an empty object reference
-				// though, in order to get some more useful logging in ApplyCreateChange.
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be created", currentContainerObject.Key))
-				createState = append(createState, ContainerObjectState{})
-				break
-			} else {
-				// The desired object does not exist in the current state of the system,
-				// so we want to create it.
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be created", currentContainerObject.Key))
-				createState = append(createState, currentContainerObject)
-			}
+		if objectInSliceByKey(desiredContainerObject, currentContainerObjects) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be created", desiredContainerObject.Key))
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be created", desiredContainerObject.Key))
+			createState = append(createState, desiredContainerObject)
 		}
 	}
 
