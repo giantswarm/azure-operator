@@ -177,7 +177,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-
 	}
 
 	var deploymentResource controller.Resource
