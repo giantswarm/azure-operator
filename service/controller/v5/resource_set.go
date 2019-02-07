@@ -169,15 +169,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var containerURLResource controller.Resource
 	{
-		azureClients, err := client.NewAzureClientSet(config.HostAzureClientSetConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		storageAccountsClient := azureClients.StorageAccountsClient
-
 		c := containerurl.Config{
-			Logger:                config.Logger,
-			StorageAccountsClient: storageAccountsClient,
+			Logger: config.Logger,
 		}
 
 		containerURLResource, err = containerurl.New(c)

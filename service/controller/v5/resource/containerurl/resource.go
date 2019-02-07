@@ -18,26 +18,20 @@ const (
 )
 
 type Config struct {
-	Logger                micrologger.Logger
-	StorageAccountsClient *storage.AccountsClient
+	Logger micrologger.Logger
 }
 
 type Resource struct {
-	logger                micrologger.Logger
-	storageAccountsClient *storage.AccountsClient
+	logger micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.StorageAccountsClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.StorageAccountsClient must not be empty", config)
-	}
 
 	newResource := &Resource{
-		logger:                config.Logger,
-		storageAccountsClient: config.StorageAccountsClient,
+		logger: config.Logger,
 	}
 
 	return newResource, nil
@@ -47,18 +41,15 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, groupName, storageAccountName string) error {
+func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, groupName, storageAccountName, primaryKey string) error {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "set containerurl to context")
+
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	key, err := r.getAccountPrimaryKey(ctx, groupName, storageAccountName)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	sc, err := azblob.NewSharedKeyCredential(storageAccountName, key)
+	sc, err := azblob.NewSharedKeyCredential(storageAccountName, primaryKey)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -72,31 +63,16 @@ func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, 
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "setting containerurl to context")
 	cc.ContainerURL = &containerURL
 
 	return nil
 }
 
-func (r *Resource) getAccountPrimaryKey(ctx context.Context, groupName, storageAccountName string) (string, error) {
-	keys, err := r.storageAccountsClient.ListKeys(ctx, groupName, storageAccountName)
+func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
+	sc, err := controllercontext.FromContext(ctx)
 	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	if len(*(keys.Keys)) == 0 {
-		return "", microerror.Maskf(executionFailedError, "storage account key's list is empty")
+		return nil, microerror.Mask(err)
 	}
 
-	return *(((*keys.Keys)[0]).Value), nil
-}
-
-func (r *Resource) storageAccountExists(ctx context.Context, groupName, storageAccountName string) (bool, error) {
-	_, err := r.storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
-	if IsStorageAccountNotFound(err) {
-		return false, nil
-	} else if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return true, nil
+	return sc.AzureClientSet.StorageAccountsClient, nil
 }
