@@ -72,6 +72,7 @@ func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, 
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "setting containerurl to context")
 	cc.ContainerURL = &containerURL
 
 	return nil
