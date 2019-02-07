@@ -41,7 +41,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	if !containerExists {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find blob object's container")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource for custom object")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil, nil
 	} else if err != nil {
 		return nil, microerror.Mask(err)

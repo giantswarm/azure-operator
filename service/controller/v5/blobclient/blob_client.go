@@ -10,7 +10,6 @@ import (
 )
 
 const (
-	resourceNotFoundError = "NotFound"
 	maxRetriesRequests    = 3
 )
 

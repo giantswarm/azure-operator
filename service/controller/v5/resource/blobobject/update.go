@@ -16,8 +16,6 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 		return microerror.Mask(err)
 	}
 
-	containerURL := cc.ContainerURL
-
 	containerObjectToUpdate, err := toContainerObjectState(updateChange)
 	if err != nil {
 		return microerror.Mask(err)
@@ -27,7 +25,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 		if containerObject.Key != "" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating container object %#q", containerObject.Key))
 
-			_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, containerURL)
+			_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, cc.ContainerURL)
 			if err != nil {
 				return microerror.Mask(err)
 			}
