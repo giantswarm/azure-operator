@@ -62,7 +62,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	oldSpec := *customObject.Spec.DeepCopy()
 
-	if customObject.Spec.Azure.CredentialSecret.Name != "" {
+	if customObject.Spec.Azure.CredentialSecret.Name == "" {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "CR is missing credential, setting the default")
 
 		customObject.Spec.Azure.CredentialSecret.Namespace = credentialSecretDefaultNamespace
