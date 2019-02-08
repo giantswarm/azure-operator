@@ -2,15 +2,19 @@ package blobclient
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"strings"
+	"time"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
 )
 
 const (
-	maxRetriesRequests = 3
+	blobFormatString    = `https://%s.blob.core.windows.net`
+	blobSASValidityTime = 4320
+	maxRetriesRequests  = 3
 )
 
 func BlobExists(ctx context.Context, blobName string, containerURL *azblob.ContainerURL) (bool, error) {
@@ -74,6 +78,33 @@ func GetBlockBlob(ctx context.Context, blobName string, containerURL *azblob.Con
 	}
 
 	return blobData, nil
+}
+
+func GetBlobURL(ctx context.Context, blobName, containerName, storageAccountName, primaryKey string, containerURL *azblob.ContainerURL) (string, error) {
+
+	sharedKeyCredential, err := azblob.NewSharedKeyCredential(storageAccountName, primaryKey)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	// Set the desired SAS signature values and sign them
+	//with the shared key credentials to get the SAS query parameters.
+	sasQueryParams, err := azblob.BlobSASSignatureValues{
+		BlobName:      blobName,
+		ContainerName: containerName,
+		ExpiryTime:    time.Now().UTC().Add(blobSASValidityTime * time.Hour),
+		// give readonly access
+		Permissions: azblob.BlobSASPermissions{Add: false, Read: true, Write: false}.String(),
+		Protocol:    azblob.SASProtocolHTTPS,
+	}.NewSASQueryParameters(sharedKeyCredential)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	blobURL := fmt.Sprintf("%s/%s/%s?%s", fmt.Sprintf(blobFormatString, storageAccountName),
+		containerName, blobName, sasQueryParams.Encode())
+
+	return blobURL, nil
 }
 
 func ListBlobs(ctx context.Context, containerURL *azblob.ContainerURL) (*azblob.ListBlobsFlatSegmentResponse, error) {

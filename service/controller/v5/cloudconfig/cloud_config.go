@@ -1,15 +1,13 @@
 package cloudconfig
 
 import (
-	"bytes"
-	"compress/gzip"
-	"encoding/base64"
+	"crypto/aes"
+	"encoding/hex"
 	"fmt"
-	"io"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_7_4"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_0_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -18,6 +16,12 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	"github.com/giantswarm/azure-operator/service/network"
+)
+
+const (
+	FileOwnerUser  = "root"
+	FileOwnerGroup = "root"
+	FilePermission = 0700
 )
 
 type Config struct {
@@ -29,6 +33,7 @@ type Config struct {
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig  client.AzureClientSetConfig
 	AzureNetwork network.Subnets
+	IgnitionPath string
 	OIDC         setting.OIDC
 	SSOPublicKey string
 }
@@ -41,6 +46,9 @@ type CloudConfig struct {
 	azure        setting.Azure
 	azureConfig  client.AzureClientSetConfig
 	azureNetwork network.Subnets
+	// encrypter is initialized in runtime
+	encrypter    Encrypter
+	ignitionPath string
 	OIDC         setting.OIDC
 	ssoPublicKey string
 }
@@ -48,6 +56,9 @@ type CloudConfig struct {
 func New(config Config) (*CloudConfig, error) {
 	if config.CertsSearcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
+	}
+	if config.IgnitionPath == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.IgnitionPath must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -63,6 +74,11 @@ func New(config Config) (*CloudConfig, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 
+	encrypter, err := NewEncrypter()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	c := &CloudConfig{
 		certsSearcher:      config.CertsSearcher,
 		logger:             config.Logger,
@@ -71,11 +87,23 @@ func New(config Config) (*CloudConfig, error) {
 		azure:        config.Azure,
 		azureConfig:  config.AzureConfig,
 		azureNetwork: config.AzureNetwork,
+		encrypter:    encrypter,
+		ignitionPath: config.IgnitionPath,
 		OIDC:         config.OIDC,
 		ssoPublicKey: config.SSOPublicKey,
 	}
 
 	return c, nil
+}
+
+// GetEncryptionKey returns hex of the key, which is used for certificates encryption.
+func (c CloudConfig) GetEncryptionKey() string {
+	return hex.EncodeToString(c.encrypter.key[aes.BlockSize:])
+}
+
+// GetInitialVector returns hex of the initial vector, which is used in certificate encryption.
+func (c CloudConfig) GetInitialVector() string {
+	return hex.EncodeToString(c.encrypter.key[:aes.BlockSize])
 }
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
@@ -115,15 +143,14 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 	customObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
 	customObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
 
-	params := k8scloudconfig.Params{
-		APIServerEncryptionKey:          apiserverEncryptionKey,
-		Cluster:                         customObject.Spec.Cluster,
-		DisableCalico:                   true,
-		DisableCoreDNS:                  true,
-		DisableIngressController:        true,
-		DisableIngressControllerService: true,
-		EtcdPort:                        customObject.Spec.Cluster.Etcd.Port,
-		Hyperkube: k8scloudconfig.Hyperkube{
+	var params k8scloudconfig.Params
+	{
+		params = k8scloudconfig.DefaultParams()
+		params.APIServerEncryptionKey = apiserverEncryptionKey
+		params.Cluster = customObject.Spec.Cluster
+		params.DisableCalico = true
+		params.DisableIngressControllerService = true
+		params.Hyperkube = k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{
 					HyperkubePodHostExtraMounts: []k8scloudconfig.HyperkubePodHostMount{
@@ -167,18 +194,25 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 					},
 				},
 			},
-		},
-		Extension: &masterExtension{
+		}
+
+		params.Extension = &masterExtension{
 			Azure:         c.azure,
 			AzureConfig:   c.azureConfig,
 			CalicoCIDR:    c.azureNetwork.Calico.String(),
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
-		},
-		ExtraManifests: []string{
+			Encrypter:     c.encrypter,
+		}
+		params.ExtraManifests = []string{
 			"calico-azure.yaml",
-		},
-		SSOPublicKey: c.ssoPublicKey,
+		}
+		params.SSOPublicKey = c.ssoPublicKey
+	}
+	ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignitionPath)
+	params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
+	if err != nil {
+		return "", microerror.Mask(err)
 	}
 
 	return newCloudConfig(k8scloudconfig.MasterTemplate, params)
@@ -187,6 +221,8 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+	var err error
+
 	// NOTE in Azure we disable Calico right now. This is due to a transitioning
 	// phase. The k8scloudconfig templates require certain calico valus to be set
 	// nonetheless. So we set them here. Later when the Calico setup is
@@ -194,9 +230,12 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 	customObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
 	customObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
 
-	params := k8scloudconfig.Params{
-		Cluster: customObject.Spec.Cluster,
-		Hyperkube: k8scloudconfig.Hyperkube{
+	var params k8scloudconfig.Params
+	{
+		params = k8scloudconfig.DefaultParams()
+
+		params.Cluster = customObject.Spec.Cluster
+		params.Hyperkube = k8scloudconfig.Hyperkube{
 			Kubelet: k8scloudconfig.HyperkubeKubelet{
 				Docker: k8scloudconfig.HyperkubeDocker{
 					RunExtraArgs: []string{
@@ -207,17 +246,46 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 					},
 				},
 			},
-		},
-		Extension: &workerExtension{
+		}
+		params.Extension = &workerExtension{
 			Azure:         c.azure,
 			AzureConfig:   c.azureConfig,
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
-		},
-		SSOPublicKey: c.ssoPublicKey,
+			Encrypter:     c.encrypter,
+		}
+		params.SSOPublicKey = c.ssoPublicKey
+
+		ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignitionPath)
+		params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
+}
+
+// certFiles returns list of certificates paths for particular role.
+// It is used for rendering cert-decrypter systemd unit.
+func (c CloudConfig) certFiles(customObject providerv1alpha1.AzureConfig, role string) (certs.Files, error) {
+	var certFiles certs.Files
+
+	clusterCerts, err := c.certsSearcher.SearchCluster(key.ClusterID(customObject))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	switch role {
+	case key.PrefixMaster():
+		certFiles = certs.NewFilesClusterMaster(clusterCerts)
+	case key.PrefixWorker():
+		certFiles = certs.NewFilesClusterWorker(clusterCerts)
+	default:
+		return nil, microerror.Maskf(err, "unknown role %#q", role)
+	}
+
+	return certFiles, nil
 }
 
 func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
@@ -242,43 +310,5 @@ func newCloudConfig(template string, params k8scloudconfig.Params) (string, erro
 		return "", microerror.Mask(err)
 	}
 
-	compressed, err := gzipBase64(cloudConfig.String())
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	// cloud-config is compressed so we fit the tight 85kB limit of
-	// customData parameter.
-	//
-	// "Custom data in OSProfile must be in Base64 encoding and with
-	// a maximum length of 87380 characters."
-	//
-	//  87380 / 1024 = 85
-	customData := fmt.Sprintf(`#!/bin/bash
-D="/root/cloudinit"
-mkdir -m 700 -p ${D}
-echo -n "%s" | base64 -d | gzip -d -c > ${D}/cc
-coreos-cloudinit --from-file=${D}/cc`, compressed)
-
-	customData = base64.StdEncoding.EncodeToString([]byte(customData))
-	return customData, nil
-}
-
-func gzipBase64(s string) (string, error) {
-	buf := new(bytes.Buffer)
-
-	w, err := gzip.NewWriterLevel(buf, gzip.BestCompression)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	_, err = io.WriteString(w, s)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	err = w.Close()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return base64.StdEncoding.EncodeToString(buf.Bytes()), nil
+	return cloudConfig.String(), nil
 }

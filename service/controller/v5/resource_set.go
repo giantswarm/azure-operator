@@ -47,6 +47,7 @@ type ResourceSetConfig struct {
 
 	Azure                    setting.Azure
 	HostAzureClientSetConfig client.AzureClientSetConfig
+	IgnitionPath             string
 	InstallationName         string
 	ProjectName              string
 	OIDC                     setting.OIDC

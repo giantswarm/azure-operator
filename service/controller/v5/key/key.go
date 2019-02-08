@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/service/controller/v5/templates/cloudconfig"
 	"github.com/giantswarm/microerror"
 )
 
@@ -24,6 +25,8 @@ const (
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
+	prefixMaster              = "master"
+	prefixWorker              = "worker"
 	virtualNetworkSuffix      = "VirtualNetwork"
 	vpnGatewaySubnet          = "GatewaySubnet"
 	vpnGatewaySuffix          = "VPNGateway"
@@ -89,6 +92,12 @@ func BlobContainerName() string {
 
 func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
+}
+
+func CloudConfigSmallTemplates() []string {
+	return []string{
+		cloudconfig.Small,
+	}
 }
 
 func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
@@ -262,6 +271,14 @@ func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master", ClusterID(customObject))
+}
+
+func PrefixMaster() string {
+	return prefixMaster
+}
+
+func PrefixWorker() string {
+	return prefixWorker
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.

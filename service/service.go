@@ -145,6 +145,7 @@ func New(config Config) (*Service, error) {
 
 			Azure:            azure,
 			AzureConfig:      azureConfig,
+			IgnitionPath:     config.Viper.GetString(config.Flag.Service.Guest.Ignition.Path),
 			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,

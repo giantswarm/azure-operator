@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_7_4"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_0_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -17,6 +17,7 @@ type masterExtension struct {
 	CalicoCIDR    string
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig
+	Encrypter     Encrypter
 }
 
 // Files allows files to be injected into the master cloudconfig.
@@ -59,6 +60,12 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 
 // Units allows systemd units to be injected into the master cloudconfig.
 func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
+	// Unit for decrypting certificates.
+	certDecrypterUnit, err := me.renderCertificateDecrypterUnit()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	// Unit to format etcd disk.
 	formatEtcdUnit, err := me.renderEtcdDiskFormatUnit()
 	if err != nil {
@@ -90,6 +97,7 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	}
 
 	units := []k8scloudconfig.UnitAsset{
+		certDecrypterUnit,
 		formatEtcdUnit,
 		mountEtcdUnit,
 		formatDockerUnit,
@@ -122,7 +130,7 @@ func (me *masterExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 		return nil, microerror.Mask(err)
 	}
 
-	assets, err := renderCertificatesFiles(certs.NewFilesClusterMaster(clusterCerts))
+	assets, err := renderCertificatesFiles(me.Encrypter, certs.NewFilesClusterMaster(clusterCerts))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -159,6 +167,22 @@ func (me *masterExtension) renderIngressLBFile() (k8scloudconfig.FileAsset, erro
 	}
 
 	return asset, nil
+}
+
+func (me *masterExtension) renderCertificateDecrypterUnit() (k8scloudconfig.UnitAsset, error) {
+	clusterCerts, err := me.CertsSearcher.SearchCluster(key.ClusterID(me.CustomObject))
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+ 	params := newCertificateDecrypterUnitParams(certs.NewFilesClusterMaster(clusterCerts))
+
+ 	asset, err := renderCertificateDecrypterUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+ 	return asset, nil
 }
 
 func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {

@@ -1,8 +1,10 @@
 package cloudconfig
 
 import (
+	"encoding/base64"
+
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_7_4"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_0_0"
 	"github.com/giantswarm/microerror"
 )
 
@@ -10,11 +12,14 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: calicoAzureFileTemplate,
 		Path:         calicoAzureFileName,
-		Owner:        calicoAzureFileOwner,
-		Permissions:  calicoAzureFilePermission,
+		Owner: k8scloudconfig.Owner{
+			User:  FileOwnerUser,
+			Group: FileOwnerGroup,
+		},
+		Permissions: calicoAzureFilePermission,
 	}
 
-	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	content, err := k8scloudconfig.RenderFileAssetContent(fileMeta.AssetContent, params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
@@ -27,29 +32,27 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 	return file, nil
 }
 
-func renderCertificatesFiles(certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
-	params := struct{}{}
-
-	var fileMetas []k8scloudconfig.FileMetadata
+func renderCertificatesFiles(encrypter Encrypter, certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
+	var certsMeta []k8scloudconfig.FileMetadata
 	for _, f := range certFiles {
 		m := k8scloudconfig.FileMetadata{
 			AssetContent: string(f.Data),
 			Path:         f.AbsolutePath,
-			Owner:        certFileOwner,
-			Permissions:  certFilePermission,
+			Owner: k8scloudconfig.Owner{
+				User:  FileOwnerUser,
+				Group: FileOwnerGroup,
+			},
+			Permissions: certFilePermission,
 		}
-		fileMetas = append(fileMetas, m)
+		certsMeta = append(certsMeta, m)
 	}
 
 	var files []k8scloudconfig.FileAsset
-	for _, m := range fileMetas {
-		content, err := k8scloudconfig.RenderAssetContent(m.AssetContent, params)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+	for _, cm := range certsMeta {
+		content := base64.StdEncoding.EncodeToString([]byte(cm.AssetContent))
 
 		f := k8scloudconfig.FileAsset{
-			Metadata: m,
+			Metadata: cm,
 			Content:  content,
 		}
 		files = append(files, f)
@@ -62,11 +65,14 @@ func renderCloudProviderConfFile(params cloudProviderConfFileParams) (k8scloudco
 	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: cloudProviderConfFileTemplate,
 		Path:         cloudProviderConfFileName,
-		Owner:        cloudProviderConfFileOwner,
-		Permissions:  cloudProviderConfFilePermission,
+		Owner: k8scloudconfig.Owner{
+			User:  FileOwnerUser,
+			Group: FileOwnerGroup,
+		},
+		Permissions: cloudProviderConfFilePermission,
 	}
 
-	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	content, err := k8scloudconfig.RenderFileAssetContent(fileMeta.AssetContent, params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
@@ -85,11 +91,14 @@ func renderDefaultStorageClassFile() (k8scloudconfig.FileAsset, error) {
 	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: defaultStorageClassFileTemplate,
 		Path:         defaultStorageClassFileName,
-		Owner:        defaultStorageClassFileOwner,
-		Permissions:  defaultStorageClassFilePermission,
+		Owner: k8scloudconfig.Owner{
+			User:  FileOwnerUser,
+			Group: FileOwnerGroup,
+		},
+		Permissions: defaultStorageClassFilePermission,
 	}
 
-	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	content, err := k8scloudconfig.RenderFileAssetContent(fileMeta.AssetContent, params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
@@ -106,11 +115,14 @@ func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, 
 	fileMeta := k8scloudconfig.FileMetadata{
 		AssetContent: ingressLBFileTemplate,
 		Path:         ingressLBFileName,
-		Owner:        ingressLBFileOwner,
-		Permissions:  ingressLBFilePermission,
+		Owner: k8scloudconfig.Owner{
+			User:  FileOwnerUser,
+			Group: FileOwnerGroup,
+		},
+		Permissions: ingressLBFilePermission,
 	}
 
-	content, err := k8scloudconfig.RenderAssetContent(fileMeta.AssetContent, params)
+	content, err := k8scloudconfig.RenderFileAssetContent(fileMeta.AssetContent, params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
 	}
@@ -123,14 +135,33 @@ func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, 
 	return file, nil
 }
 
+func renderCertificateDecrypterUnit(params certificateDecrypterUnitParams) (k8scloudconfig.UnitAsset, error) {
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: certDecrypterUnitTemplate,
+		Name:         certDecrypterUnitName,
+		Enabled:      true,
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
+}
+
 func renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
 	params := struct{}{}
 
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: etcdMountUnitTemplate,
 		Name:         etcdMountUnitName,
-		Enable:       true,
-		Command:      "start",
+		Enabled:      true,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
@@ -150,8 +181,7 @@ func renderEtcdDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, erro
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: etcdDiskFormatUnitTemplate,
 		Name:         etcdDiskFormatUnitName,
-		Enable:       true,
-		Command:      "start",
+		Enabled:      true,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
@@ -173,8 +203,7 @@ func renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: dockerMountUnitTemplate,
 		Name:         dockerMountUnitName,
-		Enable:       true,
-		Command:      "start",
+		Enabled:      true,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
@@ -194,8 +223,7 @@ func renderDockerDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, er
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: dockerDiskFormatUnitTemplate,
 		Name:         dockerDiskFormatUnitName,
-		Enable:       true,
-		Command:      "start",
+		Enabled:      true,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
@@ -217,8 +245,7 @@ func renderIngressLBUnit() (k8scloudconfig.UnitAsset, error) {
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: ingressLBUnitTemplate,
 		Name:         ingressLBUnitName,
-		Enable:       false,
-		Command:      "start",
+		Enabled:      false,
 	}
 
 	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)

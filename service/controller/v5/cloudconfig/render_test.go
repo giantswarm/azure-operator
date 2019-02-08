@@ -7,6 +7,11 @@ import (
 )
 
 func Test_render(t *testing.T) {
+	encrypter, err := NewEncrypter()
+	if err != nil {
+		t.Errorf("expected err = nil, got %v", err)
+	}
+	
 	testCases := []struct {
 		Name string
 		Fn   func() error
@@ -18,7 +23,7 @@ func Test_render(t *testing.T) {
 		{
 			Name: "renderCalicoAzureFile",
 			Fn: func() error {
-				_, err := renderCertificatesFiles([]certs.File{
+				_, err := renderCertificatesFiles(encrypter, []certs.File{
 					{AbsolutePath: "/a/b/c.crt", Data: []byte("test cert data c")},
 					{AbsolutePath: "/c/b/a.crt", Data: []byte("test cert data a")},
 				})
