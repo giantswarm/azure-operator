@@ -396,11 +396,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f7ae60209ba785a98a5b27ed43ec9778f74e6c7623b5ff3d86f900f66c86fac1"
+  digest = "1:79f54a2f18a165a7f4310ff5ec6ae87e5352e31a5ac2b0e84e8913ba22cfa841"
   name = "github.com/giantswarm/microerror"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3bc3cb1a36700aa4bbfcf6c335bc2ab92ad66d8d"
+  revision = "dc32fd459f94c7f9f938366135f6a19b3f9c63a9"
 
 [[projects]]
   branch = "master"
@@ -603,11 +603,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:0c319c6984a4ebc10318e02005e5244642a28ec5d3d9c636f41c99bb8405842f"
+  digest = "1:6941a7d528be72060a099355714022b2d5a21e8fbd48f3e5c052ee8c93d7784f"
   name = "github.com/google/go-github"
   packages = ["github"]
   pruneopts = "UT"
-  revision = "94cd03c0c0b858a66ea286baedd59e66ef3f21dd"
+  revision = "fbfacb4e2ba6cc2c9ffb89ef30af7e9cc62c9bff"
 
 [[projects]]
   digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
@@ -977,7 +977,7 @@
     "trace",
   ]
   pruneopts = "UT"
-  revision = "d26f9f9a57f3fab6a695bec0d84433c2c50f8bbf"
+  revision = "65e2d4e15006aab9813ff8769e768bbf4bb667a0"
 
 [[projects]]
   branch = "master"

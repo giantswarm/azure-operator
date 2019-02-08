@@ -15,7 +15,10 @@ const (
 	installationTagName = "GiantSwarmInstallation"
 	organizationTagName = "GiantSwarmOrganization"
 
-	blobContainerName         = "ignition"
+	blobContainerName = "ignition"
+	// cloudConfigVersion is used in blob object ignition name
+	cloudConfigVersion        = "v4.0.0"
+	storageAccountSuffix      = "gsstorageaccount"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
@@ -82,6 +85,10 @@ func ARMTemplateURI(version, resource, template string) string {
 
 func BlobContainerName() string {
 	return blobContainerName
+}
+
+func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
+	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
 }
 
 func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
@@ -267,7 +274,6 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
-// StorageAccountName returns name of the storage account for the ignition.
 func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	// In integration tests we use hyphens which are not allowed. We also
 	// need to keep the name globaly unique and within 24 character limit.
