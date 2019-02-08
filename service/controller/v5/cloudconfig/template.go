@@ -755,8 +755,8 @@ WantedBy=multi-user.target
 `
 )
 
- // Certificate decryption
- const (
+// Certificate decryption
+const (
 	certDecrypterUnitName     = "certificate-decrypter.service"
 	certDecrypterUnitTemplate = `[Unit]
 Description=Certificate Decrypter

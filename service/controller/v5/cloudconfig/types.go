@@ -69,15 +69,14 @@ type ingressLBFileParams struct {
 	ClusterDNSDomain string
 }
 
-
 func newCertificateDecrypterUnitParams(certFiles certs.Files) certificateDecrypterUnitParams {
 	var certsPaths []string
 
- 	for _, file := range certFiles {
+	for _, file := range certFiles {
 		certsPaths = append(certsPaths, file.AbsolutePath)
 	}
 
- 	return certificateDecrypterUnitParams{
+	return certificateDecrypterUnitParams{
 		CertsPaths: certsPaths,
 	}
 }

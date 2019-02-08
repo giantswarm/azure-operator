@@ -41,12 +41,12 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 
 // Units allows systemd units to be injected into the master cloudconfig.
 func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
-		// Unit for decrypting certificates.
-		certDecrypterUnit, err := we.renderCertificateDecrypterUnit()
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	
+	// Unit for decrypting certificates.
+	certDecrypterUnit, err := we.renderCertificateDecrypterUnit()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	// Unit to format docker disk.
 	formatDockerUnit, err := we.renderDockerDiskFormatUnit()
 	if err != nil {
@@ -87,7 +87,6 @@ func (we *workerExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 	return assets, nil
 }
 
-
 func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAsset, error) {
 	params := newCloudProviderConfFileParams(we.Azure, we.AzureConfig, we.CustomObject)
 
@@ -105,14 +104,14 @@ func (we *workerExtension) renderCertificateDecrypterUnit() (k8scloudconfig.Unit
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
- 	params := newCertificateDecrypterUnitParams(certs.NewFilesClusterWorker(clusterCerts))
+	params := newCertificateDecrypterUnitParams(certs.NewFilesClusterWorker(clusterCerts))
 
- 	asset, err := renderCertificateDecrypterUnit(params)
+	asset, err := renderCertificateDecrypterUnit(params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
- 	return asset, nil
+	return asset, nil
 }
 
 func (we *workerExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {

@@ -175,14 +175,14 @@ func (me *masterExtension) renderCertificateDecrypterUnit() (k8scloudconfig.Unit
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
- 	params := newCertificateDecrypterUnitParams(certs.NewFilesClusterMaster(clusterCerts))
+	params := newCertificateDecrypterUnitParams(certs.NewFilesClusterMaster(clusterCerts))
 
- 	asset, err := renderCertificateDecrypterUnit(params)
+	asset, err := renderCertificateDecrypterUnit(params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
- 	return asset, nil
+	return asset, nil
 }
 
 func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {

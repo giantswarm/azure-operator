@@ -11,7 +11,7 @@ func Test_render(t *testing.T) {
 	if err != nil {
 		t.Errorf("expected err = nil, got %v", err)
 	}
-	
+
 	testCases := []struct {
 		Name string
 		Fn   func() error
