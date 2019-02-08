@@ -62,7 +62,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		body, err := blobclient.GetBlockBlob(ctx, object.Name, containerURL)
 
 		if err != nil {
-			return output, microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 
 		containerObjectState := ContainerObjectState{
