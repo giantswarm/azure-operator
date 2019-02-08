@@ -89,7 +89,7 @@ func ListBlobs(ctx context.Context, containerURL *azblob.ContainerURL) (*azblob.
 		})
 
 	if err != nil {
-		return listBlobs, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
 	return listBlobs, nil
