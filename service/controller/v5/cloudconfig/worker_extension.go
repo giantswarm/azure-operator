@@ -16,7 +16,6 @@ type workerExtension struct {
 	AzureConfig   client.AzureClientSetConfig
 	CertsSearcher certs.Interface
 	CustomObject  providerv1alpha1.AzureConfig
-	Encrypter     Encrypter
 }
 
 // Files allows files to be injected into the master cloudconfig.
@@ -41,12 +40,6 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 
 // Units allows systemd units to be injected into the master cloudconfig.
 func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
-	// Unit for decrypting certificates.
-	certDecrypterUnit, err := we.renderCertificateDecrypterUnit()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	// Unit to format docker disk.
 	formatDockerUnit, err := we.renderDockerDiskFormatUnit()
 	if err != nil {
@@ -60,7 +53,6 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	}
 
 	units := []k8scloudconfig.UnitAsset{
-		certDecrypterUnit,
 		formatDockerUnit,
 		mountDockerUnit,
 	}
@@ -79,7 +71,7 @@ func (we *workerExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset
 		return nil, microerror.Mask(err)
 	}
 
-	assets, err := renderCertificatesFiles(we.Encrypter, certs.NewFilesClusterWorker(clusterCerts))
+	assets, err := renderCertificatesFiles(certs.NewFilesClusterWorker(clusterCerts))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -93,22 +85,6 @@ func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (we *workerExtension) renderCertificateDecrypterUnit() (k8scloudconfig.UnitAsset, error) {
-	clusterCerts, err := we.CertsSearcher.SearchCluster(key.ClusterID(we.CustomObject))
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	params := newCertificateDecrypterUnitParams(certs.NewFilesClusterWorker(clusterCerts))
-
-	asset, err := renderCertificateDecrypterUnit(params)
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
 	return asset, nil

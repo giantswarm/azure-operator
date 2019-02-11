@@ -1,8 +1,6 @@
 package cloudconfig
 
 import (
-	"crypto/aes"
-	"encoding/hex"
 	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -46,8 +44,6 @@ type CloudConfig struct {
 	azure        setting.Azure
 	azureConfig  client.AzureClientSetConfig
 	azureNetwork network.Subnets
-	// encrypter is initialized in runtime
-	encrypter    Encrypter
 	ignitionPath string
 	OIDC         setting.OIDC
 	ssoPublicKey string
@@ -74,11 +70,6 @@ func New(config Config) (*CloudConfig, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 
-	encrypter, err := NewEncrypter()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	c := &CloudConfig{
 		certsSearcher:      config.CertsSearcher,
 		logger:             config.Logger,
@@ -87,23 +78,12 @@ func New(config Config) (*CloudConfig, error) {
 		azure:        config.Azure,
 		azureConfig:  config.AzureConfig,
 		azureNetwork: config.AzureNetwork,
-		encrypter:    encrypter,
 		ignitionPath: config.IgnitionPath,
 		OIDC:         config.OIDC,
 		ssoPublicKey: config.SSOPublicKey,
 	}
 
 	return c, nil
-}
-
-// GetEncryptionKey returns hex of the key, which is used for certificates encryption.
-func (c CloudConfig) GetEncryptionKey() string {
-	return hex.EncodeToString(c.encrypter.key[aes.BlockSize:])
-}
-
-// GetInitialVector returns hex of the initial vector, which is used in certificate encryption.
-func (c CloudConfig) GetInitialVector() string {
-	return hex.EncodeToString(c.encrypter.key[:aes.BlockSize])
 }
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
@@ -202,7 +182,6 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			CalicoCIDR:    c.azureNetwork.Calico.String(),
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
-			Encrypter:     c.encrypter,
 		}
 		params.ExtraManifests = []string{
 			"calico-azure.yaml",
@@ -252,7 +231,6 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			AzureConfig:   c.azureConfig,
 			CertsSearcher: c.certsSearcher,
 			CustomObject:  customObject,
-			Encrypter:     c.encrypter,
 		}
 		params.SSOPublicKey = c.ssoPublicKey
 
@@ -264,28 +242,6 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
-}
-
-// certFiles returns list of certificates paths for particular role.
-// It is used for rendering cert-decrypter systemd unit.
-func (c CloudConfig) certFiles(customObject providerv1alpha1.AzureConfig, role string) (certs.Files, error) {
-	var certFiles certs.Files
-
-	clusterCerts, err := c.certsSearcher.SearchCluster(key.ClusterID(customObject))
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	switch role {
-	case key.PrefixMaster():
-		certFiles = certs.NewFilesClusterMaster(clusterCerts)
-	case key.PrefixWorker():
-		certFiles = certs.NewFilesClusterWorker(clusterCerts)
-	default:
-		return nil, microerror.Maskf(err, "unknown role %#q", role)
-	}
-
-	return certFiles, nil
 }
 
 func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {

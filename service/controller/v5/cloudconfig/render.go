@@ -32,7 +32,7 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 	return file, nil
 }
 
-func renderCertificatesFiles(encrypter Encrypter, certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
+func renderCertificatesFiles(certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
 	var certsMeta []k8scloudconfig.FileMetadata
 	for _, f := range certFiles {
 		m := k8scloudconfig.FileMetadata{
@@ -133,26 +133,6 @@ func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, 
 	}
 
 	return file, nil
-}
-
-func renderCertificateDecrypterUnit(params certificateDecrypterUnitParams) (k8scloudconfig.UnitAsset, error) {
-	unitMeta := k8scloudconfig.UnitMetadata{
-		AssetContent: certDecrypterUnitTemplate,
-		Name:         certDecrypterUnitName,
-		Enabled:      true,
-	}
-
-	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	asset := k8scloudconfig.UnitAsset{
-		Metadata: unitMeta,
-		Content:  content,
-	}
-
-	return asset, nil
 }
 
 func renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {

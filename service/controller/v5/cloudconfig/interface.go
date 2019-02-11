@@ -5,8 +5,6 @@ import (
 )
 
 type Interface interface {
-	GetEncryptionKey() string
-	GetInitialVector() string
 	NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error)
 	NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error)
 }

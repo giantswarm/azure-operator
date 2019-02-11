@@ -72,8 +72,6 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	storageAccountName := key.StorageAccountName(obj)
 	masterBlobName := key.BlobName(obj, key.PrefixMaster())
 	workerBlobName := key.BlobName(obj, key.PrefixWorker())
-	encryptionKey := cc.CloudConfig.GetEncryptionKey()
-	initialVector := cc.CloudConfig.GetInitialVector()
 
 	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
 	if err != nil {
@@ -96,9 +94,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	c := SmallCloudconfigConfig{
-		BlobURL:       masterBlobURL,
-		EncryptionKey: encryptionKey,
-		InitialVector: initialVector,
+		BlobURL: masterBlobURL,
 	}
 	masterCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
 	if err != nil {
@@ -112,9 +108,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	c = SmallCloudconfigConfig{
-		BlobURL:       workerBlobURL,
-		EncryptionKey: encryptionKey,
-		InitialVector: initialVector,
+		BlobURL: workerBlobURL,
 	}
 	workerCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
 	if err != nil {
