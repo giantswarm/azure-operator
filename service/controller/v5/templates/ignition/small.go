@@ -1,4 +1,4 @@
-package cloudconfig
+package ignition
 
 const Small = `---
 ignition:

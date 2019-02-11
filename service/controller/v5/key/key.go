@@ -7,7 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v5/templates/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v5/templates/ignition"
 	"github.com/giantswarm/microerror"
 )
 
@@ -96,7 +96,7 @@ func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 
 func CloudConfigSmallTemplates() []string {
 	return []string{
-		cloudconfig.Small,
+		ignition.Small,
 	}
 }
 
