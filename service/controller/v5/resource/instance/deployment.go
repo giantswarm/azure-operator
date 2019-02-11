@@ -3,13 +3,12 @@ package instance
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
@@ -33,15 +32,10 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	for _, key := range cloudConfigURLs {
-		blobExists, err := blobclient.BlobExists(ctx, key, cc.ContainerURL)
+		blobURL := cc.ContainerURL.NewBlockBlobURL(key)
+		_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
 		if err != nil {
 			return azureresource.Deployment{}, microerror.Mask(err)
-		}
-		if !blobExists {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("cloudconfig blob %#q not found", key))
-			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return azureresource.Deployment{}, nil
 		}
 	}
 
