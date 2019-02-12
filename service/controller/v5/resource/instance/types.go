@@ -31,6 +31,6 @@ func newNodeOSImageCoreOS() nodeOSImage {
 		Offer:     "CoreOS",
 		Publisher: "CoreOS",
 		SKU:       "Stable",
-		Version:   "1855.5.0",
+		Version:   "1967.5.0",
 	}
 }
