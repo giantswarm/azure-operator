@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_6_3"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_3_6_4"
 	"github.com/giantswarm/microerror"
 )
 
