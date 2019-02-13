@@ -101,8 +101,7 @@ func GetBlobURL(ctx context.Context, blobName, containerName, storageAccountName
 		return "", microerror.Mask(err)
 	}
 
-	blobURL := fmt.Sprintf("%s/%s/%s?%s", fmt.Sprintf(blobFormatString, storageAccountName),
-		containerName, blobName, sasQueryParams.Encode())
+	blobURL := fmt.Sprintf("https://%s.blob.core.windows.net/%s/%s?%s", storageAccountName, containerName, blobName, sasQueryParams.Encode())
 
 	return blobURL, nil
 }
