@@ -34,7 +34,6 @@ import (
 	"github.com/giantswarm/operatorkit/controller/resource/metricsresource"
 	"github.com/giantswarm/operatorkit/controller/resource/retryresource"
 	"github.com/giantswarm/randomkeys"
-	"github.com/giantswarm/tenantcluster"
 	"k8s.io/client-go/kubernetes"
 )
 
@@ -104,40 +103,40 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var tenantCluster tenantcluster.Interface
-	{
-		c := tenantcluster.Config{
-			CertsSearcher: certsSearcher,
-			Logger:        config.Logger,
-
-			CertID: certs.APICert,
-		}
-
-		tenantCluster, err = tenantcluster.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	/*
-		var statusResource controller.Resource
+		var tenantCluster tenantcluster.Interface
 		{
-			c := statusresource.ResourceConfig{
-				ClusterEndpointFunc:      key.ToClusterEndpoint,
-				ClusterIDFunc:            key.ToClusterID,
-				ClusterStatusFunc:        key.ToClusterStatus,
-				NodeCountFunc:            key.ToNodeCount,
-				Logger:                   config.Logger,
-				RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
-				TenantCluster:            tenantCluster,
-				VersionBundleVersionFunc: key.ToVersionBundleVersion,
+			c := tenantcluster.Config{
+				CertsSearcher: certsSearcher,
+				Logger:        config.Logger,
+
+				CertID: certs.APICert,
 			}
 
-			statusResource, err = statusresource.NewResource(c)
+			tenantCluster, err = tenantcluster.New(c)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 		}
+
+			var statusResource controller.Resource
+			{
+				c := statusresource.ResourceConfig{
+					ClusterEndpointFunc:      key.ToClusterEndpoint,
+					ClusterIDFunc:            key.ToClusterID,
+					ClusterStatusFunc:        key.ToClusterStatus,
+					NodeCountFunc:            key.ToNodeCount,
+					Logger:                   config.Logger,
+					RESTClient:               config.G8sClient.ProviderV1alpha1().RESTClient(),
+					TenantCluster:            tenantCluster,
+					VersionBundleVersionFunc: key.ToVersionBundleVersion,
+				}
+
+				statusResource, err = statusresource.NewResource(c)
+				if err != nil {
+					return nil, microerror.Mask(err)
+				}
+			}
 	*/
 
 	var resourceGroupResource controller.Resource
