@@ -10,12 +10,12 @@
   version = "v1.1.1"
 
 [[projects]]
-  branch = "master"
-  digest = "1:0f8f8adf495b28a3e4824cdc955045f2c7880ed5e36cf507b2a20eb7b4711b60"
+  branch = "remove-status-heartbeat"
+  digest = "1:3815a09d114b8e890d465a7761e46f4f3c737fdd7c61b4b7339b4a3e61f65192"
   name = "github.com/giantswarm/apiextensions"
   packages = ["pkg/apis/provider/v1alpha1"]
   pruneopts = "UT"
-  revision = "0dc2df5b5d85f01e86af6e06c8024861ef11c2c9"
+  revision = "18eab49fe935ec6c5aa6724571652b4671deedbf"
 
 [[projects]]
   branch = "master"

@@ -227,8 +227,8 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "master"
-  digest = "1:403d834e1447b512b5f44dd4bbeaac62d770bfa597d3e6729727b91b80c9551f"
+  branch = "remove-status-heartbeat"
+  digest = "1:031086875fb12fbe7cf0ee49745035de58ff150e3eb53bf5dbed9bedccb6200f"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/application/v1alpha1",
@@ -245,7 +245,7 @@
     "pkg/clientset/versioned/typed/release/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "cd7862fb5ee9addd30c6e211ced977b69133268a"
+  revision = "18eab49fe935ec6c5aa6724571652b4671deedbf"
 
 [[projects]]
   branch = "master"
@@ -363,8 +363,8 @@
   revision = "5ac1ece392f97e08ad0797a549702e3eba9dcd8d"
 
 [[projects]]
-  branch = "master"
-  digest = "1:c2b8f9530c424d07020ec9a951a65b38aca208b89ade7dc7f6ccca830105ec75"
+  branch = "tuommaki-testing"
+  digest = "1:4b6d1f6d89da3450b144af9476581bca5e9209d3249663123b3d1bfc5f5a01ae"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "v_3_6_3",
@@ -372,7 +372,7 @@
     "v_3_7_4",
   ]
   pruneopts = "T"
-  revision = "f66d4b0ddf57eca9b72bc941a72c9336db295bfa"
+  revision = "a23a15f926f2c2071fca4e2a91c81672b67ae158"
 
 [[projects]]
   branch = "master"
@@ -476,20 +476,20 @@
   revision = "7ce5c5accc2e7896575fac81721e1218a966a380"
 
 [[projects]]
-  branch = "master"
-  digest = "1:25c29c0bd8768d41b9edb20cdff9dc43a85b2bfca355f88520a90607a4a677d1"
+  branch = "remove-heartbeat"
+  digest = "1:754ba6ba0c7625c8c22321f1ac8d8988f88a80a8f2f64238fdc68302a2364171"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
   pruneopts = "UT"
-  revision = "9503629eabf0395bcefa9628ecd8d289aae77fd5"
+  revision = "e9154e48449d86956390f81d27d7ec2b36d84668"
 
 [[projects]]
-  branch = "master"
-  digest = "1:a647b3141f73e67b3f4165ec7008c4784e129069e6a1fc486c584a3a5dd254c2"
+  branch = "tuommaki-testing"
+  digest = "1:52dbaa6a239577ff6d54e0f657c4a66e1af79be5e4f5b1608b079d6ba2bbd74c"
   name = "github.com/giantswarm/tenantcluster"
   packages = ["."]
   pruneopts = "UT"
-  revision = "23c4fe96c832ee78860e851628359368d6a2a3b7"
+  revision = "38fb4e41a3dda8ad3f896fd417773cb4bcaa7f6f"
 
 [[projects]]
   branch = "master"
