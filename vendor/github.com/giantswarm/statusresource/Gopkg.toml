@@ -38,7 +38,7 @@ required = [
   name = "github.com/docker/distribution"
 
 [[constraint]]
-  branch = "master"
+  branch = "remove-status-heartbeat"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
@@ -58,7 +58,7 @@ required = [
   name = "github.com/giantswarm/micrologger"
 
 [[constraint]]
-  branch = "master"
+  branch = "tuommaki-testing"
   name = "github.com/giantswarm/tenantcluster"
 
 [[constraint]]
