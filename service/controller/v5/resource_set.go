@@ -427,6 +427,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				Azure:        config.Azure,
 				AzureConfig:  *guestAzureClientSetConfig,
 				AzureNetwork: *subnets,
+				IgnitionPath: config.IgnitionPath,
 				OIDC:         config.OIDC,
 				SSOPublicKey: config.SSOPublicKey,
 			}
