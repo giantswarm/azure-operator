@@ -38,7 +38,7 @@ required = [
   name = "github.com/docker/distribution"
 
 [[constraint]]
-  branch = "remove-status-heartbeat"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]

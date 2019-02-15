@@ -43,7 +43,7 @@ required = [
   name = "github.com/docker/distribution"
 
 [[constraint]]
-  branch = "remove-status-heartbeat"
+  branch = "master"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
@@ -75,7 +75,7 @@ required = [
   name = "github.com/giantswarm/exporterkit"
 
 [[constraint]]
-  branch = "tuommaki-testing"
+  branch = "master"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
@@ -99,11 +99,11 @@ required = [
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
-  branch = "remove-heartbeat"
+  branch = "master"
   name = "github.com/giantswarm/statusresource"
 
 [[constraint]]
-  branch = "tuommaki-testing"
+  branch = "master"
   name = "github.com/giantswarm/tenantcluster"
 
 [[constraint]]

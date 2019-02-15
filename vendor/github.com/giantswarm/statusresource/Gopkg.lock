@@ -80,7 +80,7 @@
   version = "v1.0.0"
 
 [[projects]]
-  branch = "remove-status-heartbeat"
+  branch = "master"
   digest = "1:031086875fb12fbe7cf0ee49745035de58ff150e3eb53bf5dbed9bedccb6200f"
   name = "github.com/giantswarm/apiextensions"
   packages = [
@@ -98,7 +98,7 @@
     "pkg/clientset/versioned/typed/release/v1alpha1",
   ]
   pruneopts = "NUT"
-  revision = "18eab49fe935ec6c5aa6724571652b4671deedbf"
+  revision = "304908ba11ba09bfc343c4781f642da58488746b"
 
 [[projects]]
   branch = "master"
@@ -172,12 +172,12 @@
   revision = "a1aa0b72cce3bb752ca8e5097dc84f97cf4cbbf7"
 
 [[projects]]
-  branch = "tuommaki-testing"
+  branch = "master"
   digest = "1:9864225372d8555ccb3c56f4ac12258d29e7eb65e237e1bbeacd54afc6086df0"
   name = "github.com/giantswarm/tenantcluster"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "38fb4e41a3dda8ad3f896fd417773cb4bcaa7f6f"
+  revision = "23c4fe96c832ee78860e851628359368d6a2a3b7"
 
 [[projects]]
   branch = "master"
