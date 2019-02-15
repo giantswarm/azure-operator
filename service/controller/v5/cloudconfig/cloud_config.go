@@ -130,7 +130,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		params.Cluster = customObject.Spec.Cluster
 		params.DisableCalico = true
 		params.DisableIngressControllerService = true
-		params.EtcdPort = customObject.Spec.Cluster.EtcdPort
+		params.EtcdPort = customObject.Spec.Cluster.Etcd.Port
 		params.Hyperkube = k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{
