@@ -169,9 +169,9 @@ type ReleaseCycle struct {
 
 type ReleaseCycleSpec struct {
 	// DisabledDate is the date of the cycle phase being changed to "disabled".
-	DisabledDate DeepCopyTime `json:"disabledDate,omitempty" yaml:"disabledDate,omitempty"`
+	DisabledDate DeepCopyDate `json:"disabledDate,omitempty" yaml:"disabledDate,omitempty"`
 	// EnabledDate is the date of the cycle phase being changed to "enabled".
-	EnabledDate DeepCopyTime `json:"enabledDate,omitempty" yaml:"enabledDate,omitempty"`
+	EnabledDate DeepCopyDate `json:"enabledDate,omitempty" yaml:"enabledDate,omitempty"`
 	// Phase is the release phase. It can be one of: "upcoming", "enabled",
 	// "disabled", "eol".
 	Phase ReleaseCyclePhase `json:"phase" yaml:"phase"`
