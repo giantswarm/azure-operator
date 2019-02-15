@@ -297,7 +297,8 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	//
 	//	See https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions#storage
 	//
-	return strings.Replace(ClusterID(customObject), "-", "", -1)
+	storageAccountName := fmt.Sprintf("%s%s", storageAccountSuffix, ClusterID(customObject))
+	return strings.Replace(storageAccountName, "-", "", -1)
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {
