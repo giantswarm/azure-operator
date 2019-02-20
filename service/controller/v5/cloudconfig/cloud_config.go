@@ -25,7 +25,6 @@ const (
 )
 
 type Config struct {
-	CertsSearcher      certs.Interface
 	Logger             micrologger.Logger
 	RandomkeysSearcher randomkeys.Interface
 
@@ -39,7 +38,6 @@ type Config struct {
 }
 
 type CloudConfig struct {
-	certsSearcher      certs.Interface
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
@@ -53,9 +51,6 @@ type CloudConfig struct {
 }
 
 func New(config Config) (*CloudConfig, error) {
-	if config.CertsSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
-	}
 	if config.IgnitionPath == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.IgnitionPath must not be empty", config)
 	}
@@ -74,7 +69,6 @@ func New(config Config) (*CloudConfig, error) {
 	}
 
 	c := &CloudConfig{
-		certsSearcher:      config.CertsSearcher,
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
 
