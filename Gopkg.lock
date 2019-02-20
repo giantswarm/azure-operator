@@ -265,9 +265,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2f7c9bf12339fa91c6dca789831bd916d981d7482b6a437d9a679e0fecc684bf"
+  digest = "1:788b90f0a9ec05644bdf23323c808325902234dc00551fad2f417242fe3e1f3a"
   name = "github.com/giantswarm/certs"
-  packages = ["."]
+  packages = [
+    ".",
+    "certstest",
+  ]
   pruneopts = "UT"
   revision = "f0fb2f61d78e06f2d1e17f940fd782b92bf29642"
 
@@ -1447,6 +1450,7 @@
     "github.com/giantswarm/apiextensions/pkg/clientset/versioned",
     "github.com/giantswarm/apprclient",
     "github.com/giantswarm/certs",
+    "github.com/giantswarm/certs/certstest",
     "github.com/giantswarm/e2e-harness/pkg/framework",
     "github.com/giantswarm/e2e-harness/pkg/framework/resource",
     "github.com/giantswarm/e2e-harness/pkg/release",
