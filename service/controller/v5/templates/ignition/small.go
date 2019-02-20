@@ -18,7 +18,7 @@ const Small = `{
         "filesystem": "root",
         "mode": 256,
         "contents": {
-          "source": "data:text/plain;base64,ENCRYPTION_KEY={{ .EncryptionKey }}"
+          "source": "data:text/plain,ENCRYPTION_KEY={{ .EncryptionKey }}"
         }
       },
       {
@@ -26,7 +26,7 @@ const Small = `{
         "filesystem": "root",
         "mode": 256,
         "contents": {
-          "source": "data:text/plain;base64,INITIAL_VECTOR={{ .InitialVector }}"
+          "source": "data:text/plain,INITIAL_VECTOR={{ .InitialVector }}"
         }
       }
     ]
