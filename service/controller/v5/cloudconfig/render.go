@@ -37,7 +37,7 @@ func renderCertificatesFiles(encrypter Encrypter, certFiles certs.Files) ([]k8sc
 	for _, f := range certFiles {
 		encryptedData, err := encrypter.EncryptCFBBase64(f.Data)
 		if err != nil {
-			return []k8scloudconfig.FileAsset{}, microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 		m := k8scloudconfig.FileMetadata{
 			AssetContent: string(encryptedData),
