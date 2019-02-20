@@ -769,7 +769,7 @@ EnvironmentFile=/etc/.enc/key
 EnvironmentFile=/etc/.enc/iv
 ExecStart=/bin/sh -c "\
 {{ range $index, $file := .CertsPaths -}}
-cat {{ $file }}.enc | openssl enc -aes-256-cfb -base64 -d -K ${ENCRYPTION_KEY} -iv ${INITIAL_VECTOR} > {{ $file }} \
+cat {{ $file }}.enc | openssl enc -aes-256-cfb -d -K ${ENCRYPTION_KEY} -iv ${INITIAL_VECTOR} > {{ $file }}; \
 {{ end -}}
 "
  [Install]

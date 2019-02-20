@@ -8,7 +8,7 @@ const (
 	TestKey = "12345678901234567890123456789012"
 )
 
-func Test_EncryptCFBBase64(t *testing.T) {
+func Test_EncryptCFB(t *testing.T) {
 	testCases := []struct {
 		Name  string
 		Input []byte
@@ -25,12 +25,12 @@ func Test_EncryptCFBBase64(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		encrypted, err := encrypter.EncryptCFBBase64(tc.Input)
+		encrypted, err := encrypter.EncryptCFB(tc.Input)
 		if err != nil {
 			t.Errorf("case %d: %s: expected err = nil, got %v", i, tc.Name, err)
 		}
 
-		decrypted, err := encrypter.DecryptCFBBase64(encrypted)
+		decrypted, err := encrypter.DecryptCFB(encrypted)
 		if err != nil {
 			t.Errorf("case %d: %s: expected err = nil, got %v", i, tc.Name, err)
 		}

@@ -4,7 +4,6 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
-	"encoding/base64"
 	"io"
 
 	"github.com/giantswarm/microerror"
@@ -40,10 +39,10 @@ func NewEncrypter() (Encrypter, error) {
 	return encrypter, nil
 }
 
-func (e *Encrypter) EncryptCFBBase64(data []byte) (string, error) {
+func (e *Encrypter) EncryptCFB(data []byte) ([]byte, error) {
 	block, err := aes.NewCipher(e.key)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
 	encryptedData := make([]byte, len(data))
@@ -51,16 +50,12 @@ func (e *Encrypter) EncryptCFBBase64(data []byte) (string, error) {
 	cfb := cipher.NewCFBEncrypter(block, e.iv)
 	cfb.XORKeyStream(encryptedData, data)
 
-	return base64.StdEncoding.EncodeToString(encryptedData), nil
+	return encryptedData, nil
 }
 
-func (e *Encrypter) DecryptCFBBase64(encoded string) ([]byte, error) {
+func (e *Encrypter) DecryptCFB(encrypted []byte) ([]byte, error) {
 	var block cipher.Block
-
-	encrypted, err := base64.StdEncoding.DecodeString(encoded)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	var err error
 
 	if block, err = aes.NewCipher(e.key); err != nil {
 		return nil, microerror.Mask(err)
