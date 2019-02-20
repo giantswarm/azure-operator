@@ -438,7 +438,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		var cloudConfig *cloudconfig.CloudConfig
 		{
 			c := cloudconfig.Config{
-				CertsSearcher:      certsSearcher,
 				Logger:             config.Logger,
 				RandomkeysSearcher: randomkeysSearcher,
 

@@ -191,11 +191,11 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		}
 
 		params.Extension = &masterExtension{
-			Azure:         c.azure,
-			AzureConfig:   c.azureConfig,
-			CalicoCIDR:    c.azureNetwork.Calico.String(),
-			CertsSearcher: c.certsSearcher,
-			CustomObject:  customObject,
+			Azure:        c.azure,
+			AzureConfig:  c.azureConfig,
+			CalicoCIDR:   c.azureNetwork.Calico.String(),
+			ClusterCerts: clusterCerts,
+			CustomObject: customObject,
 		}
 		params.ExtraManifests = []string{
 			"calico-azure.yaml",
@@ -241,10 +241,10 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			},
 		}
 		params.Extension = &workerExtension{
-			Azure:         c.azure,
-			AzureConfig:   c.azureConfig,
-			CertsSearcher: c.certsSearcher,
-			CustomObject:  customObject,
+			Azure:        c.azure,
+			AzureConfig:  c.azureConfig,
+			ClusterCerts: clusterCerts,
+			CustomObject: customObject,
 		}
 		params.SSOPublicKey = c.ssoPublicKey
 

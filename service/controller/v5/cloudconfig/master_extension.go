@@ -11,13 +11,12 @@ import (
 )
 
 type masterExtension struct {
-	Azure         setting.Azure
-	AzureConfig   client.AzureClientSetConfig
-	CalicoCIDR    string
-	CertsSearcher certs.Interface
-	ClusterCerts  certs.Cluster
-	CustomObject  providerv1alpha1.AzureConfig
-	Encrypter     Encrypter
+	Azure        setting.Azure
+	AzureConfig  client.AzureClientSetConfig
+	CalicoCIDR   string
+	ClusterCerts certs.Cluster
+	CustomObject providerv1alpha1.AzureConfig
+	Encrypter    Encrypter
 }
 
 // Files allows files to be injected into the master cloudconfig.
