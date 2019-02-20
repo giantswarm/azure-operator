@@ -422,6 +422,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
+		encrypter, err := cloudconfig.NewEncrypter()
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
 		var cloudConfig *cloudconfig.CloudConfig
 		{
 			c := cloudconfig.Config{
@@ -431,6 +436,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				Azure:        config.Azure,
 				AzureConfig:  *guestAzureClientSetConfig,
 				AzureNetwork: *subnets,
+				Encrypter:    encrypter,
 				IgnitionPath: config.IgnitionPath,
 				OIDC:         config.OIDC,
 				SSOPublicKey: config.SSOPublicKey,

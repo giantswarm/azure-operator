@@ -32,6 +32,7 @@ type Config struct {
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig  client.AzureClientSetConfig
 	AzureNetwork network.Subnets
+	Encrypter    Encrypter
 	IgnitionPath string
 	OIDC         setting.OIDC
 	SSOPublicKey string
@@ -68,11 +69,6 @@ func New(config Config) (*CloudConfig, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 
-	encrypter, err := NewEncrypter()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	c := &CloudConfig{
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
@@ -80,7 +76,7 @@ func New(config Config) (*CloudConfig, error) {
 		azure:        config.Azure,
 		azureConfig:  config.AzureConfig,
 		azureNetwork: config.AzureNetwork,
-		encrypter:    encrypter,
+		encrypter:    config.Encrypter,
 		ignitionPath: config.IgnitionPath,
 		OIDC:         config.OIDC,
 		ssoPublicKey: config.SSOPublicKey,
@@ -196,6 +192,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			CalicoCIDR:   c.azureNetwork.Calico.String(),
 			ClusterCerts: clusterCerts,
 			CustomObject: customObject,
+			Encrypter:    c.encrypter,
 		}
 		params.ExtraManifests = []string{
 			"calico-azure.yaml",
@@ -245,6 +242,7 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			AzureConfig:  c.azureConfig,
 			ClusterCerts: clusterCerts,
 			CustomObject: customObject,
+			Encrypter:    c.encrypter,
 		}
 		params.SSOPublicKey = c.ssoPublicKey
 
