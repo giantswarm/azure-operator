@@ -27,7 +27,7 @@
       }
     },
     "masterCloudConfigData":{
-      "type":"secureString",
+      "type":"string",
       "metadata":{
         "description":"Base64-encoded cloud-config data."
       }
@@ -49,7 +49,7 @@
       "defaultValue":"vmss.json"
     },
     "workerCloudConfigData":{
-      "type":"secureString",
+      "type":"string",
       "metadata":{
         "description":"Base64-encoded cloud-config data."
       }
