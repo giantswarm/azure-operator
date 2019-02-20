@@ -2,6 +2,7 @@ package cloudconfig
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -56,12 +57,28 @@ func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.Azur
 	}
 }
 
+type certificateDecrypterUnitParams struct {
+	CertsPaths []string
+}
+
 type diskParams struct {
 	LUNID string
 }
 
 type ingressLBFileParams struct {
 	ClusterDNSDomain string
+}
+
+func newCertificateDecrypterUnitParams(certFiles certs.Files) certificateDecrypterUnitParams {
+	var certsPaths []string
+
+	for _, file := range certFiles {
+		certsPaths = append(certsPaths, file.AbsolutePath)
+	}
+
+	return certificateDecrypterUnitParams{
+		CertsPaths: certsPaths,
+	}
 }
 
 func newIngressLBFileParams(obj providerv1alpha1.AzureConfig) ingressLBFileParams {

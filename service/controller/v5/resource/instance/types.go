@@ -1,5 +1,7 @@
 package instance
 
+import "github.com/giantswarm/certs"
+
 type node struct {
 	// AdminUsername is the vm administrator username
 	AdminUsername string `json:"adminUsername" yaml:"adminUsername"`
@@ -38,5 +40,8 @@ func newNodeOSImageCoreOS() nodeOSImage {
 // SmallCloudconfigConfig represents the data structure required for executing
 // the small cloudconfig template.
 type SmallCloudconfigConfig struct {
-	BlobURL string
+	BlobURL       string
+	CertsFiles    certs.Files
+	EncryptionKey string
+	InitialVector string
 }

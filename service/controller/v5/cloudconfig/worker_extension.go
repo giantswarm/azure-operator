@@ -8,14 +8,15 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
 type workerExtension struct {
 	Azure         setting.Azure
 	AzureConfig   client.AzureClientSetConfig
 	CertsSearcher certs.Interface
+	ClusterCerts  certs.Cluster
 	CustomObject  providerv1alpha1.AzureConfig
+	Encrypter     Encrypter
 }
 
 // Files allows files to be injected into the master cloudconfig.
@@ -40,6 +41,12 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 
 // Units allows systemd units to be injected into the master cloudconfig.
 func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
+	// Unit for decrypting certificates.
+	certDecrypterUnit, err := we.renderCertificateDecrypterUnit()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	// Unit to format docker disk.
 	formatDockerUnit, err := we.renderDockerDiskFormatUnit()
 	if err != nil {
@@ -53,6 +60,7 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	}
 
 	units := []k8scloudconfig.UnitAsset{
+		certDecrypterUnit,
 		formatDockerUnit,
 		mountDockerUnit,
 	}
@@ -66,12 +74,8 @@ func (we *workerExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 }
 
 func (we *workerExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset, error) {
-	clusterCerts, err := we.CertsSearcher.SearchCluster(key.ClusterID(we.CustomObject))
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	assets, err := renderCertificatesFiles(certs.NewFilesClusterWorker(clusterCerts))
+	certFiles := certs.NewFilesClusterWorker(we.ClusterCerts)
+	assets, err := renderCertificatesFiles(we.Encrypter, certFiles)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -85,6 +89,18 @@ func (we *workerExtension) renderCloudProviderConfFile() (k8scloudconfig.FileAss
 	asset, err := renderCloudProviderConfFile(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (we *workerExtension) renderCertificateDecrypterUnit() (k8scloudconfig.UnitAsset, error) {
+	certFiles := certs.NewFilesClusterWorker(we.ClusterCerts)
+	params := newCertificateDecrypterUnitParams(certFiles)
+
+	asset, err := renderCertificateDecrypterUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
 	return asset, nil

@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs/certstest"
 	"github.com/giantswarm/micrologger/microloggertest"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
@@ -159,9 +160,11 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			var err error
 			var newResource *Resource
 			{
-				c := Config{}
-				c.Logger = microloggertest.New()
-				c.StorageAccountsClient = &storage.AccountsClient{}
+				c := Config{
+					CertsSearcher:         certstest.NewSearcher(),
+					Logger:                microloggertest.New(),
+					StorageAccountsClient: &storage.AccountsClient{},
+				}
 
 				newResource, err = New(c)
 				if err != nil {

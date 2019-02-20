@@ -20,6 +20,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
+	clusterCerts, err := r.certsSearcher.SearchCluster(key.ClusterID(customObject))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	storageAccountName := key.StorageAccountName(customObject)
 
 	containerName := key.BlobContainerName()
@@ -27,7 +32,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	output := []ContainerObjectState{}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewMasterCloudConfig(customObject)
+		b, err := ctlCtx.CloudConfig.NewMasterCloudConfig(customObject, clusterCerts)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -43,7 +48,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewWorkerCloudConfig(customObject)
+		b, err := ctlCtx.CloudConfig.NewWorkerCloudConfig(customObject, clusterCerts)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

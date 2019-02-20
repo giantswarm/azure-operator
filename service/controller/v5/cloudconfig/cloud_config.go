@@ -1,6 +1,8 @@
 package cloudconfig
 
 import (
+	"crypto/aes"
+	"encoding/hex"
 	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -44,6 +46,7 @@ type CloudConfig struct {
 	azure        setting.Azure
 	azureConfig  client.AzureClientSetConfig
 	azureNetwork network.Subnets
+	encrypter    Encrypter
 	ignitionPath string
 	OIDC         setting.OIDC
 	ssoPublicKey string
@@ -86,9 +89,19 @@ func New(config Config) (*CloudConfig, error) {
 	return c, nil
 }
 
+// GetEncryptionKey returns hex of the key, which is used for certificates encryption.
+func (c CloudConfig) GetEncryptionKey() string {
+	return hex.EncodeToString(c.encrypter.key[aes.BlockSize:])
+}
+
+// GetInitialVector returns hex of the initial vector, which is used in certificate encryption.
+func (c CloudConfig) GetInitialVector() string {
+	return hex.EncodeToString(c.encrypter.key[:aes.BlockSize])
+}
+
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, clusterCerts certs.Cluster) (string, error) {
 	apiserverEncryptionKey, err := c.getEncryptionkey(customObject)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -200,7 +213,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, clusterCerts certs.Cluster) (string, error) {
 	var err error
 
 	// NOTE in Azure we disable Calico right now. This is due to a transitioning
