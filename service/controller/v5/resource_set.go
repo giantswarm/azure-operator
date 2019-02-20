@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"time"
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
@@ -59,6 +58,9 @@ type ResourceSetConfig struct {
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
+	if config.CertsSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
+	}
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
@@ -67,21 +69,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	var err error
-
-	var certsSearcher certs.Interface
-	{
-		c := certs.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-
-			WatchTimeout: 5 * time.Second,
-		}
-
-		certsSearcher, err = certs.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
 
 	var newDebugger *debugger.Debugger
 	{
@@ -111,7 +98,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var tenantCluster tenantcluster.Interface
 	{
 		c := tenantcluster.Config{
-			CertsSearcher: certsSearcher,
+			CertsSearcher: config.CertsSearcher,
 			Logger:        config.Logger,
 
 			CertID: certs.APICert,

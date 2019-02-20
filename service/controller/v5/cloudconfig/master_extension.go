@@ -1,6 +1,8 @@
 package cloudconfig
 
 import (
+	"fmt"
+
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_1_0"
@@ -125,7 +127,11 @@ func (me *masterExtension) renderCalicoAzureFile() (k8scloudconfig.FileAsset, er
 
 func (me *masterExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset, error) {
 	certFiles := certs.NewFilesClusterMaster(me.ClusterCerts)
+	fmt.Println("certificates-xxx")
+	fmt.Println(certFiles)
 	assets, err := renderCertificatesFiles(me.Encrypter, certFiles)
+	fmt.Println("certificates-xxx-encrypted")
+	fmt.Println(assets)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
