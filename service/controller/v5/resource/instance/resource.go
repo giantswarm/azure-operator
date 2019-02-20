@@ -5,6 +5,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -86,6 +87,15 @@ func (r *Resource) getScaleSetsClient(ctx context.Context) (*compute.VirtualMach
 	}
 
 	return sc.AzureClientSet.VirtualMachineScaleSetsClient, nil
+}
+
+func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
+	sc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return sc.AzureClientSet.StorageAccountsClient, nil
 }
 
 func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineScaleSetVMsClient, error) {

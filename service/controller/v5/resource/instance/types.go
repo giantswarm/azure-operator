@@ -34,3 +34,9 @@ func newNodeOSImageCoreOS() nodeOSImage {
 		Version:   "1967.5.0",
 	}
 }
+
+// SmallCloudconfigConfig represents the data structure required for executing
+// the small cloudconfig template.
+type SmallCloudconfigConfig struct {
+	BlobURL string
+}

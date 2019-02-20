@@ -43,8 +43,8 @@ func VersionBundle() versionbundle.Bundle {
 				Kind:        versionbundle.KindChanged,
 			},
 			{
-				Component:   "cloudconfig",
-				Description: "Updated k8scloudconfig to 3.7.4",
+				Component:   "ignition",
+				Description: "Updated k8scloudconfig to 4.1.0",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -60,7 +60,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "1855.5.0",
+				Version: "1967.5.0",
 			},
 			{
 				Name:    "docker",

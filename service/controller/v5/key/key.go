@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/service/controller/v5/templates/ignition"
 	"github.com/giantswarm/microerror"
 )
 
@@ -17,13 +18,15 @@ const (
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
-	cloudConfigVersion        = "v4.0.0"
+	cloudConfigVersion        = "v4.1.0"
 	storageAccountSuffix      = "gsstorageaccount"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
+	prefixMaster              = "master"
+	prefixWorker              = "worker"
 	virtualNetworkSuffix      = "VirtualNetwork"
 	vpnGatewaySubnet          = "GatewaySubnet"
 	vpnGatewaySuffix          = "VPNGateway"
@@ -89,6 +92,12 @@ func BlobContainerName() string {
 
 func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
+}
+
+func CloudConfigSmallTemplates() []string {
+	return []string{
+		ignition.Small,
+	}
 }
 
 func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
@@ -264,6 +273,14 @@ func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master", ClusterID(customObject))
 }
 
+func PrefixMaster() string {
+	return prefixMaster
+}
+
+func PrefixWorker() string {
+	return prefixWorker
+}
+
 // ResourceGroupName returns name of the resource group for this cluster.
 func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return ClusterID(customObject)
@@ -280,7 +297,8 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	//
 	//	See https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions#storage
 	//
-	return strings.Replace(ClusterID(customObject), "-", "", -1)
+	storageAccountName := fmt.Sprintf("%s%s", storageAccountSuffix, ClusterID(customObject))
+	return strings.Replace(storageAccountName, "-", "", -1)
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {
