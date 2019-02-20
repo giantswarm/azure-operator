@@ -68,6 +68,11 @@ func New(config Config) (*CloudConfig, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
 	}
 
+	encrypter, err := NewEncrypter()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	c := &CloudConfig{
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
@@ -75,6 +80,7 @@ func New(config Config) (*CloudConfig, error) {
 		azure:        config.Azure,
 		azureConfig:  config.AzureConfig,
 		azureNetwork: config.AzureNetwork,
+		encrypter:    encrypter,
 		ignitionPath: config.IgnitionPath,
 		OIDC:         config.OIDC,
 		ssoPublicKey: config.SSOPublicKey,
