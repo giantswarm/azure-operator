@@ -1,7 +1,6 @@
 package cloudconfig
 
 import (
-	"crypto/aes"
 	"encoding/hex"
 	"fmt"
 
@@ -87,12 +86,12 @@ func New(config Config) (*CloudConfig, error) {
 
 // GetEncryptionKey returns hex of the key, which is used for certificates encryption.
 func (c CloudConfig) GetEncryptionKey() string {
-	return hex.EncodeToString(c.encrypter.key[aes.BlockSize:])
+	return hex.EncodeToString(c.encrypter.key)
 }
 
 // GetInitialVector returns hex of the initial vector, which is used in certificate encryption.
 func (c CloudConfig) GetInitialVector() string {
-	return hex.EncodeToString(c.encrypter.key[:aes.BlockSize])
+	return hex.EncodeToString(c.encrypter.iv)
 }
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a

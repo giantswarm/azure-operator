@@ -11,23 +11,30 @@ import (
 )
 
 const (
-	blockSize = 32
+	keySize = 32
 )
 
 type Encrypter struct {
 	key []byte
+	iv  []byte
 }
 
 func NewEncrypter() (Encrypter, error) {
-	var key []byte
+	var key, iv []byte
 
-	key = make([]byte, blockSize)
+	key = make([]byte, keySize)
 	if _, err := io.ReadFull(rand.Reader, key); err != nil {
+		return Encrypter{}, microerror.Mask(err)
+	}
+
+	iv = make([]byte, aes.BlockSize)
+	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
 		return Encrypter{}, microerror.Mask(err)
 	}
 
 	encrypter := Encrypter{
 		key: key,
+		iv:  iv,
 	}
 
 	return encrypter, nil
@@ -39,15 +46,10 @@ func (e *Encrypter) EncryptCFBBase64(data []byte) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	// generate random initial vector
-	encryptedData := make([]byte, aes.BlockSize+len(data))
-	iv := encryptedData[:aes.BlockSize]
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return "", microerror.Mask(err)
-	}
+	encryptedData := make([]byte, len(data))
 
-	cfb := cipher.NewCFBEncrypter(block, iv)
-	cfb.XORKeyStream(encryptedData[aes.BlockSize:], data)
+	cfb := cipher.NewCFBEncrypter(block, e.iv)
+	cfb.XORKeyStream(encryptedData, data)
 
 	return base64.StdEncoding.EncodeToString(encryptedData), nil
 }
@@ -64,11 +66,9 @@ func (e *Encrypter) DecryptCFBBase64(encoded string) ([]byte, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	iv := encrypted[:aes.BlockSize]
-	encrypted = encrypted[aes.BlockSize:]
 	decrypted := make([]byte, len(encrypted))
 
-	cfb := cipher.NewCFBDecrypter(block, iv)
+	cfb := cipher.NewCFBDecrypter(block, e.iv)
 	cfb.XORKeyStream(decrypted, encrypted)
 
 	return decrypted, nil
