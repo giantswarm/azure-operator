@@ -171,8 +171,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var encryptionkeyResource controller.Resource
 	{
 		c := encryptionkey.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
+			K8sClient:   config.K8sClient,
+			Logger:      config.Logger,
+			ProjectName: config.ProjectName,
 		}
 
 		encryptionkeyResource, err = encryptionkey.New(c)
