@@ -1,7 +1,6 @@
 package cloudconfig
 
 import (
-	"encoding/hex"
 	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -31,7 +30,6 @@ type Config struct {
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig  client.AzureClientSetConfig
 	AzureNetwork network.Subnets
-	Encrypter    Encrypter
 	IgnitionPath string
 	OIDC         setting.OIDC
 	SSOPublicKey string
@@ -82,16 +80,6 @@ func New(config Config) (*CloudConfig, error) {
 	}
 
 	return c, nil
-}
-
-// GetEncryptionKey returns hex of the key, which is used for certificates encryption.
-func (c CloudConfig) GetEncryptionKey() string {
-	return hex.EncodeToString(c.encrypter.key)
-}
-
-// GetInitialVector returns hex of the initial vector, which is used in certificate encryption.
-func (c CloudConfig) GetInitialVector() string {
-	return hex.EncodeToString(c.encrypter.iv)
 }
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a

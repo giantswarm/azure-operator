@@ -1,9 +1,10 @@
-package cloudconfig
+package encrypter
 
 import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/rand"
+	"encoding/hex"
 	"io"
 
 	"github.com/giantswarm/microerror"
@@ -67,4 +68,14 @@ func (e *Encrypter) DecryptCFB(encrypted []byte) ([]byte, error) {
 	cfb.XORKeyStream(decrypted, encrypted)
 
 	return decrypted, nil
+}
+
+// GetEncryptionKey returns hex of the key, which is used for certificates encryption.
+func (e *Encrypter) GetEncryptionKey() string {
+	return hex.EncodeToString(e.key)
+}
+
+// GetInitialVector returns hex of the initial vector, which is used in certificate encryption.
+func (e *Encrypter) GetInitialVector() string {
+	return hex.EncodeToString(e.iv)
 }

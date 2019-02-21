@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/v5/cloudconfig"
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/azure-operator/service/network"
 )
 
@@ -21,6 +22,7 @@ type Context struct {
 	AzureNetwork        *network.Subnets
 	CloudConfig         cloudconfig.Interface
 	ContainerURL        *azblob.ContainerURL
+	Encrypter           *encrypter.Encrypter
 	EtcdLBBackendPoolID string
 	MasterSubnetID      string
 	WorkerSubnetID      string

@@ -1,4 +1,4 @@
-package cloudconfig
+package encrypter
 
 import (
 	"testing"

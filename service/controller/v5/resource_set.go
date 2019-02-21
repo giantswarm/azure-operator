@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"time"
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/azure-operator/client"
@@ -40,10 +41,9 @@ import (
 )
 
 type ResourceSetConfig struct {
-	CertsSearcher certs.Interface
-	G8sClient     versioned.Interface
-	K8sClient     kubernetes.Interface
-	Logger        micrologger.Logger
+	G8sClient versioned.Interface
+	K8sClient kubernetes.Interface
+	Logger    micrologger.Logger
 
 	Azure                    setting.Azure
 	HostAzureClientSetConfig client.AzureClientSetConfig
@@ -58,9 +58,6 @@ type ResourceSetConfig struct {
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
-	if config.CertsSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
-	}
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
@@ -69,6 +66,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	var err error
+
+	var certsSearcher certs.Interface
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var newDebugger *debugger.Debugger
 	{
@@ -98,7 +110,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var tenantCluster tenantcluster.Interface
 	{
 		c := tenantcluster.Config{
-			CertsSearcher: config.CertsSearcher,
+			CertsSearcher: certsSearcher,
 			Logger:        config.Logger,
 
 			CertID: certs.APICert,
@@ -173,8 +185,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var blobObjectResource controller.Resource
 	{
 		c := blobobject.Config{
-			CertsSearcher: config.CertsSearcher,
-			Logger:        config.Logger,
+			Logger: config.Logger,
 		}
 
 		blobObject, err := blobobject.New(c)
@@ -422,21 +433,16 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		encrypter, err := cloudconfig.NewEncrypter()
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
 		var cloudConfig *cloudconfig.CloudConfig
 		{
 			c := cloudconfig.Config{
+				CertsSearcher:      certsSearcher,
 				Logger:             config.Logger,
 				RandomkeysSearcher: randomkeysSearcher,
 
 				Azure:        config.Azure,
 				AzureConfig:  *guestAzureClientSetConfig,
 				AzureNetwork: *subnets,
-				Encrypter:    encrypter,
 				IgnitionPath: config.IgnitionPath,
 				OIDC:         config.OIDC,
 				SSOPublicKey: config.SSOPublicKey,
