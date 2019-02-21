@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 )
 
 type workerExtension struct {
@@ -15,7 +16,7 @@ type workerExtension struct {
 	AzureConfig  client.AzureClientSetConfig
 	ClusterCerts certs.Cluster
 	CustomObject providerv1alpha1.AzureConfig
-	Encrypter    Encrypter
+	Encrypter    encrypter.Encrypter
 }
 
 // Files allows files to be injected into the master cloudconfig.

@@ -3,38 +3,32 @@ package encrypter
 import (
 	"crypto/aes"
 	"crypto/cipher"
-	"crypto/rand"
 	"encoding/hex"
-	"io"
 
 	"github.com/giantswarm/microerror"
 )
 
-const (
-	keySize = 32
-)
+type Config struct {
+	Key []byte
+	IV  []byte
+}
 
 type Encrypter struct {
 	key []byte
 	iv  []byte
 }
 
-func NewEncrypter() (Encrypter, error) {
-	var key, iv []byte
-
-	key = make([]byte, keySize)
-	if _, err := io.ReadFull(rand.Reader, key); err != nil {
-		return Encrypter{}, microerror.Mask(err)
+func New(config Config) (Encrypter, error) {
+	if config.Key == nil {
+		return Encrypter{}, microerror.Maskf(invalidConfigError, "%T.Key must not be empty", config)
 	}
-
-	iv = make([]byte, aes.BlockSize)
-	if _, err := io.ReadFull(rand.Reader, iv); err != nil {
-		return Encrypter{}, microerror.Mask(err)
+	if config.IV == nil {
+		return Encrypter{}, microerror.Maskf(invalidConfigError, "%T.IV must not be empty", config)
 	}
 
 	encrypter := Encrypter{
-		key: key,
-		iv:  iv,
+		key: config.Key,
+		iv:  config.IV,
 	}
 
 	return encrypter, nil

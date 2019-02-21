@@ -41,9 +41,10 @@ import (
 )
 
 type ResourceSetConfig struct {
-	G8sClient versioned.Interface
-	K8sClient kubernetes.Interface
-	Logger    micrologger.Logger
+	CertsSearcher certs.Interface
+	G8sClient     versioned.Interface
+	K8sClient     kubernetes.Interface
+	Logger        micrologger.Logger
 
 	Azure                    setting.Azure
 	HostAzureClientSetConfig client.AzureClientSetConfig
@@ -185,7 +186,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var blobObjectResource controller.Resource
 	{
 		c := blobobject.Config{
-			Logger: config.Logger,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
 		}
 
 		blobObject, err := blobobject.New(c)

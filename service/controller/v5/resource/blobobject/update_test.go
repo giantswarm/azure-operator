@@ -9,6 +9,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/certstest"
 	"github.com/giantswarm/micrologger/microloggertest"
+	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 )
@@ -162,6 +163,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			{
 				c := Config{
 					CertsSearcher:         certstest.NewSearcher(),
+					K8sClient:             fake.NewSimpleClientset(),
 					Logger:                microloggertest.New(),
 					StorageAccountsClient: &storage.AccountsClient{},
 				}

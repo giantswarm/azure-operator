@@ -4,10 +4,6 @@ import (
 	"testing"
 )
 
-const (
-	TestKey = "12345678901234567890123456789012"
-)
-
 func Test_EncryptCFB(t *testing.T) {
 	testCases := []struct {
 		Name  string
@@ -19,7 +15,14 @@ func Test_EncryptCFB(t *testing.T) {
 		},
 	}
 
-	encrypter, err := NewEncrypter()
+	testKey := []byte("12345678901234567890123456789012")
+	testIV := []byte("1234567891234567")
+	c := Config{
+		Key: testKey,
+		IV:  testIV,
+	}
+
+	encrypter, err := New(c)
 	if err != nil {
 		t.Errorf("failed to create encrypter, %v", err)
 	}

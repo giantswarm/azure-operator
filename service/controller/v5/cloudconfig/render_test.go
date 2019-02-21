@@ -3,14 +3,23 @@ package cloudconfig
 import (
 	"testing"
 
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/certs"
 )
 
 func Test_render(t *testing.T) {
-	encrypter, err := NewEncrypter()
-	if err != nil {
-		t.Error(err)
+	testKey := []byte("12345678901234567890123456789012")
+	testIV := []byte("1234567891234567")
+	c := encrypter.Config{
+		Key: testKey,
+		IV:  testIV,
 	}
+
+	encrypter, err := encrypter.New(c)
+	if err != nil {
+		t.Errorf("failed to create encrypter, %v", err)
+	}
+
 	testCases := []struct {
 		Name string
 		Fn   func() error
@@ -20,7 +29,7 @@ func Test_render(t *testing.T) {
 			Fn:   func() error { _, err := renderCalicoAzureFile(calicoAzureFileParams{}); return err },
 		},
 		{
-			Name: "renderCalicoAzureFile",
+			Name: "renderCertificatesFiles",
 			Fn: func() error {
 				_, err := renderCertificatesFiles(encrypter, []certs.File{
 					{AbsolutePath: "/a/b/c.crt", Data: []byte("test cert data c")},
