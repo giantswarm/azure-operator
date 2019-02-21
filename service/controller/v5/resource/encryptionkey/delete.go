@@ -4,7 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )

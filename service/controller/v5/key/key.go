@@ -98,7 +98,7 @@ func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
 }
 
-func CertificateEncryptionName(customObject providerv1alpha1.AzureConfig) string {
+func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-certificate-encryption", customObject.Spec.Cluster.ID)
 }
 

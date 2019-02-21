@@ -7,8 +7,8 @@ import (
 	"io"
 
 	"github.com/giantswarm/microerror"
-	apiv1 "k8s.io/api/core/v1"
-	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
