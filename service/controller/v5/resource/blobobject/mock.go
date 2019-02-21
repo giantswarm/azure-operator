@@ -11,10 +11,6 @@ type CloudConfigMock struct {
 	template  string
 }
 
-type EncrypterMock struct {
-	key []byte
-}
-
 func (c *CloudConfigMock) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Encrypter) (string, error) {
 	return c.template, nil
 }
