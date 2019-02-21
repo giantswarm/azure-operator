@@ -53,7 +53,7 @@ func VersionBundle() versionbundle.Bundle {
 				Kind:        versionbundle.KindChanged,
 			},
 			{
-				Component:   "cloudconfig",
+				Component:   "kubernetes",
 				Description: "Improved Audit policy to reduce the amount of Audit logs (high-volume and low-risk).",
 				Kind:        versionbundle.KindChanged,
 			},
