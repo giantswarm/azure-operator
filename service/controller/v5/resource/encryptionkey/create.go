@@ -38,11 +38,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Name:      key.CertificateEncryptionName(customObject),
 			Namespace: key.CertificateEncryptionNamespace,
 			Labels: map[string]string{
-				key.LegacyLabelCluster: key.ClusterID(customObject),
-				key.LabelCustomer:      key.ClusterCustomer(customObject),
-				key.LabelCluster:       key.ClusterID(customObject),
-				key.LabelOrganization:  key.ClusterCustomer(customObject),
-				key.LabelVersionBundle: key.VersionBundleVersion(customObject),
+				key.LabelCluster: key.ClusterID(customObject),
 			},
 		},
 		Data: map[string][]byte{
