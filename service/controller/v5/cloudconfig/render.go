@@ -2,6 +2,8 @@ package cloudconfig
 
 import (
 	"encoding/base64"
+	"encoding/hex"
+	"fmt"
 
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_1_0"
@@ -34,8 +36,11 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 
 func renderCertificatesFiles(encrypter Encrypter, certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
 	var certsMeta []k8scloudconfig.FileMetadata
+	fmt.Printf("\n----------\nenckey: %#q\nenciv: %#q", hex.EncodeToString(encrypter.key), hex.EncodeToString(encrypter.iv))
 	for _, f := range certFiles {
 		encryptedData, err := encrypter.EncryptCFB(f.Data)
+		fmt.Printf("\n\npath: %#q\nraw cert: %#q\nencrypted: %#q\n\n", f.AbsolutePath, base64.StdEncoding.EncodeToString(f.Data), base64.StdEncoding.EncodeToString(encryptedData))
+
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
