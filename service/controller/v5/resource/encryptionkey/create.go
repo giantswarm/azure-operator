@@ -8,6 +8,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
@@ -52,7 +53,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey secret")
 
 	_, err = r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Create(secret)
-	if err != nil {
+	if apierrors.IsAlreadyExists(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey: already created")
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
