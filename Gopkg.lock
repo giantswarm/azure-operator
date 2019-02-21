@@ -186,6 +186,7 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:b5997303d44d9a00b694e9f533f292d7439ee3ed10608fabd8c690764e531486"
   name = "github.com/giantswarm/apiextensions"
   packages = [
     "pkg/apis/application/v1alpha1",
@@ -201,6 +202,7 @@
     "pkg/clientset/versioned/typed/provider/v1alpha1",
     "pkg/clientset/versioned/typed/release/v1alpha1"
   ]
+  pruneopts = "UT"
   revision = "f7142f26f519703d5b2543338a05ed3f606dea5b"
 
 [[projects]]
@@ -392,8 +394,10 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:f5c567930d4fd8a2d34e0231f2e2e1c3a0b40d41d0efbbdc50bf71668a0f375f"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
+  pruneopts = "UT"
   revision = "37ad148a1015fff2d1a45b29ea05114911b7d422"
 
 [[projects]]
