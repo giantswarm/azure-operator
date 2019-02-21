@@ -54,7 +54,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "cloudconfig",
-				Description: "Change Audit policy to reduce the amount of Audit logs",
+				Description: "Improved Audit policy to reduce the amount of Audit logs (high-volume and low-risk).",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
