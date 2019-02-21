@@ -14,7 +14,7 @@ import (
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	var secret *apiv1.Secret
+	var secret *corev1.Secret
 	var encKey, encIV []byte
 
 	customObject, err := key.ToCustomObject(obj)
@@ -32,13 +32,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	secret = &apiv1.Secret{
-		Type: apiv1.SecretTypeOpaque,
-		ObjectMeta: apismetav1.ObjectMeta{
-			Name:      key.CertificateEncryptionName(customObject),
+	secret = &corev1.Secret{
+		Type: corev1.SecretTypeOpaque,
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      key.CertificateEncryptionSecretName(customObject),
 			Namespace: key.CertificateEncryptionNamespace,
 			Labels: map[string]string{
-				key.LabelCluster: key.ClusterID(customObject),
+				key.LabelCluster:      key.ClusterID(customObject),
+				key.LabelManagedBy:    r.projectName,
+				key.LabelOrganization: key.ClusterCustomer(customObject),
 			},
 		},
 		Data: map[string][]byte{

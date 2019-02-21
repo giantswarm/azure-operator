@@ -17,7 +17,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting encryptionkey secret")
 
-	err = r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Delete(key.CertificateEncryptionName(customObject), &apismetav1.DeleteOptions{})
+	err = r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Delete(key.CertificateEncryptionSecretName(customObject), &metav1.DeleteOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
