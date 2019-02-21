@@ -10,11 +10,11 @@ const (
 #  - Made install-cni initContainer.
 #  - Added 'priorityClassName: system-cluster-critical' to calico daemonset and calico typha deployment.
 #
-# Calico Version v3.2.3
-# https://docs.projectcalico.org/v3.2/releases#v3.2.3
+# Calico Version v3.5.1
+# https://docs.projectcalico.org/v3.2/releases#v3.5.1
 # This manifest includes the following component versions:
-#   calico/node:v3.2.3
-#   calico/cni:v3.2.3
+#   calico/node:v3.5.1
+#   calico/cni:v3.5.1
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -220,7 +220,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/giantswarm/node:v3.2.3
+          image: quay.io/giantswarm/node:v3.5.1
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -301,7 +301,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/giantswarm/cni:v3.2.3
+          image: quay.io/giantswarm/cni:v3.5.1
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -483,10 +483,10 @@ spec:
 
 ---
 
-# Calico Version v3.2.3
-# https://docs.projectcalico.org/v3.2/releases#v3.2.3
+# Calico Version v3.5.1
+# https://docs.projectcalico.org/v3.5/releases#v3.5.1
 kind: ClusterRole
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 metadata:
   name: calico-node
 rules:
@@ -564,7 +564,7 @@ rules:
 
 ---
 
-apiVersion: rbac.authorization.k8s.io/v1beta1
+apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: calico-node
