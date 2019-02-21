@@ -186,8 +186,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var blobObjectResource controller.Resource
 	{
 		c := blobobject.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
+			CertsSearcher: config.CertsSearcher,
+			K8sClient:     config.K8sClient,
+			Logger:        config.Logger,
 		}
 
 		blobObject, err := blobobject.New(c)

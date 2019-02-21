@@ -7,8 +7,7 @@ import (
 )
 
 type CloudConfigMock struct {
-	encrypter EncrypterMock
-	template  string
+	template string
 }
 
 func (c *CloudConfigMock) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Encrypter) (string, error) {
