@@ -59,10 +59,5 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.addEncrypterToContext(ctx, encKey, encIV)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	return nil
 }

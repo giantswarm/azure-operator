@@ -9,6 +9,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
@@ -67,8 +69,20 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	storageAccountName := key.StorageAccountName(obj)
 	masterBlobName := key.BlobName(obj, key.PrefixMaster())
 	workerBlobName := key.BlobName(obj, key.PrefixWorker())
-	encryptionKey := cc.Encrypter.GetEncryptionKey()
-	initialVector := cc.Encrypter.GetInitialVector()
+
+	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
+	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
+	if apierrors.IsNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey resource is not ready")
+		resourcecanceledcontext.SetCanceled(ctx)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return azureresource.Deployment{}, nil
+	} else if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
+	encryptionKey := encrypter.GetEncryptionKey()
+	initialVector := encrypter.GetInitialVector()
 
 	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
 	if err != nil {
