@@ -34,10 +34,10 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 	return file, nil
 }
 
-func renderCertificatesFiles(encrypter encrypter.Encrypter, certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
+func renderCertificatesFiles(encrypter encrypter.Interface, certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
 	var certsMeta []k8scloudconfig.FileMetadata
 	for _, f := range certFiles {
-		encryptedData, err := encrypter.EncryptCFB(f.Data)
+		encryptedData, err := encrypter.Encrypt(f.Data)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

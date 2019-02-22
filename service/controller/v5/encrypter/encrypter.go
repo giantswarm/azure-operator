@@ -18,15 +18,15 @@ type Encrypter struct {
 	iv  []byte
 }
 
-func New(config Config) (Encrypter, error) {
+func New(config Config) (*Encrypter, error) {
 	if config.Key == nil {
-		return Encrypter{}, microerror.Maskf(invalidConfigError, "%T.Key must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.Key must not be empty", config)
 	}
 	if config.IV == nil {
-		return Encrypter{}, microerror.Maskf(invalidConfigError, "%T.IV must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.IV must not be empty", config)
 	}
 
-	encrypter := Encrypter{
+	encrypter := &Encrypter{
 		key: config.Key,
 		iv:  config.IV,
 	}
@@ -34,7 +34,7 @@ func New(config Config) (Encrypter, error) {
 	return encrypter, nil
 }
 
-func (e *Encrypter) EncryptCFB(data []byte) ([]byte, error) {
+func (e *Encrypter) Encrypt(data []byte) ([]byte, error) {
 	block, err := aes.NewCipher(e.key)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -48,7 +48,7 @@ func (e *Encrypter) EncryptCFB(data []byte) ([]byte, error) {
 	return encryptedData, nil
 }
 
-func (e *Encrypter) DecryptCFB(encrypted []byte) ([]byte, error) {
+func (e *Encrypter) Decrypt(encrypted []byte) ([]byte, error) {
 	var block cipher.Block
 	var err error
 

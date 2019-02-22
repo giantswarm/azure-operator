@@ -11,10 +11,10 @@ type CloudConfigMock struct {
 	template string
 }
 
-func (c *CloudConfigMock) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Encrypter) (string, error) {
+func (c *CloudConfigMock) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Interface) (string, error) {
 	return c.template, nil
 }
 
-func (c *CloudConfigMock) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Encrypter) (string, error) {
+func (c *CloudConfigMock) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Interface) (string, error) {
 	return c.template, nil
 }

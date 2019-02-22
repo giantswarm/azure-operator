@@ -17,7 +17,7 @@ type masterExtension struct {
 	CalicoCIDR   string
 	ClusterCerts certs.Cluster
 	CustomObject providerv1alpha1.AzureConfig
-	Encrypter    encrypter.Encrypter
+	Encrypter    encrypter.Interface
 }
 
 // Files allows files to be injected into the master cloudconfig.

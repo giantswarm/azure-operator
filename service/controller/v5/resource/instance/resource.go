@@ -117,21 +117,21 @@ func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineSca
 	return sc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
 }
 
-func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Encrypter, error) {
+func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
 
 	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {
-		return encrypter.Encrypter{}, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
-	var enc encrypter.Encrypter
+	var enc *encrypter.Encrypter
 	{
 		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
-			return encrypter.Encrypter{}, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
 		}
 		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
-			return encrypter.Encrypter{}, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
 		}
 		c := encrypter.Config{
 			Key: secret.Data[key.CertificateEncryptionKeyName],
@@ -140,7 +140,7 @@ func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (e
 
 		enc, err = encrypter.New(c)
 		if err != nil {
-			return encrypter.Encrypter{}, microerror.Mask(err)
+			return nil, microerror.Mask(err)
 
 		}
 	}

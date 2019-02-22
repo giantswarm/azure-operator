@@ -28,12 +28,12 @@ func Test_EncryptCFB(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		encrypted, err := encrypter.EncryptCFB(tc.Input)
+		encrypted, err := encrypter.Encrypt(tc.Input)
 		if err != nil {
 			t.Errorf("case %d: %s: expected err = nil, got %v", i, tc.Name, err)
 		}
 
-		decrypted, err := encrypter.DecryptCFB(encrypted)
+		decrypted, err := encrypter.Decrypt(encrypted)
 		if err != nil {
 			t.Errorf("case %d: %s: expected err = nil, got %v", i, tc.Name, err)
 		}
