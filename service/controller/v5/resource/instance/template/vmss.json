@@ -51,7 +51,7 @@
       "defaultValue":"true"
     },
     "vmssVmCustomData":{
-      "type":"string"
+      "type":"secureString"
     },
     "vmssLbBackendPools":{
       "type":"array"
