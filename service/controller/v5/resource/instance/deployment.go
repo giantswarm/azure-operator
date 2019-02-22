@@ -73,7 +73,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
 	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey resource is not ready")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
 		resourcecanceledcontext.SetCanceled(ctx)
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return azureresource.Deployment{}, nil

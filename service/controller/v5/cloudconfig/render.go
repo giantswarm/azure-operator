@@ -2,7 +2,6 @@ package cloudconfig
 
 import (
 	"encoding/base64"
-	"fmt"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/certs"
@@ -36,10 +35,8 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 
 func renderCertificatesFiles(encrypter encrypter.Encrypter, certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
 	var certsMeta []k8scloudconfig.FileMetadata
-	fmt.Printf("\n----------\nenckey: %#q\nenciv: %#q", encrypter.GetEncryptionKey(), encrypter.GetInitialVector())
 	for _, f := range certFiles {
 		encryptedData, err := encrypter.EncryptCFB(f.Data)
-		fmt.Printf("\n\npath: %#q\nraw cert: %#q\nencrypted: %#q\n\n", f.AbsolutePath, base64.StdEncoding.EncodeToString(f.Data), base64.StdEncoding.EncodeToString(encryptedData))
 
 		if err != nil {
 			return nil, microerror.Mask(err)
