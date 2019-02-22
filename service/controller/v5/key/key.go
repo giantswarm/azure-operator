@@ -39,10 +39,15 @@ const (
 	LabelApp           = "app"
 	LabelCluster       = "giantswarm.io/cluster"
 	LabelCustomer      = "customer"
+	LabelManagedBy     = "giantswarm.io/managed-by"
 	LabelOrganization  = "giantswarm.io/organization"
 	LabelVersionBundle = "giantswarm.io/version-bundle"
 
 	LegacyLabelCluster = "cluster"
+
+	CertificateEncryptionNamespace = "default"
+	CertificateEncryptionKeyName   = "encryptionkey"
+	CertificateEncryptionIVName    = "encryptioniv"
 )
 
 const (
@@ -92,6 +97,10 @@ func BlobContainerName() string {
 
 func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
+}
+
+func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-certificate-encryption", customObject.Spec.Cluster.ID)
 }
 
 func CloudConfigSmallTemplates() []string {

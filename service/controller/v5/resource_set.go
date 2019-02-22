@@ -17,6 +17,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/containerurl"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/deployment"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/service/controller/v5/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/endpoints"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/instance"
 	"github.com/giantswarm/azure-operator/service/controller/v5/resource/namespace"
@@ -162,6 +163,20 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		containerURLResource, err = containerurl.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var encryptionkeyResource controller.Resource
+	{
+		c := encryptionkey.Config{
+			K8sClient:   config.K8sClient,
+			Logger:      config.Logger,
+			ProjectName: config.ProjectName,
+		}
+
+		encryptionkeyResource, err = encryptionkey.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -347,6 +362,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		serviceResource,
 		resourceGroupResource,
 		containerURLResource,
+		encryptionkeyResource,
 		blobObjectResource,
 		deploymentResource,
 		vnetPeeringCleanerResource,
