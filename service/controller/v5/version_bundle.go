@@ -52,6 +52,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Improved node draining during updates and scaling.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "kubernetes",
+				Description: "Improved Audit policy to reduce the amount of Audit logs (high-volume and low-risk).",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
