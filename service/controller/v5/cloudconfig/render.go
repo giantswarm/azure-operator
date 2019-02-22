@@ -6,6 +6,8 @@ import (
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_1_0"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 )
 
 func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAsset, error) {
@@ -32,12 +34,16 @@ func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAss
 	return file, nil
 }
 
-func renderCertificatesFiles(certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
+func renderCertificatesFiles(encrypter encrypter.Interface, certFiles certs.Files) ([]k8scloudconfig.FileAsset, error) {
 	var certsMeta []k8scloudconfig.FileMetadata
 	for _, f := range certFiles {
+		encryptedData, err := encrypter.Encrypt(f.Data)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 		m := k8scloudconfig.FileMetadata{
-			AssetContent: string(f.Data),
-			Path:         f.AbsolutePath,
+			AssetContent: string(encryptedData),
+			Path:         f.AbsolutePath + ".enc",
 			Owner: k8scloudconfig.Owner{
 				User:  FileOwnerUser,
 				Group: FileOwnerGroup,
@@ -133,6 +139,26 @@ func renderIngressLBFile(params ingressLBFileParams) (k8scloudconfig.FileAsset, 
 	}
 
 	return file, nil
+}
+
+func renderCertificateDecrypterUnit(params certificateDecrypterUnitParams) (k8scloudconfig.UnitAsset, error) {
+	unitMeta := k8scloudconfig.UnitMetadata{
+		AssetContent: certDecrypterUnitTemplate,
+		Name:         certDecrypterUnitName,
+		Enabled:      true,
+	}
+
+	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
+	}
+
+	asset := k8scloudconfig.UnitAsset{
+		Metadata: unitMeta,
+		Content:  content,
+	}
+
+	return asset, nil
 }
 
 func renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {

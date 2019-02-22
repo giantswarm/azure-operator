@@ -1,9 +1,17 @@
 package blobobject
 
 import (
+	"context"
+
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
+	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
 const (
@@ -12,21 +20,33 @@ const (
 )
 
 type Config struct {
+	CertsSearcher         certs.Interface
+	K8sClient             kubernetes.Interface
 	Logger                micrologger.Logger
 	StorageAccountsClient *storage.AccountsClient
 }
 
 type Resource struct {
-	logger micrologger.Logger
+	certsSearcher certs.Interface
+	k8sClient     kubernetes.Interface
+	logger        micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
+	if config.CertsSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
+	}
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
 	r := &Resource{
-		logger: config.Logger,
+		certsSearcher: config.CertsSearcher,
+		k8sClient:     config.K8sClient,
+		logger:        config.Logger,
 	}
 
 	return r, nil
@@ -35,6 +55,37 @@ func New(config Config) (*Resource, error) {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
+}
+
+func (r *Resource) toEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+
+	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var enc *encrypter.Encrypter
+	{
+		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
+			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+		}
+		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
+			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+		}
+		c := encrypter.Config{
+			Key: secret.Data[key.CertificateEncryptionKeyName],
+			IV:  secret.Data[key.CertificateEncryptionIVName],
+		}
+
+		enc, err = encrypter.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+
+		}
+	}
+
+	return enc, nil
 }
 
 func toContainerObjectState(v interface{}) ([]ContainerObjectState, error) {

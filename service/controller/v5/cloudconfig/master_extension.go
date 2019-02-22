@@ -8,15 +8,16 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v5/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 )
 
 type masterExtension struct {
-	Azure         setting.Azure
-	AzureConfig   client.AzureClientSetConfig
-	CalicoCIDR    string
-	CertsSearcher certs.Interface
-	CustomObject  providerv1alpha1.AzureConfig
+	Azure        setting.Azure
+	AzureConfig  client.AzureClientSetConfig
+	CalicoCIDR   string
+	ClusterCerts certs.Cluster
+	CustomObject providerv1alpha1.AzureConfig
+	Encrypter    encrypter.Interface
 }
 
 // Files allows files to be injected into the master cloudconfig.
@@ -59,6 +60,12 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 
 // Units allows systemd units to be injected into the master cloudconfig.
 func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
+	// Unit for decrypting certificates.
+	certDecrypterUnit, err := me.renderCertificateDecrypterUnit()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	// Unit to format etcd disk.
 	formatEtcdUnit, err := me.renderEtcdDiskFormatUnit()
 	if err != nil {
@@ -90,6 +97,7 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	}
 
 	units := []k8scloudconfig.UnitAsset{
+		certDecrypterUnit,
 		formatEtcdUnit,
 		mountEtcdUnit,
 		formatDockerUnit,
@@ -117,12 +125,8 @@ func (me *masterExtension) renderCalicoAzureFile() (k8scloudconfig.FileAsset, er
 }
 
 func (me *masterExtension) renderCertificatesFiles() ([]k8scloudconfig.FileAsset, error) {
-	clusterCerts, err := me.CertsSearcher.SearchCluster(key.ClusterID(me.CustomObject))
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	assets, err := renderCertificatesFiles(certs.NewFilesClusterMaster(clusterCerts))
+	certFiles := certs.NewFilesClusterMaster(me.ClusterCerts)
+	assets, err := renderCertificatesFiles(me.Encrypter, certFiles)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -156,6 +160,18 @@ func (me *masterExtension) renderIngressLBFile() (k8scloudconfig.FileAsset, erro
 	asset, err := renderIngressLBFile(params)
 	if err != nil {
 		return k8scloudconfig.FileAsset{}, microerror.Mask(err)
+	}
+
+	return asset, nil
+}
+
+func (me *masterExtension) renderCertificateDecrypterUnit() (k8scloudconfig.UnitAsset, error) {
+	certFiles := certs.NewFilesClusterMaster(me.ClusterCerts)
+	params := newCertificateDecrypterUnitParams(certFiles)
+
+	asset, err := renderCertificateDecrypterUnit(params)
+	if err != nil {
+		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
 
 	return asset, nil

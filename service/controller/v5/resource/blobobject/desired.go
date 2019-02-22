@@ -4,6 +4,8 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
@@ -20,14 +22,29 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	storageAccountName := key.StorageAccountName(customObject)
+	clusterCerts, err := r.certsSearcher.SearchCluster(key.ClusterID(customObject))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
+	storageAccountName := key.StorageAccountName(customObject)
 	containerName := key.BlobContainerName()
+	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(customObject)
+
+	encrypter, err := r.toEncrypterObject(ctx, certificateEncryptionSecretName)
+	if apierrors.IsNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey resource is not ready")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		resourcecanceledcontext.SetCanceled(ctx)
+		return nil, nil
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	output := []ContainerObjectState{}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewMasterCloudConfig(customObject)
+		b, err := ctlCtx.CloudConfig.NewMasterCloudConfig(customObject, clusterCerts, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -43,7 +60,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewWorkerCloudConfig(customObject)
+		b, err := ctlCtx.CloudConfig.NewWorkerCloudConfig(customObject, clusterCerts, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
