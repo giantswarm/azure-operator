@@ -3,10 +3,11 @@ package cloudconfig
 import (
 	"encoding/base64"
 
-	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_1_0"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 )
 
 func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAsset, error) {
@@ -37,7 +38,6 @@ func renderCertificatesFiles(encrypter encrypter.Encrypter, certFiles certs.File
 	var certsMeta []k8scloudconfig.FileMetadata
 	for _, f := range certFiles {
 		encryptedData, err := encrypter.EncryptCFB(f.Data)
-
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

@@ -2,8 +2,9 @@ package cloudconfig
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/certs"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 )
 
 type Interface interface {

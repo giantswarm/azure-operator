@@ -15,7 +15,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/debugger"
-	enc "github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
@@ -117,33 +117,33 @@ func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineSca
 	return sc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
 }
 
-func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (enc.Encrypter, error) {
+func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Encrypter, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
 
 	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {
-		return enc.Encrypter{}, microerror.Mask(err)
+		return encrypter.Encrypter{}, microerror.Mask(err)
 	}
 
-	var encrypter enc.Encrypter
+	var enc encrypter.Encrypter
 	{
 		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
-			return enc.Encrypter{}, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+			return encrypter.Encrypter{}, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
 		}
 		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
-			return enc.Encrypter{}, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+			return encrypter.Encrypter{}, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
 		}
-		c := enc.Config{
+		c := encrypter.Config{
 			Key: secret.Data[key.CertificateEncryptionKeyName],
 			IV:  secret.Data[key.CertificateEncryptionIVName],
 		}
 
-		encrypter, err = enc.New(c)
+		enc, err = encrypter.New(c)
 		if err != nil {
-			return enc.Encrypter{}, microerror.Mask(err)
+			return encrypter.Encrypter{}, microerror.Mask(err)
 
 		}
 	}
 
-	return encrypter, nil
+	return enc, nil
 }

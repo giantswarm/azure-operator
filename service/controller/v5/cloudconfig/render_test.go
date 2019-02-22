@@ -3,8 +3,9 @@ package cloudconfig
 import (
 	"testing"
 
-	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/certs"
+
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 )
 
 func Test_render(t *testing.T) {
