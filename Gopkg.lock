@@ -219,13 +219,8 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:788b90f0a9ec05644bdf23323c808325902234dc00551fad2f417242fe3e1f3a"
   name = "github.com/giantswarm/certs"
-  packages = [
-    ".",
-    "certstest",
-  ]
-  pruneopts = "UT"
+  packages = ["."]
   revision = "f0fb2f61d78e06f2d1e17f940fd782b92bf29642"
 
 [[projects]]
@@ -1210,77 +1205,6 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  input-imports = [
-    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute",
-    "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
-    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network",
-    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
-    "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage",
-    "github.com/Azure/azure-storage-blob-go/azblob",
-    "github.com/Azure/go-autorest/autorest",
-    "github.com/Azure/go-autorest/autorest/adal",
-    "github.com/Azure/go-autorest/autorest/azure",
-    "github.com/Azure/go-autorest/autorest/to",
-    "github.com/docker/distribution/reference",
-    "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1",
-    "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1",
-    "github.com/giantswarm/apiextensions/pkg/clientset/versioned",
-    "github.com/giantswarm/apprclient",
-    "github.com/giantswarm/certs",
-    "github.com/giantswarm/certs/certstest",
-    "github.com/giantswarm/e2e-harness/pkg/framework",
-    "github.com/giantswarm/e2e-harness/pkg/framework/resource",
-    "github.com/giantswarm/e2e-harness/pkg/release",
-    "github.com/giantswarm/e2eclients/azure",
-    "github.com/giantswarm/e2esetup/k8s",
-    "github.com/giantswarm/e2etemplates/pkg/chartvalues",
-    "github.com/giantswarm/e2etests/clusterstate",
-    "github.com/giantswarm/e2etests/clusterstate/provider",
-    "github.com/giantswarm/e2etests/scaling",
-    "github.com/giantswarm/e2etests/scaling/provider",
-    "github.com/giantswarm/e2etests/update",
-    "github.com/giantswarm/e2etests/update/provider",
-    "github.com/giantswarm/exporterkit/collector",
-    "github.com/giantswarm/helmclient",
-    "github.com/giantswarm/ipam",
-    "github.com/giantswarm/k8scloudconfig/v_3_6_3",
-    "github.com/giantswarm/k8scloudconfig/v_3_6_4",
-    "github.com/giantswarm/k8scloudconfig/v_4_1_0",
-    "github.com/giantswarm/microendpoint/endpoint/healthz",
-    "github.com/giantswarm/microendpoint/endpoint/version",
-    "github.com/giantswarm/microendpoint/service/version",
-    "github.com/giantswarm/microerror",
-    "github.com/giantswarm/microkit/command",
-    "github.com/giantswarm/microkit/flag",
-    "github.com/giantswarm/microkit/server",
-    "github.com/giantswarm/micrologger",
-    "github.com/giantswarm/micrologger/microloggertest",
-    "github.com/giantswarm/operatorkit/client/k8scrdclient",
-    "github.com/giantswarm/operatorkit/client/k8srestconfig",
-    "github.com/giantswarm/operatorkit/controller",
-    "github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext",
-    "github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext",
-    "github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext",
-    "github.com/giantswarm/operatorkit/controller/resource/metricsresource",
-    "github.com/giantswarm/operatorkit/controller/resource/retryresource",
-    "github.com/giantswarm/operatorkit/informer",
-    "github.com/giantswarm/randomkeys",
-    "github.com/giantswarm/statusresource",
-    "github.com/giantswarm/tenantcluster",
-    "github.com/giantswarm/versionbundle",
-    "github.com/prometheus/client_golang/prometheus",
-    "github.com/spf13/viper",
-    "golang.org/x/sync/errgroup",
-    "k8s.io/api/core/v1",
-    "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
-    "k8s.io/apimachinery/pkg/api/errors",
-    "k8s.io/apimachinery/pkg/apis/meta/v1",
-    "k8s.io/apimachinery/pkg/util/intstr",
-    "k8s.io/apiserver/pkg/authentication/authenticator",
-    "k8s.io/apiserver/pkg/endpoints/request",
-    "k8s.io/client-go/kubernetes",
-    "k8s.io/client-go/kubernetes/fake",
-    "k8s.io/client-go/rest",
-  ]
+  inputs-digest = "0aa8d6ee8897ea2ea9e144bf08b654155adcc9f9657853c2466e9cd52a92444e"
   solver-name = "gps-cdcl"
   solver-version = 1
