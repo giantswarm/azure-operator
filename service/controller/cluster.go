@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/client/k8scrdclient"
@@ -46,6 +47,19 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	}
 
 	var err error
+
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var crdClient *k8scrdclient.CRDClient
 	{
@@ -123,9 +137,10 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var v5ResourceSet *controller.ResourceSet
 	{
 		c := v5.ResourceSetConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
+			CertsSearcher: certsSearcher,
+			G8sClient:     config.G8sClient,
+			K8sClient:     config.K8sClient,
+			Logger:        config.Logger,
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,

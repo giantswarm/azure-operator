@@ -12,6 +12,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
 	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 	"github.com/giantswarm/azure-operator/service/network"
 )
@@ -37,7 +38,6 @@ type Config struct {
 }
 
 type CloudConfig struct {
-	certsSearcher      certs.Interface
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
@@ -50,9 +50,6 @@ type CloudConfig struct {
 }
 
 func New(config Config) (*CloudConfig, error) {
-	if config.CertsSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
-	}
 	if config.IgnitionPath == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.IgnitionPath must not be empty", config)
 	}
@@ -71,7 +68,6 @@ func New(config Config) (*CloudConfig, error) {
 	}
 
 	c := &CloudConfig{
-		certsSearcher:      config.CertsSearcher,
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
 
@@ -88,7 +84,7 @@ func New(config Config) (*CloudConfig, error) {
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, clusterCerts certs.Cluster, encrypter encrypter.Interface) (string, error) {
 	apiserverEncryptionKey, err := c.getEncryptionkey(customObject)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -178,11 +174,12 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		}
 
 		params.Extension = &masterExtension{
-			Azure:         c.azure,
-			AzureConfig:   c.azureConfig,
-			CalicoCIDR:    c.azureNetwork.Calico.String(),
-			CertsSearcher: c.certsSearcher,
-			CustomObject:  customObject,
+			Azure:        c.azure,
+			AzureConfig:  c.azureConfig,
+			CalicoCIDR:   c.azureNetwork.Calico.String(),
+			ClusterCerts: clusterCerts,
+			CustomObject: customObject,
+			Encrypter:    encrypter,
 		}
 		params.ExtraManifests = []string{
 			"calico-azure.yaml",
@@ -200,7 +197,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig) (string, error) {
+func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, clusterCerts certs.Cluster, encrypter encrypter.Interface) (string, error) {
 	var err error
 
 	// NOTE in Azure we disable Calico right now. This is due to a transitioning
@@ -228,10 +225,11 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			},
 		}
 		params.Extension = &workerExtension{
-			Azure:         c.azure,
-			AzureConfig:   c.azureConfig,
-			CertsSearcher: c.certsSearcher,
-			CustomObject:  customObject,
+			Azure:        c.azure,
+			AzureConfig:  c.azureConfig,
+			ClusterCerts: clusterCerts,
+			CustomObject: customObject,
+			Encrypter:    encrypter,
 		}
 		params.SSOPublicKey = c.ssoPublicKey
 

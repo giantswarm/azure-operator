@@ -9,10 +9,14 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v5/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v5/key"
 )
 
 const (
@@ -22,6 +26,7 @@ const (
 type Config struct {
 	Debugger  *debugger.Debugger
 	G8sClient versioned.Interface
+	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
 	Azure           setting.Azure
@@ -31,6 +36,7 @@ type Config struct {
 type Resource struct {
 	debugger  *debugger.Debugger
 	g8sClient versioned.Interface
+	k8sClient kubernetes.Interface
 	logger    micrologger.Logger
 
 	azure           setting.Azure
@@ -43,6 +49,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
+	}
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -58,6 +67,7 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		debugger:  config.Debugger,
 		g8sClient: config.G8sClient,
+		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
 		azure:           config.Azure,
@@ -105,4 +115,35 @@ func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineSca
 	}
 
 	return sc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
+}
+
+func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+
+	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var enc *encrypter.Encrypter
+	{
+		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
+			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+		}
+		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
+			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+		}
+		c := encrypter.Config{
+			Key: secret.Data[key.CertificateEncryptionKeyName],
+			IV:  secret.Data[key.CertificateEncryptionIVName],
+		}
+
+		enc, err = encrypter.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+
+		}
+	}
+
+	return enc, nil
 }
