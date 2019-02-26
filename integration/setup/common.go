@@ -4,10 +4,12 @@ import (
 	"context"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/integration/env"
+	"github.com/giantswarm/azure-operator/integration/key"
 )
 
 // common installs components required to run the operator.
@@ -31,7 +33,7 @@ func common(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		err = config.Release.Install(ctx, "e2esetup-vault", release.NewStableVersion(), values, config.Release.Condition().PodExists(ctx, "default", "app=vault"))
+		err = config.Release.Install(ctx, key.VaultReleaseName(), release.NewStableVersion(), values, config.Release.Condition().PodExists(ctx, "default", "app=vault"))
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -58,7 +60,20 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		err := config.Host.InstallCertResource()
+		c := chartvalues.CertOperatorConfig{
+			CommonDomain:       env.CommonDomain(),
+			RegistryPullSecret: env.RegistryPullSecret(),
+			Vault: chartvalues.CertOperatorVault{
+				Token: env.VaultToken(),
+			},
+		}
+
+		values, err := chartvalues.NewCertOperator(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = config.Release.InstallOperator(ctx, key.CertOperatorReleaseName(), release.NewStableVersion(), values, corev1alpha1.NewCertConfigCRD())
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -74,7 +89,7 @@ func common(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		err = config.Release.InstallOperator(ctx, "node-operator", release.NewStableVersion(), values, corev1alpha1.NewNodeConfigCRD())
+		err = config.Release.InstallOperator(ctx, key.NodeOperatorReleaseName(), release.NewStableVersion(), values, corev1alpha1.NewNodeConfigCRD())
 		if err != nil {
 			return microerror.Mask(err)
 		}
