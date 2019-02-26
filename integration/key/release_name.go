@@ -4,14 +4,6 @@ import (
 	"fmt"
 )
 
-func AWSConfigReleaseName(clusterID string) string {
-	return fmt.Sprintf("e2esetup-awsconfig-%s", clusterID)
-}
-
-func AWSOperatorReleaseName() string {
-	return "aws-operator"
-}
-
 func CertOperatorReleaseName() string {
 	return "cert-operator"
 }
