@@ -1,10 +1,10 @@
 package installation
 
 import (
-	"github.com/giantswarm/azure-operator/flag/service/installation/guest"
+	"github.com/giantswarm/azure-operator/flag/service/installation/tenant"
 )
 
 type Installation struct {
-	Name  string
-	Guest guest.Guest
+	Name   string
+	Tenant tenant.Tenant
 }
