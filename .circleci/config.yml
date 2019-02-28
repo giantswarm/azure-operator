@@ -111,62 +111,55 @@ workflows:
       - build
       - hold:
           type: approval
+      - master:
+          requires:
+            - build
+          filters:
+            branches:
+              only: master
+      - pr:
+          requires:
+            - build
+            - hold
           filters:
             branches:
               ignore: master
-          requires:
-          - build
 
 
 
+#     - e2eTestCurMasterClusterState:
+#         requires:
+#         - master
+#     - e2eTestWIPMasterClusterState:
+#         requires:
+#         - master
       - e2eTestCurPRClusterState:
           requires:
-          - hold
-      - e2eTestCurMasterClusterState:
-          filters:
-            branches:
-              only: master
-          requires:
-          - build
+          - pr
       - e2eTestWIPPRClusterState:
           requires:
-          - hold
-      - e2eTestWIPMasterClusterState:
-          filters:
-            branches:
-              only: master
-          requires:
-          - build
+          - pr
 
 
 
+#     - e2eTestCurMasterScaling:
+#         requires:
+#         - master
+#     - e2eTestWIPMasterScaling:
+#         requires:
+#         - master
       - e2eTestCurPRScaling:
           requires:
-          - hold
-      - e2eTestCurMasterScaling:
-          filters:
-            branches:
-              only: master
-          requires:
-          - build
+          - pr
       - e2eTestWIPPRScaling:
           requires:
-          - hold
-      - e2eTestWIPMasterScaling:
-          filters:
-            branches:
-              only: master
-          requires:
-          - build
+          - pr
 
 
 
-      - e2eTestCurMasterUpdate:
-          filters:
-            branches:
-              only: master
-          requires:
-          - build
+#     - e2eTestCurMasterUpdate:
+#         requires:
+#         - master
       - e2eTestCurPRUpdate:
           requires:
-          - hold
+          - pr
