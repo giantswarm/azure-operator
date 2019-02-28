@@ -23,9 +23,6 @@ data:
         location: '{{ .Values.Installation.V1.Provider.Azure.Location }}'
         msi:
           enabled: '{{ .Values.Installation.V1.Provider.Azure.MSI.Enabled }}'
-      tenant:
-        ssh:
-          ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
       installation:
         name: '{{ .Values.Installation.V1.Name }}'
       {{- if .Values.Installation.V1.Guest }}
@@ -42,3 +39,6 @@ data:
         {{- end }}
       kubernetes:
         incluster: true
+      tenant:
+        ssh:
+          ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
