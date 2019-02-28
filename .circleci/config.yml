@@ -40,6 +40,17 @@ jobs:
           if [ "${CIRCLE_BRANCH}" == "master" ]; then
             ./architect deploy
           fi
+  master:
+    docker:
+      - image: busybox
+    steps:
+      - run: "true"
+  pr:
+    docker:
+      - image: busybox
+    steps:
+      - run: "true"
+
 
 
   e2eTestCurMasterClusterState:
