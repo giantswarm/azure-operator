@@ -60,6 +60,13 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
+		err := ensureCertConfigsInstalled(ctx, env.ClusterID(), config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
 		c := chartvalues.NodeOperatorConfig{
 			RegistryPullSecret: env.RegistryPullSecret(),
 		}
