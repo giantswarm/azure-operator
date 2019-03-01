@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/e2e-harness/pkg/release"
-	"github.com/giantswarm/e2esetup/aws/env"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/key"
 )
 
