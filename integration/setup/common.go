@@ -53,26 +53,6 @@ func common(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		err = config.Host.InstallStableOperator("cert-operator", "certconfig", values)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	{
-		c := chartvalues.CertOperatorConfig{
-			CommonDomain:       env.CommonDomain(),
-			RegistryPullSecret: env.RegistryPullSecret(),
-			Vault: chartvalues.CertOperatorVault{
-				Token: env.VaultToken(),
-			},
-		}
-
-		values, err := chartvalues.NewCertOperator(c)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
 		err = config.Release.InstallOperator(ctx, key.CertOperatorReleaseName(), release.NewStableVersion(), values, corev1alpha1.NewCertConfigCRD())
 		if err != nil {
 			return microerror.Mask(err)
