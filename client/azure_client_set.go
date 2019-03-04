@@ -22,8 +22,7 @@ type AzureClientSetConfig struct {
 	ClientSecret string
 	// The cloud environment identifier. Takes values from
 	// https://github.com/Azure/go-autorest/blob/ec5f4903f77ed9927ac95b19ab8e44ada64c1356/autorest/azure/environments.go#L13
-	// TODO rename to EnvironmentName. See https://github.com/giantswarm/giantswarm/issues/4124.
-	Cloud string
+	EnvironmentName string
 	// SubscriptionID is the ID of the Azure subscription.
 	SubscriptionID string
 	// TenantID is the ID of the Active Directory tenant.
@@ -88,9 +87,9 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.%s", err)
 	}
 
-	// Returns environment object contains all API endpoints for specific Azure cloud.
-	// For empty config.Cloud returns Azure public cloud.
-	env, err := parseAzureEnvironment(config.Cloud)
+	// Returns environment object contains all API endpoints for specific Azure
+	// cloud. For empty config.EnvironmentName returns Azure public cloud.
+	env, err := parseAzureEnvironment(config.EnvironmentName)
 	if err != nil {
 		return nil, microerror.Maskf(err, "parsing Azure environment")
 	}

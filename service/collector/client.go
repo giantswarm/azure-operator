@@ -33,7 +33,7 @@ func getClientSets(k8sClient kubernetes.Interface, environmentName string) ([]*c
 			return nil, microerror.Mask(err)
 		}
 
-		config.Cloud = environmentName
+		config.EnvironmentName = environmentName
 
 		clientSet, err := client.NewAzureClientSet(*config)
 		if err != nil {

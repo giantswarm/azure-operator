@@ -37,7 +37,7 @@ func NewSet(config SetConfig) (*Set, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			EnvironmentName: config.AzureSetting.Cloud,
+			EnvironmentName: config.AzureSetting.EnvironmentName,
 		}
 
 		deploymentCollector, err = NewDeployment(c)
@@ -52,7 +52,7 @@ func NewSet(config SetConfig) (*Set, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			EnvironmentName: config.AzureSetting.Cloud,
+			EnvironmentName: config.AzureSetting.EnvironmentName,
 		}
 
 		resourceGroupCollector, err = NewResourceGroup(c)

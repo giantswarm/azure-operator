@@ -171,7 +171,7 @@ func (d *Deployment) getDeploymentsClient(cr providerv1alpha1.AzureConfig) (*res
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	config.Cloud = d.environmentName
+	config.EnvironmentName = d.environmentName
 
 	azureClients, err := client.NewAzureClientSet(*config)
 	if err != nil {
