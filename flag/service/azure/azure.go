@@ -7,14 +7,13 @@ import (
 )
 
 type Azure struct {
-	// TODO rename to EnvironmentName. See https://github.com/giantswarm/giantswarm/issues/4124.
-	Cloud          string
-	ClientID       string
-	ClientSecret   string
-	HostCluster    hostcluster.HostCluster
-	MSI            msi.MSI
-	Location       string
-	SubscriptionID string
-	TenantID       string
-	Template       template.Template
+	ClientID        string
+	ClientSecret    string
+	EnvironmentName string
+	HostCluster     hostcluster.HostCluster
+	MSI             msi.MSI
+	Location        string
+	SubscriptionID  string
+	TenantID        string
+	Template        template.Template
 }
