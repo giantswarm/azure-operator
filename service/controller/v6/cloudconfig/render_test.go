@@ -5,7 +5,7 @@ import (
 
 	"github.com/giantswarm/certs"
 
-	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v6/encrypter"
 )
 
 func Test_render(t *testing.T) {
