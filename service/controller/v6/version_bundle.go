@@ -9,8 +9,8 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 
 			{
-				Component:   "TODO",
-				Description: "TODO",
+				Component:   "azure-operator",
+				Description: "Fix ingress load-balancer creation.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
