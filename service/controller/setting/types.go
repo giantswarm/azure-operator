@@ -3,15 +3,14 @@ package setting
 import "fmt"
 
 type Azure struct {
-	// TODO rename to EnvironmentName. See https://github.com/giantswarm/giantswarm/issues/4124.
-	Cloud       string
-	HostCluster AzureHostCluster
-	MSI         AzureMSI
-	Location    string
+	EnvironmentName string
+	HostCluster     AzureHostCluster
+	MSI             AzureMSI
+	Location        string
 }
 
 func (a Azure) Validate() error {
-	if a.Cloud == "" {
+	if a.EnvironmentName == "" {
 		return fmt.Errorf("Location must not be empty")
 	}
 	if err := a.HostCluster.Validate(); err != nil {

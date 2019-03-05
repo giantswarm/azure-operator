@@ -72,7 +72,7 @@ func New(config Config) (*Service, error) {
 	var err error
 
 	azure := setting.Azure{
-		Cloud: config.Viper.GetString(config.Flag.Service.Azure.Cloud),
+		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
 		HostCluster: setting.AzureHostCluster{
 			CIDR:                  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
 			ResourceGroup:         config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
@@ -86,11 +86,11 @@ func New(config Config) (*Service, error) {
 	}
 
 	azureConfig := client.AzureClientSetConfig{
-		ClientID:       config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		ClientSecret:   config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		Cloud:          config.Viper.GetString(config.Flag.Service.Azure.Cloud),
-		SubscriptionID: config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
-		TenantID:       config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+		ClientID:        config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		ClientSecret:    config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
+		SubscriptionID:  config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
+		TenantID:        config.Viper.GetString(config.Flag.Service.Azure.TenantID),
 	}
 
 	OIDC := setting.OIDC{
