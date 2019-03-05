@@ -72,7 +72,7 @@ func New(config Config) (*Service, error) {
 	var err error
 
 	azure := setting.Azure{
-		Cloud: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
+		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
 		HostCluster: setting.AzureHostCluster{
 			CIDR:                  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
 			ResourceGroup:         config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),

@@ -25,7 +25,7 @@ type cloudProviderConfFileVMType string
 type cloudProviderConfFileParams struct {
 	AADClientID                 string
 	AADClientSecret             string
-	Cloud                       string
+	EnvironmentName             string
 	Location                    string
 	PrimaryScaleSetName         string
 	ResourceGroup               string
@@ -42,7 +42,7 @@ func newCloudProviderConfFileParams(azure setting.Azure, azureConfig client.Azur
 	return cloudProviderConfFileParams{
 		AADClientID:                 azureConfig.ClientID,
 		AADClientSecret:             azureConfig.ClientSecret,
-		Cloud:                       azure.Cloud,
+		EnvironmentName:             azure.EnvironmentName,
 		Location:                    azure.Location,
 		PrimaryScaleSetName:         key.WorkerVMSSName(obj),
 		ResourceGroup:               key.ResourceGroupName(obj),
