@@ -12,8 +12,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/v5/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/key"
 	"github.com/giantswarm/azure-operator/service/network"
 )
 

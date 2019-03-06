@@ -1,4 +1,4 @@
-package v5
+package v5patch1
 
 import (
 	"github.com/giantswarm/microerror"
