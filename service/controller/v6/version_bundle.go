@@ -13,6 +13,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Fix ingress load-balancer creation.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "kubernetes",
+				Description: "Update to 1.13.4 (CVE-2019-1002100).",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -33,7 +38,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.13.3",
+				Version: "1.13.4",
 			},
 		},
 		Name:    "azure-operator",

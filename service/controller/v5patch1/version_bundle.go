@@ -6,7 +6,13 @@ import (
 
 func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
-		Changelogs: []versionbundle.Changelog{},
+		Changelogs: []versionbundle.Changelog{
+			{
+				Component:   "kubernetes",
+				Description: "Update to 1.13.4 (CVE-2019-1002100).",
+				Kind:        versionbundle.KindAdded,
+			},
+		},
 		Components: []versionbundle.Component{
 			{
 				Name:    "calico",
@@ -26,10 +32,10 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.13.3",
+				Version: "1.13.4",
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.1.0",
+		Version: "2.1.1",
 	}
 }
