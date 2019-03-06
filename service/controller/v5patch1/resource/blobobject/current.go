@@ -6,9 +6,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
-	"github.com/giantswarm/azure-operator/service/controller/v5/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v5/key"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/key"
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {

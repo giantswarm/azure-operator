@@ -7,7 +7,7 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_1_0"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/v5/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/encrypter"
 )
 
 func renderCalicoAzureFile(params calicoAzureFileParams) (k8scloudconfig.FileAsset, error) {

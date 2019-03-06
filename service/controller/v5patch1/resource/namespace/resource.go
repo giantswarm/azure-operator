@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Name = "namespacev5"
+	Name = "namespacev5patch1"
 )
 
 type Config struct {

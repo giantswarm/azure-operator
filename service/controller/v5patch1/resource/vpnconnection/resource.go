@@ -6,13 +6,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/controllercontext"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
 
 const (
-	Name = "vpnconnectionv5"
+	Name = "vpnconnectionv5patch1"
 )
 
 // Config is the configuration required by Resource.

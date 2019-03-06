@@ -9,11 +9,11 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v5/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v5patch1/controllercontext"
 )
 
 const (
-	Name = "vnetpeeringcleanerv5"
+	Name = "vnetpeeringcleanerv5patch1"
 )
 
 // Config is the configuration required by Resource.
