@@ -7,7 +7,6 @@ import (
 func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
-
 			{
 				Component:   "azure-operator",
 				Description: "Fix ingress load-balancer creation.",
@@ -15,8 +14,13 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "kubernetes",
-				Description: "Update to 1.13.4 (CVE-2019-1002100).",
+				Description: "Update to 1.13.4. (CVE-2019-1002100).",
 				Kind:        versionbundle.KindAdded,
+			},
+			{
+				Component:   "containerlinux",
+				Description: "Update CoreOS to 2023.4.0. (CVE-2019-8912).",
+				Kind:        versionbundle.KindChanged,
 			},
 		},
 		Components: []versionbundle.Component{
@@ -26,7 +30,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "1967.5.0",
+				Version: "2023.4.0",
 			},
 			{
 				Name:    "docker",
