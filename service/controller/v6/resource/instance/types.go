@@ -44,4 +44,5 @@ type SmallCloudconfigConfig struct {
 	CertsFiles    certs.Files
 	EncryptionKey string
 	InitialVector string
+	InstanceRole  string
 }

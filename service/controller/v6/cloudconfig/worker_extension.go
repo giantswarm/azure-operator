@@ -47,12 +47,6 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	// Unit to format docker disk.
-	formatDockerUnit, err := we.renderDockerDiskFormatUnit()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	// Unit to mount docker disk.
 	mountDockerUnit, err := we.renderDockerMountUnit()
 	if err != nil {
@@ -61,7 +55,6 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 
 	units := []k8scloudconfig.UnitAsset{
 		certDecrypterUnit,
-		formatDockerUnit,
 		mountDockerUnit,
 	}
 
@@ -108,19 +101,6 @@ func (we *workerExtension) renderCertificateDecrypterUnit() (k8scloudconfig.Unit
 
 func (we *workerExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
 	asset, err := renderDockerMountUnit()
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (we *workerExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		LUNID: "0",
-	}
-
-	asset, err := renderDockerDiskFormatUnit(params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}
