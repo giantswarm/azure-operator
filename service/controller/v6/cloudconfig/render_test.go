@@ -56,16 +56,8 @@ func Test_render(t *testing.T) {
 			Fn:   func() error { _, err := renderEtcdMountUnit(); return err },
 		},
 		{
-			Name: "renderEtcdDiskFormatUnit",
-			Fn:   func() error { _, err := renderEtcdDiskFormatUnit(diskParams{}); return err },
-		},
-		{
 			Name: "renderDockerMountUnit",
 			Fn:   func() error { _, err := renderDockerMountUnit(); return err },
-		},
-		{
-			Name: "renderDockerDiskFormatUnit",
-			Fn:   func() error { _, err := renderDockerDiskFormatUnit(diskParams{}); return err },
 		},
 		{
 			Name: "renderIngressLBUnit",

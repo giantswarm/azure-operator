@@ -172,19 +172,6 @@ func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, erro
 	return asset, nil
 }
 
-func (me *masterExtension) renderEtcdDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		LUNID: "0",
-	}
-
-	asset, err := renderEtcdDiskFormatUnit(params)
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
 func (me *masterExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
 	asset, err := renderDockerMountUnit()
 	if err != nil {

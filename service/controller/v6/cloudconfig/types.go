@@ -61,10 +61,6 @@ type certificateDecrypterUnitParams struct {
 	CertsPaths []string
 }
 
-type diskParams struct {
-	LUNID string
-}
-
 type ingressLBFileParams struct {
 	ClusterDNSDomain string
 }
