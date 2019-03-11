@@ -34,7 +34,7 @@ const Small = `{
       { 
         "name": "docker",
         "mount": {
-          "device": "/dev/disk/azure/scsi1/lun1",
+          "device": "/dev/disk/azure/scsi1/{{ if eq .InstanceRole "master"}}lun1{{ else }}lun0{{end}}",
           "wipeFilesystem": true,
           "label": "docker",
           "format": "xfs"
