@@ -29,8 +29,7 @@ const Small = `{
           "source": "data:text/plain,INITIAL_VECTOR={{ .InitialVector }}"
         }
       }
-    ]
-  },
+    ],
   "filesystems": [
       { 
         "name": "docker",
@@ -50,7 +49,7 @@ const Small = `{
           "format": "ext4"
         }
       }
-	  {{- end }}
+	   {{- end }}
     ]
   }
 }
