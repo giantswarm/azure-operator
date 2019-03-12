@@ -8,18 +8,8 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "azure-operator",
-				Description: "Fix ingress load-balancer creation.",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "kubernetes",
-				Description: "Update to 1.13.4. (CVE-2019-1002100).",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "containerlinux",
-				Description: "Update CoreOS to 2023.4.0. (CVE-2019-8912).",
+				Component:   "TODO",
+				Description: "TODO",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
@@ -46,6 +36,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.2.0",
+		Version: "2.3.0",
 	}
 }
