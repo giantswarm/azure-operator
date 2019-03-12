@@ -8,7 +8,7 @@ import (
 
 const (
 	keySize = 32
-	Name    = "encryptionkeyv6"
+	Name    = "encryptionkeyv7"
 )
 
 type Config struct {

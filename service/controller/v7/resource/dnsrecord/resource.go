@@ -8,12 +8,12 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v6/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v7/controllercontext"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "dnsrecordv6"
+	Name = "dnsrecordv7"
 )
 
 type Config struct {

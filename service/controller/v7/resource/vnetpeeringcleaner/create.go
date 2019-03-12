@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v6/key"
+	"github.com/giantswarm/azure-operator/service/controller/v7/key"
 )
 
 // EnsureCreated ensure that vnetpeering resource are deleted,
