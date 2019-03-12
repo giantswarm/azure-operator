@@ -108,6 +108,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		BlobURL:       masterBlobURL,
 		EncryptionKey: encryptionKey,
 		InitialVector: initialVector,
+		InstanceRole:  key.PrefixMaster(),
 	}
 	masterCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
 	if err != nil {
@@ -124,6 +125,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		BlobURL:       workerBlobURL,
 		EncryptionKey: encryptionKey,
 		InitialVector: initialVector,
+		InstanceRole:  key.PrefixWorker(),
 	}
 	workerCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
 	if err != nil {

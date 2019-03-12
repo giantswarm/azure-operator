@@ -29,6 +29,27 @@ const Small = `{
           "source": "data:text/plain,INITIAL_VECTOR={{ .InitialVector }}"
         }
       }
+    ],
+  "filesystems": [
+      { 
+        "name": "docker",
+        "mount": {
+          "device": "/dev/disk/azure/scsi1/{{ if eq .InstanceRole "master"}}lun1{{ else }}lun0{{end}}",
+          "wipeFilesystem": true,
+          "label": "docker",
+          "format": "xfs"
+        }
+      }{{ if eq .InstanceRole "master" -}},
+      {
+        "name": "etcd",
+        "mount": {
+          "device": "/dev/disk/azure/scsi1/lun0",
+          "wipeFilesystem": false,
+          "label": "etcd",
+          "format": "ext4"
+        }
+      }
+	   {{- end }}
     ]
   }
 }

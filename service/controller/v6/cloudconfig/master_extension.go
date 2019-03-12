@@ -66,20 +66,8 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	// Unit to format etcd disk.
-	formatEtcdUnit, err := me.renderEtcdDiskFormatUnit()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	// Unit to mount etcd disk.
 	mountEtcdUnit, err := me.renderEtcdMountUnit()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	// Unit to format docker disk.
-	formatDockerUnit, err := me.renderDockerDiskFormatUnit()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -98,9 +86,7 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 
 	units := []k8scloudconfig.UnitAsset{
 		certDecrypterUnit,
-		formatEtcdUnit,
 		mountEtcdUnit,
-		formatDockerUnit,
 		mountDockerUnit,
 		ingressLBUnit,
 	}
@@ -186,34 +172,8 @@ func (me *masterExtension) renderEtcdMountUnit() (k8scloudconfig.UnitAsset, erro
 	return asset, nil
 }
 
-func (me *masterExtension) renderEtcdDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		LUNID: "0",
-	}
-
-	asset, err := renderEtcdDiskFormatUnit(params)
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
 func (me *masterExtension) renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
 	asset, err := renderDockerMountUnit()
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	return asset, nil
-}
-
-func (me *masterExtension) renderDockerDiskFormatUnit() (k8scloudconfig.UnitAsset, error) {
-	params := diskParams{
-		LUNID: "1",
-	}
-
-	asset, err := renderDockerDiskFormatUnit(params)
 	if err != nil {
 		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
 	}

@@ -183,52 +183,12 @@ func renderEtcdMountUnit() (k8scloudconfig.UnitAsset, error) {
 	return asset, nil
 }
 
-func renderEtcdDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
-	unitMeta := k8scloudconfig.UnitMetadata{
-		AssetContent: etcdDiskFormatUnitTemplate,
-		Name:         etcdDiskFormatUnitName,
-		Enabled:      true,
-	}
-
-	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	asset := k8scloudconfig.UnitAsset{
-		Metadata: unitMeta,
-		Content:  content,
-	}
-
-	return asset, nil
-}
-
 func renderDockerMountUnit() (k8scloudconfig.UnitAsset, error) {
 	params := struct{}{}
 
 	unitMeta := k8scloudconfig.UnitMetadata{
 		AssetContent: dockerMountUnitTemplate,
 		Name:         dockerMountUnitName,
-		Enabled:      true,
-	}
-
-	content, err := k8scloudconfig.RenderAssetContent(unitMeta.AssetContent, params)
-	if err != nil {
-		return k8scloudconfig.UnitAsset{}, microerror.Mask(err)
-	}
-
-	asset := k8scloudconfig.UnitAsset{
-		Metadata: unitMeta,
-		Content:  content,
-	}
-
-	return asset, nil
-}
-
-func renderDockerDiskFormatUnit(params diskParams) (k8scloudconfig.UnitAsset, error) {
-	unitMeta := k8scloudconfig.UnitMetadata{
-		AssetContent: dockerDiskFormatUnitTemplate,
-		Name:         dockerDiskFormatUnitName,
 		Enabled:      true,
 	}
 
