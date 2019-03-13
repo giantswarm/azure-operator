@@ -173,18 +173,13 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		},
 	}
 
-	certFiles := certs.NewFilesClusterWorker(we.clusterCerts)
-
-	var certsPaths []string
-
-	for _, file := range certFiles {
-		certsPaths = append(certsPaths, file.AbsolutePath)
-	}
+	certFiles := certs.NewFilesClusterMaster(we.clusterCerts)
+	data := we.templateData(certFiles)
 
 	var newUnits []k8scloudconfig.UnitAsset
 
 	for _, fm := range unitsMeta {
-		c, err := k8scloudconfig.RenderAssetContent(fm.AssetContent, certsPaths)
+		c, err := k8scloudconfig.RenderAssetContent(fm.AssetContent, data)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
