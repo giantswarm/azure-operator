@@ -9,7 +9,6 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/v7/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/v7/key"
 	"github.com/giantswarm/azure-operator/service/controller/v7/templates/ignition"
 )
 
@@ -63,31 +62,6 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 	}
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
-}
-
-func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
-	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(customObject))
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	return string(cluster.APIServerEncryptionKey), nil
-}
-
-func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
-	c := k8scloudconfig.DefaultCloudConfigConfig()
-	c.Params = params
-	c.Template = template
-
-	cloudConfig, err := k8scloudconfig.NewCloudConfig(c)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	err = cloudConfig.ExecuteTemplate()
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return cloudConfig.String(), nil
 }
 
 type workerExtension struct {
@@ -173,7 +147,7 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		},
 	}
 
-	certFiles := certs.NewFilesClusterMaster(we.clusterCerts)
+	certFiles := certs.NewFilesClusterWorker(we.clusterCerts)
 	data := we.templateData(certFiles)
 
 	var newUnits []k8scloudconfig.UnitAsset

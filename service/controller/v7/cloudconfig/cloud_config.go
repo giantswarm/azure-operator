@@ -1,13 +1,16 @@
 package cloudconfig
 
 import (
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_1_1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/service/controller/v7/key"
 	"github.com/giantswarm/azure-operator/service/network"
 )
 
@@ -75,4 +78,29 @@ func New(config Config) (*CloudConfig, error) {
 	}
 
 	return c, nil
+}
+
+func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
+	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(customObject))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	return string(cluster.APIServerEncryptionKey), nil
+}
+
+func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
+	c := k8scloudconfig.DefaultCloudConfigConfig()
+	c.Params = params
+	c.Template = template
+
+	cloudConfig, err := k8scloudconfig.NewCloudConfig(c)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	err = cloudConfig.ExecuteTemplate()
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return cloudConfig.String(), nil
 }
