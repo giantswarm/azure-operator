@@ -309,14 +309,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:4a0488fb0653d5c720676386e116471d054824055a1d5c0ca20bfa7643eebffe"
+  digest = "1:3ff305bf387bfcbdf9ed73d651553afb7d270c5ec7b212adf5de44792929e3a9"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
     "internal/render",
     "pkg/chartvalues",
   ]
   pruneopts = "UT"
-  revision = "a30d02cb034c0bbb6c162af06ea950e988c889b7"
+  revision = "01d00a35fdcebfadddfd63267f106615fe044421"
 
 [[projects]]
   branch = "master"
@@ -609,12 +609,12 @@
   version = "v1.3.1"
 
 [[projects]]
-  branch = "master"
   digest = "1:0bfbe13936953a98ae3cfe8ed6670d396ad81edf069a806d2f6515d7bb6950df"
   name = "github.com/google/btree"
   packages = ["."]
   pruneopts = "UT"
   revision = "4030bb1f1f0c35b30ca7009e9ebd06849dd45306"
+  version = "v1.0.0"
 
 [[projects]]
   branch = "master"
@@ -622,7 +622,7 @@
   name = "github.com/google/go-github"
   packages = ["github"]
   pruneopts = "UT"
-  revision = "a627c9f2b45bda1e367a0241649807445a4fc0a8"
+  revision = "fc51e0a08ebd23dfaa8cacd77444a8ca57df151f"
 
 [[projects]]
   digest = "1:a63cff6b5d8b95638bfe300385d93b2a6d9d687734b863da8e09dc834510a690"
@@ -1105,7 +1105,7 @@
     "protobuf/field_mask",
   ]
   pruneopts = "UT"
-  revision = "5fe7a883aa19554f42890211544aa549836af7b7"
+  revision = "e79c0c59cdb5e117ef82a6f885294df3d74065d5"
 
 [[projects]]
   digest = "1:a0bdff6a1dd68e7fa6edbffe3bef8e061db79543975d1c53afcae3a8d8a6c445"
