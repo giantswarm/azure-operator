@@ -118,6 +118,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		}
 		params.ExtraManifests = []string{
 			"calico-azure.yaml",
+			"k8s-ingress-loadbalancer.yaml",
 		}
 		params.SSOPublicKey = c.ssoPublicKey
 	}
