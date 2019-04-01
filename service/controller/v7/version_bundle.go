@@ -8,8 +8,8 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "TODO",
-				Description: "TODO",
+				Component:   "cloudconfig",
+				Description: "Pin calico-kube-controllers to master.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
