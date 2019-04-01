@@ -162,7 +162,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			var newResource *Resource
 			{
 				c := Config{
-					CertsSearcher:         certstest.NewSearcher(),
+					CertsSearcher:         certstest.NewSearcher(certstest.Config{}),
 					K8sClient:             fake.NewSimpleClientset(),
 					Logger:                microloggertest.New(),
 					StorageAccountsClient: &storage.AccountsClient{},
