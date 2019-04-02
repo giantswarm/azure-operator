@@ -40,6 +40,7 @@ jobs:
           if [ "${CIRCLE_BRANCH}" == "master" ]; then
             ./architect deploy
           fi
+    - run: ./architect release
   master:
     docker:
       - image: busybox
