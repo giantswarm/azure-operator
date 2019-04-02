@@ -7,7 +7,6 @@ import (
 	"time"
 
 	"github.com/giantswarm/e2etests/update"
-	"github.com/giantswarm/e2etests/update/provider"
 
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/setup"
@@ -28,17 +27,17 @@ func init() {
 		}
 	}
 
-	var p *provider.Azure
+	var p *Provider
 	{
-		c := provider.AzureConfig{
-			HostFramework: config.Host,
-			Logger:        config.Logger,
+		c := ProviderConfig{
+			G8sClient: config.Host.G8sClient(),
+			Logger:    config.Logger,
 
 			ClusterID:   env.ClusterID(),
 			GithubToken: env.GithubToken(),
 		}
 
-		p, err = provider.NewAzure(c)
+		p, err = NewProvider(c)
 		if err != nil {
 			panic(err.Error())
 		}
