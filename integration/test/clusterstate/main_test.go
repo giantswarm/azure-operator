@@ -6,7 +6,6 @@ import (
 	"testing"
 
 	"github.com/giantswarm/e2etests/clusterstate"
-	"github.com/giantswarm/e2etests/clusterstate/provider"
 
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/setup"
@@ -27,17 +26,17 @@ func init() {
 		}
 	}
 
-	var p *provider.Azure
+	var p *Provider
 	{
-		c := provider.AzureConfig{
-			AzureClient:   config.AzureClient,
-			HostFramework: config.Host,
-			Logger:        config.Logger,
+		c := ProviderConfig{
+			AzureClient: config.AzureClient,
+			G8sClient:   config.Host.G8sClient(),
+			Logger:      config.Logger,
 
 			ClusterID: env.ClusterID(),
 		}
 
-		p, err = provider.NewAzure(c)
+		p, err = NewProvider(c)
 		if err != nil {
 			panic(err.Error())
 		}
