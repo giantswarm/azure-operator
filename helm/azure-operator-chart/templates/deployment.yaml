@@ -38,7 +38,7 @@ spec:
       serviceAccountName: azure-operator
       containers:
       - name: azure-operator
-        image: quay.io/giantswarm/azure-operator:[[ .SHA ]]
+        image: quay.io/giantswarm/azure-operator:[[ .DockerTag ]]
         volumeMounts:
         - name: azure-operator-configmap
           mountPath: /var/run/azure-operator/configmap/
