@@ -36,6 +36,7 @@ const awsOperatorTemplate = `Installation:
         IncludeTags: true
         Route53:
           Enabled: true
+        RouteTableNames: '{{ .Provider.AWS.RouteTableNames }}'
         Encrypter: '{{ .Provider.AWS.Encrypter }}'
         TrustedAdvisor:
           Enabled: false
