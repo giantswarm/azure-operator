@@ -12,6 +12,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Pin calico-kube-controllers to master.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "kubernetes",
+				Description: "Upgrade to 1.14.1.",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -32,7 +37,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.13.4",
+				Version: "1.14.1",
 			},
 		},
 		Name:    "azure-operator",
