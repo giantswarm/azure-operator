@@ -2,8 +2,6 @@ package ignition
 
 const EtcdMountUnit = `[Unit]
 Description=Mounts disk to /var/lib/etcd
-Requires=format-etcd-disk.service
-After=format-etcd-disk.service
 Before=etcd3.service
 
 [Mount]
