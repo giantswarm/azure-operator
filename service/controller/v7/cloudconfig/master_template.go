@@ -236,12 +236,12 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		},
 		{
 			AssetContent: ignition.EtcdMountUnit,
-			Name:         "etcd.mount",
+			Name:         "var-lib-etcd.mount",
 			Enabled:      true,
 		},
 		{
 			AssetContent: ignition.DockerMountUnit,
-			Name:         "docker.mount",
+			Name:         "var-lib-docker.mount",
 			Enabled:      true,
 		},
 		{
