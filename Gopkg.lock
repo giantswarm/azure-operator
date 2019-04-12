@@ -240,7 +240,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1a87381a728176e216ad15503b4951e080d876941d421212bd48f6be39bc0fb6"
+  digest = "1:2ec89783a5a8596b96eb90d6483852590ce8118ca5bcb08a607d1c868b79332a"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "internal/filelogger",
@@ -250,7 +250,7 @@
     "pkg/release",
   ]
   pruneopts = "UT"
-  revision = "5a101474fa6d784552bf4cc9bf620bcfed13a7b2"
+  revision = "130ef056aaf90dba4f3500d76c073236eaa379b9"
 
 [[projects]]
   branch = "master"
@@ -262,11 +262,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:fbc1eeecc99cb0fe005773afeefdd0f7b2db39f67aa0912467d9ec925a92e98c"
+  digest = "1:1aa4cc4501c54834108fd38587e57b1658374939b9a4ab9a4d8f99322bc6187b"
   name = "github.com/giantswarm/e2esetup"
   packages = ["k8s"]
   pruneopts = "UT"
-  revision = "cce2a9b85517f40b62d9500d5a385bf2542a8cdc"
+  revision = "5b8be38d61b1afe5bf17cb5600599cadbe3feca8"
 
 [[projects]]
   branch = "master"
@@ -292,7 +292,7 @@
     "update/provider",
   ]
   pruneopts = "UT"
-  revision = "798f25d709a8cb90270751a4fda90cdb9382c3b1"
+  revision = "fdec8e1d93ef6b67c005cdd6de2d111b0aaf52da"
 
 [[projects]]
   branch = "master"
@@ -328,7 +328,7 @@
 
 [[projects]]
   branch = "add-1-14"
-  digest = "1:11b5c4a6afb697aa4960c27397f7bb7f485ee501cb350ecb4dd194f532476b61"
+  digest = "1:42fd91bc7ff0a39a8f956cc3d27819a293ca62dd7d65bf1089cc16434678857f"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "ignition/v_2_2_0",
@@ -336,11 +336,10 @@
     "v_3_6_4",
     "v_4_1_0",
     "v_4_1_1",
-    "v_4_1_2",
     "v_4_3_0",
   ]
   pruneopts = "T"
-  revision = "e4d799f4318b003618c7833f3db6c41d345b2337"
+  revision = "69c0431234c1faf076bbbc81666b1f122e07c890"
 
 [[projects]]
   branch = "master"
@@ -416,7 +415,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2d1f3fc41fd8f55225233dce260827bbf1fa3425d758cdfe572f168da6e8cc55"
+  digest = "1:06d85b7a32fefc8d774db32228e925c01fc7d95b209486d135cb51ccddcaf6c1"
   name = "github.com/giantswarm/operatorkit"
   packages = [
     "client/k8scrdclient",
@@ -436,7 +435,7 @@
     "informer/collector",
   ]
   pruneopts = "UT"
-  revision = "3eee778ada56b5947a0e2631aad5ad608a6ac1cd"
+  revision = "dc60ddf19e89ce0a1ade4a52e94258734bf82dab"
 
 [[projects]]
   branch = "master"
@@ -814,7 +813,7 @@
     "prometheus/promhttp",
   ]
   pruneopts = "UT"
-  revision = "8b8c870c3087566adad67b673ddaabb07f26a2c6"
+  revision = "5a3ec6a883d301737d83860ed604021342ff2144"
 
 [[projects]]
   branch = "master"
@@ -833,8 +832,8 @@
     "model",
   ]
   pruneopts = "UT"
-  revision = "cfeb6f9992ffa54aaa4f2170ade4067ee478b250"
-  version = "v0.2.0"
+  revision = "a82f4c12f983cc2649298185f296632953e50d3e"
+  version = "v0.3.0"
 
 [[projects]]
   branch = "master"
@@ -932,7 +931,7 @@
     "ssh/terminal",
   ]
   pruneopts = "UT"
-  revision = "38d8ce5564a5b71b2e3a00553993f1b9a7ae852f"
+  revision = "88737f569e3a9c7ab309cdc09a07fe7fc87233c3"
 
 [[projects]]
   branch = "master"
@@ -976,14 +975,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:503f66aac79cb9135d73679c7fa3e95a6fad82a3da399c505ea282b50ff03723"
+  digest = "1:ae913c44e70b411817f8d4d352dc10e595d6b970ba23f2f1e668c95901f8a46a"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
   ]
   pruneopts = "UT"
-  revision = "4b34438f7a67ee5f45cc6132e2bad873a20324e9"
+  revision = "b44545bcd369ef9ff9bebcfebf5f3370ef9b1932"
 
 [[projects]]
   digest = "1:a2ab62866c75542dd18d2b069fec854577a20211d7c0ea6ae746072a1dccdd18"
@@ -1364,12 +1363,12 @@
   version = "v2.12.0"
 
 [[projects]]
-  digest = "1:72fd56341405f53c745377e0ebc4abeff87f1a048e0eea6568a20212650f5a82"
+  digest = "1:c696379ad201c1e86591785579e16bf6cf886c362e9a7534e8eb0d1028b20582"
   name = "k8s.io/klog"
   packages = ["."]
   pruneopts = "UT"
-  revision = "71442cd4037d612096940ceb0f3fec3f7fff66e0"
-  version = "v0.2.0"
+  revision = "e531227889390a39d9533dde61f590fe9f4b0035"
+  version = "v0.3.0"
 
 [[projects]]
   digest = "1:0761d08cbab7345aa2b7715073879dde6235aaa5671adcab409a91da67b97b8b"
@@ -1440,7 +1439,6 @@
     "github.com/giantswarm/k8scloudconfig/v_3_6_4",
     "github.com/giantswarm/k8scloudconfig/v_4_1_0",
     "github.com/giantswarm/k8scloudconfig/v_4_1_1",
-    "github.com/giantswarm/k8scloudconfig/v_4_1_2",
     "github.com/giantswarm/k8scloudconfig/v_4_3_0",
     "github.com/giantswarm/microendpoint/endpoint/healthz",
     "github.com/giantswarm/microendpoint/endpoint/version",
