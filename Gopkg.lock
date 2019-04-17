@@ -18,11 +18,12 @@
   version = "v0.1.8"
 
 [[projects]]
-  digest = "1:616a7f7be7f1047797d5c936d864315e1313096660a07e22bf0edd597cd1c9f4"
+  digest = "1:09ab8962ad3a97c48cce9be2e8424af3454e0c278db24a166dc789a03fdb2ae1"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/compute/mgmt/2018-06-01/compute",
     "services/dns/mgmt/2017-10-01/dns",
+    "services/graphrbac/1.6/graphrbac",
     "services/network/mgmt/2018-06-01/network",
     "services/resources/mgmt/2018-05-01/resources",
     "services/storage/mgmt/2018-07-01/storage",
@@ -274,7 +275,6 @@
   pruneopts = "UT"
   revision = "f0fb2f61d78e06f2d1e17f940fd782b92bf29642"
 
-
 [[projects]]
   branch = "master"
   digest = "1:1a87381a728176e216ad15503b4951e080d876941d421212bd48f6be39bc0fb6"
@@ -368,7 +368,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f240cc074898116c801232be75ea4e42d02c69d8f30bd350845257a7a603e820"
+  digest = "1:88b53a453d7e4e63413d2a19fc856e59f5a966a1a0e3e326d32cb788110b028a"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "ignition/v_2_2_0",
@@ -376,10 +376,10 @@
     "v_3_6_4",
     "v_4_1_0",
     "v_4_1_1",
+    "v_4_1_2",
   ]
   pruneopts = "T"
-  revision = "100d834280834beb78233661a6a6d7aeecba7749"
-
+  revision = "80b22e313bd60f651c8f24456e366931ef2a347d"
 
 [[projects]]
   branch = "master"
@@ -767,6 +767,22 @@
   pruneopts = "UT"
   revision = "c2353362d570a7bfa228149c62842019201cfb71"
   version = "v1.8.0"
+
+[[projects]]
+  digest = "1:c78066b952f7960f7bffeb04d176e1e8d2579bd1e65067fc29f043706f11c4f3"
+  name = "github.com/marstr/collection"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "43f1d00df9bf332cbf8d26c3eecd6c348e92f7b3"
+  version = "v1.0.1"
+
+[[projects]]
+  branch = "master"
+  digest = "1:6688b117d0ac766a6ea0e0238c5eb1f866128d126c3f8a97cd209f301e51d82e"
+  name = "github.com/marstr/randname"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "d5b0f288ab8cfdaa716502900e10405f123dc0cf"
 
 [[projects]]
   digest = "1:ff5ebae34cfbf047d505ee150de27e60570e8c394b3b8fdbb720ff6ac71985fc"
@@ -1443,6 +1459,7 @@
   input-imports = [
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute",
     "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
+    "github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac",
     "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
     "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage",
@@ -1465,11 +1482,8 @@
     "github.com/giantswarm/e2esetup/k8s",
     "github.com/giantswarm/e2etemplates/pkg/chartvalues",
     "github.com/giantswarm/e2etests/clusterstate",
-    "github.com/giantswarm/e2etests/clusterstate/provider",
     "github.com/giantswarm/e2etests/scaling",
-    "github.com/giantswarm/e2etests/scaling/provider",
     "github.com/giantswarm/e2etests/update",
-    "github.com/giantswarm/e2etests/update/provider",
     "github.com/giantswarm/exporterkit/collector",
     "github.com/giantswarm/helmclient",
     "github.com/giantswarm/ipam",
@@ -1477,6 +1491,7 @@
     "github.com/giantswarm/k8scloudconfig/v_3_6_4",
     "github.com/giantswarm/k8scloudconfig/v_4_1_0",
     "github.com/giantswarm/k8scloudconfig/v_4_1_1",
+    "github.com/giantswarm/k8scloudconfig/v_4_1_2",
     "github.com/giantswarm/microendpoint/endpoint/healthz",
     "github.com/giantswarm/microendpoint/endpoint/version",
     "github.com/giantswarm/microendpoint/service/version",
@@ -1500,6 +1515,7 @@
     "github.com/giantswarm/statusresource",
     "github.com/giantswarm/tenantcluster",
     "github.com/giantswarm/versionbundle",
+    "github.com/marstr/randname",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/spf13/viper",
     "golang.org/x/sync/errgroup",
@@ -1507,6 +1523,7 @@
     "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/types",
     "k8s.io/apimachinery/pkg/util/intstr",
     "k8s.io/apiserver/pkg/authentication/authenticator",
     "k8s.io/apiserver/pkg/endpoints/request",

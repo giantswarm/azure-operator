@@ -6,6 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns"
+	"github.com/Azure/azure-sdk-for-go/services/graphrbac/1.6/graphrbac"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
@@ -34,6 +35,7 @@ type clientConfig struct {
 	subscriptionID          string
 	resourceManagerEndpoint string
 	servicePrincipalToken   *adal.ServicePrincipalToken
+	tenantID                string
 }
 
 func (c AzureClientSetConfig) Validate() error {
@@ -55,6 +57,8 @@ func (c AzureClientSetConfig) Validate() error {
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
+	// ApplicationClient manages applications in AD
+	ApplicationsClient *graphrbac.ApplicationsClient
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
@@ -103,9 +107,11 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 		subscriptionID:          config.SubscriptionID,
 		resourceManagerEndpoint: env.ResourceManagerEndpoint,
 		servicePrincipalToken:   servicePrincipalToken,
+		tenantID:                config.TenantID,
 	}
 
 	clientSet := &AzureClientSet{
+		ApplicationsClient:                     newApplicationsClient(c),
 		DeploymentsClient:                      newDeploymentsClient(c),
 		GroupsClient:                           newGroupsClient(c),
 		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
@@ -131,6 +137,12 @@ func ResponseWasNotFound(resp autorest.Response) bool {
 	}
 
 	return false
+}
+
+func newApplicationsClient(config *clientConfig) *graphrbac.ApplicationsClient {
+	c := graphrbac.NewApplicationsClient(config.tenantID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	return &c
 }
 
 func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
