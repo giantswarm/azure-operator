@@ -17,6 +17,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Upgrade to 1.14.1.",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "containerlinux",
+				Description: "Update CoreOS to 2023.5.0. ",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -25,7 +30,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "2023.4.0",
+				Version: "2023.5.0",
 			},
 			{
 				Name:    "docker",
