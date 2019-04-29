@@ -422,7 +422,7 @@ func (r *Release) podName(namespace, labelSelector string) (string, error) {
 		return "", microerror.Mask(err)
 	}
 	if len(pods.Items) > 1 {
-		return "", microerror.Mask(tooManyResultsError)
+		return "", microerror.Maskf(waitError, "expected at most 1 pod but got %d", len(pods.Items))
 	}
 	if len(pods.Items) == 0 {
 		return "", microerror.Mask(notFoundError)
