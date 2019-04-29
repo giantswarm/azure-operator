@@ -3,7 +3,7 @@ package containerurl
 import (
 	"context"
 
-	"github.com/giantswarm/azure-operator/service/controller/v7/key"
+	"github.com/giantswarm/azure-operator/service/controller/v8/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 )
