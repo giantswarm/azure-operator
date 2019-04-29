@@ -16,6 +16,10 @@ const (
 
 type ReleaseCyclePhase string
 
+func (r ReleaseCyclePhase) String() string {
+	return string(r)
+}
+
 var releaseCycleValidation = &apiextensionsv1beta1.CustomResourceValidation{
 	// See http://json-schema.org/learn.
 	OpenAPIV3Schema: &apiextensionsv1beta1.JSONSchemaProps{
@@ -124,6 +128,7 @@ func NewReleaseCycleTypeMeta() metav1.TypeMeta {
 }
 
 // +genclient
+// +genclient:nonNamespaced
 // +k8s:deepcopy-gen:interfaces=k8s.io/apimachinery/pkg/runtime.Object
 
 // ReleaseCycle CRs might look something like the following.
