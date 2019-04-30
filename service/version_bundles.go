@@ -5,9 +5,10 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/v4patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v4patch2"
-	"github.com/giantswarm/azure-operator/service/controller/v5"
-	"github.com/giantswarm/azure-operator/service/controller/v6"
-	"github.com/giantswarm/azure-operator/service/controller/v7"
+	v5 "github.com/giantswarm/azure-operator/service/controller/v5"
+	v6 "github.com/giantswarm/azure-operator/service/controller/v6"
+	v7 "github.com/giantswarm/azure-operator/service/controller/v7"
+	v8 "github.com/giantswarm/azure-operator/service/controller/v8"
 )
 
 func NewVersionBundles() []versionbundle.Bundle {
@@ -18,6 +19,7 @@ func NewVersionBundles() []versionbundle.Bundle {
 	versionBundles = append(versionBundles, v5.VersionBundle())
 	versionBundles = append(versionBundles, v6.VersionBundle())
 	versionBundles = append(versionBundles, v7.VersionBundle())
+	versionBundles = append(versionBundles, v8.VersionBundle())
 
 	return versionBundles
 }
