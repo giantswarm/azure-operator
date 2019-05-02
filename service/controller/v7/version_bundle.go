@@ -8,13 +8,13 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "cloudconfig",
-				Description: "Pin calico-kube-controllers to master.",
+				Component:   "calico",
+				Description: "Update calico to 3.6.1",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
-				Component:   "kubernetes",
-				Description: "Upgrade to 1.14.1.",
+				Component:   "cloudconfig",
+				Description: "Pin calico-kube-controllers to master.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
@@ -23,8 +23,13 @@ func VersionBundle() versionbundle.Bundle {
 				Kind:        versionbundle.KindChanged,
 			},
 			{
-				Component:   "calico",
-				Description: "Update calico to 3.6.1",
+				Component:   "kubernetes",
+				Description: "Upgrade to 1.14.1.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "kubernetes",
+				Description: "Tolerate all taints for calico and node-exported daemon sets.",
 				Kind:        versionbundle.KindChanged,
 			},
 		},
