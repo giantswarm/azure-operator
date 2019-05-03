@@ -267,7 +267,7 @@
   name = "github.com/giantswarm/e2esetup"
   packages = ["k8s"]
   pruneopts = "UT"
-  revision = "4424c711c56f2e3d6ff4a1424862458836be95b5"
+  revision = "8373c3d3cffd1232055dcf4200e00f005c50da70"
 
 [[projects]]
   branch = "master"
