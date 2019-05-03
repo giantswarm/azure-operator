@@ -59,7 +59,7 @@ required = [
   name = "github.com/giantswarm/e2eclients"
 
 [[constraint]]
-  branch = "master"
+  branch = "ensure-crd"
   name = "github.com/giantswarm/e2esetup"
 
 [[constraint]]
