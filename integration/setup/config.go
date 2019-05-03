@@ -5,6 +5,7 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/e2e-harness/pkg/framework/resource"
+	"github.com/giantswarm/e2e-harness/pkg/harness"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
 	"github.com/giantswarm/e2esetup/k8s"
@@ -96,11 +97,27 @@ func NewConfig() (Config, error) {
 		}
 	}
 
+	var cpK8sClients *k8s.Clients
+	{
+		kubeConfigPath := harness.DefaultKubeConfig
+
+		c := k8s.ClientsConfig{
+			Logger: logger,
+
+			KubeConfigPath: kubeConfigPath,
+		}
+
+		cpK8sClients, err = k8s.NewClients(c)
+		if err != nil {
+			return Config{}, microerror.Mask(err)
+		}
+	}
+
 	var k8sSetup *k8s.Setup
 	{
 		c := k8s.SetupConfig{
-			K8sClient: host.K8sClient(),
-			Logger:    logger,
+			Clients: cpK8sClients,
+			Logger:  logger,
 		}
 
 		k8sSetup, err = k8s.NewSetup(c)
@@ -113,7 +130,7 @@ func NewConfig() (Config, error) {
 	{
 		c := helmclient.Config{
 			Logger:          logger,
-			K8sClient:       host.K8sClient(),
+			K8sClient:       cpK8sClients.K8sClient(),
 			RestConfig:      host.RestConfig(),
 			TillerNamespace: tillerNamespace,
 		}
@@ -131,7 +148,7 @@ func NewConfig() (Config, error) {
 			ExtClient:  host.ExtClient(),
 			G8sClient:  host.G8sClient(),
 			HelmClient: helmClient,
-			K8sClient:  host.K8sClient(),
+			K8sClient:  cpK8sClients.K8sClient(),
 			Logger:     logger,
 
 			Namespace: namespace,
