@@ -41,7 +41,7 @@ type Service struct {
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
 	operatorCollector       *collector.Set
-	statusResourceCollector *statusresource.Collector
+	statusResourceCollector *statusresource.CollectorSet
 }
 
 // New creates a new configured service object.
@@ -177,14 +177,14 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var statusResourceCollector *statusresource.Collector
+	var statusResourceCollector *statusresource.CollectorSet
 	{
-		c := statusresource.CollectorConfig{
+		c := statusresource.CollectorSetConfig{
 			Logger:  config.Logger,
 			Watcher: g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
 		}
 
-		statusResourceCollector, err = statusresource.NewCollector(c)
+		statusResourceCollector, err = statusresource.NewCollectorSet(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -220,9 +220,9 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		go s.clusterController.Boot(ctx)
-
 		go s.operatorCollector.Boot(ctx)
 		go s.statusResourceCollector.Boot(ctx)
+
+		go s.clusterController.Boot(ctx)
 	})
 }

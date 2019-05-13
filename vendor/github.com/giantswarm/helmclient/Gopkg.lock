@@ -145,11 +145,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1aa4cc4501c54834108fd38587e57b1658374939b9a4ab9a4d8f99322bc6187b"
+  digest = "1:766a1dc9804de1c692fbad5a8b3816fcb920586524a7c4f1996dff52152e164a"
   name = "github.com/giantswarm/e2esetup"
   packages = ["k8s"]
   pruneopts = "UT"
-  revision = "8373c3d3cffd1232055dcf4200e00f005c50da70"
+  revision = "d5d694bf51575b7110d466b8fe7f9c590decaec2"
 
 [[projects]]
   branch = "master"
@@ -186,6 +186,14 @@
   ]
   pruneopts = "UT"
   revision = "0926d9b7c5419173936b4556411a103bdf8d5966"
+
+[[projects]]
+  branch = "master"
+  digest = "1:7f108bbeae041753de0a3d8b4bc8d13d4d1c7884129523ece1495104f5591742"
+  name = "github.com/giantswarm/operatorkit"
+  packages = ["client/k8scrdclient"]
+  pruneopts = "UT"
+  revision = "dc60ddf19e89ce0a1ade4a52e94258734bf82dab"
 
 [[projects]]
   branch = "master"
@@ -865,6 +873,7 @@
     "github.com/Masterminds/semver",
     "github.com/docker/distribution/reference",
     "github.com/giantswarm/backoff",
+    "github.com/giantswarm/e2e-harness/pkg/harness",
     "github.com/giantswarm/e2esetup/k8s",
     "github.com/giantswarm/errors/guest",
     "github.com/giantswarm/k8sportforward",
@@ -884,7 +893,6 @@
     "k8s.io/apiserver/pkg/endpoints/request",
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/rest",
-    "k8s.io/client-go/tools/clientcmd",
     "k8s.io/helm/cmd/helm/installer",
     "k8s.io/helm/pkg/chartutil",
     "k8s.io/helm/pkg/helm",
