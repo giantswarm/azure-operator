@@ -76,9 +76,9 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			Path:         "/etc/kubernetes/config/azure.yaml",
 			Owner: k8scloudconfig.Owner{
 				User:  FileOwnerUser,
-				Group: FileOwnerGroup,
+				Group: FileOwnerGroupNobody,
 			},
-			Permissions: CloudProviderConfigFilePermission,
+			Permissions: FilePermission,
 		},
 	}
 
