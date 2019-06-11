@@ -78,7 +78,7 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 				User:  FileOwnerUser,
 				Group: FileOwnerGroupNobody,
 			},
-			Permissions: FilePermission,
+			Permissions: CloudProviderFilePermission,
 		},
 	}
 

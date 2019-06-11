@@ -15,11 +15,12 @@ import (
 )
 
 const (
-	CertFilePermission   = 0400
-	FileOwnerUser        = "root"
-	FileOwnerGroup       = "root"
-	FileOwnerGroupNobody = "nobody"
-	FilePermission       = 0700
+	CertFilePermission          = 0400
+	CloudProviderFilePermission = 0640
+	FileOwnerUser               = "root"
+	FileOwnerGroup              = "root"
+	FileOwnerGroupNobody        = "65534"
+	FilePermission              = 0700
 )
 
 type Config struct {

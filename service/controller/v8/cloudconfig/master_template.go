@@ -154,7 +154,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 				User:  FileOwnerUser,
 				Group: FileOwnerGroupNobody,
 			},
-			Permissions: FilePermission,
+			Permissions: CloudProviderFilePermission,
 		},
 		{
 			AssetContent: ignition.DefaultStorageClass,
