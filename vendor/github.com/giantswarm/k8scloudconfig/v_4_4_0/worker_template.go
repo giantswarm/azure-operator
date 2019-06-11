@@ -262,17 +262,17 @@ storage:
     - path: {{ .Metadata.Path }}
       filesystem: root
       user:
-      {{ with .Metadata.Owner.User.ID }}
+      {{- if .Metadata.Owner.User.ID }}
         id: {{ .Metadata.Owner.User.ID }}
-      {{ else }}
+      {{- else }}
         name: {{ .Metadata.Owner.User.Name }}
-      {{ end }}
+      {{- end }}
       group:
-      {{ with .Metadata.Owner.Group.ID }}
+      {{- if .Metadata.Owner.Group.ID }}
         id: {{ .Metadata.Owner.Group.ID }}
-      {{ else }}
+      {{- else }}
         name: {{ .Metadata.Owner.Group.Name }}
-      {{ end }}
+      {{- end }}
       mode: {{printf "%#o" .Metadata.Permissions}}
       contents:
         source: "data:text/plain;charset=utf-8;base64,{{ .Content }}"
