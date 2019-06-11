@@ -6,7 +6,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_3_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_4_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/v8/encrypter"
@@ -154,7 +154,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 				User:  FileOwnerUser,
 				Group: FileOwnerGroup,
 			},
-			Permissions: FilePermission,
+			Permissions: CloudProviderConfigFilePermission,
 		},
 		{
 			AssetContent: ignition.DefaultStorageClass,
