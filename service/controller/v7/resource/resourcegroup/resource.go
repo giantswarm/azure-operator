@@ -4,6 +4,7 @@ import (
 	"context"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -80,7 +81,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		Tags:      key.ClusterTags(customObject, r.installationName),
 	}
 	_, err = groupsClient.CreateOrUpdate(ctx, *resourceGroup.Name, resourceGroup)
-	if err != nil {
+	if IsBadRequest(err) {
+		res, err := groupsClient.CheckExistence(ctx, *resourceGroup.Name)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		if !checkExistence(res) {
+			return microerror.Mask(notFoundError)
+		}
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
@@ -137,6 +146,17 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
+}
+
+func checkExistence(response autorest.Response) bool {
+	result := false
+	switch response.StatusCode {
+	case 204:
+		result = true
+	case 404:
+		result = false
+	}
+	return result
 }
 
 func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
