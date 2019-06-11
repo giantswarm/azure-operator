@@ -41,7 +41,7 @@
   version = "0.5.0"
 
 [[projects]]
-  digest = "1:3be281a52efe82500b6c1093bde9b00e0aac3ce491c54803dabf069f2d907cb3"
+  digest = "1:c1e04f3b97fbb6e25891c10d3d2d906dcd5807774a3a68d0e32e2b7bda9b5c7f"
   name = "github.com/Azure/go-autorest"
   packages = [
     "autorest",
@@ -52,7 +52,6 @@
     "autorest/validation",
     "logger",
     "tracing",
-    "version",
   ]
   pruneopts = "UT"
   revision = "562d3769ef2f0f56bc52749babd3e88367e28588"
@@ -329,7 +328,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:d2133f8aee91fbb080edfa4b0814bb9474692211e709b4bcaf1c38bca0b35967"
+  digest = "1:af0b9be0c1d6f6e2736f2e2624dd33629415584610da706ab0e5a0943b46cdb0"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "ignition/v_2_2_0",
@@ -340,7 +339,7 @@
     "v_4_3_0",
   ]
   pruneopts = "T"
-  revision = "ea5814acc101d30b3cf4df5746f94bd86f5fdb61"
+  revision = "daf328930f516e780a78706bff106fc3bde19ad6"
 
 [[projects]]
   branch = "master"
