@@ -17,9 +17,9 @@ import (
 const (
 	CertFilePermission          = 0400
 	CloudProviderFilePermission = 0640
-	FileOwnerUser               = "root"
-	FileOwnerGroup              = "root"
-	FileOwnerGroupNobody        = "65534"
+	FileOwnerUserName           = "root"
+	FileOwnerGroupName          = "root"
+	FileOwnerGroupIDNobody      = 65534
 	FilePermission              = 0700
 )
 
