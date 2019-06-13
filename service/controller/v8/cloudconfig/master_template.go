@@ -6,7 +6,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_3_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_4_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/v8/encrypter"
@@ -142,8 +142,12 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			AssetContent: ignition.CalicoAzureResources,
 			Path:         "/srv/calico-azure.yaml",
 			Owner: k8scloudconfig.Owner{
-				User:  FileOwnerUser,
-				Group: FileOwnerGroup,
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
 			},
 			Permissions: FilePermission,
 		},
@@ -151,17 +155,25 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			AssetContent: ignition.CloudProviderConf,
 			Path:         "/etc/kubernetes/config/azure.yaml",
 			Owner: k8scloudconfig.Owner{
-				User:  FileOwnerUser,
-				Group: FileOwnerGroup,
+				Group: k8scloudconfig.Group{
+					ID: FileOwnerGroupIDNobody,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
 			},
-			Permissions: FilePermission,
+			Permissions: CloudProviderFilePermission,
 		},
 		{
 			AssetContent: ignition.DefaultStorageClass,
 			Path:         "/srv/default-storage-class.yaml",
 			Owner: k8scloudconfig.Owner{
-				User:  FileOwnerUser,
-				Group: FileOwnerGroup,
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
 			},
 			Permissions: FilePermission,
 		},
@@ -169,8 +181,12 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			AssetContent: ignition.IngressLB,
 			Path:         "/srv/k8s-ingress-loadbalancer.yaml",
 			Owner: k8scloudconfig.Owner{
-				User:  FileOwnerUser,
-				Group: FileOwnerGroup,
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
 			},
 			Permissions: FilePermission,
 		},
@@ -205,8 +221,12 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			AssetContent: string(encryptedData),
 			Path:         f.AbsolutePath + ".enc",
 			Owner: k8scloudconfig.Owner{
-				User:  FileOwnerUser,
-				Group: FileOwnerGroup,
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
 			},
 			Permissions: CertFilePermission,
 		}

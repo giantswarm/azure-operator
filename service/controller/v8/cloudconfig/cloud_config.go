@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_3_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_4_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -15,10 +15,12 @@ import (
 )
 
 const (
-	CertFilePermission = 0400
-	FileOwnerUser      = "root"
-	FileOwnerGroup     = "root"
-	FilePermission     = 0700
+	CertFilePermission          = 0400
+	CloudProviderFilePermission = 0640
+	FileOwnerUserName           = "root"
+	FileOwnerGroupName          = "root"
+	FileOwnerGroupIDNobody      = 65534
+	FilePermission              = 0700
 )
 
 type Config struct {
