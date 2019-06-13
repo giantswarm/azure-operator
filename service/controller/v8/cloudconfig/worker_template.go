@@ -75,11 +75,11 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			AssetContent: ignition.CloudProviderConf,
 			Path:         "/etc/kubernetes/config/azure.yaml",
 			Owner: k8scloudconfig.Owner{
-				User: k8scloudconfig.User{
-					Name: FileOwnerUserName,
-				},
 				Group: k8scloudconfig.Group{
 					ID: FileOwnerGroupIDNobody,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
 				},
 			},
 			Permissions: CloudProviderFilePermission,
@@ -115,11 +115,11 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			AssetContent: string(encryptedData),
 			Path:         f.AbsolutePath + ".enc",
 			Owner: k8scloudconfig.Owner{
-				User: k8scloudconfig.User{
-					Name: FileOwnerUserName,
-				},
 				Group: k8scloudconfig.Group{
 					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
 				},
 			},
 			Permissions: CertFilePermission,
