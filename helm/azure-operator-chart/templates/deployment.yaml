@@ -36,6 +36,9 @@ spec:
         hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
       serviceAccountName: azure-operator
+      securityContext:
+        runAsUser: {{ .Values.userID }}
+        runAsGroup: {{ .Values.groupID }}
       containers:
       - name: azure-operator
         image: quay.io/giantswarm/azure-operator:[[ .DockerTag ]]
