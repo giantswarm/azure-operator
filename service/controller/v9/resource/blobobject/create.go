@@ -6,8 +6,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/v8/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/v8/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v9/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/v9/controllercontext"
 )
 
 func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange interface{}) error {

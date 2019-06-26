@@ -8,7 +8,7 @@ import (
 )
 
 const (
-	Name = "endpointsv8"
+	Name = "endpointsv9"
 
 	httpsPort = 443
 )
