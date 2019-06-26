@@ -9,12 +9,12 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "Update kubernetes to 1.14.3. More info here: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.14.md",
+				Description: "Updated kubernetes to 1.14.3. More info here: https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.14.md",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
 				Component:   "calico",
-				Description: "Update calico to 3.7.2. More info here: https://docs.projectcalico.org/v3.7/release-notes/",
+				Description: "Updated calico to 3.7.2. More info here: https://docs.projectcalico.org/v3.7/release-notes/",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
