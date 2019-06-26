@@ -7,7 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v8/templates/ignition"
+	"github.com/giantswarm/azure-operator/service/controller/v9/templates/ignition"
 	"github.com/giantswarm/microerror"
 )
 
@@ -80,7 +80,7 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 // The returned URI point to a file hosted on github in this repository
 // under a controller resource's template folder at:
 //
-// service/controller/v8/resource/<resource>/template/<template>
+// service/controller/v9/resource/<resource>/template/<template>
 //
 // version refers to a branch or commit.
 // resource refers to directory name of the resource.
@@ -88,7 +88,7 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 //
 // e.g. ARMTemplateURI("master", "deployment", "main.json")
 func ARMTemplateURI(version, resource, template string) string {
-	return fmt.Sprintf("https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v8/resource/%s/template/%s", version, resource, template)
+	return fmt.Sprintf("https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/v9/resource/%s/template/%s", version, resource, template)
 }
 
 func BlobContainerName() string {
