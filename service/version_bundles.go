@@ -23,6 +23,5 @@ func NewVersionBundles() []versionbundle.Bundle {
 	versionBundles = append(versionBundles, v8.VersionBundle())
 	versionBundles = append(versionBundles, v9.VersionBundle())
 
-
 	return versionBundles
 }
