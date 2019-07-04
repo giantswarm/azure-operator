@@ -88,6 +88,7 @@ func NewUsage(config UsageConfig) (*Usage, error) {
 }
 
 func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
+	// We need all CRs to gather all subscriptions below.
 	var crs []providerv1alpha1.AzureConfig
 	{
 		mark := ""
@@ -108,6 +109,7 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 		}
 	}
 
+	// We generate clients and group them by subscription.
 	var clients map[string]*compute.UsageClient
 	{
 		for _, cr := range crs {
@@ -120,6 +122,8 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 		}
 	}
 
+	// We track usage metrics for each client, which is unique per subscription.
+	// That way we prevent duplicated metrics.
 	for _, c := range clients {
 		r, err := c.List(context.Background(), u.location)
 		if err != nil {
