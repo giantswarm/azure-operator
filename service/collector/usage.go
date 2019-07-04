@@ -123,11 +123,10 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 		for r.NotDone() {
 			for _, v := range r.Values() {
 				fmt.Printf("\n")
-				fmt.Printf("%#v\n", u.location)
 				fmt.Printf("    %#v\n", *v.CurrentValue)
 				fmt.Printf("    %#v\n", *v.Limit)
-				fmt.Printf("    %#v\n", *v.Name)
-				fmt.Printf("    %#v\n", *v.Unit)
+				fmt.Printf("    %#v\n", *v.Name.LocalizedValue)
+				fmt.Printf("    %#v\n", *v.Name.Value)
 				fmt.Printf("\n")
 				//ch <- prometheus.MustNewConstMetric(
 				//	deploymentDesc,
