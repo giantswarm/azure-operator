@@ -2,7 +2,6 @@ package collector
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -122,28 +121,18 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 
 		for r.NotDone() {
 			for _, v := range r.Values() {
-				fmt.Printf("\n")
-				fmt.Printf("    %#v\n", *v.CurrentValue)
-				fmt.Printf("    %#v\n", *v.Limit)
-				fmt.Printf("    %#v\n", *v.Name.LocalizedValue)
-				fmt.Printf("    %#v\n", *v.Name.Value)
-				fmt.Printf("\n")
-				//ch <- prometheus.MustNewConstMetric(
-				//	deploymentDesc,
-				//	prometheus.GaugeValue,
-				//	float64(matchedStringToInt(statusRunning, *v.Properties.ProvisioningState)),
-				//	key.ClusterID(cr),
-				//	*v.Name,
-				//	statusRunning,
-				//)
-				//ch <- prometheus.MustNewConstMetric(
-				//	deploymentDesc,
-				//	prometheus.GaugeValue,
-				//	float64(matchedStringToInt(statusSucceeded, *v.Properties.ProvisioningState)),
-				//	key.ClusterID(cr),
-				//	*v.Name,
-				//	statusSucceeded,
-				//)
+				ch <- prometheus.MustNewConstMetric(
+					usageCurrentDesc,
+					prometheus.GaugeValue,
+					float64(*v.CurrentValue),
+					*v.Name.LocalizedValue,
+				)
+				ch <- prometheus.MustNewConstMetric(
+					usageLimitDesc,
+					prometheus.GaugeValue,
+					float64(*v.Limit),
+					*v.Name.LocalizedValue,
+				)
 			}
 
 			err := r.Next()
