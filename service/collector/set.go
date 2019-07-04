@@ -61,6 +61,23 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
+	var usageCollector *Usage
+	{
+		c := UsageConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			EnvironmentName: config.AzureSetting.EnvironmentName,
+			Location:        config.AzureSetting.Location,
+		}
+
+		usageCollector, err = NewUsage(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vpnConnectionCollector *VPNConnection
 	{
 		c := VPNConnectionConfig{
@@ -83,6 +100,7 @@ func NewSet(config SetConfig) (*Set, error) {
 			Collectors: []collector.Interface{
 				deploymentCollector,
 				resourceGroupCollector,
+				usageCollector,
 				vpnConnectionCollector,
 			},
 			Logger: config.Logger,
