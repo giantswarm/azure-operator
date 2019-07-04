@@ -108,13 +108,20 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 		}
 	}
 
-	for _, cr := range crs {
-		usageClient, err := u.getUsageClient(cr)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	var clients map[string]*compute.UsageClient
+	{
+		for _, cr := range crs {
+			c, err := u.getUsageClient(cr)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
-		r, err := usageClient.List(context.Background(), u.location)
+			clients[c.SubscriptionID] = c
+		}
+	}
+
+	for _, c := range clients {
+		r, err := c.List(context.Background(), u.location)
 		if err != nil {
 			return microerror.Mask(err)
 		}
