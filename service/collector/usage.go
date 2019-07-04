@@ -110,7 +110,7 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 	}
 
 	// We generate clients and group them by subscription.
-	var clients map[string]*compute.UsageClient
+	clients := map[string]*compute.UsageClient{}
 	{
 		for _, cr := range crs {
 			c, err := u.getUsageClient(cr)
