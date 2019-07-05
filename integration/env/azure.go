@@ -21,11 +21,6 @@ const (
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
 
-	EnvVarAzureGuestClientID       = "AZURE_GUEST_CLIENTID"
-	EnvVarAzureGuestClientSecret   = "AZURE_GUEST_CLIENTSECRET"
-	EnvVarAzureGuestSubscriptionID = "AZURE_GUEST_SUBSCRIPTIONID"
-	EnvVarAzureGuestTenantID       = "AZURE_GUEST_TENANTID"
-
 	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
 	EnvVarCircleBuildNumber         = "CIRCLE_BUILD_NUM"
 )
@@ -36,11 +31,6 @@ var (
 	azureLocation       string
 	azureSubscriptionID string
 	azureTenantID       string
-
-	azureGuestClientID       string
-	azureGuestClientSecret   string
-	azureGuestSubscriptionID string
-	azureGuestTenantID       string
 
 	azureCIDR             string
 	azureCalicoSubnetCIDR string
@@ -75,26 +65,6 @@ func init() {
 	azureTenantID = os.Getenv(EnvVarAzureTenantID)
 	if azureTenantID == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureTenantID))
-	}
-
-	azureGuestClientID = os.Getenv(EnvVarAzureGuestClientID)
-	if azureGuestClientID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientID))
-	}
-
-	azureGuestClientSecret = os.Getenv(EnvVarAzureGuestClientSecret)
-	if azureGuestClientSecret == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestClientSecret))
-	}
-
-	azureGuestSubscriptionID = os.Getenv(EnvVarAzureGuestSubscriptionID)
-	if azureGuestSubscriptionID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestSubscriptionID))
-	}
-
-	azureGuestTenantID = os.Getenv(EnvVarAzureGuestTenantID)
-	if azureGuestTenantID == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureGuestTenantID))
 	}
 
 	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
@@ -138,22 +108,6 @@ func AzureClientSecret() string {
 
 func AzureCIDR() string {
 	return azureCIDR
-}
-
-func AzureGuestClientID() string {
-	return azureGuestClientID
-}
-
-func AzureGuestClientSecret() string {
-	return azureGuestClientSecret
-}
-
-func AzureGuestSubscriptionID() string {
-	return azureGuestSubscriptionID
-}
-
-func AzureGuestTenantID() string {
-	return azureGuestTenantID
 }
 
 func AzureLocation() string {
