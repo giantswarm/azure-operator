@@ -1,9 +1,6 @@
 package client
 
 import (
-	"errors"
-	"net/http"
-
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
@@ -14,44 +11,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
 )
-
-type AzureClientSetConfig struct {
-	// ClientID is the ID of the Active Directory Service Principal.
-	ClientID string
-	// ClientSecret is the secret of the Active Directory Service Principal.
-	ClientSecret string
-	// The cloud environment identifier. Takes values from
-	// https://github.com/Azure/go-autorest/blob/ec5f4903f77ed9927ac95b19ab8e44ada64c1356/autorest/azure/environments.go#L13
-	EnvironmentName string
-	// SubscriptionID is the ID of the Azure subscription.
-	SubscriptionID string
-	// TenantID is the ID of the Active Directory tenant.
-	TenantID string
-}
-
-// clientConfig contains all essential information to create an Azure client.
-type clientConfig struct {
-	subscriptionID          string
-	resourceManagerEndpoint string
-	servicePrincipalToken   *adal.ServicePrincipalToken
-}
-
-func (c AzureClientSetConfig) Validate() error {
-	if c.ClientID == "" {
-		return errors.New("ClientID must not be empty")
-	}
-	if c.ClientSecret == "" {
-		return errors.New("ClientSecret must not be empty")
-	}
-	if c.SubscriptionID == "" {
-		return errors.New("SubscriptionID must not be empty")
-	}
-	if c.TenantID == "" {
-		return errors.New("TenantID must not be empty")
-	}
-
-	return nil
-}
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
@@ -67,6 +26,8 @@ type AzureClientSet struct {
 	InterfacesClient *network.InterfacesClient
 	//StorageAccountsClient manages blobs in storage containers.
 	StorageAccountsClient *storage.AccountsClient
+	// UsageClient is used to work with limits and quotas.
+	UsageClient *compute.UsageClient
 	// VirtualNetworkClient manages virtual networks.
 	VirtualNetworkClient *network.VirtualNetworksClient
 	// VirtualNetworkGatewayConnectionsClient manages virtual network gateway connections.
@@ -83,20 +44,21 @@ type AzureClientSet struct {
 
 // NewAzureClientSet returns the Azure API clients.
 func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
-	if err := config.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.%s", err)
+	err := config.Validate()
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	// Returns environment object contains all API endpoints for specific Azure
 	// cloud. For empty config.EnvironmentName returns Azure public cloud.
 	env, err := parseAzureEnvironment(config.EnvironmentName)
 	if err != nil {
-		return nil, microerror.Maskf(err, "parsing Azure environment")
+		return nil, microerror.Mask(err)
 	}
 
 	servicePrincipalToken, err := newServicePrincipalToken(config, env)
 	if err != nil {
-		return nil, microerror.Maskf(err, "creating service principal token")
+		return nil, microerror.Mask(err)
 	}
 
 	c := &clientConfig{
@@ -107,11 +69,12 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 
 	clientSet := &AzureClientSet{
 		DeploymentsClient:                      newDeploymentsClient(c),
-		GroupsClient:                           newGroupsClient(c),
 		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
 		DNSZonesClient:                         newDNSZonesClient(c),
+		GroupsClient:                           newGroupsClient(c),
 		InterfacesClient:                       newInterfacesClient(c),
 		StorageAccountsClient:                  newStorageAccountsClient(c),
+		UsageClient:                            newUsageClient(c),
 		VirtualNetworkClient:                   newVirtualNetworkClient(c),
 		VirtualNetworkGatewayConnectionsClient: newVirtualNetworkGatewayConnectionsClient(c),
 		VirtualNetworkGatewaysClient:           newVirtualNetworkGatewaysClient(c),
@@ -123,25 +86,8 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	return clientSet, nil
 }
 
-// ResponseWasNotFound returns true if the response code from the Azure API
-// was a 404.
-func ResponseWasNotFound(resp autorest.Response) bool {
-	if resp.Response != nil && resp.StatusCode == http.StatusNotFound {
-		return true
-	}
-
-	return false
-}
-
 func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
 	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-
-	return &c
-}
-
-func newGroupsClient(config *clientConfig) *resources.GroupsClient {
-	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &c
@@ -161,8 +107,28 @@ func newDNSZonesClient(config *clientConfig) *dns.ZonesClient {
 	return &c
 }
 
+func newGroupsClient(config *clientConfig) *resources.GroupsClient {
+	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &c
+}
+
 func newInterfacesClient(config *clientConfig) *network.InterfacesClient {
 	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &c
+}
+
+func newStorageAccountsClient(config *clientConfig) *storage.AccountsClient {
+	c := storage.NewAccountsClient(config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	return &c
+}
+
+func newUsageClient(config *clientConfig) *compute.UsageClient {
+	c := compute.NewUsageClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 
 	return &c
@@ -222,12 +188,6 @@ func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment
 	}
 
 	return token, nil
-}
-
-func newStorageAccountsClient(config *clientConfig) *storage.AccountsClient {
-	c := storage.NewAccountsClient(config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	return &c
 }
 
 // parseAzureEnvironment returns azure environment by name.

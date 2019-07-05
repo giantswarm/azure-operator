@@ -3,8 +3,7 @@ package collector
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -18,27 +17,26 @@ import (
 	"github.com/giantswarm/azure-operator/service/credential"
 )
 
-const (
-	statusCanceled  = "Canceled"
-	statusFailed    = "Failed"
-	statusRunning   = "Running"
-	statusSucceeded = "Succeeded"
-)
-
 var (
-	deploymentDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "deployment", "status"),
-		"Cluster status condition as provided by the CR status.",
+	usageCurrentDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "usage", "current"),
+		"Current usage of specific Quotas as defined by Azure.",
 		[]string{
-			"cluster_id",
-			"deployment_name",
-			"status",
+			"name",
+		},
+		nil,
+	)
+	usageLimitDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "usage", "limit"),
+		"Usage limit of specific Quotas as defined by Azure.",
+		[]string{
+			"name",
 		},
 		nil,
 	)
 )
 
-type DeploymentConfig struct {
+type UsageConfig struct {
 	G8sClient versioned.Interface
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
@@ -47,17 +45,19 @@ type DeploymentConfig struct {
 	// azure.Environment type. See also
 	// https://godoc.org/github.com/Azure/go-autorest/autorest/azure#Environment.
 	EnvironmentName string
+	Location        string
 }
 
-type Deployment struct {
+type Usage struct {
 	g8sClient versioned.Interface
 	k8sClient kubernetes.Interface
 	logger    micrologger.Logger
 
 	environmentName string
+	location        string
 }
 
-func NewDeployment(config DeploymentConfig) (*Deployment, error) {
+func NewUsage(config UsageConfig) (*Usage, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
@@ -71,19 +71,24 @@ func NewDeployment(config DeploymentConfig) (*Deployment, error) {
 	if config.EnvironmentName == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.EnvironmentName must not be empty", config)
 	}
+	if config.Location == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
+	}
 
-	d := &Deployment{
+	u := &Usage{
 		g8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
 		environmentName: config.EnvironmentName,
+		location:        config.Location,
 	}
 
-	return d, nil
+	return u, nil
 }
 
-func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
+func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
+	// We need all CRs to gather all subscriptions below.
 	var crs []providerv1alpha1.AzureConfig
 	{
 		mark := ""
@@ -92,7 +97,7 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 			opts := metav1.ListOptions{
 				Continue: mark,
 			}
-			list, err := d.g8sClient.ProviderV1alpha1().AzureConfigs("").List(opts)
+			list, err := u.g8sClient.ProviderV1alpha1().AzureConfigs("").List(opts)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -104,13 +109,23 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 		}
 	}
 
-	for _, cr := range crs {
-		deploymentsClient, err := d.getDeploymentsClient(cr)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	// We generate clients and group them by subscription.
+	clients := map[string]*compute.UsageClient{}
+	{
+		for _, cr := range crs {
+			c, err := u.getUsageClient(cr)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
-		r, err := deploymentsClient.ListByResourceGroup(context.Background(), key.ClusterID(cr), "", to.Int32Ptr(100))
+			clients[c.SubscriptionID] = c
+		}
+	}
+
+	// We track usage metrics for each client, which is unique per subscription.
+	// That way we prevent duplicated metrics.
+	for _, c := range clients {
+		r, err := c.List(context.Background(), u.location)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -118,36 +133,16 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 		for r.NotDone() {
 			for _, v := range r.Values() {
 				ch <- prometheus.MustNewConstMetric(
-					deploymentDesc,
+					usageCurrentDesc,
 					prometheus.GaugeValue,
-					float64(matchedStringToInt(statusCanceled, *v.Properties.ProvisioningState)),
-					key.ClusterID(cr),
-					*v.Name,
-					statusCanceled,
+					float64(*v.CurrentValue),
+					*v.Name.LocalizedValue,
 				)
 				ch <- prometheus.MustNewConstMetric(
-					deploymentDesc,
+					usageLimitDesc,
 					prometheus.GaugeValue,
-					float64(matchedStringToInt(statusFailed, *v.Properties.ProvisioningState)),
-					key.ClusterID(cr),
-					*v.Name,
-					statusFailed,
-				)
-				ch <- prometheus.MustNewConstMetric(
-					deploymentDesc,
-					prometheus.GaugeValue,
-					float64(matchedStringToInt(statusRunning, *v.Properties.ProvisioningState)),
-					key.ClusterID(cr),
-					*v.Name,
-					statusRunning,
-				)
-				ch <- prometheus.MustNewConstMetric(
-					deploymentDesc,
-					prometheus.GaugeValue,
-					float64(matchedStringToInt(statusSucceeded, *v.Properties.ProvisioningState)),
-					key.ClusterID(cr),
-					*v.Name,
-					statusSucceeded,
+					float64(*v.Limit),
+					*v.Name.LocalizedValue,
 				)
 			}
 
@@ -161,30 +156,23 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 	return nil
 }
 
-func (d *Deployment) Describe(ch chan<- *prometheus.Desc) error {
-	ch <- deploymentDesc
+func (u *Usage) Describe(ch chan<- *prometheus.Desc) error {
+	ch <- usageCurrentDesc
+	ch <- usageLimitDesc
 	return nil
 }
 
-func (d *Deployment) getDeploymentsClient(cr providerv1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
-	config, err := credential.GetAzureConfig(d.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
+func (u *Usage) getUsageClient(cr providerv1alpha1.AzureConfig) (*compute.UsageClient, error) {
+	config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	config.EnvironmentName = d.environmentName
+	config.EnvironmentName = u.environmentName
 
 	azureClients, err := client.NewAzureClientSet(*config)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.DeploymentsClient, nil
-}
-
-func matchedStringToInt(a, b string) int {
-	if a == b {
-		return 1
-	}
-
-	return 0
+	return azureClients.UsageClient, nil
 }
