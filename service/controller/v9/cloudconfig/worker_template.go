@@ -5,7 +5,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_5_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_6_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/v9/encrypter"
