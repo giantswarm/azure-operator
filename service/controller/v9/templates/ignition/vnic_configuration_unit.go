@@ -1,7 +1,7 @@
 package ignition
 
 const VNICConfigurationUnit = `[Unit]
-Description=Certificate Decrypter
+Description=VNIC configuration
 Wants=systemd-networkd.service
 After=systemd-networkd.service
 Before=docker.service
