@@ -17,6 +17,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Use v1 stable for giantswarm-critical priority class.",
 				Kind:        versionbundle.KindFixed,
 			},
+			{
+				Component:   "ignition",
+				Description: "Add systemd which increase tx queue size for eth0 interface to 1024.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
