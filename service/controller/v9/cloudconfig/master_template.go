@@ -269,6 +269,11 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 			Name:         "ingress-lb.service",
 			Enabled:      true,
 		},
+		{
+			AssetContent: ignition.VNICConfigurationUnit,
+			Name:         "vnic-configuration.service",
+			Enabled:      true,
+		},
 	}
 
 	certFiles := certs.NewFilesClusterMaster(me.clusterCerts)

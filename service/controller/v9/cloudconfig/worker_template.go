@@ -153,6 +153,11 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 			Name:         "docker.mount",
 			Enabled:      true,
 		},
+		{
+			AssetContent: ignition.VNICConfigurationUnit,
+			Name:         "vnic-configuration.service",
+			Enabled:      true,
+		},
 	}
 
 	certFiles := certs.NewFilesClusterWorker(we.clusterCerts)
