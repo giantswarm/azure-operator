@@ -11,7 +11,7 @@
     },
     "loadBalancersAPIVersion":{
       "type":"string",
-      "defaultValue":"2016-09-01",
+      "defaultValue":"2018-12-01",
       "metadata":{
         "description":"API version used by the Microsoft.Network/loadBalancers resource."
       }
