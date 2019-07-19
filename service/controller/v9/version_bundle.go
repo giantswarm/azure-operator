@@ -22,6 +22,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Add systemd which increase tx queue size for eth0 interface to 1024.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "ignition",
+				Description: "Introduce explicit resource reservation for OS resources and container runtime.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
