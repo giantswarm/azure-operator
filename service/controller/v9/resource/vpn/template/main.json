@@ -26,7 +26,8 @@
     "publicIPID":"[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIPName'))]",
     "vnetID":"[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('vnetGatewaySubnetName'))]",
     "publicIPAddressesAPIVersion":"2017-10-01",
-    "virtualNetworksGatewayAPIVersion":"2017-10-01"
+    "virtualNetworksGatewayAPIVersion":"2017-10-01",
+    "loadBalancerSkuName": "Standard"
   },
   "resources":[
     {
@@ -38,7 +39,7 @@
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
       },
       "sku":{
-        "name":"Basic"
+        "name": "[variables('loadBalancerSkuName')]"
       },
       "properties":{
         "publicIPAllocationMethod":"Dynamic"
