@@ -61,7 +61,7 @@
           {
             "id":"string",
             "properties":{
-              "privateIPAllocationMethod":"Dynamic",
+              "privateIPAllocationMethod":"Static",
               "subnet":{
                 "id":"[variables('vnetID')]"
               },
