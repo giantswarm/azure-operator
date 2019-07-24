@@ -42,7 +42,7 @@
         "name": "[variables('loadBalancerSkuName')]"
       },
       "properties":{
-        "publicIPAllocationMethod":"Dynamic"
+        "publicIPAllocationMethod":"Static"
       }
     },
     {
@@ -61,7 +61,7 @@
           {
             "id":"string",
             "properties":{
-              "privateIPAllocationMethod":"Static",
+              "privateIPAllocationMethod":"Dynamic",
               "subnet":{
                 "id":"[variables('vnetID')]"
               },
