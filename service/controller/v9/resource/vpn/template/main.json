@@ -38,7 +38,7 @@
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
       },
       "sku":{
-        "name":"Basic"
+        "name": "Basic"
       },
       "properties":{
         "publicIPAllocationMethod":"Dynamic"

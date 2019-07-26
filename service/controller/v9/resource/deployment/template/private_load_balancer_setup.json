@@ -4,7 +4,7 @@
   "parameters":{
     "loadBalancersAPIVersion":{
       "type":"string",
-      "defaultValue":"2016-09-01",
+      "defaultValue":"2018-12-01",
       "metadata":{
         "description":"API version used by the Microsoft.Network/loadBalancers resource."
       }
@@ -30,6 +30,7 @@
   },
   "variables":{
     "loadBalancerName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-PrivateLoadBalancer')]",
+    "loadBalancerSkuName": "Standard",
     "loadBalancerID":"[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
     "loadBalancerBackendPoolName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PrivateLoadBalancer-BackendPool')]",
     "loadBalancerBackendPoolID":"[concat(variables('loadBalancerID'),'/backendAddressPools/',variables('loadBalancerBackendPoolName'))]",
@@ -45,6 +46,9 @@
       "name":"[variables('loadBalancerName')]",
       "type":"Microsoft.Network/loadBalancers",
       "location":"[resourceGroup().location]",
+      "sku": {
+        "name": "[variables('loadBalancerSkuName')]"
+      },
       "tags":{
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
       },
