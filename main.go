@@ -13,6 +13,7 @@ import (
 	"github.com/spf13/viper"
 
 	"github.com/giantswarm/azure-operator/flag"
+	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/server"
 	"github.com/giantswarm/azure-operator/service"
 )
@@ -22,11 +23,7 @@ const (
 )
 
 var (
-	description string     = "The azure-operator manages Kubernetes clusters on Azure."
-	f           *flag.Flag = flag.New()
-	gitCommit   string     = notAvailable
-	name        string     = "azure-operator"
-	source      string     = "https://github.com/giantswarm/azure-operator"
+	f *flag.Flag = flag.New()
 )
 
 func init() {
@@ -60,10 +57,11 @@ func mainError() error {
 				Logger: logger,
 				Viper:  v,
 
-				Description: description,
-				GitCommit:   gitCommit,
-				ProjectName: name,
-				Source:      source,
+				Description: project.Description(),
+				GitCommit:   project.GitSHA(),
+				ProjectName: project.Name(),
+				Source:      project.Source(),
+				Version:     project.Version(),
 			}
 
 			newService, err = service.New(c)
@@ -82,7 +80,7 @@ func mainError() error {
 				Service: newService,
 				Viper:   v,
 
-				ProjectName: name,
+				ProjectName: project.Name(),
 			}
 
 			newServer, err = server.New(c)
@@ -101,10 +99,11 @@ func mainError() error {
 			Logger:        logger,
 			ServerFactory: serverFactory,
 
-			Description:    description,
-			GitCommit:      gitCommit,
-			Name:           name,
-			Source:         source,
+			Description:    project.Description(),
+			GitCommit:      project.GitSHA(),
+			Name:           project.Name(),
+			Source:         project.Source(),
+			Version:        project.Version(),
 			VersionBundles: service.NewVersionBundles(),
 		}
 
@@ -116,8 +115,8 @@ func mainError() error {
 
 	var defaultTemplateVersion string
 	{
-		if gitCommit != notAvailable {
-			defaultTemplateVersion = gitCommit
+		if project.GitSHA() != notAvailable {
+			defaultTemplateVersion = project.GitSHA()
 		}
 	}
 
