@@ -119,7 +119,7 @@ workflows:
   version: 2
   build_and_e2eTest:
     jobs:
-      - build:
+      - build
       - hold:
           type: approval
       - master:
