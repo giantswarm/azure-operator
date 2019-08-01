@@ -41,7 +41,7 @@ spec:
         runAsGroup: {{ .Values.groupID }}
       containers:
       - name: azure-operator
-        image: quay.io/giantswarm/azure-operator:[[ .DockerTag ]]
+        image: quay.io/giantswarm/azure-operator:[[ .SHA ]]
         volumeMounts:
         - name: azure-operator-configmap
           mountPath: /var/run/azure-operator/configmap/
