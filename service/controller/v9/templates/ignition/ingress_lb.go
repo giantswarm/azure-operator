@@ -7,6 +7,8 @@ metadata:
   namespace: kube-system
   annotations:
     external-dns.alpha.kubernetes.io/hostname: ingress.{{ .ClusterDNSDomain }}.
+    # this annotation adds lb rules fot both TCP and UDP to allow UDP outbound connection with Standard LB
+    service.beta.kubernetes.io/azure-load-balancer-mixed-protocols: "true" 
   labels:
     app: ingress-loadbalancer
 spec:
