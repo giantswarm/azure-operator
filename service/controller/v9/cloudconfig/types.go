@@ -5,10 +5,15 @@ import (
 )
 
 type templateData struct {
+	azureCNIFileParams
 	calicoAzureFileParams
 	cloudProviderConfFileParams
 	certificateDecrypterUnitParams
 	ingressLBFileParams
+}
+
+type azureCNIFileParams struct {
+	VnetCIDR string
 }
 
 type calicoAzureFileParams struct {

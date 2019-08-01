@@ -32,6 +32,7 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 			clusterCerts: clusterCerts,
 			customObject: customObject,
 			encrypter:    encrypter,
+			vnetCIDR:     customObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
 		params = k8scloudconfig.DefaultParams()
@@ -143,6 +144,11 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 // Units allows systemd units to be injected into the master cloudconfig.
 func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 	unitsMeta := []k8scloudconfig.UnitMetadata{
+		{
+			AssetContent: ignition.AzureCNINatRules,
+			Name:         "azure-cni-nat-rules.service",
+			Enabled:      true,
+		},
 		{
 			AssetContent: ignition.CertificateDecrypterUnit,
 			Name:         "certificate-decrypter.service",
