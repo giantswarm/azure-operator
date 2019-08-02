@@ -140,7 +140,7 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 	for _, c := range clients {
 		r, err := c.List(context.Background(), u.location)
 		if err != nil {
-			u.logger.Log("level", "warning", "message", "An error occured during the scraping of usage", "stack", fmt.Sprintf("%v", err))
+			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of usage", "stack", fmt.Sprintf("%v", err))
 			u.usageScrapeError.Inc()
 			ch <- u.usageScrapeError
 		} else {
