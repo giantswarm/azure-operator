@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -53,9 +54,14 @@ type Usage struct {
 	k8sClient kubernetes.Interface
 	logger    micrologger.Logger
 
+	usageScrapeError prometheus.Counter
+
 	environmentName string
 	location        string
 }
+
+const namespace = "azure_operator"
+const component = "usage"
 
 func NewUsage(config UsageConfig) (*Usage, error) {
 	if config.G8sClient == nil {
@@ -79,6 +85,13 @@ func NewUsage(config UsageConfig) (*Usage, error) {
 		g8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
+
+		usageScrapeError: prometheus.NewCounter(prometheus.CounterOpts{
+			Namespace: namespace,
+			Subsystem: component,
+			Name:      "scrape_error",
+			Help:      "Total number of times Usage scraping returned an error.",
+		}),
 
 		environmentName: config.EnvironmentName,
 		location:        config.Location,
@@ -127,28 +140,30 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 	for _, c := range clients {
 		r, err := c.List(context.Background(), u.location)
 		if err != nil {
-			return microerror.Mask(err)
-		}
+			u.logger.Log("level", "warning", "message", "An error occured during the scraping of usage", "stack", fmt.Sprintf("%v", err))
+			u.usageScrapeError.Inc()
+			ch <- u.usageScrapeError
+		} else {
+			for r.NotDone() {
+				for _, v := range r.Values() {
+					ch <- prometheus.MustNewConstMetric(
+						usageCurrentDesc,
+						prometheus.GaugeValue,
+						float64(*v.CurrentValue),
+						*v.Name.LocalizedValue,
+					)
+					ch <- prometheus.MustNewConstMetric(
+						usageLimitDesc,
+						prometheus.GaugeValue,
+						float64(*v.Limit),
+						*v.Name.LocalizedValue,
+					)
+				}
 
-		for r.NotDone() {
-			for _, v := range r.Values() {
-				ch <- prometheus.MustNewConstMetric(
-					usageCurrentDesc,
-					prometheus.GaugeValue,
-					float64(*v.CurrentValue),
-					*v.Name.LocalizedValue,
-				)
-				ch <- prometheus.MustNewConstMetric(
-					usageLimitDesc,
-					prometheus.GaugeValue,
-					float64(*v.Limit),
-					*v.Name.LocalizedValue,
-				)
-			}
-
-			err := r.Next()
-			if err != nil {
-				return microerror.Mask(err)
+				err := r.Next()
+				if err != nil {
+					return microerror.Mask(err)
+				}
 			}
 		}
 	}
