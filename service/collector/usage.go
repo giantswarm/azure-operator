@@ -90,7 +90,7 @@ func NewUsage(config UsageConfig) (*Usage, error) {
 			Namespace: namespace,
 			Subsystem: component,
 			Name:      "scrape_error",
-			Help:      "Total number of times Usage scraping returned an error.",
+			Help:      "Total number of times compute resource usage information scraping returned an error.",
 		}),
 
 		environmentName: config.EnvironmentName,
@@ -140,7 +140,7 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 	for _, c := range clients {
 		r, err := c.List(context.Background(), u.location)
 		if err != nil {
-			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of usage", "stack", fmt.Sprintf("%v", err))
+			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource usage information", "stack", fmt.Sprintf("%v", err))
 			u.usageScrapeError.Inc()
 			ch <- u.usageScrapeError
 		} else {
