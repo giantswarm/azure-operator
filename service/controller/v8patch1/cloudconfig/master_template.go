@@ -9,8 +9,8 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_4_5_0"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/v8/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/v8/templates/ignition"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/templates/ignition"
 )
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
