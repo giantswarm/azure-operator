@@ -14,7 +14,7 @@ import (
 )
 
 const (
-	Name = "containerurlv8"
+	Name = "containerurlv8patch1"
 )
 
 type Config struct {

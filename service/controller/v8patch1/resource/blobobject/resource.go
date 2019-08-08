@@ -16,7 +16,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "blobobjectv8"
+	Name = "blobobjectv8patch1"
 )
 
 type Config struct {

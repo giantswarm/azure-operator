@@ -17,7 +17,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "deploymentv8"
+	Name = "deploymentv8patch1"
 )
 
 const (

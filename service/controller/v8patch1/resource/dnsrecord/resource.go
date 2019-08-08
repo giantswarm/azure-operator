@@ -13,7 +13,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "dnsrecordv8"
+	Name = "dnsrecordv8patch1"
 )
 
 type Config struct {

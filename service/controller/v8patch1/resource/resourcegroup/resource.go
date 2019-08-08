@@ -17,7 +17,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "resourcegroupv8"
+	Name = "resourcegroupv8patch1"
 
 	managedBy = "azure-operator"
 )

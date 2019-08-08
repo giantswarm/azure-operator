@@ -20,7 +20,7 @@ import (
 )
 
 const (
-	Name = "instancev8"
+	Name = "instancev8patch1"
 )
 
 type Config struct {

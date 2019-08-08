@@ -12,7 +12,7 @@ import (
 )
 
 const (
-	Name = "vpnconnectionv8"
+	Name = "vpnconnectionv8patch1"
 )
 
 // Config is the configuration required by Resource.

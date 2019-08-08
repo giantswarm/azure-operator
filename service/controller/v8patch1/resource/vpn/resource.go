@@ -15,7 +15,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "vpnv8"
+	Name = "vpnv8patch1"
 )
 
 // Config contains information required by Resource.
