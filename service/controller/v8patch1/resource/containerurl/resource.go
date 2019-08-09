@@ -10,11 +10,11 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/service/controller/v8/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/controllercontext"
 )
 
 const (
-	Name = "containerurlv8"
+	Name = "containerurlv8patch1"
 )
 
 type Config struct {

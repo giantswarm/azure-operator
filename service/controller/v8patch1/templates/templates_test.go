@@ -3,7 +3,7 @@ package templates_test
 import (
 	"testing"
 
-	"github.com/giantswarm/azure-operator/service/controller/v8/templates"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/templates"
 )
 
 func TestRender(t *testing.T) {

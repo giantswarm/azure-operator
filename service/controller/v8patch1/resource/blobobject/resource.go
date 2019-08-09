@@ -10,13 +10,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/service/controller/v8/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/v8/key"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/key"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "blobobjectv8"
+	Name = "blobobjectv8patch1"
 )
 
 type Config struct {

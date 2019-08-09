@@ -8,15 +8,16 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v8/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/v8/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v8/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/key"
 )
 
 const (

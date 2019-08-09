@@ -3,9 +3,10 @@ package containerurl
 import (
 	"context"
 
-	"github.com/giantswarm/azure-operator/service/controller/v8/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {

@@ -8,8 +8,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v8/key"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1/key"
 )
 
 func Test_Resource_Instance_findActionableInstance(t *testing.T) {
