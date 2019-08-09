@@ -9,53 +9,17 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "kubernetes",
-				Description: "Update kubernetes to 1.14.3. https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.14.md",
+				Description: "Update kubernetes to 1.14.5 to fix CVE-2019-11247. https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.14.md",
 				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "calico",
-				Description: "Update calico to 3.7.2. https://docs.projectcalico.org/v3.7/release-notes/",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "containerlinux",
-				Description: "Update to 2135.4.0. https://github.com/coreos/manifest/releases/tag/v2135.4.0",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "etcd",
-				Description: "Update to 3.3.13. https://github.com/etcd-io/etcd/blob/master/CHANGELOG-3.3.md#v3313-2019-05-02",
-				Kind:        versionbundle.KindChanged,
-			},
-			{
-				Component:   "ignition",
-				Description: "Add name label for default and kube-system namespaces.",
-				Kind:        versionbundle.KindAdded,
 			},
 		},
 		Components: []versionbundle.Component{
 			{
-				Name:    "calico",
-				Version: "3.7.2",
-			},
-			{
-				Name:    "containerlinux",
-				Version: "2135.4.0",
-			},
-			{
-				Name:    "docker",
-				Version: "18.06.1",
-			},
-			{
-				Name:    "etcd",
-				Version: "3.3.13",
-			},
-			{
 				Name:    "kubernetes",
-				Version: "1.14.3",
+				Version: "1.14.5",
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.4.0",
+		Version: "2.4.1",
 	}
 }
