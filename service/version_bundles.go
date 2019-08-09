@@ -6,6 +6,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v6"
 	"github.com/giantswarm/azure-operator/service/controller/v7"
 	"github.com/giantswarm/azure-operator/service/controller/v8"
+	"github.com/giantswarm/azure-operator/service/controller/v8patch1"
 	"github.com/giantswarm/azure-operator/service/controller/v9"
 )
 
@@ -15,6 +16,7 @@ func NewVersionBundles() []versionbundle.Bundle {
 	versionBundles = append(versionBundles, v6.VersionBundle())
 	versionBundles = append(versionBundles, v7.VersionBundle())
 	versionBundles = append(versionBundles, v8.VersionBundle())
+	versionBundles = append(versionBundles, v8patch1.VersionBundle())
 	versionBundles = append(versionBundles, v9.VersionBundle())
 
 	return versionBundles
