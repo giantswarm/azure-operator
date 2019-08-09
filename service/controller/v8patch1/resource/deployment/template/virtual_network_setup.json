@@ -87,12 +87,7 @@
               },
               "routeTable":{
                 "id":"[parameters('routeTableID')]"
-              },
-              "serviceEndpoints": [
-                {
-                  "service": "Microsoft.Storage"
-                }
-              ]
+              }
             }
           },
           {

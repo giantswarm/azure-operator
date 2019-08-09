@@ -27,6 +27,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Introduce explicit resource reservation for OS resources and container runtime.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Add VNET service endpoint for accessing Azure Storage.",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
