@@ -1,4 +1,4 @@
-package v_4_6_0
+package v_4_5_1
 
 const WorkerTemplate = `---
 ignition:
@@ -27,36 +27,12 @@ passwd:
 
 systemd:
   units:
-  # Start - manual management for cgroup structure
-  - name: kubereserved.slice
-    path: /etc/systemd/system/kubereserved.slice
-    content: |
-      [Unit]
-      Description=Limited resources slice for Kubernetes services
-      Documentation=man:systemd.special(7)
-      DefaultDependencies=no
-      Before=slices.target
-      Requires=-.slice
-      After=-.slice
-  # End - manual management for cgroup structure
   {{range .Extension.Units}}
   - name: {{.Metadata.Name}}
     enabled: {{.Metadata.Enabled}}
     contents: |
       {{range .Content}}{{.}}
       {{end}}{{end}}
-  - name: set-certs-group-owner-permission-giantswarm.service
-    enabled: true
-    contents: |
-      [Unit]
-      Description=Change group owner for certificates to giantswarm
-      Wants=k8s-kubelet.service k8s-setup-network-env.service
-      After=k8s-kubelet.service k8s-setup-network-env.service
-      [Service]
-      Type=oneshot
-      ExecStart=/bin/sh -c "find /etc/kubernetes/ssl -name '*.pem' -print | xargs -i  sh -c 'chown root:giantswarm {} && chmod 640 {}'"
-      [Install]
-      WantedBy=multi-user.target
   - name: wait-for-domains.service
     enabled: true
     contents: |
@@ -94,16 +70,6 @@ systemd:
       ExecStart=/bin/bash -c '/usr/bin/envsubst </etc/kubernetes/config/kubelet.yaml.tmpl >/etc/kubernetes/config/kubelet.yaml'
       [Install]
       WantedBy=multi-user.target
-  - name: containerd.service
-    enabled: true
-    contents: |
-    dropins:
-      - name: 10-change-cgroup.conf
-        contents: |
-          [Service]
-          CPUAccounting=true
-          MemoryAccounting=true
-          Slice=kubereserved.slice
   - name: docker.service
     enabled: true
     contents: |
@@ -111,10 +77,7 @@ systemd:
       - name: 10-giantswarm-extra-args.conf
         contents: |
           [Service]
-          CPUAccounting=true
-          MemoryAccounting=true
-          Slice=kubereserved.slice
-          Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs --cgroup-parent=/kubereserved.slice --log-opt max-size=25m --log-opt max-file=2 --log-opt labels=io.kubernetes.container.hash,io.kubernetes.container.name,io.kubernetes.pod.name,io.kubernetes.pod.namespace,io.kubernetes.pod.uid"
+          Environment="DOCKER_CGROUPS=--exec-opt native.cgroupdriver=cgroupfs --log-opt max-size=25m --log-opt max-file=2 --log-opt labels=io.kubernetes.container.hash,io.kubernetes.container.name,io.kubernetes.pod.name,io.kubernetes.pod.namespace,io.kubernetes.pod.uid"
           Environment="DOCKER_OPT_BIP=--bip={{.Cluster.Docker.Daemon.CIDR}}"
           Environment="DOCKER_OPTS=--live-restore --icc=false --userland-proxy=false"
   - name: k8s-setup-network-env.service
@@ -152,13 +115,10 @@ systemd:
       Restart=always
       RestartSec=0
       TimeoutStopSec=10
-      CPUAccounting=true
-      MemoryAccounting=true
-      Slice=kubereserved.slice
       EnvironmentFile=/etc/network-environment
       Environment="IMAGE={{ .RegistryDomain }}/{{ .Images.Kubernetes }}"
       Environment="NAME=%p.service"
-      Environment="PATH=/opt/bin/:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin"
+      Environment="PATH=/opt/bin/:/usr/bin/:/usr/sbin:/sbin:$PATH"
       ExecStartPre=/usr/bin/docker pull $IMAGE
       ExecStartPre=-/usr/bin/docker stop -t 10 $NAME
       ExecStartPre=-/usr/bin/docker rm -f $NAME
@@ -173,9 +133,6 @@ systemd:
       -v /run/calico/:/run/calico/:rw \
       -v /run/docker/:/run/docker/:rw \
       -v /run/docker.sock:/run/docker.sock:rw \
-      -v /usr/bin/docker:/usr/bin/docker \
-      -v /run/metadata/torcx:/run/metadata/torcx \
-      -v /run/torcx/:/run/torcx/ \
       -v /usr/lib/os-release:/etc/os-release \
       -v /usr/share/ca-certificates/:/etc/ssl/certs \
       -v /var/lib/calico/:/var/lib/calico \
@@ -212,7 +169,6 @@ systemd:
       --enable-server \
       --logtostderr=true \
       --cloud-provider={{.Cluster.Kubernetes.CloudProvider}} \
-      --image-pull-progress-deadline={{.ImagePullProgressDeadline}} \
       --network-plugin=cni \
       --register-node=true \
       --kubeconfig=/etc/kubernetes/kubeconfig/kubelet.yaml \
