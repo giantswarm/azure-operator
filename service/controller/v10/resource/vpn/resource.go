@@ -9,13 +9,13 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v9/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v9/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/v10/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v10/debugger"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "vpnv9"
+	Name = "vpnv10"
 )
 
 // Config contains information required by Resource.

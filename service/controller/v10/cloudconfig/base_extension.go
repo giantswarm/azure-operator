@@ -6,8 +6,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v9/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/v9/key"
+	"github.com/giantswarm/azure-operator/service/controller/v10/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v10/key"
 )
 
 type baseExtension struct {

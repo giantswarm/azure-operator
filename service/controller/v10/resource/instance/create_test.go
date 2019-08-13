@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v9/key"
+	"github.com/giantswarm/azure-operator/service/controller/v10/key"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 

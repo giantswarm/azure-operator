@@ -13,14 +13,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v9/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v9/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/v9/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/v9/key"
+	"github.com/giantswarm/azure-operator/service/controller/v10/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v10/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/v10/encrypter"
+	"github.com/giantswarm/azure-operator/service/controller/v10/key"
 )
 
 const (
-	Name = "instancev9"
+	Name = "instancev10"
 )
 
 type Config struct {
