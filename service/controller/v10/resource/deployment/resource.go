@@ -10,14 +10,14 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v9/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v9/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/v9/key"
+	"github.com/giantswarm/azure-operator/service/controller/v10/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v10/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/v10/key"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "deploymentv9"
+	Name = "deploymentv10"
 )
 
 const (
