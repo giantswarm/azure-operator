@@ -32,6 +32,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Add VNET service endpoint for accessing Azure Storage.",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "kubernetes",
+				Description: "Update kubernetes to 1.14.5 (CVE-2019-11247) https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.14.md#v1145",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
@@ -52,7 +57,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.14.3",
+				Version: "1.14.5",
 			},
 		},
 		Name:    "azure-operator",
