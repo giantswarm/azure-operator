@@ -19,7 +19,7 @@ const (
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
-	cloudConfigVersion        = "v4.1.0"
+	cloudConfigVersion        = "v4.5.1"
 	storageAccountSuffix      = "gssa"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
