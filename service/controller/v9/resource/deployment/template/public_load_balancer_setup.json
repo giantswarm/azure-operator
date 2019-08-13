@@ -4,14 +4,14 @@
   "parameters":{
     "publicIPAddressesAPIVersion":{
       "type":"string",
-      "defaultValue":"2016-09-01",
+      "defaultValue":"2018-12-01",
       "metadata":{
         "description":"API version used by the Microsoft.Network/publicIPAddresses resource."
       }
     },
     "loadBalancersAPIVersion":{
       "type":"string",
-      "defaultValue":"2016-09-01",
+      "defaultValue":"2018-12-01",
       "metadata":{
         "description":"API version used by the Microsoft.Network/loadBalancers resource."
       }
@@ -36,6 +36,7 @@
     "loadBalancerPublicIPName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-PublicLoadBalancer-PublicIP')]",
     "loadBalancerPublicIPId":"[resourceId('Microsoft.Network/publicIPAddresses', variables('LoadBalancerPublicIPName'))]",
     "loadBalancerName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-PublicLoadBalancer')]",
+    "loadBalancerSkuName": "Standard",
     "loadBalancerID":"[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
     "loadBalancerBackendPoolName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-BackendPool')]",
     "loadBalancerBackendPoolID":"[concat(variables('loadBalancerID'),'/backendAddressPools/',variables('loadBalancerBackendPoolName'))]",
@@ -50,6 +51,9 @@
       "type":"Microsoft.Network/publicIPAddresses",
       "name":"[variables('loadBalancerPublicIPName')]",
       "location":"[resourceGroup().location]",
+      "sku": {
+        "name": "[variables('loadBalancerSkuName')]"
+      },
       "tags":{
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
       },
@@ -63,6 +67,9 @@
       "name":"[variables('loadBalancerName')]",
       "type":"Microsoft.Network/loadBalancers",
       "location":"[resourceGroup().location]",
+      "sku": {
+        "name": "[variables('loadBalancerSkuName')]"
+      },
       "tags":{
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
       },

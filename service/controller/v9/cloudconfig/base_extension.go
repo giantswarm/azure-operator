@@ -17,6 +17,7 @@ type baseExtension struct {
 	clusterCerts certs.Cluster
 	customObject providerv1alpha1.AzureConfig
 	encrypter    encrypter.Interface
+	vnetCIDR     string
 }
 
 func (e *baseExtension) templateData(certFiles certs.Files) templateData {
@@ -27,6 +28,9 @@ func (e *baseExtension) templateData(certFiles certs.Files) templateData {
 	}
 
 	return templateData{
+		azureCNIFileParams{
+			VnetCIDR: e.vnetCIDR,
+		},
 		calicoAzureFileParams{
 			Cluster:    e.customObject.Spec.Cluster,
 			CalicoCIDR: e.calicoCIDR,

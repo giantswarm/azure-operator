@@ -16,4 +16,5 @@ vnetName: {{ .VnetName }}
 vmType: vmss
 routeTableName: {{ .RouteTableName }}
 useManagedIdentityExtension: {{ .UseManagedIdentityExtension }}
+loadBalancerSku: standard
 `
