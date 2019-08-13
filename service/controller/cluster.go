@@ -20,7 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v7"
 	"github.com/giantswarm/azure-operator/service/controller/v8"
 	"github.com/giantswarm/azure-operator/service/controller/v8patch1"
-	"github.com/giantswarm/azure-operator/service/controller/v9"
+	"github.com/giantswarm/azure-operator/service/controller/v10"
 )
 
 type ClusterConfig struct {
@@ -188,9 +188,9 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var v9ResourceSet *controller.ResourceSet
+	var v10ResourceSet *controller.ResourceSet
 	{
-		c := v9.ResourceSetConfig{
+		c := v10.ResourceSetConfig{
 			CertsSearcher: certsSearcher,
 			G8sClient:     config.G8sClient,
 			K8sClient:     config.K8sClient,
@@ -206,7 +206,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			TemplateVersion:          config.TemplateVersion,
 		}
 
-		v9ResourceSet, err = v9.NewResourceSet(c)
+		v10ResourceSet, err = v10.NewResourceSet(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -224,7 +224,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 				v7ResourceSet,
 				v8ResourceSet,
 				v8patch1ResourceSet,
-				v9ResourceSet,
+				v10ResourceSet,
 			},
 			RESTClient: config.G8sClient.ProviderV1alpha1().RESTClient(),
 
