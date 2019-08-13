@@ -3,11 +3,11 @@ package service
 import (
 	"github.com/giantswarm/versionbundle"
 
+	"github.com/giantswarm/azure-operator/service/controller/v10"
 	"github.com/giantswarm/azure-operator/service/controller/v6"
 	"github.com/giantswarm/azure-operator/service/controller/v7"
 	"github.com/giantswarm/azure-operator/service/controller/v8"
 	"github.com/giantswarm/azure-operator/service/controller/v8patch1"
-	"github.com/giantswarm/azure-operator/service/controller/v10"
 )
 
 func NewVersionBundles() []versionbundle.Bundle {
