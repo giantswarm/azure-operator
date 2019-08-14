@@ -16,12 +16,12 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	v10 "github.com/giantswarm/azure-operator/service/controller/v10"
-	v6 "github.com/giantswarm/azure-operator/service/controller/v6"
-	v7 "github.com/giantswarm/azure-operator/service/controller/v7"
-	v8 "github.com/giantswarm/azure-operator/service/controller/v8"
+	"github.com/giantswarm/azure-operator/service/controller/v10"
+	"github.com/giantswarm/azure-operator/service/controller/v6"
+	"github.com/giantswarm/azure-operator/service/controller/v7"
+	"github.com/giantswarm/azure-operator/service/controller/v8"
 	"github.com/giantswarm/azure-operator/service/controller/v8patch1"
-	v9 "github.com/giantswarm/azure-operator/service/controller/v9"
+	"github.com/giantswarm/azure-operator/service/controller/v9"
 )
 
 type ClusterConfig struct {
