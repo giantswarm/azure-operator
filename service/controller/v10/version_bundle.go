@@ -8,34 +8,9 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "ignition",
-				Description: "Add name label for default and kube-system namespaces.",
+				Component:   "TODO",
+				Description: "TODO",
 				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "ignition",
-				Description: "Use v1 stable for giantswarm-critical priority class.",
-				Kind:        versionbundle.KindFixed,
-			},
-			{
-				Component:   "ignition",
-				Description: "Add systemd which increase tx queue size for eth0 interface to 1024.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "ignition",
-				Description: "Introduce explicit resource reservation for OS resources and container runtime.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "azure-operator",
-				Description: "Add VNET service endpoint for accessing Azure Storage.",
-				Kind:        versionbundle.KindAdded,
-			},
-			{
-				Component:   "kubernetes",
-				Description: "Update kubernetes to 1.14.5 (CVE-2019-11247) https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.14.md#v1145",
-				Kind:        versionbundle.KindChanged,
 			},
 		},
 		Components: []versionbundle.Component{
@@ -61,6 +36,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.5.0",
+		Version: "2.6.0",
 	}
 }
