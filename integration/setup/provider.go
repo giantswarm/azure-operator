@@ -22,12 +22,6 @@ func provider(ctx context.Context, config Config) error {
 			},
 			Secret: chartvalues.AzureOperatorConfigSecret{
 				AzureOperator: chartvalues.AzureOperatorConfigSecretAzureOperator{
-					CredentialDefault: chartvalues.AzureOperatorConfigSecretAzureOperatorCredentialDefault{
-						ClientID:       env.AzureClientID(),
-						ClientSecret:   env.AzureClientSecret(),
-						SubscriptionID: env.AzureSubscriptionID(),
-						TenantID:       env.AzureTenantID(),
-					},
 					SecretYaml: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYaml{
 						Service: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlService{
 							Azure: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzure{

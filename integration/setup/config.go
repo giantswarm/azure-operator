@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/e2e-harness/pkg/harness"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
-	"github.com/giantswarm/e2esetup/k8s"
 	"github.com/giantswarm/helmclient"
+	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
@@ -25,7 +25,7 @@ type Config struct {
 	AzureClient *e2eclientsazure.Client
 	Guest       *framework.Guest
 	Host        *framework.Host
-	K8s         *k8s.Setup
+	K8s         *k8sclient.Setup
 	Logger      micrologger.Logger
 	Release     *release.Release
 	Resource    *resource.Resource
@@ -96,30 +96,30 @@ func NewConfig() (Config, error) {
 		}
 	}
 
-	var cpK8sClients *k8s.Clients
+	var cpK8sClients *k8sclient.Clients
 	{
 		kubeConfigPath := harness.DefaultKubeConfig
 
-		c := k8s.ClientsConfig{
+		c := k8sclient.ClientsConfig{
 			Logger: logger,
 
 			KubeConfigPath: kubeConfigPath,
 		}
 
-		cpK8sClients, err = k8s.NewClients(c)
+		cpK8sClients, err = k8sclient.NewClients(c)
 		if err != nil {
 			return Config{}, microerror.Mask(err)
 		}
 	}
 
-	var k8sSetup *k8s.Setup
+	var k8sSetup *k8sclient.Setup
 	{
-		c := k8s.SetupConfig{
+		c := k8sclient.SetupConfig{
 			Clients: cpK8sClients,
 			Logger:  logger,
 		}
 
-		k8sSetup, err = k8s.NewSetup(c)
+		k8sSetup, err = k8sclient.NewSetup(c)
 		if err != nil {
 			return Config{}, microerror.Mask(err)
 		}
