@@ -58,6 +58,33 @@ func provider(ctx context.Context, config Config) error {
 	}
 
 	{
+		c := chartvalues.CredentialdConfig{
+			Azure: chartvalues.CredentialdConfigAzure{
+				CredentialDefault: chartvalues.CredentialdConfigAzureCredentialDefault{
+					ClientID:       env.AzureClientID(),
+					ClientSecret:   env.AzureClientSecret(),
+					SubscriptionID: env.AzureSubscriptionID(),
+					TenantID:       env.AzureTenantID(),
+				},
+			},
+			Deployment: chartvalues.CredentialdConfigDeployment{
+				Replicas: 0,
+			},
+			RegistryPullSecret: env.RegistryPullSecret(),
+		}
+
+		values, err := chartvalues.NewCredentiald(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = config.Release.Install(ctx, "credentiald", release.NewStableVersion(), values, config.Release.Condition().SecretExists(ctx, namespace, "credential-default"))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
 		c := chartvalues.APIExtensionsAzureConfigE2EConfig{
 			Azure: chartvalues.APIExtensionsAzureConfigE2EConfigAzure{
 				CalicoSubnetCIDR: env.AzureCalicoSubnetCIDR(),
