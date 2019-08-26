@@ -24,6 +24,7 @@ var (
 		"Current usage of specific Quotas as defined by Azure.",
 		[]string{
 			"name",
+			"subscription",
 		},
 		nil,
 	)
@@ -32,6 +33,7 @@ var (
 		"Usage limit of specific Quotas as defined by Azure.",
 		[]string{
 			"name",
+			"subscription",
 		},
 		nil,
 	)
@@ -135,9 +137,9 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 		}
 	}
 
-	// We track usage metrics for each client, which is unique per subscription.
+	// We track usage metrics for each client labeled by subscription.
 	// That way we prevent duplicated metrics.
-	for _, c := range clients {
+	for subscriptionID, c := range clients {
 		r, err := c.List(context.Background(), u.location)
 		if err != nil {
 			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource usage information", "stack", fmt.Sprintf("%v", err))
@@ -151,12 +153,14 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 						prometheus.GaugeValue,
 						float64(*v.CurrentValue),
 						*v.Name.LocalizedValue,
+						subscriptionID,
 					)
 					ch <- prometheus.MustNewConstMetric(
 						usageLimitDesc,
 						prometheus.GaugeValue,
 						float64(*v.Limit),
 						*v.Name.LocalizedValue,
+						subscriptionID,
 					)
 				}
 
