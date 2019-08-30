@@ -6,11 +6,11 @@ const CalicoAzureResources = `# Extra changes:
 #  - Made install-cni initContainer.
 #  - Added 'priorityClassName: system-cluster-critical' to calico daemonset and calico typha deployment.
 #
-# Calico Version v3.5.1
-# https://docs.projectcalico.org/v3.2/releases#v3.5.1
+# Calico Version v3.8.2
+# https://docs.projectcalico.org/v3.2/releases#v3.8.2
 # This manifest includes the following component versions:
-#   calico/node:v3.5.1
-#   calico/cni:v3.5.1
+#   calico/node:v3.8.2
+#   calico/cni:v3.8.2
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -216,7 +216,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/giantswarm/node:v3.5.1
+          image: quay.io/giantswarm/node:v3.8.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -297,7 +297,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/giantswarm/cni:v3.5.1
+          image: quay.io/giantswarm/cni:v3.8.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -479,8 +479,8 @@ spec:
 
 ---
 
-# Calico Version v3.5.1
-# https://docs.projectcalico.org/v3.5/releases#v3.5.1
+# Calico Version v3.8.2
+# https://docs.projectcalico.org/v3.5/releases#v3.8.2
 # Include a clusterrole for the calico-node DaemonSet,
 # and bind it to the calico-node serviceaccount.
 kind: ClusterRole
