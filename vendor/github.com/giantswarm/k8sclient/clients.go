@@ -1,10 +1,11 @@
-package k8s
+package k8sclient
 
 import (
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
+	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	"k8s.io/client-go/tools/clientcmd"
@@ -19,6 +20,7 @@ type ClientsConfig struct {
 type Clients struct {
 	logger micrologger.Logger
 
+	dynClient  dynamic.Interface
 	extClient  *apiextensionsclient.Clientset
 	g8sClient  *versioned.Clientset
 	k8sClient  *kubernetes.Clientset
@@ -39,6 +41,16 @@ func NewClients(config ClientsConfig) (*Clients, error) {
 	restConfig, err := clientcmd.BuildConfigFromFlags("", config.KubeConfigPath)
 	if err != nil {
 		return nil, microerror.Mask(err)
+	}
+
+	var dynClient dynamic.Interface
+	{
+		c := rest.CopyConfig(restConfig)
+
+		dynClient, err = dynamic.NewForConfig(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	var extClient *apiextensionsclient.Clientset
@@ -74,6 +86,7 @@ func NewClients(config ClientsConfig) (*Clients, error) {
 	c := &Clients{
 		logger: config.Logger,
 
+		dynClient:  dynClient,
 		extClient:  extClient,
 		g8sClient:  g8sClient,
 		k8sClient:  k8sClient,
@@ -83,15 +96,19 @@ func NewClients(config ClientsConfig) (*Clients, error) {
 	return c, nil
 }
 
-func (c *Clients) ExtClient() *apiextensionsclient.Clientset {
+func (c *Clients) DynClient() dynamic.Interface {
+	return c.dynClient
+}
+
+func (c *Clients) ExtClient() apiextensionsclient.Interface {
 	return c.extClient
 }
 
-func (c *Clients) G8sClient() *versioned.Clientset {
+func (c *Clients) G8sClient() versioned.Interface {
 	return c.g8sClient
 }
 
-func (c *Clients) K8sClient() *kubernetes.Clientset {
+func (c *Clients) K8sClient() kubernetes.Interface {
 	return c.k8sClient
 }
 
