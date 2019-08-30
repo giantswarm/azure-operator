@@ -609,6 +609,7 @@ rules:
       - globalnetworkpolicies
       - globalnetworksets
       - networkpolicies
+      - networksets
       - clusterinformations
       - hostendpoints
     verbs:
