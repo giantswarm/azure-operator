@@ -540,6 +540,21 @@ spec:
 
 ---
 
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: networksets.crd.projectcalico.org
+spec:
+  scope: Namespaced
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: NetworkSet
+    plural: networksets
+    singular: networkset
+
+---
+
 # Calico Version v3.8.2
 # https://docs.projectcalico.org/v3.5/releases#v3.8.2
 # Include a clusterrole for the calico-node DaemonSet,
