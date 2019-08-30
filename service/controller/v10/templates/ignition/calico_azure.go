@@ -632,19 +632,19 @@ rules:
       - get
       - list
       - watch
-	- apiGroups:
-		- crd.projectcalico.org
-		resources:
-		- blockaffinities
-		- ipamblocks
-		- ipamhandles
-		verbs:
-		- get
-		- list
-		- watch
-		- create
-		- update
-		- delete
+  - apiGroups:
+    - crd.projectcalico.org
+    resources:
+    - blockaffinities
+    - ipamblocks
+    - ipamhandles
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - delete
   # These permissions are only requried for upgrade from v2.6, and can
   # be removed after upgrade or on fresh installations.
   - apiGroups: ["crd.projectcalico.org"]
