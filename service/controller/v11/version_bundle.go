@@ -17,6 +17,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Update calico to 3.8.2 https://docs.projectcalico.org/v3.8/release-notes/",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Add all service endpoints to the VNET",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
