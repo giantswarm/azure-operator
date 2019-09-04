@@ -6,11 +6,11 @@ const CalicoAzureResources = `# Extra changes:
 #  - Made install-cni initContainer.
 #  - Added 'priorityClassName: system-cluster-critical' to calico daemonset and calico typha deployment.
 #
-# Calico Version v3.5.1
-# https://docs.projectcalico.org/v3.2/releases#v3.5.1
+# Calico Version v3.8.2
+# https://docs.projectcalico.org/v3.2/releases#v3.8.2
 # This manifest includes the following component versions:
-#   calico/node:v3.5.1
-#   calico/cni:v3.5.1
+#   calico/node:v3.8.2
+#   calico/cni:v3.8.2
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -216,7 +216,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/giantswarm/node:v3.5.1
+          image: quay.io/giantswarm/node:v3.8.2
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
@@ -297,7 +297,7 @@ spec:
         # This container installs the Calico CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/giantswarm/cni:v3.5.1
+          image: quay.io/giantswarm/cni:v3.8.2
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -372,6 +372,67 @@ spec:
     kind: FelixConfiguration
     plural: felixconfigurations
     singular: felixconfiguration
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamblocks.crd.projectcalico.org
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMBlock
+    plural: ipamblocks
+    singular: ipamblock
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: blockaffinities.crd.projectcalico.org
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: BlockAffinity
+    plural: blockaffinities
+    singular: blockaffinity
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamhandles.crd.projectcalico.org
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMHandle
+    plural: ipamhandles
+    singular: ipamhandle
+
+---
+
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: ipamconfigs.crd.projectcalico.org
+spec:
+  scope: Cluster
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: IPAMConfig
+    plural: ipamconfigs
+    singular: ipamconfig
+
 ---
 
 apiVersion: apiextensions.k8s.io/v1beta1
@@ -479,8 +540,23 @@ spec:
 
 ---
 
-# Calico Version v3.5.1
-# https://docs.projectcalico.org/v3.5/releases#v3.5.1
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: networksets.crd.projectcalico.org
+spec:
+  scope: Namespaced
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: NetworkSet
+    plural: networksets
+    singular: networkset
+
+---
+
+# Calico Version v3.8.2
+# https://docs.projectcalico.org/v3.5/releases#v3.8.2
 # Include a clusterrole for the calico-node DaemonSet,
 # and bind it to the calico-node serviceaccount.
 kind: ClusterRole
@@ -548,6 +624,7 @@ rules:
       - globalnetworkpolicies
       - globalnetworksets
       - networkpolicies
+      - networksets
       - clusterinformations
       - hostendpoints
     verbs:
@@ -571,6 +648,19 @@ rules:
       - get
       - list
       - watch
+  - apiGroups:
+    - crd.projectcalico.org
+    resources:
+    - blockaffinities
+    - ipamblocks
+    - ipamhandles
+    verbs:
+    - get
+    - list
+    - watch
+    - create
+    - update
+    - delete
   # These permissions are only requried for upgrade from v2.6, and can
   # be removed after upgrade or on fresh installations.
   - apiGroups: ["crd.projectcalico.org"]
