@@ -16,12 +16,13 @@ import (
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v10"
-	"github.com/giantswarm/azure-operator/service/controller/v6"
-	"github.com/giantswarm/azure-operator/service/controller/v7"
-	"github.com/giantswarm/azure-operator/service/controller/v8"
+	v10 "github.com/giantswarm/azure-operator/service/controller/v10"
+	v11 "github.com/giantswarm/azure-operator/service/controller/v11"
+	v6 "github.com/giantswarm/azure-operator/service/controller/v6"
+	v7 "github.com/giantswarm/azure-operator/service/controller/v7"
+	v8 "github.com/giantswarm/azure-operator/service/controller/v8"
 	"github.com/giantswarm/azure-operator/service/controller/v8patch1"
-	"github.com/giantswarm/azure-operator/service/controller/v9"
+	v9 "github.com/giantswarm/azure-operator/service/controller/v9"
 )
 
 type ClusterConfig struct {
@@ -237,6 +238,30 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
+	var v11ResourceSet *controller.ResourceSet
+	{
+		c := v11.ResourceSetConfig{
+			CertsSearcher: certsSearcher,
+			G8sClient:     config.G8sClient,
+			K8sClient:     config.K8sClient,
+			Logger:        config.Logger,
+
+			Azure:                    config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			IgnitionPath:             config.IgnitionPath,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v11ResourceSet, err = v11.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorkitController *controller.Controller
 	{
 		c := controller.Config{
@@ -251,6 +276,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 				v8patch1ResourceSet,
 				v9ResourceSet,
 				v10ResourceSet,
+				v11ResourceSet,
 			},
 			RESTClient: config.G8sClient.ProviderV1alpha1().RESTClient(),
 
