@@ -89,14 +89,9 @@
                 "id":"[parameters('routeTableID')]"
               },
               "serviceEndpoints": [
-                { "service": "Microsoft.Storage" },
-                { "service": "Microsoft.Sql" },
-                { "service": "Microsoft.AzureCosmosDB" },
-                { "service": "Microsoft.KeyVault" },
-                { "service": "Microsoft.ServiceBus" },
-                { "service": "Microsoft.EventHub" },
-                { "service": "Microsoft.AzureActiveDirectory" },
-                { "service": "Microsoft.ContainerRegistry" }
+                {
+                  "service": "Microsoft.Storage"
+                }
               ]
             }
           },
