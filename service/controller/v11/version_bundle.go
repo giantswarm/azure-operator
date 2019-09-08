@@ -12,6 +12,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "TODO",
 				Kind:        versionbundle.KindChanged,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Add all service endpoints to the VNET",
+				Kind:        versionbundle.KindAdded,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
