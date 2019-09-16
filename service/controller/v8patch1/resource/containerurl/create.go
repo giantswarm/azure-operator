@@ -3,6 +3,7 @@ package containerurl
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
@@ -25,7 +26,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	_, err = storageAccountsClient.GetProperties(ctx, groupName, storageAccountName)
+	_, err = storageAccountsClient.GetProperties(ctx, groupName, storageAccountName, storage.AccountExpandGeoReplicationStats)
 	if IsStorageAccountNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")
 		resourcecanceledcontext.SetCanceled(ctx)
