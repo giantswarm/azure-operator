@@ -479,7 +479,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	g := key.ResourceGroupName(customObject)
 	s := deploymentNameFunc(customObject)
-	ids := &compute.VirtualMachineScaleSetVMInstanceIDs{
+	ids := &compute.VirtualMachineScaleSetReimageParameters{
 		InstanceIds: to.StringSlicePtr([]string{
 			*instance.InstanceID,
 		}),
