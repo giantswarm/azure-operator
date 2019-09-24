@@ -1,2 +1,2 @@
 name: azure-operator-chart
-version: [[ .Version ]]
+version: 1.0.0-[[ .SHA ]]
