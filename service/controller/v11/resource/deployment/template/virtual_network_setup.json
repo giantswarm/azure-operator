@@ -96,7 +96,8 @@
                 { "service": "Microsoft.ServiceBus" },
                 { "service": "Microsoft.EventHub" },
                 { "service": "Microsoft.AzureActiveDirectory" },
-                { "service": "Microsoft.ContainerRegistry" }
+                { "service": "Microsoft.ContainerRegistry" },
+                { "service": "Microsoft.Web" }
               ]
             }
           },
