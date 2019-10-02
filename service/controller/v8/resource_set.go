@@ -31,6 +31,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
 	"github.com/giantswarm/randomkeys"
@@ -122,7 +123,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var statusResource controller.Resource
+	var statusResource resource.Interface
 	{
 		c := statusresource.ResourceConfig{
 			ClusterEndpointFunc:      key.ToClusterEndpoint,
@@ -141,7 +142,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var resourceGroupResource controller.Resource
+	var resourceGroupResource resource.Interface
 	{
 		c := resourcegroup.Config{
 			Logger: config.Logger,
@@ -156,7 +157,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var containerURLResource controller.Resource
+	var containerURLResource resource.Interface
 	{
 		c := containerurl.Config{
 			Logger: config.Logger,
@@ -168,7 +169,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var encryptionkeyResource controller.Resource
+	var encryptionkeyResource resource.Interface
 	{
 		c := encryptionkey.Config{
 			K8sClient:   config.K8sClient,
@@ -182,7 +183,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var blobObjectResource controller.Resource
+	var blobObjectResource resource.Interface
 	{
 		c := blobobject.Config{
 			CertsSearcher: config.CertsSearcher,
@@ -201,7 +202,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var deploymentResource controller.Resource
+	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
 			Debugger: newDebugger,
@@ -217,7 +218,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var dnsrecordResource controller.Resource
+	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
 			Logger: config.Logger,
@@ -236,7 +237,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var endpointsResource controller.Resource
+	var endpointsResource resource.Interface
 	{
 		c := endpoints.Config{
 			K8sClient: config.K8sClient,
@@ -254,7 +255,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var instanceResource controller.Resource
+	var instanceResource resource.Interface
 	{
 		c := instance.Config{
 			Debugger:  newDebugger,
@@ -272,7 +273,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var namespaceResource controller.Resource
+	var namespaceResource resource.Interface
 	{
 		c := namespace.Config{
 			K8sClient: config.K8sClient,
@@ -290,7 +291,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var serviceResource controller.Resource
+	var serviceResource resource.Interface
 	{
 		c := service.Config{
 			K8sClient: config.K8sClient,
@@ -308,7 +309,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var vpnResource controller.Resource
+	var vpnResource resource.Interface
 	{
 		c := vpn.Config{
 			Debugger: newDebugger,
@@ -344,7 +345,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	resources := []controller.Resource{
+	resources := []resource.Interface{
 		statusResource,
 		namespaceResource,
 		serviceResource,

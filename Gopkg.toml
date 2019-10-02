@@ -23,9 +23,7 @@
 
 
 required = [
-  "github.com/docker/distribution/reference",
-  "k8s.io/apiserver/pkg/endpoints/request",
-  "k8s.io/apiserver/pkg/authentication/authenticator"
+  "github.com/docker/distribution/reference"
 ]
 
 
@@ -43,15 +41,15 @@ required = [
   name = "github.com/docker/distribution"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/apiextensions"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/certs"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/e2e-harness"
 
 [[constraint]]
@@ -60,14 +58,10 @@ required = [
 
 [[constraint]]
   branch = "master"
-  name = "github.com/giantswarm/e2esetup"
-
-[[constraint]]
-  branch = "master"
   name = "github.com/giantswarm/e2etemplates"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/e2etests"
 
 [[constraint]]
@@ -75,7 +69,7 @@ required = [
   name = "github.com/giantswarm/exporterkit"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/k8scloudconfig"
 
 [[constraint]]
@@ -95,15 +89,15 @@ required = [
   name = "github.com/giantswarm/micrologger"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/operatorkit"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/statusresource"
 
 [[constraint]]
-  branch = "master"
+  branch = "kubernetes-1.15.4"
   name = "github.com/giantswarm/tenantcluster"
 
 [[constraint]]
@@ -112,11 +106,39 @@ required = [
 
 [[constraint]]
   name = "k8s.io/client-go"
-  version = "kubernetes-1.13.2"
+  version = "kubernetes-1.15.4"
 
-[[constraint]]
+[[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.13.2"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "k8s.io/cli-runtime"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  version = "v1.15.4"
+
+[[override]]
+  name = "k8s.io/component-base"
+  version = "kubernetes-1.15.4"
+
+[[override]]
+  name = "github.com/ghodss/yaml"
+  branch = "master"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "v1.5.2"
 
 [prune]
   go-tests = true
