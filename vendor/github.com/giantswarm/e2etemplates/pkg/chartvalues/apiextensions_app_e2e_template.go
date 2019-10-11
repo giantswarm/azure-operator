@@ -5,14 +5,14 @@ apps:
   - name: "{{ .App.Name }}"
     namespace: "{{ .App.Namespace }}"
     catalog: "{{ .App.Catalog }}"
-{{- if .App.Config }}
+{{- if or .App.Config.ConfigMap.Name .App.Config.Secret.Name }}
     config:
-{{- if .App.Config.ConfigMap }}
+{{- if .App.Config.ConfigMap.Name }}
       configMap:
         name: "{{ .App.Config.ConfigMap.Name }}"
         namespace: "{{ .App.Config.ConfigMap.Namespace }}"
 {{- end }}
-{{- if .App.Config.Secret }}
+{{- if .App.Config.Secret.Name }}
       secret:
         name: "{{ .App.Config.Secret.Name }}"
         namespace: "{{ .App.Config.Secret.Namespace }}"
@@ -28,13 +28,6 @@ apps:
 {{- end }}
 {{- end }}
     version: "{{ .App.Version }}"
-  # Added chart-operator app CR for e2e testing purpose.
-  - name: "chart-operator"
-    namespace: "giantswarm"
-    catalog: "giantswarm-catalog"
-    kubeconfig:
-      inCluster: "true"
-    version: "0.9.0"
 
 appCatalogs:
   - name: "{{ .AppCatalog.Name }}"
@@ -44,18 +37,11 @@ appCatalogs:
     storage:
       type: "{{ .AppCatalog.Storage.Type }}"
       url: "{{ .AppCatalog.Storage.URL }}"
-  - name: "giantswarm-catalog"
-    title: "giantswarm-catalog"
-    description: "giantswarm catalog"
-    logoUrl: "http://giantswarm.com/catalog-logo.png"
-    storage:
-      type: "helm"
-      url: "https://giantswarm.github.com/giantswarm-catalog/"
 
 appOperator:
   version: "{{ .AppOperator.Version }}"
 
-{{ if .App.Config.ConfigMap -}}
+{{ if .App.Config.ConfigMap.Name -}}
 configMaps:
   {{ .App.Config.ConfigMap.Name }}:
     {{ .ConfigMap.ValuesYAML }}
@@ -63,7 +49,7 @@ configMaps:
 
 namespace: "{{ .Namespace }}"
 
-{{ if .App.Config.Secret -}}
+{{ if .App.Config.Secret.Name -}}
 secrets:
   {{ .App.Config.Secret.Name }}:
     {{ .Secret.ValuesYAML }}
