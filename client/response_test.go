@@ -2,47 +2,57 @@ package client
 
 import (
 	"net/http"
+	"strconv"
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/google/go-cmp/cmp"
 )
 
 func Test_ResponseWasNotFound(t *testing.T) {
 	testCases := []struct {
-		Response       *http.Response
-		ExpectedResult bool
+		name           string
+		response       *http.Response
+		expectedResult bool
 	}{
 		{
-			Response: &http.Response{
+			name: "case 0: Azure API returns 404",
+			response: &http.Response{
 				StatusCode: http.StatusNotFound,
 			},
-			ExpectedResult: true,
+			expectedResult: true,
 		},
 		{
-			Response: &http.Response{
+			name: "case 1: Azure API responds normally",
+			response: &http.Response{
 				StatusCode: http.StatusOK,
 			},
-			ExpectedResult: false,
+			expectedResult: false,
 		},
 		{
-			Response: &http.Response{
+			name: "case 2: Internal server error",
+			response: &http.Response{
 				StatusCode: http.StatusInternalServerError,
 			},
-			ExpectedResult: false,
+			expectedResult: false,
 		},
 		{
-			Response:       nil,
-			ExpectedResult: false,
+			name:           "case 3: Reponse is nil (response does not exist)",
+			response:       nil,
+			expectedResult: false,
 		},
 	}
 
 	for i, tc := range testCases {
-		resp := autorest.Response{
-			Response: tc.Response,
-		}
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			resp := autorest.Response{
+				Response: tc.response,
+			}
+			notFoundResult := ResponseWasNotFound(resp)
+			if !cmp.Equal(notFoundResult, tc.expectedResult) {
+				t.Fatalf("\n\n%s\n", cmp.Diff(tc.expectedResult, notFoundResult))
 
-		if tc.ExpectedResult != ResponseWasNotFound(resp) {
-			t.Fatalf("case %d expected %t got %t", i+1, tc.ExpectedResult, ResponseWasNotFound(resp))
-		}
+			}
+		})
 	}
 }
