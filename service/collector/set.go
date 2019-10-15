@@ -78,6 +78,22 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
+	var vmssCollector *VMSS
+	{
+		c := VMSSConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			EnvironmentName: config.AzureSetting.EnvironmentName,
+		}
+
+		vmssCollector, err = NewVMSS(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vpnConnectionCollector *VPNConnection
 	{
 		c := VPNConnectionConfig{
@@ -101,6 +117,7 @@ func NewSet(config SetConfig) (*Set, error) {
 				deploymentCollector,
 				resourceGroupCollector,
 				usageCollector,
+				vmssCollector,
 				vpnConnectionCollector,
 			},
 			Logger: config.Logger,
