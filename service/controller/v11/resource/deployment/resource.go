@@ -128,7 +128,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	deploymentExtended, err := deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment failed", "deployment", deploymentExtended, "error", err)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.Stack(microerror.Mask(err)))
+
 		return microerror.Mask(err)
 	}
 
