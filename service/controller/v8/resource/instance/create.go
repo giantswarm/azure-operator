@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"fmt"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -271,10 +272,34 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 
 	g := key.ResourceGroupName(customObject)
 	s := deploymentNameFunc(customObject)
-	result, err := c.List(ctx, g, s, "", "", "")
-	if IsScaleSetNotFound(err) {
-		return nil, microerror.Mask(scaleSetNotFoundError)
-	} else if err != nil {
+
+	resultChan := make(chan compute.VirtualMachineScaleSetVMListResultPage, 1)
+	errChan := make(chan error, 1)
+
+	go func() {
+		result, err := c.List(ctx, g, s, "", "", "")
+		if IsScaleSetNotFound(err) {
+			errChan <- scaleSetNotFoundError
+			return
+		} else if err != nil {
+			errChan <- err
+		}
+
+		resultChan <- result
+	}()
+
+	var result compute.VirtualMachineScaleSetVMListResultPage
+
+	select {
+	case r := <-resultChan:
+		result = r
+	case e := <-errChan:
+		err = e
+	case <-time.After(5 * time.Second):
+		return nil, microerror.Mask(timeoutError)
+	}
+
+	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 

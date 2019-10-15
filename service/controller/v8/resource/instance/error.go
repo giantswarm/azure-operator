@@ -88,6 +88,15 @@ func IsScaleSetNotFound(err error) bool {
 	return false
 }
 
+var timeoutError = &microerror.Error{
+	Kind: "timeoutError",
+}
+
+// IsTimeout asserts timeoutError.
+func IsTimeout(err error) bool {
+	return microerror.Cause(err) == timeoutError
+}
+
 var versionBlobEmptyError = &microerror.Error{
 	Kind: "versionBlobEmptyError",
 }
