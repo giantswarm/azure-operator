@@ -9,6 +9,7 @@ location: {{ .Location }}
 aadClientId: {{ .AADClientID }}
 aadClientSecret: {{ .AADClientSecret }}
 {{- end}}
+cloudProviderRateLimit: true
 primaryScaleSetName: {{ .PrimaryScaleSetName }}
 subnetName: {{ .SubnetName }}
 securityGroupName: {{ .SecurityGroupName }}
