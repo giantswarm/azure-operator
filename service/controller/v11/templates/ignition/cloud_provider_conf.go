@@ -9,6 +9,11 @@ location: {{ .Location }}
 aadClientId: {{ .AADClientID }}
 aadClientSecret: {{ .AADClientSecret }}
 {{- end}}
+cloudProviderBackoff: true
+cloudProviderBackoffRetries: 6
+cloudProviderBackoffJitter: 1
+cloudProviderBackoffDuration: 6
+cloudProviderBackoffExponent: 1.5
 cloudProviderRateLimit: true
 cloudProviderRateLimitQPS: 3
 cloudProviderRateLimitBucket: 10
