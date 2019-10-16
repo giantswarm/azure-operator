@@ -30,12 +30,6 @@
     },
     "ports":{
       "type":"array"
-    },
-    "UDPPorts":{
-      "type":"array",
-      "defaultValue": [
-        { "frontend": "1234", "backend": "1234" }
-      ]
     }
   },
   "variables":{
@@ -123,9 +117,9 @@
           },
           {
             "name":"loadBalancingRulesUDP",
-            "count":"[length(parameters('UDPPorts'))]",
+            "count":"1",
             "input":{
-              "name":"[concat('loadBalancingRule-UDP-', string(add(copyIndex('loadBalancingRulesUDP'), 1)))]",
+              "name":"UDP-rule-needed-to-allow-outgoing-UDP-traffic",
               "properties":{
                 "frontendIPConfiguration":{
                   "id":"[variables('loadBalancerFrontendID')]"
@@ -134,8 +128,8 @@
                   "id":"[variables('loadBalancerBackendPoolID')]"
                 },
                 "protocol":"Udp",
-                "frontendPort":"[parameters('ports')[copyIndex('loadBalancingRulesUDP')].frontend]",
-                "backendPort":"[parameters('ports')[copyIndex('loadBalancingRulesUDP')].backend]",
+                "frontendPort":"60001",
+                "backendPort":"60001",
                 "enableFloatingIP":false
               }
             }
