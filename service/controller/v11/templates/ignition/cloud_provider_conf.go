@@ -12,6 +12,8 @@ aadClientSecret: {{ .AADClientSecret }}
 cloudProviderRateLimit: true
 cloudProviderRateLimitQPS: 3
 cloudProviderRateLimitBucket: 10
+cloudProviderRateLimitQPSWrite: 3
+cloudProviderRateLimitBucketWrite: 10
 primaryScaleSetName: {{ .PrimaryScaleSetName }}
 subnetName: {{ .SubnetName }}
 securityGroupName: {{ .SecurityGroupName }}
