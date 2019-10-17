@@ -5,10 +5,11 @@ package update
 import (
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
-	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/azure-operator/service"
 )
 
 type ProviderConfig struct {
@@ -63,43 +64,13 @@ func (p *Provider) CurrentStatus() (v1alpha1.StatusCluster, error) {
 }
 
 func (p *Provider) CurrentVersion() (string, error) {
-	i := &framework.VBVParams{
-		Component: "azure-operator",
-		Provider:  "azure",
-		Token:     p.githubToken,
-		VType:     "current",
-	}
-
-	o, err := framework.GetVersionBundleVersion(i)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	if o == "" {
-		return "", microerror.Mask(versionNotFoundError)
-	}
-
-	return o, nil
+	vbs := service.NewVersionBundles()
+	return vbs[len(vbs)-2].Version, nil
 }
 
 func (p *Provider) NextVersion() (string, error) {
-	i := &framework.VBVParams{
-		Component: "azure-operator",
-		Provider:  "azure",
-		Token:     p.githubToken,
-		VType:     "wip",
-	}
-
-	o, err := framework.GetVersionBundleVersion(i)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	if o == "" {
-		return "", microerror.Mask(versionNotFoundError)
-	}
-
-	return o, nil
+	vbs := service.NewVersionBundles()
+	return vbs[len(vbs)-1].Version, nil
 }
 
 func (p *Provider) UpdateVersion(nextVersion string) error {
