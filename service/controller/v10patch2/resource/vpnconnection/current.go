@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
-	"github.com/giantswarm/azure-operator/service/controller/v10patch1/key"
+	"github.com/giantswarm/azure-operator/service/controller/v10patch2/key"
 )
 
 // GetCurrentState retrieve current vpn gateway connection from host to tenant
