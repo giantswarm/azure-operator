@@ -1,4 +1,4 @@
-package v10patch1
+package v10patch2
 
 import (
 	"github.com/giantswarm/versionbundle"
