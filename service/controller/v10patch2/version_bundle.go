@@ -9,8 +9,8 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "azure-operator",
-				Description: "Add service endpoints to the worker VNET.",
-				Kind:        versionbundle.KindAdded,
+				Description: "Update to kubernetes 1.14.8.",
+				Kind:        versionbundle.KindChanged,
 			},
 		},
 		Components: []versionbundle.Component{
@@ -32,10 +32,10 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.14.6",
+				Version: "1.14.8",
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.6.1",
+		Version: "2.6.2",
 	}
 }
