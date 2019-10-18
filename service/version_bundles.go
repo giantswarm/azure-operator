@@ -4,8 +4,8 @@ import (
 	"github.com/giantswarm/versionbundle"
 
 	v10 "github.com/giantswarm/azure-operator/service/controller/v10"
-	"github.com/giantswarm/azure-operator/service/controller/v10patch2"
 	"github.com/giantswarm/azure-operator/service/controller/v10patch1"
+	"github.com/giantswarm/azure-operator/service/controller/v10patch2"
 	v11 "github.com/giantswarm/azure-operator/service/controller/v11"
 	v6 "github.com/giantswarm/azure-operator/service/controller/v6"
 	v7 "github.com/giantswarm/azure-operator/service/controller/v7"
