@@ -117,7 +117,7 @@
           },
           {
             "name":"loadBalancingRulesUDP",
-            "count":"1",
+            "count":1,
             "input":{
               "name":"UDP-rule-needed-to-allow-outgoing-UDP-traffic",
               "properties":{
@@ -128,8 +128,8 @@
                   "id":"[variables('loadBalancerBackendPoolID')]"
                 },
                 "protocol":"Udp",
-                "frontendPort":"60001",
-                "backendPort":"60001",
+                "frontendPort":60001,
+                "backendPort":60001,
                 "enableFloatingIP":false
               }
             }
