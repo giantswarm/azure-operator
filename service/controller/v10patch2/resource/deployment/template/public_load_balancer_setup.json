@@ -94,22 +94,18 @@
         ],
         "loadBalancingRules": [
           {
-            "name":"loadBalancingRulesUDP",
-            "count":1,
-            "input":{
-              "name":"UDP-rule-needed-to-allow-outgoing-UDP-traffic",
-              "properties":{
-                "frontendIPConfiguration":{
-                  "id":"[variables('loadBalancerFrontendID')]"
-                },
-                "backendAddressPool":{
-                  "id":"[variables('loadBalancerBackendPoolID')]"
-                },
-                "protocol":"Udp",
-                "frontendPort":60001,
-                "backendPort":60001,
-                "enableFloatingIP":false
-              }
+            "name":"UDP-rule-needed-to-allow-outgoing-UDP-traffic",
+            "properties":{
+              "frontendIPConfiguration":{
+                "id":"[variables('loadBalancerFrontendID')]"
+              },
+              "backendAddressPool":{
+                "id":"[variables('loadBalancerBackendPoolID')]"
+              },
+              "protocol":"Udp",
+              "frontendPort":60001,
+              "backendPort":60001,
+              "enableFloatingIP":false
             }
           }
         ],
