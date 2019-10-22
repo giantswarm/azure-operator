@@ -110,20 +110,19 @@
                 "backendPort":"[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
                 "enableFloatingIP":false,
                 "probe":{
-                  "id":"[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]",
-                  "condition":"[equals(parameters('ports')[copyIndex('loadBalancingRules')].protocol,'Tcp')]"
+                  "id":"[if(equals(parameters('ports')[copyIndex('loadBalancingRules')].probe,''),json('null'),parameters('ports')[copyIndex('loadBalancingRules')].probe)]"
                 }
               }
             }
           },
           {
             "name":"probes",
-            "count":"[length(parameters('ports'))]",
+            "count":"[length(parameters('probes'))]",
             "input":{
-              "name":"[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
+              "name":"[parameters('probes')[copyIndex('probes')].name]",
               "properties":{
-                "protocol":"Tcp",
-                "port":"[parameters('ports')[copyIndex('probes')].backend]",
+                "protocol":"parameters('probes')[copyIndex('probes').protocol]",
+                "port":"[parameters('probes')[copyIndex('probes').port]",
                 "intervalInSeconds":5,
                 "numberOfProbes":2
               }
