@@ -24,7 +24,7 @@ var (
 		prometheus.BuildFQName("azure_operator", "VMSS", "reads"),
 		"Remaining number of writes allowed.",
 		[]string{
-			"name",
+			"environment",
 			"subscription",
 		},
 		nil,
@@ -33,7 +33,7 @@ var (
 		prometheus.BuildFQName("azure_operator", "VMSS", "writes"),
 		"Remaining number of reads allowed.",
 		[]string{
-			"name",
+			"environment",
 			"subscription",
 		},
 		nil,
@@ -147,12 +147,14 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 				VMSSReadsDesc,
 				prometheus.GaugeValue,
 				float64(reads),
+				u.environmentName,
 				subscriptionID,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				VMSSWritesDesc,
 				prometheus.GaugeValue,
 				float64(writes),
+				u.environmentName,
 				subscriptionID,
 			)
 		}
