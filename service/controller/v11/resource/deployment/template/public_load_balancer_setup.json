@@ -121,8 +121,8 @@
             "input":{
               "name":"[parameters('probes')[copyIndex('probes')].name]",
               "properties":{
-                "protocol":"parameters('probes')[copyIndex('probes').protocol]",
-                "port":"[parameters('probes')[copyIndex('probes').port]",
+                "protocol":"parameters('probes')[copyIndex('probes')].protocol]",
+                "port":"[parameters('probes')[copyIndex('probes')].port]",
                 "intervalInSeconds":5,
                 "numberOfProbes":2
               }
