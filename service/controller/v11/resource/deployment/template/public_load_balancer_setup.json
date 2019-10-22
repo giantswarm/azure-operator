@@ -111,7 +111,7 @@
                 "enableFloatingIP":false,
                 "probe":{
                   "id":"[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]",
-                  "condition":"[parameters('ports')[copyIndex('loadBalancingRules')].probe]"
+                  "condition":"[equals(parameters('ports')[copyIndex('loadBalancingRules')].probe,'Tcp')]"
                 }
               }
             }
@@ -119,7 +119,7 @@
           {
             "name":"probes",
             "count":"[length(parameters('ports'))]",
-            "condition": "[parameters('ports')[copyIndex('probes')].probe]",
+            "condition": "[equals(parameters('ports')[copyIndex('probes')].protocol,'Tcp')]",
             "input":{
               "name":"[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
               "properties":{

@@ -259,14 +259,12 @@
               {
                 "protocol":"Tcp",
                 "frontend":443,
-                "backend":443,
-                "probe": true
+                "backend":443
               },
               {
                 "protocol":"Udp",
                 "frontend":60001,
-                "backend":60001,
-                "probe": false
+                "backend":60001
               }
             ]
           }
