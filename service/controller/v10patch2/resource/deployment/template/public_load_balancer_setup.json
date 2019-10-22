@@ -116,7 +116,7 @@
             }
           },
           {
-            "name":"loadBalancingRules",
+            "name":"loadBalancingRulesUDP",
             "count":1,
             "input": {
               "name": "UDP-rule-needed-to-allow-outgoing-UDP-traffic",
