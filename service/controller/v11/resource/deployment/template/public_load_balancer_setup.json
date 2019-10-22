@@ -1,133 +1,130 @@
 {
-  "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion":"1.0.0.0",
-  "parameters":{
-    "publicIPAddressesAPIVersion":{
-      "type":"string",
-      "defaultValue":"2018-12-01",
-      "metadata":{
-        "description":"API version used by the Microsoft.Network/publicIPAddresses resource."
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "publicIPAddressesAPIVersion": {
+      "defaultValue": "2018-12-01",
+      "type": "String",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/publicIPAddresses resource."
       }
     },
-    "loadBalancersAPIVersion":{
-      "type":"string",
-      "defaultValue":"2018-12-01",
-      "metadata":{
-        "description":"API version used by the Microsoft.Network/loadBalancers resource."
+    "loadBalancersAPIVersion": {
+      "defaultValue": "2018-12-01",
+      "type": "String",
+      "metadata": {
+        "description": "API version used by the Microsoft.Network/loadBalancers resource."
       }
     },
-    "clusterID":{
-      "type":"string"
+    "clusterID": {
+      "type": "String"
     },
-    "GiantSwarmTags":{
-      "type":"object",
-      "defaultValue":{
-        "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
-      }
+    "GiantSwarmTags": {
+      "defaultValue": {
+        "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+      },
+      "type": "Object"
     },
-    "prefix":{
-      "type":"string"
+    "prefix": {
+      "type": "String"
     },
-    "ports":{
-      "type":"array"
-    },
-    "probes":{
-      "type":"array"
+    "ports": {
+      "type": "Array"
     }
   },
-  "variables":{
-    "loadBalancerPublicIPName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-PublicLoadBalancer-PublicIP')]",
-    "loadBalancerPublicIPId":"[resourceId('Microsoft.Network/publicIPAddresses', variables('LoadBalancerPublicIPName'))]",
-    "loadBalancerName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-PublicLoadBalancer')]",
+  "variables": {
+    "loadBalancerPublicIPName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PublicLoadBalancer-PublicIP')]",
+    "loadBalancerPublicIPId": "[resourceId('Microsoft.Network/publicIPAddresses', variables('LoadBalancerPublicIPName'))]",
+    "loadBalancerName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-PublicLoadBalancer')]",
     "loadBalancerSkuName": "Standard",
-    "loadBalancerID":"[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
-    "loadBalancerBackendPoolName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-BackendPool')]",
-    "loadBalancerBackendPoolID":"[concat(variables('loadBalancerID'),'/backendAddressPools/',variables('loadBalancerBackendPoolName'))]",
-    "loadBalancerFrontendName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-Frontend')]",
-    "loadBalancerFrontendID":"[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('loadBalancerFrontendName'))]",
-    "loadBalancerProbeName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-Probe')]",
-    "loadBalancerProbeID":"[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]"
+    "loadBalancerID": "[resourceId('Microsoft.Network/loadBalancers', variables('loadBalancerName'))]",
+    "loadBalancerBackendPoolName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-BackendPool')]",
+    "loadBalancerBackendPoolID": "[concat(variables('loadBalancerID'),'/backendAddressPools/',variables('loadBalancerBackendPoolName'))]",
+    "loadBalancerFrontendName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-Frontend')]",
+    "loadBalancerFrontendID": "[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('loadBalancerFrontendName'))]",
+    "loadBalancerProbeName": "[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PublicLoadBalancer-Probe')]",
+    "loadBalancerProbeID": "[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]"
   },
-  "resources":[
+  "resources": [
     {
-      "apiVersion":"[parameters('publicIPAddressesAPIVersion')]",
-      "type":"Microsoft.Network/publicIPAddresses",
-      "name":"[variables('loadBalancerPublicIPName')]",
-      "location":"[resourceGroup().location]",
+      "type": "Microsoft.Network/publicIPAddresses",
+      "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
+      "name": "[variables('loadBalancerPublicIPName')]",
+      "location": "[resourceGroup().location]",
+      "tags": {
+        "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "sku": {
         "name": "[variables('loadBalancerSkuName')]"
       },
-      "tags":{
-        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
-      },
-      "properties":{
-        "publicIPAllocationMethod":"Static",
-        "publicIPAddressVersion":"IPv4"
+      "properties": {
+        "publicIPAllocationMethod": "Static",
+        "publicIPAddressVersion": "IPv4"
       }
     },
     {
-      "apiVersion":"[parameters('loadBalancersAPIVersion')]",
-      "name":"[variables('loadBalancerName')]",
-      "type":"Microsoft.Network/loadBalancers",
-      "location":"[resourceGroup().location]",
+      "type": "Microsoft.Network/loadBalancers",
+      "apiVersion": "[parameters('loadBalancersAPIVersion')]",
+      "name": "[variables('loadBalancerName')]",
+      "location": "[resourceGroup().location]",
+      "dependsOn": [
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('loadBalancerPublicIPName'))]"
+      ],
+      "tags": {
+        "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
       "sku": {
         "name": "[variables('loadBalancerSkuName')]"
       },
-      "tags":{
-        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
-      },
-      "dependsOn":[
-        "[concat('Microsoft.Network/publicIPAddresses/', variables('loadBalancerPublicIPName'))]"
-      ],
-      "properties":{
-        "frontendIPConfigurations":[
+      "properties": {
+        "frontendIPConfigurations": [
           {
-            "name":"[variables('loadBalancerFrontendName')]",
-            "properties":{
-              "publicIPAddress":{
-                "id":"[variables('loadBalancerPublicIPId')]"
+            "name": "[variables('loadBalancerFrontendName')]",
+            "properties": {
+              "publicIPAddress": {
+                "id": "[variables('loadBalancerPublicIPId')]"
               }
             }
           }
         ],
-        "backendAddressPools":[
+        "backendAddressPools": [
           {
-            "name":"[variables('loadBalancerBackendPoolName')]"
+            "name": "[variables('loadBalancerBackendPoolName')]"
           }
         ],
-        "copy":[
+        "copy": [
           {
-            "name":"loadBalancingRules",
-            "count":"[length(parameters('ports'))]",
-            "input":{
-              "name":"[concat('loadBalancingRule-', string(add(copyIndex('loadBalancingRules'), 1)))]",
-              "properties":{
-                "frontendIPConfiguration":{
-                  "id":"[variables('loadBalancerFrontendID')]"
+            "name": "loadBalancingRules",
+            "count": "[length(parameters('ports'))]",
+            "input": {
+              "name": "[concat('loadBalancingRule-', string(add(copyIndex('loadBalancingRules'), 1)))]",
+              "properties": {
+                "frontendIPConfiguration": {
+                  "id": "[variables('loadBalancerFrontendID')]"
                 },
-                "backendAddressPool":{
-                  "id":"[variables('loadBalancerBackendPoolID')]"
+                "backendAddressPool": {
+                  "id": "[variables('loadBalancerBackendPoolID')]"
                 },
-                "protocol":"[parameters('ports')[copyIndex('loadBalancingRules')].protocol]",
-                "frontendPort":"[parameters('ports')[copyIndex('loadBalancingRules')].frontend]",
-                "backendPort":"[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
-                "enableFloatingIP":false,
-                "probe":{
-                  "id":"[if(equals(parameters('ports')[copyIndex('loadBalancingRules')].probe,''),json('null'),parameters('ports')[copyIndex('loadBalancingRules')].probe)]"
+                "protocol": "[parameters('ports')[copyIndex('loadBalancingRules')].protocol]",
+                "frontendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].frontend]",
+                "backendPort": "[parameters('ports')[copyIndex('loadBalancingRules')].backend]",
+                "enableFloatingIP": false,
+                "probe": {
+                  "id": "[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]"
                 }
               }
             }
           },
           {
-            "name":"probes",
-            "count":"[length(parameters('probes'))]",
-            "input":{
-              "name":"[parameters('probes')[copyIndex('probes')].name]",
-              "properties":{
-                "protocol":"[parameters('probes')[copyIndex('probes')].protocol]",
-                "port":"[parameters('probes')[copyIndex('probes')].port]",
-                "intervalInSeconds":5,
-                "numberOfProbes":2
+            "name": "probes",
+            "count": 1,
+            "input": {
+              "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
+              "properties": {
+                "protocol": "[parameters('ports')[copyIndex('probes')].probeProtocol]",
+                "port": "[parameters('ports')[copyIndex('probes')].probePort]",
+                "intervalInSeconds": 5,
+                "numberOfProbes": 2
               }
             }
           }
@@ -135,14 +132,14 @@
       }
     }
   ],
-  "outputs":{
-    "ipAddress":{
-      "type":"string",
-      "value":"[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
+  "outputs": {
+    "ipAddress": {
+      "type": "String",
+      "value": "[reference(variables('loadBalancerPublicIPId'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
     },
-    "backendPoolId":{
-      "type":"string",
-      "value":"[reference(variables('loadBalancerID')).backendAddressPools[0].id]"
+    "backendPoolId": {
+      "type": "String",
+      "value": "[reference(variables('loadBalancerID')).backendAddressPools[0].id]"
     }
   }
 }

@@ -260,22 +260,15 @@
                 "protocol":"Tcp",
                 "frontend":443,
                 "backend":443,
-                "probe":"tcp-443"
+                "probeProtocol": "Tcp",
+                "probePort": 443
               },
               {
                 "protocol":"Udp",
                 "frontend":60001,
                 "backend":60001,
-                "probe": ""
-              }
-            ]
-          },
-          "probes":{
-            "value":[
-              {
-                "name": "tcp-443",
-                "protocol":"Tcp",
-                "port":443
+                "probeProtocol": "Tcp",
+                "probePort": 443
               }
             ]
           }
