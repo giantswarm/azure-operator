@@ -117,7 +117,7 @@
           },
           {
             "name": "probes",
-            "count": 1,
+            "count": "[length(parameters('ports'))]",
             "input": {
               "name": "[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
               "properties": {
