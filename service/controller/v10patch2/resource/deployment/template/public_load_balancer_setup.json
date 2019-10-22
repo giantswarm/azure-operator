@@ -111,7 +111,7 @@
                 "enableFloatingIP":false,
                 "probe":{
                   "id":"[concat(variables('loadBalancerProbeID'), '-', string(add(copyIndex('loadBalancingRules'), 1)))]",
-                  "condition":"[parameters('ports')[copyIndex('probes')].probe]"
+                  "condition":"[parameters('ports')[copyIndex('loadBalancingRules')].probe]"
                 }
               }
             }
