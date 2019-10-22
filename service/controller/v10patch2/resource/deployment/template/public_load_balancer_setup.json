@@ -119,11 +119,10 @@
           {
             "name":"probes",
             "count":"[length(parameters('ports'))]",
-            "condition": "[equals(parameters('ports')[copyIndex('probes')].protocol,'Tcp')]",
             "input":{
               "name":"[concat(variables('loadBalancerProbeName'), '-', string(add(copyIndex('probes'), 1)))]",
               "properties":{
-                "protocol":"[parameters('ports')[copyIndex('probes')].protocol]",
+                "protocol":"Tcp",
                 "port":"[parameters('ports')[copyIndex('probes')].backend]",
                 "intervalInSeconds":5,
                 "numberOfProbes":2
