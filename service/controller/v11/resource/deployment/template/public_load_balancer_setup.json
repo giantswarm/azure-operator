@@ -30,6 +30,9 @@
     },
     "ports":{
       "type":"array"
+    },
+    "probes":{
+      "type":"array"
     }
   },
   "variables":{
