@@ -86,6 +86,7 @@ func NewVMSS(config VMSSConfig) (*VMSS, error) {
 }
 
 func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
+	var err error
 	// We need all CRs to gather all subscriptions below.
 	var crs []providerv1alpha1.AzureConfig
 	{
@@ -108,15 +109,12 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 	}
 
 	// We generate clients and group them by subscription.
-	clients := map[string]*compute.VirtualMachineScaleSetsClient{}
+	// Subscription is defined by the credentials used.
+	crsBySubscription := map[string]providerv1alpha1.AzureConfig{}
 	{
 		for _, cr := range crs {
-			c, err := u.getVMSSClient(cr)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			clients[c.SubscriptionID] = c
+			subscriptionCredentials := fmt.Sprintf("%s-%s", key.CredentialName(cr), key.CredentialNamespace(cr))
+			crsBySubscription[subscriptionCredentials] = cr
 		}
 	}
 
@@ -124,11 +122,20 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 
 	// We track VMSS metrics for each client labeled by subscription.
 	// That way we prevent duplicated metrics.
-	for subscriptionID, c := range clients {
-		r, err := c.ListAll(ctx)
+	for _, cr := range crs {
+		vmssClient := &compute.VirtualMachineScaleSetsClient{}
+		{
+			vmssClient, err = u.getVMSSClient(cr)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		r, err := vmssClient.ListAll(ctx)
 		if err != nil {
 			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", fmt.Sprintf("%v", err))
 		} else {
+			vmss := r.Values()[0]
 			var reads int64
 			{
 				reads, err = strconv.ParseInt(r.Response().Header.Get("x-ms-ratelimit-remaining-subscription-reads"), 10, 64)
@@ -138,7 +145,22 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 			}
 			var writes int64
 			{
-				writes, err = strconv.ParseInt(r.Response().Header.Get("x-ms-ratelimit-remaining-subscription-writes"), 10, 64)
+				future, err := vmssClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), *vmss.Name, vmss)
+				if err != nil {
+					return fmt.Errorf("cannot update vmss: %v", err)
+				}
+
+				err = future.WaitForCompletionRef(ctx, vmssClient.Client)
+				if err != nil {
+					return fmt.Errorf("cannot get the vmss create or update future response: %v", err)
+				}
+
+				res, err := future.Result(*vmssClient)
+				if err != nil {
+					return fmt.Errorf("cannot update vmss: %v", err)
+				}
+
+				writes, err = strconv.ParseInt(res.Response.Header.Get("x-ms-ratelimit-remaining-subscription-writes"), 10, 64)
 				if err != nil {
 					writes = 0
 				}
@@ -148,14 +170,14 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 				prometheus.GaugeValue,
 				float64(reads),
 				u.environmentName,
-				subscriptionID,
+				vmssClient.SubscriptionID,
 			)
 			ch <- prometheus.MustNewConstMetric(
 				VMSSWritesDesc,
 				prometheus.GaugeValue,
 				float64(writes),
 				u.environmentName,
-				subscriptionID,
+				vmssClient.SubscriptionID,
 			)
 		}
 	}
