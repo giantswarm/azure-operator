@@ -257,8 +257,18 @@
           "ports":{
             "value":[
               {
+                "protocol":"Tcp",
                 "frontend":443,
-                "backend":443
+                "backend":443,
+                "probeProtocol": "Tcp",
+                "probePort": 443
+              },
+              {
+                "protocol":"Udp",
+                "frontend":60001,
+                "backend":60001,
+                "probeProtocol": "Tcp",
+                "probePort": 443
               }
             ]
           }

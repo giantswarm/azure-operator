@@ -13,6 +13,11 @@ func VersionBundle() versionbundle.Bundle {
 				Kind:        versionbundle.KindAdded,
 			},
 			{
+				Component:   "azure-operator",
+				Description: "Added new rule to the Public Load Balancer to allow outgoing UDP traffic from the master nodes",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
 				Component:   "calico",
 				Description: "Updated from v3.6.2 to v3.9.1.",
 				Kind:        versionbundle.KindChanged,
