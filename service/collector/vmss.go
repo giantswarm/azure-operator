@@ -24,7 +24,6 @@ var (
 		prometheus.BuildFQName("azure_operator", "VMSS", "reads"),
 		"Remaining number of writes allowed.",
 		[]string{
-			"environment",
 			"subscription",
 		},
 		nil,
@@ -33,7 +32,6 @@ var (
 		prometheus.BuildFQName("azure_operator", "VMSS", "writes"),
 		"Remaining number of reads allowed.",
 		[]string{
-			"environment",
 			"subscription",
 		},
 		nil,
@@ -135,16 +133,24 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 		if err != nil {
 			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", fmt.Sprintf("%v", err))
 		} else {
-			vmss := r.Values()[0]
 			var reads int64
 			{
 				reads, err = strconv.ParseInt(r.Response().Header.Get("x-ms-ratelimit-remaining-subscription-reads"), 10, 64)
 				if err != nil {
 					reads = 0
 				}
+
+				ch <- prometheus.MustNewConstMetric(
+					VMSSReadsDesc,
+					prometheus.GaugeValue,
+					float64(reads),
+					vmssClient.SubscriptionID,
+				)
 			}
 			var writes int64
 			{
+				vmss := r.Values()[0]
+
 				future, err := vmssClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), *vmss.Name, vmss)
 				if err != nil {
 					return fmt.Errorf("cannot update vmss: %v", err)
@@ -164,21 +170,14 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 				if err != nil {
 					writes = 0
 				}
+
+				ch <- prometheus.MustNewConstMetric(
+					VMSSWritesDesc,
+					prometheus.GaugeValue,
+					float64(writes),
+					vmssClient.SubscriptionID,
+				)
 			}
-			ch <- prometheus.MustNewConstMetric(
-				VMSSReadsDesc,
-				prometheus.GaugeValue,
-				float64(reads),
-				u.environmentName,
-				vmssClient.SubscriptionID,
-			)
-			ch <- prometheus.MustNewConstMetric(
-				VMSSWritesDesc,
-				prometheus.GaugeValue,
-				float64(writes),
-				u.environmentName,
-				vmssClient.SubscriptionID,
-			)
 		}
 	}
 
