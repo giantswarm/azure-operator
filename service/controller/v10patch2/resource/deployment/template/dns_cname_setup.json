@@ -1,0 +1,53 @@
+{
+  "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion":"1.0.0.0",
+  "parameters":{
+    "dnsZone":{
+      "type":"string"
+    },
+    "GiantSwarmTags":{
+      "type":"object",
+      "defaultValue":{
+        "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
+    "prefix":{
+      "type":"string"
+    },
+    "cname":{
+      "type":"string"
+    }
+  },
+  "resources":[
+    {
+      "type":"Microsoft.Network/dnszones",
+      "name":"[parameters('dnsZone')]",
+      "apiVersion":"2016-04-01",
+      "location":"global",
+      "properties":{
+
+      },
+      "tags":{
+        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+      }
+    },
+    {
+      "type":"Microsoft.Network/dnszones/cname",
+      "name":"[concat(parameters('dnsZone'), '/', parameters('prefix'))]",
+      "apiVersion":"2016-04-01",
+      "location":"global",
+      "tags":{
+        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "dependsOn":[
+        "[parameters('dnsZone')]"
+      ],
+      "properties":{
+        "TTL":3600,
+        "CNAMERecord":{
+          "cname":"[parameters('cname')]"
+        }
+      }
+    }
+  ]
+}

@@ -17,6 +17,11 @@ func VersionBundle() versionbundle.Bundle {
 				Description: "Add all service endpoints to the VNET",
 				Kind:        versionbundle.KindAdded,
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Added new rule to the Public Load Balancer to allow outgoing UDP traffic from the master nodes",
+				Kind:        versionbundle.KindChanged,
+			},
 		},
 		Components: []versionbundle.Component{
 			{
