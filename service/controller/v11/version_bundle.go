@@ -19,7 +19,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   "calico",
-				Description: "Updated from v3.6.2 to v3.9.1.",
+				Description: "Updated from v3.8.2 to v3.9.1.",
 				Kind:        versionbundle.KindChanged,
 			},
 			{
