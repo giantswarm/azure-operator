@@ -3,9 +3,11 @@ package collector
 import (
 	"context"
 	"fmt"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/go-autorest/autorest/to"
+	"math/rand"
 	"strconv"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -20,13 +22,23 @@ import (
 )
 
 const (
-	remainingReadsHeaderName = "x-ms-ratelimit-remaining-subscription-reads"
+	remainingReadsHeaderName  = "x-ms-ratelimit-remaining-subscription-reads"
+	remainingWritesHeaderName = "x-ms-ratelimit-remaining-subscription-writes"
 )
 
 var (
 	VMSSReadsDesc *prometheus.Desc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "VMSS", "reads"),
 		"Remaining number of reads allowed.",
+		[]string{
+			"subscription",
+			"clientid",
+		},
+		nil,
+	)
+	VMSSWritesDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "VMSS", "writes"),
+		"Remaining number of writes allowed.",
 		[]string{
 			"subscription",
 			"clientid",
@@ -44,6 +56,7 @@ type VMSSConfig struct {
 	// azure.Environment type. See also
 	// https://godoc.org/github.com/Azure/go-autorest/autorest/azure#Environment.
 	EnvironmentName string
+	Location        string
 }
 
 type VMSS struct {
@@ -52,6 +65,7 @@ type VMSS struct {
 	logger    micrologger.Logger
 
 	environmentName string
+	location        string
 }
 
 func NewVMSS(config VMSSConfig) (*VMSS, error) {
@@ -69,12 +83,17 @@ func NewVMSS(config VMSSConfig) (*VMSS, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.EnvironmentName must not be empty", config)
 	}
 
+	if config.Location == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
+	}
+
 	u := &VMSS{
 		g8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
 		environmentName: config.EnvironmentName,
+		location:        config.Location,
 	}
 
 	return u, nil
@@ -117,25 +136,64 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 	// We track VMSS metrics for each client labeled by ClientID.
 	// That way we prevent duplicated metrics.
 	for _, cr := range crsBySubscription {
-		azureConfig, vmssClient, err := u.getVMSSClient(cr)
+		azureConfig, azureClients, err := u.getAzureClients(cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r, err := vmssClient.ListAll(ctx)
-		if err != nil {
-			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", fmt.Sprintf("%v", err))
-		} else {
-			reads, err := strconv.ParseFloat(r.Response().Header.Get(remainingReadsHeaderName), 64)
+		var reads float64
+		{
+			vmssResponse, err := azureClients.VirtualMachineScaleSetsClient.ListAll(ctx)
 			if err != nil {
-				reads = 0
+				u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", fmt.Sprintf("%v", err))
+			} else {
+				reads, err = strconv.ParseFloat(vmssResponse.Response().Header.Get(remainingReadsHeaderName), 64)
+				if err != nil {
+					reads = 0
+				}
+
+				ch <- prometheus.MustNewConstMetric(
+					VMSSReadsDesc,
+					prometheus.GaugeValue,
+					reads,
+					azureClients.VirtualMachineScaleSetsClient.SubscriptionID,
+					azureConfig.ClientID,
+				)
+			}
+		}
+
+		// Remaining write requests can be retrieved sending a write request.
+		// We create a resource group with a random name, so we can delete it.
+		var writes float64
+		{
+			resourceGroupName := randStringBytes(16)
+			_, err := azureClients.GroupsClient.CreateOrUpdate(
+				ctx,
+				resourceGroupName,
+				resources.Group{
+					Location: to.StringPtr(u.location),
+				})
+
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			deleteResponse, err := azureClients.GroupsClient.Delete(ctx, resourceGroupName)
+
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			writes, err = strconv.ParseFloat(deleteResponse.Response().Header.Get(remainingWritesHeaderName), 64)
+			if err != nil {
+				writes = 0
 			}
 
 			ch <- prometheus.MustNewConstMetric(
-				VMSSReadsDesc,
+				VMSSWritesDesc,
 				prometheus.GaugeValue,
-				reads,
-				vmssClient.SubscriptionID,
+				writes,
+				azureClients.GroupsClient.SubscriptionID,
 				azureConfig.ClientID,
 			)
 		}
@@ -149,7 +207,7 @@ func (u *VMSS) Describe(ch chan<- *prometheus.Desc) error {
 	return nil
 }
 
-func (u *VMSS) getVMSSClient(cr providerv1alpha1.AzureConfig) (*client.AzureClientSetConfig, *compute.VirtualMachineScaleSetsClient, error) {
+func (u *VMSS) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.AzureClientSetConfig, *client.AzureClientSet, error) {
 	config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
@@ -158,8 +216,19 @@ func (u *VMSS) getVMSSClient(cr providerv1alpha1.AzureConfig) (*client.AzureClie
 
 	azureClients, err := client.NewAzureClientSet(*config)
 	if err != nil {
-		return config, nil, microerror.Mask(err)
+		return nil, nil, microerror.Mask(err)
 	}
 
-	return config, azureClients.VirtualMachineScaleSetsClient, nil
+	return config, azureClients, nil
+}
+
+const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+
+func randStringBytes(n int) string {
+	b := make([]byte, n)
+	for i := range b {
+		b[i] = letterBytes[rand.Intn(len(letterBytes))]
+	}
+
+	return string(b)
 }

@@ -86,6 +86,7 @@ func NewSet(config SetConfig) (*Set, error) {
 			Logger:    config.Logger,
 
 			EnvironmentName: config.AzureSetting.EnvironmentName,
+			Location:        config.AzureSetting.Location,
 		}
 
 		vmssCollector, err = NewVMSS(c)
