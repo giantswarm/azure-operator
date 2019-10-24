@@ -19,6 +19,10 @@ import (
 	"github.com/giantswarm/azure-operator/service/credential"
 )
 
+const (
+	remainingReadsHeaderName = "x-ms-ratelimit-remaining-subscription-reads"
+)
+
 var (
 	VMSSReadsDesc *prometheus.Desc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "VMSS", "reads"),
@@ -122,7 +126,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 		if err != nil {
 			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", fmt.Sprintf("%v", err))
 		} else {
-			reads, err := strconv.ParseInt(r.Response().Header.Get("x-ms-ratelimit-remaining-subscription-reads"), 10, 64)
+			reads, err := strconv.ParseFloat(r.Response().Header.Get(remainingReadsHeaderName), 64)
 			if err != nil {
 				reads = 0
 			}
@@ -130,7 +134,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 			ch <- prometheus.MustNewConstMetric(
 				VMSSReadsDesc,
 				prometheus.GaugeValue,
-				float64(reads),
+				reads,
 				vmssClient.SubscriptionID,
 				azureConfig.ClientID,
 			)
