@@ -25,6 +25,7 @@ var (
 		"Remaining number of reads allowed.",
 		[]string{
 			"subscription",
+			"clientid",
 		},
 		nil,
 	)
@@ -109,10 +110,10 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 
 	ctx := context.Background()
 
-	// We track VMSS metrics for each client labeled by subscription.
+	// We track VMSS metrics for each client labeled by ClientID.
 	// That way we prevent duplicated metrics.
-	for _, cr := range crs {
-		vmssClient, err := u.getVMSSClient(cr)
+	for _, cr := range crsBySubscription {
+		azureConfig, vmssClient, err := u.getVMSSClient(cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -131,6 +132,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 				prometheus.GaugeValue,
 				float64(reads),
 				vmssClient.SubscriptionID,
+				azureConfig.ClientID,
 			)
 		}
 	}
@@ -143,17 +145,17 @@ func (u *VMSS) Describe(ch chan<- *prometheus.Desc) error {
 	return nil
 }
 
-func (u *VMSS) getVMSSClient(cr providerv1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetsClient, error) {
+func (u *VMSS) getVMSSClient(cr providerv1alpha1.AzureConfig) (*client.AzureClientSetConfig, *compute.VirtualMachineScaleSetsClient, error) {
 	config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, nil, microerror.Mask(err)
 	}
 	config.EnvironmentName = u.environmentName
 
 	azureClients, err := client.NewAzureClientSet(*config)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return config, nil, microerror.Mask(err)
 	}
 
-	return azureClients.VirtualMachineScaleSetsClient, nil
+	return config, azureClients.VirtualMachineScaleSetsClient, nil
 }
