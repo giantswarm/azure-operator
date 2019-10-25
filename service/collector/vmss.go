@@ -82,7 +82,6 @@ func NewVMSS(config VMSSConfig) (*VMSS, error) {
 	if config.EnvironmentName == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.EnvironmentName must not be empty", config)
 	}
-
 	if config.Location == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
 	}
@@ -109,7 +108,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 			opts := metav1.ListOptions{
 				Continue: mark,
 			}
-			list, err := u.g8sClient.ProviderV1alpha1().AzureConfigs("").List(opts)
+			list, err := u.g8sClient.ProviderV1alpha1().AzureConfigs(metav1.NamespaceAll).List(opts)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -126,7 +125,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 	crsBySubscription := map[string]providerv1alpha1.AzureConfig{}
 	{
 		for _, cr := range crs {
-			subscriptionCredentials := fmt.Sprintf("%s-%s", key.CredentialName(cr), key.CredentialNamespace(cr))
+			subscriptionCredentials := fmt.Sprintf("%s-%s", key.CredentialNamespace(cr), key.CredentialName(cr))
 			crsBySubscription[subscriptionCredentials] = cr
 		}
 	}
@@ -145,7 +144,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 		{
 			vmssResponse, err := azureClients.VirtualMachineScaleSetsClient.ListAll(ctx)
 			if err != nil {
-				u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", fmt.Sprintf("%v", err))
+				u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", microerror.Stack(microerror.Mask(err)))
 			} else {
 				reads, err = strconv.ParseFloat(vmssResponse.Response().Header.Get(remainingReadsHeaderName), 64)
 				if err != nil {
