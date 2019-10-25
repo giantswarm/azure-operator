@@ -3,11 +3,11 @@ package collector
 import (
 	"context"
 	"fmt"
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
 	"math/rand"
 	"strconv"
 
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -148,6 +148,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 			} else {
 				reads, err = strconv.ParseFloat(vmssResponse.Response().Header.Get(remainingReadsHeaderName), 64)
 				if err != nil {
+					u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for VMSS read requests", "stack", microerror.Stack(microerror.Mask(err)))
 					reads = 0
 				}
 
@@ -172,19 +173,18 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 				resources.Group{
 					Location: to.StringPtr(u.location),
 				})
-
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
 			deleteResponse, err := azureClients.GroupsClient.Delete(ctx, resourceGroupName)
-
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
 			writes, err = strconv.ParseFloat(deleteResponse.Response().Header.Get(remainingWritesHeaderName), 64)
 			if err != nil {
+				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for VMSS write requests", "stack", microerror.Stack(microerror.Mask(err)))
 				writes = 0
 			}
 
