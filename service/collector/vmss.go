@@ -108,12 +108,13 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 			opts := metav1.ListOptions{
 				Continue: mark,
 			}
-			list, err := u.g8sClient.ProviderV1alpha1().AzureConfigs(metav1.NamespaceAll).List(opts)
+			list, err := u.g8sClient.ProviderV1alpha1().AzureConfigs("").List(opts)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
 			crs = append(crs, list.Items...)
+			u.logger.Log("level", "debug", "message", "appending the CRs")
 
 			mark = list.Continue
 			page++
