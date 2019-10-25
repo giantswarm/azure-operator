@@ -171,7 +171,11 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 				ctx,
 				resourceGroupName,
 				resources.Group{
-					Location: to.StringPtr(u.location),
+					ManagedBy: to.StringPtr("azure-operator"),
+					Location:  to.StringPtr(u.location),
+					Tags: map[string]*string{
+						"collector": to.StringPtr("azure-operator"),
+					},
 				})
 			if err != nil {
 				return microerror.Mask(err)
@@ -221,7 +225,10 @@ func (u *VMSS) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.AzureCl
 	return config, azureClients, nil
 }
 
-const letterBytes = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+const (
+	letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
+	resourceGroupNamePrefix = "azure-operator-collector"
+)
 
 func randStringBytes(n int) string {
 	b := make([]byte, n)
@@ -229,5 +236,5 @@ func randStringBytes(n int) string {
 		b[i] = letterBytes[rand.Intn(len(letterBytes))]
 	}
 
-	return string(b)
+	return fmt.Sprintf("%s-%s", resourceGroupNamePrefix, b)
 }
