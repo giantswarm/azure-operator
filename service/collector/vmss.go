@@ -127,6 +127,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 		for _, cr := range crs {
 			subscriptionCredentials := fmt.Sprintf("%s-%s", key.CredentialNamespace(cr), key.CredentialName(cr))
 			crsBySubscription[subscriptionCredentials] = cr
+			u.logger.Log("level", "debug", "message", "grouping the CRs by subscriptionID")
 		}
 	}
 
@@ -135,6 +136,7 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 	// We track VMSS metrics for each client labeled by ClientID.
 	// That way we prevent duplicated metrics.
 	for _, cr := range crsBySubscription {
+		u.logger.Log("level", "debug", "message", "looping through CRs")
 		azureConfig, azureClients, err := u.getAzureClients(cr)
 		if err != nil {
 			return microerror.Mask(err)
