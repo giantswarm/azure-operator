@@ -78,18 +78,19 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
-	var vmssCollector *VMSS
+	var rateLimitCollector *RateLimit
 	{
-		c := VMSSConfig{
+		c := RateLimitConfig{
 			G8sClient: config.G8sClient,
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			EnvironmentName: config.AzureSetting.EnvironmentName,
-			Location:        config.AzureSetting.Location,
+			EnvironmentName:          config.AzureSetting.EnvironmentName,
+			Location:                 config.AzureSetting.Location,
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
-		vmssCollector, err = NewVMSS(c)
+		rateLimitCollector, err = NewRateLimit(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -118,7 +119,7 @@ func NewSet(config SetConfig) (*Set, error) {
 				deploymentCollector,
 				resourceGroupCollector,
 				usageCollector,
-				vmssCollector,
+				rateLimitCollector,
 				vpnConnectionCollector,
 			},
 			Logger: config.Logger,

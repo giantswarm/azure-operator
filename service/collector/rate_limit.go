@@ -27,8 +27,8 @@ const (
 )
 
 var (
-	VMSSReadsDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "VMSS", "reads"),
+	ReadsDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "RateLimit", "reads"),
 		"Remaining number of reads allowed.",
 		[]string{
 			"subscription",
@@ -36,8 +36,8 @@ var (
 		},
 		nil,
 	)
-	VMSSWritesDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "VMSS", "writes"),
+	WritesDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "RateLimit", "writes"),
 		"Remaining number of writes allowed.",
 		[]string{
 			"subscription",
@@ -47,7 +47,7 @@ var (
 	)
 )
 
-type VMSSConfig struct {
+type RateLimitConfig struct {
 	G8sClient versioned.Interface
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
@@ -55,20 +55,22 @@ type VMSSConfig struct {
 	// EnvironmentName is the name of the Azure environment used to compute the
 	// azure.Environment type. See also
 	// https://godoc.org/github.com/Azure/go-autorest/autorest/azure#Environment.
-	EnvironmentName string
-	Location        string
+	EnvironmentName          string
+	Location                 string
+	HostAzureClientSetConfig client.AzureClientSetConfig
 }
 
-type VMSS struct {
+type RateLimit struct {
 	g8sClient versioned.Interface
 	k8sClient kubernetes.Interface
 	logger    micrologger.Logger
 
-	environmentName string
-	location        string
+	environmentName          string
+	location                 string
+	HostAzureClientSetConfig client.AzureClientSetConfig
 }
 
-func NewVMSS(config VMSSConfig) (*VMSS, error) {
+func NewRateLimit(config RateLimitConfig) (*RateLimit, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
@@ -86,19 +88,20 @@ func NewVMSS(config VMSSConfig) (*VMSS, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
 	}
 
-	u := &VMSS{
+	u := &RateLimit{
 		g8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
-		environmentName: config.EnvironmentName,
-		location:        config.Location,
+		environmentName:          config.EnvironmentName,
+		location:                 config.Location,
+		HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 	}
 
 	return u, nil
 }
 
-func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
+func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 	// We need all CRs to gather all subscriptions below.
 	var crs []providerv1alpha1.AzureConfig
 	{
@@ -121,83 +124,87 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 	}
 
 	// We generate clients and group them by subscription.
-	// Subscription is defined by the credentials used.
-	crsBySubscription := map[string]providerv1alpha1.AzureConfig{}
+	// Subscription is defined by the Secret used to fetch the credentials.
+	clientConfigBySubscription := map[string]client.AzureClientSetConfig{}
 	{
 		for _, cr := range crs {
-			subscriptionCredentials := fmt.Sprintf("%s-%s", key.CredentialNamespace(cr), key.CredentialName(cr))
-			crsBySubscription[subscriptionCredentials] = cr
+			config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			clientConfigBySubscription[config.SubscriptionID] = *config
+		}
+
+		if _, present := clientConfigBySubscription[u.HostAzureClientSetConfig.SubscriptionID]; !present {
+			config := &client.AzureClientSetConfig{
+				ClientID:       u.HostAzureClientSetConfig.ClientID,
+				ClientSecret:   u.HostAzureClientSetConfig.ClientSecret,
+				SubscriptionID: u.HostAzureClientSetConfig.SubscriptionID,
+				TenantID:       u.HostAzureClientSetConfig.TenantID,
+			}
+			clientConfigBySubscription[config.SubscriptionID] = *config
 		}
 	}
 
 	ctx := context.Background()
 
-	// We track VMSS metrics for each client labeled by ClientID.
+	// We track RateLimit metrics for each client labeled by SubscriptionID and
+	// ClientID.
 	// That way we prevent duplicated metrics.
-	for _, cr := range crsBySubscription {
-		azureConfig, azureClients, err := u.getAzureClients(cr)
+	for _, clientConfig := range clientConfigBySubscription {
+		azureClients, err := client.NewAzureClientSet(clientConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		var reads float64
-		{
-			vmssResponse, err := azureClients.VirtualMachineScaleSetsClient.ListAll(ctx)
-			if err != nil {
-				u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource VMSS information", "stack", microerror.Stack(microerror.Mask(err)))
-			} else {
-				reads, err = strconv.ParseFloat(vmssResponse.Response().Header.Get(remainingReadsHeaderName), 64)
-				if err != nil {
-					u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for VMSS read requests", "stack", microerror.Stack(microerror.Mask(err)))
-					reads = 0
-				}
-
-				ch <- prometheus.MustNewConstMetric(
-					VMSSReadsDesc,
-					prometheus.GaugeValue,
-					reads,
-					azureClients.VirtualMachineScaleSetsClient.SubscriptionID,
-					azureConfig.ClientID,
-				)
-			}
+		resourceGroup, err := u.createEmptyResourceGroup(ctx, azureClients)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 
-		// Remaining write requests can be retrieved sending a write request.
-		// We create a resource group with a random name, so we can delete it.
-		var writes float64
+		// Remaining read requests can be retrieved sending a read request.
+		var reads float64
 		{
-			resourceGroupName := randStringBytes(16)
-			_, err := azureClients.GroupsClient.CreateOrUpdate(
-				ctx,
-				resourceGroupName,
-				resources.Group{
-					ManagedBy: to.StringPtr("azure-operator"),
-					Location:  to.StringPtr(u.location),
-					Tags: map[string]*string{
-						"collector": to.StringPtr("azure-operator"),
-					},
-				})
+			groupResponse, err := azureClients.GroupsClient.Get(ctx, *resourceGroup.Name)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			deleteResponse, err := azureClients.GroupsClient.Delete(ctx, resourceGroupName)
+			reads, err = strconv.ParseFloat(groupResponse.Response.Header.Get(remainingReadsHeaderName), 64)
+			if err != nil {
+				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
+				reads = 0
+			}
+
+			ch <- prometheus.MustNewConstMetric(
+				ReadsDesc,
+				prometheus.GaugeValue,
+				reads,
+				azureClients.GroupsClient.SubscriptionID,
+				clientConfig.ClientID,
+			)
+		}
+
+		// Remaining write requests can be retrieved sending a write request.
+		var writes float64
+		{
+			deleteResponse, err := azureClients.GroupsClient.Delete(ctx, *resourceGroup.Name)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
 			writes, err = strconv.ParseFloat(deleteResponse.Response().Header.Get(remainingWritesHeaderName), 64)
 			if err != nil {
-				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for VMSS write requests", "stack", microerror.Stack(microerror.Mask(err)))
+				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err)))
 				writes = 0
 			}
 
 			ch <- prometheus.MustNewConstMetric(
-				VMSSWritesDesc,
+				WritesDesc,
 				prometheus.GaugeValue,
 				writes,
 				azureClients.GroupsClient.SubscriptionID,
-				azureConfig.ClientID,
+				clientConfig.ClientID,
 			)
 		}
 	}
@@ -205,12 +212,13 @@ func (u *VMSS) Collect(ch chan<- prometheus.Metric) error {
 	return nil
 }
 
-func (u *VMSS) Describe(ch chan<- *prometheus.Desc) error {
-	ch <- VMSSReadsDesc
+func (u *RateLimit) Describe(ch chan<- *prometheus.Desc) error {
+	ch <- ReadsDesc
+	ch <- WritesDesc
 	return nil
 }
 
-func (u *VMSS) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.AzureClientSetConfig, *client.AzureClientSet, error) {
+func (u *RateLimit) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.AzureClientSetConfig, *client.AzureClientSet, error) {
 	config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
@@ -223,6 +231,20 @@ func (u *VMSS) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.AzureCl
 	}
 
 	return config, azureClients, nil
+}
+
+// We create a resource group with a random name so we can later send
+// requests to the API and figure out the rate limiting status.
+func (u *RateLimit) createEmptyResourceGroup(ctx context.Context, azureClients *client.AzureClientSet) (resources.Group, error) {
+	resourceGroupName := randStringBytes(16)
+	resourceGroup := resources.Group{
+		ManagedBy: to.StringPtr("azure-operator"),
+		Location:  to.StringPtr(u.location),
+		Tags: map[string]*string{
+			"collector": to.StringPtr("azure-operator"),
+		},
+	}
+	return azureClients.GroupsClient.CreateOrUpdate(ctx, resourceGroupName, resourceGroup)
 }
 
 const (
