@@ -10,13 +10,15 @@ Both the Azure operator and Kubernetes need to send authenticated requests to th
 			
 ## Azure Operator
 This process runs on the worker nodes on the control planes. [When deployed](https://github.com/giantswarm/installations/blob/ad518ba95584685bf37cd9c3cca403115153dc14/ghost/draughtsman-secret-values.yaml#L20-L27), it receives a set of [parameters](https://github.com/giantswarm/azure-operator/blob/d0185b1de2cf6975f8e795a38bb55dfc875ecdeb/main.go#L125-L126) 
-such as the `Azure.ClientID`, the `Azure.ClientSecret`, or `Azure.MSI.Enabled` to select whether to enabled [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview).
+such as the `Azure.ClientID`, the `Azure.ClientSecret`, or `Azure.MSI.Enabled` to select whether to enable [Managed Service Identity](https://docs.microsoft.com/en-us/azure/active-directory/managed-identities-azure-resources/overview) on the tenant clusters.
+
+These credentials are different for every installation, [as documented here](https://github.com/giantswarm/giantswarm/blob/master/ops-recipes/azure-service-principals.md#installation-azure-operator-sp).
 
 ## Credentiald server
 It's using the same credentials than Azure Operator is using.
 
 ## Control plane clusters
-## Cloud Provider k8s integration on masters
+### Cloud Provider k8s integration on masters
 [A new client id is created](https://github.com/giantswarm/giantnetes-terraform/blob/master/docs/installation-guide-azure.md#create-service-principal) when deploying a new control plane cluster, and it's assigned the [Azure's built-in Contributor role](https://docs.microsoft.com/es-es/azure/role-based-access-control/built-in-roles#contributor). 
 The credentials are passed in the deployment step as Terraform [variables](https://github.com/giantswarm/giantnetes-terraform/blob/0e5f27fa08b15461097029d50f3ca132845a81d8/platforms/azure/giantnetes/main.tf#L73). 
 
@@ -24,7 +26,9 @@ The credentials are passed in the deployment step as Terraform [variables](https
 
 They are later stored in [our installations repository](https://github.com/giantswarm/installations/blob/ad518ba95584685bf37cd9c3cca403115153dc14/godsmack/terraform/bootstrap.sh#L27-L34).
 
-## Cloud Provider k8s integration on workers
+These credentials are different for every installation, [as documented here](https://github.com/giantswarm/giantswarm/blob/master/ops-recipes/azure-service-principals.md#installation-sp).
+
+### Cloud Provider k8s integration on workers
 Same as master nodes.
 
 ## Tenant clusters
@@ -41,3 +45,8 @@ This identity is assigned the [Azure's built-in role called `Contributor`](https
 ### Cloud Provider k8s integration on workers
 This works exactly the same than for master nodes. 
 Workers will use a different Identity than masters, since they are created using different VMSS.
+
+
+# Aditional info
+
+- [Azure Service Principals](https://github.com/giantswarm/giantswarm/blob/master/ops-recipes/azure-service-principals.md)
