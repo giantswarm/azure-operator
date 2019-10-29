@@ -85,9 +85,9 @@ func NewSet(config SetConfig) (*Set, error) {
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
 
-			EnvironmentName:          config.AzureSetting.EnvironmentName,
-			Location:                 config.AzureSetting.Location,
-			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+			EnvironmentName:        config.AzureSetting.EnvironmentName,
+			Location:               config.AzureSetting.Location,
+			CPAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
 		rateLimitCollector, err = NewRateLimit(c)

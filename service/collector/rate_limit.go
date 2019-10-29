@@ -22,12 +22,14 @@ import (
 const (
 	remainingReadsHeaderName  = "x-ms-ratelimit-remaining-subscription-reads"
 	remainingWritesHeaderName = "x-ms-ratelimit-remaining-subscription-writes"
-	resourceGroupName         = "azure-operator-empty-rg-for-collector"
+	resourceGroupName         = "azure-operator-empty-rg-for-metrics"
+	metricsNamespace          = "azure_operator"
+	metricsSubsystem          = "rate_limit"
 )
 
 var (
 	ReadsDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "rate_limit", "reads"),
+		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "reads"),
 		"Remaining number of reads allowed.",
 		[]string{
 			"subscription",
@@ -36,7 +38,7 @@ var (
 		nil,
 	)
 	WritesDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "rate_limit", "writes"),
+		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "writes"),
 		"Remaining number of writes allowed.",
 		[]string{
 			"subscription",
@@ -44,24 +46,18 @@ var (
 		},
 		nil,
 	)
-	ReadsErrorDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "rate_limit", "reads_parsing_errors"),
-		"Errors trying to parse the remaining requests from the response header",
-		[]string{
-			"subscription",
-			"clientid",
-		},
-		nil,
-	)
-	WritesErrorDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "rate_limit", "writes_parsing_errors"),
-		"Errors trying to parse the remaining requests from the response header",
-		[]string{
-			"subscription",
-			"clientid",
-		},
-		nil,
-	)
+	ReadsErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: metricsNamespace,
+		Subsystem: metricsSubsystem,
+		Name:      "reads_parsing_errors",
+		Help:      "Errors trying to parse the remaining requests from the response header",
+	})
+	WritesErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: metricsNamespace,
+		Subsystem: metricsSubsystem,
+		Name:      "writes_parsing_errors",
+		Help:      "Errors trying to parse the remaining requests from the response header",
+	})
 )
 
 type RateLimitConfig struct {
@@ -193,13 +189,8 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err)))
 				writes = 0
-				ch <- prometheus.MustNewConstMetric(
-					WritesErrorDesc,
-					prometheus.CounterValue,
-					1,
-					azureClients.GroupsClient.SubscriptionID,
-					clientConfig.ClientID,
-				)
+				WritesErrorCounter.Inc()
+				ch <- WritesErrorCounter
 			}
 
 			ch <- prometheus.MustNewConstMetric(
@@ -223,13 +214,8 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
 				reads = 0
-				ch <- prometheus.MustNewConstMetric(
-					ReadsErrorDesc,
-					prometheus.CounterValue,
-					1,
-					azureClients.GroupsClient.SubscriptionID,
-					clientConfig.ClientID,
-				)
+				ReadsErrorCounter.Inc()
+				ch <- ReadsErrorCounter
 			}
 
 			ch <- prometheus.MustNewConstMetric(
@@ -248,8 +234,6 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 func (u *RateLimit) Describe(ch chan<- *prometheus.Desc) error {
 	ch <- ReadsDesc
 	ch <- WritesDesc
-	ch <- ReadsErrorDesc
-	ch <- WritesErrorDesc
 	return nil
 }
 
