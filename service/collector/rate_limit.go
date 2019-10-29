@@ -28,7 +28,7 @@ const (
 
 var (
 	ReadsDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "RateLimit", "reads"),
+		prometheus.BuildFQName("azure_operator", "rate_limit", "reads"),
 		"Remaining number of reads allowed.",
 		[]string{
 			"subscription",
@@ -37,7 +37,7 @@ var (
 		nil,
 	)
 	WritesDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName("azure_operator", "RateLimit", "writes"),
+		prometheus.BuildFQName("azure_operator", "rate_limit", "writes"),
 		"Remaining number of writes allowed.",
 		[]string{
 			"subscription",
@@ -55,9 +55,9 @@ type RateLimitConfig struct {
 	// EnvironmentName is the name of the Azure environment used to compute the
 	// azure.Environment type. See also
 	// https://godoc.org/github.com/Azure/go-autorest/autorest/azure#Environment.
-	EnvironmentName          string
-	Location                 string
-	HostAzureClientSetConfig client.AzureClientSetConfig
+	EnvironmentName        string
+	Location               string
+	CPAzureClientSetConfig client.AzureClientSetConfig
 }
 
 type RateLimit struct {
@@ -65,9 +65,9 @@ type RateLimit struct {
 	k8sClient kubernetes.Interface
 	logger    micrologger.Logger
 
-	environmentName          string
-	location                 string
-	HostAzureClientSetConfig client.AzureClientSetConfig
+	environmentName        string
+	location               string
+	cpAzureClientSetConfig client.AzureClientSetConfig
 }
 
 func NewRateLimit(config RateLimitConfig) (*RateLimit, error) {
@@ -93,9 +93,9 @@ func NewRateLimit(config RateLimitConfig) (*RateLimit, error) {
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
-		environmentName:          config.EnvironmentName,
-		location:                 config.Location,
-		HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+		environmentName:        config.EnvironmentName,
+		location:               config.Location,
+		cpAzureClientSetConfig: config.CPAzureClientSetConfig,
 	}
 
 	return u, nil
@@ -135,12 +135,12 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			clientConfigBySubscription[config.SubscriptionID] = *config
 		}
 
-		if _, present := clientConfigBySubscription[u.HostAzureClientSetConfig.SubscriptionID]; !present {
+		if _, present := clientConfigBySubscription[u.cpAzureClientSetConfig.SubscriptionID]; !present {
 			config := &client.AzureClientSetConfig{
-				ClientID:       u.HostAzureClientSetConfig.ClientID,
-				ClientSecret:   u.HostAzureClientSetConfig.ClientSecret,
-				SubscriptionID: u.HostAzureClientSetConfig.SubscriptionID,
-				TenantID:       u.HostAzureClientSetConfig.TenantID,
+				ClientID:       u.cpAzureClientSetConfig.ClientID,
+				ClientSecret:   u.cpAzureClientSetConfig.ClientSecret,
+				SubscriptionID: u.cpAzureClientSetConfig.SubscriptionID,
+				TenantID:       u.cpAzureClientSetConfig.TenantID,
 			}
 			clientConfigBySubscription[config.SubscriptionID] = *config
 		}
