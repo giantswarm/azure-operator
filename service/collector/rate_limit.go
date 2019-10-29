@@ -2,8 +2,6 @@ package collector
 
 import (
 	"context"
-	"fmt"
-	"math/rand"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
@@ -24,6 +22,7 @@ import (
 const (
 	remainingReadsHeaderName  = "x-ms-ratelimit-remaining-subscription-reads"
 	remainingWritesHeaderName = "x-ms-ratelimit-remaining-subscription-writes"
+	resourceGroupName         = "azure-operator-empty-rg-for-collector"
 )
 
 var (
@@ -39,6 +38,24 @@ var (
 	WritesDesc *prometheus.Desc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "rate_limit", "writes"),
 		"Remaining number of writes allowed.",
+		[]string{
+			"subscription",
+			"clientid",
+		},
+		nil,
+	)
+	ReadsErrorDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "rate_limit", "reads_parsing_errors"),
+		"Errors trying to parse the remaining requests from the response header",
+		[]string{
+			"subscription",
+			"clientid",
+		},
+		nil,
+	)
+	WritesErrorDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "rate_limit", "writes_parsing_errors"),
+		"Errors trying to parse the remaining requests from the response header",
 		[]string{
 			"subscription",
 			"clientid",
@@ -135,15 +152,15 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			clientConfigBySubscription[config.SubscriptionID] = *config
 		}
 
-		if _, present := clientConfigBySubscription[u.cpAzureClientSetConfig.SubscriptionID]; !present {
-			config := &client.AzureClientSetConfig{
-				ClientID:       u.cpAzureClientSetConfig.ClientID,
-				ClientSecret:   u.cpAzureClientSetConfig.ClientSecret,
-				SubscriptionID: u.cpAzureClientSetConfig.SubscriptionID,
-				TenantID:       u.cpAzureClientSetConfig.TenantID,
-			}
-			clientConfigBySubscription[config.SubscriptionID] = *config
+		// The operator potentially uses a different set of credentials than
+		// tenant clusters, so we add the operator credentials as well.
+		config := &client.AzureClientSetConfig{
+			ClientID:       u.cpAzureClientSetConfig.ClientID,
+			ClientSecret:   u.cpAzureClientSetConfig.ClientSecret,
+			SubscriptionID: u.cpAzureClientSetConfig.SubscriptionID,
+			TenantID:       u.cpAzureClientSetConfig.TenantID,
 		}
+		clientConfigBySubscription[config.SubscriptionID] = *config
 	}
 
 	ctx := context.Background()
@@ -157,15 +174,47 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			return microerror.Mask(err)
 		}
 
-		resourceGroup, err := u.createEmptyResourceGroup(ctx, azureClients)
-		if err != nil {
-			return microerror.Mask(err)
+		// Remaining write requests can be retrieved sending a write request.
+		var writes float64
+		{
+			resourceGroup := resources.Group{
+				ManagedBy: to.StringPtr("azure-operator"),
+				Location:  to.StringPtr(u.location),
+				Tags: map[string]*string{
+					"collector": to.StringPtr("azure-operator"),
+				},
+			}
+			resourceGroup, err := azureClients.GroupsClient.CreateOrUpdate(ctx, resourceGroupName, resourceGroup)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			writes, err = strconv.ParseFloat(resourceGroup.Response.Header.Get(remainingWritesHeaderName), 64)
+			if err != nil {
+				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err)))
+				writes = 0
+				ch <- prometheus.MustNewConstMetric(
+					WritesErrorDesc,
+					prometheus.CounterValue,
+					1,
+					azureClients.GroupsClient.SubscriptionID,
+					clientConfig.ClientID,
+				)
+			}
+
+			ch <- prometheus.MustNewConstMetric(
+				WritesDesc,
+				prometheus.GaugeValue,
+				writes,
+				azureClients.GroupsClient.SubscriptionID,
+				clientConfig.ClientID,
+			)
 		}
 
 		// Remaining read requests can be retrieved sending a read request.
 		var reads float64
 		{
-			groupResponse, err := azureClients.GroupsClient.Get(ctx, *resourceGroup.Name)
+			groupResponse, err := azureClients.GroupsClient.Get(ctx, resourceGroupName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -174,35 +223,19 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
 				reads = 0
+				ch <- prometheus.MustNewConstMetric(
+					ReadsErrorDesc,
+					prometheus.CounterValue,
+					1,
+					azureClients.GroupsClient.SubscriptionID,
+					clientConfig.ClientID,
+				)
 			}
 
 			ch <- prometheus.MustNewConstMetric(
 				ReadsDesc,
 				prometheus.GaugeValue,
 				reads,
-				azureClients.GroupsClient.SubscriptionID,
-				clientConfig.ClientID,
-			)
-		}
-
-		// Remaining write requests can be retrieved sending a write request.
-		var writes float64
-		{
-			deleteResponse, err := azureClients.GroupsClient.Delete(ctx, *resourceGroup.Name)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			writes, err = strconv.ParseFloat(deleteResponse.Response().Header.Get(remainingWritesHeaderName), 64)
-			if err != nil {
-				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err)))
-				writes = 0
-			}
-
-			ch <- prometheus.MustNewConstMetric(
-				WritesDesc,
-				prometheus.GaugeValue,
-				writes,
 				azureClients.GroupsClient.SubscriptionID,
 				clientConfig.ClientID,
 			)
@@ -215,6 +248,8 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 func (u *RateLimit) Describe(ch chan<- *prometheus.Desc) error {
 	ch <- ReadsDesc
 	ch <- WritesDesc
+	ch <- ReadsErrorDesc
+	ch <- WritesErrorDesc
 	return nil
 }
 
@@ -231,32 +266,4 @@ func (u *RateLimit) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.Az
 	}
 
 	return config, azureClients, nil
-}
-
-// We create a resource group with a random name so we can later send
-// requests to the API and figure out the rate limiting status.
-func (u *RateLimit) createEmptyResourceGroup(ctx context.Context, azureClients *client.AzureClientSet) (resources.Group, error) {
-	resourceGroupName := randStringBytes(16)
-	resourceGroup := resources.Group{
-		ManagedBy: to.StringPtr("azure-operator"),
-		Location:  to.StringPtr(u.location),
-		Tags: map[string]*string{
-			"collector": to.StringPtr("azure-operator"),
-		},
-	}
-	return azureClients.GroupsClient.CreateOrUpdate(ctx, resourceGroupName, resourceGroup)
-}
-
-const (
-	letterBytes             = "abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ1234567890"
-	resourceGroupNamePrefix = "azure-operator-collector"
-)
-
-func randStringBytes(n int) string {
-	b := make([]byte, n)
-	for i := range b {
-		b[i] = letterBytes[rand.Intn(len(letterBytes))]
-	}
-
-	return fmt.Sprintf("%s-%s", resourceGroupNamePrefix, b)
 }
