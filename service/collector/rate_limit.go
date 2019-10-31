@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	ReadsDesc *prometheus.Desc = prometheus.NewDesc(
+	readsDesc *prometheus.Desc = prometheus.NewDesc(
 		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "reads"),
 		"Remaining number of reads allowed.",
 		[]string{
@@ -37,7 +37,7 @@ var (
 		},
 		nil,
 	)
-	WritesDesc *prometheus.Desc = prometheus.NewDesc(
+	writesDesc *prometheus.Desc = prometheus.NewDesc(
 		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "writes"),
 		"Remaining number of writes allowed.",
 		[]string{
@@ -46,13 +46,13 @@ var (
 		},
 		nil,
 	)
-	ReadsErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	readsErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: metricsNamespace,
 		Subsystem: metricsSubsystem,
 		Name:      "reads_parsing_errors",
 		Help:      "Errors trying to parse the remaining requests from the response header",
 	})
-	WritesErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	writesErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: metricsNamespace,
 		Subsystem: metricsSubsystem,
 		Name:      "writes_parsing_errors",
@@ -84,8 +84,8 @@ type RateLimit struct {
 }
 
 func init() {
-	prometheus.MustRegister(ReadsErrorCounter)
-	prometheus.MustRegister(WritesErrorCounter)
+	prometheus.MustRegister(readsErrorCounter)
+	prometheus.MustRegister(writesErrorCounter)
 }
 
 func NewRateLimit(config RateLimitConfig) (*RateLimit, error) {
@@ -194,12 +194,12 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err)))
 				writes = 0
-				WritesErrorCounter.Inc()
-				ch <- WritesErrorCounter
+				writesErrorCounter.Inc()
+				ch <- writesErrorCounter
 			}
 
 			ch <- prometheus.MustNewConstMetric(
-				WritesDesc,
+				writesDesc,
 				prometheus.GaugeValue,
 				writes,
 				azureClients.GroupsClient.SubscriptionID,
@@ -219,12 +219,12 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
 				reads = 0
-				ReadsErrorCounter.Inc()
-				ch <- ReadsErrorCounter
+				readsErrorCounter.Inc()
+				ch <- readsErrorCounter
 			}
 
 			ch <- prometheus.MustNewConstMetric(
-				ReadsDesc,
+				readsDesc,
 				prometheus.GaugeValue,
 				reads,
 				azureClients.GroupsClient.SubscriptionID,
@@ -237,8 +237,8 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 }
 
 func (u *RateLimit) Describe(ch chan<- *prometheus.Desc) error {
-	ch <- ReadsDesc
-	ch <- WritesDesc
+	ch <- readsDesc
+	ch <- writesDesc
 	return nil
 }
 

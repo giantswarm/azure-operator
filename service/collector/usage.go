@@ -37,6 +37,12 @@ var (
 		},
 		nil,
 	)
+	scrapeErrorCounter = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: namespace,
+		Subsystem: component,
+		Name:      "scrape_error",
+		Help:      "Total number of times compute resource usage information scraping returned an error.",
+	})
 )
 
 type UsageConfig struct {
@@ -65,6 +71,10 @@ type Usage struct {
 const namespace = "azure_operator"
 const component = "usage"
 
+func init() {
+	prometheus.MustRegister(scrapeErrorCounter)
+}
+
 func NewUsage(config UsageConfig) (*Usage, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
@@ -88,12 +98,7 @@ func NewUsage(config UsageConfig) (*Usage, error) {
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
-		usageScrapeError: prometheus.NewCounter(prometheus.CounterOpts{
-			Namespace: namespace,
-			Subsystem: component,
-			Name:      "scrape_error",
-			Help:      "Total number of times compute resource usage information scraping returned an error.",
-		}),
+		usageScrapeError: scrapeErrorCounter,
 
 		environmentName: config.EnvironmentName,
 		location:        config.Location,
