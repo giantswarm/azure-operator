@@ -83,6 +83,11 @@ type RateLimit struct {
 	cpAzureClientSetConfig client.AzureClientSetConfig
 }
 
+func init() {
+	prometheus.MustRegister(ReadsErrorCounter)
+	prometheus.MustRegister(WritesErrorCounter)
+}
+
 func NewRateLimit(config RateLimitConfig) (*RateLimit, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
