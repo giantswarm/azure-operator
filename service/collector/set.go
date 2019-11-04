@@ -78,6 +78,24 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
+	var rateLimitCollector *RateLimit
+	{
+		c := RateLimitConfig{
+			G8sClient: config.G8sClient,
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+
+			EnvironmentName:        config.AzureSetting.EnvironmentName,
+			Location:               config.AzureSetting.Location,
+			CPAzureClientSetConfig: config.HostAzureClientSetConfig,
+		}
+
+		rateLimitCollector, err = NewRateLimit(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vpnConnectionCollector *VPNConnection
 	{
 		c := VPNConnectionConfig{
@@ -101,6 +119,7 @@ func NewSet(config SetConfig) (*Set, error) {
 				deploymentCollector,
 				resourceGroupCollector,
 				usageCollector,
+				rateLimitCollector,
 				vpnConnectionCollector,
 			},
 			Logger: config.Logger,
