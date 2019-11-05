@@ -3,11 +3,10 @@ package env
 import (
 	"crypto/sha1"
 	"fmt"
-	"log"
 	"os"
 	"strings"
 
-	"github.com/giantswarm/e2e-harness/pkg/framework"
+	"github.com/giantswarm/azure-operator/service"
 )
 
 const (
@@ -39,8 +38,6 @@ var (
 )
 
 func init() {
-	var err error
-
 	circleCI = os.Getenv(EnvVarCircleCI)
 	keepResources = os.Getenv(EnvVarKeepResources)
 
@@ -73,24 +70,15 @@ func init() {
 		os.Setenv("CLUSTER_NAME", ClusterID())
 	}
 
-	params := &framework.VBVParams{
-		Component: component,
-		Provider:  provider,
-		Token:     githubToken,
-		VType:     TestedVersion(),
-	}
-	versionBundleVersion, err = framework.GetVersionBundleVersion(params)
-	if err != nil {
-		panic(err.Error())
-	}
-	// TODO there should be a not found error returned by the framework in such
-	// cases.
-	if VersionBundleVersion() == "" {
-		if strings.ToLower(TestedVersion()) == "wip" {
-			log.Println("WIP version bundle version not present, exiting.")
-			os.Exit(0)
+	{
+		switch testedVersion {
+		case "latest", "wip":
+			vbs := service.NewVersionBundles()
+			versionBundleVersion = vbs[len(vbs)-1].Version
+		case "previous", "current":
+			vbs := service.NewVersionBundles()
+			versionBundleVersion = vbs[len(vbs)-2].Version
 		}
-		panic("version bundle version  must not be empty")
 	}
 	os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
 }
