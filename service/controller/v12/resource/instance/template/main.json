@@ -62,6 +62,10 @@
       "metadata":{
         "description":"Output value of the worker subnet ID as referenced from the virtual network setup."
       }
+    },
+    "vmssRootDiskSizeGB":{
+      "type":"int",
+      "defaultValue":40
     }
   },
   "variables":{
@@ -149,6 +153,9 @@
           },
           "vmssUpgradePolicy":{
             "value":"Manual"
+          },
+          "vmssRootDiskSizeGB":{
+            "value":"[parameters('vmssRootDiskSizeGB')]"
           }
         }
       }
