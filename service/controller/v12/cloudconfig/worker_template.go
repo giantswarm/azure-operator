@@ -160,6 +160,11 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 			Enabled:      true,
 		},
 		{
+			AssetContent: ignition.KubeletMountUnit,
+			Name:         "kubelet.mount",
+			Enabled:      true,
+		},
+		{
 			AssetContent: ignition.VNICConfigurationUnit,
 			Name:         "vnic-configuration.service",
 			Enabled:      true,
