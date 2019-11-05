@@ -263,7 +263,6 @@ spec:
     kind: NetworkPolicy
     plural: networkpolicies
     singular: networkpolicy
-
 ---
 # This manifest installs the calico-node container, as well
 # as the CNI plugins and network config on
@@ -318,6 +317,7 @@ spec:
         # and CNI network config file on each node.
         - name: install-cni
           image: {{ .RegistryDomain }}/giantswarm/cni:v3.9.1
+
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -364,6 +364,7 @@ spec:
         # host.
         - name: calico-node
           image: {{ .RegistryDomain }}/giantswarm/node:v3.9.1
+
           env:
             # The location of the Calico etcd cluster.
             - name: ETCD_ENDPOINTS
@@ -613,6 +614,7 @@ metadata:
   namespace: kube-system
 ---
 ---
+
 # Include a clusterrole for the kube-controllers component,
 # and bind it to the calico-kube-controllers serviceaccount.
 kind: ClusterRole

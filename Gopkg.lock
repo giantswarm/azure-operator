@@ -2007,6 +2007,7 @@
     "github.com/giantswarm/statusresource",
     "github.com/giantswarm/tenantcluster",
     "github.com/giantswarm/versionbundle",
+    "github.com/google/go-cmp/cmp",
     "github.com/prometheus/client_golang/prometheus",
     "github.com/spf13/viper",
     "golang.org/x/sync/errgroup",
