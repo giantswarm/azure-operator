@@ -106,7 +106,7 @@
               },
               {
                 "name":"DockerDisk",
-                "sizeGB":"[parameters('masterNodes')[0].dockerVolumeSizeGB]"
+                "sizeGB":"[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]"
               }
             ]
           },
@@ -186,7 +186,7 @@
             "value":[
               {
                 "name":"DockerDisk",
-                "sizeGB":"[parameters('workerNodes')[0].dockerVolumeSizeGB]"
+                "sizeGB":"[if(greater(parameters('workerNodes')[0].dockerVolumeSizeGB, 0), parameters('workerNodes')[0].dockerVolumeSizeGB, 50)]"
               }
             ]
           },
