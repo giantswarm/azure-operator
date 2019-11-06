@@ -123,6 +123,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
 	if err != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.Stack(microerror.Mask(err)))
+
 		return microerror.Mask(err)
 	}
 
