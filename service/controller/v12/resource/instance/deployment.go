@@ -50,6 +50,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 			OSImage:            newNodeOSImageCoreOS(),
 			VMSize:             m.VMSize,
 			DockerVolumeSizeGB: m.DockerVolumeSizeGB,
+			RootVolumeSizeGB:   m.RootVolumeSizeGB,
 		}
 		masterNodes = append(masterNodes, n)
 	}
@@ -62,6 +63,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 			OSImage:            newNodeOSImageCoreOS(),
 			VMSize:             w.VMSize,
 			DockerVolumeSizeGB: w.DockerVolumeSizeGB,
+			RootVolumeSizeGB:   w.RootVolumeSizeGB,
 		}
 		workerNodes = append(workerNodes, n)
 	}

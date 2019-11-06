@@ -13,6 +13,8 @@ type node struct {
 	VMSize string `json:"vmSize" yaml:"vmSize"`
 	// Size of the Disk mounted in /var/lib/docker
 	DockerVolumeSizeGB int `json:"dockerVolumeSizeGB" yaml:"dockerVolumeSizeGB"`
+	// Size of the Disk mounted in /
+	RootVolumeSizeGB int `json:"rootVolumeSizeGB" yaml:"rootVolumeSizeGB"`
 }
 
 // nodeOSImage provides OS information for Microsoft.Compute/virtualMachines
