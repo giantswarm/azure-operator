@@ -233,6 +233,9 @@
           },
           "vmssUpgradePolicy":{
             "value":"Manual"
+          },
+          "vmssRootDiskSizeGB":{
+            "value":"[parameters('vmssRootDiskSizeGB')]"
           }
         }
       }
