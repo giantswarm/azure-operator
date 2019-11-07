@@ -110,7 +110,7 @@
               },
               {
                 "name":"KubeletDisk",
-                "sizeGB":100
+                "sizeGB":"[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0],.kubeletVolumeSizeGB, 100)]"
               }
             ]
           },
@@ -194,7 +194,7 @@
               },
               {
                 "name":"KubeletDisk",
-                "sizeGB":100
+                "sizeGB":"[if(greater(parameters('workerNodes')[0].kubeletVolumeSizeGB, 0), parameters('workerNodes')[0],.kubeletVolumeSizeGB, 100)]"
               }
             ]
           },
