@@ -21,6 +21,8 @@ import (
 
 const (
 	vmssDeploymentName = "cluster-vmss-template"
+	dockerDiskName     = "DockerDisk"
+	kubeletDiskName    = "KubeletDisk"
 )
 
 // EnsureCreated operates in 3 different stages which are executed sequentially.
@@ -624,14 +626,25 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 			return nil, microerror.Mask(err)
 		}
 		instanceVersion, ok := versionValue[instanceName]
+		// current version unavailable, skip this instance
 		if !ok {
 			continue
 		}
-		if desiredVersion == instanceVersion {
-			continue
+		// version is changed
+		if desiredVersion != instanceVersion {
+			return &v, nil
 		}
 
-		return &v, nil
+		for _, disk := range *v.StorageProfile.DataDisks {
+			// check if the Docker Disk Size is changed
+			if *disk.Name == dockerDiskName && *disk.DiskSizeGB != int32(customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB) {
+				return &v, nil
+			}
+			// check if the Kubelet Disk Size is changed
+			if *disk.Name == kubeletDiskName && *disk.DiskSizeGB != int32(customObject.Spec.Azure.Workers[0].KubeletVolumeSizeGB) {
+				return &v, nil
+			}
+		}
 	}
 
 	return nil, nil
