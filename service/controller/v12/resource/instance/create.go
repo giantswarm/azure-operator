@@ -182,6 +182,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
 				ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
+				desiredDiskSizes := map[string]int32{
+					dockerDiskName:  int32(customObject.Spec.Azure.Masters[0].DockerVolumeSizeGB),
+					kubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
+				}
+
+				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue, desiredDiskSizes)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -227,6 +233,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
+				desiredDiskSizes := map[string]int32{
+					dockerDiskName:  int32(customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB),
+					kubeletDiskName: int32(customObject.Spec.Azure.Workers[0].KubeletVolumeSizeGB),
+				}
+				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue, desiredDiskSizes)
 				ws, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
@@ -575,7 +586,7 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 	}
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
-	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
+	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue, desiredDiskSizes)
 	if err != nil {
 		return ws, microerror.Mask(err)
 	}
@@ -614,7 +625,13 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
+func firstInstanceToReimage(
+	customObject providerv1alpha1.AzureConfig,
+	list []compute.VirtualMachineScaleSetVM,
+	instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error),
+	versionValue map[string]string,
+	desiredDiskSizes map[string]int32,
+) (*compute.VirtualMachineScaleSetVM, error) {
 	if versionValue == nil {
 		return nil, microerror.Mask(versionBlobEmptyError)
 	}
@@ -636,12 +653,13 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 		}
 
 		for _, disk := range *v.StorageProfile.DataDisks {
-			// check if the Docker Disk Size is changed
-			if *disk.Name == dockerDiskName && *disk.DiskSizeGB != int32(customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB) {
-				return &v, nil
+			desiredDiskSize, ok := desiredDiskSizes[*disk.Name]
+			if !ok {
+				// this disk has no target size specified, ignore it
+				continue
 			}
-			// check if the Kubelet Disk Size is changed
-			if *disk.Name == kubeletDiskName && *disk.DiskSizeGB != int32(customObject.Spec.Azure.Workers[0].KubeletVolumeSizeGB) {
+			// desired disk size is changed
+			if *disk.DiskSizeGB != desiredDiskSize {
 				return &v, nil
 			}
 		}
