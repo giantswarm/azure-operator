@@ -161,7 +161,7 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		},
 		{
 			AssetContent: ignition.KubeletMountUnit,
-			Name:         "kubelet.mount",
+			Name:         "var-lib-kubelet.mount",
 			Enabled:      true,
 		},
 		{
