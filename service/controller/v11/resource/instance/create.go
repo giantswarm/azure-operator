@@ -112,7 +112,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.debugger.LogFailedDeployment(ctx, d, err)
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			err := r.deleteResourceStatus(customObject, Stage, DeploymentInitialized)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, DeploymentInitialized))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		}
 	}
