@@ -177,8 +177,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 				ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 				desiredDiskSizes := map[string]int32{
-					dockerDiskName:  int32(customObject.Spec.Azure.Masters[0].DockerVolumeSizeGB),
-					kubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
+					key.DockerDiskName:  int32(customObject.Spec.Azure.Masters[0].DockerVolumeSizeGB),
+					key.KubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
 				}
 
 				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue, desiredDiskSizes)

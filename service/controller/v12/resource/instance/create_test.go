@@ -13,32 +13,30 @@ import (
 )
 
 func Test_Resource_Instance_findActionableInstance(t *testing.T) {
-	const dockerDiskName = "DockerDisk"
-	const kubeletDiskName = "KubeletDisk"
 	oneGBDataDisks := []compute.DataDisk{
-		compute.DataDisk{
-			Name:       to.StringPtr(dockerDiskName),
+		{
+			Name:       to.StringPtr(key.DockerDiskName),
 			DiskSizeGB: to.Int32Ptr(1),
 		},
-		compute.DataDisk{
-			Name:       to.StringPtr(kubeletDiskName),
+		{
+			Name:       to.StringPtr(key.KubeletDiskName),
 			DiskSizeGB: to.Int32Ptr(1),
 		},
 	}
 
 	desiredDiskSizeOneGb := map[string]int32{
-		dockerDiskName:  int32(1),
-		kubeletDiskName: int32(1),
+		key.DockerDiskName:  int32(1),
+		key.KubeletDiskName: int32(1),
 	}
 
 	desiredDiskSizesDockerTwoGb := map[string]int32{
-		dockerDiskName:  int32(2),
-		kubeletDiskName: int32(1),
+		key.DockerDiskName:  int32(2),
+		key.KubeletDiskName: int32(1),
 	}
 
 	desiredDiskSizesKubeletTwoGb := map[string]int32{
-		dockerDiskName:  int32(1),
-		kubeletDiskName: int32(2),
+		key.DockerDiskName:  int32(1),
+		key.KubeletDiskName: int32(2),
 	}
 
 	testCases := []struct {
