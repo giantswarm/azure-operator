@@ -24,6 +24,17 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 	}
 
+	twoGBDataDisks := []compute.DataDisk{
+		{
+			Name:       to.StringPtr(key.DockerDiskName),
+			DiskSizeGB: to.Int32Ptr(2),
+		},
+		{
+			Name:       to.StringPtr(key.KubeletDiskName),
+			DiskSizeGB: to.Int32Ptr(2),
+		},
+	}
+
 	desiredDiskSizeOneGb := map[string]int32{
 		key.DockerDiskName:  int32(1),
 		key.KubeletDiskName: int32(1),
@@ -725,6 +736,43 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			},
 			DesiredDiskSizes: desiredDiskSizesKubeletTwoGb,
 			ErrorMatcher:     nil,
+		},
+		{
+			Name: "case 14: kubelet disk size decreased, no instance should be updated",
+			CustomObject: providerv1alpha1.AzureConfig{
+				Spec: providerv1alpha1.AzureConfigSpec{
+					Cluster: providerv1alpha1.Cluster{
+						ID: "al9qy",
+					},
+					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
+						Version: "0.1.0",
+					},
+				},
+			},
+			Instances: []compute.VirtualMachineScaleSetVM{
+				{
+					InstanceID: to.StringPtr("1"),
+					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
+						LatestModelApplied: to.BoolPtr(true),
+						ProvisioningState:  to.StringPtr("Succeeded"),
+						StorageProfile: &compute.StorageProfile{
+							DataDisks: &twoGBDataDisks,
+						},
+					},
+				},
+			},
+			DrainerConfigs: []corev1alpha1.DrainerConfig{
+				newFinalDrainerConfigForID("al9qy-worker-000001"),
+			},
+			InstanceNameFunc: key.WorkerInstanceName,
+			VersionValue: map[string]string{
+				"al9qy-worker-000001": "0.1.0",
+			},
+			ExpectedInstanceToUpdate:  nil,
+			ExpectedInstanceToDrain:   nil,
+			ExpectedInstanceToReimage: nil,
+			DesiredDiskSizes:          desiredDiskSizesKubeletTwoGb,
+			ErrorMatcher:              nil,
 		},
 	}
 

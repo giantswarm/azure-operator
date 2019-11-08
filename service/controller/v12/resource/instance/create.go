@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"fmt"
-
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -179,6 +178,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				desiredDiskSizes := map[string]int32{
 					key.DockerDiskName:  int32(customObject.Spec.Azure.Masters[0].DockerVolumeSizeGB),
 					key.KubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
+				}
+
+				// use default values for size if the value is below it
+				// TODO these default values should also be injected into the ARM templates!
+				if desiredDiskSizes[key.DockerDiskName] < 50 {
+					desiredDiskSizes[key.DockerDiskName] = 50
+				}
+				if desiredDiskSizes[key.KubeletDiskName] < 100 {
+					desiredDiskSizes[key.KubeletDiskName] = 100
 				}
 
 				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue, desiredDiskSizes)
@@ -654,6 +662,12 @@ func firstInstanceToReimage(
 			}
 			// desired disk size is changed
 			if *disk.DiskSizeGB != desiredDiskSize {
+				if *disk.DiskSizeGB > desiredDiskSize {
+					// the desired size of the disk is decreased, this is unsupported and will lead to a failed deployment.
+					// we ignore this change
+					// todo log what happened
+					continue
+				}
 				return &v, nil
 			}
 		}
