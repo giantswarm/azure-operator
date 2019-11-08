@@ -48,6 +48,11 @@ const (
 	CertificateEncryptionNamespace = "default"
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
+
+	DockerDiskName  = "DockerDisk"
+	KubeletDiskName = "KubeletDisk"
+
+	VmssDeploymentName = "cluster-vmss-template"
 )
 
 const (
