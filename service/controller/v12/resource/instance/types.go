@@ -11,6 +11,8 @@ type node struct {
 	OSImage nodeOSImage `json:"osImage" yaml:"osImage"`
 	// VMSize is the master vm size (e.g. Standard_A1)
 	VMSize string `json:"vmSize" yaml:"vmSize"`
+	// Size of the Disk mounted in /var/lib/docker
+	DockerVolumeSizeGB int `json:"dockerVolumeSizeGB" yaml:"dockerVolumeSizeGB"`
 }
 
 // nodeOSImage provides OS information for Microsoft.Compute/virtualMachines
