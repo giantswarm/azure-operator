@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
-	v1 "k8s.io/api/core/v1"
+	"k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
@@ -110,16 +110,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else {
-			r.debugger.LogFailedDeployment(ctx, d, err)
+			r.debugger.LogFailedDeployment(ctx, d)
 
-			err := r.deleteResourceStatus(customObject, Stage, DeploymentInitialized)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, DeploymentInitialized))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
-			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 	}

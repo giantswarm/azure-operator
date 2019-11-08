@@ -72,7 +72,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("vpn gateway deployment is in state '%s'", s))
 
 			if !key.IsSucceededProvisioningState(s) {
-				r.debugger.LogFailedDeployment(ctx, d)
+				r.debugger.LogFailedDeployment(ctx, d, err)
 			}
 			if !key.IsFinalProvisioningState(s) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
