@@ -9,8 +9,8 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "azure-operator",
-				Description: "TODO",
-				Kind:        versionbundle.KindAdded,
+				Description: "Fixed automatic reconciliation of failed deployments",
+				Kind:        versionbundle.KindFixed,
 			},
 		},
 		Components: []versionbundle.Component{
