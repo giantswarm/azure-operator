@@ -13,43 +13,6 @@ import (
 )
 
 func Test_Resource_Instance_findActionableInstance(t *testing.T) {
-	oneGBDataDisks := []compute.DataDisk{
-		{
-			Name:       to.StringPtr(key.DockerDiskName),
-			DiskSizeGB: to.Int32Ptr(1),
-		},
-		{
-			Name:       to.StringPtr(key.KubeletDiskName),
-			DiskSizeGB: to.Int32Ptr(1),
-		},
-	}
-
-	twoGBDataDisks := []compute.DataDisk{
-		{
-			Name:       to.StringPtr(key.DockerDiskName),
-			DiskSizeGB: to.Int32Ptr(2),
-		},
-		{
-			Name:       to.StringPtr(key.KubeletDiskName),
-			DiskSizeGB: to.Int32Ptr(2),
-		},
-	}
-
-	desiredDiskSizeOneGb := map[string]int32{
-		key.DockerDiskName:  int32(1),
-		key.KubeletDiskName: int32(1),
-	}
-
-	desiredDiskSizesDockerTwoGb := map[string]int32{
-		key.DockerDiskName:  int32(2),
-		key.KubeletDiskName: int32(1),
-	}
-
-	desiredDiskSizesKubeletTwoGb := map[string]int32{
-		key.DockerDiskName:  int32(1),
-		key.KubeletDiskName: int32(2),
-	}
-
 	testCases := []struct {
 		Name                      string
 		CustomObject              providerv1alpha1.AzureConfig
@@ -60,7 +23,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		ExpectedInstanceToUpdate  *compute.VirtualMachineScaleSetVM
 		ExpectedInstanceToDrain   *compute.VirtualMachineScaleSetVM
 		ExpectedInstanceToReimage *compute.VirtualMachineScaleSetVM
-		DesiredDiskSizes          map[string]int32
 		ErrorMatcher              func(err error) bool
 	}{
 		{
@@ -73,7 +35,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              IsVersionBlobEmpty,
 		},
 		{
@@ -94,9 +55,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -110,7 +68,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -131,9 +88,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -141,9 +95,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -158,7 +109,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -179,9 +129,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -197,14 +144,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(false),
 					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
 				},
 			},
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -225,9 +168,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -235,9 +175,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -254,14 +191,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(false),
 					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
 				},
 			},
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -282,9 +215,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -292,9 +222,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(false),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -311,14 +238,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(false),
 					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
 				},
 			},
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -339,9 +262,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -349,9 +269,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -370,13 +287,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(true),
 					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
 				},
 			},
-			DesiredDiskSizes: desiredDiskSizeOneGb,
-			ErrorMatcher:     nil,
+			ErrorMatcher: nil,
 		},
 		{
 			Name: "case 7: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied results in reimaging the second instance",
@@ -396,9 +309,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -406,9 +316,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -427,13 +334,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(true),
 					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
 				},
 			},
-			DesiredDiskSizes: desiredDiskSizeOneGb,
-			ErrorMatcher:     nil,
+			ErrorMatcher: nil,
 		},
 		{
 			Name: "case 8: two instances not having the latest version bundle version applied and being in provisioning state 'InProgress' results in no action",
@@ -453,9 +356,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("InProgress"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -463,9 +363,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("InProgress"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -480,7 +377,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -501,9 +397,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("InProgress"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -511,9 +404,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("InProgress"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -528,7 +418,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			ExpectedInstanceToUpdate:  nil,
 			ExpectedInstanceToDrain:   nil,
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -549,9 +438,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -559,9 +445,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -579,13 +462,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(true),
 					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
 				},
 			},
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
 			ErrorMatcher:              nil,
 		},
 		{
@@ -606,9 +485,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 				{
@@ -616,9 +492,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 						LatestModelApplied: to.BoolPtr(true),
 						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
 					},
 				},
 			},
@@ -636,142 +509,9 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
 					LatestModelApplied: to.BoolPtr(true),
 					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
 				},
 			},
 			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizeOneGb,
-			ErrorMatcher:              nil,
-		},
-		{
-			Name: "case 12: one instance being up to date, docker disk size changed",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Spec: providerv1alpha1.AzureConfigSpec{
-					Cluster: providerv1alpha1.Cluster{
-						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
-					},
-				},
-			},
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("1"),
-					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-						LatestModelApplied: to.BoolPtr(true),
-						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
-					},
-				},
-			},
-			DrainerConfigs: []corev1alpha1.DrainerConfig{
-				newFinalDrainerConfigForID("al9qy-worker-000001"),
-			},
-			InstanceNameFunc: key.WorkerInstanceName,
-			VersionValue: map[string]string{
-				"al9qy-worker-000001": "0.1.0",
-			},
-			ExpectedInstanceToUpdate: nil,
-			ExpectedInstanceToDrain:  nil,
-			ExpectedInstanceToReimage: &compute.VirtualMachineScaleSetVM{
-				InstanceID: to.StringPtr("1"),
-				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-					LatestModelApplied: to.BoolPtr(true),
-					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
-				},
-			},
-			DesiredDiskSizes: desiredDiskSizesDockerTwoGb,
-			ErrorMatcher:     nil,
-		},
-		{
-			Name: "case 13: one instance being up to date, kubelet disk size changed",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Spec: providerv1alpha1.AzureConfigSpec{
-					Cluster: providerv1alpha1.Cluster{
-						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
-					},
-				},
-			},
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("1"),
-					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-						LatestModelApplied: to.BoolPtr(true),
-						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &oneGBDataDisks,
-						},
-					},
-				},
-			},
-			DrainerConfigs: []corev1alpha1.DrainerConfig{
-				newFinalDrainerConfigForID("al9qy-worker-000001"),
-			},
-			InstanceNameFunc: key.WorkerInstanceName,
-			VersionValue: map[string]string{
-				"al9qy-worker-000001": "0.1.0",
-			},
-			ExpectedInstanceToUpdate: nil,
-			ExpectedInstanceToDrain:  nil,
-			ExpectedInstanceToReimage: &compute.VirtualMachineScaleSetVM{
-				InstanceID: to.StringPtr("1"),
-				VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-					LatestModelApplied: to.BoolPtr(true),
-					ProvisioningState:  to.StringPtr("Succeeded"),
-					StorageProfile: &compute.StorageProfile{
-						DataDisks: &oneGBDataDisks,
-					},
-				},
-			},
-			DesiredDiskSizes: desiredDiskSizesKubeletTwoGb,
-			ErrorMatcher:     nil,
-		},
-		{
-			Name: "case 14: kubelet disk size decreased, no instance should be updated",
-			CustomObject: providerv1alpha1.AzureConfig{
-				Spec: providerv1alpha1.AzureConfigSpec{
-					Cluster: providerv1alpha1.Cluster{
-						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
-					},
-				},
-			},
-			Instances: []compute.VirtualMachineScaleSetVM{
-				{
-					InstanceID: to.StringPtr("1"),
-					VirtualMachineScaleSetVMProperties: &compute.VirtualMachineScaleSetVMProperties{
-						LatestModelApplied: to.BoolPtr(true),
-						ProvisioningState:  to.StringPtr("Succeeded"),
-						StorageProfile: &compute.StorageProfile{
-							DataDisks: &twoGBDataDisks,
-						},
-					},
-				},
-			},
-			DrainerConfigs: []corev1alpha1.DrainerConfig{
-				newFinalDrainerConfigForID("al9qy-worker-000001"),
-			},
-			InstanceNameFunc: key.WorkerInstanceName,
-			VersionValue: map[string]string{
-				"al9qy-worker-000001": "0.1.0",
-			},
-			ExpectedInstanceToUpdate:  nil,
-			ExpectedInstanceToDrain:   nil,
-			ExpectedInstanceToReimage: nil,
-			DesiredDiskSizes:          desiredDiskSizesKubeletTwoGb,
 			ErrorMatcher:              nil,
 		},
 	}

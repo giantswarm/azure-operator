@@ -180,16 +180,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 					key.KubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
 				}
 
-				// use default values for size if the value is below it
-				// TODO these default values should also be injected into the ARM templates!
-				if desiredDiskSizes[key.DockerDiskName] < 50 {
-					desiredDiskSizes[key.DockerDiskName] = 50
-				}
-				if desiredDiskSizes[key.KubeletDiskName] < 100 {
-					desiredDiskSizes[key.KubeletDiskName] = 100
-				}
-
-				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue, desiredDiskSizes)
+				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -588,7 +579,7 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 	}
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
-	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue, desiredDiskSizes)
+	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
 	if err != nil {
 		return ws, microerror.Mask(err)
 	}
@@ -627,13 +618,7 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(
-	customObject providerv1alpha1.AzureConfig,
-	list []compute.VirtualMachineScaleSetVM,
-	instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error),
-	versionValue map[string]string,
-	desiredDiskSizes map[string]int32,
-) (*compute.VirtualMachineScaleSetVM, error) {
+func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
 	if versionValue == nil {
 		return nil, microerror.Mask(versionBlobEmptyError)
 	}
@@ -650,27 +635,11 @@ func firstInstanceToReimage(
 			continue
 		}
 		// version is changed
-		if desiredVersion != instanceVersion {
-			return &v, nil
+		if desiredVersion == instanceVersion {
+			continue
 		}
 
-		for _, disk := range *v.StorageProfile.DataDisks {
-			desiredDiskSize, ok := desiredDiskSizes[*disk.Name]
-			if !ok {
-				// this disk has no target size specified, ignore it
-				continue
-			}
-			// desired disk size is changed
-			if *disk.DiskSizeGB != desiredDiskSize {
-				if *disk.DiskSizeGB > desiredDiskSize {
-					// the desired size of the disk is decreased, this is unsupported and will lead to a failed deployment.
-					// we ignore this change
-					// todo log what happened
-					continue
-				}
-				return &v, nil
-			}
-		}
+		return &v, nil
 	}
 
 	return nil, nil
