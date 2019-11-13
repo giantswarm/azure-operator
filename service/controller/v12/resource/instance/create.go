@@ -226,6 +226,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
+				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
 				desiredDiskSizes := map[string]int32{
 					key.DockerDiskName:  int32(customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB),
 					key.KubeletDiskName: int32(customObject.Spec.Azure.Workers[0].KubeletVolumeSizeGB),
@@ -630,11 +631,9 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 			return nil, microerror.Mask(err)
 		}
 		instanceVersion, ok := versionValue[instanceName]
-		// current version unavailable, skip this instance
 		if !ok {
 			continue
 		}
-		// version is changed
 		if desiredVersion == instanceVersion {
 			continue
 		}
