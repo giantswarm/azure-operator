@@ -112,12 +112,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			r.debugger.LogFailedDeployment(ctx, d, err)
 
-			err := r.deleteResourceStatus(customObject, Stage, DeploymentInitialized)
-			if err != nil {
-				return microerror.Mask(err)
+			if key.IsFinalProvisioningState(s) {
+				// Deployment is not running and not succeeded (Failed?)
+				// This indicates some kind of error in the deployment template and/or parameters.
+				// Deleting the resource status will force the next loop to apply the deployment once again.
+				// (If the azure operator has been fixed/updated in the meantime that could lead to a fix).
+				err := r.deleteResourceStatus(customObject, Stage, DeploymentInitialized)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, DeploymentInitialized))
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, DeploymentInitialized))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
