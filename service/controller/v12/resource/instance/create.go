@@ -179,30 +179,28 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, instanceAlreadyBeingUpdated, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
+				ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.updateInstance(ctx, customObject, masterInstanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
+				err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.createDrainerConfig(ctx, customObject, masterInstanceToDrain, key.MasterInstanceName)
+				err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.MasterInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.reimageInstance(ctx, customObject, masterInstanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
+				err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.deleteDrainerConfig(ctx, customObject, masterInstanceToReimage, key.MasterInstanceName, drainerConfigs)
+				err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.MasterInstanceName, drainerConfigs)
 				if err != nil {
 					return microerror.Mask(err)
 				}
 
-				if masterInstanceToUpdate != nil || masterInstanceToDrain != nil || masterInstanceToReimage != nil || instanceAlreadyBeingUpdated != nil {
-					masterUpgradeInProgress = true
-				}
+				masterUpgradeInProgress = ws.isWIP()
 
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
 			}
@@ -226,30 +224,28 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, instanceAlreadyBeingUpdated, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
+				ws, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.updateInstance(ctx, customObject, workerInstanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
+				err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.createDrainerConfig(ctx, customObject, workerInstanceToDrain, key.WorkerInstanceName)
+				err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.reimageInstance(ctx, customObject, workerInstanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
+				err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.deleteDrainerConfig(ctx, customObject, workerInstanceToReimage, key.WorkerInstanceName, drainerConfigs)
+				err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.WorkerInstanceName, drainerConfigs)
 				if err != nil {
 					return microerror.Mask(err)
 				}
 
-				if workerInstanceToUpdate != nil || workerInstanceToDrain != nil || workerInstanceToReimage != nil || instanceAlreadyBeingUpdated != nil {
-					workerUpgradeInProgess = true
-				}
+				workerUpgradeInProgess = ws.isWIP()
 
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
 			}
@@ -418,17 +414,14 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 //     loop 5: worker 2 drained
 //     loop 6: worker 2 reimage
 //
-func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (workingSet, error) {
 	var err error
 
-	var instanceToUpdate *compute.VirtualMachineScaleSetVM
-	var instanceToDrain *compute.VirtualMachineScaleSetVM
-	var instanceToReimage *compute.VirtualMachineScaleSetVM
-	var instanceAlreadyBeingUpdated *compute.VirtualMachineScaleSetVM
+	var ws workingSet
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated, drained or reimaged")
 
-		instanceToUpdate, instanceToDrain, instanceToReimage, instanceAlreadyBeingUpdated, err = findActionableInstance(customObject, instances, drainerConfigs, instanceNameFunc, versionValue)
+		ws, err = findActionableInstance(customObject, instances, drainerConfigs, instanceNameFunc, versionValue)
 		if IsVersionBlobEmpty(err) {
 			// When no version bundle version is found it means the cluster just got
 			// created and the version bundle versions are not yet tracked within the
@@ -436,42 +429,42 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 			// must not select an instance to be reimaged because we would roll a node
 			// that just got created and is already up to date.
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged")
-			return nil, nil, nil, nil, nil
+			return newWorkingSetEmpty(), nil
 		} else if err != nil {
-			return nil, nil, nil, nil, microerror.Mask(err)
+			return newWorkingSetEmpty(), microerror.Mask(err)
 		}
 
-		if instanceToUpdate == nil && instanceToDrain == nil && instanceToReimage == nil && instanceAlreadyBeingUpdated == nil {
+		if !ws.isWIP() {
 			// Neither did we find an instance to be updated nor to be reimaged.
 			// Nothing has to be done or we already processes all instances.
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged")
-			return nil, nil, nil, nil, nil
+			return newWorkingSetEmpty(), nil
 		}
 
-		if instanceToUpdate != nil {
-			instanceName, err := instanceNameFunc(customObject, *instanceToUpdate.InstanceID)
+		if ws.instanceToUpdate != nil {
+			instanceName, err := instanceNameFunc(customObject, *ws.instanceToUpdate.InstanceID)
 			if err != nil {
-				return nil, nil, nil, nil, microerror.Mask(err)
+				return newWorkingSetEmpty(), microerror.Mask(err)
 			}
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceName))
 		}
-		if instanceToDrain != nil {
-			instanceName, err := instanceNameFunc(customObject, *instanceToDrain.InstanceID)
+		if ws.instanceToDrain != nil {
+			instanceName, err := instanceNameFunc(customObject, *ws.instanceToDrain.InstanceID)
 			if err != nil {
-				return nil, nil, nil, nil, microerror.Mask(err)
+				return newWorkingSetEmpty(), microerror.Mask(err)
 			}
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be drained", instanceName))
 		}
-		if instanceToReimage != nil {
-			instanceName, err := instanceNameFunc(customObject, *instanceToReimage.InstanceID)
+		if ws.instanceToReimage != nil {
+			instanceName, err := instanceNameFunc(customObject, *ws.instanceToReimage.InstanceID)
 			if err != nil {
-				return nil, nil, nil, nil, microerror.Mask(err)
+				return newWorkingSetEmpty(), microerror.Mask(err)
 			}
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be reimaged", instanceName))
 		}
 	}
 
-	return instanceToUpdate, instanceToDrain, instanceToReimage, instanceAlreadyBeingUpdated, nil
+	return ws, nil
 }
 
 func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)) error {
@@ -562,38 +555,38 @@ func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool
 
 // findActionableInstance either returns an instance to update or an instance to
 // reimage, but never both at the same time.
-func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, *compute.VirtualMachineScaleSetVM, error) {
+func findActionableInstance(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (workingSet, error) {
 	var err error
 
 	instanceInProgress := firstInstanceInProgress(customObject, instances)
 	if instanceInProgress != nil {
-		return nil, nil, nil, instanceInProgress, nil
+		return newWorkingSetFromInstanceAlreadyBeingUpdated(instanceInProgress), nil
 	}
 
 	var instanceToUpdate *compute.VirtualMachineScaleSetVM
 	instanceToUpdate = firstInstanceToUpdate(customObject, instances)
 	if instanceToUpdate != nil {
-		return instanceToUpdate, nil, nil, nil, nil
+		return newWorkingSetFromInstanceToUpdate(instanceToUpdate), nil
 	}
 
 	var instanceToReimage *compute.VirtualMachineScaleSetVM
 	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
 	if err != nil {
-		return nil, nil, nil, nil, microerror.Mask(err)
+		return newWorkingSetEmpty(), microerror.Mask(err)
 	}
 	if instanceToReimage != nil {
 		instanceName, err := instanceNameFunc(customObject, *instanceToReimage.InstanceID)
 		if err != nil {
-			return nil, nil, nil, nil, microerror.Mask(err)
+			return newWorkingSetEmpty(), microerror.Mask(err)
 		}
 		if isNodeDrained(drainerConfigs, instanceName) {
-			return nil, nil, instanceToReimage, nil, nil
+			return newWorkingSetFromInstanceToReimage(instanceToReimage), nil
 		} else {
-			return nil, instanceToReimage, nil, nil, nil
+			return newWorkingSetFromInstanceToDrain(instanceToReimage), nil
 		}
 	}
 
-	return nil, nil, nil, nil, nil
+	return newWorkingSetEmpty(), nil
 }
 
 // firstInstanceInProgress returns the first instance in the list not having a
