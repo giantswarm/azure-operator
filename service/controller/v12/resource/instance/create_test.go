@@ -518,7 +518,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.Name, func(t *testing.T) {
-			ws, err := findActionableInstance(tc.CustomObject, tc.Instances, tc.DrainerConfigs, tc.InstanceNameFunc, tc.VersionValue)
+			ws, err := getWorkingSet(tc.CustomObject, tc.Instances, tc.DrainerConfigs, tc.InstanceNameFunc, tc.VersionValue)
 
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:

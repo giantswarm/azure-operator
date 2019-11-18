@@ -9,37 +9,45 @@ type workingSet struct {
 	instanceAlreadyBeingUpdated *compute.VirtualMachineScaleSetVM
 }
 
-func (ws *workingSet) isWIP() bool {
+func (ws *workingSet) WithInstanceToUpdate(instance *compute.VirtualMachineScaleSetVM) *workingSet {
+	if ws == nil {
+		ws = &workingSet{}
+	}
+	ws.instanceToUpdate = instance
+	return ws
+}
+
+func (ws *workingSet) WithInstanceToDrain(instance *compute.VirtualMachineScaleSetVM) *workingSet {
+	if ws == nil {
+		ws = &workingSet{}
+	}
+	ws.instanceToDrain = instance
+	return ws
+}
+
+func (ws *workingSet) WithInstanceToReimage(instance *compute.VirtualMachineScaleSetVM) *workingSet {
+	if ws == nil {
+		ws = &workingSet{}
+	}
+	ws.instanceToReimage = instance
+	return ws
+}
+
+func (ws *workingSet) WithInstanceAlreadyBeingUpdated(instance *compute.VirtualMachineScaleSetVM) *workingSet {
+	if ws == nil {
+		ws = &workingSet{}
+	}
+	ws.instanceAlreadyBeingUpdated = instance
+	return ws
+}
+
+func (ws *workingSet) IsWIP() bool {
+	if ws == nil {
+		return false
+	}
+
 	return ws.instanceToUpdate != nil ||
 		ws.instanceToDrain != nil ||
 		ws.instanceToReimage != nil ||
 		ws.instanceAlreadyBeingUpdated != nil
-}
-
-func newWorkingSetEmpty() workingSet {
-	return workingSet{}
-}
-
-func newWorkingSetFromInstanceToUpdate(vm *compute.VirtualMachineScaleSetVM) workingSet {
-	return workingSet{
-		instanceToUpdate: vm,
-	}
-}
-
-func newWorkingSetFromInstanceToDrain(vm *compute.VirtualMachineScaleSetVM) workingSet {
-	return workingSet{
-		instanceToDrain: vm,
-	}
-}
-
-func newWorkingSetFromInstanceToReimage(vm *compute.VirtualMachineScaleSetVM) workingSet {
-	return workingSet{
-		instanceToReimage: vm,
-	}
-}
-
-func newWorkingSetFromInstanceAlreadyBeingUpdated(vm *compute.VirtualMachineScaleSetVM) workingSet {
-	return workingSet{
-		instanceAlreadyBeingUpdated: vm,
-	}
 }
