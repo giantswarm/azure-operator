@@ -182,9 +182,8 @@
       "location":"[parameters('location')]",
       "tags":{
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
-        "k8s.io/cluster-autoscaler/enabled":"true",
-        "[concat('k8s.io/cluster-autoscaler/', parameters('vmssName'))]": "true"
-
+        "cluster-autoscaler-enabled":"true",
+        "cluster-autoscaler-name":"[parameters('vmssName')]"
       },
       "sku":{
         "name":"[parameters('vmssVmSize')]",
