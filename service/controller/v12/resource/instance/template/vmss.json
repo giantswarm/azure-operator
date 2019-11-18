@@ -1,9 +1,9 @@
 {
-  "$schema":"http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
     "location":{
-      "type":"String"
+      "type":"string"
     },
     "GiantSwarmTags":{
       "type":"object",
@@ -29,7 +29,7 @@
       "type":"array"
     },
     "vmssSshUser":{
-      "type":"String"
+      "type":"string"
     },
     "vmssSshPublicKey":{
       "type":"string"
@@ -51,7 +51,7 @@
       "defaultValue":"true"
     },
     "vmssVmCustomData":{
-      "type":"secureString"
+      "type":"securestring"
     },
     "vmssLbBackendPools":{
       "type":"array"
@@ -181,7 +181,9 @@
       "name":"[parameters('vmssName')]",
       "location":"[parameters('location')]",
       "tags":{
-        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
+        "cluster-autoscaler-enabled":"true",
+        "cluster-autoscaler-name":"[parameters('vmssName')]"
       },
       "sku":{
         "name":"[parameters('vmssVmSize')]",
