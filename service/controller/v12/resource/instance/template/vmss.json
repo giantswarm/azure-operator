@@ -181,7 +181,10 @@
       "name":"[parameters('vmssName')]",
       "location":"[parameters('location')]",
       "tags":{
-        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
+        "k8s.io/cluster-autoscaler/enabled":"true",
+        "[concat('k8s.io/cluster-autoscaler/', parameters('vmssName'))]": "true"
+
       },
       "sku":{
         "name":"[parameters('vmssVmSize')]",
