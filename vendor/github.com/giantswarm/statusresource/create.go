@@ -231,7 +231,6 @@ func (r *Resource) computeCreateEventPatches(ctx context.Context, obj interface{
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Connecting to tenant cluster with endpoint: %s", e))
 			k8sClient, err = r.tenantCluster.NewK8sClient(ctx, i, e)
 			if tenantcluster.IsTimeout(err) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "did not create Kubernetes client for tenant cluster")
