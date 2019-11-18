@@ -359,11 +359,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:109f5bac6ea240c7be934080356ccc4c7f0f455a2ab4b417282971503451b13e"
+  digest = "1:f3fcf73e718ba0c00a1a23f8bee2d0517f6e1168351d19b1d1c200f37ee75fba"
   name = "github.com/giantswarm/errors"
   packages = ["tenant"]
   pruneopts = "UT"
-  revision = "2f0151a3dfe0a682dbb3ce710068941c4b24e2b8"
+  revision = "e6ed796ae4ab950ba7c5a006a8208d1e65cb1ae0"
 
 [[projects]]
   branch = "master"
@@ -522,11 +522,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9636538a10aff7db8836e8f0010e00b044d03d38c63feef3b62d7490f54b5750"
+  digest = "1:59e8658e807e8b1dca120394175ef5375c0ff5a02d943c849c7ea92a6d65f3a9"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
   pruneopts = "UT"
-  revision = "b6145653f453e94418989a46b768dfa5d7fde404"
+  revision = "ecd1604ba50d452076b55d48fda6bd26aed5d1ea"
 
 [[projects]]
   branch = "master"
