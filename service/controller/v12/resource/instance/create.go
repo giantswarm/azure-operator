@@ -174,13 +174,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
+				//desiredDiskSizes := map[string]int32{
+				//	key.DockerDiskName:  int32(customObject.Spec.Azure.Masters[0].DockerVolumeSizeGB),
+				//	key.KubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
+				//}
 				ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
-				desiredDiskSizes := map[string]int32{
-					key.DockerDiskName:  int32(customObject.Spec.Azure.Masters[0].DockerVolumeSizeGB),
-					key.KubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
-				}
 
-				masterInstanceToUpdate, masterInstanceToDrain, masterInstanceToReimage, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -226,12 +225,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
-				desiredDiskSizes := map[string]int32{
-					key.DockerDiskName:  int32(customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB),
-					key.KubeletDiskName: int32(customObject.Spec.Azure.Workers[0].KubeletVolumeSizeGB),
-				}
-				workerInstanceToUpdate, workerInstanceToDrain, workerInstanceToReimage, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue, desiredDiskSizes)
+				//desiredDiskSizes := map[string]int32{
+				//	key.DockerDiskName:  int32(customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB),
+				//	key.KubeletDiskName: int32(customObject.Spec.Azure.Workers[0].KubeletVolumeSizeGB),
+				//}
 				ws, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
