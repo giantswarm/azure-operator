@@ -520,6 +520,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			ws, err := getWorkingSet(tc.CustomObject, tc.Instances, tc.DrainerConfigs, tc.InstanceNameFunc, tc.VersionValue)
 
+			if ws == nil {
+				ws = &workingSet{}
+			}
+
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:
 				// fall through
