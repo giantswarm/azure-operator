@@ -99,3 +99,7 @@ var versionBlobEmptyError = &microerror.Error{
 func IsVersionBlobEmpty(err error) bool {
 	return microerror.Cause(err) == versionBlobEmptyError
 }
+
+var nilTemplateLiknError = &microerror.Error{
+	Kind: "nilTemplateLink",
+}
