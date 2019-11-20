@@ -14,6 +14,7 @@ const (
 	ClientSecretKey   = "azure.azureoperator.clientsecret"
 	SubscriptionIDKey = "azure.azureoperator.subscriptionid"
 	TenantIDKey       = "azure.azureoperator.tenantid"
+	PartnerIDKey      = "azure.azureoperator.partnerid"
 )
 
 func GetAzureConfig(k8sClient kubernetes.Interface, name string, namespace string) (*client.AzureClientSetConfig, error) {
@@ -42,11 +43,17 @@ func GetAzureConfig(k8sClient kubernetes.Interface, name string, namespace strin
 		return nil, microerror.Mask(err)
 	}
 
+	partnerID, err := valueFromSecret(credential, PartnerIDKey)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	c := &client.AzureClientSetConfig{
 		ClientID:       clientID,
 		ClientSecret:   clientSecret,
 		SubscriptionID: subscriptionID,
 		TenantID:       tenantID,
+		PartnerID:      partnerID,
 	}
 
 	return c, nil

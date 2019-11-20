@@ -20,6 +20,8 @@ type AzureClientSetConfig struct {
 	SubscriptionID string
 	// TenantID is the ID of the Active Directory tenant.
 	TenantID string
+	// PartnerID is the ID used for the Azure Partner Program.
+	PartnerID string
 }
 
 func (c AzureClientSetConfig) Validate() error {
@@ -42,6 +44,7 @@ func (c AzureClientSetConfig) Validate() error {
 // clientConfig contains all essential information to create an Azure client.
 type clientConfig struct {
 	subscriptionID          string
+	partnerIdUserAgent      string
 	resourceManagerEndpoint string
 	servicePrincipalToken   *adal.ServicePrincipalToken
 }

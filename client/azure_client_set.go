@@ -1,6 +1,8 @@
 package client
 
 import (
+	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
@@ -63,6 +65,7 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 
 	c := &clientConfig{
 		subscriptionID:          config.SubscriptionID,
+		partnerIdUserAgent:      fmt.Sprintf("pid-%s", config.PartnerID),
 		resourceManagerEndpoint: env.ResourceManagerEndpoint,
 		servicePrincipalToken:   servicePrincipalToken,
 	}
@@ -89,6 +92,7 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
 	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -96,6 +100,7 @@ func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
 func newDNSRecordSetsClient(config *clientConfig) *dns.RecordSetsClient {
 	c := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -103,6 +108,7 @@ func newDNSRecordSetsClient(config *clientConfig) *dns.RecordSetsClient {
 func newDNSZonesClient(config *clientConfig) *dns.ZonesClient {
 	c := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -110,6 +116,7 @@ func newDNSZonesClient(config *clientConfig) *dns.ZonesClient {
 func newGroupsClient(config *clientConfig) *resources.GroupsClient {
 	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -117,6 +124,7 @@ func newGroupsClient(config *clientConfig) *resources.GroupsClient {
 func newInterfacesClient(config *clientConfig) *network.InterfacesClient {
 	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -124,12 +132,15 @@ func newInterfacesClient(config *clientConfig) *network.InterfacesClient {
 func newStorageAccountsClient(config *clientConfig) *storage.AccountsClient {
 	c := storage.NewAccountsClient(config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+
 	return &c
 }
 
 func newUsageClient(config *clientConfig) *compute.UsageClient {
 	c := compute.NewUsageClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -137,6 +148,7 @@ func newUsageClient(config *clientConfig) *compute.UsageClient {
 func newVirtualNetworkClient(config *clientConfig) *network.VirtualNetworksClient {
 	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -144,6 +156,7 @@ func newVirtualNetworkClient(config *clientConfig) *network.VirtualNetworksClien
 func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) *network.VirtualNetworkGatewayConnectionsClient {
 	c := network.NewVirtualNetworkGatewayConnectionsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -151,6 +164,7 @@ func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) *network.Vi
 func newVirtualNetworkGatewaysClient(config *clientConfig) *network.VirtualNetworkGatewaysClient {
 	c := network.NewVirtualNetworkGatewaysClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -158,6 +172,7 @@ func newVirtualNetworkGatewaysClient(config *clientConfig) *network.VirtualNetwo
 func newVirtualMachineScaleSetsClient(config *clientConfig) *compute.VirtualMachineScaleSetsClient {
 	c := compute.NewVirtualMachineScaleSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -165,6 +180,7 @@ func newVirtualMachineScaleSetsClient(config *clientConfig) *compute.VirtualMach
 func newVirtualMachineScaleSetVMsClient(config *clientConfig) *compute.VirtualMachineScaleSetVMsClient {
 	c := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
@@ -172,6 +188,7 @@ func newVirtualMachineScaleSetVMsClient(config *clientConfig) *compute.VirtualMa
 func newVnetPeeringClient(config *clientConfig) *network.VirtualNetworkPeeringsClient {
 	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	_ = c.AddToUserAgent(config.partnerIdUserAgent)
 
 	return &c
 }
