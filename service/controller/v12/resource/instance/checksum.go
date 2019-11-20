@@ -44,8 +44,9 @@ func getDeploymentParametersChecksum(deployment resources.Deployment) (string, e
 	// I have to filter out the changing data in order to be able to calculate a replicatable checksum
 	for k, v := range params {
 		switch k {
-		case "masterCloudConfigData":
 		case "workerCloudConfigData":
+			fallthrough
+		case "masterCloudConfigData":
 			// these two fields are base64 encoded, so first decode 'em
 			decoded, err := base64.StdEncoding.DecodeString(v.(struct{ Value interface{} }).Value.(string))
 			if err != nil {
