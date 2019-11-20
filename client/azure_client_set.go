@@ -70,127 +70,180 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 		servicePrincipalToken:   servicePrincipalToken,
 	}
 
+	deploymentsClient, err := newDeploymentsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	dnsRecordSetsClient, err := newDNSRecordSetsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	dnsZonesClient, err := newDNSZonesClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	groupsClient, err := newGroupsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	interfacesClient, err := newInterfacesClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	storageAccountsClient, err := newStorageAccountsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	usageClient, err := newUsageClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	virtualNetworkClient, err := newVirtualNetworkClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	virtualNetworkGatewayConnectionsClient, err := newVirtualNetworkGatewayConnectionsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	virtualNetworkGatewaysClient, err := newVirtualNetworkGatewaysClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	vnetPeeringClient, err := newVnetPeeringClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	clientSet := &AzureClientSet{
-		DeploymentsClient:                      newDeploymentsClient(c),
-		DNSRecordSetsClient:                    newDNSRecordSetsClient(c),
-		DNSZonesClient:                         newDNSZonesClient(c),
-		GroupsClient:                           newGroupsClient(c),
-		InterfacesClient:                       newInterfacesClient(c),
-		StorageAccountsClient:                  newStorageAccountsClient(c),
-		UsageClient:                            newUsageClient(c),
-		VirtualNetworkClient:                   newVirtualNetworkClient(c),
-		VirtualNetworkGatewayConnectionsClient: newVirtualNetworkGatewayConnectionsClient(c),
-		VirtualNetworkGatewaysClient:           newVirtualNetworkGatewaysClient(c),
-		VirtualMachineScaleSetVMsClient:        newVirtualMachineScaleSetVMsClient(c),
-		VirtualMachineScaleSetsClient:          newVirtualMachineScaleSetsClient(c),
-		VnetPeeringClient:                      newVnetPeeringClient(c),
+		DeploymentsClient:                      deploymentsClient,
+		DNSRecordSetsClient:                    dnsRecordSetsClient,
+		DNSZonesClient:                         dnsZonesClient,
+		GroupsClient:                           groupsClient,
+		InterfacesClient:                       interfacesClient,
+		StorageAccountsClient:                  storageAccountsClient,
+		UsageClient:                            usageClient,
+		VirtualNetworkClient:                   virtualNetworkClient,
+		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
+		VirtualNetworkGatewaysClient:           virtualNetworkGatewaysClient,
+		VirtualMachineScaleSetVMsClient:        virtualMachineScaleSetVMsClient,
+		VirtualMachineScaleSetsClient:          virtualMachineScaleSetsClient,
+		VnetPeeringClient:                      vnetPeeringClient,
 	}
 
 	return clientSet, nil
 }
 
-func newDeploymentsClient(config *clientConfig) *resources.DeploymentsClient {
+func newDeploymentsClient(config *clientConfig) (*resources.DeploymentsClient, error) {
 	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newDNSRecordSetsClient(config *clientConfig) *dns.RecordSetsClient {
+func newDNSRecordSetsClient(config *clientConfig) (*dns.RecordSetsClient, error) {
 	c := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newDNSZonesClient(config *clientConfig) *dns.ZonesClient {
+func newDNSZonesClient(config *clientConfig) (*dns.ZonesClient, error) {
 	c := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newGroupsClient(config *clientConfig) *resources.GroupsClient {
+func newGroupsClient(config *clientConfig) (*resources.GroupsClient, error) {
 	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newInterfacesClient(config *clientConfig) *network.InterfacesClient {
+func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error) {
 	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newStorageAccountsClient(config *clientConfig) *storage.AccountsClient {
+func newStorageAccountsClient(config *clientConfig) (*storage.AccountsClient, error) {
 	c := storage.NewAccountsClient(config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newUsageClient(config *clientConfig) *compute.UsageClient {
+func newUsageClient(config *clientConfig) (*compute.UsageClient, error) {
 	c := compute.NewUsageClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newVirtualNetworkClient(config *clientConfig) *network.VirtualNetworksClient {
+func newVirtualNetworkClient(config *clientConfig) (*network.VirtualNetworksClient, error) {
 	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) *network.VirtualNetworkGatewayConnectionsClient {
+func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) (*network.VirtualNetworkGatewayConnectionsClient, error) {
 	c := network.NewVirtualNetworkGatewayConnectionsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newVirtualNetworkGatewaysClient(config *clientConfig) *network.VirtualNetworkGatewaysClient {
+func newVirtualNetworkGatewaysClient(config *clientConfig) (*network.VirtualNetworkGatewaysClient, error) {
 	c := network.NewVirtualNetworkGatewaysClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newVirtualMachineScaleSetsClient(config *clientConfig) *compute.VirtualMachineScaleSetsClient {
+func newVirtualMachineScaleSetsClient(config *clientConfig) (*compute.VirtualMachineScaleSetsClient, error) {
 	c := compute.NewVirtualMachineScaleSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newVirtualMachineScaleSetVMsClient(config *clientConfig) *compute.VirtualMachineScaleSetVMsClient {
+func newVirtualMachineScaleSetVMsClient(config *clientConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
 	c := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
-func newVnetPeeringClient(config *clientConfig) *network.VirtualNetworkPeeringsClient {
+func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeeringsClient, error) {
 	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	_ = c.AddToUserAgent(config.partnerIdUserAgent)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c
+	return &c, err
 }
 
 func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
