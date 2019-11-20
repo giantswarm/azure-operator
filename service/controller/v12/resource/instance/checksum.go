@@ -14,7 +14,7 @@ func getDeploymentTemplateChecksum(deployment resources.Deployment) (string, err
 
 	templateLink := deployment.Properties.TemplateLink
 	if templateLink == nil {
-		return "", nilTemplateLiknError
+		return "", nilTemplateLinkError
 	}
 
 	resp, err := http.Get(*templateLink.URI)
@@ -23,6 +23,11 @@ func getDeploymentTemplateChecksum(deployment resources.Deployment) (string, err
 	}
 
 	defer resp.Body.Close()
+
+	if resp.StatusCode != http.StatusOK {
+		return "", unableToGetTemplateError
+	}
+
 	body, err := ioutil.ReadAll(resp.Body)
 
 	hash := fmt.Sprintf("%x", sha256.Sum256(body))
