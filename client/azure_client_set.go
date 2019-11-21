@@ -72,55 +72,55 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 
 	deploymentsClient, err := newDeploymentsClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	dnsRecordSetsClient, err := newDNSRecordSetsClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	dnsZonesClient, err := newDNSZonesClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	groupsClient, err := newGroupsClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	interfacesClient, err := newInterfacesClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	storageAccountsClient, err := newStorageAccountsClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	usageClient, err := newUsageClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	virtualNetworkClient, err := newVirtualNetworkClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	virtualNetworkGatewayConnectionsClient, err := newVirtualNetworkGatewayConnectionsClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	virtualNetworkGatewaysClient, err := newVirtualNetworkGatewaysClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 	vnetPeeringClient, err := newVnetPeeringClient(c)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return nil, err
 	}
 
 	clientSet := &AzureClientSet{
@@ -147,7 +147,7 @@ func newDeploymentsClient(config *clientConfig) (*resources.DeploymentsClient, e
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newDNSRecordSetsClient(config *clientConfig) (*dns.RecordSetsClient, error) {
@@ -155,7 +155,7 @@ func newDNSRecordSetsClient(config *clientConfig) (*dns.RecordSetsClient, error)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newDNSZonesClient(config *clientConfig) (*dns.ZonesClient, error) {
@@ -163,7 +163,7 @@ func newDNSZonesClient(config *clientConfig) (*dns.ZonesClient, error) {
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newGroupsClient(config *clientConfig) (*resources.GroupsClient, error) {
@@ -171,7 +171,7 @@ func newGroupsClient(config *clientConfig) (*resources.GroupsClient, error) {
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error) {
@@ -179,7 +179,7 @@ func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newStorageAccountsClient(config *clientConfig) (*storage.AccountsClient, error) {
@@ -187,7 +187,7 @@ func newStorageAccountsClient(config *clientConfig) (*storage.AccountsClient, er
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newUsageClient(config *clientConfig) (*compute.UsageClient, error) {
@@ -195,7 +195,7 @@ func newUsageClient(config *clientConfig) (*compute.UsageClient, error) {
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newVirtualNetworkClient(config *clientConfig) (*network.VirtualNetworksClient, error) {
@@ -203,7 +203,7 @@ func newVirtualNetworkClient(config *clientConfig) (*network.VirtualNetworksClie
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) (*network.VirtualNetworkGatewayConnectionsClient, error) {
@@ -211,7 +211,7 @@ func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) (*network.V
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newVirtualNetworkGatewaysClient(config *clientConfig) (*network.VirtualNetworkGatewaysClient, error) {
@@ -219,7 +219,7 @@ func newVirtualNetworkGatewaysClient(config *clientConfig) (*network.VirtualNetw
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newVirtualMachineScaleSetsClient(config *clientConfig) (*compute.VirtualMachineScaleSetsClient, error) {
@@ -227,7 +227,7 @@ func newVirtualMachineScaleSetsClient(config *clientConfig) (*compute.VirtualMac
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newVirtualMachineScaleSetVMsClient(config *clientConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
@@ -235,7 +235,7 @@ func newVirtualMachineScaleSetVMsClient(config *clientConfig) (*compute.VirtualM
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeeringsClient, error) {
@@ -243,7 +243,7 @@ func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeerings
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 
-	return &c, err
+	return &c, microerror.Mask(err)
 }
 
 func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
