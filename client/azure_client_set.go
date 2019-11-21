@@ -72,55 +72,55 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 
 	deploymentsClient, err := newDeploymentsClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	dnsRecordSetsClient, err := newDNSRecordSetsClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	dnsZonesClient, err := newDNSZonesClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	groupsClient, err := newGroupsClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	interfacesClient, err := newInterfacesClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	storageAccountsClient, err := newStorageAccountsClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	usageClient, err := newUsageClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	virtualNetworkClient, err := newVirtualNetworkClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	virtualNetworkGatewayConnectionsClient, err := newVirtualNetworkGatewayConnectionsClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	virtualNetworkGatewaysClient, err := newVirtualNetworkGatewaysClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 	vnetPeeringClient, err := newVnetPeeringClient(c)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 
 	clientSet := &AzureClientSet{
