@@ -110,8 +110,8 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 		"#19 Changed Master Subnet ID":      defaultTestData().WithMasterSubnetID("/and/another/one"),
 		"#20 Change VMSS MSIE enabled":      defaultTestData().WithVmssMSIEnabled(false),
 		"#21 Changed Worker Subnet ID":      defaultTestData().WithWorkerSubnetID("/and/the/last/one"),
-		// todo test with additional fields
-		// todo test with fewer fields
+		"#22 Added a new field":             defaultTestData().WithAdditionalFields(map[string]string{"additional": "field"}),
+		"#23 Removed a field":               defaultTestData().WithRemovedFields([]string{"masterSubnetID"}),
 	}
 
 	for name, tc := range testCases {
@@ -160,6 +160,8 @@ type testData struct {
 	MasterSubnetID      string
 	VmssMSIEnabled      bool
 	WorkerSubnetID      string
+	AdditionalFields    map[string]string
+	RemovedFields       []string
 
 	ChecksumIs    *string
 	ChecksumIsNot *string
@@ -189,6 +191,8 @@ func defaultTestData() testData {
 		MasterSubnetID:      "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-MasterSubnet",
 		VmssMSIEnabled:      true,
 		WorkerSubnetID:      "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-WorkerSubnet",
+		AdditionalFields:    nil,
+		RemovedFields:       nil,
 
 		ChecksumIs:    to.StringPtr("5bd677fda75a9855203689725977c4d3118b3a0f8204674266bab7cf1ee2881b"),
 		ChecksumIsNot: nil,
@@ -353,6 +357,22 @@ func (td testData) WithWorkerSubnetID(data string) testData {
 	return td
 }
 
+func (td testData) WithAdditionalFields(data map[string]string) testData {
+	td.AdditionalFields = data
+	td.ChecksumIsNot = td.ChecksumIs
+	td.ChecksumIs = nil
+
+	return td
+}
+
+func (td testData) WithRemovedFields(data []string) testData {
+	td.RemovedFields = data
+	td.ChecksumIsNot = td.ChecksumIs
+	td.ChecksumIs = nil
+
+	return td
+}
+
 func getDeployment(data testData) (*resources.Deployment, error) {
 	nodes := []node{
 		{
@@ -407,6 +427,23 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 		"workerCloudConfigData": struct{ Value interface{} }{Value: encodedWorkerCloudConfig},
 		"workerNodes":           nodes,
 		"workerSubnetID":        data.WorkerSubnetID,
+	}
+
+	if data.AdditionalFields != nil {
+		for k, v := range data.AdditionalFields {
+			parameters[k] = v
+		}
+	}
+
+	if data.RemovedFields != nil {
+		for _, v := range data.RemovedFields {
+			_, ok := parameters[v]
+			if !ok {
+				panic(fmt.Sprintf("Field '%s' was not found for removal", v))
+			}
+
+			delete(parameters, v)
+		}
 	}
 
 	properties := resources.DeploymentProperties{
