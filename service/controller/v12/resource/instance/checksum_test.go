@@ -112,6 +112,7 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 		"#21 Changed Worker Subnet ID":      defaultTestData().WithWorkerSubnetID("/and/the/last/one"),
 		"#22 Added a new field":             defaultTestData().WithAdditionalFields(map[string]string{"additional": "field"}),
 		"#23 Removed a field":               defaultTestData().WithRemovedFields([]string{"masterSubnetID"}),
+		"#24 Changed the cloud config tmpl": defaultTestData().WithCloudConfigSmallTemplates([]string{"{}"}),
 	}
 
 	for name, tc := range testCases {
@@ -138,30 +139,31 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 }
 
 type testData struct {
-	AdminUsername       string
-	AdminSSHKeyData     string
-	OSImageOffer        string
-	OSImagePublisher    string
-	OSImageSKU          string
-	OSImageVersion      string
-	VMSize              string
-	DockerVolumeSizeGB  int
-	MasterBlobUrl       string
-	MasterEncryptionKey string
-	MasterInitialVector string
-	MasterInstanceRole  string
-	WorkerBlobUrl       string
-	WorkerEncryptionKey string
-	WorkerInitialVector string
-	WorkerInstanceRole  string
-	ApiLBBackendPoolID  string
-	ClusterID           string
-	EtcdLBBackendPoolID string
-	MasterSubnetID      string
-	VmssMSIEnabled      bool
-	WorkerSubnetID      string
-	AdditionalFields    map[string]string
-	RemovedFields       []string
+	AdminUsername             string
+	AdminSSHKeyData           string
+	OSImageOffer              string
+	OSImagePublisher          string
+	OSImageSKU                string
+	OSImageVersion            string
+	VMSize                    string
+	DockerVolumeSizeGB        int
+	MasterBlobUrl             string
+	MasterEncryptionKey       string
+	MasterInitialVector       string
+	MasterInstanceRole        string
+	WorkerBlobUrl             string
+	WorkerEncryptionKey       string
+	WorkerInitialVector       string
+	WorkerInstanceRole        string
+	ApiLBBackendPoolID        string
+	ClusterID                 string
+	EtcdLBBackendPoolID       string
+	MasterSubnetID            string
+	VmssMSIEnabled            bool
+	WorkerSubnetID            string
+	AdditionalFields          map[string]string
+	RemovedFields             []string
+	CloudConfigSmallTemplates []string
 
 	ChecksumIs    *string
 	ChecksumIsNot *string
@@ -169,30 +171,31 @@ type testData struct {
 
 func defaultTestData() testData {
 	return testData{
-		AdminUsername:       "giantswarm",
-		AdminSSHKeyData:     "ssh-rsa AAAAB3NzaC1yc...k+y+ls2D0xJfqxw==",
-		OSImageOffer:        "CoreOS",
-		OSImagePublisher:    "CoreOS",
-		OSImageSKU:          "Stable",
-		OSImageVersion:      "2191.5.0",
-		VMSize:              "Standard_D4s_v3",
-		DockerVolumeSizeGB:  50,
-		MasterBlobUrl:       "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A60%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
-		MasterEncryptionKey: "00112233445566778899aabbccddeeff00112233445566778899aabbccddee",
-		MasterInitialVector: "0011223344556677889900aabbccddee",
-		MasterInstanceRole:  "master",
-		WorkerBlobUrl:       "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A61%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
-		WorkerEncryptionKey: "eeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
-		WorkerInitialVector: "eeddccbbaa0099887766554433221100",
-		WorkerInstanceRole:  "worker",
-		ApiLBBackendPoolID:  "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-API-PublicLoadBalancer/backendAddressPools/tjb62-API-PublicLoadBalancer-BackendPool",
-		ClusterID:           "tjb62",
-		EtcdLBBackendPoolID: "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-ETCD-PrivateLoadBalancer/backendAddressPools/tjb62-ETCD-PrivateLoadBalancer-BackendPool", // string
-		MasterSubnetID:      "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-MasterSubnet",
-		VmssMSIEnabled:      true,
-		WorkerSubnetID:      "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-WorkerSubnet",
-		AdditionalFields:    nil,
-		RemovedFields:       nil,
+		AdminUsername:             "giantswarm",
+		AdminSSHKeyData:           "ssh-rsa AAAAB3NzaC1yc...k+y+ls2D0xJfqxw==",
+		OSImageOffer:              "CoreOS",
+		OSImagePublisher:          "CoreOS",
+		OSImageSKU:                "Stable",
+		OSImageVersion:            "2191.5.0",
+		VMSize:                    "Standard_D4s_v3",
+		DockerVolumeSizeGB:        50,
+		MasterBlobUrl:             "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A60%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
+		MasterEncryptionKey:       "00112233445566778899aabbccddeeff00112233445566778899aabbccddee",
+		MasterInitialVector:       "0011223344556677889900aabbccddee",
+		MasterInstanceRole:        "master",
+		WorkerBlobUrl:             "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A61%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
+		WorkerEncryptionKey:       "eeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
+		WorkerInitialVector:       "eeddccbbaa0099887766554433221100",
+		WorkerInstanceRole:        "worker",
+		ApiLBBackendPoolID:        "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-API-PublicLoadBalancer/backendAddressPools/tjb62-API-PublicLoadBalancer-BackendPool",
+		ClusterID:                 "tjb62",
+		EtcdLBBackendPoolID:       "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-ETCD-PrivateLoadBalancer/backendAddressPools/tjb62-ETCD-PrivateLoadBalancer-BackendPool", // string
+		MasterSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-MasterSubnet",
+		VmssMSIEnabled:            true,
+		WorkerSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-WorkerSubnet",
+		AdditionalFields:          nil,
+		RemovedFields:             nil,
+		CloudConfigSmallTemplates: key.CloudConfigSmallTemplates(),
 
 		ChecksumIs:    to.StringPtr("5bd677fda75a9855203689725977c4d3118b3a0f8204674266bab7cf1ee2881b"),
 		ChecksumIsNot: nil,
@@ -373,6 +376,14 @@ func (td testData) WithRemovedFields(data []string) testData {
 	return td
 }
 
+func (td testData) WithCloudConfigSmallTemplates(data []string) testData {
+	td.CloudConfigSmallTemplates = data
+	td.ChecksumIsNot = td.ChecksumIs
+	td.ChecksumIs = nil
+
+	return td
+}
+
 func getDeployment(data testData) (*resources.Deployment, error) {
 	nodes := []node{
 		{
@@ -398,7 +409,7 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 		InitialVector: data.MasterInitialVector,
 		InstanceRole:  data.MasterInstanceRole,
 	}
-	masterCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
+	masterCloudConfig, err := templates.Render(data.CloudConfigSmallTemplates, c)
 	if err != nil {
 		return nil, err
 	}
@@ -410,7 +421,7 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 		InitialVector: data.WorkerInitialVector,
 		InstanceRole:  data.WorkerInstanceRole,
 	}
-	workerCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
+	workerCloudConfig, err := templates.Render(data.CloudConfigSmallTemplates, c)
 	if err != nil {
 		return nil, err
 	}

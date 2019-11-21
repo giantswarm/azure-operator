@@ -60,9 +60,12 @@ func getDeploymentParametersChecksum(deployment resources.Deployment) (string, e
 				return "", err
 			}
 
-			// delete the [ignition][config] field which is the one that changes at every loop.
+			// safely delete the [ignition][config] field which is the one that changes at every loop.
 			// It is not semantically important and it can be ignored for the sake of checksum calculation
-			m["ignition"].(map[string]interface{})["config"] = nil
+			_, ok := m["ignition"]
+			if ok {
+				m["ignition"].(map[string]interface{})["config"] = nil
+			}
 
 			// convert the modified map back to json
 			jsonStr, err := json.Marshal(m)
