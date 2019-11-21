@@ -18,12 +18,14 @@ import (
 
 // EnsureCreated operates in 3 different stages which are executed sequentially.
 // The first stage is for uploading ARM templates and is represented by stage
-// DeploymentInitialized. The second stage is for waiting for ARM templates to
-// be applied and is represented by stage ProvisioningSuccessful. the third
-// stage is for draining and upgrading the VMSS instances and is represented by
-// stage InstancesUpgrading. The stages are executed one after another and the
-// instance resource cycles through them reliably until all necessary upgrade
-// steps are successfully processed.
+// DeploymentInitialized.
+// The second stage is for waiting for ARM templates to be applied and is represented
+// by stage ProvisioningSuccessful.
+// The third stage is for draining and upgrading the VMSS instances and is represented by
+// stage InstancesUpgrading.
+// Once all instances are Upgraded the state becomes DeploymentCompleted and the reconciliation
+// loop stops until a change in the ARM template or parameters is detected.
+// Check docs/instances-stages-v12.svg file for a grafical representation of this process.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
