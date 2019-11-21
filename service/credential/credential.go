@@ -15,6 +15,7 @@ const (
 	SubscriptionIDKey = "azure.azureoperator.subscriptionid"
 	TenantIDKey       = "azure.azureoperator.tenantid"
 	PartnerIDKey      = "azure.azureoperator.partnerid"
+	defaultAzureGUID  = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 )
 
 func GetAzureConfig(k8sClient kubernetes.Interface, name string, namespace string) (*client.AzureClientSetConfig, error) {
@@ -45,7 +46,11 @@ func GetAzureConfig(k8sClient kubernetes.Interface, name string, namespace strin
 
 	partnerID, err := valueFromSecret(credential, PartnerIDKey)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		// No having partnerID in the secret means that customer has not
+		// upgraded yet to use the Azure Partner Program. In that case we set a
+		// constant random generated GUID that we haven't registered with Azure.
+		// When all customers have migrated, we should error out instead.
+		partnerID = defaultAzureGUID
 	}
 
 	c := &client.AzureClientSetConfig{
