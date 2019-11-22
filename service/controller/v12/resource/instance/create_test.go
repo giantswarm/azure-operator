@@ -520,10 +520,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			ws, err := getWorkingSet(tc.CustomObject, tc.Instances, tc.DrainerConfigs, tc.InstanceNameFunc, tc.VersionValue)
 
-			if ws == nil {
-				ws = &workingSet{}
-			}
-
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:
 				// fall through
@@ -535,13 +531,13 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				t.Fatalf("expected %#v got %#v", true, false)
 			}
 
-			if !reflect.DeepEqual(ws.instanceToUpdate, tc.ExpectedInstanceToUpdate) {
+			if !reflect.DeepEqual(ws.InstanceToUpdate(), tc.ExpectedInstanceToUpdate) {
 				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToUpdate, ws.instanceToUpdate)
 			}
-			if !reflect.DeepEqual(ws.instanceToDrain, tc.ExpectedInstanceToDrain) {
+			if !reflect.DeepEqual(ws.InstanceToDrain(), tc.ExpectedInstanceToDrain) {
 				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToDrain, ws.instanceToDrain)
 			}
-			if !reflect.DeepEqual(ws.instanceToReimage, tc.ExpectedInstanceToReimage) {
+			if !reflect.DeepEqual(ws.InstanceToReimage(), tc.ExpectedInstanceToReimage) {
 				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, ws.instanceToReimage)
 			}
 		})
