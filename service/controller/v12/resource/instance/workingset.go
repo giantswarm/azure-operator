@@ -51,3 +51,35 @@ func (ws *workingSet) IsWIP() bool {
 		ws.instanceToReimage != nil ||
 		ws.instanceAlreadyBeingUpdated != nil
 }
+
+func (ws *workingSet) InstanceToUpdate() *compute.VirtualMachineScaleSetVM {
+	if ws == nil {
+		return nil
+	}
+
+	return ws.instanceToUpdate
+}
+
+func (ws *workingSet) InstanceToDrain() *compute.VirtualMachineScaleSetVM {
+	if ws == nil {
+		return nil
+	}
+
+	return ws.instanceToDrain
+}
+
+func (ws *workingSet) InstanceToReimage() *compute.VirtualMachineScaleSetVM {
+	if ws == nil {
+		return nil
+	}
+
+	return ws.instanceToReimage
+}
+
+func (ws *workingSet) InstanceAlreadyBeingUpdated() *compute.VirtualMachineScaleSetVM {
+	if ws == nil {
+		return nil
+	}
+
+	return ws.instanceAlreadyBeingUpdated
+}

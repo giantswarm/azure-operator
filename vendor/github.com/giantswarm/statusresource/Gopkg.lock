@@ -228,11 +228,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:f3fcf73e718ba0c00a1a23f8bee2d0517f6e1168351d19b1d1c200f37ee75fba"
+  digest = "1:e9e6c4c2ae7f624a6eb1b768c582c05f200041de51faf5151b8e074eae917b57"
   name = "github.com/giantswarm/errors"
   packages = ["tenant"]
   pruneopts = "NUT"
-  revision = "e6ed796ae4ab950ba7c5a006a8208d1e65cb1ae0"
+  revision = "2640113be13f2eec85fe785ed74418a1a2852e5d"
 
 [[projects]]
   branch = "master"

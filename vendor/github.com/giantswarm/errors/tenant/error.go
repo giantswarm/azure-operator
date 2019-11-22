@@ -10,6 +10,8 @@ var (
 	APINotAvailablePatterns = []*regexp.Regexp{
 		// A regular expression representing DNS errors for the tenant API domain.
 		regexp.MustCompile(`dial tcp: lookup .* on .*:53: (no such host|server misbehaving)`),
+		// Alternative DNS error appearing when running azure-operator with telepresence
+		regexp.MustCompile(`[Get|Patch|Post] https://api\..* dial tcp: lookup .*: no such host`),
 		// A regular expression representing EOF errors for the tenant API domain.
 		regexp.MustCompile(`[Get|Patch|Post] https://api\..*/api/v1/nodes.* (unexpected )?EOF`),
 		// A regular expression representing EOF errors for the tenant API domain.
