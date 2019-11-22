@@ -183,24 +183,27 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.MasterInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.MasterInstanceName, drainerConfigs)
-				if err != nil {
-					return microerror.Mask(err)
-				}
 
-				masterUpgradeInProgress = ws.IsWIP()
+				if ws != nil {
+					err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
+					if err != nil {
+						return microerror.Mask(err)
+					}
+					err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.MasterInstanceName)
+					if err != nil {
+						return microerror.Mask(err)
+					}
+					err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
+					if err != nil {
+						return microerror.Mask(err)
+					}
+					err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.MasterInstanceName, drainerConfigs)
+					if err != nil {
+						return microerror.Mask(err)
+					}
+
+					masterUpgradeInProgress = ws.IsWIP()
+				}
 
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
 			}
@@ -228,24 +231,26 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.WorkerInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
-				if err != nil {
-					return microerror.Mask(err)
-				}
-				err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.WorkerInstanceName, drainerConfigs)
-				if err != nil {
-					return microerror.Mask(err)
-				}
+				if ws != nil {
+					err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
+					if err != nil {
+						return microerror.Mask(err)
+					}
+					err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.WorkerInstanceName)
+					if err != nil {
+						return microerror.Mask(err)
+					}
+					err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
+					if err != nil {
+						return microerror.Mask(err)
+					}
+					err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.WorkerInstanceName, drainerConfigs)
+					if err != nil {
+						return microerror.Mask(err)
+					}
 
-				workerUpgradeInProgess = ws.IsWIP()
+					workerUpgradeInProgess = ws.IsWIP()
+				}
 
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
 			}
