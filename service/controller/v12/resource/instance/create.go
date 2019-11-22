@@ -251,11 +251,12 @@ func (r *Resource) handleDeploymentCompletedStatus(ctx context.Context, customOb
 					return microerror.Mask(err)
 				}
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, DeploymentCompleted))
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+				reconciliationcanceledcontext.SetCanceled(ctx)
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "Template and parameters unchanged")
 			}
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
-			reconciliationcanceledcontext.SetCanceled(ctx)
+
 			return nil
 		}
 	} else if key.IsFinalProvisioningState(s) {
