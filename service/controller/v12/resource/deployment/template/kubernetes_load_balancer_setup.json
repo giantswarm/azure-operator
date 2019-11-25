@@ -11,13 +11,14 @@
     }
   },
   "variables":{
-    "loadBalancerSkuName": "Standard"
+    "loadBalancerSkuName": "Standard",
+    "loadBalancerPIPName": "[parameters('ingressPIPName')]"
   },
   "resources":[
     {
       "apiVersion":"2017-10-01",
       "type":"Microsoft.Network/publicIPAddresses",
-      "name":"dummy-pip",
+      "name":"[variables('loadBalancerPIPName')]",
       "sku": {
         "name": "[variables('loadBalancerSkuName')]"
       },
@@ -36,7 +37,7 @@
         "name": "[variables('loadBalancerSkuName')]"
       },
       "dependsOn":[
-        "[concat('Microsoft.Network/publicIPAddresses/', 'dummy-pip')]"
+        "[concat('Microsoft.Network/publicIPAddresses/', variables('loadBalancerPIPName'))]"
       ],
       "properties":{
         "frontendIPConfigurations":[
@@ -44,7 +45,7 @@
             "name":"dummy-frontend",
             "properties":{
               "publicIPAddress":{
-                "id":"[resourceId('Microsoft.Network/publicIPAddresses', 'dummy-pip')]"
+                "id":"[resourceId('Microsoft.Network/publicIPAddresses', variables('loadBalancerPIPName'))]"
               }
             }
           }

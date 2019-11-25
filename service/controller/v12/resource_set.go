@@ -19,6 +19,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v12/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/service/controller/v12/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/service/controller/v12/resource/endpoints"
+	"github.com/giantswarm/azure-operator/service/controller/v12/resource/ingresspipname"
 	"github.com/giantswarm/azure-operator/service/controller/v12/resource/instance"
 	"github.com/giantswarm/azure-operator/service/controller/v12/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v12/resource/resourcegroup"
@@ -255,6 +256,19 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var ingressPIPNameResource resource.Interface
+	{
+		c := ingresspipname.Config{
+			G8sClient: config.G8sClient,
+			Logger:    config.Logger,
+		}
+
+		ingressPIPNameResource, err = ingresspipname.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var instanceResource resource.Interface
 	{
 		c := instance.Config{
@@ -353,6 +367,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		containerURLResource,
 		encryptionkeyResource,
 		blobObjectResource,
+		ingressPIPNameResource,
 		deploymentResource,
 		instanceResource,
 		endpointsResource,
