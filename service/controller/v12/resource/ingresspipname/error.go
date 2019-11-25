@@ -34,19 +34,3 @@ func IsPIPNotFound(err error) bool {
 	}
 	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound")
 }
-
-// IsStorageAccountNotFound asserts storage account not found error from upstream's API message.
-func IsStorageAccountNotFound(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound")
-}
-
-// IsStorageAccountNotProvisioned asserts storage account not provisioned error from upstream's API message.
-func IsStorageAccountNotProvisioned(err error) bool {
-	if err == nil {
-		return false
-	}
-	return strings.Contains(microerror.Cause(err).Error(), "StorageAccountIsNotProvisioned")
-}
