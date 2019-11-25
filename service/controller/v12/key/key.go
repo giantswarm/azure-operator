@@ -8,7 +8,6 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/controller/v12/templates/ignition"
-	"github.com/giantswarm/azure-operator/service/controller/v6/key"
 	"github.com/giantswarm/microerror"
 )
 
@@ -220,7 +219,7 @@ func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureC
 }
 
 func DefaultIngressPIPName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-Ingress-PublicLoadBalancer-PublicIP", key.ClusterID(customObject))
+	return fmt.Sprintf("%s-Ingress-PublicLoadBalancer-PublicIP", ClusterID(customObject))
 }
 
 func IngressPIPName(customObject providerv1alpha1.AzureConfig) string {
