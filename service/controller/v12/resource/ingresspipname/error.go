@@ -27,7 +27,7 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-// IsPIPNotFound asserts storage account not found error from upstream's API message.
+// IsPIPNotFound asserts public IP address not found error from upstream's API message.
 func IsPIPNotFound(err error) bool {
 	if err == nil {
 		return false
