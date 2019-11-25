@@ -54,7 +54,7 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomObject(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -62,7 +62,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding if ingress PIP name must be set to status")
 
-		if key.IngressPIPName(customObject) != "" {
+		if key.IngressPIPName(cr) != "" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "found out that ingress PIP name is already set to status")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
@@ -74,7 +74,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding if ingress PIP has been already created")
 
-		groupName := key.ClusterID(customObject)
+		groupName := key.ClusterID(cr)
 		pipClient, err := r.getPIPClient(ctx)
 		if err != nil {
 			return microerror.Mask(err)
@@ -85,14 +85,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if IsPIPNotFound(err) {
 			// This is ok. Maybe PIP is created with currently desired name?
 
-			_, err = pipClient.Get(ctx, groupName, key.DefaultIngressPIPName(customObject), "")
+			_, err = pipClient.Get(ctx, groupName, key.DefaultIngressPIPName(cr), "")
 			if IsPIPNotFound(err) {
 				// This is ok as well. The given Public IP is not created yet.
 			} else if err != nil {
 				return microerror.Mask(err)
 			}
 
-			ingressPIPName = key.DefaultIngressPIPName(customObject)
+			ingressPIPName = key.DefaultIngressPIPName(cr)
 
 		} else if err != nil {
 			return microerror.Mask(err)
@@ -102,7 +102,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if ingressPIPName == "" {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find already created ingress PIP")
-			ingressPIPName = key.DefaultIngressPIPName(customObject)
+			ingressPIPName = key.DefaultIngressPIPName(cr)
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("defaulting to %q", ingressPIPName))
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found ingress PIP with name %q", ingressPIPName))
@@ -112,9 +112,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "updating CR status with ingress PIP name")
 
-		customObject.Status.Provider.Ingress.LoadBalancer.PublicIPName = ingressPIPName
+		cr.Status.Provider.Ingress.LoadBalancer.PublicIPName = ingressPIPName
 
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).UpdateStatus(&customObject)
+		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(cr.Namespace).UpdateStatus(&cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
