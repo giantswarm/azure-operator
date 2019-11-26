@@ -1,4 +1,4 @@
-apiVersion: extensions/v1beta1
+apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: azure-operator
@@ -10,6 +10,9 @@ metadata:
 spec:
   replicas: 1
   revisionHistoryLimit: 3
+  selector:
+    matchLabels:
+      app: azure-operator
   strategy:
     type: RollingUpdate
   template:
@@ -41,7 +44,7 @@ spec:
         runAsGroup: {{ .Values.groupID }}
       containers:
       - name: azure-operator
-        image: quay.io/giantswarm/azure-operator:[[ .SHA ]]
+        image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
         volumeMounts:
         - name: azure-operator-configmap
           mountPath: /var/run/azure-operator/configmap/
