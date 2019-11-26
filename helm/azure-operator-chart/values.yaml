@@ -1,4 +1,9 @@
 namespace: giantswarm
 
+image:
+  registry: "quay.io"
+  name: "giantswarm/azure-operator"
+  tag: "[[ .SHA ]]"
+
 userID: 1000
 groupID: 1000
