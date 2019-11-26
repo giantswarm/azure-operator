@@ -374,8 +374,6 @@ func (r *Resource) handleInstancesUpgradingStatus(ctx context.Context, customObj
 				return microerror.Mask(err)
 			}
 			err = r.updateInstance(ctx, customObject, ws.InstanceToUpdate(), key.WorkerVMSSName, key.WorkerInstanceName)
-
-			err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
