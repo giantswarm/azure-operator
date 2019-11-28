@@ -33,7 +33,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
 	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
