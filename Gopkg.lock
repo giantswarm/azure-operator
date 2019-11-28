@@ -310,8 +310,8 @@
   revision = "776376d011031615b44d4080a0f2efaa301d6ddd"
 
 [[projects]]
-  branch = "update-guest"
-  digest = "1:e036af69d5af6cf010c805461b4339e06e06aea2abee48bb248e804b0b94921c"
+  branch = "master"
+  digest = "1:24a69d97ee92e59082d8d768373366ab931c1778759797f494610481f8d127fb"
   name = "github.com/giantswarm/e2e-harness"
   packages = [
     "internal/filelogger",
@@ -321,7 +321,7 @@
     "pkg/release",
   ]
   pruneopts = "UT"
-  revision = "3bb66ad27e2e53301f0480edf3883149b7bd0bb0"
+  revision = "f54d8a266f15340b465463a8b8b972f1f430a69c"
 
 [[projects]]
   branch = "master"
@@ -343,7 +343,7 @@
   revision = "11c30c63f167e8b027926eea81ad4ca513becf20"
 
 [[projects]]
-  branch = "update-guest"
+  branch = "master"
   digest = "1:801444f34dcc6ad0808b61e3ead8b6d0943f58742bcab0aaaefda238aa0d61de"
   name = "github.com/giantswarm/e2etests"
   packages = [
@@ -355,7 +355,7 @@
     "update/provider",
   ]
   pruneopts = "UT"
-  revision = "221dc04f9064ae5f1d4b9a0a03c69a7459f93fbc"
+  revision = "4725599ab01a636085874e4999d1d318b59923bf"
 
 [[projects]]
   branch = "master"
