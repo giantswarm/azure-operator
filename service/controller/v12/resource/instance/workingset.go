@@ -2,9 +2,6 @@ package instance
 
 import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
-	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/microerror"
 )
 
 type workingSet struct {
@@ -87,42 +84,4 @@ func (ws *workingSet) InstanceAlreadyBeingUpdated() *compute.VirtualMachineScale
 	}
 
 	return ws.instanceAlreadyBeingUpdated
-}
-
-// getWorkingSet either returns an instance to update or an instance to
-// reimage, but never both at the same time.
-func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error), versionValue map[string]string) (*workingSet, error) {
-	var err error
-
-	var ws *workingSet
-
-	instanceInProgress := firstInstanceInProgress(customObject, instances)
-	if instanceInProgress != nil {
-		return ws.WithInstanceAlreadyBeingUpdated(instanceInProgress), nil
-	}
-
-	var instanceToUpdate *compute.VirtualMachineScaleSetVM
-	instanceToUpdate = firstInstanceToUpdate(customObject, instances)
-	if instanceToUpdate != nil {
-		return ws.WithInstanceToUpdate(instanceToUpdate), nil
-	}
-
-	var instanceToReimage *compute.VirtualMachineScaleSetVM
-	instanceToReimage, err = firstInstanceToReimage(customObject, instances, instanceNameFunc, versionValue)
-	if err != nil {
-		return ws, microerror.Mask(err)
-	}
-	if instanceToReimage != nil {
-		instanceName, err := instanceNameFunc(customObject, *instanceToReimage.InstanceID)
-		if err != nil {
-			return ws, microerror.Mask(err)
-		}
-		if isNodeDrained(drainerConfigs, instanceName) {
-			return ws.WithInstanceToReimage(instanceToReimage), nil
-		} else {
-			return ws.WithInstanceToDrain(instanceToReimage), nil
-		}
-	}
-
-	return ws, nil
 }
