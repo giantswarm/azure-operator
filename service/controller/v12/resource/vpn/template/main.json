@@ -38,7 +38,7 @@
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
       },
       "sku":{
-        "name": "Basic"
+        "name": "Standard"
       },
       "properties":{
         "publicIPAllocationMethod":"Dynamic"
@@ -80,8 +80,8 @@
           ]
         },
         "sku":{
-          "name":"VpnGw1",
-          "tier":"VpnGw1"
+          "name":"VpnGw1AZ",
+          "tier":"VpnGw1AZ"
         }
       }
     }

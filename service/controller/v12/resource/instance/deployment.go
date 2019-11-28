@@ -71,6 +71,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	storageAccountName := key.StorageAccountName(obj)
 	masterBlobName := key.BlobName(obj, key.PrefixMaster())
 	workerBlobName := key.BlobName(obj, key.PrefixWorker())
+	zones := key.AvailabilityZones(obj)
 
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
 	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
@@ -146,6 +147,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"workerCloudConfigData": encodedWorkerCloudConfig,
 		"workerNodes":           workerNodes,
 		"workerSubnetID":        cc.WorkerSubnetID,
+		"zones":                 zones,
 	}
 
 	d := azureresource.Deployment{
