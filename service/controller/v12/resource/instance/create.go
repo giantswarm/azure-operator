@@ -238,6 +238,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				}
 
 				masterUpgradeInProgress = ws.IsWIP()
+
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
 			}
 		}
@@ -282,6 +283,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				}
 
 				workerUpgradeInProgess = ws.IsWIP()
+
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
 			}
 		} else {
