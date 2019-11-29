@@ -92,29 +92,29 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 func Test_getDeploymentParametersChecksum(t *testing.T) {
 	testCases := map[string]testData{
 		"case 0: Default test data":              defaultTestData(),
-		"case 1: Changed Admin Username":         defaultTestData().WithAdminUsername("giantswarm2"),
-		"case 2: Changed SSH key":                defaultTestData().WithAdminSSHKeyData("ssh-rsa AAAAB3aC1yc...k+y+ls2D0xJfqxw=="),
-		"case 3: Changed OS Image Offer":         defaultTestData().WithOSImageOffer("Ubuntu"),
-		"case 4: Changed OS Image Publisher":     defaultTestData().WithOSImagePublisher("Canonical"),
-		"case 5: Changed OS Image SKU":           defaultTestData().WithOSImageSKU("LTS"),
-		"case 6: Changed OS Image Version":       defaultTestData().WithOSImageVersion("18.04"),
-		"case 7: Changed VM Size":                defaultTestData().WithVMSize("very_sml"),
-		"case 8: Changed Docker Volume Size":     defaultTestData().WithDockerVolumeSizeGB(100),
-		"case 9: Changed Master Blob Url":        defaultTestData().WithMasterBlobUrl("http://www.giantwarm.io"),
-		"case 10: Changed Master Encryption Key": defaultTestData().WithMasterEncryptionKey("0123456789abcdef"),
-		"case 11: Changed Master Initial Vector": defaultTestData().WithMasterInitialVector("fedcba9876543210"),
-		"case 12: Changed Worker Blob Url":       defaultTestData().WithWorkerBlobUrl("http://www.giantwarm.io"),
-		"case 13: Changed Worker Encryption Key": defaultTestData().WithWorkerEncryptionKey("0123456789abcdef"),
-		"case 14: Changed Worker Initial Vector": defaultTestData().WithWorkerInitialVector("fedcba9876543210"),
-		"case 15: Changed Api LB Backend Pool":   defaultTestData().WithApiLBBackendPoolID("/just/a/test"),
-		"case 16: Changed Cluster ID":            defaultTestData().WithClusterID("abcde"),
-		"case 17: Changed ETCD LB Backend Pool":  defaultTestData().WithEtcdLBBackendPoolID("/and/another/test"),
-		"case 18: Changed Master Subnet ID":      defaultTestData().WithMasterSubnetID("/and/another/one"),
-		"case 19: Change VMSS MSIE enabled":      defaultTestData().WithVmssMSIEnabled(false),
-		"case 20: Changed Worker Subnet ID":      defaultTestData().WithWorkerSubnetID("/and/the/last/one"),
-		"case 21: Added a new field":             defaultTestData().WithAdditionalFields(map[string]string{"additional": "field"}),
-		"case 22: Removed a field":               defaultTestData().WithRemovedFields([]string{"masterSubnetID"}),
-		"case 23: Changed the cloud config tmpl": defaultTestData().WithCloudConfigSmallTemplates([]string{"{}"}),
+		"case 1: Changed Admin Username":         defaultTestData().WithadminUsername("giantswarm2"),
+		"case 2: Changed SSH key":                defaultTestData().WithadminSSHKeyData("ssh-rsa AAAAB3aC1yc...k+y+ls2D0xJfqxw=="),
+		"case 3: Changed OS Image Offer":         defaultTestData().WithosImageOffer("Ubuntu"),
+		"case 4: Changed OS Image Publisher":     defaultTestData().WithosImagePublisher("Canonical"),
+		"case 5: Changed OS Image SKU":           defaultTestData().WithosImageSKU("LTS"),
+		"case 6: Changed OS Image Version":       defaultTestData().WithosImageVersion("18.04"),
+		"case 7: Changed VM Size":                defaultTestData().WithvmSize("very_sml"),
+		"case 8: Changed Docker Volume Size":     defaultTestData().WithdockerVolumeSizeGB(100),
+		"case 9: Changed Master Blob Url":        defaultTestData().WithmasterBlobUrl("http://www.giantwarm.io"),
+		"case 10: Changed Master Encryption Key": defaultTestData().WithmasterEncryptionKey("0123456789abcdef"),
+		"case 11: Changed Master Initial Vector": defaultTestData().WithmasterInitialVector("fedcba9876543210"),
+		"case 12: Changed Worker Blob Url":       defaultTestData().WithworkerBlobUrl("http://www.giantwarm.io"),
+		"case 13: Changed Worker Encryption Key": defaultTestData().WithworkerEncryptionKey("0123456789abcdef"),
+		"case 14: Changed Worker Initial Vector": defaultTestData().WithworkerInitialVector("fedcba9876543210"),
+		"case 15: Changed Api LB Backend Pool":   defaultTestData().WithapiLBBackendPoolID("/just/a/test"),
+		"case 16: Changed Cluster ID":            defaultTestData().WithclusterID("abcde"),
+		"case 17: Changed ETCD LB Backend Pool":  defaultTestData().WithetcdLBBackendPoolID("/and/another/test"),
+		"case 18: Changed Master Subnet ID":      defaultTestData().WithmasterSubnetID("/and/another/one"),
+		"case 19: Change VMSS MSIE enabled":      defaultTestData().WithvmssMSIEnabled(false),
+		"case 20: Changed Worker Subnet ID":      defaultTestData().WithworkerSubnetID("/and/the/last/one"),
+		"case 21: Added a new field":             defaultTestData().WithadditionalFields(map[string]string{"additional": "field"}),
+		"case 22: Removed a field":               defaultTestData().WithremovedFields([]string{"masterSubnetID"}),
+		"case 23: Changed the cloud config tmpl": defaultTestData().WithcloudConfigSmallTemplates([]string{"{}"}),
 	}
 
 	for name, tc := range testCases {
@@ -129,11 +129,11 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 				t.Fatalf("Unexpected error")
 			}
 
-			if tc.ChecksumIs != nil && chk != *tc.ChecksumIs {
+			if tc.checksumIs != nil && chk != *tc.checksumIs {
 				t.Fatalf("Checksum calculation invalid %s", chk)
 			}
 
-			if tc.ChecksumIsNot != nil && chk == *tc.ChecksumIsNot {
+			if tc.checksumIsNot != nil && chk == *tc.checksumIsNot {
 				t.Fatalf("Expected checksum to change but it didn't")
 			}
 		})
@@ -141,247 +141,247 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 }
 
 type testData struct {
-	AdminUsername             string
-	AdminSSHKeyData           string
-	OSImageOffer              string
-	OSImagePublisher          string
-	OSImageSKU                string
-	OSImageVersion            string
-	VMSize                    string
-	DockerVolumeSizeGB        int
-	MasterBlobUrl             string
-	MasterEncryptionKey       string
-	MasterInitialVector       string
-	MasterInstanceRole        string
-	WorkerBlobUrl             string
-	WorkerEncryptionKey       string
-	WorkerInitialVector       string
-	WorkerInstanceRole        string
-	ApiLBBackendPoolID        string
-	ClusterID                 string
-	EtcdLBBackendPoolID       string
-	MasterSubnetID            string
-	VmssMSIEnabled            bool
-	WorkerSubnetID            string
-	AdditionalFields          map[string]string
-	RemovedFields             []string
-	CloudConfigSmallTemplates []string
+	adminUsername             string
+	adminSSHKeyData           string
+	osImageOffer              string
+	osImagePublisher          string
+	osImageSKU                string
+	osImageVersion            string
+	vmSize                    string
+	dockerVolumeSizeGB        int
+	masterBlobUrl             string
+	masterEncryptionKey       string
+	masterInitialVector       string
+	masterInstanceRole        string
+	workerBlobUrl             string
+	workerEncryptionKey       string
+	workerInitialVector       string
+	workerInstanceRole        string
+	apiLBBackendPoolID        string
+	clusterID                 string
+	etcdLBBackendPoolID       string
+	masterSubnetID            string
+	vmssMSIEnabled            bool
+	workerSubnetID            string
+	additionalFields          map[string]string
+	removedFields             []string
+	cloudConfigSmallTemplates []string
 
-	ChecksumIs    *string
-	ChecksumIsNot *string
+	checksumIs    *string
+	checksumIsNot *string
 }
 
 func defaultTestData() testData {
 	return testData{
-		AdminUsername:             "giantswarm",
-		AdminSSHKeyData:           "ssh-rsa AAAAB3NzaC1yc...k+y+ls2D0xJfqxw==",
-		OSImageOffer:              "CoreOS",
-		OSImagePublisher:          "CoreOS",
-		OSImageSKU:                "Stable",
-		OSImageVersion:            "2191.5.0",
-		VMSize:                    "Standard_D4s_v3",
-		DockerVolumeSizeGB:        50,
-		MasterBlobUrl:             "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A60%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
-		MasterEncryptionKey:       "00112233445566778899aabbccddeeff00112233445566778899aabbccddee",
-		MasterInitialVector:       "0011223344556677889900aabbccddee",
-		MasterInstanceRole:        "master",
-		WorkerBlobUrl:             "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A61%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
-		WorkerEncryptionKey:       "eeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
-		WorkerInitialVector:       "eeddccbbaa0099887766554433221100",
-		WorkerInstanceRole:        "worker",
-		ApiLBBackendPoolID:        "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-API-PublicLoadBalancer/backendAddressPools/tjb62-API-PublicLoadBalancer-BackendPool",
-		ClusterID:                 "tjb62",
-		EtcdLBBackendPoolID:       "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-ETCD-PrivateLoadBalancer/backendAddressPools/tjb62-ETCD-PrivateLoadBalancer-BackendPool", // string
-		MasterSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-MasterSubnet",
-		VmssMSIEnabled:            true,
-		WorkerSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-WorkerSubnet",
-		AdditionalFields:          nil,
-		RemovedFields:             nil,
-		CloudConfigSmallTemplates: key.CloudConfigSmallTemplates(),
+		adminUsername:             "giantswarm",
+		adminSSHKeyData:           "ssh-rsa AAAAB3NzaC1yc...k+y+ls2D0xJfqxw==",
+		osImageOffer:              "CoreOS",
+		osImagePublisher:          "CoreOS",
+		osImageSKU:                "Stable",
+		osImageVersion:            "2191.5.0",
+		vmSize:                    "Standard_D4s_v3",
+		dockerVolumeSizeGB:        50,
+		masterBlobUrl:             "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A60%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
+		masterEncryptionKey:       "00112233445566778899aabbccddeeff00112233445566778899aabbccddee",
+		masterInitialVector:       "0011223344556677889900aabbccddee",
+		masterInstanceRole:        "master",
+		workerBlobUrl:             "https://gssatjb62.blob.core.windows.net/ignition/2.8.0-v4.7.0-worker?se=2020-05-18T13%3A61%3A03Z&sig=9tXJCWxsZb6MxBQZDDbVykB3VMs0CxxoIDHJtpKs10g%3D&sp=r&spr=https&sr=b&sv=2018-03-28",
+		workerEncryptionKey:       "eeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
+		workerInitialVector:       "eeddccbbaa0099887766554433221100",
+		workerInstanceRole:        "worker",
+		apiLBBackendPoolID:        "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-API-PublicLoadBalancer/backendAddressPools/tjb62-API-PublicLoadBalancer-BackendPool",
+		clusterID:                 "tjb62",
+		etcdLBBackendPoolID:       "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-ETCD-PrivateLoadBalancer/backendAddressPools/tjb62-ETCD-PrivateLoadBalancer-BackendPool", // string
+		masterSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-MasterSubnet",
+		vmssMSIEnabled:            true,
+		workerSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-WorkerSubnet",
+		additionalFields:          nil,
+		removedFields:             nil,
+		cloudConfigSmallTemplates: key.CloudConfigSmallTemplates(),
 
-		ChecksumIs:    to.StringPtr("5bd677fda75a9855203689725977c4d3118b3a0f8204674266bab7cf1ee2881b"),
-		ChecksumIsNot: nil,
+		checksumIs:    to.StringPtr("5bd677fda75a9855203689725977c4d3118b3a0f8204674266bab7cf1ee2881b"),
+		checksumIsNot: nil,
 	}
 }
 
-func (td testData) WithAdminUsername(data string) testData {
-	td.AdminUsername = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithadminUsername(data string) testData {
+	td.adminUsername = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithAdminSSHKeyData(data string) testData {
-	td.AdminSSHKeyData = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithadminSSHKeyData(data string) testData {
+	td.adminSSHKeyData = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithOSImageOffer(data string) testData {
-	td.OSImageOffer = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithosImageOffer(data string) testData {
+	td.osImageOffer = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithOSImagePublisher(data string) testData {
-	td.OSImagePublisher = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithosImagePublisher(data string) testData {
+	td.osImagePublisher = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithOSImageSKU(data string) testData {
-	td.OSImageSKU = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithosImageSKU(data string) testData {
+	td.osImageSKU = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithOSImageVersion(data string) testData {
-	td.OSImageVersion = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithosImageVersion(data string) testData {
+	td.osImageVersion = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithVMSize(data string) testData {
-	td.VMSize = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithvmSize(data string) testData {
+	td.vmSize = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithDockerVolumeSizeGB(data int) testData {
-	td.DockerVolumeSizeGB = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithdockerVolumeSizeGB(data int) testData {
+	td.dockerVolumeSizeGB = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithMasterBlobUrl(data string) testData {
-	td.MasterBlobUrl = data
+func (td testData) WithmasterBlobUrl(data string) testData {
+	td.masterBlobUrl = data
 	// checksum isn't expected to change
 
 	return td
 }
 
-func (td testData) WithMasterEncryptionKey(data string) testData {
-	td.MasterEncryptionKey = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithmasterEncryptionKey(data string) testData {
+	td.masterEncryptionKey = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithMasterInitialVector(data string) testData {
-	td.MasterInitialVector = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithmasterInitialVector(data string) testData {
+	td.masterInitialVector = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithWorkerBlobUrl(data string) testData {
-	td.WorkerBlobUrl = data
+func (td testData) WithworkerBlobUrl(data string) testData {
+	td.workerBlobUrl = data
 	// checksum isn't expected to change
 
 	return td
 }
 
-func (td testData) WithWorkerEncryptionKey(data string) testData {
-	td.WorkerEncryptionKey = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithworkerEncryptionKey(data string) testData {
+	td.workerEncryptionKey = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithWorkerInitialVector(data string) testData {
-	td.WorkerInitialVector = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithworkerInitialVector(data string) testData {
+	td.workerInitialVector = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithApiLBBackendPoolID(data string) testData {
-	td.ApiLBBackendPoolID = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithapiLBBackendPoolID(data string) testData {
+	td.apiLBBackendPoolID = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithClusterID(data string) testData {
-	td.ClusterID = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithclusterID(data string) testData {
+	td.clusterID = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithEtcdLBBackendPoolID(data string) testData {
-	td.EtcdLBBackendPoolID = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithetcdLBBackendPoolID(data string) testData {
+	td.etcdLBBackendPoolID = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithMasterSubnetID(data string) testData {
-	td.MasterSubnetID = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithmasterSubnetID(data string) testData {
+	td.masterSubnetID = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithVmssMSIEnabled(data bool) testData {
-	td.VmssMSIEnabled = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithvmssMSIEnabled(data bool) testData {
+	td.vmssMSIEnabled = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithWorkerSubnetID(data string) testData {
-	td.WorkerSubnetID = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithworkerSubnetID(data string) testData {
+	td.workerSubnetID = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithAdditionalFields(data map[string]string) testData {
-	td.AdditionalFields = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithadditionalFields(data map[string]string) testData {
+	td.additionalFields = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithRemovedFields(data []string) testData {
-	td.RemovedFields = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithremovedFields(data []string) testData {
+	td.removedFields = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
 
-func (td testData) WithCloudConfigSmallTemplates(data []string) testData {
-	td.CloudConfigSmallTemplates = data
-	td.ChecksumIsNot = td.ChecksumIs
-	td.ChecksumIs = nil
+func (td testData) WithcloudConfigSmallTemplates(data []string) testData {
+	td.cloudConfigSmallTemplates = data
+	td.checksumIsNot = td.checksumIs
+	td.checksumIs = nil
 
 	return td
 }
@@ -389,16 +389,16 @@ func (td testData) WithCloudConfigSmallTemplates(data []string) testData {
 func getDeployment(data testData) (*resources.Deployment, error) {
 	nodes := []node{
 		{
-			AdminUsername:   data.AdminUsername,
-			AdminSSHKeyData: data.AdminSSHKeyData,
+			AdminUsername:   data.adminUsername,
+			AdminSSHKeyData: data.adminSSHKeyData,
 			OSImage: nodeOSImage{
-				Offer:     data.OSImageOffer,
-				Publisher: data.OSImagePublisher,
-				SKU:       data.OSImageSKU,
-				Version:   data.OSImageVersion,
+				Offer:     data.osImageOffer,
+				Publisher: data.osImagePublisher,
+				SKU:       data.osImageSKU,
+				Version:   data.osImageVersion,
 			},
-			VMSize:             data.VMSize,
-			DockerVolumeSizeGB: data.DockerVolumeSizeGB,
+			VMSize:             data.vmSize,
+			DockerVolumeSizeGB: data.dockerVolumeSizeGB,
 		},
 	}
 
@@ -406,50 +406,50 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 	}{}
 
 	c := SmallCloudconfigConfig{
-		BlobURL:       data.MasterBlobUrl,
-		EncryptionKey: data.MasterEncryptionKey,
-		InitialVector: data.MasterInitialVector,
-		InstanceRole:  data.MasterInstanceRole,
+		BlobURL:       data.masterBlobUrl,
+		EncryptionKey: data.masterEncryptionKey,
+		InitialVector: data.masterInitialVector,
+		InstanceRole:  data.masterInstanceRole,
 	}
-	masterCloudConfig, err := templates.Render(data.CloudConfigSmallTemplates, c)
+	masterCloudConfig, err := templates.Render(data.cloudConfigSmallTemplates, c)
 	if err != nil {
 		return nil, err
 	}
 	encodedMasterCloudConfig := base64.StdEncoding.EncodeToString([]byte(masterCloudConfig))
 
 	c = SmallCloudconfigConfig{
-		BlobURL:       data.WorkerBlobUrl,
-		EncryptionKey: data.WorkerEncryptionKey,
-		InitialVector: data.WorkerInitialVector,
-		InstanceRole:  data.WorkerInstanceRole,
+		BlobURL:       data.workerBlobUrl,
+		EncryptionKey: data.workerEncryptionKey,
+		InitialVector: data.workerInitialVector,
+		InstanceRole:  data.workerInstanceRole,
 	}
-	workerCloudConfig, err := templates.Render(data.CloudConfigSmallTemplates, c)
+	workerCloudConfig, err := templates.Render(data.cloudConfigSmallTemplates, c)
 	if err != nil {
 		return nil, err
 	}
 	encodedWorkerCloudConfig := base64.StdEncoding.EncodeToString([]byte(workerCloudConfig))
 
 	parameters := map[string]interface{}{
-		"apiLBBackendPoolID":    data.ApiLBBackendPoolID,
-		"clusterID":             data.ClusterID,
-		"etcdLBBackendPoolID":   data.EtcdLBBackendPoolID,
+		"apiLBBackendPoolID":    data.apiLBBackendPoolID,
+		"clusterID":             data.clusterID,
+		"etcdLBBackendPoolID":   data.etcdLBBackendPoolID,
 		"masterCloudConfigData": struct{ Value interface{} }{Value: encodedMasterCloudConfig},
 		"masterNodes":           nodes,
-		"masterSubnetID":        data.MasterSubnetID,
-		"vmssMSIEnabled":        data.VmssMSIEnabled,
+		"masterSubnetID":        data.masterSubnetID,
+		"vmssMSIEnabled":        data.vmssMSIEnabled,
 		"workerCloudConfigData": struct{ Value interface{} }{Value: encodedWorkerCloudConfig},
 		"workerNodes":           nodes,
-		"workerSubnetID":        data.WorkerSubnetID,
+		"workerSubnetID":        data.workerSubnetID,
 	}
 
-	if data.AdditionalFields != nil {
-		for k, v := range data.AdditionalFields {
+	if data.additionalFields != nil {
+		for k, v := range data.additionalFields {
 			parameters[k] = v
 		}
 	}
 
-	if data.RemovedFields != nil {
-		for _, v := range data.RemovedFields {
+	if data.removedFields != nil {
+		for _, v := range data.removedFields {
 			_, ok := parameters[v]
 			if !ok {
 				panic(fmt.Sprintf("Field '%s' was not found for removal", v))
