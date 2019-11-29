@@ -177,9 +177,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			resourcecanceledcontext.SetCanceled(ctx)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
+		} else if err != nil {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "unexpected error during handling of DeploymentCompleted status")
+			return microerror.Mask(err)
 		}
 
-		return err
+		return nil
 	}
 
 	if hasResourceStatus(customObject, Stage, ProvisioningSuccessful) {
@@ -319,8 +322,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		}
-
-		return nil
 	}
 
 	return nil
