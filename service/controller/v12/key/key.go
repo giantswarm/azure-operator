@@ -48,9 +48,6 @@ const (
 	CertificateEncryptionNamespace = "default"
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
-
-	DockerDiskName  = "DockerDisk"
-	KubeletDiskName = "KubeletDisk"
 )
 
 const (

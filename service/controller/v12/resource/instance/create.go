@@ -179,7 +179,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
 				ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
-
 				if err != nil {
 					return microerror.Mask(err)
 				}
