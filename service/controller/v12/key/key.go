@@ -51,8 +51,6 @@ const (
 
 	DockerDiskName  = "DockerDisk"
 	KubeletDiskName = "KubeletDisk"
-
-	VmssDeploymentName = "cluster-vmss-template"
 )
 
 const (

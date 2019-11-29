@@ -18,6 +18,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
+const (
+	vmssDeploymentName = "cluster-vmss-template"
+)
+
 // EnsureCreated operates in 3 different stages which are executed sequentially.
 // The first stage is for uploading ARM templates and is represented by stage
 // DeploymentInitialized. The second stage is for waiting for ARM templates to
@@ -53,7 +57,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.VmssDeploymentName, computedDeployment)
+			res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -79,7 +83,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if hasResourceStatus(customObject, Stage, DeploymentInitialized) {
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
 		if IsDeploymentNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
@@ -174,10 +178,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-				//desiredDiskSizes := map[string]int32{
-				//	key.DockerDiskName:  int32(customObject.Spec.Azure.Masters[0].DockerVolumeSizeGB),
-				//	key.KubeletDiskName: int32(customObject.Spec.Azure.Masters[0].KubeletVolumeSizeGB),
-				//}
 				ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 
 				if err != nil {
@@ -225,10 +225,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
-				//desiredDiskSizes := map[string]int32{
-				//	key.DockerDiskName:  int32(customObject.Spec.Azure.Workers[0].DockerVolumeSizeGB),
-				//	key.KubeletDiskName: int32(customObject.Spec.Azure.Workers[0].KubeletVolumeSizeGB),
-				//}
 				ws, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
 				if err != nil {
 					return microerror.Mask(err)
