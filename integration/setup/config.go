@@ -67,10 +67,27 @@ func NewConfig() (Config, error) {
 		}
 	}
 
+	var cpK8sClients *k8sclient.Clients
+	{
+		kubeConfigPath := harness.DefaultKubeConfig
+
+		c := k8sclient.ClientsConfig{
+			Logger: logger,
+
+			KubeConfigPath: kubeConfigPath,
+		}
+
+		cpK8sClients, err = k8sclient.NewClients(c)
+		if err != nil {
+			return Config{}, microerror.Mask(err)
+		}
+	}
+
 	var guest *framework.Guest
 	{
 		c := framework.GuestConfig{
-			Logger: logger,
+			Logger:        logger,
+			HostK8sClient: cpK8sClients.K8sClient(),
 
 			ClusterID:    env.ClusterID(),
 			CommonDomain: env.CommonDomain(),
@@ -91,22 +108,6 @@ func NewConfig() (Config, error) {
 		}
 
 		host, err = framework.NewHost(c)
-		if err != nil {
-			return Config{}, microerror.Mask(err)
-		}
-	}
-
-	var cpK8sClients *k8sclient.Clients
-	{
-		kubeConfigPath := harness.DefaultKubeConfig
-
-		c := k8sclient.ClientsConfig{
-			Logger: logger,
-
-			KubeConfigPath: kubeConfigPath,
-		}
-
-		cpK8sClients, err = k8sclient.NewClients(c)
 		if err != nil {
 			return Config{}, microerror.Mask(err)
 		}
