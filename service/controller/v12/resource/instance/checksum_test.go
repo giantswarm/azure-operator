@@ -9,52 +9,54 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v12/templates"
 	"net/http"
 	"net/http/httptest"
+	"strconv"
 	"testing"
 )
 
 func Test_getDeploymentTemplateChecksum(t *testing.T) {
 	testCases := []struct {
-		Name                string
-		TemplateLinkPresent bool
-		StatusCode          int
-		ResponseBody        string
-		ExpectedChecksum    string
-		ErrorMatcher        func(err error) bool
+		name                string
+		templateLinkPresent bool
+		statusCode          int
+		responseBody        string
+		expectedChecksum    string
+		errorMatcher        func(err error) bool
 	}{
 		{
-			Name:                "Case 1: Successful checksum calculation",
-			TemplateLinkPresent: true,
-			StatusCode:          http.StatusOK,
-			ResponseBody:        `{"fake": "json string"}`,
-			ExpectedChecksum:    "0cfe91509c17c2a9f230cd117d90e837d948639c3a2d559cf1ef6ca6ae24ec79",
+			name:                "case 0: Successful checksum calculation",
+			templateLinkPresent: true,
+			statusCode:          http.StatusOK,
+			responseBody:        `{"fake": "json string"}`,
+			expectedChecksum:    "0cfe91509c17c2a9f230cd117d90e837d948639c3a2d559cf1ef6ca6ae24ec79",
 		},
 		{
-			Name:                "Case 2: Missing template link",
-			TemplateLinkPresent: false,
-			ExpectedChecksum:    "",
-			ErrorMatcher:        IsNilTemplateLinkError,
+			name:                "case 1: Missing template link",
+			templateLinkPresent: false,
+			expectedChecksum:    "",
+			errorMatcher:        IsNilTemplateLinkError,
 		},
 		{
-			Name:                "Case 3: Error downloading template from external URI",
-			TemplateLinkPresent: true,
-			ExpectedChecksum:    "",
-			StatusCode:          http.StatusInternalServerError,
-			ResponseBody:        `{"error": "500 - Internal server error"}`,
-			ErrorMatcher:        IsUnableToGetTemplateError,
+			name:                "case 2: Error downloading template from external URI",
+			templateLinkPresent: true,
+			expectedChecksum:    "",
+			statusCode:          http.StatusInternalServerError,
+			responseBody:        `{"error": "500 - Internal server error"}`,
+			errorMatcher:        IsUnableToGetTemplateError,
 		},
 	}
 
-	for _, tc := range testCases {
-		t.Run(tc.Name, func(t *testing.T) {
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Log(tc.name)
 			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
 				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(tc.StatusCode)
-				w.Write([]byte(tc.ResponseBody))
+				w.WriteHeader(tc.statusCode)
+				w.Write([]byte(tc.responseBody))
 			}))
 			defer ts.Close()
 
 			var templateLink *resources.TemplateLink
-			if tc.TemplateLinkPresent {
+			if tc.templateLinkPresent {
 				templateLink = &resources.TemplateLink{
 					URI: to.StringPtr(ts.URL),
 				}
@@ -69,19 +71,19 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 
 			chk, err := getDeploymentTemplateChecksum(deployment)
 
-			if chk != tc.ExpectedChecksum {
-				t.Fatal(fmt.Sprintf("Wrong checksum: expected %s got %s", tc.ExpectedChecksum, chk))
+			switch {
+			case err == nil && tc.errorMatcher == nil:
+				// fall through
+			case err != nil && tc.errorMatcher == nil:
+				t.Fatalf("expected %#v got %#v", nil, err)
+			case err == nil && tc.errorMatcher != nil:
+				t.Fatalf("expected %#v got %#v", "error", nil)
+			case !tc.errorMatcher(err):
+				t.Fatalf("expected %#v got %#v", true, false)
 			}
 
-			switch {
-			case err == nil && tc.ErrorMatcher == nil:
-				// fall through
-			case err != nil && tc.ErrorMatcher == nil:
-				t.Fatalf("expected %#v got %#v", nil, err)
-			case err == nil && tc.ErrorMatcher != nil:
-				t.Fatalf("expected %#v got %#v", "error", nil)
-			case !tc.ErrorMatcher(err):
-				t.Fatalf("expected %#v got %#v", true, false)
+			if chk != tc.expectedChecksum {
+				t.Fatal(fmt.Sprintf("Wrong checksum: expected %s got %s", tc.expectedChecksum, chk))
 			}
 		})
 	}
@@ -89,30 +91,30 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 
 func Test_getDeploymentParametersChecksum(t *testing.T) {
 	testCases := map[string]testData{
-		"#1 Default test data":              defaultTestData(),
-		"#2 Changed Admin Username":         defaultTestData().WithAdminUsername("giantswarm2"),
-		"#3 Changed SSH key":                defaultTestData().WithAdminSSHKeyData("ssh-rsa AAAAB3aC1yc...k+y+ls2D0xJfqxw=="),
-		"#4 Changed OS Image Offer":         defaultTestData().WithOSImageOffer("Ubuntu"),
-		"#5 Changed OS Image Publisher":     defaultTestData().WithOSImagePublisher("Canonical"),
-		"#6 Changed OS Image SKU":           defaultTestData().WithOSImageSKU("LTS"),
-		"#7 Changed OS Image Version":       defaultTestData().WithOSImageVersion("18.04"),
-		"#8 Changed VM Size":                defaultTestData().WithVMSize("very_sml"),
-		"#9 Changed Docker Volume Size":     defaultTestData().WithDockerVolumeSizeGB(100),
-		"#10 Changed Master Blob Url":       defaultTestData().WithMasterBlobUrl("http://www.giantwarm.io"),
-		"#11 Changed Master Encryption Key": defaultTestData().WithMasterEncryptionKey("0123456789abcdef"),
-		"#12 Changed Master Initial Vector": defaultTestData().WithMasterInitialVector("fedcba9876543210"),
-		"#13 Changed Worker Blob Url":       defaultTestData().WithWorkerBlobUrl("http://www.giantwarm.io"),
-		"#14 Changed Worker Encryption Key": defaultTestData().WithWorkerEncryptionKey("0123456789abcdef"),
-		"#15 Changed Worker Initial Vector": defaultTestData().WithWorkerInitialVector("fedcba9876543210"),
-		"#16 Changed Api LB Backend Pool":   defaultTestData().WithApiLBBackendPoolID("/just/a/test"),
-		"#17 Changed Cluster ID":            defaultTestData().WithClusterID("abcde"),
-		"#18 Changed ETCD LB Backend Pool":  defaultTestData().WithEtcdLBBackendPoolID("/and/another/test"),
-		"#19 Changed Master Subnet ID":      defaultTestData().WithMasterSubnetID("/and/another/one"),
-		"#20 Change VMSS MSIE enabled":      defaultTestData().WithVmssMSIEnabled(false),
-		"#21 Changed Worker Subnet ID":      defaultTestData().WithWorkerSubnetID("/and/the/last/one"),
-		"#22 Added a new field":             defaultTestData().WithAdditionalFields(map[string]string{"additional": "field"}),
-		"#23 Removed a field":               defaultTestData().WithRemovedFields([]string{"masterSubnetID"}),
-		"#24 Changed the cloud config tmpl": defaultTestData().WithCloudConfigSmallTemplates([]string{"{}"}),
+		"case 0: Default test data":              defaultTestData(),
+		"case 1: Changed Admin Username":         defaultTestData().WithAdminUsername("giantswarm2"),
+		"case 2: Changed SSH key":                defaultTestData().WithAdminSSHKeyData("ssh-rsa AAAAB3aC1yc...k+y+ls2D0xJfqxw=="),
+		"case 3: Changed OS Image Offer":         defaultTestData().WithOSImageOffer("Ubuntu"),
+		"case 4: Changed OS Image Publisher":     defaultTestData().WithOSImagePublisher("Canonical"),
+		"case 5: Changed OS Image SKU":           defaultTestData().WithOSImageSKU("LTS"),
+		"case 6: Changed OS Image Version":       defaultTestData().WithOSImageVersion("18.04"),
+		"case 7: Changed VM Size":                defaultTestData().WithVMSize("very_sml"),
+		"case 8: Changed Docker Volume Size":     defaultTestData().WithDockerVolumeSizeGB(100),
+		"case 9: Changed Master Blob Url":        defaultTestData().WithMasterBlobUrl("http://www.giantwarm.io"),
+		"case 10: Changed Master Encryption Key": defaultTestData().WithMasterEncryptionKey("0123456789abcdef"),
+		"case 11: Changed Master Initial Vector": defaultTestData().WithMasterInitialVector("fedcba9876543210"),
+		"case 12: Changed Worker Blob Url":       defaultTestData().WithWorkerBlobUrl("http://www.giantwarm.io"),
+		"case 13: Changed Worker Encryption Key": defaultTestData().WithWorkerEncryptionKey("0123456789abcdef"),
+		"case 14: Changed Worker Initial Vector": defaultTestData().WithWorkerInitialVector("fedcba9876543210"),
+		"case 15: Changed Api LB Backend Pool":   defaultTestData().WithApiLBBackendPoolID("/just/a/test"),
+		"case 16: Changed Cluster ID":            defaultTestData().WithClusterID("abcde"),
+		"case 17: Changed ETCD LB Backend Pool":  defaultTestData().WithEtcdLBBackendPoolID("/and/another/test"),
+		"case 18: Changed Master Subnet ID":      defaultTestData().WithMasterSubnetID("/and/another/one"),
+		"case 19: Change VMSS MSIE enabled":      defaultTestData().WithVmssMSIEnabled(false),
+		"case 20: Changed Worker Subnet ID":      defaultTestData().WithWorkerSubnetID("/and/the/last/one"),
+		"case 21: Added a new field":             defaultTestData().WithAdditionalFields(map[string]string{"additional": "field"}),
+		"case 22: Removed a field":               defaultTestData().WithRemovedFields([]string{"masterSubnetID"}),
+		"case 23: Changed the cloud config tmpl": defaultTestData().WithCloudConfigSmallTemplates([]string{"{}"}),
 	}
 
 	for name, tc := range testCases {

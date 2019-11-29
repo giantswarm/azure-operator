@@ -89,7 +89,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, deploymentTemplateChk))
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
-				// todo remove any DeploymentTemplateChecksum leftovers from the CR
 			}
 
 			deploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
@@ -106,7 +105,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, deploymentParametersChk))
 			} else {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
-				// todo remove any DeploymentParametersChecksum leftovers from the CR
 			}
 
 			reconciliationcanceledcontext.SetCanceled(ctx)
@@ -163,7 +161,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if hasResourceStatus(customObject, Stage, DeploymentCompleted) {
-		return r.handleDeploymentCompletedStatus(ctx, customObject)
+		err := r.handleDeploymentCompletedStatus(ctx, customObject)
+		if IsDeploymentNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if controllercontext.IsInvalidContext(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if blobclient.IsBlobNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		}
+
+		return err
 	}
 
 	if hasResourceStatus(customObject, Stage, ProvisioningSuccessful) {
@@ -703,12 +719,7 @@ func (r *Resource) handleDeploymentCompletedStatus(ctx context.Context, customOb
 	}
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
-	if IsDeploymentNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return nil
-	} else if err != nil {
+	if err != nil {
 		return microerror.Mask(err)
 	}
 
@@ -717,17 +728,7 @@ func (r *Resource) handleDeploymentCompletedStatus(ctx context.Context, customOb
 
 	if key.IsSucceededProvisioningState(s) {
 		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
-		if controllercontext.IsInvalidContext(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return nil
-		} else if blobclient.IsBlobNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
-			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return nil
-		} else if err != nil {
+		if err != nil {
 			return microerror.Mask(err)
 		} else {
 			desiredDeploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
