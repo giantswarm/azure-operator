@@ -39,6 +39,15 @@ const Small = `{
           "label": "docker",
           "format": "xfs"
         }
+      },
+      { 
+        "name": "kubelet",
+        "mount": {
+          "device": "/dev/disk/azure/scsi1/{{ if eq .InstanceRole "master"}}lun2{{ else }}lun1{{end}}",
+          "wipeFilesystem": true,
+          "label": "kubelet",
+          "format": "xfs"
+        }
       }{{ if eq .InstanceRole "master" -}},
       {
         "name": "etcd",
