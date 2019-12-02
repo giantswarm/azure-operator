@@ -46,7 +46,11 @@
     },
     "vmssTemplateFile":{
       "type":"string",
-      "defaultValue":"vmss.json"
+      "defaultValue":"vmss.json",
+      "allowedValues": [
+        "vmss.json",
+        "vmss-az.json"
+      ]
     },
     "workerCloudConfigData":{
       "type":"secureString",

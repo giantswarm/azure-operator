@@ -73,6 +73,15 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	workerBlobName := key.BlobName(obj, key.PrefixWorker())
 	zones := key.AvailabilityZones(obj)
 
+	var vmssTemplateFile = "vmss.json"
+	{
+		if zones != nil {
+			// Setting the AZ parameter on a template that doesn't already have
+			// it would fail, so we need to use a different ARM template.
+			vmssTemplateFile = "vmss-az.json"
+		}
+	}
+
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
 	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
@@ -144,6 +153,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"masterNodes":           masterNodes,
 		"masterSubnetID":        cc.MasterSubnetID,
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
+		"vmssTemplateFile":      vmssTemplateFile,
 		"workerCloudConfigData": encodedWorkerCloudConfig,
 		"workerNodes":           workerNodes,
 		"workerSubnetID":        cc.WorkerSubnetID,
