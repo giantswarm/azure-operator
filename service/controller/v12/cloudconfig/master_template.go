@@ -271,6 +271,11 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 			Enabled:      true,
 		},
 		{
+			AssetContent: ignition.KubeletMountUnit,
+			Name:         "var-lib-kubelet.mount",
+			Enabled:      true,
+		},
+		{
 			AssetContent: ignition.IngressLBUnit,
 			Name:         "ingress-lb.service",
 			Enabled:      true,

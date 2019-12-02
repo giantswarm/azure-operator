@@ -45,11 +45,12 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	var masterNodes []node
 	for _, m := range obj.Spec.Azure.Masters {
 		n := node{
-			AdminUsername:      key.AdminUsername(obj),
-			AdminSSHKeyData:    key.AdminSSHKeyData(obj),
-			OSImage:            newNodeOSImageCoreOS(),
-			VMSize:             m.VMSize,
-			DockerVolumeSizeGB: m.DockerVolumeSizeGB,
+			AdminUsername:       key.AdminUsername(obj),
+			AdminSSHKeyData:     key.AdminSSHKeyData(obj),
+			OSImage:             newNodeOSImageCoreOS(),
+			VMSize:              m.VMSize,
+			DockerVolumeSizeGB:  m.DockerVolumeSizeGB,
+			KubeletVolumeSizeGB: m.KubeletVolumeSizeGB,
 		}
 		masterNodes = append(masterNodes, n)
 	}
@@ -57,11 +58,12 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	var workerNodes []node
 	for _, w := range obj.Spec.Azure.Workers {
 		n := node{
-			AdminUsername:      key.AdminUsername(obj),
-			AdminSSHKeyData:    key.AdminSSHKeyData(obj),
-			OSImage:            newNodeOSImageCoreOS(),
-			VMSize:             w.VMSize,
-			DockerVolumeSizeGB: w.DockerVolumeSizeGB,
+			AdminUsername:       key.AdminUsername(obj),
+			AdminSSHKeyData:     key.AdminSSHKeyData(obj),
+			OSImage:             newNodeOSImageCoreOS(),
+			VMSize:              w.VMSize,
+			DockerVolumeSizeGB:  w.DockerVolumeSizeGB,
+			KubeletVolumeSizeGB: w.KubeletVolumeSizeGB,
 		}
 		workerNodes = append(workerNodes, n)
 	}
