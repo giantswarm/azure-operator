@@ -199,7 +199,7 @@ func defaultTestData() testData {
 		removedFields:             nil,
 		cloudConfigSmallTemplates: key.CloudConfigSmallTemplates(),
 
-		checksumIs:    to.StringPtr("5bd677fda75a9855203689725977c4d3118b3a0f8204674266bab7cf1ee2881b"),
+		checksumIs:    to.StringPtr("2a3fe6edffc9cd202717b4267eb95274a906feaa74c6fbdb5fae4a5fa1e5bcec"),
 		checksumIsNot: nil,
 	}
 }
