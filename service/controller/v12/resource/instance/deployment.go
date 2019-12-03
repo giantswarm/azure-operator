@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"encoding/base64"
-
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/to"

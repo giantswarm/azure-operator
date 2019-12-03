@@ -532,13 +532,13 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(ws.InstanceToUpdate(), tc.ExpectedInstanceToUpdate) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToUpdate, ws.instanceToUpdate)
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToUpdate, ws.InstanceToUpdate())
 			}
 			if !reflect.DeepEqual(ws.InstanceToDrain(), tc.ExpectedInstanceToDrain) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToDrain, ws.instanceToDrain)
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToDrain, ws.InstanceToDrain())
 			}
 			if !reflect.DeepEqual(ws.InstanceToReimage(), tc.ExpectedInstanceToReimage) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, ws.instanceToReimage)
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, ws.InstanceToReimage())
 			}
 		})
 	}
