@@ -9,11 +9,14 @@ import (
 )
 
 const (
-	Stage = "Stage"
-)
+	// Types
+	Stage                        = "Stage"
+	DeploymentTemplateChecksum   = "TemplateChecksum"
+	DeploymentParametersChecksum = "ParametersChecksum"
 
-const (
+	// States
 	DeploymentInitialized  = "DeploymentInitialized"
+	DeploymentCompleted    = "DeploymentCompleted"
 	InstancesUpgrading     = "InstancesUpgrading"
 	ProvisioningSuccessful = "ProvisioningSuccessful"
 )
@@ -85,6 +88,31 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	}
 
 	return nil
+}
+
+func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, t string) (string, error) {
+	{
+		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		customObject = *c
+	}
+
+	for _, r := range customObject.Status.Cluster.Resources {
+		if r.Name != Name {
+			continue
+		}
+
+		for _, c := range r.Conditions {
+			if c.Type == t {
+				return c.Status, nil
+			}
+		}
+	}
+
+	return "", nil
 }
 
 func computeForDeleteResourceStatus(customObject providerv1alpha1.AzureConfig, n string, t string, s string) providerv1alpha1.AzureConfig {
