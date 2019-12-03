@@ -75,6 +75,12 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	workerBlobName := key.BlobName(obj, key.PrefixWorker())
 	zones := key.AvailabilityZones(obj)
 
+	// TODO having two ARM templates duplicates a lot of code. We could use go
+	// templates to create the ARM template and conditionally add the AZ
+	// parameters only when needed.
+	//
+	//     https://github.com/giantswarm/giantswarm/issues/7909
+	//
 	var vmssTemplateFile = "vmss.json"
 	{
 		if zones != nil {
