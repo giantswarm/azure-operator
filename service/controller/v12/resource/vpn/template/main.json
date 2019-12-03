@@ -80,8 +80,8 @@
           ]
         },
         "sku":{
-          "name":"VpnGw1AZ",
-          "tier":"VpnGw1AZ"
+          "name":"VpnGw1",
+          "tier":"VpnGw1"
         }
       }
     }
