@@ -166,7 +166,7 @@
             "value":"Manual"
           },
           "zones":{
-            "value":"[parameters('zones')"
+            "value":"[parameters('zones')]"
           }
         }
       }
@@ -250,7 +250,7 @@
             "value":"Manual"
           },
           "zones":{
-            "value":"[parameters('zones')"
+            "value":"[parameters('zones')]"
           }
         }
       }
