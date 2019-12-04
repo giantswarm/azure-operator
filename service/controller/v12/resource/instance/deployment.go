@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"encoding/base64"
+	"fmt"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -86,6 +87,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 			// Setting the AZ parameter on a template that doesn't already have
 			// it would fail, so we need to use a different ARM template.
 			vmssTemplateFile = "vmss-az.json"
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%v", zones))
 		}
 	}
 
