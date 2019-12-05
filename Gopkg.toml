@@ -88,9 +88,9 @@ required = [
   name = "github.com/giantswarm/micrologger"
   branch = "master"
 
-[[override]]
-  branch = "cluster-controller"
+[[constraint]]
   name = "github.com/giantswarm/operatorkit"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/statusresource"
