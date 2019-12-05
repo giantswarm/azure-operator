@@ -46,7 +46,11 @@
     },
     "vmssTemplateFile":{
       "type":"string",
-      "defaultValue":"vmss.json"
+      "defaultValue":"vmss.json",
+      "allowedValues": [
+        "vmss.json",
+        "vmss-az.json"
+      ]
     },
     "workerCloudConfigData":{
       "type":"secureString",
@@ -61,6 +65,13 @@
       "type":"string",
       "metadata":{
         "description":"Output value of the worker subnet ID as referenced from the virtual network setup."
+      }
+    },
+    "zones":{
+      "type":"array",
+      "defaultValue": [1],
+      "metadata":{
+        "description":"Availability zones used to create the cluster."
       }
     }
   },
@@ -153,6 +164,9 @@
           },
           "vmssUpgradePolicy":{
             "value":"Manual"
+          },
+          "zones":{
+            "value":"[parameters('zones')]"
           }
         }
       }
@@ -234,6 +248,9 @@
           },
           "vmssUpgradePolicy":{
             "value":"Manual"
+          },
+          "zones":{
+            "value":"[parameters('zones')]"
           }
         }
       }

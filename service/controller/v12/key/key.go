@@ -301,6 +301,15 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
+// AvailabilityZones returns the availability zones where the cluster will be created.
+func AvailabilityZones(customObject providerv1alpha1.AzureConfig) []int {
+	if customObject.Spec.Azure.AvailabilityZones == nil {
+		return []int{}
+	}
+
+	return customObject.Spec.Azure.AvailabilityZones
+}
+
 func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	// In integration tests we use hyphens which are not allowed. We also
 	// need to keep the name globaly unique and within 24 character limit.

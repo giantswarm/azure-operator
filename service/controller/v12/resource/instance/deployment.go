@@ -72,6 +72,24 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	storageAccountName := key.StorageAccountName(obj)
 	masterBlobName := key.BlobName(obj, key.PrefixMaster())
 	workerBlobName := key.BlobName(obj, key.PrefixWorker())
+	zones := key.AvailabilityZones(obj)
+
+	// TODO having two ARM templates duplicates a lot of code. We could use go
+	// templates to create the ARM template and conditionally add the AZ
+	// parameters only when needed.
+	//
+	//     https://github.com/giantswarm/giantswarm/issues/7909
+	//
+	var vmssTemplateFile string
+	{
+		// Setting the AZ parameter on a template that doesn't already have
+		// it would fail, so we need to use a different ARM template.
+		if len(zones) > 0 {
+			vmssTemplateFile = "vmss-az.json"
+		} else {
+			vmssTemplateFile = "vmss.json"
+		}
+	}
 
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
 	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
@@ -144,9 +162,11 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"masterNodes":           masterNodes,
 		"masterSubnetID":        cc.MasterSubnetID,
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
+		"vmssTemplateFile":      vmssTemplateFile,
 		"workerCloudConfigData": encodedWorkerCloudConfig,
 		"workerNodes":           workerNodes,
 		"workerSubnetID":        cc.WorkerSubnetID,
+		"zones":                 zones,
 	}
 
 	d := azureresource.Deployment{
