@@ -303,6 +303,10 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 
 // AvailabilityZones returns the availability zones where the cluster will be created.
 func AvailabilityZones(customObject providerv1alpha1.AzureConfig) []int {
+	if customObject.Spec.Azure.AvailabilityZones == nil {
+		return []int{}
+	}
+
 	return customObject.Spec.Azure.AvailabilityZones
 }
 

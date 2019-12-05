@@ -84,14 +84,10 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	{
 		// Setting the AZ parameter on a template that doesn't already have
 		// it would fail, so we need to use a different ARM template.
-		if zones != nil {
+		if len(zones) > 0 {
 			vmssTemplateFile = "vmss-az.json"
 		} else {
 			vmssTemplateFile = "vmss.json"
-			// Even though is not used on the vmss template, the zones
-			// parameter is defined in the main template, so we need to pass
-			// something other than 'nil'.
-			zones = []int{}
 		}
 	}
 
