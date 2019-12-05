@@ -7,7 +7,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/resource/crud"
 
 	"github.com/giantswarm/azure-operator/service/controller/v8patch1/key"
 )
@@ -48,7 +48,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 
 // NewDeletePatch returns the patch deleting resource group for this cluster if
 // it is needed.
-func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
+func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -65,8 +65,8 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 	return r.newDeletePatch(ctx, o, c, d)
 }
 
-func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*controller.Patch, error) {
-	patch := controller.NewPatch()
+func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {
+	patch := crud.NewPatch()
 
 	deleteChange, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
 	if err != nil {

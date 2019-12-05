@@ -391,11 +391,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:be4bcfa973fb546006d9c60d7bb40f0041cc0b292a5ef2f42030b99bbdd2aa0a"
+  digest = "1:f14f3cf9e9784cbcffe13c6fe4728a9e38b9c124337e72570c720fe46642231f"
   name = "github.com/giantswarm/k8sclient"
-  packages = ["."]
+  packages = [
+    ".",
+    "k8scrdclient",
+    "k8srestconfig",
+  ]
   pruneopts = "UT"
-  revision = "079149b6a5df4f16247dd3c1b7c06fb14c03bcca"
+  revision = "059a94fd04e59aceab384413cf9608ae1640a2ca"
 
 [[projects]]
   branch = "master"
@@ -490,11 +494,9 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:63f3733db2f2af3343e8935dcd9762dd7208c03fe5113c12304cb32de9f1db29"
+  digest = "1:1ee36c886f3a482886f654bc85f2bf7b1181814720b993e74faa4e04d933ef2e"
   name = "github.com/giantswarm/operatorkit"
   packages = [
-    "client/k8scrdclient",
-    "client/k8srestconfig",
     "controller",
     "controller/context/finalizerskeptcontext",
     "controller/context/reconciliationcanceledcontext",
@@ -506,12 +508,13 @@
     "informer",
     "informer/collector",
     "resource",
+    "resource/crud",
     "resource/wrapper/internal",
     "resource/wrapper/metricsresource",
     "resource/wrapper/retryresource",
   ]
   pruneopts = "UT"
-  revision = "3ac58af660114a9eb5c38f62ea568a6fbb3cc060"
+  revision = "0bdb515a2e0ab4fe8999b371b5ff1d13425a0c49"
 
 [[projects]]
   branch = "master"
@@ -531,11 +534,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a2eb6ad574f5abbf4fe0790763f40ff249e1ec29e5e10e630d0708137d1b9d31"
+  digest = "1:2e3650786229c1182973b00f72bd11b0c4cace9ea9bd6d4b6c6bd8fc0ed64dd7"
   name = "github.com/giantswarm/tenantcluster"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1a7ae4c49fa426b7d87169862b740f0d9dbc94ea"
+  revision = "9c414538c248c12cd6b6e6c361213cfa44ae472d"
 
 [[projects]]
   branch = "master"
@@ -1204,6 +1207,17 @@
   packages = ["rate"]
   pruneopts = "UT"
   revision = "555d28b269f0569763d25dbe1a237ae74c6bcc82"
+
+[[projects]]
+  branch = "master"
+  digest = "1:918a46e4a2fb83df33f668f5a6bd51b2996775d073fce1800d3ec01b0a5ddd2b"
+  name = "golang.org/x/xerrors"
+  packages = [
+    ".",
+    "internal",
+  ]
+  pruneopts = "UT"
+  revision = "9bdfabe68543c54f90421aeb9a60ef8061b5b544"
 
 [[projects]]
   digest = "1:e0a1881f9e0564bebdeac98c75e59f07acdde6ed3a5396e0e613eaad31194866"
@@ -1896,6 +1910,17 @@
   revision = "8d271d903fe4c290aa361acfb242cff7bcee96f1"
 
 [[projects]]
+  digest = "1:bdb52c1bab3f4336d128f504e0035e956fc7b817fbacd7eed60287c5e99a5d34"
+  name = "sigs.k8s.io/controller-runtime"
+  packages = [
+    "pkg/client",
+    "pkg/client/apiutil",
+  ]
+  pruneopts = "UT"
+  revision = "d21241119ea4de139f1892ba2f5bc72c96d07f3f"
+  version = "v0.3.0"
+
+[[projects]]
   digest = "1:cb422c75bab66a8339a38b64e837f3b28f3d5a8c06abd7b9048f420363baa18a"
   name = "sigs.k8s.io/kustomize"
   packages = [
@@ -1976,6 +2001,8 @@
     "github.com/giantswarm/helmclient",
     "github.com/giantswarm/ipam",
     "github.com/giantswarm/k8sclient",
+    "github.com/giantswarm/k8sclient/k8scrdclient",
+    "github.com/giantswarm/k8sclient/k8srestconfig",
     "github.com/giantswarm/k8scloudconfig/v_4_1_1",
     "github.com/giantswarm/k8scloudconfig/v_4_3_0",
     "github.com/giantswarm/k8scloudconfig/v_4_5_0",
@@ -1994,8 +2021,6 @@
     "github.com/giantswarm/microkit/server",
     "github.com/giantswarm/micrologger",
     "github.com/giantswarm/micrologger/microloggertest",
-    "github.com/giantswarm/operatorkit/client/k8scrdclient",
-    "github.com/giantswarm/operatorkit/client/k8srestconfig",
     "github.com/giantswarm/operatorkit/controller",
     "github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext",
     "github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext",
@@ -2003,6 +2028,7 @@
     "github.com/giantswarm/operatorkit/flag/service/kubernetes",
     "github.com/giantswarm/operatorkit/informer",
     "github.com/giantswarm/operatorkit/resource",
+    "github.com/giantswarm/operatorkit/resource/crud",
     "github.com/giantswarm/operatorkit/resource/wrapper/metricsresource",
     "github.com/giantswarm/operatorkit/resource/wrapper/retryresource",
     "github.com/giantswarm/randomkeys",
@@ -2014,7 +2040,6 @@
     "github.com/spf13/viper",
     "golang.org/x/sync/errgroup",
     "k8s.io/api/core/v1",
-    "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
     "k8s.io/apimachinery/pkg/types",
