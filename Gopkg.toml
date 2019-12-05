@@ -88,9 +88,9 @@ required = [
   name = "github.com/giantswarm/micrologger"
   branch = "master"
 
-[[constraint]]
+[[override]]
+  branch = "cluster-controller"
   name = "github.com/giantswarm/operatorkit"
-  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/statusresource"
@@ -139,6 +139,11 @@ required = [
 [[override]]
   name = "github.com/russross/blackfriday"
   version = "v1.5.2"
+
+[[override]]
+  source = "gopkg.in/fsnotify/fsnotify.v1"
+  name = "gopkg.in/fsnotify.v1"
+
 
 [prune]
   go-tests = true
