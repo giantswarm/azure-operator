@@ -4,7 +4,7 @@ import (
 	"context"
 	"sync"
 
-	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/k8sclient/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
@@ -120,11 +120,6 @@ func New(config Config) (*Service, error) {
 			return nil, microerror.Mask(err)
 		}
 	}
-
-	//g8sClient, err := gsclient.NewForConfig(restConfig)
-	//if err != nil {
-	//	return nil, microerror.Mask(err)
-	//}
 
 	var k8sClient *k8sclient.Clients
 	{
