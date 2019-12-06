@@ -1,16 +1,13 @@
 package controller
 
 import (
-	"time"
-
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
-	"github.com/giantswarm/k8sclient/k8scrdclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
-	"github.com/giantswarm/operatorkit/informer"
+	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -55,22 +52,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 
 		certsSearcher, err = certs.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var newInformer *informer.Informer
-	{
-		c := informer.Config{
-			Logger:  config.Logger,
-			Watcher: config.K8sClient.G8sClient().ProviderV1alpha1().AzureConfigs(""),
-
-			RateWait:     informer.DefaultRateWait,
-			ResyncPeriod: 3 * time.Minute,
-		}
-
-		newInformer, err = informer.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -320,9 +301,9 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	{
 		c := controller.Config{
 			CRD:       v1alpha1.NewAzureConfigCRD(),
-			CRDClient: config.K8sClient.CRDClient().(*k8scrdclient.CRDClient),
-			Informer:  newInformer,
+			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
+			Name:      config.ProjectName,
 			ResourceSets: []*controller.ResourceSet{
 				v6ResourceSet,
 				v7ResourceSet,
@@ -335,9 +316,9 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 				v11ResourceSet,
 				v12ResourceSet,
 			},
-			RESTClient: config.K8sClient.G8sClient().ProviderV1alpha1().RESTClient(),
-
-			Name: config.ProjectName,
+			NewRuntimeObjectFunc: func() runtime.Object {
+				return new(v1alpha1.AzureConfig)
+			},
 		}
 
 		operatorkitController, err = controller.New(c)
