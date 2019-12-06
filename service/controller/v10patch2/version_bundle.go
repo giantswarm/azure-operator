@@ -11,14 +11,11 @@ func VersionBundle() versionbundle.Bundle {
 				Component:   "azure-operator",
 				Description: "Update to kubernetes 1.14.8.",
 				Kind:        versionbundle.KindChanged,
-<<<<<<< HEAD
 			},
 			{
 				Component:   "azure-operator",
 				Description: "Added new rule to the Public Load Balancer to allow outgoing UDP traffic from the master nodes",
 				Kind:        versionbundle.KindChanged,
-=======
->>>>>>> 21e1e308... update version bundle
 			},
 		},
 		Components: []versionbundle.Component{
