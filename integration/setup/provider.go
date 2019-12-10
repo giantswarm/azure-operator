@@ -87,12 +87,13 @@ func provider(ctx context.Context, config Config) error {
 	{
 		c := chartvalues.APIExtensionsAzureConfigE2EConfig{
 			Azure: chartvalues.APIExtensionsAzureConfigE2EConfigAzure{
-				CalicoSubnetCIDR: env.AzureCalicoSubnetCIDR(),
-				CIDR:             env.AzureCIDR(),
-				Location:         env.AzureLocation(),
-				MasterSubnetCIDR: env.AzureMasterSubnetCIDR(),
-				VPNSubnetCIDR:    env.AzureVPNSubnetCIDR(),
-				WorkerSubnetCIDR: env.AzureWorkerSubnetCIDR(),
+				AvailabilityZones: env.AzureAvailabilityZones(),
+				CalicoSubnetCIDR:  env.AzureCalicoSubnetCIDR(),
+				CIDR:              env.AzureCIDR(),
+				Location:          env.AzureLocation(),
+				MasterSubnetCIDR:  env.AzureMasterSubnetCIDR(),
+				VPNSubnetCIDR:     env.AzureVPNSubnetCIDR(),
+				WorkerSubnetCIDR:  env.AzureWorkerSubnetCIDR(),
 			},
 			ClusterName:               env.ClusterID(),
 			CommonDomain:              env.CommonDomain(),
