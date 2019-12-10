@@ -107,7 +107,18 @@ func AzureAvailabilityZones() []int {
 	zones := make([]int, len(azs))
 
 	for i, s := range azs {
-		zones[i], _ = strconv.Atoi(s)
+		zone, err := strconv.Atoi(s)
+		if err != nil {
+			panic(fmt.Sprintf("AvailabilityZones valid numbers are 1, "+
+				"2, 3. Your '%s' env var contains %s",
+				EnvVarAzureAZs, azureAvailabilityZones))
+		}
+		if zone < 1 || zone > 3 {
+			panic(fmt.Sprintf("AvailabilityZones valid numbers are 1, "+
+				"2, 3. Your '%s' env var contains %s",
+				EnvVarAzureAZs, azureAvailabilityZones))
+		}
+		zones[i] = zone
 	}
 	return zones
 }
