@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/giantswarm/azure-operator/integration/network"
 )
 
 const (
+	EnvVarAzureAZs              = "AZURE_AZS"
 	EnvVarAzureCIDR             = "AZURE_CIDR"
 	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
 	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
@@ -32,11 +34,12 @@ var (
 	azureSubscriptionID string
 	azureTenantID       string
 
-	azureCIDR             string
-	azureCalicoSubnetCIDR string
-	azureMasterSubnetCIDR string
-	azureVPNSubnetCIDR    string
-	azureWorkerSubnetCIDR string
+	azureAvailabilityZones string
+	azureCIDR              string
+	azureCalicoSubnetCIDR  string
+	azureMasterSubnetCIDR  string
+	azureVPNSubnetCIDR     string
+	azureWorkerSubnetCIDR  string
 
 	commonDomainResourceGroup string
 )
@@ -55,6 +58,11 @@ func init() {
 	azureLocation = os.Getenv(EnvVarAzureLocation)
 	if azureLocation == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureLocation))
+	}
+
+	azureAvailabilityZones = os.Getenv(EnvVarAzureAZs)
+	if azureAvailabilityZones == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureAZs))
 	}
 
 	azureSubscriptionID = os.Getenv(EnvVarAzureSubscriptionID)
@@ -92,6 +100,16 @@ func init() {
 		azureVPNSubnetCIDR = subnets.VPN.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
 	}
+}
+
+func AzureAvailabilityZones() []int {
+	azs := strings.Split(strings.TrimSpace(azureAvailabilityZones), " ")
+	zones := make([]int, len(azs))
+
+	for i, s := range azs {
+		zones[i], _ = strconv.Atoi(s)
+	}
+	return zones
 }
 
 func AzureCalicoSubnetCIDR() string {
