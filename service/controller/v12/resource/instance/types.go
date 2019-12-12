@@ -1,6 +1,8 @@
 package instance
 
-import "github.com/giantswarm/certs"
+import (
+	"github.com/giantswarm/certs"
+)
 
 type node struct {
 	// AdminUsername is the vm administrator username
@@ -29,6 +31,17 @@ type nodeOSImage struct {
 	SKU string `json:"sku" yaml:"sku"`
 	// Version is the image version (e.g. 1465.7.0).
 	Version string `json:"version" yaml:"version"`
+}
+
+func newNode(adminUsername string, adminSSHKeyData string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) node {
+	return node{
+		AdminUsername:       adminUsername,
+		AdminSSHKeyData:     adminSSHKeyData,
+		OSImage:             newNodeOSImageCoreOS(),
+		VMSize:              vmSize,
+		DockerVolumeSizeGB:  dockerVolumeSizeGB,
+		KubeletVolumeSizeGB: kubeletVolumeSizeGB,
+	}
 }
 
 // newNodeOSImage provides OS information for Container Linux
