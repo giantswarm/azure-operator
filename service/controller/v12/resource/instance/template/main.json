@@ -48,8 +48,7 @@
       "type":"string",
       "defaultValue":"vmss.json",
       "allowedValues": [
-        "vmss.json",
-        "vmss-az.json"
+        "vmss.json"
       ]
     },
     "workerCloudConfigData":{
