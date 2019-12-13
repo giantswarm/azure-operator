@@ -15,6 +15,9 @@ spec:
       app: azure-operator
   strategy:
     type: RollingUpdate
+  selector:
+    matchLabels:
+      app: azure-operator
   template:
     metadata:
       annotations:

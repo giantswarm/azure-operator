@@ -45,6 +45,10 @@ required = [
   branch = "master"
 
 [[constraint]]
+  name = "github.com/giantswarm/apprclient"
+  branch = "master"
+
+[[constraint]]
   name = "github.com/giantswarm/certs"
   branch = "master"
 
@@ -66,6 +70,18 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/exporterkit"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/helmclient"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/ipam"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/k8sclient"
   branch = "master"
 
 [[constraint]]
@@ -93,6 +109,10 @@ required = [
   branch = "master"
 
 [[constraint]]
+  name = "github.com/giantswarm/randomkeys"
+  branch = "master"
+
+[[constraint]]
   name = "github.com/giantswarm/statusresource"
   branch = "master"
 
@@ -105,32 +125,60 @@ required = [
   branch = "master"
 
 [[constraint]]
+  name = "github.com/google/go-cmp"
+  version = "v0.3.1"
+
+[[constraint]]
+  name = "github.com/prometheus/client_golang"
+  version = "v0.9.4"
+
+[[constraint]]
+  name = "github.com/spf13/viper"
+  version = "v1.6.1"
+
+[[constraint]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
   name = "k8s.io/client-go"
-  version = "kubernetes-1.15.4"
+  version = "kubernetes-1.16.3"
 
 [[override]]
   name = "k8s.io/apiserver"
-  version = "kubernetes-1.15.4"
+  version = "kubernetes-1.16.3"
 
 [[override]]
   name = "k8s.io/apiextensions-apiserver"
-  version = "kubernetes-1.15.4"
-
-[[override]]
-  name = "k8s.io/apimachinery"
-  version = "kubernetes-1.15.4"
+  version = "kubernetes-1.16.3"
 
 [[override]]
   name = "k8s.io/cli-runtime"
-  version = "kubernetes-1.15.4"
-
-[[override]]
-  name = "k8s.io/kubernetes"
-  version = "v1.15.4"
+  version = "kubernetes-1.16.3"
 
 [[override]]
   name = "k8s.io/component-base"
-  version = "kubernetes-1.15.4"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/kubectl"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  version = "=v1.16.3"
+
+[[override]]
+  name = "sigs.k8s.io/kustomize"
+  version = "v2.0.3"
+
+[[override]]
+  name = "github.com/evanphx/json-patch"
+  version = "4.5.0"
 
 [[override]]
   name = "github.com/ghodss/yaml"
