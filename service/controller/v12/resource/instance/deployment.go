@@ -27,9 +27,14 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	prefixMaster := key.PrefixMaster()
+	prefixWorker := key.PrefixWorker()
+
+	masterBlobName := key.BlobName(obj, prefixMaster)
+	workerBlobName := key.BlobName(obj, prefixWorker)
 	cloudConfigURLs := []string{
-		key.BlobName(obj, key.PrefixMaster()),
-		key.BlobName(obj, key.PrefixWorker()),
+		masterBlobName,
+		workerBlobName,
 	}
 
 	for _, key := range cloudConfigURLs {
@@ -40,39 +45,6 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 			return azureresource.Deployment{}, microerror.Mask(err)
 		}
 	}
-
-	var masterNodes []node
-	for _, m := range obj.Spec.Azure.Masters {
-		n := node{
-			AdminUsername:       key.AdminUsername(obj),
-			AdminSSHKeyData:     key.AdminSSHKeyData(obj),
-			OSImage:             newNodeOSImageCoreOS(),
-			VMSize:              m.VMSize,
-			DockerVolumeSizeGB:  m.DockerVolumeSizeGB,
-			KubeletVolumeSizeGB: m.KubeletVolumeSizeGB,
-		}
-		masterNodes = append(masterNodes, n)
-	}
-
-	var workerNodes []node
-	for _, w := range obj.Spec.Azure.Workers {
-		n := node{
-			AdminUsername:       key.AdminUsername(obj),
-			AdminSSHKeyData:     key.AdminSSHKeyData(obj),
-			OSImage:             newNodeOSImageCoreOS(),
-			VMSize:              w.VMSize,
-			DockerVolumeSizeGB:  w.DockerVolumeSizeGB,
-			KubeletVolumeSizeGB: w.KubeletVolumeSizeGB,
-		}
-		workerNodes = append(workerNodes, n)
-	}
-
-	containerName := key.BlobContainerName()
-	groupName := key.ResourceGroupName(obj)
-	storageAccountName := key.StorageAccountName(obj)
-	masterBlobName := key.BlobName(obj, key.PrefixMaster())
-	workerBlobName := key.BlobName(obj, key.PrefixWorker())
-	zones := key.AvailabilityZones(obj)
 
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
 	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
@@ -93,6 +65,8 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	groupName := key.ResourceGroupName(obj)
+	storageAccountName := key.StorageAccountName(obj)
 	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -102,53 +76,40 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		return azureresource.Deployment{}, microerror.Maskf(executionFailedError, "storage account key's list is empty")
 	}
 	primaryKey := *(((*keys.Keys)[0]).Value)
+	containerName := key.BlobContainerName()
 
+	// Masters cloudconfig
 	masterBlobURL, err := blobclient.GetBlobURL(ctx, masterBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-
-	c := SmallCloudconfigConfig{
-		BlobURL:       masterBlobURL,
-		EncryptionKey: encryptionKey,
-		InitialVector: initialVector,
-		InstanceRole:  key.PrefixMaster(),
-	}
-	masterCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
+	masterCloudConfig, err := renderCloudConfig(masterBlobURL, encryptionKey, initialVector, prefixMaster)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-	encodedMasterCloudConfig := base64.StdEncoding.EncodeToString([]byte(masterCloudConfig))
 
+	// Workers cloudconfig
 	workerBlobURL, err := blobclient.GetBlobURL(ctx, workerBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-
-	c = SmallCloudconfigConfig{
-		BlobURL:       workerBlobURL,
-		EncryptionKey: encryptionKey,
-		InitialVector: initialVector,
-		InstanceRole:  key.PrefixWorker(),
-	}
-	workerCloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), c)
+	workerCloudConfig, err := renderCloudConfig(workerBlobURL, encryptionKey, initialVector, prefixWorker)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-	encodedWorkerCloudConfig := base64.StdEncoding.EncodeToString([]byte(workerCloudConfig))
 
 	defaultParams := map[string]interface{}{
 		"apiLBBackendPoolID":    cc.APILBBackendPoolID,
 		"clusterID":             key.ClusterID(obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
-		"masterCloudConfigData": encodedMasterCloudConfig,
-		"masterNodes":           masterNodes,
+		"masterCloudConfigData": masterCloudConfig,
+		"masterNodes":           getMasterNodesConfiguration(obj),
 		"masterSubnetID":        cc.MasterSubnetID,
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
-		"workerCloudConfigData": encodedWorkerCloudConfig,
-		"workerNodes":           workerNodes,
+		"workerCloudConfigData": workerCloudConfig,
+		"workerNodes":           getWorkerNodesConfiguration(obj),
 		"workerSubnetID":        cc.WorkerSubnetID,
-		"zones":                 zones,
+		"zones":                 key.AvailabilityZones(obj),
 	}
 
 	d := azureresource.Deployment{
@@ -163,4 +124,36 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	return d, nil
+}
+
+func renderCloudConfig(blobURL string, encryptionKey string, initialVector string, instanceRole string) (string, error) {
+	smallCloudconfigConfig := SmallCloudconfigConfig{
+		BlobURL:       blobURL,
+		EncryptionKey: encryptionKey,
+		InitialVector: initialVector,
+		InstanceRole:  instanceRole,
+	}
+	cloudConfig, err := templates.Render(key.CloudConfigSmallTemplates(), smallCloudconfigConfig)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return base64.StdEncoding.EncodeToString([]byte(cloudConfig)), nil
+}
+
+func getMasterNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
+	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Masters)
+}
+
+func getWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
+	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Workers)
+}
+
+func getNodesConfiguration(adminUsername string, adminSSHKeyData string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []node {
+	var nodes []node
+	for _, m := range nodesSpecs {
+		n := newNode(adminUsername, adminSSHKeyData, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
+		nodes = append(nodes, n)
+	}
+	return nodes
 }
