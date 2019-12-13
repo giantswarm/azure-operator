@@ -48,8 +48,7 @@
       "type":"string",
       "defaultValue":"vmss.json",
       "allowedValues": [
-        "vmss.json",
-        "vmss-az.json"
+        "vmss.json"
       ]
     },
     "workerCloudConfigData":{
@@ -76,12 +75,13 @@
     }
   },
   "variables":{
+    "apiVersion":"2016-09-01",
     "kubernetesLBBackendID":"[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
     "vmssTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('vmssTemplateFile'))]"
   },
   "resources":[
     {
-      "apiVersion":"2016-09-01",
+      "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
       "name":"master-vmss-deploy",
       "properties":{
@@ -172,7 +172,7 @@
       }
     },
     {
-      "apiVersion":"2016-09-01",
+      "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
       "name":"worker-vmss-deploy",
       "properties":{

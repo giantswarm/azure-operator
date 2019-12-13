@@ -14,8 +14,8 @@ version directory, and  then changes are introduced.
 ### Changed
 
 - Moved kubelet from container to host process (`--containerized` flag is removed in Kubernetes 1.16).
-- Switch from `iptables` to `ipvs` mode in kube-proxy and tune kernel params accordingly (all providers but azure).
 - Changed `restricted` PodSecurityPolicy to restrict the allowed range of user IDs for PODs.
+- Increase `fs.inotify.max_user_instances` to 8192.
 
 ### Added
 
@@ -38,11 +38,12 @@ version directory, and  then changes are introduced.
 - Use `/bin/calico-node -felix-live` for `calico-node` liveness probe instead of `httpGet`.
 - Generally minimize differences between [Calico v3.9 yaml](https://docs.projectcalico.org/v3.9/manifests/calico.yaml) and `calico-all.yaml`.
 
-## [v4.8.1] 
+## [v4.8.1] - 2019-12-04
 
 ### Changed
 
-- Update kubernetes to 1.14.8, includes fixes for CVE-2019-11253
+- Update kubernetes to 1.14.9, includes fixes for CVE-2019-11253.
+- Increase `fs.inotify.max_user_instances` to 8192.
 
 ## [v4.8.0] 
 

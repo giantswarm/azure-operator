@@ -187,6 +187,7 @@
       "type":"Microsoft.Compute/virtualMachineScaleSets",
       "name":"[parameters('vmssName')]",
       "location":"[parameters('location')]",
+      "zones": "[if(greater(length(parameters('zones')),0), parameters('zones'), json('null'))]",
       "tags":{
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
         "cluster-autoscaler-enabled":"true",

@@ -2,7 +2,7 @@ version: 1
 
 test:
   env:
-    - "AZURE_AZS=''"
+    - "AZURE_AZS=1"
     - "AZURE_CALICO_SUBNET_CIDR=${AZURE_CALICO_SUBNET_CIDR}"
     - "AZURE_CIDR=${AZURE_CIDR}"
     - "AZURE_CLIENTID=${AZURE_CLIENTID}"
