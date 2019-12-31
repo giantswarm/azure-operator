@@ -5,13 +5,13 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/resource/crud"
 
 	"github.com/giantswarm/azure-operator/service/controller/v10/key"
 )
 
-// NewDeletePatch provide a controller.Patch holding connections to be deleted.
-func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
+// NewDeletePatch provide a crud.Patch holding connections to be deleted.
+func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*crud.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -34,8 +34,8 @@ func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, des
 }
 
 // newDeletePatch use desired as delete patch since it is mostly static and more likely to be present than current.
-func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*controller.Patch, error) {
-	patch := controller.NewPatch()
+func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
+	patch := crud.NewPatch()
 
 	patch.SetDeleteChange(desired)
 

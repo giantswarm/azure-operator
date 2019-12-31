@@ -46,7 +46,10 @@
     },
     "vmssTemplateFile":{
       "type":"string",
-      "defaultValue":"vmss.json"
+      "defaultValue":"vmss.json",
+      "allowedValues": [
+        "vmss.json"
+      ]
     },
     "workerCloudConfigData":{
       "type":"secureString",
@@ -62,15 +65,23 @@
       "metadata":{
         "description":"Output value of the worker subnet ID as referenced from the virtual network setup."
       }
+    },
+    "zones":{
+      "type":"array",
+      "defaultValue": [1],
+      "metadata":{
+        "description":"Availability zones used to create the cluster."
+      }
     }
   },
   "variables":{
+    "apiVersion":"2016-09-01",
     "kubernetesLBBackendID":"[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
     "vmssTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('vmssTemplateFile'))]"
   },
   "resources":[
     {
-      "apiVersion":"2016-09-01",
+      "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
       "name":"master-vmss-deploy",
       "properties":{
@@ -153,12 +164,15 @@
           },
           "vmssUpgradePolicy":{
             "value":"Manual"
+          },
+          "zones":{
+            "value":"[parameters('zones')]"
           }
         }
       }
     },
     {
-      "apiVersion":"2016-09-01",
+      "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
       "name":"worker-vmss-deploy",
       "properties":{
@@ -234,6 +248,9 @@
           },
           "vmssUpgradePolicy":{
             "value":"Manual"
+          },
+          "zones":{
+            "value":"[parameters('zones')]"
           }
         }
       }

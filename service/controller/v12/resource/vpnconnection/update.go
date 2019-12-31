@@ -6,13 +6,13 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/resource/crud"
 
 	"github.com/giantswarm/azure-operator/service/controller/v12/key"
 )
 
-// NewUpdatePatch provide a controller.Patch holding the needed connections update.
-func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*controller.Patch, error) {
+// NewUpdatePatch provide a crud.Patch holding the needed connections update.
+func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*crud.Patch, error) {
 	a, err := key.ToCustomObject(azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -36,8 +36,8 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, des
 	return patch, nil
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*controller.Patch, error) {
-	patch := controller.NewPatch()
+func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
+	patch := crud.NewPatch()
 
 	change := r.newUpdateChange(ctx, azureConfig, current, desired)
 

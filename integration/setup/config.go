@@ -4,7 +4,6 @@ import (
 	"github.com/giantswarm/apprclient"
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
-	"github.com/giantswarm/e2e-harness/pkg/framework/resource"
 	"github.com/giantswarm/e2e-harness/pkg/harness"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
@@ -28,7 +27,6 @@ type Config struct {
 	K8s         *k8sclient.Setup
 	Logger      micrologger.Logger
 	Release     *release.Release
-	Resource    *resource.Resource
 }
 
 func NewConfig() (Config, error) {
@@ -160,22 +158,6 @@ func NewConfig() (Config, error) {
 		}
 	}
 
-	var newResource *resource.Resource
-	{
-		c := resource.Config{
-			ApprClient: apprClient,
-			HelmClient: helmClient,
-			Logger:     logger,
-
-			Namespace: namespace,
-		}
-
-		newResource, err = resource.New(c)
-		if err != nil {
-			return Config{}, microerror.Mask(err)
-		}
-	}
-
 	c := Config{
 		AzureClient: azureClient,
 		Guest:       guest,
@@ -183,7 +165,6 @@ func NewConfig() (Config, error) {
 		K8s:         k8sSetup,
 		Logger:      logger,
 		Release:     newRelease,
-		Resource:    newResource,
 	}
 
 	return c, nil

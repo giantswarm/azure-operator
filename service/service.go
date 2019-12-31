@@ -4,15 +4,14 @@ import (
 	"context"
 	"sync"
 
-	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/client/k8srestconfig"
 	"github.com/giantswarm/statusresource"
 	"github.com/spf13/viper"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -122,28 +121,26 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	g8sClient, err := gsclient.NewForConfig(restConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	k8sClient, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	k8sExtClient, err := apiextensionsclient.NewForConfig(restConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	var k8sClient *k8sclient.Clients
+	{
+		c := k8sclient.ClientsConfig{
+			SchemeBuilder: k8sclient.SchemeBuilder{
+				v1alpha1.AddToScheme,
+			},
+			Logger:     config.Logger,
+			RestConfig: restConfig,
+		}
+		k8sClient, err = k8sclient.NewClients(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	var clusterController *controller.Cluster
 	{
 		c := controller.ClusterConfig{
-			G8sClient:    g8sClient,
-			K8sClient:    k8sClient,
-			K8sExtClient: k8sExtClient,
-			Logger:       config.Logger,
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
 
 			Azure:            azure,
 			AzureConfig:      azureConfig,
@@ -164,7 +161,6 @@ func New(config Config) (*Service, error) {
 	var operatorCollector *collector.Set
 	{
 		c := collector.SetConfig{
-			G8sClient: g8sClient,
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 
@@ -182,7 +178,7 @@ func New(config Config) (*Service, error) {
 	{
 		c := statusresource.CollectorSetConfig{
 			Logger:  config.Logger,
-			Watcher: g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
+			Watcher: k8sClient.G8sClient().ProviderV1alpha1().AzureConfigs("").Watch,
 		}
 
 		statusResourceCollector, err = statusresource.NewCollectorSet(c)

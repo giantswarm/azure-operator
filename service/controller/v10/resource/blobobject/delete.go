@@ -3,7 +3,7 @@ package blobobject
 import (
 	"context"
 
-	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/resource/crud"
 )
 
 // ApplyDeleteChange not in use as blobobject deleted
@@ -14,6 +14,6 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 
 // NewDeletePatch is not in use as blobobject deleted
 // with container delete.
-func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
+func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
 	return nil, nil
 }
