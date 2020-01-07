@@ -131,7 +131,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			ClusterStatusFunc:        key.ToClusterStatus,
 			NodeCountFunc:            key.ToNodeCount,
 			Logger:                   config.Logger,
-			RESTClient:               config.K8sClient.RESTClient(),
+			RESTClient:               config.K8sClient.G8sClient().ProviderV1alpha1().RESTClient(),
 			TenantCluster:            tenantCluster,
 			VersionBundleVersionFunc: key.ToVersionBundleVersion,
 		}
