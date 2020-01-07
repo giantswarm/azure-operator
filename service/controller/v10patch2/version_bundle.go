@@ -8,14 +8,37 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "azure-operator",
-				Description: "Update to kubernetes 1.14.8.",
+				Component:   "kubernetes",
+				Description: "Update from v1.14.6 to v1.14.10.",
 				Kind:        versionbundle.KindChanged,
+				URLs: []string{
+					"https://github.com/giantswarm/azure-operator/pull/611",
+					"https://github.com/kubernetes/kubernetes/blob/master/CHANGELOG-1.14.md#changelog-since-v11410",
+				},
 			},
 			{
 				Component:   "azure-operator",
-				Description: "Added new rule to the Public Load Balancer to allow outgoing UDP traffic from the master nodes",
+				Description: "Add new rule to the Public Load Balancer to allow outgoing UDP traffic from the master nodes.",
+				Kind:        versionbundle.KindAdded,
+				URLs: []string{
+					"https://github.com/giantswarm/azure-operator/pull/579",
+				},
+			},
+			{
+				Component:   "containerlinux",
+				Description: "Increase fs.inotify.max_user_instances to 8192.",
 				Kind:        versionbundle.KindChanged,
+				URLs: []string{
+					"https://github.com/giantswarm/k8scloudconfig/pull/617",
+				},
+			},
+			{
+				Component:   "containerlinux",
+				Description: "Update from 2135.4.0 to 2135.6.0 for improved regional availability.",
+				Kind:        versionbundle.KindChanged,
+				URLs: []string{
+					"https://github.com/giantswarm/azure-operator/pull/613",
+				},
 			},
 		},
 		Components: []versionbundle.Component{
@@ -25,7 +48,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "2135.4.0",
+				Version: "2135.6.0",
 			},
 			{
 				Name:    "docker",
@@ -37,7 +60,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.14.8",
+				Version: "1.14.10",
 			},
 		},
 		Name:    "azure-operator",
