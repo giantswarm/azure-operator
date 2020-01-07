@@ -9,8 +9,33 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "azure-operator",
-				Description: "Fixed automatic reconciliation of failed deployments",
+				Description: "Fixed automatic reconciliation of failed deployments.",
 				Kind:        versionbundle.KindFixed,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Using checksum calculation to avoid applying the same VMSS template over and over again.",
+				Kind:        versionbundle.KindChanged,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Fixed the systemd unit that mounts the Docker volume on worker nodes.",
+				Kind:        versionbundle.KindFixed,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Added a new volume for the kubelet directory on worker nodes.",
+				Kind:        versionbundle.KindAdded,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Hardened 'restricted' PodSecurityPolicy (added UID range).",
+				Kind:        versionbundle.KindSecurity,
+			},
+			{
+				Component:   "azure-operator",
+				Description: "Added support for multi AZ deployments.",
+				Kind:        versionbundle.KindAdded,
 			},
 			{
 				Component:   "kubernetes",
