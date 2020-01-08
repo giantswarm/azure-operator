@@ -17,6 +17,7 @@ const (
 	// States
 	DeploymentInitialized  = "DeploymentInitialized"
 	DeploymentCompleted    = "DeploymentCompleted"
+	ScaleVMSSToDouble      = "ScaleVMSSToDouble"
 	InstancesUpgrading     = "InstancesUpgrading"
 	ProvisioningSuccessful = "ProvisioningSuccessful"
 )

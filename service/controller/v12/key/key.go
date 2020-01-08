@@ -474,6 +474,10 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
+func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
+	return len(customObject.Spec.Azure.Workers)
+}
+
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error) {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {

@@ -3,6 +3,7 @@ package instance
 import (
 	"context"
 	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -187,9 +188,36 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	if hasResourceStatus(customObject, Stage, ProvisioningSuccessful) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "vmss deployment successful")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, ScaleVMSSToDouble))
+
+		err := r.setResourceStatus(customObject, Stage, ScaleVMSSToDouble)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, ScaleVMSSToDouble))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		reconciliationcanceledcontext.SetCanceled(ctx)
+		return nil
+	}
+
+	if hasResourceStatus(customObject, Stage, ScaleVMSSToDouble) {
+		// Double the desired number of nodes in worker VMSS in order to
+		// provide 1:1 mapping between new up-to-date nodes when draining and
+		// terminating old nodes.
+		nodeCountFunc := func(_ int64) int64 {
+			return int64(key.WorkerCount(customObject) * 2)
+		}
+
+		err := r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, nodeCountFunc)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled number of nodes from %d to %d in vmss %s", key.WorkerCount(customObject), nodeCountFunc(int64(key.WorkerCount(customObject))), key.WorkerVMSSName(customObject)))
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, InstancesUpgrading))
 
-		err := r.setResourceStatus(customObject, Stage, InstancesUpgrading)
+		err = r.setResourceStatus(customObject, Stage, InstancesUpgrading)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -595,6 +623,31 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
+
+	return nil
+}
+
+func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, nodeCountFunc func(int64) int64) error {
+	c, err := r.getScaleSetsClient(ctx)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	vmss, err := c.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	*vmss.Sku.Capacity = nodeCountFunc(*vmss.Sku.Capacity)
+	res, err := c.CreateOrUpdate(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject), vmss)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, err = c.CreateOrUpdateResponder(res.Response())
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	return nil
 }
