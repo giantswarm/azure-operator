@@ -403,8 +403,8 @@
   revision = "f75fead2ae064a2ae20a117cc1cd1d2f6d050641"
 
 [[projects]]
-  branch = "release-11-0-0"
-  digest = "1:e73a63e65a83427be77b541fc11c7bf2086a854063341e6ff6a21046deb99275"
+  branch = "remove-timeout"
+  digest = "1:de1541252b285a7c3a8c0136e186c9178f92f75e37bf2b4c7fd9416fe7ee9a5e"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "ignition/v_2_2_0",
@@ -419,7 +419,7 @@
     "v_5_0_0",
   ]
   pruneopts = "T"
-  revision = "9bc2f16c2cc191231ffe0969db4aef208c6deef3"
+  revision = "2a884cf20b0a22ad3b0bca754f847ebd0c649585"
 
 [[projects]]
   branch = "master"
