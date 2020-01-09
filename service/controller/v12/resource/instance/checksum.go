@@ -5,10 +5,11 @@ import (
 	"encoding/base64"
 	"encoding/json"
 	"fmt"
+	"io"
+	"net/http"
+
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
 	"github.com/giantswarm/microerror"
-	"io/ioutil"
-	"net/http"
 )
 
 func getDeploymentTemplateChecksum(deployment resources.Deployment) (string, error) {
@@ -28,12 +29,13 @@ func getDeploymentTemplateChecksum(deployment resources.Deployment) (string, err
 		return "", microerror.Mask(unableToGetTemplateError)
 	}
 
-	body, err := ioutil.ReadAll(resp.Body)
+	digest := sha256.New()
+	_, err = io.Copy(digest, resp.Body)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	hash := fmt.Sprintf("%x", sha256.Sum256(body))
+	hash := fmt.Sprintf("%x", digest.Sum(nil))
 
 	return hash, nil
 }
