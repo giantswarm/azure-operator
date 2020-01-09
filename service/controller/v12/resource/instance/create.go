@@ -338,10 +338,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if !masterUpgradeInProgress && !workerUpgradeInProgess {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "neither masters nor workers upgraded")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling %s VMSS down to desired number of nodes %d", key.WorkerVMSSName(customObject), key.WorkerCount(customObject)))
 
+			// Scale down to the desired number of nodes in worker VMSS.
+			nodeCountFunc := func(_ int64) int64 {
+				return int64(key.WorkerCount(customObject))
+			}
+
+			err := r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, nodeCountFunc)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled number of nodes from %d to %d in vmss %s", key.WorkerCount(customObject), nodeCountFunc(int64(key.WorkerCount(customObject))), key.WorkerVMSSName(customObject)))
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, DeploymentCompleted))
 
-			err := r.setResourceStatus(customObject, Stage, DeploymentCompleted)
+			err = r.setResourceStatus(customObject, Stage, DeploymentCompleted)
 			if err != nil {
 				return microerror.Mask(err)
 			}
