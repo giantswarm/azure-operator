@@ -111,8 +111,9 @@ func New(config Config) (*Service, error) {
 
 		// Prefer KubeConfigPath if given, otherwise build restconfig.
 		{
+			inCluster := config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
 			kubeConfigPath := config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfigPath)
-			if kubeConfigPath != "" {
+			if !inCluster && kubeConfigPath != "" {
 				c.KubeConfigPath = kubeConfigPath
 			} else {
 				restConfig, err := buildK8sRestConfig(config)
