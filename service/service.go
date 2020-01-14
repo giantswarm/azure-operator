@@ -100,36 +100,32 @@ func New(config Config) (*Service, error) {
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
 	}
 
-	var restConfig *rest.Config
-	{
-		c := k8srestconfig.Config{
-			Logger: config.Logger,
-
-			Address:    config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
-			InCluster:  config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
-			KubeConfig: config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfig),
-			TLS: k8srestconfig.ConfigTLS{
-				CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
-				CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
-				KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
-			},
-		}
-
-		restConfig, err = k8srestconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var k8sClient *k8sclient.Clients
 	{
 		c := k8sclient.ClientsConfig{
 			SchemeBuilder: k8sclient.SchemeBuilder{
 				v1alpha1.AddToScheme,
 			},
-			Logger:     config.Logger,
-			RestConfig: restConfig,
+			Logger: config.Logger,
 		}
+
+		// Prefer KubeConfigPath if given, otherwise build restconfig.
+		{
+			inCluster := config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
+			kubeConfigPath := config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfigPath)
+			if !inCluster && kubeConfigPath != "" {
+				c.KubeConfigPath = kubeConfigPath
+			} else if inCluster && kubeConfigPath != "" {
+				return nil, microerror.Maskf(invalidConfigError, "inCluster and kubeConfigPath must not be defined at the same time")
+			} else {
+				restConfig, err := buildK8sRestConfig(config)
+				if err != nil {
+					return nil, microerror.Mask(err)
+				}
+				c.RestConfig = restConfig
+			}
+		}
+
 		k8sClient, err = k8sclient.NewClients(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -223,4 +219,26 @@ func (s *Service) Boot(ctx context.Context) {
 
 		go s.clusterController.Boot(ctx)
 	})
+}
+
+func buildK8sRestConfig(config Config) (*rest.Config, error) {
+	c := k8srestconfig.Config{
+		Logger: config.Logger,
+
+		Address:    config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
+		InCluster:  config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
+		KubeConfig: config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfig),
+		TLS: k8srestconfig.ConfigTLS{
+			CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
+			CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
+			KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
+		},
+	}
+
+	restConfig, err := k8srestconfig.New(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return restConfig, nil
 }
