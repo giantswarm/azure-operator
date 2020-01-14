@@ -7,12 +7,12 @@ const CalicoAzureResources = `
 #  - Made install-cni initContainer.
 #  - Added 'priorityClassName: system-cluster-critical' to calico daemonset and calico typha deployment.
 #
-# Calico Version v3.9.1
-# https://docs.projectcalico.org/v3.9/release-notes/
+# Calico Version v3.10.1
+# https://docs.projectcalico.org/v3.10/release-notes/
 # This manifest includes the following component versions:
-#   calico/node:v3.9.1
-#   calico/cni:v3.9.1
-#   calico/typha:v3.9.1
+#   calico/node:v3.10.1
+#   calico/cni:v3.10.1
+#   calico/typha:v3.10.1
 
 # This ConfigMap is used to configure a self-hosted Calico installation.
 kind: ConfigMap
@@ -119,7 +119,7 @@ spec:
       serviceAccountName: calico-node
       priorityClassName: system-cluster-critical
       containers:
-      - image: quay.io/giantswarm/typha:v3.9.1
+      - image: quay.io/giantswarm/typha:v3.10.1
         name: calico-typha
         ports:
         - containerPort: 5473
@@ -363,6 +363,21 @@ spec:
 
 ---
 
+apiVersion: apiextensions.k8s.io/v1beta1
+kind: CustomResourceDefinition
+metadata:
+  name: networksets.crd.projectcalico.org
+spec:
+  scope: Namespaced
+  group: crd.projectcalico.org
+  version: v1
+  names:
+    kind: NetworkSet
+    plural: networksets
+    singular: networkset
+
+---
+
 
 # This manifest installs the calico-node container, as well
 # as the CNI plugins and network config on
@@ -414,7 +429,7 @@ spec:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
         - name: install-cni
-          image: quay.io/giantswarm/cni:v3.9.1
+          image: quay.io/giantswarm/cni:v3.10.1
           command: ["/install-cni.sh"]
           env:
             # Name of the CNI config file to create.
@@ -451,7 +466,7 @@ spec:
         # container programs network policy and routes on each
         # host.
         - name: calico-node
-          image: quay.io/giantswarm/node:v3.9.1
+          image: quay.io/giantswarm/node:v3.10.1
           env:
             # Use Kubernetes API as the backing datastore.
             - name: DATASTORE_TYPE
