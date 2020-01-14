@@ -117,7 +117,7 @@ spec:
       # Since Calico can't network a pod until Typha is up, we need to run Typha itself
       # as a host-networked pod.
       serviceAccountName: calico-node
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       containers:
       - image: quay.io/giantswarm/typha:v3.10.1
         name: calico-typha
@@ -424,7 +424,7 @@ spec:
       # Minimize downtime during a rolling upgrade or deletion; tell Kubernetes to do a "force
       # deletion": https://kubernetes.io/docs/concepts/workloads/pods/pod/#termination-of-pods.
       terminationGracePeriodSeconds: 0
-      priorityClassName: system-cluster-critical
+      priorityClassName: system-node-critical
       initContainers:
         # This container installs the CNI binaries
         # and CNI network config file on each node.
