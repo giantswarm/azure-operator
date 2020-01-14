@@ -453,9 +453,6 @@ spec:
             requests:
               cpu: 50m
               memory: 100Mi
-            limits:
-              cpu: 50m
-              memory: 100Mi
           volumeMounts:
             - mountPath: /host/opt/cni/bin
               name: cni-bin-dir
@@ -514,9 +511,6 @@ spec:
             privileged: true
           resources:
             requests:
-              cpu: 250m
-              memory: 150Mi
-            limits:
               cpu: 250m
               memory: 150Mi
           livenessProbe:
