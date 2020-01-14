@@ -113,14 +113,19 @@ func New(config Config) (*Service, error) {
 		{
 			inCluster := config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
 			kubeConfigPath := config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfigPath)
-			if !inCluster && kubeConfigPath != "" {
-				c.KubeConfigPath = kubeConfigPath
-			} else {
+
+			if inCluster {
+				if kubeConfigPath != "" {
+					return nil, microerror.Maskf(invalidConfigError, "inCluster and kubeConfigPath must not be defined at the same time")
+				}
+
 				restConfig, err := buildK8sRestConfig(config)
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}
 				c.RestConfig = restConfig
+			} else {
+				c.KubeConfigPath = kubeConfigPath
 			}
 		}
 
