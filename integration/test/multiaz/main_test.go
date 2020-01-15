@@ -88,16 +88,18 @@ func New(config Config) (*MultiAZ, error) {
 }
 
 func (s *MultiAZ) Test(ctx context.Context) error {
+	s.logger.LogCtx(ctx, "level", "debug", "message", "getting current availability zones")
 	azs, err := s.provider.GetClusterAZs(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", azs)
 
 	if len(azs) != 1 {
-		return microerror.Mask(wrongAZzUsed)
+		return microerror.Mask(wrongAzsUsed)
 	}
 	if azs[0] != 1 {
-		return microerror.Mask(wrongAZzUsed)
+		return microerror.Mask(wrongAzsUsed)
 	}
 
 	return nil
