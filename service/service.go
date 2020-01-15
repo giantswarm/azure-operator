@@ -130,7 +130,6 @@ func New(config Config) (*Service, error) {
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
-			c.RestConfig = restConfig
 		}
 
 		c := k8sclient.ClientsConfig{
