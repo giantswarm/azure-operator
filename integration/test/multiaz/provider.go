@@ -60,5 +60,5 @@ func (p *Provider) GetClusterAZs(ctx context.Context) ([]int, error) {
 		return []int{}, microerror.Mask(err)
 	}
 
-	return customResource.AvailabilityZones(), nil
+	return customResource.Status.Provider.AvailabilityZones, nil
 }
