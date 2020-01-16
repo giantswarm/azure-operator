@@ -90,7 +90,7 @@ func New(config Config) (*MultiAZ, error) {
 
 func (s *MultiAZ) Test(ctx context.Context) error {
 	s.logger.LogCtx(ctx, "level", "debug", "message", "getting current availability zones")
-	vmss, err := s.provider.azureClient.VirtualMachineScaleSetsClient.Get(ctx, "s.provider.clusterID", fmt.Sprintf("%s-%s", s.provider.clusterID, "worker"))
+	vmss, err := s.provider.azureClient.VirtualMachineScaleSetsClient.Get(ctx, s.provider.clusterID, fmt.Sprintf("%s-%s", s.provider.clusterID, "worker"))
 	if err != nil {
 		return microerror.Mask(err)
 	}
