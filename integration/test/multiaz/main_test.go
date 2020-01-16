@@ -4,6 +4,7 @@ package multiaz
 
 import (
 	"context"
+	"fmt"
 	"testing"
 
 	"github.com/giantswarm/microerror"
@@ -89,16 +90,16 @@ func New(config Config) (*MultiAZ, error) {
 
 func (s *MultiAZ) Test(ctx context.Context) error {
 	s.logger.LogCtx(ctx, "level", "debug", "message", "getting current availability zones")
-	azs, err := s.provider.GetClusterAZs(ctx)
+	vmss, err := s.provider.azureClient.VirtualMachineScaleSetsClient.Get(ctx, "s.provider.clusterID", fmt.Sprintf("%s-%s", s.provider.clusterID, "worker"))
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", azs)
+	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", *vmss.Zones)
 
-	if len(azs) != 1 {
+	if len(*vmss.Zones) != 1 {
 		return microerror.Mask(wrongAzsUsed)
 	}
-	if azs[0] != 1 {
+	if (*vmss.Zones)[0] != "1" {
 		return microerror.Mask(wrongAzsUsed)
 	}
 
