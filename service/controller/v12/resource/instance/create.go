@@ -3,6 +3,8 @@ package instance
 import (
 	"context"
 	"fmt"
+	"strconv"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -74,6 +76,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, DeploymentInitialized))
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", "setting AZs on resource status")
+
+			zones, err := r.getVmssAvailabilityZones(ctx, key.ResourceGroupName(customObject), fmt.Sprintf("%s-%s", key.ResourceGroupName(customObject), "worker"))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			customObject.Status.Provider.AvailabilityZones = zones
+			_, err = r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).UpdateStatus(&customObject)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set AZs on resource status to '%v'", zones))
 
 			deploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
 			if err != nil {
@@ -325,6 +342,29 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	return nil
+}
+
+func (r *Resource) getVmssAvailabilityZones(ctx context.Context, resourceGroupName string, vmssName string) ([]int, error) {
+	asd, err := r.getScaleSetsClient(ctx)
+	if err != nil {
+		return []int{}, err
+	}
+
+	vmss, err := asd.Get(ctx, resourceGroupName, vmssName)
+	if err != nil {
+		return []int{}, err
+	}
+
+	var zones []int
+	for _, az := range *vmss.Zones {
+		zone, err := strconv.Atoi(az)
+		if err != nil {
+			return []int{}, err
+		}
+		zones = append(zones, zone)
+	}
+
+	return zones, nil
 }
 
 func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
