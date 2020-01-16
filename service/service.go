@@ -102,28 +102,44 @@ func New(config Config) (*Service, error) {
 
 	var k8sClient *k8sclient.Clients
 	{
+		address := config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
+		inCluster := config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
+		kubeConfigPath := config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfigPath)
+
+		defined := 0
+		if address != "" {
+			defined++
+		}
+		if inCluster {
+			defined++
+		}
+		if kubeConfigPath != "" {
+			defined++
+		}
+
+		if defined == 0 {
+			return nil, microerror.Maskf(invalidConfigError, "address or inCluster or kubeConfigPath must be defined")
+		}
+		if defined > 1 {
+			return nil, microerror.Maskf(invalidConfigError, "address and inCluster and kubeConfigPath must not be defined at the same time")
+		}
+
+		var restConfig *rest.Config
+		if kubeConfigPath == "" {
+			restConfig, err = buildK8sRestConfig(config)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+
 		c := k8sclient.ClientsConfig{
+			Logger: config.Logger,
 			SchemeBuilder: k8sclient.SchemeBuilder{
 				v1alpha1.AddToScheme,
 			},
-			Logger: config.Logger,
-		}
 
-		// Prefer KubeConfigPath if given, otherwise build restconfig.
-		{
-			inCluster := config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
-			kubeConfigPath := config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfigPath)
-			if !inCluster && kubeConfigPath != "" {
-				c.KubeConfigPath = kubeConfigPath
-			} else if inCluster && kubeConfigPath != "" {
-				return nil, microerror.Maskf(invalidConfigError, "inCluster and kubeConfigPath must not be defined at the same time")
-			} else {
-				restConfig, err := buildK8sRestConfig(config)
-				if err != nil {
-					return nil, microerror.Mask(err)
-				}
-				c.RestConfig = restConfig
-			}
+			KubeConfigPath: kubeConfigPath,
+			RestConfig:     restConfig,
 		}
 
 		k8sClient, err = k8sclient.NewClients(c)
