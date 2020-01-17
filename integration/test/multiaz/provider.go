@@ -4,12 +4,12 @@ package multiaz
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	azureclient "github.com/giantswarm/e2eclients/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 type ProviderConfig struct {
@@ -54,11 +54,11 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 	return p, nil
 }
 
-func (p *Provider) GetClusterAZs(ctx context.Context) ([]int, error) {
-	customResource, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+func (p *Provider) GetClusterAZs(ctx context.Context) ([]string, error) {
+	vmss, err := p.azureClient.VirtualMachineScaleSetsClient.Get(ctx, p.clusterID, fmt.Sprintf("%s-%s", p.clusterID, "worker"))
 	if err != nil {
-		return []int{}, microerror.Mask(err)
+		return []string{}, microerror.Mask(err)
 	}
 
-	return customResource.Status.Provider.AvailabilityZones, nil
+	return *vmss.Zones, nil
 }

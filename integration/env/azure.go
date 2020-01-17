@@ -34,11 +34,11 @@ var (
 	azureSubscriptionID string
 	azureTenantID       string
 
-	azureCIDR              string
-	azureCalicoSubnetCIDR  string
-	azureMasterSubnetCIDR  string
-	azureVPNSubnetCIDR     string
-	azureWorkerSubnetCIDR  string
+	azureCIDR             string
+	azureCalicoSubnetCIDR string
+	azureMasterSubnetCIDR string
+	azureVPNSubnetCIDR    string
+	azureWorkerSubnetCIDR string
 
 	commonDomainResourceGroup string
 )
