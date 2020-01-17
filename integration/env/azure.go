@@ -34,7 +34,6 @@ var (
 	azureSubscriptionID string
 	azureTenantID       string
 
-	azureAvailabilityZones string
 	azureCIDR              string
 	azureCalicoSubnetCIDR  string
 	azureMasterSubnetCIDR  string
@@ -58,11 +57,6 @@ func init() {
 	azureLocation = os.Getenv(EnvVarAzureLocation)
 	if azureLocation == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureLocation))
-	}
-
-	azureAvailabilityZones = os.Getenv(EnvVarAzureAZs)
-	if azureAvailabilityZones == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureAZs))
 	}
 
 	azureSubscriptionID = os.Getenv(EnvVarAzureSubscriptionID)
@@ -103,6 +97,11 @@ func init() {
 }
 
 func AzureAvailabilityZones() []int {
+	azureAvailabilityZones := os.Getenv(EnvVarAzureAZs)
+	if azureAvailabilityZones == "" {
+		return []int{}
+	}
+
 	azs := strings.Split(strings.TrimSpace(azureAvailabilityZones), " ")
 	zones := make([]int, len(azs))
 
