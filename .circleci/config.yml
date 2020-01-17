@@ -191,9 +191,9 @@ workflows:
 
 
 
-      - e2eTestCurPRMultiAZ:
-          requires:
-          - pr
+#      - e2eTestCurPRMultiAZ:
+#          requires:
+#          - pr
       - e2eTestWIPPRMultiAZ:
           requires:
           - pr
