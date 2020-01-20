@@ -7,9 +7,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v12/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/v12/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v12/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/v13/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
@@ -27,7 +27,7 @@ import (
 // stage InstancesUpgrading.
 // Once all instances are Upgraded the state becomes DeploymentCompleted and the reconciliation
 // loop stops until a change in the ARM template or parameters is detected.
-// Check docs/instances-stages-v12.svg file for a grafical representation of this process.
+// Check docs/instances-stages-v13.svg file for a grafical representation of this process.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {

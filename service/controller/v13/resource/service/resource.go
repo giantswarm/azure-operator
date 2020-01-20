@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Name = "servicev12"
+	Name = "servicev13"
 
 	httpsPort         = 443
 	masterServiceName = "master"
