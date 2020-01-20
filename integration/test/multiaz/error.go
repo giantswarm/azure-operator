@@ -6,14 +6,8 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var wrongAvailabilityZones = &microerror.Error{
-	Desc: "The tenant cluster is not using the specified availability zones.",
-	Kind: "wrongAvailabilityZones",
-}
-
-// IsWrongAzsUsed asserts wrongAvailabilityZones.
-func IsWrongAvailabilityZones(err error) bool {
-	return microerror.Cause(err) == wrongAvailabilityZones
+var executionFailedError = &microerror.Error{
+	Kind: "executionFailedError",
 }
 
 var invalidConfigError = &microerror.Error{
