@@ -2,7 +2,6 @@ package env
 
 import (
 	"fmt"
-	"log"
 	"os"
 	"strconv"
 	"strings"
@@ -99,7 +98,6 @@ func init() {
 
 func AzureAvailabilityZones() []int {
 	azureAvailabilityZones := os.Getenv(EnvVarAzureAZs)
-	log.Printf("These are the AZs in the env %v\n", azureAvailabilityZones)
 	if azureAvailabilityZones == "" {
 		return []int{}
 	}
@@ -121,7 +119,6 @@ func AzureAvailabilityZones() []int {
 		}
 		zones[i] = zone
 	}
-	log.Printf("These are the AZs that will be used %v\n", zones)
 	return zones
 }
 
