@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
 
-	"github.com/giantswarm/azure-operator/service/controller/v12/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 )
 
 // NewDeletePatch provide a crud.Patch holding connections to be deleted.

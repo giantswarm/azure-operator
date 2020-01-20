@@ -11,7 +11,7 @@ import (
 
 func Test_ARMTemplateURI(t *testing.T) {
 	uri := ARMTemplateURI("dev", "deployment", "worker.json")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v12/resource/deployment/template/worker.json"
+	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/v13/resource/deployment/template/worker.json"
 
 	if uri != euri {
 		t.Errorf("expected '%s' got '%s'", euri, uri)
