@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/service/controller/v12/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 )
 
 type Config struct {
