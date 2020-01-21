@@ -10,7 +10,7 @@
   version = "v0.2.2"
 
 [[projects]]
-  digest = "1:d07cc3cf1359b0986e2031571b1b50a67fa1c78505c1e05406383c995ce036cc"
+  digest = "1:f926ec11449e4fd1993e1979781d2ebbf47a76756bc67f0c76ff53c67b9fc327"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/compute/mgmt/2018-06-01/compute",
@@ -21,8 +21,8 @@
     "version",
   ]
   pruneopts = "UT"
-  revision = "7577651eb4127da06c3cb42126e22d70ad974b12"
-  version = "v33.2.0"
+  revision = "68963eeeb7479a7f78fa571b07d745b49cd8d747"
+  version = "v38.2.0"
 
 [[projects]]
   digest = "1:5041865c1d50f6c46e3aa0638741539129d0a48924abdcc850f93c53af5cac36"
@@ -282,7 +282,7 @@
     "pkg/clientset/versioned/typed/release/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "29482fb3d774cedee3578619809e04274372bf9b"
+  revision = "3fdfe37ee131b55cdcd2e395a770eb92c2422d01"
 
 [[projects]]
   branch = "master"
@@ -330,7 +330,7 @@
   name = "github.com/giantswarm/e2eclients"
   packages = ["azure"]
   pruneopts = "UT"
-  revision = "889c9ae897f8c0fa1d857f98dca22fa124305237"
+  revision = "67f802fafaec45f370ad1aaa12543f018890ce39"
 
 [[projects]]
   branch = "master"
