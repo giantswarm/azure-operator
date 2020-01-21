@@ -1,11 +1,11 @@
 package instance
 
 import (
+	"github.com/Azure/go-autorest/autorest/to"
 	"reflect"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/controller/v12/key"
@@ -520,10 +520,6 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		t.Run(tc.Name, func(t *testing.T) {
 			ws, err := getWorkingSet(tc.CustomObject, tc.Instances, tc.DrainerConfigs, tc.InstanceNameFunc, tc.VersionValue)
 
-			if ws == nil {
-				ws = &workingSet{}
-			}
-
 			switch {
 			case err == nil && tc.ErrorMatcher == nil:
 				// fall through
@@ -535,14 +531,14 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 				t.Fatalf("expected %#v got %#v", true, false)
 			}
 
-			if !reflect.DeepEqual(ws.instanceToUpdate, tc.ExpectedInstanceToUpdate) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToUpdate, ws.instanceToUpdate)
+			if !reflect.DeepEqual(ws.InstanceToUpdate(), tc.ExpectedInstanceToUpdate) {
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToUpdate, ws.InstanceToUpdate())
 			}
-			if !reflect.DeepEqual(ws.instanceToDrain, tc.ExpectedInstanceToDrain) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToDrain, ws.instanceToDrain)
+			if !reflect.DeepEqual(ws.InstanceToDrain(), tc.ExpectedInstanceToDrain) {
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToDrain, ws.InstanceToDrain())
 			}
-			if !reflect.DeepEqual(ws.instanceToReimage, tc.ExpectedInstanceToReimage) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, ws.instanceToReimage)
+			if !reflect.DeepEqual(ws.InstanceToReimage(), tc.ExpectedInstanceToReimage) {
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, ws.InstanceToReimage())
 			}
 		})
 	}

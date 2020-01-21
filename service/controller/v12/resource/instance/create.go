@@ -3,7 +3,6 @@ package instance
 import (
 	"context"
 	"fmt"
-
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -19,18 +18,16 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-const (
-	vmssDeploymentName = "cluster-vmss-template"
-)
-
 // EnsureCreated operates in 3 different stages which are executed sequentially.
 // The first stage is for uploading ARM templates and is represented by stage
-// DeploymentInitialized. The second stage is for waiting for ARM templates to
-// be applied and is represented by stage ProvisioningSuccessful. the third
-// stage is for draining and upgrading the VMSS instances and is represented by
-// stage InstancesUpgrading. The stages are executed one after another and the
-// instance resource cycles through them reliably until all necessary upgrade
-// steps are successfully processed.
+// DeploymentInitialized.
+// The second stage is for waiting for ARM templates to be applied and is represented
+// by stage ProvisioningSuccessful.
+// The third stage is for draining and upgrading the VMSS instances and is represented by
+// stage InstancesUpgrading.
+// Once all instances are Upgraded the state becomes DeploymentCompleted and the reconciliation
+// loop stops until a change in the ARM template or parameters is detected.
+// Check docs/instances-stages-v12.svg file for a grafical representation of this process.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
@@ -58,7 +55,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), vmssDeploymentName, computedDeployment)
+			res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.VmssDeploymentName, computedDeployment)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -77,6 +74,38 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, DeploymentInitialized))
+
+			deploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if deploymentTemplateChk != "" {
+				err = r.setResourceStatus(customObject, DeploymentTemplateChecksum, deploymentTemplateChk)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, deploymentTemplateChk))
+			} else {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
+			}
+
+			deploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if deploymentTemplateChk != "" {
+				err = r.setResourceStatus(customObject, DeploymentParametersChecksum, deploymentParametersChk)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, deploymentParametersChk))
+			} else {
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
+			}
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
@@ -84,7 +113,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if hasResourceStatus(customObject, Stage, DeploymentInitialized) {
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), vmssDeploymentName)
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
 		if IsDeploymentNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
@@ -129,6 +158,31 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		}
+	}
+
+	if hasResourceStatus(customObject, Stage, DeploymentCompleted) {
+		err := r.handleDeploymentCompletedStatus(ctx, customObject)
+		if IsDeploymentNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if controllercontext.IsInvalidContext(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if blobclient.IsBlobNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
+			resourcecanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if err != nil {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "unexpected error during handling of DeploymentCompleted status")
+			return microerror.Mask(err)
+		}
+
+		return nil
 	}
 
 	if hasResourceStatus(customObject, Stage, ProvisioningSuccessful) {
@@ -183,19 +237,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.MasterVMSSName, key.MasterInstanceName)
+
+				err = r.updateInstance(ctx, customObject, ws.InstanceToUpdate(), key.MasterVMSSName, key.MasterInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.MasterInstanceName)
+				err = r.createDrainerConfig(ctx, customObject, ws.InstanceToDrain(), key.MasterInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.MasterVMSSName, key.MasterInstanceName)
+				err = r.reimageInstance(ctx, customObject, ws.InstanceToReimage(), key.MasterVMSSName, key.MasterInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.MasterInstanceName, drainerConfigs)
+				err = r.deleteDrainerConfig(ctx, customObject, ws.InstanceToReimage(), key.MasterInstanceName, drainerConfigs)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -228,19 +283,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.updateInstance(ctx, customObject, ws.instanceToUpdate, key.WorkerVMSSName, key.WorkerInstanceName)
+				err = r.updateInstance(ctx, customObject, ws.InstanceToUpdate(), key.WorkerVMSSName, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.createDrainerConfig(ctx, customObject, ws.instanceToDrain, key.WorkerInstanceName)
+				err = r.createDrainerConfig(ctx, customObject, ws.InstanceToDrain(), key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.reimageInstance(ctx, customObject, ws.instanceToReimage, key.WorkerVMSSName, key.WorkerInstanceName)
+				err = r.reimageInstance(ctx, customObject, ws.InstanceToReimage(), key.WorkerVMSSName, key.WorkerInstanceName)
 				if err != nil {
 					return microerror.Mask(err)
 				}
-				err = r.deleteDrainerConfig(ctx, customObject, ws.instanceToReimage, key.WorkerInstanceName, drainerConfigs)
+				err = r.deleteDrainerConfig(ctx, customObject, ws.InstanceToReimage(), key.WorkerInstanceName, drainerConfigs)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -255,16 +310,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if !masterUpgradeInProgress && !workerUpgradeInProgess {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "neither masters nor workers upgraded")
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removing resource status '%s/%s'", Stage, InstancesUpgrading))
 
-			err := r.deleteResourceStatus(customObject, Stage, InstancesUpgrading)
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, DeploymentCompleted))
+
+			err := r.setResourceStatus(customObject, Stage, DeploymentCompleted)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, InstancesUpgrading))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, DeploymentCompleted))
+
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return nil
 		}
 	}
 
@@ -441,22 +497,22 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 			return nil, nil
 		}
 
-		if ws.instanceToUpdate != nil {
-			instanceName, err := instanceNameFunc(customObject, *ws.instanceToUpdate.InstanceID)
+		if ws.InstanceToUpdate() != nil {
+			instanceName, err := instanceNameFunc(customObject, *ws.InstanceToUpdate().InstanceID)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceName))
 		}
-		if ws.instanceToDrain != nil {
-			instanceName, err := instanceNameFunc(customObject, *ws.instanceToDrain.InstanceID)
+		if ws.InstanceToDrain() != nil {
+			instanceName, err := instanceNameFunc(customObject, *ws.InstanceToDrain().InstanceID)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be drained", instanceName))
 		}
-		if ws.instanceToReimage != nil {
-			instanceName, err := instanceNameFunc(customObject, *ws.instanceToReimage.InstanceID)
+		if ws.InstanceToReimage() != nil {
+			instanceName, err := instanceNameFunc(customObject, *ws.InstanceToReimage().InstanceID)
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
@@ -541,16 +597,6 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
 
 	return nil
-}
-
-func containsInstanceID(list []compute.VirtualMachineScaleSetVM, id string) bool {
-	for _, v := range list {
-		if *v.InstanceID == id {
-			return true
-		}
-	}
-
-	return false
 }
 
 // getWorkingSet either returns an instance to update or an instance to
@@ -665,4 +711,76 @@ func isNodeDrained(drainerConfigs []corev1alpha1.DrainerConfig, instanceName str
 	}
 
 	return false
+}
+
+func (r *Resource) handleDeploymentCompletedStatus(ctx context.Context, customObject providerv1alpha1.AzureConfig) error {
+	deploymentsClient, err := r.getDeploymentsClient(ctx)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	s := *d.Properties.ProvisioningState
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+
+	if key.IsSucceededProvisioningState(s) {
+		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
+		if err != nil {
+			return microerror.Mask(err)
+		} else {
+			desiredDeploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			desiredDeploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			currentDeploymentTemplateChk, err := r.getResourceStatus(customObject, DeploymentTemplateChecksum)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			currentDeploymentParametersChk, err := r.getResourceStatus(customObject, DeploymentParametersChecksum)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "Either the template or parameters are changed")
+
+				err := r.deleteResourceStatus(customObject, Stage, DeploymentCompleted)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, DeploymentCompleted))
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+				reconciliationcanceledcontext.SetCanceled(ctx)
+			} else {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "Template and parameters unchanged")
+			}
+
+			return nil
+		}
+	} else if key.IsFinalProvisioningState(s) {
+		// deployment is failed
+		err := r.deleteResourceStatus(customObject, Stage, DeploymentCompleted)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removed resource status '%s/%s'", Stage, DeploymentCompleted))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		reconciliationcanceledcontext.SetCanceled(ctx)
+		return nil
+	}
+
+	// If the flow arrives here, the deployment is running and we have to wait for it to complete.
+	return nil
 }

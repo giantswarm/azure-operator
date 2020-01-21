@@ -4,11 +4,13 @@ import (
 	"fmt"
 	"os"
 	"strconv"
+	"strings"
 
 	"github.com/giantswarm/azure-operator/integration/network"
 )
 
 const (
+	EnvVarAzureAZs              = "AZURE_AZS"
 	EnvVarAzureCIDR             = "AZURE_CIDR"
 	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
 	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
@@ -92,6 +94,32 @@ func init() {
 		azureVPNSubnetCIDR = subnets.VPN.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
 	}
+}
+
+func AzureAvailabilityZones() []int {
+	azureAvailabilityZones := os.Getenv(EnvVarAzureAZs)
+	if azureAvailabilityZones == "" {
+		return []int{}
+	}
+
+	azs := strings.Split(strings.TrimSpace(azureAvailabilityZones), " ")
+	zones := make([]int, len(azs))
+
+	for i, s := range azs {
+		zone, err := strconv.Atoi(s)
+		if err != nil {
+			panic(fmt.Sprintf("AvailabilityZones valid numbers are 1, "+
+				"2, 3. Your '%s' env var contains %s",
+				EnvVarAzureAZs, azureAvailabilityZones))
+		}
+		if zone < 1 || zone > 3 {
+			panic(fmt.Sprintf("AvailabilityZones valid numbers are 1, "+
+				"2, 3. Your '%s' env var contains %s",
+				EnvVarAzureAZs, azureAvailabilityZones))
+		}
+		zones[i] = zone
+	}
+	return zones
 }
 
 func AzureCalicoSubnetCIDR() string {

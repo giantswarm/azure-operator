@@ -1,19 +1,17 @@
 package collector
 
 import (
-	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/exporterkit/collector"
+	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 )
 
 type SetConfig struct {
-	G8sClient versioned.Interface
-	K8sClient kubernetes.Interface
+	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
 	AzureSetting             setting.Azure
@@ -33,8 +31,8 @@ func NewSet(config SetConfig) (*Set, error) {
 	var deploymentCollector *Deployment
 	{
 		c := DeploymentConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
+			G8sClient: config.K8sClient.G8sClient(),
+			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
 			EnvironmentName: config.AzureSetting.EnvironmentName,
@@ -49,7 +47,7 @@ func NewSet(config SetConfig) (*Set, error) {
 	var resourceGroupCollector *ResourceGroup
 	{
 		c := ResourceGroupConfig{
-			K8sClient: config.K8sClient,
+			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
 			EnvironmentName: config.AzureSetting.EnvironmentName,
@@ -64,8 +62,8 @@ func NewSet(config SetConfig) (*Set, error) {
 	var usageCollector *Usage
 	{
 		c := UsageConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
+			G8sClient: config.K8sClient.G8sClient(),
+			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
 			EnvironmentName: config.AzureSetting.EnvironmentName,
@@ -81,8 +79,8 @@ func NewSet(config SetConfig) (*Set, error) {
 	var rateLimitCollector *RateLimit
 	{
 		c := RateLimitConfig{
-			G8sClient: config.G8sClient,
-			K8sClient: config.K8sClient,
+			G8sClient: config.K8sClient.G8sClient(),
+			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
 			EnvironmentName:        config.AzureSetting.EnvironmentName,
@@ -99,7 +97,7 @@ func NewSet(config SetConfig) (*Set, error) {
 	var vpnConnectionCollector *VPNConnection
 	{
 		c := VPNConnectionConfig{
-			K8sClient: config.K8sClient,
+			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
 			AzureSetting:             config.AzureSetting,
