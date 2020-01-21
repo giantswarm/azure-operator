@@ -2,12 +2,12 @@
 
 
 [[projects]]
-  digest = "1:279540310125d2b219920588d7e2edb2a85b3317b528839166e896ce6b6f211c"
+  digest = "1:602649ff074ccee9273e1d3b25c4069f13a70fa0c232957c7d68a6f02fb7a9ea"
   name = "github.com/Azure/azure-pipeline-go"
   packages = ["pipeline"]
   pruneopts = "UT"
-  revision = "55fedc85a614dcd0e942a66f302ae3efb83d563c"
-  version = "v0.1.9"
+  revision = "232aee85e8e3a6223a11c0943f7df2ae0fac00e4"
+  version = "v0.2.2"
 
 [[projects]]
   digest = "1:f926ec11449e4fd1993e1979781d2ebbf47a76756bc67f0c76ff53c67b9fc327"
@@ -25,12 +25,12 @@
   version = "v38.2.0"
 
 [[projects]]
-  digest = "1:435043934aa0a8221e2c660e88dffe588783e9497facf6b517a465a37c58c97b"
+  digest = "1:5041865c1d50f6c46e3aa0638741539129d0a48924abdcc850f93c53af5cac36"
   name = "github.com/Azure/azure-storage-blob-go"
   packages = ["azblob"]
   pruneopts = "UT"
-  revision = "457680cc0804810f6d02958481e0ffdda51d5c60"
-  version = "0.5.0"
+  revision = "fc700035fe4a7020f50d49f420b3c088aed57e03"
+  version = "v0.8.0"
 
 [[projects]]
   branch = "master"
@@ -888,6 +888,14 @@
   version = "v0.7.0"
 
 [[projects]]
+  branch = "master"
+  digest = "1:1cba92887cdcf6228ac9310e028737053933c2ca128585cf3bfc81499bf8a083"
+  name = "github.com/mattn/go-ieproxy"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "7c0f6868bffe087073376feaab3ace57f2ef90b2"
+
+[[projects]]
   digest = "1:ff5ebae34cfbf047d505ee150de27e60570e8c394b3b8fdbb720ff6ac71985fc"
   name = "github.com/matttproud/golang_protobuf_extensions"
   packages = ["pbutil"]
@@ -1137,12 +1145,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:a6918666d02b6496294c4bb4be17fae297e1c32e985abad7a3e2d41b5e272162"
+  digest = "1:758fd9250d985aa96708e299d725d700a82ec6c48113fdb134411d3a44ea957e"
   name = "golang.org/x/net"
   packages = [
     "context",
     "context/ctxhttp",
     "http/httpguts",
+    "http/httpproxy",
     "http2",
     "http2/hpack",
     "idna",
@@ -1174,11 +1183,12 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:1c6ff9c8f791488f011d40961eb147b976ca5e4d1340fcdd019eb12d7a37e5b3"
+  digest = "1:3fcc571813fc15e3764f21f96084bbc8b8c36b2d42b8b26562193a231d32c32c"
   name = "golang.org/x/sys"
   packages = [
     "unix",
     "windows",
+    "windows/registry",
   ]
   pruneopts = "UT"
   revision = "b016eb3dc98ea7f69ed55e8216b87187067ae621"
