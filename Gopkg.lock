@@ -282,7 +282,7 @@
     "pkg/clientset/versioned/typed/release/v1alpha1",
   ]
   pruneopts = "UT"
-  revision = "29482fb3d774cedee3578619809e04274372bf9b"
+  revision = "3fdfe37ee131b55cdcd2e395a770eb92c2422d01"
 
 [[projects]]
   branch = "master"
