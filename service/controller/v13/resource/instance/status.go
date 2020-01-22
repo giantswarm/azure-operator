@@ -15,7 +15,7 @@ const (
 	DeploymentParametersChecksum = "ParametersChecksum"
 
 	// States
-	DeploymentUninitialized = "DeploymentUnitialized"
+	DeploymentUninitialized = "DeploymentUninitialized"
 	DeploymentInitialized   = "DeploymentInitialized"
 	DeploymentCompleted     = "DeploymentCompleted"
 	InstancesUpgrading      = "InstancesUpgrading"
