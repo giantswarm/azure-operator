@@ -108,6 +108,14 @@ func IsNilTemplateLinkError(err error) bool {
 	return microerror.Cause(err) == nilTemplateLinkError
 }
 
+var reconciliationStateMismatchError = &microerror.Error{
+	Kind: "reconciliationStateMismatch",
+}
+
+func IsReconciliationStateMismatchError(err error) bool {
+	return microerror.Cause(err) == reconciliationStateMismatchError
+}
+
 var unableToGetTemplateError = &microerror.Error{
 	Kind: "unableToGetTemplate",
 }
