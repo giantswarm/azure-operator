@@ -19,6 +19,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 	}
 
 	defaultParams := map[string]interface{}{
+		"bastionSubnetCidr":       sc.AzureNetwork.Bastion.String(),
 		"blobContainerName":       key.BlobContainerName(),
 		"calicoSubnetCidr":        sc.AzureNetwork.Calico.String(),
 		"clusterID":               key.ClusterID(customObject),
