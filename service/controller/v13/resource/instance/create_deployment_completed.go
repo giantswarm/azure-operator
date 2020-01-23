@@ -13,11 +13,11 @@ import (
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
@@ -26,7 +26,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
 		return currentState, nil
 	} else if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
@@ -38,26 +38,26 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
 		} else if err != nil {
-			return currentState, microerror.Mask(err)
+			return "", microerror.Mask(err)
 		} else {
 			desiredDeploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 
 			desiredDeploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 
 			currentDeploymentTemplateChk, err := r.getResourceStatus(customObject, DeploymentTemplateChecksum)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 
 			currentDeploymentParametersChk, err := r.getResourceStatus(customObject, DeploymentParametersChecksum)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 
 			if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {

@@ -19,7 +19,7 @@ import (
 func (r *Resource) instancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	versionValue := map[string]string{}
@@ -38,7 +38,7 @@ func (r *Resource) instancesUpgradingTransition(ctx context.Context, obj interfa
 
 		list, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
 		if err != nil {
-			return currentState, microerror.Mask(err)
+			return "", microerror.Mask(err)
 		}
 
 		drainerConfigs = list.Items
@@ -50,30 +50,30 @@ func (r *Resource) instancesUpgradingTransition(ctx context.Context, obj interfa
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(customObject)))
 		} else if err != nil {
-			return currentState, microerror.Mask(err)
+			return "", microerror.Mask(err)
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
 			ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 
 			err = r.updateInstance(ctx, customObject, ws.InstanceToUpdate(), key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 			err = r.createDrainerConfig(ctx, customObject, ws.InstanceToDrain(), key.MasterInstanceName)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 			err = r.reimageInstance(ctx, customObject, ws.InstanceToReimage(), key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 			err = r.deleteDrainerConfig(ctx, customObject, ws.InstanceToReimage(), key.MasterInstanceName, drainerConfigs)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 
 			masterUpgradeInProgress = ws.IsWIP()
@@ -96,29 +96,29 @@ func (r *Resource) instancesUpgradingTransition(ctx context.Context, obj interfa
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
 		} else if err != nil {
-			return currentState, microerror.Mask(err)
+			return "", microerror.Mask(err)
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
 
 			ws, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 			err = r.updateInstance(ctx, customObject, ws.InstanceToUpdate(), key.WorkerVMSSName, key.WorkerInstanceName)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 			err = r.createDrainerConfig(ctx, customObject, ws.InstanceToDrain(), key.WorkerInstanceName)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 			err = r.reimageInstance(ctx, customObject, ws.InstanceToReimage(), key.WorkerVMSSName, key.WorkerInstanceName)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 			err = r.deleteDrainerConfig(ctx, customObject, ws.InstanceToReimage(), key.WorkerInstanceName, drainerConfigs)
 			if err != nil {
-				return currentState, microerror.Mask(err)
+				return "", microerror.Mask(err)
 			}
 
 			workerUpgradeInProgess = ws.IsWIP()
