@@ -2,6 +2,12 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
+    "bastionSubnetCidr":{
+      "type":"string",
+      "metadata":{
+        "description":"CIDR used for the subnet where the e2e bastion will be deployed."
+      }
+    },
     "networkSecurityGroupsAPIVersion":{
       "type":"string",
       "defaultValue":"2016-09-01",
@@ -120,6 +126,20 @@
               "access":"Allow",
               "direction":"Inbound",
               "priority":"4093"
+            }
+          },
+          {
+            "name":"sshBastionToMasterSubnetRule",
+            "properties":{
+              "description":"Allow the e2e bastion to reach this tenant cluster master subnet.",
+              "protocol":"*",
+              "sourcePortRange":"*",
+              "destinationPortRange":"22",
+              "sourceAddressPrefix":"[parameters('bastionSubnetCidr')]",
+              "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+              "access":"Allow",
+              "direction":"Inbound",
+              "priority":"4092"
             }
           },
           {
@@ -316,6 +336,20 @@
               "access":"Allow",
               "direction":"Inbound",
               "priority":"4093"
+            }
+          },
+          {
+            "name":"sshBastionToWorkerSubnetRule",
+            "properties":{
+              "description":"Allow the e2e bastion to reach this tenant cluster worker subnet.",
+              "protocol":"*",
+              "sourcePortRange":"*",
+              "destinationPortRange":"22",
+              "sourceAddressPrefix":"[parameters('bastionSubnetCidr')]",
+              "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+              "access":"Allow",
+              "direction":"Inbound",
+              "priority":"4092"
             }
           },
           {

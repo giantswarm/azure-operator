@@ -2,6 +2,12 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
+    "bastionSubnetCidr":{
+      "type":"string",
+      "metadata":{
+        "description":"CIDR used for the subnet where the e2e bastion will be deployed."
+      }
+    },
     "blobContainerName":{
       "type":"string",
       "metadata":{
@@ -134,6 +140,9 @@
           "contentVersion":"1.0.0.0"
         },
         "parameters":{
+          "bastionSubnetCidr":{
+            "value":"[parameters('bastionSubnetCidr')]"
+          },
           "clusterID":{
             "value":"[parameters('clusterID')]"
           },
