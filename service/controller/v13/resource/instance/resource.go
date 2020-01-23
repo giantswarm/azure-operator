@@ -17,6 +17,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v13/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/v13/encrypter"
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 )
 
 const (
@@ -34,10 +35,11 @@ type Config struct {
 }
 
 type Resource struct {
-	debugger  *debugger.Debugger
-	g8sClient versioned.Interface
-	k8sClient kubernetes.Interface
-	logger    micrologger.Logger
+	debugger     *debugger.Debugger
+	g8sClient    versioned.Interface
+	k8sClient    kubernetes.Interface
+	logger       micrologger.Logger
+	stateMachine state.Machine
 
 	azure           setting.Azure
 	templateVersion string
@@ -73,6 +75,8 @@ func New(config Config) (*Resource, error) {
 		azure:           config.Azure,
 		templateVersion: config.TemplateVersion,
 	}
+
+	r.configureStateMachine()
 
 	return r, nil
 }
