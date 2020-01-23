@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 )
 
-// newStateMachine configures and returns state machine that is driven by
+// configureStateMachine configures and returns state machine that is driven by
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
