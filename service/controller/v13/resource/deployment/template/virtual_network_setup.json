@@ -2,6 +2,18 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
+    "bastionSecurityGroupID":{
+      "type":"string",
+      "metadata":{
+        "description":"Security group that allows traffic on port 22 from nodes on the same Virtual Network."
+      }
+    },
+    "bastionSubnetCidr":{
+      "type":"string",
+      "metadata":{
+        "description":"CIDR used for the subnet where the e2e bastion will be deployed."
+      }
+    },
     "GiantSwarmTags":{
       "type":"object",
       "defaultValue":{
@@ -45,6 +57,7 @@
   },
   "variables":{
     "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
+    "bastionSubnetName":"[concat(parameters('virtualNetworkName'), '-BastionSubnet')]",
     "masterSubnetName":"[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
     "masterSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
     "workerSubnetName":"[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
@@ -66,6 +79,18 @@
           ]
         },
         "subnets":[
+          {
+            "name":"[variables('bastionSubnetName')]",
+            "properties":{
+              "addressPrefix":"[parameters('bastionSubnetCidr')]",
+              "networkSecurityGroup":{
+                "id":"[parameters('bastionSecurityGroupID')]"
+              },
+              "routeTable":{
+                "id":"[parameters('routeTableID')]"
+              }
+            }
+          },
           {
             "name":"[variables('masterSubnetName')]",
             "properties":{

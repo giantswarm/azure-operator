@@ -219,6 +219,9 @@
           "virtualNetworkCidr":{
             "value":"[parameters('virtualNetworkCidr')]"
           },
+          "bastionSubnetCidr":{
+            "value":"[parameters('bastionSubnetCidr')]"
+          },
           "masterSubnetCidr":{
             "value":"[parameters('masterSubnetCidr')]"
           },
@@ -230,6 +233,9 @@
           },
           "vpnSubnetCidr":{
             "value":"[parameters('vpnSubnetCidr')]"
+          },
+          "bastionSecurityGroupID":{
+            "value":"[reference('security_groups_setup').outputs.bastionSecurityGroupID.value]"
           },
           "masterSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"
