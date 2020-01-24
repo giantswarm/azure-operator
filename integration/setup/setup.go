@@ -55,5 +55,10 @@ func Setup(ctx context.Context, c Config) error {
 		return microerror.Mask(err)
 	}
 
+	err = bastion(ctx, c)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	return nil
 }

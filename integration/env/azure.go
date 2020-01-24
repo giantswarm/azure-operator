@@ -39,6 +39,7 @@ var (
 	azureMasterSubnetCIDR string
 	azureVPNSubnetCIDR    string
 	azureWorkerSubnetCIDR string
+	bastionE2ESubnetCIDR  string
 
 	commonDomainResourceGroup string
 )
@@ -93,6 +94,12 @@ func init() {
 		azureMasterSubnetCIDR = subnets.Master.String()
 		azureVPNSubnetCIDR = subnets.VPN.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
+
+		bastionSubnetCIDR, err := network.ComputeE2EBastionSubnet(uint(buildNumber), subnets)
+		if err != nil {
+			panic(err)
+		}
+		bastionE2ESubnetCIDR = bastionSubnetCIDR.String()
 	}
 }
 
@@ -160,6 +167,10 @@ func AzureVPNSubnetCIDR() string {
 
 func AzureWorkerSubnetCIDR() string {
 	return azureWorkerSubnetCIDR
+}
+
+func BastionE2ESubnetCIDR() string {
+	return bastionE2ESubnetCIDR
 }
 
 func CommonDomainResourceGroup() string {
