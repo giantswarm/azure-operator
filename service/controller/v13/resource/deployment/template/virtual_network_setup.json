@@ -58,6 +58,7 @@
   "variables":{
     "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
     "bastionE2ESubnetName":"[concat(parameters('virtualNetworkName'), '-BastionE2ESubnet')]",
+    "bastionE2ESubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('bastionE2ESubnetName'))]",
     "masterSubnetName":"[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
     "masterSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
     "workerSubnetName":"[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
@@ -133,7 +134,7 @@
             "[parameters('virtualNetworkCidr')]"
           ]
         },
-        "subnets":"[concat( parameters('subnets'), if( contains(parameters('virtualNetworkName'), 'ci-'), variables('bastionE2ESubnetDefinition'), []) )]"
+        "subnets":"[concat( variables('subnets'), if( contains(parameters('virtualNetworkName'), 'ci-'), variables('bastionE2ESubnetDefinition'), []) )]"
       }
     }
   ],
@@ -145,6 +146,10 @@
     "workerSubnetID":{
       "type":"string",
       "value":"[variables('workerSubnetID')]"
+    },
+    "bastionE2ESubnetID":{
+      "type":"string",
+      "value":"[variables('bastionE2ESubnetID')]"
     }
   }
 }

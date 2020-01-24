@@ -72,6 +72,10 @@
     "kubernetesAPISecurePort":{
       "type":"int"
     },
+    "bastionE2ETemplateFile":{
+      "type":"string",
+      "defaultValue":"bastion_e2e_vm.json"
+    },
     "dnsASetupTemplateFile":{
       "type":"string",
       "defaultValue":"dns_a_setup.json"
@@ -116,6 +120,7 @@
     }
   },
   "variables":{
+    "bastionE2ETemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('bastionE2ETemplateFile'))]",
     "dnsASetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('dnsASetupTemplateFile'))]",
     "dnsCNAMESetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('dnsCNAMESetupTemplateFile'))]",
     "containerSetupTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('containerSetupTemplateFile'))]",
@@ -441,6 +446,30 @@
           },
           "cname":{
             "value":"[concat('ingress.', parameters('clusterID'), '.k8s.', parameters('dnsZones').ingress.name)]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
+      "name":"bastion_e2e_vm",
+      "type":"Microsoft.Resources/deployments",
+      "condition":"[contains(parameters('virtualNetworkName'), 'ci-')]",
+      "properties":{
+        "mode":"incremental",
+        "templateLink":{
+          "uri":"[variables('bastionE2ETemplateURI')]",
+          "contentVersion":"1.0.0.0"
+        },
+        "parameters":{
+          "adminPublicKey":{
+            "value":""
+          },
+          "GiantSwarmTags":{
+            "value":"[parameters('GiantSwarmTags')]"
+          },
+          "subnetID":{
+            "value":"[reference('virtual_network_setup').outputs.bastionE2ESubnetID.value]"
           }
         }
       }
