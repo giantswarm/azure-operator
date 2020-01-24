@@ -55,6 +55,8 @@
     "masterSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('masterSecurityGroupName'))]",
     "workerSecurityGroupName":"[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
     "workerSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
+    "bastionSecurityGroupName":"[concat(parameters('clusterID'), '-BastionSecurityGroup')]",
+    "bastionSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionSecurityGroupName'))]",
     "cadvisorPort":"4194",
     "etcdPort":"2379",
     "kubeletPort":"10250",
@@ -452,6 +454,34 @@
           }
         ]
       }
+    },
+    {
+      "type":"Microsoft.Network/networkSecurityGroups",
+      "name":"[variables('bastionSecurityGroupName')]",
+      "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
+      "apiVersion":"[parameters('networkSecurityGroupsAPIVersion')]",
+      "location":"[resourceGroup().location]",
+      "tags":{
+        "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+      },
+      "properties":{
+        "securityRules":[
+          {
+            "name":"sshToBastionSubnetRule",
+            "properties":{
+              "description":"Allow SSH traffic into the bastion subnet",
+              "protocol":"TCP",
+              "sourcePortRange":"*",
+              "destinationPortRange":"22",
+              "sourceAddressPrefix":"*",
+              "destinationAddressPrefix":"[parameters('bastionSubnetCidr')]",
+              "access":"Allow",
+              "direction":"Inbound",
+              "priority":"4093"
+            }
+          }
+        ]
+      }
     }
   ],
   "outputs":{
@@ -462,6 +492,10 @@
     "workerSecurityGroupID":{
       "type":"string",
       "value":"[variables('workerSecurityGroupID')]"
+    },
+    "bastionSecurityGroupID":{
+      "type":"string",
+      "value":"[variables('bastionSecurityGroupID')]"
     }
   }
 }
