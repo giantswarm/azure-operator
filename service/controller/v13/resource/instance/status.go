@@ -15,11 +15,12 @@ const (
 	DeploymentParametersChecksum = "ParametersChecksum"
 
 	// States
-	DeploymentUninitialized = "DeploymentUninitialized"
-	DeploymentInitialized   = "DeploymentInitialized"
-	DeploymentCompleted     = "DeploymentCompleted"
-	InstancesUpgrading      = "InstancesUpgrading"
-	ProvisioningSuccessful  = "ProvisioningSuccessful"
+	DeploymentUninitialized  = "DeploymentUninitialized"
+	DeploymentInitialized    = "DeploymentInitialized"
+	DeploymentCompleted      = "DeploymentCompleted"
+	MasterInstancesUpgrading = "MasterInstancesUpgrading"
+	WorkerInstancesUpgrading = "WorkerInstancesUpgrading"
+	ProvisioningSuccessful   = "ProvisioningSuccessful"
 )
 
 func (r *Resource) deleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {

@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
-func (r *Resource) instancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -82,57 +82,9 @@ func (r *Resource) instancesUpgradingTransition(ctx context.Context, obj interfa
 		}
 	}
 
-	// In case the master instance is being updated we want to prevent any
-	// other updates on the workers. This is because the update process
-	// involves the draining of the updated node and if the master is being
-	// updated at the same time the tenant cluster's Kubernetes API is not
-	// available in order to drain nodes. As consequence we have to reset the
-	// worker instance selected to be reimaged in order to not update its
-	// version information. The next reconciliation loop will catch up here
-	// and instruct the worker instance to be reimaged again.
-	var workerUpgradeInProgess bool
 	if !masterUpgradeInProgress {
-		allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
-		if IsScaleSetNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
-		} else if err != nil {
-			return "", microerror.Mask(err)
-		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
-
-			ws, err := r.nextInstance(ctx, customObject, allWorkerInstances, drainerConfigs, key.WorkerInstanceName, versionValue)
-			if err != nil {
-				return "", microerror.Mask(err)
-			}
-			err = r.updateInstance(ctx, customObject, ws.InstanceToUpdate(), key.WorkerVMSSName, key.WorkerInstanceName)
-			if err != nil {
-				return "", microerror.Mask(err)
-			}
-			err = r.createDrainerConfig(ctx, customObject, ws.InstanceToDrain(), key.WorkerInstanceName)
-			if err != nil {
-				return "", microerror.Mask(err)
-			}
-			err = r.reimageInstance(ctx, customObject, ws.InstanceToReimage(), key.WorkerVMSSName, key.WorkerInstanceName)
-			if err != nil {
-				return "", microerror.Mask(err)
-			}
-			err = r.deleteDrainerConfig(ctx, customObject, ws.InstanceToReimage(), key.WorkerInstanceName, drainerConfigs)
-			if err != nil {
-				return "", microerror.Mask(err)
-			}
-
-			workerUpgradeInProgess = ws.IsWIP()
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
-		}
-	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not processing worker VMSSs due to master VMSSs processing")
-	}
-
-	if !masterUpgradeInProgress && !workerUpgradeInProgess {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "neither masters nor workers upgraded")
-
-		return DeploymentCompleted, nil
+		// When masters are upgraded, proceed to workers.
+		return WorkerInstancesUpgrading, nil
 	}
 
 	// Upgrade still in progress. Keep current state.

@@ -14,11 +14,12 @@ import (
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		DeploymentUninitialized: r.deploymentUninitializedTransition,
-		DeploymentInitialized:   r.deploymentInitializedTransition,
-		ProvisioningSuccessful:  r.provisioningSuccessfulTransition,
-		InstancesUpgrading:      r.instancesUpgradingTransition,
-		DeploymentCompleted:     r.deploymentCompletedTransition,
+		DeploymentUninitialized:  r.deploymentUninitializedTransition,
+		DeploymentInitialized:    r.deploymentInitializedTransition,
+		ProvisioningSuccessful:   r.provisioningSuccessfulTransition,
+		MasterInstancesUpgrading: r.masterInstancesUpgradingTransition,
+		WorkerInstancesUpgrading: r.workerInstancesUpgradingTransition,
+		DeploymentCompleted:      r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm
