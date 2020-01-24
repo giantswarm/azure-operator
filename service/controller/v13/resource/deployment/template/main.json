@@ -2,7 +2,7 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
-    "bastionSubnetCidr":{
+    "bastionE2ESubnetCidr":{
       "type":"string",
       "metadata":{
         "description":"CIDR used for the subnet where the e2e bastion will be deployed."
@@ -140,8 +140,8 @@
           "contentVersion":"1.0.0.0"
         },
         "parameters":{
-          "bastionSubnetCidr":{
-            "value":"[parameters('bastionSubnetCidr')]"
+          "bastionE2ESubnetCidr":{
+            "value":"[parameters('bastionE2ESubnetCidr')]"
           },
           "clusterID":{
             "value":"[parameters('clusterID')]"
@@ -219,8 +219,8 @@
           "virtualNetworkCidr":{
             "value":"[parameters('virtualNetworkCidr')]"
           },
-          "bastionSubnetCidr":{
-            "value":"[parameters('bastionSubnetCidr')]"
+          "bastionE2ESubnetCidr":{
+            "value":"[parameters('bastionE2ESubnetCidr')]"
           },
           "masterSubnetCidr":{
             "value":"[parameters('masterSubnetCidr')]"
@@ -234,8 +234,8 @@
           "vpnSubnetCidr":{
             "value":"[parameters('vpnSubnetCidr')]"
           },
-          "bastionSecurityGroupID":{
-            "value":"[reference('security_groups_setup').outputs.bastionSecurityGroupID.value]"
+          "bastionE2ESecurityGroupID":{
+            "value":"[reference('security_groups_setup').outputs.bastionE2ESecurityGroupID.value]"
           },
           "masterSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"

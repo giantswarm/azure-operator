@@ -7,12 +7,12 @@ import (
 
 // Subnets holds network subnets used by guest clusters.
 type Subnets struct {
-	Parent  net.IPNet
-	Bastion net.IPNet
-	Calico  net.IPNet
-	Master  net.IPNet
-	VPN     net.IPNet
-	Worker  net.IPNet
+	Parent     net.IPNet
+	BastionE2E net.IPNet
+	Calico     net.IPNet
+	Master     net.IPNet
+	VPN        net.IPNet
+	Worker     net.IPNet
 }
 
 // Equal return true when every network IP and Mask in a and b are equal.

@@ -2,7 +2,7 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
-    "bastionSubnetCidr":{
+    "bastionE2ESubnetCidr":{
       "type":"string",
       "metadata":{
         "description":"CIDR used for the subnet where the e2e bastion will be deployed."
@@ -55,8 +55,8 @@
     "masterSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('masterSecurityGroupName'))]",
     "workerSecurityGroupName":"[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
     "workerSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
-    "bastionSecurityGroupName":"[concat(parameters('clusterID'), '-BastionSecurityGroup')]",
-    "bastionSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionSecurityGroupName'))]",
+    "bastionE2ESecurityGroupName":"[concat(parameters('clusterID'), '-BastionE2ESecurityGroup')]",
+    "bastionE2ESecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('bastionE2ESecurityGroupName'))]",
     "cadvisorPort":"4194",
     "etcdPort":"2379",
     "kubeletPort":"10250",
@@ -131,13 +131,13 @@
             }
           },
           {
-            "name":"sshBastionToMasterSubnetRule",
+            "name":"sshBastionE2EToMasterSubnetRule",
             "properties":{
               "description":"Allow the e2e bastion to reach this tenant cluster master subnet.",
               "protocol":"*",
               "sourcePortRange":"*",
               "destinationPortRange":"22",
-              "sourceAddressPrefix":"[parameters('bastionSubnetCidr')]",
+              "sourceAddressPrefix":"[parameters('bastionE2ESubnetCidr')]",
               "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
               "access":"Allow",
               "direction":"Inbound",
@@ -341,13 +341,13 @@
             }
           },
           {
-            "name":"sshBastionToWorkerSubnetRule",
+            "name":"sshBastionE2EToWorkerSubnetRule",
             "properties":{
               "description":"Allow the e2e bastion to reach this tenant cluster worker subnet.",
               "protocol":"*",
               "sourcePortRange":"*",
               "destinationPortRange":"22",
-              "sourceAddressPrefix":"[parameters('bastionSubnetCidr')]",
+              "sourceAddressPrefix":"[parameters('bastionE2ESubnetCidr')]",
               "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
               "access":"Allow",
               "direction":"Inbound",
@@ -457,7 +457,7 @@
     },
     {
       "type":"Microsoft.Network/networkSecurityGroups",
-      "name":"[variables('bastionSecurityGroupName')]",
+      "name":"[variables('bastionE2ESecurityGroupName')]",
       "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
       "apiVersion":"[parameters('networkSecurityGroupsAPIVersion')]",
       "location":"[resourceGroup().location]",
@@ -467,14 +467,14 @@
       "properties":{
         "securityRules":[
           {
-            "name":"sshToBastionSubnetRule",
+            "name":"sshToBastionE2ESubnetRule",
             "properties":{
               "description":"Allow SSH traffic into the bastion subnet",
               "protocol":"TCP",
               "sourcePortRange":"*",
               "destinationPortRange":"22",
               "sourceAddressPrefix":"*",
-              "destinationAddressPrefix":"[parameters('bastionSubnetCidr')]",
+              "destinationAddressPrefix":"[parameters('bastionE2ESubnetCidr')]",
               "access":"Allow",
               "direction":"Inbound",
               "priority":"4093"
@@ -493,9 +493,9 @@
       "type":"string",
       "value":"[variables('workerSecurityGroupID')]"
     },
-    "bastionSecurityGroupID":{
+    "bastionE2ESecurityGroupID":{
       "type":"string",
-      "value":"[variables('bastionSecurityGroupID')]"
+      "value":"[variables('bastionE2ESecurityGroupID')]"
     }
   }
 }

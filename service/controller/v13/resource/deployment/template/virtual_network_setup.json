@@ -2,13 +2,13 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
-    "bastionSecurityGroupID":{
+    "bastionE2ESecurityGroupID":{
       "type":"string",
       "metadata":{
-        "description":"Security group that allows traffic on port 22 from nodes on the same Virtual Network."
+        "description":"Security group that allows traffic on port 22 from everywhere."
       }
     },
-    "bastionSubnetCidr":{
+    "bastionE2ESubnetCidr":{
       "type":"string",
       "metadata":{
         "description":"CIDR used for the subnet where the e2e bastion will be deployed."
@@ -57,17 +57,17 @@
   },
   "variables":{
     "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-    "bastionSubnetName":"[concat(parameters('virtualNetworkName'), '-BastionSubnet')]",
+    "bastionE2ESubnetName":"[concat(parameters('virtualNetworkName'), '-BastionE2ESubnet')]",
     "masterSubnetName":"[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
     "masterSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
     "workerSubnetName":"[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
     "workerSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]",
-    "bastionSubnetDefinition": [{
-      "name":"[variables('bastionSubnetName')]",
+    "bastionE2ESubnetDefinition": [{
+      "name":"[variables('bastionE2ESubnetName')]",
       "properties":{
-        "addressPrefix":"[parameters('bastionSubnetCidr')]",
+        "addressPrefix":"[parameters('bastionE2ESubnetCidr')]",
         "networkSecurityGroup":{
-          "id":"[parameters('bastionSecurityGroupID')]"
+          "id":"[parameters('bastionE2ESecurityGroupID')]"
         },
         "routeTable":{
           "id":"[parameters('routeTableID')]"
@@ -133,7 +133,7 @@
             "[parameters('virtualNetworkCidr')]"
           ]
         },
-        "subnets":"[concat( parameters('subnets'), if( contains(parameters('virtualNetworkName'), 'ci-'), variables('bastionSubnetDefinition'), []) )]"
+        "subnets":"[concat( parameters('subnets'), if( contains(parameters('virtualNetworkName'), 'ci-'), variables('bastionE2ESubnetDefinition'), []) )]"
       }
     }
   ],
