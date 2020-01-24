@@ -105,3 +105,16 @@ We should see a list of the resource groups for our e2e tests. We need to look f
 CircleCI job logs to know which resource group is being used on each job.
 
 ![](resourcegroupname.png)
+
+## SSH into the tenant cluster
+In order to SSH into the tenant cluster, we need to allow SSH connections from our computer to the tenant cluster nodes. The nodes already contain our SSH public keys so we can SSH into them.
+
+[In the section above](#inspecting-resources-on-the-cloud-provider) we explained how to know the resource group name where the tenant cluster is deployed. Let's go to the resource group and look for security groups. We should see two: the security group for the master nodes, and the one for the worker nodes.
+
+![](securitygroups.png)
+
+As we said before, we need to allow SSH connections from our computer to the tenant cluster nodes that we need. Let's click on the security group that we need to change, the worker security group for example, and click on "Inbound Security Rules".
+
+There we can add a new rule that allows TCP traffic on port 22 coming from anywhere.
+
+![](rule.png)
