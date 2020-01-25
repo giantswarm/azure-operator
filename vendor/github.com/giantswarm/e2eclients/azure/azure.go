@@ -4,6 +4,8 @@ import (
 	"os"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2017-05-10/resources"
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
@@ -25,8 +27,16 @@ var (
 )
 
 type Client struct {
+	InterfacesClient                *network.InterfacesClient
+	IPAddressesClient               *network.PublicIPAddressesClient
+	ResourceGroupsClient            *resources.GroupsClient
+	SecurityGroupsClient            *network.SecurityGroupsClient
+	SecurityRulesClient             *network.SecurityRulesClient
+	SubnetsClient                   *network.SubnetsClient
 	VirtualMachineScaleSetsClient   *compute.VirtualMachineScaleSetsClient
 	VirtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient
+	VirtualNetworksClient           *network.VirtualNetworksClient
+	VirtualMachinesClient           *compute.VirtualMachinesClient
 }
 
 func NewClient() (*Client, error) {
@@ -77,6 +87,46 @@ func NewClient() (*Client, error) {
 		virtualMachineScaleSetVMsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
 
 		a.VirtualMachineScaleSetVMsClient = &virtualMachineScaleSetVMsClient
+
+		virtualNetworksClient := network.NewVirtualNetworksClient(azureSubscriptionID)
+		virtualNetworksClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.VirtualNetworksClient = &virtualNetworksClient
+
+		subnetsClient := network.NewSubnetsClient(azureSubscriptionID)
+		subnetsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.SubnetsClient = &subnetsClient
+
+		securityRulesClient := network.NewSecurityRulesClient(azureSubscriptionID)
+		securityRulesClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.SecurityRulesClient = &securityRulesClient
+
+		securityGroupsClient := network.NewSecurityGroupsClient(azureSubscriptionID)
+		securityGroupsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.SecurityGroupsClient = &securityGroupsClient
+
+		ipAddressesClient := network.NewPublicIPAddressesClient(azureSubscriptionID)
+		ipAddressesClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.IPAddressesClient = &ipAddressesClient
+
+		virtualMachinesClient := compute.NewVirtualMachinesClient(azureSubscriptionID)
+		virtualMachinesClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.VirtualMachinesClient = &virtualMachinesClient
+
+		interfacesClient := network.NewInterfacesClient(azureSubscriptionID)
+		interfacesClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.InterfacesClient = &interfacesClient
+
+		groupsClient := resources.NewGroupsClient(azureSubscriptionID)
+		groupsClient.Authorizer = autorest.NewBearerAuthorizer(servicePrincipalToken)
+
+		a.ResourceGroupsClient = &groupsClient
 	}
 
 	return a, nil
