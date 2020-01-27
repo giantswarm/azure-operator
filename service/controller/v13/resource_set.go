@@ -35,6 +35,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/service"
+	"github.com/giantswarm/azure-operator/service/controller/v13/resource/tenantclients"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/vpn"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/vpnconnection"
 	"github.com/giantswarm/azure-operator/service/credential"
@@ -137,6 +138,19 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		statusResource, err = statusresource.NewResource(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tenantClientsResource resource.Interface
+	{
+		c := tenantclients.Config{
+			Logger: config.Logger,
+			Tenant: tenantCluster,
+		}
+
+		tenantClientsResource, err = tenantclients.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -347,6 +361,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	resources := []resource.Interface{
 		statusResource,
+		tenantClientsResource,
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,

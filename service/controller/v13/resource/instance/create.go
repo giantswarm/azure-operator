@@ -4,22 +4,28 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/azure-operator/service/controller/v13/key"
-	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 )
 
 // configureStateMachine configures and returns state machine that is driven by
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		DeploymentUninitialized:  r.deploymentUninitializedTransition,
-		DeploymentInitialized:    r.deploymentInitializedTransition,
-		ProvisioningSuccessful:   r.provisioningSuccessfulTransition,
-		MasterInstancesUpgrading: r.masterInstancesUpgradingTransition,
-		WorkerInstancesUpgrading: r.workerInstancesUpgradingTransition,
-		DeploymentCompleted:      r.deploymentCompletedTransition,
+		DeploymentUninitialized:     r.deploymentUninitializedTransition,
+		DeploymentInitialized:       r.deploymentInitializedTransition,
+		ProvisioningSuccessful:      r.provisioningSuccessfulTransition,
+		MasterInstancesUpgrading:    r.masterInstancesUpgradingTransition,
+		ScaleUpWorkerVMSS:           r.scaleUpWorkerVMSSTransition,
+		CordonOldWorkers:            r.cordonOldWorkersTransition,
+		CreateWorkerDrainerConfigs:  r.createWorkerDrainerConfigsTransition,
+		DeleteWorkerDrainerConfigs:  r.deleteWorkerDrainerConfigsTransition,
+		TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
+		ScaleDownWorkerVMSS:         r.scaleDownWorkerVMSSTransition,
+		DeploymentCompleted:         r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm
