@@ -326,12 +326,12 @@
   revision = "b2048d8645c15ac583a270c57b95855426e48958"
 
 [[projects]]
-  branch = "add_other_clients"
-  digest = "1:85a52a26514fe6da1a39710e155cdda0478ca24e7e419292329ba37119f5ec5a"
+  branch = "master"
+  digest = "1:9f31bb6ea0638ae761de1590856214c3977e39e51654a4362d2715d9ef7dd887"
   name = "github.com/giantswarm/e2eclients"
   packages = ["azure"]
   pruneopts = "UT"
-  revision = "b239ee36aa791fc8d168e6750dd2fba4a108e552"
+  revision = "ea0388753075996907cddfabd8f57f1a66f8fac3"
 
 [[projects]]
   branch = "master"

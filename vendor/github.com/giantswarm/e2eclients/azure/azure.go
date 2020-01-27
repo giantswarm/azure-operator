@@ -35,8 +35,8 @@ type Client struct {
 	SubnetsClient                   *network.SubnetsClient
 	VirtualMachineScaleSetsClient   *compute.VirtualMachineScaleSetsClient
 	VirtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient
-	VirtualNetworksClient           *network.VirtualNetworksClient
 	VirtualMachinesClient           *compute.VirtualMachinesClient
+	VirtualNetworksClient           *network.VirtualNetworksClient
 }
 
 func NewClient() (*Client, error) {

@@ -58,7 +58,7 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/e2eclients"
-  branch = "add_other_clients"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/e2etemplates"
