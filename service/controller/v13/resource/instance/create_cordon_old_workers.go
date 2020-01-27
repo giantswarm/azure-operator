@@ -73,7 +73,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	if len(newNodes) < len(oldNodes) {
 		// Wait until there's enough new nodes up.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is still smaller than number of old nodes (%d)", len(oldNodes), len(newNodes)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is still smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
 		return currentState, nil
 	}
 
