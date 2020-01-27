@@ -10,12 +10,13 @@
   version = "v0.2.2"
 
 [[projects]]
-  digest = "1:f926ec11449e4fd1993e1979781d2ebbf47a76756bc67f0c76ff53c67b9fc327"
+  digest = "1:de14e807cf634e74d39c298b466303d96a1c4169f7652bf5e6d7cbeb3a647406"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/compute/mgmt/2018-06-01/compute",
     "services/dns/mgmt/2017-10-01/dns",
     "services/network/mgmt/2018-06-01/network",
+    "services/resources/mgmt/2017-05-10/resources",
     "services/resources/mgmt/2018-05-01/resources",
     "services/storage/mgmt/2018-07-01/storage",
     "version",
@@ -326,11 +327,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:2fe80dea4af722aea6332c2e7ce1ce5d06e9e78e9f4efb098e2476ab358acef2"
+  digest = "1:9f31bb6ea0638ae761de1590856214c3977e39e51654a4362d2715d9ef7dd887"
   name = "github.com/giantswarm/e2eclients"
   packages = ["azure"]
   pruneopts = "UT"
-  revision = "67f802fafaec45f370ad1aaa12543f018890ce39"
+  revision = "ea0388753075996907cddfabd8f57f1a66f8fac3"
 
 [[projects]]
   branch = "master"
@@ -2037,6 +2038,7 @@
     "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/clientset/versioned",
     "github.com/giantswarm/apprclient",
+    "github.com/giantswarm/backoff",
     "github.com/giantswarm/certs",
     "github.com/giantswarm/certs/certstest",
     "github.com/giantswarm/e2e-harness/pkg/framework",
