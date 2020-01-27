@@ -53,7 +53,7 @@ func bastion(ctx context.Context, config Config) error {
 	// Create public IPAddress for the instance
 	var ip network.PublicIPAddress
 	{
-		ip, err = CreatePublicIP(ctx, resourceGroupName, location, *config.AzureClient.IPAddressesClient)
+		ip, err = CreatePublicIP(ctx, location, resourceGroupName, *config.AzureClient.IPAddressesClient)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -62,7 +62,7 @@ func bastion(ctx context.Context, config Config) error {
 	// Create network interface for the VM
 	var nic network.Interface
 	{
-		nic, err = CreateNIC(ctx, resourceGroupName, location, subnet, ip, *config.AzureClient.InterfacesClient)
+		nic, err = CreateNIC(ctx, location, resourceGroupName, subnet, ip, *config.AzureClient.InterfacesClient)
 		if err != nil {
 			return microerror.Mask(err)
 		}
