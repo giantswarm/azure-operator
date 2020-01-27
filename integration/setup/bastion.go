@@ -3,7 +3,6 @@ package setup
 import (
 	"context"
 	"fmt"
-	"log"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
@@ -26,7 +25,7 @@ func bastion(ctx context.Context, config Config) error {
 	// Create the bastion security group allowing SSH from everywhere
 	var sg network.SecurityGroup
 	{
-		sg, err = CreateNetworkSecurityGroup(ctx, location, resourceGroupName, *config.AzureClient.SecurityGroupsClient)
+		sg, err = CreateNetworkSecurityGroup(ctx, location, resourceGroupName, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -35,7 +34,7 @@ func bastion(ctx context.Context, config Config) error {
 	// Add subnet to virtual network, attach the bastion security group
 	var subnet network.Subnet
 	{
-		subnet, err = CreateVirtualNetworkSubnet(ctx, resourceGroupName, virtualNetworkName, subnetAddressPrefix, sg, *config.AzureClient.SubnetsClient)
+		subnet, err = CreateVirtualNetworkSubnet(ctx, resourceGroupName, virtualNetworkName, subnetAddressPrefix, sg, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -71,7 +70,7 @@ func bastion(ctx context.Context, config Config) error {
 
 	// Create VM in that subnet, using our SSH keys
 	{
-		_, err = CreateVM(ctx, location, resourceGroupName, nic, *config.AzureClient.VirtualMachinesClient)
+		_, err = CreateVM(ctx, location, resourceGroupName, nic, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -81,10 +80,10 @@ func bastion(ctx context.Context, config Config) error {
 }
 
 // CreateVirtualNetworkSubnet creates a subnet in an existing vnet
-func CreateVirtualNetworkSubnet(ctx context.Context, groupName string, vnetName string, subnetAddressPrefix string, securityGroup network.SecurityGroup, subnetsClient network.SubnetsClient) (subnet network.Subnet, err error) {
+func CreateVirtualNetworkSubnet(ctx context.Context, groupName string, vnetName string, subnetAddressPrefix string, securityGroup network.SecurityGroup, config Config) (subnet network.Subnet, err error) {
 	bastionE2ESubnetName := "bastionE2ESubnet"
-	log.Printf("Adding e2e bastion subnet '%s' to virtual network with CIDR %s\n", bastionE2ESubnetName, subnetAddressPrefix)
-	future, err := subnetsClient.CreateOrUpdate(
+	config.Logger.LogCtx(ctx, "message", "Adding e2e bastion subnet to virtual network", "subnetName", bastionE2ESubnetName, "cidr", subnetAddressPrefix)
+	future, err := config.AzureClient.SubnetsClient.CreateOrUpdate(
 		ctx,
 		groupName,
 		vnetName,
@@ -100,12 +99,12 @@ func CreateVirtualNetworkSubnet(ctx context.Context, groupName string, vnetName 
 		return subnet, fmt.Errorf("cannot create subnet: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, subnetsClient.Client)
+	err = future.WaitForCompletionRef(ctx, config.AzureClient.SubnetsClient.Client)
 	if err != nil {
 		return subnet, fmt.Errorf("cannot get the subnet create or update future response: %v", err)
 	}
 
-	return future.Result(subnetsClient)
+	return future.Result(*config.AzureClient.SubnetsClient)
 }
 
 // CreateSSHRule creates an inbound network security rule that allows using port 22
@@ -140,10 +139,11 @@ func CreateSSHRule(ctx context.Context, groupName, nsgName, subnetAddressPrefix 
 }
 
 // CreateNetworkSecurityGroup creates a new network security group with rules set for allowing SSH and HTTPS use
-func CreateNetworkSecurityGroup(ctx context.Context, location, groupName string, nsgClient network.SecurityGroupsClient) (nsg network.SecurityGroup, err error) {
+func CreateNetworkSecurityGroup(ctx context.Context, location, groupName string, config Config) (nsg network.SecurityGroup, err error) {
 	securityGroupName := "bastionE2ESecurityGroup"
-	log.Printf("Creating e2e bastion security group '%s'\n", securityGroupName)
-	future, err := nsgClient.CreateOrUpdate(
+
+	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion security group", "securityGroup", securityGroupName)
+	future, err := config.AzureClient.SecurityGroupsClient.CreateOrUpdate(
 		ctx,
 		groupName,
 		securityGroupName,
@@ -173,12 +173,12 @@ func CreateNetworkSecurityGroup(ctx context.Context, location, groupName string,
 		return nsg, fmt.Errorf("cannot create nsg: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, nsgClient.Client)
+	err = future.WaitForCompletionRef(ctx, config.AzureClient.SecurityGroupsClient.Client)
 	if err != nil {
 		return nsg, fmt.Errorf("cannot get nsg create or update future response: %v", err)
 	}
 
-	return future.Result(nsgClient)
+	return future.Result(*config.AzureClient.SecurityGroupsClient)
 }
 
 // CreatePublicIP creates a new public IP
@@ -212,14 +212,14 @@ func CreatePublicIP(ctx context.Context, location, groupName string, ipClient ne
 
 // CreateVM creates a new virtual machine with the specified name using the specified NIC.
 // Username, password, and sshPublicKeyPath determine logon credentials.
-func CreateVM(ctx context.Context, location, groupName string, nic network.Interface, vmClient compute.VirtualMachinesClient) (vm compute.VirtualMachine, err error) {
+func CreateVM(ctx context.Context, location, groupName string, nic network.Interface, config Config) (vm compute.VirtualMachine, err error) {
 	vmName := "bastionE2EVirtualMachine"
 	username := "e2e"
-	log.Printf("Creating e2e bastion instance '%s'\n", vmName)
+	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion instance", "vmName", vmName)
 
 	sshKeyData := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDBSSJCLkZWhOvs6blotU+fWbrTmC7fOwOm0+w01Ww/YN3j3j1vCrvji1A4Yonr89ePQEQKfZsYcYFodQI/D3Uzu9rOFy0dCMQfvL/J6N8LkNtmooh3J2p061829MurAdD+TVsNGrD2FZGm5Ab4NiyDXIGAYCaHL6BHP16ipBglYjLQt6jVyzdTbYspkRi1QrsNFN3gIv9V47qQSvoNEsC97gvumKzCSQ/EwJzFoIlqVkZZHZTXvGwnZrAVXB69t9Y8OJ5zA6cYFAKR0O7lEiMpebdLNGkZgMA6t2PADxfT78PHkYXLR/4tchVuOSopssJqgSs7JgIktEE14xKyNyoLKIyBBo3xwywnDySsL8R2zG4Ytw1luo79pnSpIzTvfwrNhd7Cg//OYzyDCty+XUEUQx2JfOBx5Qb1OFw71WA+zYqjbworOsy2ZZ9UAy8ryjiaeT8L2ZRGuhdicD6kkL3Lxg5UeNIxS2FLNwgepZ4D8Vo6Yxe+VOZl524ffoOJSHQ0Gz8uE76hXMNEcn4t8HVkbR4sCMgLn2YbwJ2dJcROj4w80O4qgtN1vsL16r4gt9o6euml8LbmnJz6MtGdMczSO7kHRxirtEHMTtYbT1wNgUAzimbScRggBpUz5gbz+NRE1Xgnf4A5yNMRy+JOWtLVUozJlcGSiQkVcexzdb27yQ=="
 
-	future, err := vmClient.CreateOrUpdate(
+	future, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
 		ctx,
 		groupName,
 		vmName,
@@ -270,12 +270,12 @@ func CreateVM(ctx context.Context, location, groupName string, nic network.Inter
 		return vm, fmt.Errorf("cannot create vm: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, vmClient.Client)
+	err = future.WaitForCompletionRef(ctx, config.AzureClient.VirtualMachinesClient.Client)
 	if err != nil {
 		return vm, fmt.Errorf("cannot get the vm create or update future response: %v", err)
 	}
 
-	return future.Result(vmClient)
+	return future.Result(*config.AzureClient.VirtualMachinesClient)
 }
 
 // CreateNIC creates a new network interface. The Network Security Group is not a required parameter
