@@ -23,7 +23,7 @@ func ComputeSubnets(buildNumber uint) (*network.Subnets, error) {
 
 func ComputeE2EBastionSubnet(buildNumber uint, subnets *network.Subnets) (net.IPNet, error) {
 	azureNetwork := determineSubnet(e2eNetwork, e2eSubnetQuantity, buildNumber)
-	subnet, err := ipam.Free(azureNetwork, net.CIDRMask(24, 32), []net.IPNet{subnets.Calico, subnets.Master, subnets.Worker})
+	subnet, err := ipam.Free(azureNetwork, net.CIDRMask(24, 32), []net.IPNet{subnets.Calico, subnets.Master, subnets.Worker, subnets.VPN})
 	if err != nil {
 		return net.IPNet{}, microerror.Mask(err)
 	}
