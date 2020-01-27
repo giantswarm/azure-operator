@@ -18,7 +18,7 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 		return "", microerror.Mask(err)
 	}
 
-	var drainerConfigs map[string]corev1alpha1.DrainerConfig
+	drainerConfigs := make(map[string]corev1alpha1.DrainerConfig)
 	{
 		n := metav1.NamespaceAll
 		o := metav1.ListOptions{
