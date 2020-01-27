@@ -112,7 +112,7 @@ func CreateSSHRule(ctx context.Context, groupName, nsgName, subnetAddressPrefix 
 	future, err := rulesClient.CreateOrUpdate(ctx,
 		groupName,
 		nsgName,
-		"ALLOW-SSH-FROM-BASTION-E2E",
+		fmt.Sprintf("allowSSHBastionE2E-%s", nsgName),
 		network.SecurityRule{
 			SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
 				Access:                   network.SecurityRuleAccessAllow,
@@ -281,7 +281,16 @@ func CreateVM(ctx context.Context, location, groupName string, nic network.Inter
 // CreateNIC creates a new network interface. The Network Security Group is not a required parameter
 func CreateNIC(ctx context.Context, location, groupName string, subnet network.Subnet, ip network.PublicIPAddress, nicClient network.InterfacesClient) (nic network.Interface, err error) {
 	nicName := "bastionE2ENIC"
-	nicParams := network.Interface{
+
+	//if nsgName != "" {
+	//	nsg, err := GetNetworkSecurityGroup(ctx, nsgName)
+	//	if err != nil {
+	//		log.Fatalf("failed to get nsg: %v", err)
+	//	}
+	//	nicParams.NetworkSecurityGroup = &nsg
+	//}
+
+	future, err := nicClient.CreateOrUpdate(ctx, groupName, nicName, network.Interface{
 		Name:     to.StringPtr(nicName),
 		Location: to.StringPtr(location),
 		InterfacePropertiesFormat: &network.InterfacePropertiesFormat{
@@ -296,17 +305,7 @@ func CreateNIC(ctx context.Context, location, groupName string, subnet network.S
 				},
 			},
 		},
-	}
-
-	//if nsgName != "" {
-	//	nsg, err := GetNetworkSecurityGroup(ctx, nsgName)
-	//	if err != nil {
-	//		log.Fatalf("failed to get nsg: %v", err)
-	//	}
-	//	nicParams.NetworkSecurityGroup = &nsg
-	//}
-
-	future, err := nicClient.CreateOrUpdate(ctx, groupName, nicName, nicParams)
+	})
 	if err != nil {
 		return nic, fmt.Errorf("cannot create nic: %v", err)
 	}
