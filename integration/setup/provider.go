@@ -17,7 +17,8 @@ func provider(ctx context.Context, config Config) error {
 		c := chartvalues.AzureOperatorConfig{
 			Provider: chartvalues.AzureOperatorConfigProvider{
 				Azure: chartvalues.AzureOperatorConfigProviderAzure{
-					Location: env.AzureLocation(),
+					Location:        env.AzureLocation(),
+					HostClusterCidr: "0.0.0.0/0",
 				},
 			},
 			Secret: chartvalues.AzureOperatorConfigSecret{
@@ -98,6 +99,8 @@ func provider(ctx context.Context, config Config) error {
 			ClusterName:               env.ClusterID(),
 			CommonDomain:              env.CommonDomain(),
 			CommonDomainResourceGroup: env.CommonDomainResourceGroup(),
+			SSHUser:                   "test-user",
+			SSHPublicKey:              "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDBSSJCLkZWhOvs6blotU+fWbrTmC7fOwOm0+w01Ww/YN3j3j1vCrvji1A4Yonr89ePQEQKfZsYcYFodQI/D3Uzu9rOFy0dCMQfvL/J6N8LkNtmooh3J2p061829MurAdD+TVsNGrD2FZGm5Ab4NiyDXIGAYCaHL6BHP16ipBglYjLQt6jVyzdTbYspkRi1QrsNFN3gIv9V47qQSvoNEsC97gvumKzCSQ/EwJzFoIlqVkZZHZTXvGwnZrAVXB69t9Y8OJ5zA6cYFAKR0O7lEiMpebdLNGkZgMA6t2PADxfT78PHkYXLR/4tchVuOSopssJqgSs7JgIktEE14xKyNyoLKIyBBo3xwywnDySsL8R2zG4Ytw1luo79pnSpIzTvfwrNhd7Cg//OYzyDCty+XUEUQx2JfOBx5Qb1OFw71WA+zYqjbworOsy2ZZ9UAy8ryjiaeT8L2ZRGuhdicD6kkL3Lxg5UeNIxS2FLNwgepZ4D8Vo6Yxe+VOZl524ffoOJSHQ0Gz8uE76hXMNEcn4t8HVkbR4sCMgLn2YbwJ2dJcROj4w80O4qgtN1vsL16r4gt9o6euml8LbmnJz6MtGdMczSO7kHRxirtEHMTtYbT1wNgUAzimbScRggBpUz5gbz+NRE1Xgnf4A5yNMRy+JOWtLVUozJlcGSiQkVcexzdb27yQ==",
 			VersionBundleVersion:      env.VersionBundleVersion(),
 		}
 

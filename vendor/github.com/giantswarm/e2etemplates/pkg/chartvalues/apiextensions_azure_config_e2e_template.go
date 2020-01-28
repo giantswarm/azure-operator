@@ -19,5 +19,7 @@ azure:
 clusterName: {{ .ClusterName }}
 commonDomain: {{ .CommonDomain }}
 commonDomainResourceGroup: {{ .CommonDomainResourceGroup }}
+sshUser: {{ .SSHUser }}
+sshPublicKey: {{ .SSHPublicKey }}
 versionBundleVersion: {{ .VersionBundleVersion }}
 `

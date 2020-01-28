@@ -16,7 +16,8 @@ type AzureOperatorConfigProvider struct {
 }
 
 type AzureOperatorConfigProviderAzure struct {
-	Location string
+	HostClusterCidr string
+	Location        string
 }
 
 type AzureOperatorConfigSecret struct {
@@ -65,6 +66,9 @@ type AzureOperatorConfigSecretRegistryPullSecret struct {
 func NewAzureOperator(config AzureOperatorConfig) (string, error) {
 	if config.Provider.Azure.Location == "" {
 		return "", microerror.Maskf(invalidConfigError, "%T.Provider.Azure.Location must not be empty", config)
+	}
+	if config.Provider.Azure.HostClusterCidr == "" {
+		return "", microerror.Maskf(invalidConfigError, "%T.Provider.Azure.HostClusterCidr must not be empty", config)
 	}
 	if config.Secret.AzureOperator.SecretYaml.Service.Azure.ClientID == "" {
 		return "", microerror.Maskf(invalidConfigError, "%T.Secret.AzureOperator.SecretYaml.Service.Azure.ClientID must not be empty", config)

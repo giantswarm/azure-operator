@@ -11,6 +11,8 @@ type APIExtensionsAzureConfigE2EConfig struct {
 	ClusterName               string
 	CommonDomain              string
 	CommonDomainResourceGroup string
+	SSHUser                   string
+	SSHPublicKey              string
 	VersionBundleVersion      string
 }
 
