@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/integration/env"
@@ -19,7 +20,9 @@ func Teardown(c Config) error {
 	// We don't wait for the resources to be deleted, since we are going to delete them below.
 	err = c.Host.G8sClient().ProviderV1alpha1().AzureConfigs(c.Host.TargetNamespace()).Delete(clusterID, &metav1.DeleteOptions{})
 	if err != nil {
-		return microerror.Mask(err)
+		if !errors.IsNotFound(err) {
+			return microerror.Mask(err)
+		}
 	}
 
 	// Delete resources on Azure.
