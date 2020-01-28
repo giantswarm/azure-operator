@@ -84,7 +84,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	if !masterUpgradeInProgress {
 		// When masters are upgraded, proceed to workers.
-		return ScaleUpWorkerVMSS, nil
+		return WaitForMastersToBecomeReady, nil
 	}
 
 	// Upgrade still in progress. Keep current state.

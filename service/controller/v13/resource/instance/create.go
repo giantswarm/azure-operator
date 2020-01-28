@@ -19,6 +19,7 @@ func (r *Resource) configureStateMachine() {
 		DeploymentInitialized:       r.deploymentInitializedTransition,
 		ProvisioningSuccessful:      r.provisioningSuccessfulTransition,
 		MasterInstancesUpgrading:    r.masterInstancesUpgradingTransition,
+		WaitForMastersToBecomeReady: r.waitForMastersToBecomeReadyTransition,
 		ScaleUpWorkerVMSS:           r.scaleUpWorkerVMSSTransition,
 		CordonOldWorkers:            r.cordonOldWorkersTransition,
 		CreateWorkerDrainerConfigs:  r.createWorkerDrainerConfigsTransition,

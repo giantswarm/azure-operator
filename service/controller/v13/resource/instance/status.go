@@ -22,6 +22,7 @@ const (
 	DeploymentInitialized       = "DeploymentInitialized"
 	DeploymentCompleted         = "DeploymentCompleted"
 	MasterInstancesUpgrading    = "MasterInstancesUpgrading"
+	WaitForMastersToBecomeReady = "WaitForMastersToBecomeReady"
 	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
 	ScaleDownWorkerVMSS         = "ScaleDownWorkerVMSS"
 	TerminateOldWorkerInstances = "TerminateOldWorkerInstances"
