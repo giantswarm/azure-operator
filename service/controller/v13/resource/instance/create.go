@@ -22,6 +22,7 @@ func (r *Resource) configureStateMachine() {
 		WaitForMastersToBecomeReady: r.waitForMastersToBecomeReadyTransition,
 		ScaleUpWorkerVMSS:           r.scaleUpWorkerVMSSTransition,
 		CordonOldWorkers:            r.cordonOldWorkersTransition,
+		WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
 		CreateWorkerDrainerConfigs:  r.createWorkerDrainerConfigsTransition,
 		DeleteWorkerDrainerConfigs:  r.deleteWorkerDrainerConfigsTransition,
 		TerminateOldWorkerInstances: r.terminateOldWorkersTransition,

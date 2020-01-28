@@ -22,11 +22,12 @@ const (
 	DeploymentInitialized       = "DeploymentInitialized"
 	DeploymentCompleted         = "DeploymentCompleted"
 	MasterInstancesUpgrading    = "MasterInstancesUpgrading"
-	WaitForMastersToBecomeReady = "WaitForMastersToBecomeReady"
+	ProvisioningSuccessful      = "ProvisioningSuccessful"
 	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
 	ScaleDownWorkerVMSS         = "ScaleDownWorkerVMSS"
 	TerminateOldWorkerInstances = "TerminateOldWorkerInstances"
-	ProvisioningSuccessful      = "ProvisioningSuccessful"
+	WaitForMastersToBecomeReady = "WaitForMastersToBecomeReady"
+	WaitForWorkersToBecomeReady = "WaitForWorkersToBecomeReady"
 )
 
 func (r *Resource) deleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
