@@ -7,7 +7,9 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -49,16 +51,21 @@ func New(config Config) (*ClusterDeletion, error) {
 func (s *ClusterDeletion) Test(ctx context.Context) error {
 	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring deletion of Azure Resource Group %#q", s.provider.clusterID))
 	o := func() error {
-		resourceGroup, err := s.provider.azureClient.ResourceGroupsClient.Get(ctx, s.provider.clusterID)
-		if resourceGroup.IsHTTPStatus(http.StatusOK) {
-			return microerror.Maskf(executionFailedError, "The resource group still exists")
-		} else if resourceGroup.HasHTTPStatus(http.StatusNotFound) {
-			return nil
+		_, err := s.provider.azureClient.ResourceGroupsClient.Get(ctx, s.provider.clusterID)
+		if err != nil {
+			reqError, ok := err.(autorest.DetailedError)
+			if ok {
+				if reqError.StatusCode == http.StatusNotFound {
+					return nil
+				}
+			}
+
+			return microerror.Mask(err)
 		}
 
-		return microerror.Mask(err)
+		return microerror.Maskf(executionFailedError, "The resource group still exists")
 	}
-	b := backoff.NewExponential(backoff.LongMaxWait, backoff.LongMaxInterval)
+	b := backoff.NewExponential(60*time.Minute, backoff.LongMaxInterval)
 	n := backoff.NewNotifier(s.logger, ctx)
 	err := backoff.RetryNotify(o, b, n)
 	if err != nil {
