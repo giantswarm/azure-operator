@@ -85,7 +85,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("all old nodes (%d) are cordoned", oldNodesCordoned))
 
-	return CreateWorkerDrainerConfigs, nil
+	return WaitForWorkersToBecomeReady, nil
 }
 
 // ensureNodesCordoned ensures that given tenant cluster nodes are cordoned.
