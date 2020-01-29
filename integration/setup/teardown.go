@@ -21,6 +21,7 @@ func Teardown(c Config) error {
 	err = c.Host.G8sClient().ProviderV1alpha1().AzureConfigs(c.Host.TargetNamespace()).Delete(clusterID, &metav1.DeleteOptions{})
 	if errors.IsNotFound(err) {
 		// Fallthrough. This is fine.
+		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
