@@ -19,15 +19,6 @@ func provider(ctx context.Context, config Config) error {
 				Azure: chartvalues.AzureOperatorConfigProviderAzure{
 					Location: env.AzureLocation(),
 				},
-				Tenant: chartvalues.AzureOperatorConfigProviderTenant{
-					Ignition: chartvalues.AzureOperatorConfigProviderTenantIgnition{
-						Debug: chartvalues.AzureOperatorConfigProviderTenantIgnitionDebug{
-							Enabled:    env.IgnitionDebugEnabled(),
-							LogsPrefix: env.IgnitionDebugLogsPrefix(),
-							LogsToken:  env.IgnitionDebugLogsToken(),
-						},
-					},
-				},
 			},
 			Secret: chartvalues.AzureOperatorConfigSecret{
 				AzureOperator: chartvalues.AzureOperatorConfigSecretAzureOperator{
@@ -41,6 +32,15 @@ func provider(ctx context.Context, config Config) error {
 								Template: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplate{
 									URI: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplateURI{
 										Version: env.CircleSHA(),
+									},
+								},
+							},
+							Tenant: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenant{
+								Ignition: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnition{
+									Debug: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnitionDebug{
+										Enabled:    env.IgnitionDebugEnabled(),
+										LogsPrefix: env.IgnitionDebugLogsPrefix(),
+										LogsToken:  env.IgnitionDebugLogsToken(),
 									},
 								},
 							},
