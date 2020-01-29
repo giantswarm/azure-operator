@@ -42,12 +42,16 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 
 	// Ensure that all DrainerConfigs have DRAINED condition.
 	for _, dc := range drainerConfigs {
-		if !dc.Status.HasDrainedCondition() {
+		if !dc.Status.HasDrainedCondition() && !dc.Status.HasTimeoutCondition() {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("node %s has not been drained yet", dc.Name))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 			// Not all nodes have been drained yet. Resume later.
 			return currentState, nil
+		}
+
+		if dc.Status.HasTimeoutCondition() {
+			r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("timeout when draining node %s", dc.Name))
 		}
 	}
 
