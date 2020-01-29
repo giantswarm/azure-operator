@@ -6,10 +6,6 @@ e2eTest: &e2eTest
   - run: |
       wget -q $(curl -sS https://api.github.com/repos/giantswarm/e2e-harness/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
       chmod +x ./e2e-harness
-  - run: |
-      if [ "${IGNITION_DEBUG_ENABLED}" == "true" ]; then 
-        export IGNITION_DEBUG_LOGS_PREFIX=$(echo "${CIRCLE_SHA1:0:5}-${JOB_PREFIX}");
-      fi
   - run: ./e2e-harness localkube
   - run: ./e2e-harness setup --remote=false
   - run:
@@ -75,7 +71,7 @@ jobs:
   e2eTestWIPPRClusterState:
     environment:
       IGNITION_DEBUG_ENABLED: "true"
-      JOB_PREFIX: "wip-pr-clusterstate"
+      IGNITION_DEBUG_LOGS_PREFIX: "wip-pr-clusterstate"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/clusterstate"
     <<: *e2eTest
