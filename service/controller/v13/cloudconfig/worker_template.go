@@ -53,9 +53,14 @@ func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureCon
 		params.Extension = &workerExtension{
 			baseExtension: be,
 		}
+		params.Debug = k8scloudconfig.Debug{
+			Enabled:    c.ignition.Debug,
+			LogsPrefix: c.ignition.LogsPrefix,
+			LogsToken:  c.ignition.LogsToken,
+		}
 		params.SSOPublicKey = c.ssoPublicKey
 
-		ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignitionPath)
+		ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)
 		params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
 		if err != nil {
 			return "", microerror.Mask(err)

@@ -30,27 +30,29 @@ type Config struct {
 
 	Azure setting.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
-	AzureConfig  client.AzureClientSetConfig
-	AzureNetwork network.Subnets
-	IgnitionPath string
-	OIDC         setting.OIDC
-	SSOPublicKey string
+	AzureConfig       client.AzureClientSetConfig
+	AzureNetwork      network.Subnets
+	IgnitionDebugMode bool
+	Ignition          setting.Ignition
+	OIDC              setting.OIDC
+	SSOPublicKey      string
 }
 
 type CloudConfig struct {
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
-	azure        setting.Azure
-	azureConfig  client.AzureClientSetConfig
-	azureNetwork network.Subnets
-	ignitionPath string
-	OIDC         setting.OIDC
-	ssoPublicKey string
+	azure             setting.Azure
+	azureConfig       client.AzureClientSetConfig
+	azureNetwork      network.Subnets
+	ignitionDebugMode bool
+	ignition          setting.Ignition
+	OIDC              setting.OIDC
+	ssoPublicKey      string
 }
 
 func New(config Config) (*CloudConfig, error) {
-	if config.IgnitionPath == "" {
+	if config.Ignition.Path == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.IgnitionPath must not be empty", config)
 	}
 	if config.Logger == nil {
@@ -74,7 +76,7 @@ func New(config Config) (*CloudConfig, error) {
 		azure:        config.Azure,
 		azureConfig:  config.AzureConfig,
 		azureNetwork: config.AzureNetwork,
-		ignitionPath: config.IgnitionPath,
+		ignition:     config.Ignition,
 		OIDC:         config.OIDC,
 		ssoPublicKey: config.SSOPublicKey,
 	}

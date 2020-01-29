@@ -12,11 +12,20 @@ type AzureOperatorConfig struct {
 }
 
 type AzureOperatorConfigProvider struct {
-	Azure AzureOperatorConfigProviderAzure
+	Azure  AzureOperatorConfigProviderAzure
+	Tenant AzureOperatorConfigProviderTenant
 }
 
 type AzureOperatorConfigProviderAzure struct {
 	Location string
+}
+
+type AzureOperatorConfigProviderTenant struct {
+	Ignition AzureOperatorConfigProviderTenantIgnition
+}
+
+type AzureOperatorConfigProviderTenantIgnition struct {
+	DebugMode bool
 }
 
 type AzureOperatorConfigSecret struct {

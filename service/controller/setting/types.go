@@ -51,6 +51,13 @@ type AzureMSI struct {
 	Enabled bool
 }
 
+type Ignition struct {
+	Path       string
+	Debug      bool
+	LogsPrefix string
+	LogsToken  string
+}
+
 type OIDC struct {
 	ClientID      string
 	IssuerURL     string

@@ -32,7 +32,7 @@ type ClusterConfig struct {
 	Azure           setting.Azure
 	AzureConfig     client.AzureClientSetConfig
 	ProjectName     string
-	IgnitionPath    string
+	Ignition        setting.Ignition
 	OIDC            setting.OIDC
 	SSOPublicKey    string
 	TemplateVersion string
@@ -68,7 +68,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -92,7 +92,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -116,7 +116,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -140,7 +140,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -164,7 +164,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -188,7 +188,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -212,7 +212,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -236,7 +236,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -260,7 +260,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -283,7 +283,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			IgnitionPath:             config.Ignition.Path,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
@@ -306,7 +306,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 			Azure:                    config.Azure,
 			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.IgnitionPath,
+			Ignition:                 config.Ignition,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
 			OIDC:                     config.OIDC,
