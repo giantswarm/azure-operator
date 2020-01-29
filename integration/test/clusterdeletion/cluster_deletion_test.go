@@ -23,16 +23,16 @@ func Test_ClusterDeletion(t *testing.T) {
 }
 
 type Config struct {
+	ClusterID       string
 	Logger          micrologger.Logger
 	Provider        *Provider
-	ClusterID       string
 	TargetNamespace string
 }
 
 type ClusterDeletion struct {
+	clusterID       string
 	logger          micrologger.Logger
 	provider        *Provider
-	clusterID       string
 	targetNamespace string
 }
 
