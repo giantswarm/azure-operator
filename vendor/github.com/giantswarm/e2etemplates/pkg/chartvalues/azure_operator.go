@@ -12,26 +12,11 @@ type AzureOperatorConfig struct {
 }
 
 type AzureOperatorConfigProvider struct {
-	Azure  AzureOperatorConfigProviderAzure
-	Tenant AzureOperatorConfigProviderTenant
+	Azure AzureOperatorConfigProviderAzure
 }
 
 type AzureOperatorConfigProviderAzure struct {
 	Location string
-}
-
-type AzureOperatorConfigProviderTenant struct {
-	Ignition AzureOperatorConfigProviderTenantIgnition
-}
-
-type AzureOperatorConfigProviderTenantIgnition struct {
-	Debug AzureOperatorConfigProviderTenantIgnitionDebug
-}
-
-type AzureOperatorConfigProviderTenantIgnitionDebug struct {
-	Enabled    bool
-	LogsPrefix string
-	LogsToken  string
 }
 
 type AzureOperatorConfigSecret struct {
@@ -48,7 +33,8 @@ type AzureOperatorConfigSecretAzureOperatorSecretYaml struct {
 }
 
 type AzureOperatorConfigSecretAzureOperatorSecretYamlService struct {
-	Azure AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzure
+	Azure  AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzure
+	Tenant AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenant
 }
 
 type AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzure struct {
@@ -66,6 +52,20 @@ type AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplate struct
 type AzureOperatorConfigSecretAzureOperatorSecretYamlServiceAzureTemplateURI struct {
 	// Version is currently the Github/CircleCI SHA.
 	Version string
+}
+
+type AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenant struct {
+	Ignition AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnition
+}
+
+type AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnition struct {
+	Debug AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnitionDebug
+}
+
+type AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnitionDebug struct {
+	Enabled    bool
+	LogsPrefix string
+	LogsToken  string
 }
 
 type AzureOperatorConfigSecretRegistry struct {
