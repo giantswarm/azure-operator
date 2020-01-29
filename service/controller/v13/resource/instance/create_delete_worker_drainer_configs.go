@@ -35,6 +35,7 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 		}
 	}
 
+	// Ensure that all DrainerConfigs have DRAINED condition.
 	for _, dc := range drainerConfigs {
 		if !dc.Status.HasDrainedCondition() {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("node %s has not been drained yet", dc.Name))
@@ -43,7 +44,10 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 			// Not all nodes have been drained yet. Resume later.
 			return currentState, nil
 		}
+	}
 
+	// Delete DrainerConfigs now that all nodes have been DRAINED.
+	for _, dc := range drainerConfigs {
 		err = r.g8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
 		if err != nil {
 			return "", microerror.Mask(err)
