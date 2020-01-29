@@ -17,37 +17,15 @@ func bastion(ctx context.Context, config Config) error {
 
 	resourceGroupName := env.ClusterID()
 	virtualNetworkName := fmt.Sprintf("%s-%s", resourceGroupName, "VirtualNetwork")
-	masterSecurityGroupName := fmt.Sprintf("%s-%s", resourceGroupName, "MasterSecurityGroup")
-	workerSecurityGroupName := fmt.Sprintf("%s-%s", resourceGroupName, "WorkerSecurityGroup")
-	subnetAddressPrefix := env.BastionE2ESubnetCIDR()
+	masterSubnetName := fmt.Sprintf("%s-%s", virtualNetworkName, "MasterSubnet")
 	location := env.AzureLocation()
 
-	// Create the bastion security group allowing SSH from everywhere
-	var sg network.SecurityGroup
-	{
-		sg, err = CreateNetworkSecurityGroup(ctx, location, resourceGroupName, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	// Add subnet to virtual network, attach the bastion security group
 	var subnet network.Subnet
 	{
-		subnet, err = CreateVirtualNetworkSubnet(ctx, resourceGroupName, virtualNetworkName, subnetAddressPrefix, sg, config)
+		subnet, err = config.AzureClient.SubnetsClient.Get(ctx, resourceGroupName, virtualNetworkName, masterSubnetName, "")
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	}
-
-	// Change workers/master security group to allow traffic from created subnet
-	_, err = CreateSSHRule(ctx, resourceGroupName, masterSecurityGroupName, subnetAddressPrefix, *config.AzureClient.SecurityRulesClient)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	_, err = CreateSSHRule(ctx, resourceGroupName, workerSecurityGroupName, subnetAddressPrefix, *config.AzureClient.SecurityRulesClient)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	// Create public IPAddress for the instance
@@ -77,108 +55,6 @@ func bastion(ctx context.Context, config Config) error {
 	}
 
 	return nil
-}
-
-// CreateVirtualNetworkSubnet creates a subnet in an existing vnet
-func CreateVirtualNetworkSubnet(ctx context.Context, groupName string, vnetName string, subnetAddressPrefix string, securityGroup network.SecurityGroup, config Config) (subnet network.Subnet, err error) {
-	bastionE2ESubnetName := "bastionE2ESubnet"
-	config.Logger.LogCtx(ctx, "message", "Adding e2e bastion subnet to virtual network", "subnetName", bastionE2ESubnetName, "cidr", subnetAddressPrefix)
-	future, err := config.AzureClient.SubnetsClient.CreateOrUpdate(
-		ctx,
-		groupName,
-		vnetName,
-		bastionE2ESubnetName,
-		network.Subnet{
-			SubnetPropertiesFormat: &network.SubnetPropertiesFormat{
-				AddressPrefix:        to.StringPtr(subnetAddressPrefix),
-				NetworkSecurityGroup: &securityGroup,
-				RouteTable:           nil,
-			},
-		})
-	if err != nil {
-		return subnet, fmt.Errorf("cannot create subnet: %v", err)
-	}
-
-	err = future.WaitForCompletionRef(ctx, config.AzureClient.SubnetsClient.Client)
-	if err != nil {
-		return subnet, fmt.Errorf("cannot get the subnet create or update future response: %v", err)
-	}
-
-	return future.Result(*config.AzureClient.SubnetsClient)
-}
-
-// CreateSSHRule creates an inbound network security rule that allows using port 22
-func CreateSSHRule(ctx context.Context, groupName, nsgName, subnetAddressPrefix string, rulesClient network.SecurityRulesClient) (rule network.SecurityRule, err error) {
-	future, err := rulesClient.CreateOrUpdate(ctx,
-		groupName,
-		nsgName,
-		fmt.Sprintf("allowSSHBastionE2E-%s", nsgName),
-		network.SecurityRule{
-			SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
-				Access:                   network.SecurityRuleAccessAllow,
-				DestinationAddressPrefix: to.StringPtr("*"),
-				DestinationPortRange:     to.StringPtr("22"),
-				Direction:                network.SecurityRuleDirectionInbound,
-				Description:              to.StringPtr("Allow SSH from bastion e2e subnet"),
-				Priority:                 to.Int32Ptr(103),
-				Protocol:                 network.SecurityRuleProtocolTCP,
-				SourceAddressPrefix:      to.StringPtr(subnetAddressPrefix),
-				SourcePortRange:          to.StringPtr("*"),
-			},
-		})
-	if err != nil {
-		return rule, fmt.Errorf("cannot create SSH security rule: %v", err)
-	}
-
-	err = future.WaitForCompletionRef(ctx, rulesClient.Client)
-	if err != nil {
-		return rule, fmt.Errorf("cannot get security rule create or update future response: %v", err)
-	}
-
-	return future.Result(rulesClient)
-}
-
-// CreateNetworkSecurityGroup creates a new network security group with rules set for allowing SSH and HTTPS use
-func CreateNetworkSecurityGroup(ctx context.Context, location, groupName string, config Config) (nsg network.SecurityGroup, err error) {
-	securityGroupName := "bastionE2ESecurityGroup"
-
-	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion security group", "securityGroup", securityGroupName)
-	future, err := config.AzureClient.SecurityGroupsClient.CreateOrUpdate(
-		ctx,
-		groupName,
-		securityGroupName,
-		network.SecurityGroup{
-			Location: to.StringPtr(location),
-			SecurityGroupPropertiesFormat: &network.SecurityGroupPropertiesFormat{
-				SecurityRules: &[]network.SecurityRule{
-					{
-						Name: to.StringPtr("allow_ssh_from_everywhere"),
-						SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
-							Protocol:                 network.SecurityRuleProtocolTCP,
-							SourceAddressPrefix:      to.StringPtr("0.0.0.0/0"),
-							SourcePortRange:          to.StringPtr("*"),
-							DestinationAddressPrefix: to.StringPtr("0.0.0.0/0"),
-							DestinationPortRange:     to.StringPtr("22"),
-							Access:                   network.SecurityRuleAccessAllow,
-							Direction:                network.SecurityRuleDirectionInbound,
-							Priority:                 to.Int32Ptr(100),
-						},
-					},
-				},
-			},
-		},
-	)
-
-	if err != nil {
-		return nsg, fmt.Errorf("cannot create nsg: %v", err)
-	}
-
-	err = future.WaitForCompletionRef(ctx, config.AzureClient.SecurityGroupsClient.Client)
-	if err != nil {
-		return nsg, fmt.Errorf("cannot get nsg create or update future response: %v", err)
-	}
-
-	return future.Result(*config.AzureClient.SecurityGroupsClient)
 }
 
 // CreatePublicIP creates a new public IP
@@ -281,14 +157,6 @@ func CreateVM(ctx context.Context, location, groupName string, nic network.Inter
 // CreateNIC creates a new network interface. The Network Security Group is not a required parameter
 func CreateNIC(ctx context.Context, location, groupName string, subnet network.Subnet, ip network.PublicIPAddress, nicClient network.InterfacesClient) (nic network.Interface, err error) {
 	nicName := "bastionE2ENIC"
-
-	//if nsgName != "" {
-	//	nsg, err := GetNetworkSecurityGroup(ctx, nsgName)
-	//	if err != nil {
-	//		log.Fatalf("failed to get nsg: %v", err)
-	//	}
-	//	nicParams.NetworkSecurityGroup = &nsg
-	//}
 
 	future, err := nicClient.CreateOrUpdate(ctx, groupName, nicName, network.Interface{
 		Name:     to.StringPtr(nicName),
