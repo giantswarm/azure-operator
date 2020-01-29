@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
@@ -15,13 +16,19 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return "", microerror.Mask(err)
 	}
 
+	desiredWorkerCount := key.WorkerCount(customObject) * 2
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
+
 	// Double the desired number of nodes in worker VMSS in order to
 	// provide 1:1 mapping between new up-to-date nodes when draining and
 	// terminating old nodes.
-	err = r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, key.WorkerCount(customObject)*2)
+	err = r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, desiredWorkerCount)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
 
 	return CordonOldWorkers, nil
 }
@@ -32,11 +39,17 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 		return "", microerror.Mask(err)
 	}
 
+	desiredWorkerCount := key.WorkerCount(customObject)
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
+
 	// Scale down to the desired number of nodes in worker VMSS.
-	err = r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, key.WorkerCount(customObject))
+	err = r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, desiredWorkerCount)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
 
 	return DeploymentCompleted, nil
 }

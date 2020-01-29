@@ -18,6 +18,8 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 		return "", microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
+
 	drainerConfigs := make(map[string]corev1alpha1.DrainerConfig)
 	{
 		n := metav1.NamespaceAll
@@ -35,6 +37,9 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that all drainerconfigs have drained condition")
+
 	// Ensure that all DrainerConfigs have DRAINED condition.
 	for _, dc := range drainerConfigs {
 		if !dc.Status.HasDrainedCondition() {
@@ -46,6 +51,9 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that all drainerconfigs have drained condition")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting all drainerconfigs")
+
 	// Delete DrainerConfigs now that all nodes have been DRAINED.
 	for _, dc := range drainerConfigs {
 		err = r.g8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
@@ -54,7 +62,7 @@ func (r *Resource) deleteWorkerDrainerConfigsTransition(ctx context.Context, obj
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "all old worker nodes drained")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted all drainerconfigs")
 
 	return TerminateOldWorkerInstances, nil
 }

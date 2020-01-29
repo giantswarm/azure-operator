@@ -17,6 +17,8 @@ func (r *Resource) createWorkerDrainerConfigsTransition(ctx context.Context, obj
 		return "", microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
+
 	var drainerConfigs map[string]corev1alpha1.DrainerConfig
 	{
 		n := metav1.NamespaceAll
@@ -34,6 +36,9 @@ func (r *Resource) createWorkerDrainerConfigsTransition(ctx context.Context, obj
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+
 	allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
 	if IsScaleSetNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
@@ -41,7 +46,8 @@ func (r *Resource) createWorkerDrainerConfigsTransition(ctx context.Context, obj
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "processing worker VMSSs")
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that drainerconfig exists for all old worker nodes")
 
 	for _, i := range allWorkerInstances {
 		if *i.LatestModelApplied {
@@ -66,7 +72,7 @@ func (r *Resource) createWorkerDrainerConfigsTransition(ctx context.Context, obj
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "processed worker VMSSs")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that drainerconfig exists for all old worker nodes")
 
 	return DeleteWorkerDrainerConfigs, nil
 }

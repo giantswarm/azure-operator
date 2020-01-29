@@ -39,6 +39,8 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		return currentState, nil
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
 		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
@@ -51,6 +53,9 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
+
 	var nodes []corev1.Node
 	{
 		nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
@@ -61,6 +66,9 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, customObject, key.WorkerInstanceName)
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
 
 	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
 	if tenant.IsAPINotAvailable(err) {
@@ -83,7 +91,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("all old nodes (%d) are cordoned", oldNodesCordoned))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned))
 
 	return WaitForWorkersToBecomeReady, nil
 }

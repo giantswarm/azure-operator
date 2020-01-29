@@ -17,6 +17,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return "", microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
 		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
@@ -29,10 +30,14 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+
 	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
 
 	g := key.ResourceGroupName(customObject)
 	s := key.WorkerVMSSName(customObject)
@@ -50,6 +55,9 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "filtered instance IDs for old instances")
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminating %d old worker instances", len(*ids.InstanceIds)))
+
 	res, err := c.DeleteInstances(ctx, g, s, ids)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -58,6 +66,8 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminated %d old worker instances", len(*ids.InstanceIds)))
 
 	return ScaleDownWorkerVMSS, nil
 }

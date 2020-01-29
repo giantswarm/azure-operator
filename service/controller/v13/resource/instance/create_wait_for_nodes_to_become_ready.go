@@ -11,27 +11,37 @@ import (
 )
 
 func (r *Resource) waitForMastersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
+
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isMaster)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready")
 		return currentState, nil
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
 
 	return ScaleUpWorkerVMSS, nil
 }
 
 func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
+
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isWorker)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
 		return currentState, nil
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
 
 	return CreateWorkerDrainerConfigs, nil
 }
