@@ -25,7 +25,13 @@ type AzureOperatorConfigProviderTenant struct {
 }
 
 type AzureOperatorConfigProviderTenantIgnition struct {
-	DebugMode bool
+	Debug AzureOperatorConfigProviderTenantIgnitionDebug
+}
+
+type AzureOperatorConfigProviderTenantIgnitionDebug struct {
+	Enabled    bool
+	LogsPrefix string
+	LogsToken  string
 }
 
 type AzureOperatorConfigSecret struct {

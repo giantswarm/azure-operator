@@ -19,6 +19,15 @@ func provider(ctx context.Context, config Config) error {
 				Azure: chartvalues.AzureOperatorConfigProviderAzure{
 					Location: env.AzureLocation(),
 				},
+				Tenant: chartvalues.AzureOperatorConfigProviderTenant{
+					Ignition: chartvalues.AzureOperatorConfigProviderTenantIgnition{
+						Debug: chartvalues.AzureOperatorConfigProviderTenantIgnitionDebug{
+							Enabled:    env.IgnitionDebugEnabled(),
+							LogsPrefix: env.IgnitionDebugLogsPrefix(),
+							LogsToken:  env.IgnitionDebugLogsToken(),
+						},
+					},
+				},
 			},
 			Secret: chartvalues.AzureOperatorConfigSecret{
 				AzureOperator: chartvalues.AzureOperatorConfigSecretAzureOperator{

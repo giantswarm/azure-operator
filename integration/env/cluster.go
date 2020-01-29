@@ -16,6 +16,8 @@ var (
 )
 
 func init() {
+	var err error
+
 	commonDomain = os.Getenv(EnvVarCommonDomain)
 	if commonDomain == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomain))
