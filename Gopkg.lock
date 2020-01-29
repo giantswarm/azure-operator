@@ -334,7 +334,7 @@
   revision = "ea0388753075996907cddfabd8f57f1a66f8fac3"
 
 [[projects]]
-  branch = "allow_passing_ssh"
+  branch = "master"
   digest = "1:c0c75395be3a1c978a774dafdf556632b85f8f2fa4229c269b494df19e0a9f68"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
@@ -342,7 +342,7 @@
     "pkg/chartvalues",
   ]
   pruneopts = "UT"
-  revision = "89a284f4772c8a8fae908522609bd757b1874201"
+  revision = "81dbe769ae92464462845035274aac4dcf4f4253"
 
 [[projects]]
   branch = "master"

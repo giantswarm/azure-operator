@@ -24,7 +24,9 @@ const (
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
 
 	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
-	EnvVarCircleBuildNumber         = "CIRCLE_BUILD_NUM"
+	EnvVarSSHPublicKey              = "SSH_PUBLIC_KEY"
+
+	EnvVarCircleBuildNumber = "CIRCLE_BUILD_NUM"
 )
 
 var (
@@ -39,9 +41,9 @@ var (
 	azureMasterSubnetCIDR string
 	azureVPNSubnetCIDR    string
 	azureWorkerSubnetCIDR string
-	bastionE2ESubnetCIDR  string
 
 	commonDomainResourceGroup string
+	sshPublicKey              string
 )
 
 func init() {
@@ -73,6 +75,11 @@ func init() {
 	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
 	if commonDomainResourceGroup == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomainResourceGroup))
+	}
+
+	sshPublicKey = os.Getenv(EnvVarSSHPublicKey)
+	if sshPublicKey == "" {
+		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarSSHPublicKey))
 	}
 
 	// azureCDIR must be provided along with other CIDRs,
@@ -165,4 +172,8 @@ func AzureWorkerSubnetCIDR() string {
 
 func CommonDomainResourceGroup() string {
 	return commonDomainResourceGroup
+}
+
+func SSHPublicKey() string {
+	return sshPublicKey
 }

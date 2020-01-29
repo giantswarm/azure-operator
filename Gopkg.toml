@@ -62,7 +62,7 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/e2etemplates"
-  branch = "allow_passing_ssh"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/e2etests"

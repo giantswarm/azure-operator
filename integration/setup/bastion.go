@@ -19,7 +19,9 @@ func bastion(ctx context.Context, config Config) error {
 	virtualNetworkName := fmt.Sprintf("%s-%s", resourceGroupName, "VirtualNetwork")
 	masterSubnetName := fmt.Sprintf("%s-%s", virtualNetworkName, "MasterSubnet")
 	location := env.AzureLocation()
+	sshKeyData := env.SSHPublicKey()
 
+	// Get subnet for master nodes. It could be the workers subnet as well. We will deploy the bastion in this subnet.
 	var subnet network.Subnet
 	{
 		subnet, err = config.AzureClient.SubnetsClient.Get(ctx, resourceGroupName, virtualNetworkName, masterSubnetName, "")
@@ -28,7 +30,7 @@ func bastion(ctx context.Context, config Config) error {
 		}
 	}
 
-	// Create public IPAddress for the instance
+	// Create public IPAddress for the bastion instance.
 	var ip network.PublicIPAddress
 	{
 		ip, err = CreatePublicIP(ctx, location, resourceGroupName, *config.AzureClient.IPAddressesClient)
@@ -37,7 +39,7 @@ func bastion(ctx context.Context, config Config) error {
 		}
 	}
 
-	// Create network interface for the VM
+	// Create network interface for the VM.
 	var nic network.Interface
 	{
 		nic, err = CreateNIC(ctx, location, resourceGroupName, subnet, ip, *config.AzureClient.InterfacesClient)
@@ -46,9 +48,9 @@ func bastion(ctx context.Context, config Config) error {
 		}
 	}
 
-	// Create VM in that subnet, using our SSH keys
+	// Create bastion virtual machine.
 	{
-		_, err = CreateVM(ctx, location, resourceGroupName, nic, config)
+		_, err = CreateVM(ctx, location, resourceGroupName, sshKeyData, nic, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -57,7 +59,7 @@ func bastion(ctx context.Context, config Config) error {
 	return nil
 }
 
-// CreatePublicIP creates a new public IP
+// CreatePublicIP creates a new public IP.
 func CreatePublicIP(ctx context.Context, location, groupName string, ipClient network.PublicIPAddressesClient) (ip network.PublicIPAddress, err error) {
 	bastionE2EPublicIpName := "bastionE2EPublicIp"
 	future, err := ipClient.CreateOrUpdate(
@@ -87,13 +89,10 @@ func CreatePublicIP(ctx context.Context, location, groupName string, ipClient ne
 }
 
 // CreateVM creates a new virtual machine with the specified name using the specified NIC.
-// Username, password, and sshPublicKeyPath determine logon credentials.
-func CreateVM(ctx context.Context, location, groupName string, nic network.Interface, config Config) (vm compute.VirtualMachine, err error) {
+func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic network.Interface, config Config) (vm compute.VirtualMachine, err error) {
 	vmName := "bastionE2EVirtualMachine"
 	username := "e2e"
 	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion instance", "vmName", vmName)
-
-	sshKeyData := "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDBSSJCLkZWhOvs6blotU+fWbrTmC7fOwOm0+w01Ww/YN3j3j1vCrvji1A4Yonr89ePQEQKfZsYcYFodQI/D3Uzu9rOFy0dCMQfvL/J6N8LkNtmooh3J2p061829MurAdD+TVsNGrD2FZGm5Ab4NiyDXIGAYCaHL6BHP16ipBglYjLQt6jVyzdTbYspkRi1QrsNFN3gIv9V47qQSvoNEsC97gvumKzCSQ/EwJzFoIlqVkZZHZTXvGwnZrAVXB69t9Y8OJ5zA6cYFAKR0O7lEiMpebdLNGkZgMA6t2PADxfT78PHkYXLR/4tchVuOSopssJqgSs7JgIktEE14xKyNyoLKIyBBo3xwywnDySsL8R2zG4Ytw1luo79pnSpIzTvfwrNhd7Cg//OYzyDCty+XUEUQx2JfOBx5Qb1OFw71WA+zYqjbworOsy2ZZ9UAy8ryjiaeT8L2ZRGuhdicD6kkL3Lxg5UeNIxS2FLNwgepZ4D8Vo6Yxe+VOZl524ffoOJSHQ0Gz8uE76hXMNEcn4t8HVkbR4sCMgLn2YbwJ2dJcROj4w80O4qgtN1vsL16r4gt9o6euml8LbmnJz6MtGdMczSO7kHRxirtEHMTtYbT1wNgUAzimbScRggBpUz5gbz+NRE1Xgnf4A5yNMRy+JOWtLVUozJlcGSiQkVcexzdb27yQ=="
 
 	future, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
 		ctx,
@@ -154,7 +153,7 @@ func CreateVM(ctx context.Context, location, groupName string, nic network.Inter
 	return future.Result(*config.AzureClient.VirtualMachinesClient)
 }
 
-// CreateNIC creates a new network interface. The Network Security Group is not a required parameter
+// CreateNIC creates a new network interface in the passed subnet using the passed public ip address.
 func CreateNIC(ctx context.Context, location, groupName string, subnet network.Subnet, ip network.PublicIPAddress, nicClient network.InterfacesClient) (nic network.Interface, err error) {
 	nicName := "bastionE2ENIC"
 
