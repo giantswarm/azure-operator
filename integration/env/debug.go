@@ -13,9 +13,9 @@ const (
 )
 
 var (
-	ignitionDebugMode  bool
-	ignitionLogsPrefix string
-	ignitionLogsToken  string
+	ignitionDebugEnabled bool
+	ignitionLogsPrefix   string
+	ignitionLogsToken    string
 )
 
 func init() {
@@ -40,7 +40,7 @@ func init() {
 }
 
 func IgnitionDebugEnabled() bool {
-	return ignitionDebugMode
+	return ignitionDebugEnabled
 }
 
 func IgnitionDebugLogsPrefix() string {
