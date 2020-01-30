@@ -404,8 +404,8 @@
   revision = "f75fead2ae064a2ae20a117cc1cd1d2f6d050641"
 
 [[projects]]
-  branch = "master"
-  digest = "1:6a3f00998009fd4e9fbbc3050d8f8d5c5d82b5aeeb88e2cb7ae73be6d925ed66"
+  branch = "lowercase-hostname"
+  digest = "1:1cfcb3b971cd969f4d440047f0fc59ea2b39fc87fb52659155848d9727e7a1c5"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "ignition/v_2_2_0",
@@ -418,9 +418,10 @@
     "v_4_8_1",
     "v_4_9_0",
     "v_5_0_0",
+    "v_5_1_0",
   ]
   pruneopts = "T"
-  revision = "ead4746e4fdaa113c56755a0e291c9274722b8d8"
+  revision = "ff8a676133e29caff4e1a3da13c05f4745899dbd"
 
 [[projects]]
   branch = "master"
@@ -2048,6 +2049,7 @@
     "github.com/giantswarm/e2etests/clusterstate",
     "github.com/giantswarm/e2etests/scaling",
     "github.com/giantswarm/e2etests/update",
+    "github.com/giantswarm/errors/tenant",
     "github.com/giantswarm/exporterkit/collector",
     "github.com/giantswarm/helmclient",
     "github.com/giantswarm/ipam",
@@ -2062,6 +2064,7 @@
     "github.com/giantswarm/k8scloudconfig/v_4_8_1",
     "github.com/giantswarm/k8scloudconfig/v_4_9_0",
     "github.com/giantswarm/k8scloudconfig/v_5_0_0",
+    "github.com/giantswarm/k8scloudconfig/v_5_1_0",
     "github.com/giantswarm/microendpoint/endpoint/healthz",
     "github.com/giantswarm/microendpoint/endpoint/version",
     "github.com/giantswarm/microendpoint/service/version",
@@ -2097,6 +2100,7 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/rest",
+    "sigs.k8s.io/controller-runtime/pkg/client",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1
