@@ -2039,6 +2039,7 @@
     "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/clientset/versioned",
     "github.com/giantswarm/apprclient",
+    "github.com/giantswarm/backoff",
     "github.com/giantswarm/certs",
     "github.com/giantswarm/certs/certstest",
     "github.com/giantswarm/e2e-harness/pkg/framework",
