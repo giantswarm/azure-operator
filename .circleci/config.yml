@@ -55,22 +55,28 @@ jobs:
 
   e2eTestCurMasterClusterState:
     environment:
+      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_LOGS_PREFIX: "cur-master-clusterstate"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/clusterstate"
     <<: *e2eTest
   e2eTestCurPRClusterState:
     environment:
+      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_LOGS_PREFIX: "cur-pr-clusterstate"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/clusterstate"
     <<: *e2eTest
   e2eTestWIPMasterClusterState:
     environment:
+      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_LOGS_PREFIX: "wip-master-clusterstate"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/clusterstate"
     <<: *e2eTest
   e2eTestWIPPRClusterState:
     environment:
-      IGNITION_DEBUG_ENABLED: "true"
+      IGNITION_DEBUG_ENABLED: "false"
       IGNITION_DEBUG_LOGS_PREFIX: "wip-pr-clusterstate"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/clusterstate"
@@ -103,21 +109,29 @@ jobs:
 
   e2eTestCurMasterMultiAZ:
     environment:
+      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_LOGS_PREFIX: "cur-master-multiaz"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
   e2eTestCurPRMultiAZ:
     environment:
+      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_LOGS_PREFIX: "cur-pr-multiaz"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
   e2eTestWIPMasterMultiAZ:
     environment:
+      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_LOGS_PREFIX: "wip-master-multiaz"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
   e2eTestWIPPRMultiAZ:
     environment:
+      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_LOGS_PREFIX: "wip-pr-multiaz"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
@@ -169,9 +183,9 @@ workflows:
 #     - e2eTestWIPMasterClusterState:
 #         requires:
 #         - master
-##      - e2eTestCurPRClusterState:
-##          requires:
-##          - pr
+      - e2eTestCurPRClusterState:
+          requires:
+          - pr
       - e2eTestWIPPRClusterState:
           requires:
           - pr
@@ -184,27 +198,27 @@ workflows:
 #     - e2eTestWIPMasterScaling:
 #         requires:
 #         - master
-##      - e2eTestCurPRScaling:
-##          requires:
-##          - pr
-##      - e2eTestWIPPRScaling:
-##          requires:
-##          - pr
+      - e2eTestCurPRScaling:
+          requires:
+          - pr
+      - e2eTestWIPPRScaling:
+          requires:
+          - pr
 
 
 
 #      - e2eTestCurPRMultiAZ:
 #          requires:
 #          - pr
-##      - e2eTestWIPPRMultiAZ:
-##          requires:
-##          - pr
+      - e2eTestWIPPRMultiAZ:
+          requires:
+          - pr
 
 
 
 #     - e2eTestCurMasterUpdate:
 #         requires:
 #         - master
-##      - e2eTestCurPRUpdate:
-##          requires:
-##          - pr
+      - e2eTestCurPRUpdate:
+          requires:
+          - pr
