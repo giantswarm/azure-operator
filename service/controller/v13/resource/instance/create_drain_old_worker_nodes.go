@@ -61,16 +61,11 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		dc, drainerConfigExists := drainerConfigs[n]
 		if !drainerConfigExists {
 			nodesPendingDraining++
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating DrainerConfig for %s", n))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
 			err = r.createDrainerConfig(ctx, customObject, key.WorkerInstanceName(customObject, *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
-		}
-
-		if drainerConfigExists && !dc.Status.HasTimeoutCondition() {
-			nodesPendingDraining++
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists", n))
 		}
 
 		if drainerConfigExists && dc.Status.HasTimeoutCondition() {
@@ -85,6 +80,17 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			} else if err != nil {
 				return "", microerror.Mask(err)
 			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
+			err = r.createDrainerConfig(ctx, customObject, key.WorkerInstanceName(customObject, *i.InstanceID))
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+		}
+
+		if drainerConfigExists && !dc.Status.HasTimeoutCondition() && !dc.Status.HasDrainedCondition() {
+			nodesPendingDraining++
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists", n))
 		}
 	}
 
