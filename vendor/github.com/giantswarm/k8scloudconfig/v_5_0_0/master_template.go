@@ -349,21 +349,17 @@ systemd:
       [Install]
       WantedBy=multi-user.target
 
-{{ if .Debug.Enabled }}
-  - name: logentries.service
+  - name: debug-tools.service
     enabled: true
     contents: |
       [Unit]
-      Description=Logentries
-
+      Description=Install calicoctl and crictl tools
+      After=network.target
       [Service]
-      Environment=LOGENTRIES_PREFIX={{ .Debug.LogsPrefix }}-master
-      Environment=LOGENTRIES_TOKEN={{ .Debug.LogsToken }}
-      ExecStart=/bin/sh /opt/bin/logentries.sh ${LOGENTRIES_PREFIX} ${LOGENTRIES_TOKEN}
-
+      Type=oneshot
+      ExecStart=/opt/install-debug-tools
       [Install]
       WantedBy=multi-user.target
-{{ end }}
 
 storage:
   files:
@@ -599,14 +595,6 @@ storage:
       mode: 0444
       contents:
         source: "data:text/plain;charset=utf-8;base64,{{  index .Files "conf/etcd-alias" }}"
-
-{{ if .Debug.Enabled }}
-    - path: /opt/bin/logentries.sh
-      filesystem: root
-      mode: 0444
-      contents:
-        source: "data:text/plain;charset=utf-8;base64,{{ index .Files "conf/logentries.sh" }}"
-{{ end }}
 
     {{ range .Extension.Files -}}
     - path: {{ .Metadata.Path }}

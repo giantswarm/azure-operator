@@ -1,0 +1,79 @@
+e2eTest: &e2eTest
+  machine: true
+  working_directory: /home/circleci/.go_workspace/src/github.com/giantswarm/e2e-harness
+  steps:
+    - checkout
+    - attach_workspace:
+        at: .
+    - run: ./e2e-harness localkube
+    - run: ./e2e-harness setup --remote=false
+    - run: ./e2e-harness test --test-dir=${TEST_DIR}
+    - run:
+        command: ./e2e-harness teardown
+        when: always
+
+
+
+version: 2
+jobs:
+  build:
+    machine: true
+    steps:
+    - checkout
+    - run: |
+        wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+        chmod +x ./architect
+        ./architect version
+    - run: ./architect build
+    - store_test_results:
+        path: /tmp/results
+    - persist_to_workspace:
+        root: .
+        paths:
+        - ./architect
+        - ./e2e-harness
+    - deploy:
+        command: |
+          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+            ./architect deploy
+          fi
+
+  e2eLocalTest:
+    <<: *e2eTest
+    environment:
+      TEST_DIR: "integration"
+
+  e2eLocalSubDirTest:
+    <<: *e2eTest
+    environment:
+      TEST_DIR: "e2e/sub-dir"
+
+  github-release:
+    working_directory: /home/circleci/.go_workspace/src/github.com/giantswarm/e2e-harness
+    machine: true
+    steps:
+      - checkout
+
+      - attach_workspace:
+          at: .
+
+      - run: ./github-release.sh $CIRCLE_PROJECT_REPONAME $CIRCLE_SHA1 $PERSONAL_ACCESS_TOKEN
+
+workflows:
+  version: 2
+  build_e2e:
+    jobs:
+      - build
+      - e2eLocalTest:
+          requires:
+          - build
+      - e2eLocalSubDirTest:
+          requires:
+          - build
+      - github-release:
+          requires:
+            - e2eLocalTest
+            - e2eLocalSubDirTest
+          filters:
+            branches:
+              only: master

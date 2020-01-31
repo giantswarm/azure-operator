@@ -1,0 +1,137 @@
+# Gopkg.toml example
+#
+# Refer to https://golang.github.io/dep/docs/Gopkg.toml.html
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#   name = "github.com/x/y"
+#   version = "2.4.0"
+#
+# [prune]
+#   non-go = false
+#   go-tests = true
+#   unused-packages = true
+
+required = [
+ "k8s.io/apiserver/pkg/endpoints/request"
+]
+
+# Fix:
+#   vendor/k8s.io/kubernetes/pkg/util/parsers/parsers.go:36:16: undefined: reference.ParseNormalizedNamed
+[[override]]
+  name = "github.com/docker/distribution"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/apiextensions"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/apprclient"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/backoff"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/helmclient"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/microerror"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/micrologger"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/versionbundle"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/spf13/cobra"
+  version = "v0.0.5"
+
+[[constraint]]
+  name = "gopkg.in/yaml.v2"
+  version = "=2.2.2"
+
+[[constraint]]
+  name = "k8s.io/api"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
+  name = "k8s.io/apiextensions-apiserver"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
+  name = "k8s.io/client-go"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
+  name = "k8s.io/kube-aggregator"
+  version = "kubernetes-1.16.3"
+
+[[constraint]]
+  name = "github.com/google/go-github"
+  version = "v25.0.4"
+
+[[constraint]]
+  branch = "master"
+  name = "golang.org/x/oauth2"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  version = "v1.16.3"
+
+[[override]]
+  name = "k8s.io/cli-runtime"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/component-base"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/kubectl"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "v1.5.2"
+
+[[override]]
+  name = "github.com/ghodss/yaml"
+  branch = "master"
+
+
+
+[prune]
+  go-tests = true
+  unused-packages = true

@@ -1,0 +1,113 @@
+# Gopkg.toml example
+#
+# Refer to https://golang.github.io/dep/docs/Gopkg.toml.html
+# for detailed Gopkg.toml documentation.
+#
+# required = ["github.com/user/thing/cmd/thing"]
+# ignored = ["github.com/user/project/pkgX", "bitbucket.org/user/project/pkgA/pkgY"]
+#
+# [[constraint]]
+#   name = "github.com/user/project"
+#   version = "1.0.0"
+#
+# [[constraint]]
+#   name = "github.com/user/project2"
+#   branch = "dev"
+#   source = "github.com/myfork/project2"
+#
+# [[override]]
+#   name = "github.com/x/y"
+#   version = "2.4.0"
+#
+# [prune]
+#   non-go = false
+#   go-tests = true
+#   unused-packages = true
+
+
+
+required = [
+  "github.com/docker/distribution/reference",
+  "k8s.io/apimachinery/pkg/apis/meta/v1",
+  "k8s.io/apiserver/pkg/endpoints/request"
+]
+
+
+
+[[constraint]]
+  name = "github.com/docker/distribution"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/apiextensions"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/apprclient"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/backoff"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/e2e-harness"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/ipam"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/k8sclient"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/microerror"
+  branch = "master"
+
+[[constraint]]
+  name = "github.com/giantswarm/micrologger"
+  branch = "master"
+
+[[override]]
+  name = "k8s.io/apimachinery"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/apiserver"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/cli-runtime"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/client-go"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/component-base"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/kubectl"
+  version = "kubernetes-1.16.3"
+
+[[override]]
+  name = "k8s.io/kubernetes"
+  version = "v1.16.3"
+
+[[override]]
+  name = "github.com/ghodss/yaml"
+  branch = "master"
+
+[[override]]
+  name = "github.com/russross/blackfriday"
+  version = "v1.5.2"
+
+
+
+[prune]
+  go-tests = true
+  unused-packages = true

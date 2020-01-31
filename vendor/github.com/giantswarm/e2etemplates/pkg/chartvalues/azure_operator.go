@@ -16,7 +16,8 @@ type AzureOperatorConfigProvider struct {
 }
 
 type AzureOperatorConfigProviderAzure struct {
-	Location string
+	Location        string
+	HostClusterCidr string
 }
 
 type AzureOperatorConfigSecret struct {
