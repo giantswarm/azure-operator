@@ -20,7 +20,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
 
-	var drainerConfigs map[string]corev1alpha1.DrainerConfig
+	drainerConfigs := make(map[string]corev1alpha1.DrainerConfig)
 	{
 		n := metav1.NamespaceAll
 		o := metav1.ListOptions{
