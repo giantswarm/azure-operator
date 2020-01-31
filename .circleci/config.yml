@@ -55,8 +55,6 @@ jobs:
 
   e2eTestCurMasterClusterState:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "cur-master-clusterstate"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/clusterstate"
     <<: *e2eTest
@@ -69,8 +67,6 @@ jobs:
     <<: *e2eTest
   e2eTestWIPMasterClusterState:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "wip-master-clusterstate"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/clusterstate"
     <<: *e2eTest
@@ -109,8 +105,6 @@ jobs:
 
   e2eTestCurMasterMultiAZ:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "cur-master-multiaz"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
@@ -123,8 +117,6 @@ jobs:
     <<: *e2eTest
   e2eTestWIPMasterMultiAZ:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "wip-master-multiaz"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
