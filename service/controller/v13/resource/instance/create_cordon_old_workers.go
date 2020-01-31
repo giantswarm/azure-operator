@@ -132,17 +132,14 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 	return count, nil
 }
 
-func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, customObject providerv1alpha1.AzureConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)) (oldNodes []corev1.Node, newNodes []corev1.Node) {
+func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, customObject providerv1alpha1.AzureConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) (oldNodes []corev1.Node, newNodes []corev1.Node) {
 	nodeMap := make(map[string]corev1.Node)
 	for _, n := range nodes {
 		nodeMap[n.GetName()] = n
 	}
 
 	for _, i := range instances {
-		name, err := instanceNameFunc(customObject, *i.InstanceID)
-		if err != nil {
-			panic(err)
-		}
+		name := instanceNameFunc(customObject, *i.InstanceID)
 
 		if *i.LatestModelApplied {
 			n, found := nodeMap[name]

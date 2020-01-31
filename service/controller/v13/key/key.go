@@ -270,13 +270,13 @@ func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
-func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error) {
+func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
-		return "", microerror.Mask(err)
+		panic(err)
 	}
 
-	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), idB36), nil
+	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), idB36)
 }
 
 // MasterNICName returns name of the master NIC.
@@ -479,13 +479,13 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
-func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error) {
+func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
-		return "", microerror.Mask(err)
+		panic(err)
 	}
 
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36), nil
+	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36)
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {

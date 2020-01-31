@@ -16,11 +16,10 @@ const (
 
 	// States
 	CordonOldWorkers            = "CordonOldWorkers"
-	CreateWorkerDrainerConfigs  = "CreateWorkerDrainerConfigs"
-	DeleteWorkerDrainerConfigs  = "DeleteWorkerDrainerConfigs"
 	DeploymentUninitialized     = "DeploymentUninitialized"
 	DeploymentInitialized       = "DeploymentInitialized"
 	DeploymentCompleted         = "DeploymentCompleted"
+	DrainOldWorkerNodes         = "DrainOldWorkerNodes"
 	MasterInstancesUpgrading    = "MasterInstancesUpgrading"
 	ProvisioningSuccessful      = "ProvisioningSuccessful"
 	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
