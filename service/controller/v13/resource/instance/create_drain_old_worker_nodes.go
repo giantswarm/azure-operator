@@ -70,7 +70,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 		if drainerConfigExists && !dc.Status.HasTimeoutCondition() {
 			nodesPendingDraining++
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("crainerconfig for %s already exists", n))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists", n))
 		}
 
 		if drainerConfigExists && dc.Status.HasTimeoutCondition() {
