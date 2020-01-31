@@ -23,7 +23,8 @@ func init() {
 
 	ignitionDebugEnabled, err = strconv.ParseBool(os.Getenv(EnvVarIgnitionDebugEnabled))
 	if err != nil {
-		panic(fmt.Sprintf("env var '%s' must be true or false", EnvVarIgnitionDebugEnabled))
+		ignitionEnabled = false
+		fmt.Printf("failed to parse `%s` as boolean value, setting to false")
 	}
 
 	if ignitionDebugEnabled {
