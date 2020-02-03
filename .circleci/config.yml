@@ -110,8 +110,6 @@ jobs:
     <<: *e2eTest
   e2eTestCurPRMultiAZ:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "cur-pr-multiaz"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
@@ -122,8 +120,6 @@ jobs:
     <<: *e2eTest
   e2eTestWIPPRMultiAZ:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "wip-pr-multiaz"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/multiaz"
     <<: *e2eTest
@@ -150,6 +146,8 @@ jobs:
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/clusterdeletion"
     <<: *e2eTest
+
+
 
   # Note we only have update tests for the current version because it anyway
   # tests one version transition. Having the same tests for WIP only runs the
@@ -220,10 +218,19 @@ workflows:
 
 
 
-#      - e2eTestCurPRMultiAZ:
-#          requires:
-#          - pr
+      - e2eTestCurPRMultiAZ:
+          requires:
+          - pr
       - e2eTestWIPPRMultiAZ:
+          requires:
+          - pr
+
+
+
+      - e2eTestCurPRClusterDeletion:
+          requires:
+          - pr
+      - e2eTestWIPPRClusterDeletion:
           requires:
           - pr
 
