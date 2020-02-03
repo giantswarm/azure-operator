@@ -60,8 +60,6 @@ jobs:
     <<: *e2eTest
   e2eTestCurPRClusterState:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "cur-pr-clusterstate"
       TESTED_VERSION: "current"
       TEST_DIR: "integration/test/clusterstate"
     <<: *e2eTest
@@ -72,7 +70,7 @@ jobs:
     <<: *e2eTest
   e2eTestWIPPRClusterState:
     environment:
-      IGNITION_DEBUG_ENABLED: "true"
+      IGNITION_DEBUG_ENABLED: "false"
       IGNITION_DEBUG_LOGS_PREFIX: "wip-pr-clusterstate"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/clusterstate"
