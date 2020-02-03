@@ -15,18 +15,19 @@ import (
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		DeploymentUninitialized:     r.deploymentUninitializedTransition,
-		DeploymentInitialized:       r.deploymentInitializedTransition,
-		ProvisioningSuccessful:      r.provisioningSuccessfulTransition,
-		MasterInstancesUpgrading:    r.masterInstancesUpgradingTransition,
-		WaitForMastersToBecomeReady: r.waitForMastersToBecomeReadyTransition,
-		ScaleUpWorkerVMSS:           r.scaleUpWorkerVMSSTransition,
-		CordonOldWorkers:            r.cordonOldWorkersTransition,
-		WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
-		DrainOldWorkerNodes:         r.drainOldWorkerNodesTransition,
-		TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
-		ScaleDownWorkerVMSS:         r.scaleDownWorkerVMSSTransition,
-		DeploymentCompleted:         r.deploymentCompletedTransition,
+		DeploymentUninitialized:        r.deploymentUninitializedTransition,
+		DeploymentInitialized:          r.deploymentInitializedTransition,
+		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
+		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
+		MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
+		WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
+		ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
+		CordonOldWorkers:               r.cordonOldWorkersTransition,
+		WaitForWorkersToBecomeReady:    r.waitForWorkersToBecomeReadyTransition,
+		DrainOldWorkerNodes:            r.drainOldWorkerNodesTransition,
+		TerminateOldWorkerInstances:    r.terminateOldWorkersTransition,
+		ScaleDownWorkerVMSS:            r.scaleDownWorkerVMSSTransition,
+		DeploymentCompleted:            r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm

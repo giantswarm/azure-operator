@@ -15,18 +15,19 @@ const (
 	DeploymentParametersChecksum = "ParametersChecksum"
 
 	// States
-	CordonOldWorkers            = "CordonOldWorkers"
-	DeploymentUninitialized     = "DeploymentUninitialized"
-	DeploymentInitialized       = "DeploymentInitialized"
-	DeploymentCompleted         = "DeploymentCompleted"
-	DrainOldWorkerNodes         = "DrainOldWorkerNodes"
-	MasterInstancesUpgrading    = "MasterInstancesUpgrading"
-	ProvisioningSuccessful      = "ProvisioningSuccessful"
-	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
-	ScaleDownWorkerVMSS         = "ScaleDownWorkerVMSS"
-	TerminateOldWorkerInstances = "TerminateOldWorkerInstances"
-	WaitForMastersToBecomeReady = "WaitForMastersToBecomeReady"
-	WaitForWorkersToBecomeReady = "WaitForWorkersToBecomeReady"
+	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
+	CordonOldWorkers               = "CordonOldWorkers"
+	DeploymentUninitialized        = "DeploymentUninitialized"
+	DeploymentInitialized          = "DeploymentInitialized"
+	DeploymentCompleted            = "DeploymentCompleted"
+	DrainOldWorkerNodes            = "DrainOldWorkerNodes"
+	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
+	ProvisioningSuccessful         = "ProvisioningSuccessful"
+	ScaleUpWorkerVMSS              = "ScaleUpWorkerVMSS"
+	ScaleDownWorkerVMSS            = "ScaleDownWorkerVMSS"
+	TerminateOldWorkerInstances    = "TerminateOldWorkerInstances"
+	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
+	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
 )
 
 func (r *Resource) deleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
