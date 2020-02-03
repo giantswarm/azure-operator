@@ -111,12 +111,10 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 
 		_, err = cc.Client.TenantCluster.K8s.CoreV1().Nodes().Patch(n.Name, t, p)
 		if apierrors.IsNotFound(err) {
-			// It might happen the node we want to drain got already removed. This
-			// might even be due to human intervention. In case we cannot find the
-			// node we assume the draining was successful and set the drainer config
-			// status accordingly.
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tenant cluster node %s not found", n.Name))
+			// On manual operations or during auto-scaling it may happen that
+			// node gets terminated while instances are processed. It's ok from
+			// cordoning point of view since the node would get deleted later
+			// anyway.
 		} else if err != nil {
 			return 0, microerror.Mask(err)
 		}
