@@ -6,7 +6,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -71,11 +70,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
 
 	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
-	if tenant.IsAPINotAvailable(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster API is not available")
-
-		return currentState, nil
-	} else if err != nil {
+	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
