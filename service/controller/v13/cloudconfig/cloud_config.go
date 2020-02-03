@@ -30,25 +30,23 @@ type Config struct {
 
 	Azure setting.Azure
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
-	AzureConfig       client.AzureClientSetConfig
-	AzureNetwork      network.Subnets
-	IgnitionDebugMode bool
-	Ignition          setting.Ignition
-	OIDC              setting.OIDC
-	SSOPublicKey      string
+	AzureConfig  client.AzureClientSetConfig
+	AzureNetwork network.Subnets
+	Ignition     setting.Ignition
+	OIDC         setting.OIDC
+	SSOPublicKey string
 }
 
 type CloudConfig struct {
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
-	azure             setting.Azure
-	azureConfig       client.AzureClientSetConfig
-	azureNetwork      network.Subnets
-	ignitionDebugMode bool
-	ignition          setting.Ignition
-	OIDC              setting.OIDC
-	ssoPublicKey      string
+	azure        setting.Azure
+	azureConfig  client.AzureClientSetConfig
+	azureNetwork network.Subnets
+	ignition     setting.Ignition
+	OIDC         setting.OIDC
+	ssoPublicKey string
 }
 
 func New(config Config) (*CloudConfig, error) {
