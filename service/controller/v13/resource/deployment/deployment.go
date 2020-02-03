@@ -24,6 +24,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"clusterID":               key.ClusterID(customObject),
 		"dnsZones":                key.DNSZones(customObject),
 		"hostClusterCidr":         r.azure.HostCluster.CIDR,
+		"ingressPIPName":          key.IngressPIPName(customObject),
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
 		"masterSubnetCidr":        sc.AzureNetwork.Master.String(),
 		"storageAccountName":      key.StorageAccountName(customObject),

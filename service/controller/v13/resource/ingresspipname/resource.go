@@ -12,15 +12,15 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
-	"github.com/giantswarm/azure-operator/service/controller/v12/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v12/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 )
 
 const (
-	Name = "ingresspipnamev12"
+	Name = "ingresspipnamev13"
 )
 
 type Config struct {
