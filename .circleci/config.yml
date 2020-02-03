@@ -130,6 +130,27 @@ jobs:
 
 
 
+  e2eTestCurMasterClusterDeletion:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/clusterdeletion"
+    <<: *e2eTest
+  e2eTestCurPRClusterDeletion:
+    environment:
+      TESTED_VERSION: "current"
+      TEST_DIR: "integration/test/clusterdeletion"
+    <<: *e2eTest
+  e2eTestWIPMasterClusterDeletion:
+    environment:
+      TESTED_VERSION: "wip"
+      TEST_DIR: "integration/test/clusterdeletion"
+    <<: *e2eTest
+  e2eTestWIPPRClusterDeletion:
+    environment:
+      TESTED_VERSION: "wip"
+      TEST_DIR: "integration/test/clusterdeletion"
+    <<: *e2eTest
+
   # Note we only have update tests for the current version because it anyway
   # tests one version transition. Having the same tests for WIP only runs the
   # same test twice and we can simply save resources by not doing so.
