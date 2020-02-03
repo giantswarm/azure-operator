@@ -105,3 +105,30 @@ We should see a list of the resource groups for our e2e tests. We need to look f
 CircleCI job logs to know which resource group is being used on each job.
 
 ![](resourcegroupname.png)
+
+
+
+## SSH into tenant cluster nodes
+
+We can also SSH into the tenant cluster nodes using our personal public SSH key.
+Before executing the e2e tests on CircleCI, we need to add our public SSH key as an environment variable.
+
+![](circleci_options.png)
+
+When this environment variable is present, our end to end tests will use the key for both the bastion virtual machine
+and the tenant cluster nodes. That way we can use ssh forwarding to SSH into the tenant cluster nodes.
+
+We can now run the end to end tests, and wait until the bastion virtual machine is deployed. We can find the bastion in
+the resource group. There we can inspect the virtual machine details and fetch its public IP address.
+
+```bash
+ssh -A e2e@<bastion-public-ip>
+```
+
+Finally, we just need one of the private IP addresses of the tenant cluster nodes. In the azure portal we can find the
+workers VMSS on the resource group, and list the instances to figure out their IP address. We should be able to SSH from
+the bastion server.
+
+```bash
+ssh test-user@<tenant-cluster-node-ip>
+```
