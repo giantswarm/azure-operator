@@ -51,6 +51,9 @@
     "calicoSubnetCidr":{
       "type":"string"
     },
+    "ingressPIPName":{
+      "type":"string"
+    },
     "masterSubnetCidr":{
       "type":"string"
     },
