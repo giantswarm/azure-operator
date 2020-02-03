@@ -171,8 +171,25 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:2b6ebe77b548cc10507217c069b2a25266ea1a0d34932453e2140bb3bd4ff649"
   name = "github.com/giantswarm/apiextensions"
-  packages = ["pkg/apis/application/v1alpha1","pkg/apis/core/v1alpha1","pkg/apis/example/v1alpha1","pkg/apis/infrastructure/v1alpha2","pkg/apis/provider/v1alpha1","pkg/apis/release/v1alpha1","pkg/clientset/versioned","pkg/clientset/versioned/scheme","pkg/clientset/versioned/typed/application/v1alpha1","pkg/clientset/versioned/typed/core/v1alpha1","pkg/clientset/versioned/typed/example/v1alpha1","pkg/clientset/versioned/typed/infrastructure/v1alpha2","pkg/clientset/versioned/typed/provider/v1alpha1","pkg/clientset/versioned/typed/release/v1alpha1"]
+  packages = [
+    "pkg/apis/application/v1alpha1",
+    "pkg/apis/core/v1alpha1",
+    "pkg/apis/example/v1alpha1",
+    "pkg/apis/infrastructure/v1alpha2",
+    "pkg/apis/provider/v1alpha1",
+    "pkg/apis/release/v1alpha1",
+    "pkg/clientset/versioned",
+    "pkg/clientset/versioned/scheme",
+    "pkg/clientset/versioned/typed/application/v1alpha1",
+    "pkg/clientset/versioned/typed/core/v1alpha1",
+    "pkg/clientset/versioned/typed/example/v1alpha1",
+    "pkg/clientset/versioned/typed/infrastructure/v1alpha2",
+    "pkg/clientset/versioned/typed/provider/v1alpha1",
+    "pkg/clientset/versioned/typed/release/v1alpha1",
+  ]
+  pruneopts = "UT"
   revision = "78e994410a109864a20ff026a253214db491fa3a"
 
 [[projects]]
@@ -207,9 +224,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:c0c75395be3a1c978a774dafdf556632b85f8f2fa4229c269b494df19e0a9f68"
   name = "github.com/giantswarm/e2etemplates"
-  packages = ["internal/render","pkg/chartvalues"]
-  revision = "a4380f15546bede53707155ea5519b1a20f04cf4"
+  packages = [
+    "internal/render",
+    "pkg/chartvalues",
+  ]
+  pruneopts = "UT"
+  revision = "81dbe769ae92464462845035274aac4dcf4f4253"
 
 [[projects]]
   branch = "master"
@@ -917,6 +939,82 @@
 [solve-meta]
   analyzer-name = "dep"
   analyzer-version = 1
-  inputs-digest = "f3d3359bf7264b358d5a6df0e0a11498c389a702b665080ab1bd0cc4a9b8014e"
+  input-imports = [
+    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute",
+    "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
+    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network",
+    "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
+    "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage",
+    "github.com/Azure/azure-storage-blob-go/azblob",
+    "github.com/Azure/go-autorest/autorest",
+    "github.com/Azure/go-autorest/autorest/adal",
+    "github.com/Azure/go-autorest/autorest/azure",
+    "github.com/Azure/go-autorest/autorest/to",
+    "github.com/docker/distribution/reference",
+    "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1",
+    "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1",
+    "github.com/giantswarm/apiextensions/pkg/clientset/versioned",
+    "github.com/giantswarm/apprclient",
+    "github.com/giantswarm/backoff",
+    "github.com/giantswarm/certs",
+    "github.com/giantswarm/certs/certstest",
+    "github.com/giantswarm/e2e-harness/pkg/framework",
+    "github.com/giantswarm/e2e-harness/pkg/harness",
+    "github.com/giantswarm/e2e-harness/pkg/release",
+    "github.com/giantswarm/e2eclients/azure",
+    "github.com/giantswarm/e2etemplates/pkg/chartvalues",
+    "github.com/giantswarm/e2etests/clusterstate",
+    "github.com/giantswarm/e2etests/scaling",
+    "github.com/giantswarm/e2etests/update",
+    "github.com/giantswarm/exporterkit/collector",
+    "github.com/giantswarm/helmclient",
+    "github.com/giantswarm/ipam",
+    "github.com/giantswarm/k8sclient",
+    "github.com/giantswarm/k8sclient/k8srestconfig",
+    "github.com/giantswarm/k8scloudconfig/v_4_1_1",
+    "github.com/giantswarm/k8scloudconfig/v_4_3_0",
+    "github.com/giantswarm/k8scloudconfig/v_4_5_0",
+    "github.com/giantswarm/k8scloudconfig/v_4_5_1",
+    "github.com/giantswarm/k8scloudconfig/v_4_6_0",
+    "github.com/giantswarm/k8scloudconfig/v_4_7_0",
+    "github.com/giantswarm/k8scloudconfig/v_4_8_1",
+    "github.com/giantswarm/k8scloudconfig/v_4_9_0",
+    "github.com/giantswarm/k8scloudconfig/v_5_0_0",
+    "github.com/giantswarm/microendpoint/endpoint/healthz",
+    "github.com/giantswarm/microendpoint/endpoint/version",
+    "github.com/giantswarm/microendpoint/service/version",
+    "github.com/giantswarm/microerror",
+    "github.com/giantswarm/microkit/command",
+    "github.com/giantswarm/microkit/flag",
+    "github.com/giantswarm/microkit/server",
+    "github.com/giantswarm/micrologger",
+    "github.com/giantswarm/micrologger/microloggertest",
+    "github.com/giantswarm/operatorkit/controller",
+    "github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext",
+    "github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext",
+    "github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext",
+    "github.com/giantswarm/operatorkit/flag/service/kubernetes",
+    "github.com/giantswarm/operatorkit/resource",
+    "github.com/giantswarm/operatorkit/resource/crud",
+    "github.com/giantswarm/operatorkit/resource/wrapper/metricsresource",
+    "github.com/giantswarm/operatorkit/resource/wrapper/retryresource",
+    "github.com/giantswarm/randomkeys",
+    "github.com/giantswarm/statusresource",
+    "github.com/giantswarm/tenantcluster",
+    "github.com/giantswarm/versionbundle",
+    "github.com/google/go-cmp/cmp",
+    "github.com/prometheus/client_golang/prometheus",
+    "github.com/spf13/viper",
+    "golang.org/x/sync/errgroup",
+    "k8s.io/api/core/v1",
+    "k8s.io/apimachinery/pkg/api/errors",
+    "k8s.io/apimachinery/pkg/apis/meta/v1",
+    "k8s.io/apimachinery/pkg/runtime",
+    "k8s.io/apimachinery/pkg/types",
+    "k8s.io/apimachinery/pkg/util/intstr",
+    "k8s.io/client-go/kubernetes",
+    "k8s.io/client-go/kubernetes/fake",
+    "k8s.io/client-go/rest",
+  ]
   solver-name = "gps-cdcl"
   solver-version = 1
