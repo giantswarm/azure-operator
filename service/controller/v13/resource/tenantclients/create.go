@@ -57,7 +57,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		cc.Client.TenantCluster.G8s = k8sClient.G8sClient()
 		cc.Client.TenantCluster.K8s = k8sClient.K8sClient()
-		cc.Client.TenantCluster.CtrlClient = k8sClient.CtrlClient()
 	}
 
 	return nil
