@@ -4,15 +4,14 @@ import (
 	"context"
 	"sync"
 
-	gsclient "github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/client/k8srestconfig"
 	"github.com/giantswarm/statusresource"
 	"github.com/spf13/viper"
-	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
-	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -101,49 +100,59 @@ func New(config Config) (*Service, error) {
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
 	}
 
-	var restConfig *rest.Config
+	var k8sClient *k8sclient.Clients
 	{
-		c := k8srestconfig.Config{
-			Logger: config.Logger,
+		address := config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
+		inCluster := config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster)
+		kubeConfigPath := config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfigPath)
 
-			Address:    config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
-			InCluster:  config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
-			KubeConfig: config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfig),
-			TLS: k8srestconfig.ConfigTLS{
-				CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
-				CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
-				KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
-			},
+		defined := 0
+		if address != "" {
+			defined++
+		}
+		if inCluster {
+			defined++
+		}
+		if kubeConfigPath != "" {
+			defined++
 		}
 
-		restConfig, err = k8srestconfig.New(c)
+		if defined == 0 {
+			return nil, microerror.Maskf(invalidConfigError, "address or inCluster or kubeConfigPath must be defined")
+		}
+		if defined > 1 {
+			return nil, microerror.Maskf(invalidConfigError, "address and inCluster and kubeConfigPath must not be defined at the same time")
+		}
+
+		var restConfig *rest.Config
+		if kubeConfigPath == "" {
+			restConfig, err = buildK8sRestConfig(config)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+
+		c := k8sclient.ClientsConfig{
+			Logger: config.Logger,
+			SchemeBuilder: k8sclient.SchemeBuilder{
+				v1alpha1.AddToScheme,
+			},
+
+			KubeConfigPath: kubeConfigPath,
+			RestConfig:     restConfig,
+		}
+
+		k8sClient, err = k8sclient.NewClients(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	g8sClient, err := gsclient.NewForConfig(restConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	k8sClient, err := kubernetes.NewForConfig(restConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	k8sExtClient, err := apiextensionsclient.NewForConfig(restConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	var clusterController *controller.Cluster
 	{
 		c := controller.ClusterConfig{
-			G8sClient:    g8sClient,
-			K8sClient:    k8sClient,
-			K8sExtClient: k8sExtClient,
-			Logger:       config.Logger,
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
 
 			Azure:            azure,
 			AzureConfig:      azureConfig,
@@ -164,7 +173,6 @@ func New(config Config) (*Service, error) {
 	var operatorCollector *collector.Set
 	{
 		c := collector.SetConfig{
-			G8sClient: g8sClient,
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 
@@ -182,7 +190,7 @@ func New(config Config) (*Service, error) {
 	{
 		c := statusresource.CollectorSetConfig{
 			Logger:  config.Logger,
-			Watcher: g8sClient.ProviderV1alpha1().AzureConfigs("").Watch,
+			Watcher: k8sClient.G8sClient().ProviderV1alpha1().AzureConfigs("").Watch,
 		}
 
 		statusResourceCollector, err = statusresource.NewCollectorSet(c)
@@ -227,4 +235,26 @@ func (s *Service) Boot(ctx context.Context) {
 
 		go s.clusterController.Boot(ctx)
 	})
+}
+
+func buildK8sRestConfig(config Config) (*rest.Config, error) {
+	c := k8srestconfig.Config{
+		Logger: config.Logger,
+
+		Address:    config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
+		InCluster:  config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
+		KubeConfig: config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfig),
+		TLS: k8srestconfig.ConfigTLS{
+			CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
+			CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
+			KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
+		},
+	}
+
+	restConfig, err := k8srestconfig.New(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return restConfig, nil
 }

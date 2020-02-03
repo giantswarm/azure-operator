@@ -18,6 +18,10 @@ func provider(ctx context.Context, config Config) error {
 			Provider: chartvalues.AzureOperatorConfigProvider{
 				Azure: chartvalues.AzureOperatorConfigProviderAzure{
 					Location: env.AzureLocation(),
+					// This is "0.0.0.0/0" because SSH traffic from HostClusterCidr is allowed on the subnet.
+					// We can then deploy a virtual machine with a public IP in the subnet to serve as bastion so we
+					// can SSH into the tenant cluster nodes.
+					HostClusterCidr: "0.0.0.0/0",
 				},
 			},
 			Secret: chartvalues.AzureOperatorConfigSecret{
@@ -87,16 +91,19 @@ func provider(ctx context.Context, config Config) error {
 	{
 		c := chartvalues.APIExtensionsAzureConfigE2EConfig{
 			Azure: chartvalues.APIExtensionsAzureConfigE2EConfigAzure{
-				CalicoSubnetCIDR: env.AzureCalicoSubnetCIDR(),
-				CIDR:             env.AzureCIDR(),
-				Location:         env.AzureLocation(),
-				MasterSubnetCIDR: env.AzureMasterSubnetCIDR(),
-				VPNSubnetCIDR:    env.AzureVPNSubnetCIDR(),
-				WorkerSubnetCIDR: env.AzureWorkerSubnetCIDR(),
+				AvailabilityZones: env.AzureAvailabilityZones(),
+				CalicoSubnetCIDR:  env.AzureCalicoSubnetCIDR(),
+				CIDR:              env.AzureCIDR(),
+				Location:          env.AzureLocation(),
+				MasterSubnetCIDR:  env.AzureMasterSubnetCIDR(),
+				VPNSubnetCIDR:     env.AzureVPNSubnetCIDR(),
+				WorkerSubnetCIDR:  env.AzureWorkerSubnetCIDR(),
 			},
 			ClusterName:               env.ClusterID(),
 			CommonDomain:              env.CommonDomain(),
 			CommonDomainResourceGroup: env.CommonDomainResourceGroup(),
+			SSHUser:                   "test-user",
+			SSHPublicKey:              env.SSHPublicKey(),
 			VersionBundleVersion:      env.VersionBundleVersion(),
 		}
 

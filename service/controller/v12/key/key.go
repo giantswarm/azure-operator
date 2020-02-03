@@ -15,6 +15,7 @@ const (
 	clusterTagName      = "GiantSwarmCluster"
 	installationTagName = "GiantSwarmInstallation"
 	organizationTagName = "GiantSwarmOrganization"
+	VmssDeploymentName  = "cluster-vmss-template"
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
@@ -307,6 +308,15 @@ func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
 // RouteTableName returns name of the route table for this cluster.
 func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
+}
+
+// AvailabilityZones returns the availability zones where the cluster will be created.
+func AvailabilityZones(customObject providerv1alpha1.AzureConfig) []int {
+	if customObject.Spec.Azure.AvailabilityZones == nil {
+		return []int{}
+	}
+
+	return customObject.Spec.Azure.AvailabilityZones
 }
 
 func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {

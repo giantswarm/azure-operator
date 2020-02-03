@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/resource/crud"
 
 	"github.com/giantswarm/azure-operator/service/controller/v7/key"
 )
@@ -69,7 +69,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 
 // NewUpdatePatch returns the patch creating resource group for this cluster if
 // it is needed.
-func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*controller.Patch, error) {
+func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
 	o, err := key.ToCustomObject(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -86,8 +86,8 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 	return r.newUpdatePatch(ctx, o, c, d)
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*controller.Patch, error) {
-	patch := controller.NewPatch()
+func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {
+	patch := crud.NewPatch()
 
 	updateChange, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
 	if err != nil {

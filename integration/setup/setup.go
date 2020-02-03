@@ -55,5 +55,11 @@ func Setup(ctx context.Context, c Config) error {
 		return microerror.Mask(err)
 	}
 
+	// Uncomment the bastion code to deploy a VM with a public IP address so you can SSH into the cluster nodes.
+	err = bastion(ctx, c)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	return nil
 }

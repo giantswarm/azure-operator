@@ -1,11 +1,11 @@
 package instance
 
 import (
+	"github.com/Azure/go-autorest/autorest/to"
 	"reflect"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
-	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/azure-operator/service/controller/v12/key"
@@ -532,13 +532,13 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 			}
 
 			if !reflect.DeepEqual(ws.InstanceToUpdate(), tc.ExpectedInstanceToUpdate) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToUpdate, ws.instanceToUpdate)
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToUpdate, ws.InstanceToUpdate())
 			}
 			if !reflect.DeepEqual(ws.InstanceToDrain(), tc.ExpectedInstanceToDrain) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToDrain, ws.instanceToDrain)
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToDrain, ws.InstanceToDrain())
 			}
 			if !reflect.DeepEqual(ws.InstanceToReimage(), tc.ExpectedInstanceToReimage) {
-				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, ws.instanceToReimage)
+				t.Fatalf("expected %#v got %#v", tc.ExpectedInstanceToReimage, ws.InstanceToReimage())
 			}
 		})
 	}
