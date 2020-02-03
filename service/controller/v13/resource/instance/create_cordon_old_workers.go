@@ -65,6 +65,12 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, customObject, key.WorkerInstanceName)
+	if len(newNodes) < len(oldNodes) {
+		// Wait until there's enough new nodes up.
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return currentState, nil
+	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
@@ -72,12 +78,6 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
 	if err != nil {
 		return "", microerror.Mask(err)
-	}
-
-	if len(newNodes) < len(oldNodes) {
-		// Wait until there's enough new nodes up.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is still smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
-		return currentState, nil
 	}
 
 	if oldNodesCordoned < len(oldNodes) {
