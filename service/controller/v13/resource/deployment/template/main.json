@@ -330,7 +330,7 @@
           "initialProvisioning":{
             "value":"[parameters('initialProvisioning')]"
           },
-          "ingressPIPName"{
+          "ingressPIPName":{
             "value":"[parameters('ingressPIPName')]"
           }
         }
