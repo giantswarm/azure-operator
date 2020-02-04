@@ -345,8 +345,8 @@
   revision = "81dbe769ae92464462845035274aac4dcf4f4253"
 
 [[projects]]
-  branch = "master"
-  digest = "1:801444f34dcc6ad0808b61e3ead8b6d0943f58742bcab0aaaefda238aa0d61de"
+  branch = "merge_multiaz_e2etest"
+  digest = "1:67474be2cf6aa74160c9f560b47fa750265fccd103e0f6876e795168908c8d86"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
@@ -357,7 +357,7 @@
     "update/provider",
   ]
   pruneopts = "UT"
-  revision = "208247dafcdeff1443690d271cb9e033c1e134e1"
+  revision = "0baeb49d51fb2ee7e7f6a7412d014ca733917ac8"
 
 [[projects]]
   branch = "master"

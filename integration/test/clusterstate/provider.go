@@ -24,7 +24,8 @@ type ProviderConfig struct {
 	G8sClient   versioned.Interface
 	Logger      micrologger.Logger
 
-	ClusterID string
+	AvailabilityZones []string
+	ClusterID         string
 }
 
 type Provider struct {
@@ -32,7 +33,8 @@ type Provider struct {
 	g8sClient   versioned.Interface
 	logger      micrologger.Logger
 
-	clusterID string
+	availabilityZones []string
+	clusterID         string
 }
 
 func NewProvider(config ProviderConfig) (*Provider, error) {
@@ -50,12 +52,17 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", config)
 	}
 
+	if len(config.AvailabilityZones) == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AvailabilityZones must not be empty", config)
+	}
+
 	p := &Provider{
 		azureClient: config.AzureClient,
 		g8sClient:   config.G8sClient,
 		logger:      config.Logger,
 
-		clusterID: config.ClusterID,
+		availabilityZones: config.AvailabilityZones,
+		clusterID:         config.ClusterID,
 	}
 
 	return p, nil
@@ -106,4 +113,27 @@ func (p *Provider) ReplaceMaster() error {
 	}
 
 	return nil
+}
+
+func (p *Provider) GetClusterAZs(ctx context.Context) ([]string, error) {
+	vmss, err := p.azureClient.VirtualMachineScaleSetsClient.Get(ctx, p.clusterID, fmt.Sprintf("%s-%s", p.clusterID, "worker"))
+	if err != nil {
+		return []string{}, microerror.Mask(err)
+	}
+
+	return *vmss.Zones, nil
+}
+
+func (p *Provider) ExpectedAZs() ([]string, error) {
+	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	if err != nil {
+		return []string{}, microerror.Mask(err)
+	}
+
+	stringAZs := make([]string, 0, len(customObject.Spec.Azure.AvailabilityZones))
+	for _, a := range customObject.Spec.Azure.AvailabilityZones {
+		stringAZs = append(stringAZs, fmt.Sprintf("%d", a))
+	}
+
+	return stringAZs, nil
 }
