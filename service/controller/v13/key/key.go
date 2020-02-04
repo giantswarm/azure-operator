@@ -44,7 +44,8 @@ const (
 	LabelOrganization  = "giantswarm.io/organization"
 	LabelVersionBundle = "giantswarm.io/version-bundle"
 
-	LegacyLabelCluster = "cluster"
+	LegacyLabelCluster     = "cluster"
+	LegacyIngressLBPIPName = "dummy-pip"
 
 	CertificateEncryptionNamespace = "default"
 	CertificateEncryptionKeyName   = "encryptionkey"
@@ -216,6 +217,14 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 
 func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureConfigSpecAzureDNSZones {
 	return customObject.Spec.Azure.DNSZones
+}
+
+func DefaultIngressPIPName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-Ingress-PublicLoadBalancer-PublicIP", ClusterID(customObject))
+}
+
+func IngressPIPName(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Status.Provider.Ingress.LoadBalancer.PublicIPName
 }
 
 func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {

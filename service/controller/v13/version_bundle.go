@@ -23,6 +23,15 @@ func VersionBundle() versionbundle.Bundle {
 					"https://github.com/giantswarm/k8scloudconfig/pull/631",
 				},
 			},
+			{
+				Component:   "azure-operator",
+				Description: "Ingress LB public IP is re-used for ingress controller.",
+				Kind:        versionbundle.KindChanged,
+				URLs: []string{
+					"https://github.com/giantswarm/azure-operator/pull/604",
+					"https://github.com/giantswarm/azure-operator/pull/642",
+				},
+			},
 		},
 		Components: []versionbundle.Component{
 			{
