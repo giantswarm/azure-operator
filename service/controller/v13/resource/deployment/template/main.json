@@ -51,6 +51,13 @@
     "calicoSubnetCidr":{
       "type":"string"
     },
+    "ingressPIPName":{
+      "defaultValue":"dummy-pip",
+      "type":"string",
+      "metadata":{
+        "description":"Name of the allocated Public IP that is used for Ingress LB."
+      }
+    },
     "masterSubnetCidr":{
       "type":"string"
     },
@@ -322,6 +329,9 @@
         "parameters":{
           "initialProvisioning":{
             "value":"[parameters('initialProvisioning')]"
+          },
+          "ingressPIPName"{
+            "value":"[parameters('ingressPIPName')]"
           }
         }
       }
