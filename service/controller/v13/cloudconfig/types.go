@@ -45,4 +45,5 @@ type certificateDecrypterUnitParams struct {
 
 type ingressLBFileParams struct {
 	ClusterDNSDomain string
+	PublicIPName     string
 }
