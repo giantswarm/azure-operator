@@ -8,11 +8,12 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "TODO",
-				Description: "TODO",
+				Component:   "azure-operator",
+				Description: "Ingress LB public IP is re-used for ingress controller.",
 				Kind:        versionbundle.KindChanged,
 				URLs: []string{
-					"TODO",
+					"https://github.com/giantswarm/azure-operator/pull/604",
+					"https://github.com/giantswarm/azure-operator/pull/642",
 				},
 			},
 		},

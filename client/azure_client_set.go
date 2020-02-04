@@ -26,6 +26,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	// PublicIPAddressesClient manages Public IP addresses.
+	PublicIPAddressesClient *network.PublicIPAddressesClient
 	//StorageAccountsClient manages blobs in storage containers.
 	StorageAccountsClient *storage.AccountsClient
 	// UsageClient is used to work with limits and quotas.
@@ -129,6 +131,7 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           groupsClient,
 		InterfacesClient:                       interfacesClient,
+		PublicIPAddressesClient:                newPublicIPAddressesClient(c),
 		StorageAccountsClient:                  storageAccountsClient,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
@@ -195,6 +198,13 @@ func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error
 	}
 
 	return &c, nil
+}
+
+func newPublicIPAddressesClient(config *clientConfig) *network.PublicIPAddressesClient {
+	c := network.NewPublicIPAddressesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+
+	return &c
 }
 
 func newStorageAccountsClient(config *clientConfig) (*storage.AccountsClient, error) {

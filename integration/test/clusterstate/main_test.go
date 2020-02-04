@@ -33,7 +33,8 @@ func init() {
 			G8sClient:   config.Host.G8sClient(),
 			Logger:      config.Logger,
 
-			ClusterID: env.ClusterID(),
+			AvailabilityZones: env.AzureAvailabilityZones(),
+			ClusterID:         env.ClusterID(),
 		}
 
 		p, err = NewProvider(c)

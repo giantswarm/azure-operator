@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"strconv"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/e2e-harness/pkg/release"
@@ -89,9 +90,18 @@ func provider(ctx context.Context, config Config) error {
 	}
 
 	{
+		azs := env.AzureAvailabilityZones()
+		zones := make([]int, 0, len(azs))
+		for _, az := range azs {
+			zone, err := strconv.Atoi(az)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			zones = append(zones, zone)
+		}
 		c := chartvalues.APIExtensionsAzureConfigE2EConfig{
 			Azure: chartvalues.APIExtensionsAzureConfigE2EConfigAzure{
-				AvailabilityZones: env.AzureAvailabilityZones(),
+				AvailabilityZones: zones,
 				CalicoSubnetCIDR:  env.AzureCalicoSubnetCIDR(),
 				CIDR:              env.AzureCIDR(),
 				Location:          env.AzureLocation(),

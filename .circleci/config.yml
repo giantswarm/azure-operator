@@ -65,12 +65,6 @@ jobs:
       TEST_DIR: "integration/test/scaling"
     <<: *e2eTest
 
-  e2eTestWIPPRMultiAZ:
-    environment:
-      TESTED_VERSION: "wip"
-      TEST_DIR: "integration/test/multiaz"
-    <<: *e2eTest
-
   e2eTestWIPPRClusterDeletion:
     environment:
       TESTED_VERSION: "wip"
@@ -114,10 +108,6 @@ workflows:
           - pr
 
       - e2eTestWIPPRScaling:
-          requires:
-          - pr
-
-      - e2eTestWIPPRMultiAZ:
           requires:
           - pr
 
