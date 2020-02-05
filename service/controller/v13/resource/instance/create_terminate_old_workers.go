@@ -23,8 +23,9 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "restarting upgrade process")
 
-			return currentState, nil
+			return DeploymentUninitialized, nil
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		}
