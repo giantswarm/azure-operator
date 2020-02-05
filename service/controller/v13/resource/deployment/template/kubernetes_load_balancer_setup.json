@@ -8,13 +8,6 @@
       "metadata":{
         "description":"Whether the deployment is provisioned the very first time."
       }
-    },
-    "ingressPIPName":{
-      "defaultValue":"dummy-pip",
-      "type":"string",
-      "metadata":{
-        "description":"Name of the allocated Public IP that is used for Ingress LB."
-      }
     }
   },
   "variables":{
@@ -24,7 +17,7 @@
     {
       "apiVersion":"2017-10-01",
       "type":"Microsoft.Network/publicIPAddresses",
-      "name":"[parameters('ingressPIPName')]",
+      "name":"dummy-pip",
       "sku": {
         "name": "[variables('loadBalancerSkuName')]"
       },
@@ -43,7 +36,7 @@
         "name": "[variables('loadBalancerSkuName')]"
       },
       "dependsOn":[
-        "[concat('Microsoft.Network/publicIPAddresses/', parameters('ingressPIPName'))]"
+        "[concat('Microsoft.Network/publicIPAddresses/', 'dummy-pip')]"
       ],
       "properties":{
         "frontendIPConfigurations":[
@@ -51,7 +44,7 @@
             "name":"dummy-frontend",
             "properties":{
               "publicIPAddress":{
-                "id":"[resourceId('Microsoft.Network/publicIPAddresses', parameters('ingressPIPName'))]"
+                "id":"[resourceId('Microsoft.Network/publicIPAddresses', 'dummy-pip')]"
               }
             }
           }
