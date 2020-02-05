@@ -9,6 +9,8 @@ metadata:
     external-dns.alpha.kubernetes.io/hostname: ingress.{{ .ClusterDNSDomain }}.
     # this annotation adds lb rules fot both TCP and UDP to allow UDP outbound connection with Standard LB
     service.beta.kubernetes.io/azure-load-balancer-mixed-protocols: "true" 
+    # this annotation re-uses already allocated public IP for ingress LB.
+    service.beta.kubernetes.io/azure-pip-name: {{ .PublicIPName }}
   labels:
     app: ingress-loadbalancer
 spec:
