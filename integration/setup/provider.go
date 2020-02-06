@@ -2,7 +2,6 @@ package setup
 
 import (
 	"context"
-	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/e2e-harness/pkg/release"
@@ -44,7 +43,7 @@ func provider(ctx context.Context, config Config) error {
 								Ignition: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnition{
 									Debug: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnitionDebug{
 										Enabled:    env.IgnitionDebugEnabled(),
-										LogsPrefix: fmt.Sprintf("%s-%s", env.ClusterID(), env.IgnitionDebugLogsPrefix()),
+										LogsPrefix: env.IgnitionDebugLogsPrefix(),
 										LogsToken:  env.IgnitionDebugLogsToken(),
 									},
 								},
