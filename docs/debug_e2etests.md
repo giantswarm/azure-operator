@@ -111,7 +111,7 @@ CircleCI job logs to know which resource group is being used on each job.
 ## SSH into tenant cluster nodes
 
 We can also SSH into the tenant cluster nodes using our personal public SSH key.
-Before executing the e2e tests on CircleCI, we need to add our public SSH key as an environment variable.
+Before executing the e2e tests on CircleCI, we need to add our public SSH key as an environment variable `BASTION_PUBLIC_SSH_KEY`.
 
 ![](circleci_options.png)
 
