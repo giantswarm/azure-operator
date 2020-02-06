@@ -355,8 +355,6 @@ systemd:
     contents: |
       [Unit]
       Description=Logentries
-      After=systemd-networkd.service
-      Wants=systemd-networkd.service
       [Service]
       Environment=LOGENTRIES_PREFIX={{ .Debug.LogsPrefix }}-master
       Environment=LOGENTRIES_TOKEN={{ .Debug.LogsToken }}
