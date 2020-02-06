@@ -55,7 +55,7 @@ jobs:
 
   e2eTestWIPPRClusterState:
     environment:
-      IGNITION_DEBUG_ENABLED: "false"
+      IGNITION_DEBUG_ENABLED: "true"
       IGNITION_DEBUG_LOGS_PREFIX: "wip-pr-clusterstate"
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/clusterstate"
@@ -115,18 +115,18 @@ workflows:
           requires:
           - pr
 
-      - e2eTestWIPPRScaling:
-          requires:
-          - pr
-
-      - e2eTestWIPPRMultiAZ:
-          requires:
-          - pr
-
-      - e2eTestWIPPRClusterDeletion:
-          requires:
-          - pr
-
-      - e2eTestCurPRUpdate:
-          requires:
-          - pr
+#      - e2eTestWIPPRScaling:
+#          requires:
+#          - pr
+#
+#      - e2eTestWIPPRMultiAZ:
+#          requires:
+#          - pr
+#
+#      - e2eTestWIPPRClusterDeletion:
+#          requires:
+#          - pr
+#
+#      - e2eTestCurPRUpdate:
+#          requires:
+#          - pr
