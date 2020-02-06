@@ -115,18 +115,18 @@ workflows:
           requires:
           - pr
 
-#      - e2eTestWIPPRScaling:
-#          requires:
-#          - pr
-#
-#      - e2eTestWIPPRMultiAZ:
-#          requires:
-#          - pr
-#
-#      - e2eTestWIPPRClusterDeletion:
-#          requires:
-#          - pr
-#
-#      - e2eTestCurPRUpdate:
-#          requires:
-#          - pr
+      - e2eTestWIPPRScaling:
+          requires:
+          - pr
+
+      - e2eTestWIPPRMultiAZ:
+          requires:
+          - pr
+
+      - e2eTestWIPPRClusterDeletion:
+          requires:
+          - pr
+
+      - e2eTestCurPRUpdate:
+          requires:
+          - pr
