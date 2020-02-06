@@ -55,7 +55,6 @@ func (e *baseExtension) templateData(certFiles certs.Files) templateData {
 		},
 		ingressLBFileParams{
 			ClusterDNSDomain: key.ClusterDNSDomain(e.customObject),
-			PublicIPName:     key.IngressPIPName(e.customObject),
 		},
 	}
 }
