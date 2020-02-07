@@ -39,6 +39,15 @@ func provider(ctx context.Context, config Config) error {
 									},
 								},
 							},
+							Tenant: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenant{
+								Ignition: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnition{
+									Debug: chartvalues.AzureOperatorConfigSecretAzureOperatorSecretYamlServiceTenantIgnitionDebug{
+										Enabled:    env.IgnitionDebugEnabled(),
+										LogsPrefix: env.IgnitionDebugLogsPrefix(),
+										LogsToken:  env.IgnitionDebugLogsToken(),
+									},
+								},
+							},
 						},
 					},
 				},

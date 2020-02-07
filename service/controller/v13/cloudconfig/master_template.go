@@ -6,7 +6,7 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_5_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_5_1_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/v13/encrypter"
@@ -121,9 +121,14 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			"calico-azure.yaml",
 			"k8s-ingress-loadbalancer.yaml",
 		}
+		params.Debug = k8scloudconfig.Debug{
+			Enabled:    c.ignition.Debug,
+			LogsPrefix: c.ignition.LogsPrefix,
+			LogsToken:  c.ignition.LogsToken,
+		}
 		params.SSOPublicKey = c.ssoPublicKey
 	}
-	ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignitionPath)
+	ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)
 	params.Files, err = k8scloudconfig.RenderFiles(ignitionPath, params)
 	if err != nil {
 		return "", microerror.Mask(err)

@@ -1,5 +1,12 @@
 package ignition
 
 type Ignition struct {
-	Path string
+	Debug Debug
+	Path  string
+}
+
+type Debug struct {
+	Enabled    string
+	LogsPrefix string
+	LogsToken  string
 }

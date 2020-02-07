@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_5_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_5_1_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -32,7 +32,7 @@ type Config struct {
 	// TODO(pk) remove as soon as we sort calico in Azure provider.
 	AzureConfig  client.AzureClientSetConfig
 	AzureNetwork network.Subnets
-	IgnitionPath string
+	Ignition     setting.Ignition
 	OIDC         setting.OIDC
 	SSOPublicKey string
 }
@@ -44,13 +44,13 @@ type CloudConfig struct {
 	azure        setting.Azure
 	azureConfig  client.AzureClientSetConfig
 	azureNetwork network.Subnets
-	ignitionPath string
+	ignition     setting.Ignition
 	OIDC         setting.OIDC
 	ssoPublicKey string
 }
 
 func New(config Config) (*CloudConfig, error) {
-	if config.IgnitionPath == "" {
+	if config.Ignition.Path == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.IgnitionPath must not be empty", config)
 	}
 	if config.Logger == nil {
@@ -74,7 +74,7 @@ func New(config Config) (*CloudConfig, error) {
 		azure:        config.Azure,
 		azureConfig:  config.AzureConfig,
 		azureNetwork: config.AzureNetwork,
-		ignitionPath: config.IgnitionPath,
+		ignition:     config.Ignition,
 		OIDC:         config.OIDC,
 		ssoPublicKey: config.SSOPublicKey,
 	}

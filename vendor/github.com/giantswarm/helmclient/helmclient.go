@@ -10,6 +10,7 @@ import (
 
 	"github.com/Masterminds/semver"
 	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/k8sportforward"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -201,6 +202,12 @@ func (c *Client) getReleaseContent(ctx context.Context, releaseName string) (*Re
 			t, err := c.newTunnel()
 			if IsTillerNotFound(err) {
 				return backoff.Permanent(microerror.Mask(err))
+			} else if IsEmptyChartTemplates(err) {
+				return backoff.Permanent(microerror.Mask(err))
+			} else if IsReleaseNameInvalid(err) {
+				return backoff.Permanent(microerror.Mask(err))
+			} else if tenant.IsAPINotAvailable(err) {
+				return backoff.Permanent(microerror.Mask(err))
 			} else if err != nil {
 				return microerror.Mask(err)
 			}
@@ -347,6 +354,8 @@ func (c *Client) installReleaseFromTarball(ctx context.Context, path, ns string,
 		if IsCannotReuseRelease(err) {
 			return backoff.Permanent(microerror.Mask(err))
 		} else if IsReleaseAlreadyExists(err) {
+			return backoff.Permanent(microerror.Mask(err))
+		} else if IsEmptyChartTemplates(err) {
 			return backoff.Permanent(microerror.Mask(err))
 		} else if IsTarballNotFound(err) {
 			return backoff.Permanent(microerror.Mask(err))
@@ -600,7 +609,11 @@ func (c *Client) updateReleaseFromTarball(ctx context.Context, releaseName, path
 		defer c.closeTunnel(ctx, t)
 
 		release, err := c.newHelmClientFromTunnel(t).UpdateRelease(releaseName, path, options...)
-		if IsReleaseNotFound(err) {
+		if IsReleaseNotDeployed(err) {
+			return backoff.Permanent(microerror.Mask(err))
+		} else if IsReleaseNotFound(err) {
+			return backoff.Permanent(microerror.Mask(err))
+		} else if IsEmptyChartTemplates(err) {
 			return backoff.Permanent(microerror.Mask(err))
 		} else if IsYamlConversionFailed(err) {
 			return backoff.Permanent(microerror.Mask(err))
