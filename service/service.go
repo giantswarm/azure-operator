@@ -93,6 +93,13 @@ func New(config Config) (*Service, error) {
 		TenantID:        config.Viper.GetString(config.Flag.Service.Azure.TenantID),
 	}
 
+	Ignition := setting.Ignition{
+		Path:       config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Path),
+		Debug:      config.Viper.GetBool(config.Flag.Service.Tenant.Ignition.Debug.Enabled),
+		LogsPrefix: config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Debug.LogsPrefix),
+		LogsToken:  config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Debug.LogsToken),
+	}
+
 	OIDC := setting.OIDC{
 		ClientID:      config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.ClientID),
 		IssuerURL:     config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL),
@@ -156,7 +163,7 @@ func New(config Config) (*Service, error) {
 
 			Azure:            azure,
 			AzureConfig:      azureConfig,
-			IgnitionPath:     config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Path),
+			Ignition:         Ignition,
 			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,

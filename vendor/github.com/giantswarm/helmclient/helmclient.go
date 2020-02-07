@@ -202,8 +202,6 @@ func (c *Client) getReleaseContent(ctx context.Context, releaseName string) (*Re
 			t, err := c.newTunnel()
 			if IsTillerNotFound(err) {
 				return backoff.Permanent(microerror.Mask(err))
-			} else if IsTillerOutdated(err) {
-				return backoff.Permanent(microerror.Mask(err))
 			} else if IsEmptyChartTemplates(err) {
 				return backoff.Permanent(microerror.Mask(err))
 			} else if IsReleaseNameInvalid(err) {
@@ -700,7 +698,7 @@ func (c *Client) newTunnel() (*k8sportforward.Tunnel, error) {
 	err = validateTillerVersion(pod, c.tillerImage)
 	if err != nil {
 		if IsTillerInvalidVersion(err) && !c.tillerUpgradeEnabled {
-			return nil, microerror.Maskf(tillerOutdatedError, "found an out-dated tiller but upgrades not enabled")
+			c.logger.Log("level", "debug", "message", "found an out-dated tiller but keep going to create a tunnel")
 		} else {
 			return nil, microerror.Mask(err)
 		}
