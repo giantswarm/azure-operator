@@ -8,11 +8,19 @@ func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "TODO",
-				Description: "TODO",
+				Component:   "azure-operator",
+				Description: "Improved upgrade process by making it faster and more graceful by re-creating nodes instead of upgrading.",
 				Kind:        versionbundle.KindChanged,
 				URLs: []string{
-					"TODO",
+					"https://github.com/giantswarm/azure-operator/pull/639",
+				},
+			},
+			{
+				Component:   "k8scloudconfig",
+				Description: "Fixed node labeling when base36 encoded node ID contains letters.",
+				Kind:        versionbundle.KindFixed,
+				URLs: []string{
+					"https://github.com/giantswarm/k8scloudconfig/pull/631",
 				},
 			},
 		},

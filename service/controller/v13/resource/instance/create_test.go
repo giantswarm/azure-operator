@@ -1,9 +1,10 @@
 package instance
 
 import (
-	"github.com/Azure/go-autorest/autorest/to"
 	"reflect"
 	"testing"
+
+	"github.com/Azure/go-autorest/autorest/to"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -18,7 +19,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		CustomObject              providerv1alpha1.AzureConfig
 		Instances                 []compute.VirtualMachineScaleSetVM
 		DrainerConfigs            []corev1alpha1.DrainerConfig
-		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) (string, error)
+		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) string
 		VersionValue              map[string]string
 		ExpectedInstanceToUpdate  *compute.VirtualMachineScaleSetVM
 		ExpectedInstanceToDrain   *compute.VirtualMachineScaleSetVM

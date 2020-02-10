@@ -4,21 +4,30 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/azure-operator/service/controller/v13/key"
-	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 )
 
 // configureStateMachine configures and returns state machine that is driven by
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		DeploymentUninitialized: r.deploymentUninitializedTransition,
-		DeploymentInitialized:   r.deploymentInitializedTransition,
-		ProvisioningSuccessful:  r.provisioningSuccessfulTransition,
-		InstancesUpgrading:      r.instancesUpgradingTransition,
-		DeploymentCompleted:     r.deploymentCompletedTransition,
+		DeploymentUninitialized:        r.deploymentUninitializedTransition,
+		DeploymentInitialized:          r.deploymentInitializedTransition,
+		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
+		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
+		MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
+		WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
+		ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
+		CordonOldWorkers:               r.cordonOldWorkersTransition,
+		WaitForWorkersToBecomeReady:    r.waitForWorkersToBecomeReadyTransition,
+		DrainOldWorkerNodes:            r.drainOldWorkerNodesTransition,
+		TerminateOldWorkerInstances:    r.terminateOldWorkersTransition,
+		ScaleDownWorkerVMSS:            r.scaleDownWorkerVMSSTransition,
+		DeploymentCompleted:            r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm
