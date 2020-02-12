@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 )
 
-func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, customObject *providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	sc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)

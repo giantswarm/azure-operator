@@ -14,7 +14,7 @@ import (
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, clusterCerts certs.Cluster, encrypter encrypter.Interface) (string, error) {
+func (c CloudConfig) NewWorkerCloudConfig(customObject *providerv1alpha1.AzureConfig, clusterCerts certs.Cluster, encrypter encrypter.Interface) (string, error) {
 	var err error
 
 	// NOTE in Azure we disable Calico right now. This is due to a transitioning

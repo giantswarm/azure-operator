@@ -4,9 +4,10 @@ import (
 	"context"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/microerror"
+
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
-	"github.com/giantswarm/microerror"
 )
 
 func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -31,7 +32,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	return MasterInstancesUpgrading, nil
 }
 
-func (r *Resource) isClusterScaling(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
+func (r *Resource) isClusterScaling(ctx context.Context, cr *providerv1alpha1.AzureConfig) (bool, error) {
 	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
 		return false, microerror.Mask(err)

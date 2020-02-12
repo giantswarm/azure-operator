@@ -33,7 +33,7 @@ func (rs dnsRecords) Contains(r nsRecord) bool {
 }
 
 // newPartialDNSRecords creates DNSRecords without NameServers filled.
-func newPartialDNSRecords(obj providerv1alpha1.AzureConfig) dnsRecords {
+func newPartialDNSRecords(obj *providerv1alpha1.AzureConfig) dnsRecords {
 	all := dnsRecords{
 		// api.
 		{

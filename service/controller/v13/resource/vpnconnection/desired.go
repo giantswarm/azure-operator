@@ -90,7 +90,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 	return vpnGatewayConnections, nil
 }
 
-func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) (connections, error) {
+func (r *Resource) getDesiredState(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) (connections, error) {
 	sharedKey := randStringBytes(128)
 
 	host := network.VirtualNetworkGatewayConnection{

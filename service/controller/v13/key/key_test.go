@@ -21,7 +21,7 @@ func Test_ARMTemplateURI(t *testing.T) {
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: expectedID,
@@ -40,7 +40,7 @@ func Test_ClusterID(t *testing.T) {
 func Test_ClusterNamespace(t *testing.T) {
 	expectedNamespace := "9dj1k"
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: expectedNamespace,
@@ -56,7 +56,7 @@ func Test_ClusterNamespace(t *testing.T) {
 func Test_ClusterCustomer(t *testing.T) {
 	expectedID := "test-customer"
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: "test-cluster",
@@ -75,7 +75,7 @@ func Test_ClusterCustomer(t *testing.T) {
 func Test_ClusterOrganization(t *testing.T) {
 	expectedID := "test-org"
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: "test-org",
@@ -101,7 +101,7 @@ func Test_ClusterTags(t *testing.T) {
 		"GiantSwarmOrganization": to.StringPtr("test-org"),
 	}
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: "test-cluster",
@@ -122,7 +122,7 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 	clusterID := "eggs2"
 
 	testCases := []struct {
-		Func           func(providerv1alpha1.AzureConfig) string
+		Func           func(*providerv1alpha1.AzureConfig) string
 		ExpectedResult string
 	}{
 		{
@@ -155,7 +155,7 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 		},
 	}
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: clusterID,
@@ -177,7 +177,7 @@ func Test_Functions_for_DNSKeys(t *testing.T) {
 	resourceGroupName := clusterID
 
 	testCases := []struct {
-		Func           func(providerv1alpha1.AzureConfig) string
+		Func           func(*providerv1alpha1.AzureConfig) string
 		ExpectedResult string
 	}{
 		{
@@ -222,7 +222,7 @@ func Test_Functions_for_DNSKeys(t *testing.T) {
 		},
 	}
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Azure: providerv1alpha1.AzureConfigSpecAzure{
 				DNSZones: providerv1alpha1.AzureConfigSpecAzureDNSZones{
@@ -257,7 +257,7 @@ func Test_Functions_for_DNSKeys(t *testing.T) {
 func Test_MasterNICName(t *testing.T) {
 	expectedMasterNICName := "3p5j2-Master-1-NIC"
 
-	customObject := providerv1alpha1.AzureConfig{
+	customObject := &providerv1alpha1.AzureConfig{
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: "3p5j2",

@@ -36,7 +36,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, des
 	return patch, nil
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
+func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
 	patch := crud.NewPatch()
 
 	change := r.newUpdateChange(ctx, azureConfig, current, desired)
@@ -46,7 +46,7 @@ func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alp
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) connections {
+func (r *Resource) newUpdateChange(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig, current, desired connections) connections {
 	var change connections
 
 	if needsUpdate(current.Host, desired.Host) {
@@ -133,7 +133,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change in
 	return nil
 }
 
-func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
+func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig, change connections) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring vpn gateway connections are created")
 
 	if change.isEmpty() {

@@ -21,7 +21,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, change interface{
 		return microerror.Mask(err)
 	}
 
-	return r.applyCreateChange(ctx, o, c)
+	return r.applyCreateChange(ctx, *o, c)
 }
 
 func (r *Resource) applyCreateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {

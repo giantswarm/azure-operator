@@ -15,7 +15,7 @@ type baseExtension struct {
 	azureConfig  client.AzureClientSetConfig
 	calicoCIDR   string
 	clusterCerts certs.Cluster
-	customObject providerv1alpha1.AzureConfig
+	customObject *providerv1alpha1.AzureConfig
 	encrypter    encrypter.Interface
 	vnetCIDR     string
 }

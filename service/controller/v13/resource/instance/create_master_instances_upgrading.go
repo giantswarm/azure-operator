@@ -8,12 +8,13 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v13/key"
-	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
+	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 )
 
 func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -93,7 +94,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	return currentState, nil
 }
 
-func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
+func (r *Resource) allInstances(ctx context.Context, customObject *providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject *providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
 
 	c, err := r.getVMsClient(ctx)
@@ -126,7 +127,7 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 	return instances, nil
 }
 
-func (r *Resource) createDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, nodeName string) error {
+func (r *Resource) createDrainerConfig(ctx context.Context, customObject *providerv1alpha1.AzureConfig, nodeName string) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
 
 	n := key.ClusterID(customObject)
@@ -168,7 +169,7 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 	return nil
 }
 
-func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, drainerConfigs []corev1alpha1.DrainerConfig) error {
+func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject *providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject *providerv1alpha1.AzureConfig, instanceID string) string, drainerConfigs []corev1alpha1.DrainerConfig) error {
 	if instance == nil {
 		return nil
 	}
@@ -224,7 +225,7 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 //     loop 5: worker 2 drained
 //     loop 6: worker 2 reimage
 //
-func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingSet, error) {
+func (r *Resource) nextInstance(ctx context.Context, customObject *providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject *providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingSet, error) {
 	var err error
 
 	var ws *workingSet
@@ -268,7 +269,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 	return ws, nil
 }
 
-func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+func (r *Resource) reimageInstance(ctx context.Context, customObject *providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject *providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject *providerv1alpha1.AzureConfig, instanceID string) string) error {
 	if instance == nil {
 		return nil
 	}
@@ -303,7 +304,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 	return nil
 }
 
-func (r *Resource) updateInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+func (r *Resource) updateInstance(ctx context.Context, customObject *providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject *providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject *providerv1alpha1.AzureConfig, instanceID string) string) error {
 	if instance == nil {
 		return nil
 	}
@@ -340,7 +341,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 // getWorkingSet either returns an instance to update or an instance to
 // reimage, but never both at the same time.
-func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingSet, error) {
+func getWorkingSet(customObject *providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject *providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingSet, error) {
 	var err error
 
 	var ws *workingSet
@@ -376,7 +377,7 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 // firstInstanceInProgress returns the first instance in the list not having a
 // final state. In case all instances are in a final state
 // firstInstanceInProgress returns nil.
-func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
+func firstInstanceInProgress(customObject *providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
 		if v.ProvisioningState == nil || key.IsFinalProvisioningState(*v.ProvisioningState) {
 			continue
@@ -393,7 +394,7 @@ func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []c
 // bundle version of the custom object and the current version bundle version of
 // the instance's tags applied. In case all instances are reimaged
 // firstInstanceToReimage return nil.
-func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
+func firstInstanceToReimage(customObject *providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM, instanceNameFunc func(customObject *providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*compute.VirtualMachineScaleSetVM, error) {
 	if versionValue == nil {
 		return nil, microerror.Mask(versionBlobEmptyError)
 	}
@@ -418,7 +419,7 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 // firstInstanceToUpdate return the first instance to be updated. The decision
 // of updating an instance is done by checking if the latest scale set model is
 // applied. In case all instances are updated firstInstanceToUpdate return nil.
-func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
+func firstInstanceToUpdate(customObject *providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
 		if *v.LatestModelApplied {
 			continue

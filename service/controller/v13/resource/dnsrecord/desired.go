@@ -4,8 +4,9 @@ import (
 	"context"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	"github.com/giantswarm/microerror"
+
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 
 	"github.com/giantswarm/azure-operator/client"
 )
@@ -20,7 +21,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	return r.getDesiredState(ctx, o)
 }
 
-func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.AzureConfig) (dnsRecords, error) {
+func (r *Resource) getDesiredState(ctx context.Context, obj *providerv1alpha1.AzureConfig) (dnsRecords, error) {
 	zonesClient, err := r.getDNSZonesGuestClient(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)

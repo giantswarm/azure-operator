@@ -65,7 +65,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 	return r.newDeletePatch(ctx, o, c, d)
 }
 
-func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {
+func (r *Resource) newDeletePatch(ctx context.Context, obj *providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {
 	patch := crud.NewPatch()
 
 	deleteChange, err := r.newDeleteChange(ctx, obj, currentState, desiredState)
@@ -78,6 +78,6 @@ func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.Azur
 	return patch, nil
 }
 
-func (r *Resource) newDeleteChange(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (dnsRecords, error) {
+func (r *Resource) newDeleteChange(ctx context.Context, obj *providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (dnsRecords, error) {
 	return currentState, nil
 }

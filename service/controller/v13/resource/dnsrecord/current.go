@@ -20,7 +20,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	return r.getCurrentState(ctx, o)
 }
 
-func (r *Resource) getCurrentState(ctx context.Context, obj providerv1alpha1.AzureConfig) (dnsRecords, error) {
+func (r *Resource) getCurrentState(ctx context.Context, obj *providerv1alpha1.AzureConfig) (dnsRecords, error) {
 	recordSetsClient, err := r.getDNSRecordSetsGuestClient(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)

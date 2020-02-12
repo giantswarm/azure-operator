@@ -9,17 +9,18 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 )
 
 func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 	testCases := []struct {
 		Name                      string
-		CustomObject              providerv1alpha1.AzureConfig
+		CustomObject              *providerv1alpha1.AzureConfig
 		Instances                 []compute.VirtualMachineScaleSetVM
 		DrainerConfigs            []corev1alpha1.DrainerConfig
-		InstanceNameFunc          func(customObject providerv1alpha1.AzureConfig, instanceID string) string
+		InstanceNameFunc          func(customObject *providerv1alpha1.AzureConfig, instanceID string) string
 		VersionValue              map[string]string
 		ExpectedInstanceToUpdate  *compute.VirtualMachineScaleSetVM
 		ExpectedInstanceToDrain   *compute.VirtualMachineScaleSetVM
@@ -28,7 +29,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 	}{
 		{
 			Name:                      "case 0: empty input results in no action",
-			CustomObject:              providerv1alpha1.AzureConfig{},
+			CustomObject:              &providerv1alpha1.AzureConfig{},
 			Instances:                 nil,
 			DrainerConfigs:            nil,
 			InstanceNameFunc:          key.WorkerInstanceName,
@@ -40,7 +41,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 1: one instance being up to date results in no action",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -73,7 +74,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 2: two instances being up to date results in no action",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -114,7 +115,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 3: one instance not having the latest model applied results in updating the instance",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -153,7 +154,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 4: two instances not having the latest model applied results in updating the first instance",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -200,7 +201,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 5: one instance having the latest model applied and one instance not having the latest model applied results in updating the second instance",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -247,7 +248,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 6: two instances not having the latest version bundle version applied results in reimaging the first instance",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -294,7 +295,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 7: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied results in reimaging the second instance",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -341,7 +342,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 8: two instances not having the latest version bundle version applied and being in provisioning state 'InProgress' results in no action",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -382,7 +383,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 9: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied and being in provisioning state 'InProgress' results in no action",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -423,7 +424,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 10: instances that should be reimaged should be drained first",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
@@ -470,7 +471,7 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		},
 		{
 			Name: "case 11: same as 10 but with different input",
-			CustomObject: providerv1alpha1.AzureConfig{
+			CustomObject: &providerv1alpha1.AzureConfig{
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",

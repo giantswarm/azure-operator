@@ -34,7 +34,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, des
 }
 
 // newDeletePatch use desired as delete patch since it is mostly static and more likely to be present than current.
-func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
+func (r *Resource) newDeletePatch(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
 	patch := crud.NewPatch()
 
 	patch.SetDeleteChange(desired)
@@ -61,7 +61,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 	return nil
 }
 
-func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
+func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig, change connections) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host vpn gateway connection is deleted")
 
 	if change.isEmpty() {

@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 )
 
-func (r Resource) newDeployment(customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) azureresource.Deployment {
+func (r Resource) newDeployment(customObject *providerv1alpha1.AzureConfig, overwrites map[string]interface{}) azureresource.Deployment {
 	defaultParams := map[string]interface{}{
 		"clusterID":             key.ClusterID(customObject),
 		"virtualNetworkName":    key.VnetName(customObject),

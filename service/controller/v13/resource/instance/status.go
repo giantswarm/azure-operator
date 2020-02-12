@@ -42,19 +42,17 @@ func (r *Resource) deleteResourceStatus(customObject providerv1alpha1.AzureConfi
 	return nil
 }
 
-func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
+func (r *Resource) setResourceStatus(customObject *providerv1alpha1.AzureConfig, t string, s string) error {
 	// Get the newest CR version. Otherwise status update may fail because of:
 	//
 	//	 the object has been modified; please apply your changes to the
 	//	 latest version and try again
 	//
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		customObject = *c
 	}
 
 	resourceStatus := providerv1alpha1.StatusClusterResource{
@@ -90,7 +88,7 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 
 	{
 		n := customObject.GetNamespace()
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
+		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(customObject)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -99,14 +97,12 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	return nil
 }
 
-func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, t string) (string, error) {
+func (r *Resource) getResourceStatus(customObject *providerv1alpha1.AzureConfig, t string) (string, error) {
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-
-		customObject = *c
 	}
 
 	for _, r := range customObject.Status.Cluster.Resources {

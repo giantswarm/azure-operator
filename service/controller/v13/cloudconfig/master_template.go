@@ -15,7 +15,7 @@ import (
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, clusterCerts certs.Cluster, encrypter encrypter.Interface) (string, error) {
+func (c CloudConfig) NewMasterCloudConfig(customObject *providerv1alpha1.AzureConfig, clusterCerts certs.Cluster, encrypter encrypter.Interface) (string, error) {
 	apiserverEncryptionKey, err := c.getEncryptionkey(customObject)
 	if err != nil {
 		return "", microerror.Mask(err)

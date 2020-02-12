@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v13/templates"
 )
 
-func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, obj *providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -142,11 +142,11 @@ func renderCloudConfig(blobURL string, encryptionKey string, initialVector strin
 	return base64.StdEncoding.EncodeToString([]byte(cloudConfig)), nil
 }
 
-func getMasterNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
+func getMasterNodesConfiguration(obj *providerv1alpha1.AzureConfig) []node {
 	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Masters)
 }
 
-func getWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
+func getWorkerNodesConfiguration(obj *providerv1alpha1.AzureConfig) []node {
 	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Workers)
 }
 

@@ -151,7 +151,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) enrichControllerContext(ctx context.Context, customObject providerv1alpha1.AzureConfig) error {
+func (r *Resource) enrichControllerContext(ctx context.Context, customObject *providerv1alpha1.AzureConfig) error {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return microerror.Mask(err)
@@ -213,7 +213,7 @@ func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.Dep
 	return sc.AzureClientSet.DeploymentsClient, nil
 }
 
-func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentName string, outputName string) (string, error) {
+func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject *providerv1alpha1.AzureConfig, deploymentName string, outputName string) (string, error) {
 	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
 		return "", microerror.Mask(err)
