@@ -48,12 +48,12 @@ func (r *Resource) setResourceStatus(customObject *providerv1alpha1.AzureConfig,
 	//	 the object has been modified; please apply your changes to the
 	//	 latest version and try again
 	//
-	{
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
+	//{
+	//	_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+	//	if err != nil {
+	//		return microerror.Mask(err)
+	//	}
+	//}
 
 	resourceStatus := providerv1alpha1.StatusClusterResource{
 		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
@@ -86,13 +86,13 @@ func (r *Resource) setResourceStatus(customObject *providerv1alpha1.AzureConfig,
 		customObject.Status.Cluster.Resources = append(customObject.Status.Cluster.Resources, resourceStatus)
 	}
 
-	{
-		n := customObject.GetNamespace()
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(customObject)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
+	//{
+	//	n := customObject.GetNamespace()
+	//	_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(customObject)
+	//	if err != nil {
+	//		return microerror.Mask(err)
+	//	}
+	//}
 
 	return nil
 }
