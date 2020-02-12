@@ -27,6 +27,7 @@ func init() {
 	{
 		c := ProviderConfig{
 			AzureClient: config.AzureClient,
+			K8sClient:   config.Host.K8sClient(),
 			G8sClient:   config.Host.G8sClient(),
 			Logger:      config.Logger,
 			ClusterID:   env.ClusterID(),
