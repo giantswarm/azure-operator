@@ -345,8 +345,8 @@
   revision = "a4380f15546bede53707155ea5519b1a20f04cf4"
 
 [[projects]]
-  branch = "master"
-  digest = "1:801444f34dcc6ad0808b61e3ead8b6d0943f58742bcab0aaaefda238aa0d61de"
+  branch = "pvc_e2e"
+  digest = "1:1ef63a643dd8ad4ff683b8747ffd8b6e6266b94e713f727bb2311342e799f361"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
@@ -357,7 +357,7 @@
     "update/provider",
   ]
   pruneopts = "UT"
-  revision = "208247dafcdeff1443690d271cb9e033c1e134e1"
+  revision = "420fec8ad97086b79068c61bebba9381e82236a3"
 
 [[projects]]
   branch = "master"
