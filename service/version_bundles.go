@@ -9,14 +9,12 @@ import (
 	v12 "github.com/giantswarm/azure-operator/service/controller/v12"
 	v13 "github.com/giantswarm/azure-operator/service/controller/v13"
 	v7 "github.com/giantswarm/azure-operator/service/controller/v7"
-	v8 "github.com/giantswarm/azure-operator/service/controller/v8"
 )
 
 func NewVersionBundles() []versionbundle.Bundle {
 	var versionBundles []versionbundle.Bundle
 
 	versionBundles = append(versionBundles, v7.VersionBundle())
-	versionBundles = append(versionBundles, v8.VersionBundle())
 	versionBundles = append(versionBundles, v10patch1.VersionBundle())
 	versionBundles = append(versionBundles, v10patch2.VersionBundle())
 	versionBundles = append(versionBundles, v11.VersionBundle())

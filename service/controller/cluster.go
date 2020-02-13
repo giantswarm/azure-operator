@@ -17,7 +17,6 @@ import (
 	v12 "github.com/giantswarm/azure-operator/service/controller/v12"
 	v13 "github.com/giantswarm/azure-operator/service/controller/v13"
 	v7 "github.com/giantswarm/azure-operator/service/controller/v7"
-	v8 "github.com/giantswarm/azure-operator/service/controller/v8"
 )
 
 type ClusterConfig struct {
@@ -73,30 +72,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 
 		v7ResourceSet, err = v7.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var v8ResourceSet *controller.ResourceSet
-	{
-		c := v8.ResourceSetConfig{
-			CertsSearcher: certsSearcher,
-			G8sClient:     config.K8sClient.G8sClient(),
-			K8sClient:     config.K8sClient.K8sClient(),
-			Logger:        config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.Ignition.Path,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
-		}
-
-		v8ResourceSet, err = v8.NewResourceSet(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -229,7 +204,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Name:      config.ProjectName,
 			ResourceSets: []*controller.ResourceSet{
 				v7ResourceSet,
-				v8ResourceSet,
 				v10patch1ResourceSet,
 				v10patch2ResourceSet,
 				v11ResourceSet,
