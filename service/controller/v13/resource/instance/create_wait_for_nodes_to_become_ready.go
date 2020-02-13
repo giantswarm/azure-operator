@@ -14,7 +14,10 @@ func (r *Resource) waitForMastersToBecomeReadyTransition(ctx context.Context, ob
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isMaster)
-	if err != nil {
+	if IsClientNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		return currentState, nil
+	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
@@ -32,7 +35,10 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isWorker)
-	if err != nil {
+	if IsClientNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		return currentState, nil
+	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
@@ -50,6 +56,10 @@ func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(c
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return false, microerror.Mask(err)
+	}
+
+	if cc.Client.TenantCluster.K8s == nil {
+		return false, clientNotFoundError
 	}
 
 	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
