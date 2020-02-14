@@ -16,14 +16,6 @@ func VersionBundle() versionbundle.Bundle {
 				},
 			},
 			{
-				Component:   "containerlinux",
-				Description: "Update from v2191.5.0 to v2247.6.0.",
-				Kind:        versionbundle.KindChanged,
-				URLs: []string{
-					"https://github.com/giantswarm/azure-operator/pull/609",
-				},
-			},
-			{
 				Component:   "k8scloudconfig",
 				Description: "Fixed node labeling when base36 encoded node ID contains letters.",
 				Kind:        versionbundle.KindFixed,
@@ -39,7 +31,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "2247.6.0",
+				Version: "2191.5.0",
 			},
 			{
 				Name:    "docker",
