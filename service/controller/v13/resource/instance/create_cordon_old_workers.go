@@ -11,8 +11,8 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/service/controller/v13/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 )
@@ -28,12 +28,9 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
 
-	if cc.Client.TenantCluster.K8s == nil {
+	tenantK8sClient, err := r.getK8sClient(ctx, obj)
+	if err != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
 	}
@@ -57,7 +54,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	var nodes []corev1.Node
 	{
-		nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodeList, err := tenantK8sClient.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -75,7 +72,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
 
-	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
+	oldNodesCordoned, err := r.ensureNodesCordoned(tenantK8sClient, oldNodes)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -92,12 +89,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 }
 
 // ensureNodesCordoned ensures that given tenant cluster nodes are cordoned.
-func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node) (int, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return 0, microerror.Mask(err)
-	}
-
+func (r *Resource) ensureNodesCordoned(tenantClusterK8sClient kubernetes.Interface, nodes []corev1.Node) (int, error) {
 	var count int
 	for _, n := range nodes {
 		// Node already cordoned?
@@ -109,7 +101,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 		t := types.StrategicMergePatchType
 		p := []byte(UnschedulablePatch)
 
-		_, err = cc.Client.TenantCluster.K8s.CoreV1().Nodes().Patch(n.Name, t, p)
+		_, err := tenantClusterK8sClient.CoreV1().Nodes().Patch(n.Name, t, p)
 		if apierrors.IsNotFound(err) {
 			// On manual operations or during auto-scaling it may happen that
 			// node gets terminated while instances are processed. It's ok from
