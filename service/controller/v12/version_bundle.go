@@ -54,14 +54,6 @@ func VersionBundle() versionbundle.Bundle {
 				},
 			},
 			{
-				Component:   "containerlinux",
-				Description: "Update from v2191.5.0 to v2247.6.0.",
-				Kind:        versionbundle.KindChanged,
-				URLs: []string{
-					"https://github.com/giantswarm/azure-operator/pull/609",
-				},
-			},
-			{
 				Component:   "etcd",
 				Description: "Update from v3.3.15 to v3.3.17.",
 				Kind:        versionbundle.KindChanged,
@@ -85,7 +77,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "2247.6.0",
+				Version: "2191.5.0",
 			},
 			{
 				Name:    "docker",
