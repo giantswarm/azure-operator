@@ -21,10 +21,6 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 		return "", microerror.Mask(err)
 	}
 
-	// On Azure only master nodes access etcd, so it is locked down.
-	customObject.Spec.Cluster.Etcd.Domain = "127.0.0.1"
-	customObject.Spec.Cluster.Etcd.Port = 2379
-
 	var k8sAPIExtraArgs []string
 	{
 		k8sAPIExtraArgs = append(k8sAPIExtraArgs, "--cloud-config=/etc/kubernetes/config/azure.yaml")
@@ -258,6 +254,11 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		{
 			AssetContent: ignition.CertificateDecrypterUnit,
 			Name:         "certificate-decrypter.service",
+			Enabled:      true,
+		},
+		{
+			AssetContent: ignition.EtcdLBHostsEntry,
+			Name:         "etcd-lb-hosts-entry.service",
 			Enabled:      true,
 		},
 		{

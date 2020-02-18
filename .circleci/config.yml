@@ -10,18 +10,19 @@ e2eTest: &e2eTest
       K8S_VERSION=1.10.0
       curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v${K8S_VERSION}/bin/linux/amd64/kubectl
       chmod +x kubectl
-      sudo mv kubectl /usr/local/bin/
+      sudo mv kubectl /usr/bin/
   - run: |
       HELM_VERSION=2.16.2
       curl -L https://kubernetes-helm.storage.googleapis.com/helm-v${HELM_VERSION}-linux-amd64.tar.gz > ./helm.tar.gz
       tar xzvf helm.tar.gz
       chmod u+x linux-amd64/helm
-      sudo mv linux-amd64/helm /usr/local/bin/
+      sudo mv linux-amd64/helm /usr/bin/
   - run: |
       SONOBUOY_VERSION=0.17.2 OS=linux && \
       curl -L "https://github.com/vmware-tanzu/sonobuoy/releases/download/v${SONOBUOY_VERSION}/sonobuoy_${SONOBUOY_VERSION}_${OS}_amd64.tar.gz" --output $HOME/bin/sonobuoy.tar.gz && \
       tar -xzf $HOME/bin/sonobuoy.tar.gz -C $HOME/bin && \
       chmod +x $HOME/bin/sonobuoy && \
+      sudo mv $HOME/bin/sonobuoy /usr/bin/
       rm $HOME/bin/sonobuoy.tar.gz
   - run: ./e2e-harness localkube
   - run: ./e2e-harness setup --remote=false

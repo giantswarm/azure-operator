@@ -3,8 +3,8 @@
 package sonobuoy
 
 import (
-	"bytes"
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -50,8 +50,9 @@ func New(config Config) (*Sonobuoy, error) {
 	}
 
 	s := &Sonobuoy{
-		logger:   config.Logger,
-		provider: config.Provider,
+		logger:    config.Logger,
+		k8sClient: config.K8sClient,
+		provider:  config.Provider,
 	}
 
 	return s, nil
@@ -62,7 +63,7 @@ func (s *Sonobuoy) Test(ctx context.Context) error {
 	if err != nil {
 		log.Fatalf("can't fetch secret: %s", err)
 	}
-	kubeconfig := `apiVersion: v1
+	kubeconfigTemplate := `apiVersion: v1
 clusters:
 - cluster:
     certificate-authority-data: {{.CA}}
@@ -90,51 +91,47 @@ users:
 	}
 	defer kubeconfigFile.Close()
 	values := map[string]interface{}{
-		"CA":          secret.StringData["ca"],
-		"Certificate": secret.StringData["crt"],
+		"CA":          base64.StdEncoding.EncodeToString(secret.Data["ca"]),
+		"Certificate": base64.StdEncoding.EncodeToString(secret.Data["crt"]),
 		"ClusterID":   s.provider.clusterID,
-		"Key":         secret.StringData["key"],
+		"Key":         base64.StdEncoding.EncodeToString(secret.Data["key"]),
 	}
-	t := template.Must(template.New("letter").Parse(kubeconfig))
+	t := template.Must(template.New("kubeconfig").Parse(kubeconfigTemplate))
 	err = t.Execute(kubeconfigFile, values)
 	if err != nil {
 		log.Fatalf("templating kubeconfig file %s\n", err)
 	}
 
 	{
-		cmd := exec.Command("sonobuoy", "run", "--kubeconfig", kubeconfigFilePath, "--wait", "--mode=certified-conformance")
-		err := cmd.Run()
+		cmd := exec.Command("sonobuoy", "run", "--kubeconfig", kubeconfigFilePath, "--wait", "--mode=quick")
+		out, err := cmd.CombinedOutput()
 		if err != nil {
-			log.Fatalf("sonobuoy failed with %s\n", err)
+			return microerror.Maskf(executionFailedError, "Sonobuoy could not retrieve tests results %v", err, "sonobuoyOutput", out)
 		}
 	}
 
 	var resultsPath string
 	{
 		retrieve := exec.Command("sonobuoy", "retrieve", "--kubeconfig", kubeconfigFilePath)
-		var stdout bytes.Buffer
-		retrieve.Stdout = &stdout
-		err := retrieve.Run()
+		out, err := retrieve.CombinedOutput()
 		if err != nil {
-			log.Fatalf("sonobuoy failed with %s\n", err)
+			return microerror.Maskf(executionFailedError, "Sonobuoy could not retrieve tests results %v", err, "sonobuoyOutput", out)
 		}
-		resultsPath = string(stdout.Bytes())
+		resultsPath = strings.TrimSuffix(string(out), "\n")
 	}
 
 	var results string
 	{
 		resultsCmd := exec.Command("sonobuoy", "results", resultsPath)
-		var stdout bytes.Buffer
-		resultsCmd.Stdout = &stdout
-		err := resultsCmd.Run()
+		out, err := resultsCmd.CombinedOutput()
 		if err != nil {
-			log.Fatalf("sonobuoy failed with %s\n", err)
+			return microerror.Maskf(executionFailedError, "Sonobuoy could not open the results file on %s", resultsPath, "sonobuoyOutput", out)
 		}
-		results = string(stdout.Bytes())
+		results = string(out)
 	}
 
 	if !strings.Contains(results, "Failed: 0") {
-		return microerror.Maskf(executionFailedError, "Sonobuoy tests have failed")
+		return microerror.Maskf(executionFailedError, "Sonobuoy tests contain failures")
 	}
 
 	return nil
