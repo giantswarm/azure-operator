@@ -12,7 +12,6 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 	v10patch1 "github.com/giantswarm/azure-operator/service/controller/v10patch1"
-	v10patch2 "github.com/giantswarm/azure-operator/service/controller/v10patch2"
 	v11 "github.com/giantswarm/azure-operator/service/controller/v11"
 	v12 "github.com/giantswarm/azure-operator/service/controller/v12"
 	v13 "github.com/giantswarm/azure-operator/service/controller/v13"
@@ -101,30 +100,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var v10patch2ResourceSet *controller.ResourceSet
-	{
-		c := v10patch2.ResourceSetConfig{
-			CertsSearcher: certsSearcher,
-			G8sClient:     config.K8sClient.G8sClient(),
-			K8sClient:     config.K8sClient.K8sClient(),
-			Logger:        config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			IgnitionPath:             config.Ignition.Path,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
-		}
-
-		v10patch2ResourceSet, err = v10patch2.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var v11ResourceSet *controller.ResourceSet
 	{
 		c := v11.ResourceSetConfig{
@@ -205,7 +180,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			ResourceSets: []*controller.ResourceSet{
 				v7ResourceSet,
 				v10patch1ResourceSet,
-				v10patch2ResourceSet,
 				v11ResourceSet,
 				v12ResourceSet,
 				v13ResourceSet,
