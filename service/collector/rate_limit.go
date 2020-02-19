@@ -48,7 +48,7 @@ var (
 		nil,
 	)
 	writesDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "writes"),
+		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "resource_groups_writes"),
 		"Remaining number of writes allowed for Resource Groups.",
 		[]string{
 			"subscription",
@@ -72,7 +72,7 @@ var (
 	writesErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: metricsNamespace,
 		Subsystem: metricsSubsystem,
-		Name:      "writes_parsing_errors",
+		Name:      "resource_groups_writes_parsing_errors",
 		Help:      "Errors trying to parse the remaining requests from the response header",
 	})
 )
@@ -163,7 +163,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 	// Subscription is defined by the Secret used to fetch the credentials.
 	type clientCfg struct {
 		client client.AzureClientSetConfig
-		cr     providerv1alpha1.AzureConfig
+		cr     *providerv1alpha1.AzureConfig
 	}
 
 	clientConfigBySubscription := map[string]clientCfg{}
@@ -175,7 +175,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			}
 			clientConfigBySubscription[config.SubscriptionID] = clientCfg{
 				client: *config,
-				cr:     cr,
+				cr:     &cr,
 			}
 		}
 
@@ -262,7 +262,12 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 		// VMSS
 		{
-			vmssGetResponse, err := azureClients.VirtualMachineScaleSetsClient.Get(ctx, resourceGroupName, key.WorkerVMSSName(clientConfig.cr))
+			if clientConfig.cr == nil {
+				// Can't check tenant worker VMSS for control plane cluster.
+				continue
+			}
+
+			vmssGetResponse, err := azureClients.VirtualMachineScaleSetsClient.Get(ctx, resourceGroupName, key.WorkerVMSSName(*clientConfig.cr))
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -281,7 +286,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 				reads,
 				azureClients.GroupsClient.SubscriptionID,
 				clientConfig.client.ClientID,
-				key.ClusterID(clientConfig.cr),
+				key.ClusterID(*clientConfig.cr),
 			)
 		}
 	}
