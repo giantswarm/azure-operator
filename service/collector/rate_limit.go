@@ -28,30 +28,47 @@ const (
 )
 
 var (
-	readsDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "reads"),
-		"Remaining number of reads allowed.",
+	rgReadsDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "resource_groups_reads"),
+		"Remaining number of reads allowed for Resource Groups.",
 		[]string{
 			"subscription",
 			"clientid",
+		},
+		nil,
+	)
+	vmssReadsDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "vmss_reads"),
+		"Remaining number of reads allowed for tenant VMSS.",
+		[]string{
+			"subscription",
+			"clientid",
+			"tenantid",
 		},
 		nil,
 	)
 	writesDesc *prometheus.Desc = prometheus.NewDesc(
 		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "writes"),
-		"Remaining number of writes allowed.",
+		"Remaining number of writes allowed for Resource Groups.",
 		[]string{
 			"subscription",
 			"clientid",
 		},
 		nil,
 	)
-	readsErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	rgReadsErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: metricsNamespace,
 		Subsystem: metricsSubsystem,
-		Name:      "reads_parsing_errors",
+		Name:      "resource_groups_reads_parsing_errors",
 		Help:      "Errors trying to parse the remaining requests from the response header",
 	})
+	vmssReadsErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+		Namespace: metricsNamespace,
+		Subsystem: metricsSubsystem,
+		Name:      "vmss_reads_parsing_errors",
+		Help:      "Errors trying to parse the remaining requests from the response header",
+	})
+
 	writesErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: metricsNamespace,
 		Subsystem: metricsSubsystem,
@@ -84,7 +101,8 @@ type RateLimit struct {
 }
 
 func init() {
-	prometheus.MustRegister(readsErrorCounter)
+	prometheus.MustRegister(rgReadsErrorCounter)
+	prometheus.MustRegister(vmssReadsErrorCounter)
 	prometheus.MustRegister(writesErrorCounter)
 }
 
@@ -143,14 +161,22 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 	// We generate clients and group them by subscription.
 	// Subscription is defined by the Secret used to fetch the credentials.
-	clientConfigBySubscription := map[string]client.AzureClientSetConfig{}
+	type clientCfg struct {
+		client client.AzureClientSetConfig
+		cr     providerv1alpha1.AzureConfig
+	}
+
+	clientConfigBySubscription := map[string]clientCfg{}
 	{
 		for _, cr := range crs {
 			config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			clientConfigBySubscription[config.SubscriptionID] = *config
+			clientConfigBySubscription[config.SubscriptionID] = clientCfg{
+				client: *config,
+				cr:     cr,
+			}
 		}
 
 		// The operator potentially uses a different set of credentials than
@@ -161,7 +187,9 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 			SubscriptionID: u.cpAzureClientSetConfig.SubscriptionID,
 			TenantID:       u.cpAzureClientSetConfig.TenantID,
 		}
-		clientConfigBySubscription[config.SubscriptionID] = *config
+		clientConfigBySubscription[config.SubscriptionID] = clientCfg{
+			client: *config,
+		}
 	}
 
 	ctx := context.Background()
@@ -170,13 +198,12 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 	// ClientID.
 	// That way we prevent duplicated metrics.
 	for _, clientConfig := range clientConfigBySubscription {
-		azureClients, err := client.NewAzureClientSet(clientConfig)
+		azureClients, err := client.NewAzureClientSet(clientConfig.client)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
 		// Remaining write requests can be retrieved sending a write request.
-		var writes float64
 		{
 			resourceGroup := resources.Group{
 				ManagedBy: to.StringPtr("azure-operator"),
@@ -190,7 +217,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 				return microerror.Mask(err)
 			}
 
-			writes, err = strconv.ParseFloat(resourceGroup.Response.Header.Get(remainingWritesHeaderName), 64)
+			writes, err := strconv.ParseFloat(resourceGroup.Response.Header.Get(remainingWritesHeaderName), 64)
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err)))
 				writes = 0
@@ -203,32 +230,58 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 				prometheus.GaugeValue,
 				writes,
 				azureClients.GroupsClient.SubscriptionID,
-				clientConfig.ClientID,
+				clientConfig.client.ClientID,
 			)
 		}
 
 		// Remaining read requests can be retrieved sending a read request.
-		var reads float64
+
+		// Resource Groups
 		{
 			groupResponse, err := azureClients.GroupsClient.Get(ctx, resourceGroupName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			reads, err = strconv.ParseFloat(groupResponse.Response.Header.Get(remainingReadsHeaderName), 64)
+			reads, err := strconv.ParseFloat(groupResponse.Response.Header.Get(remainingReadsHeaderName), 64)
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
 				reads = 0
-				readsErrorCounter.Inc()
-				ch <- readsErrorCounter
+				rgReadsErrorCounter.Inc()
+				ch <- rgReadsErrorCounter
 			}
 
 			ch <- prometheus.MustNewConstMetric(
-				readsDesc,
+				rgReadsDesc,
 				prometheus.GaugeValue,
 				reads,
 				azureClients.GroupsClient.SubscriptionID,
-				clientConfig.ClientID,
+				clientConfig.client.ClientID,
+			)
+		}
+
+		// VMSS
+		{
+			groupResponse, err := azureClients.VirtualMachineScaleSetsClient.Get(ctx, resourceGroupName, key.WorkerVMSSName(clientConfig.cr))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			reads, err := strconv.ParseFloat(groupResponse.Response.Header.Get(remainingReadsHeaderName), 64)
+			if err != nil {
+				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
+				reads = 0
+				vmssReadsErrorCounter.Inc()
+				ch <- vmssReadsErrorCounter
+			}
+
+			ch <- prometheus.MustNewConstMetric(
+				vmssReadsDesc,
+				prometheus.GaugeValue,
+				reads,
+				azureClients.GroupsClient.SubscriptionID,
+				clientConfig.client.ClientID,
+				key.ClusterID(clientConfig.cr),
 			)
 		}
 	}
@@ -237,7 +290,8 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 }
 
 func (u *RateLimit) Describe(ch chan<- *prometheus.Desc) error {
-	ch <- readsDesc
+	ch <- rgReadsDesc
+	ch <- vmssReadsDesc
 	ch <- writesDesc
 	return nil
 }
