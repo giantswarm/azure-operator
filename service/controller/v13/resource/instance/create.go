@@ -4,9 +4,11 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
+	"github.com/giantswarm/azure-operator/service/controller/v13/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 )
@@ -86,4 +88,42 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	return nil
+}
+
+func (r *Resource) areThereChangesToReconciliate(err error, ctx context.Context, customObject v1alpha1.AzureConfig) (bool, error) {
+	computedDeployment, err := r.newDeployment(ctx, customObject, nil)
+	if blobclient.IsBlobNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
+		return false, microerror.Mask(err)
+	} else if err != nil {
+		return false, microerror.Mask(err)
+	} else {
+		desiredDeploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+
+		desiredDeploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+
+		currentDeploymentTemplateChk, err := r.getResourceStatus(customObject, DeploymentTemplateChecksum)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+
+		currentDeploymentParametersChk, err := r.getResourceStatus(customObject, DeploymentParametersChecksum)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+
+		if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+			return true, nil
+		}
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters unchanged")
+	return false, nil
 }

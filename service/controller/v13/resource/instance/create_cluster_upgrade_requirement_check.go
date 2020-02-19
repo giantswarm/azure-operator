@@ -6,7 +6,6 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/v13/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/v13/key"
 	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
 )
@@ -30,43 +29,18 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 		return DeploymentCompleted, nil
 	}
 
-	computedDeployment, err := r.newDeployment(ctx, cr, nil)
-	if blobclient.IsBlobNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
-		return currentState, nil
-	} else if err != nil {
+	areThereChangesToReconciliate, err := r.areThereChangesToReconciliate(err, ctx, cr)
+	if err != nil {
 		return currentState, microerror.Mask(err)
-	} else {
-		desiredDeploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
-		if err != nil {
-			return currentState, microerror.Mask(err)
-		}
+	}
 
-		desiredDeploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
-		if err != nil {
-			return currentState, microerror.Mask(err)
-		}
-
-		currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
-		if err != nil {
-			return currentState, microerror.Mask(err)
-		}
-
-		currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
-		if err != nil {
-			return currentState, microerror.Mask(err)
-		}
-
-		if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
-			// As current and desired state differs, start process from the beginning.
-			return MasterInstancesUpgrading, nil
-		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
-
+	if !areThereChangesToReconciliate {
+		// As current and desired state are the same, skip to the last state.
 		return DeploymentCompleted, nil
 	}
+
+	// As current and desired state differs, let's proceed to the next state.
+	return MasterInstancesUpgrading, nil
 }
 
 func (r *Resource) isClusterScaling(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
