@@ -262,12 +262,12 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 		// VMSS
 		{
-			groupResponse, err := azureClients.VirtualMachineScaleSetsClient.Get(ctx, resourceGroupName, key.WorkerVMSSName(clientConfig.cr))
+			vmssGetResponse, err := azureClients.VirtualMachineScaleSetsClient.Get(ctx, resourceGroupName, key.WorkerVMSSName(clientConfig.cr))
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			reads, err := strconv.ParseFloat(groupResponse.Response.Header.Get(remainingReadsHeaderName), 64)
+			reads, err := strconv.ParseFloat(vmssGetResponse.Response.Header.Get(remainingReadsHeaderName), 64)
 			if err != nil {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
 				reads = 0
