@@ -4,6 +4,8 @@ import (
 	"github.com/giantswarm/versionbundle"
 )
 
+const CoreosVersion = "2303.4.0"
+
 func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
@@ -21,7 +23,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "2303.4.0",
+				Version: CoreosVersion,
 			},
 			{
 				Name:    "docker",
