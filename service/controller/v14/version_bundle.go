@@ -21,7 +21,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: "2191.5.0",
+				Version: "2303.4.0",
 			},
 			{
 				Name:    "docker",
