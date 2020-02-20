@@ -2,9 +2,9 @@ package v14
 
 import (
 	"github.com/giantswarm/versionbundle"
-)
 
-const CoreosVersion = "2303.4.0"
+	"github.com/giantswarm/azure-operator/service/controller/v14/key"
+)
 
 func VersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
@@ -23,7 +23,7 @@ func VersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "containerlinux",
-				Version: CoreosVersion,
+				Version: key.CoreosVersion,
 			},
 			{
 				Name:    "docker",

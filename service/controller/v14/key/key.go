@@ -49,6 +49,8 @@ const (
 	CertificateEncryptionNamespace = "default"
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
+
+	CoreosVersion = "2303.4.0"
 )
 
 const (

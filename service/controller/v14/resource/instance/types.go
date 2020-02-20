@@ -3,7 +3,7 @@ package instance
 import (
 	"github.com/giantswarm/certs"
 
-	v14 "github.com/giantswarm/azure-operator/service/controller/v14"
+	"github.com/giantswarm/azure-operator/service/controller/v14/key"
 )
 
 type node struct {
@@ -52,7 +52,7 @@ func newNodeOSImageCoreOS() nodeOSImage {
 		Offer:     "CoreOS",
 		Publisher: "CoreOS",
 		SKU:       "Stable",
-		Version:   v14.CoreosVersion,
+		Version:   key.CoreosVersion,
 	}
 }
 
