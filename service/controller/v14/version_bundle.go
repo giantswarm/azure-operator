@@ -9,19 +9,9 @@ func VersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "azure-operator",
-				Description: "Improved upgrade process by making it faster and more graceful by re-creating nodes instead of upgrading.",
+				Description: "TODO",
 				Kind:        versionbundle.KindChanged,
-				URLs: []string{
-					"https://github.com/giantswarm/azure-operator/pull/639",
-				},
-			},
-			{
-				Component:   "k8scloudconfig",
-				Description: "Fixed node labeling when base36 encoded node ID contains letters.",
-				Kind:        versionbundle.KindFixed,
-				URLs: []string{
-					"https://github.com/giantswarm/k8scloudconfig/pull/631",
-				},
+				URLs:        []string{},
 			},
 		},
 		Components: []versionbundle.Component{
@@ -47,6 +37,6 @@ func VersionBundle() versionbundle.Bundle {
 			},
 		},
 		Name:    "azure-operator",
-		Version: "2.9.0",
+		Version: "2.10.0",
 	}
 }
