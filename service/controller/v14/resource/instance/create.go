@@ -7,8 +7,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
-	"github.com/giantswarm/azure-operator/service/controller/v13/key"
-	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/v14/key"
+	"github.com/giantswarm/azure-operator/service/controller/v14/resource/instance/internal/state"
 )
 
 // configureStateMachine configures and returns state machine that is driven by

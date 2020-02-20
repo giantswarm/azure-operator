@@ -6,7 +6,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/v13/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v14/controllercontext"
 )
 
 const (
