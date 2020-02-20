@@ -103,10 +103,19 @@ users:
 	}
 
 	{
+		cmd := exec.Command("go", "go", "get", "-u", "github.com/heptio/sonobuoy")
+		out, err := cmd.CombinedOutput()
+		if err != nil {
+			return microerror.Maskf(executionFailedError, "Error installing sonobuoy %v", err, "sonobuoyOutput", out)
+		}
+		s.logger.LogCtx(ctx, "output", out)
+	}
+
+	{
 		cmd := exec.Command("sonobuoy", "run", "--kubeconfig", kubeconfigFilePath, "--wait", "--mode=quick")
 		out, err := cmd.CombinedOutput()
 		if err != nil {
-			return microerror.Maskf(executionFailedError, "Sonobuoy could not retrieve tests results %v", err, "sonobuoyOutput", out)
+			return microerror.Maskf(executionFailedError, "Error running sonobuoy %v", err, "sonobuoyOutput", out)
 		}
 	}
 
