@@ -17,7 +17,7 @@ const (
 	// States
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
 	CordonOldWorkers               = "CordonOldWorkers"
-	DeploymentUninitialized        = "DeploymentUninitialized"
+	DeploymentUninitialized        = ""
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
 	DrainOldWorkerNodes            = "DrainOldWorkerNodes"

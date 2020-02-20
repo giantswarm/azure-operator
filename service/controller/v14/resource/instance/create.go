@@ -58,16 +58,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		currentState = state.State(s)
 
-		if currentState == "" {
-			// DeploymentUninitialized is the initial state for instance resource.
-			newState = DeploymentUninitialized
-			r.logger.LogCtx(ctx, "level", "debug", "message", "no current state present")
-		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
-			newState, err = r.stateMachine.Execute(ctx, obj, currentState)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
+		newState, err = r.stateMachine.Execute(ctx, obj, currentState)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 	}
 

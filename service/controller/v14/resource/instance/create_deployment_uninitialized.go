@@ -16,11 +16,11 @@ import (
 func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return currentState, microerror.Mask(err)
 	}
 	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return currentState, microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
@@ -37,29 +37,29 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if err != nil {
-		return "", microerror.Mask(err)
+		return currentState, microerror.Mask(err)
 	} else {
 		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.VmssDeploymentName, computedDeployment)
 		if err != nil {
-			return "", microerror.Mask(err)
+			return currentState, microerror.Mask(err)
 		}
 
 		_, err = deploymentsClient.CreateOrUpdateResponder(res.Response())
 		if err != nil {
-			return "", microerror.Mask(err)
+			return currentState, microerror.Mask(err)
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
 
 		deploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
 		if err != nil {
-			return "", microerror.Mask(err)
+			return currentState, microerror.Mask(err)
 		}
 
 		if deploymentTemplateChk != "" {
 			err = r.setResourceStatus(customObject, DeploymentTemplateChecksum, deploymentTemplateChk)
 			if err != nil {
-				return "", microerror.Mask(err)
+				return currentState, microerror.Mask(err)
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, deploymentTemplateChk))
@@ -69,13 +69,13 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 		deploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
 		if err != nil {
-			return "", microerror.Mask(err)
+			return currentState, microerror.Mask(err)
 		}
 
 		if deploymentTemplateChk != "" {
 			err = r.setResourceStatus(customObject, DeploymentParametersChecksum, deploymentParametersChk)
 			if err != nil {
-				return "", microerror.Mask(err)
+				return currentState, microerror.Mask(err)
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, deploymentParametersChk))
