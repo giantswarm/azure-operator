@@ -3,8 +3,8 @@ package instance
 import (
 	"context"
 
-	"github.com/giantswarm/azure-operator/service/controller/v13/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v13/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/v14/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v14/resource/instance/internal/state"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -11,13 +11,13 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/controller/v13/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/v13/key"
+	"github.com/giantswarm/azure-operator/service/controller/v14/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/v14/key"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "resourcegroupv13"
+	Name = "resourcegroupv14"
 
 	managedBy = "azure-operator"
 )
