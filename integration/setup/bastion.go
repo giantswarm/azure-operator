@@ -7,7 +7,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/integration/env"
 )
@@ -24,6 +26,11 @@ func bastion(ctx context.Context, config Config) error {
 	// Get subnet for master nodes. It could be the workers subnet as well. We will deploy the bastion in this subnet.
 	var subnet network.Subnet
 	{
+		err = WaitForNetworkToBeCreated(ctx, config.Logger, resourceGroupName, virtualNetworkName, masterSubnetName, *config.AzureClient.SubnetsClient)
+		if err != nil {
+			return nil
+		}
+
 		subnet, err = config.AzureClient.SubnetsClient.Get(ctx, resourceGroupName, virtualNetworkName, masterSubnetName, "")
 		if err != nil {
 			return microerror.Mask(err)
@@ -54,6 +61,25 @@ func bastion(ctx context.Context, config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
+
+	return nil
+}
+
+func WaitForNetworkToBeCreated(ctx context.Context, logger micrologger.Logger, resourceGroupName, virtualNetworkName, masterSubnetName string, subnetsClient network.SubnetsClient) error {
+	o := func() error {
+		_, err := subnetsClient.Get(ctx, resourceGroupName, virtualNetworkName, masterSubnetName, "")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+	n := backoff.NewNotifier(logger, ctx)
+	b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
+	err := backoff.RetryNotify(o, b, n)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
