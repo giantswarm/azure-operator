@@ -124,8 +124,6 @@ workflows:
           filters:
             branches:
               ignore: master
-          requires:
-            - build
       - master:
           requires:
             - build
