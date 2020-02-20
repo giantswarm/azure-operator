@@ -44,7 +44,7 @@ func Test_StateMachine(t *testing.T) {
 				"closed": func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "open", nil },
 			},
 			currentState:     "open",
-			expectedNewState: "",
+			expectedNewState: "half-way",
 			errorMatcher:     IsExecutionFailedError,
 		},
 		{
