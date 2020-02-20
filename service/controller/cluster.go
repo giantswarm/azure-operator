@@ -15,6 +15,7 @@ import (
 	v11 "github.com/giantswarm/azure-operator/service/controller/v11"
 	v12 "github.com/giantswarm/azure-operator/service/controller/v12"
 	v13 "github.com/giantswarm/azure-operator/service/controller/v13"
+	v14 "github.com/giantswarm/azure-operator/service/controller/v14"
 	v7 "github.com/giantswarm/azure-operator/service/controller/v7"
 )
 
@@ -170,6 +171,29 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
+	var v14ResourceSet *controller.ResourceSet
+	{
+		c := v14.ResourceSetConfig{
+			CertsSearcher: certsSearcher,
+			K8sClient:     config.K8sClient,
+			Logger:        config.Logger,
+
+			Azure:                    config.Azure,
+			HostAzureClientSetConfig: config.AzureConfig,
+			Ignition:                 config.Ignition,
+			InstallationName:         config.InstallationName,
+			ProjectName:              config.ProjectName,
+			OIDC:                     config.OIDC,
+			SSOPublicKey:             config.SSOPublicKey,
+			TemplateVersion:          config.TemplateVersion,
+		}
+
+		v14ResourceSet, err = v14.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var operatorkitController *controller.Controller
 	{
 		c := controller.Config{
@@ -183,6 +207,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 				v11ResourceSet,
 				v12ResourceSet,
 				v13ResourceSet,
+				v14ResourceSet,
 			},
 			NewRuntimeObjectFunc: func() runtime.Object {
 				return new(v1alpha1.AzureConfig)
