@@ -335,14 +335,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b83b2bb7ab046b896022f1a76239664e16dab6c60c05dd445e56c75faad148a1"
+  digest = "1:4369690858eabc87be1dbf72c88f8ff82ad05424810e3e24dc7f7ca1bc4e0499"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
     "internal/render",
     "pkg/chartvalues",
   ]
   pruneopts = "UT"
-  revision = "a4380f15546bede53707155ea5519b1a20f04cf4"
+  revision = "d9b582bb77554ca3a14bcf1226c38b67ed42660f"
 
 [[projects]]
   branch = "master"
@@ -410,9 +410,7 @@
   packages = [
     "ignition/v_2_2_0",
     "v_4_3_0",
-    "v_4_5_0",
     "v_4_7_0",
-    "v_4_8_1",
     "v_4_9_0",
     "v_5_0_0",
     "v_5_1_0",
@@ -2054,9 +2052,7 @@
     "github.com/giantswarm/k8sclient",
     "github.com/giantswarm/k8sclient/k8srestconfig",
     "github.com/giantswarm/k8scloudconfig/v_4_3_0",
-    "github.com/giantswarm/k8scloudconfig/v_4_5_0",
     "github.com/giantswarm/k8scloudconfig/v_4_7_0",
-    "github.com/giantswarm/k8scloudconfig/v_4_8_1",
     "github.com/giantswarm/k8scloudconfig/v_4_9_0",
     "github.com/giantswarm/k8scloudconfig/v_5_0_0",
     "github.com/giantswarm/k8scloudconfig/v_5_1_0",
