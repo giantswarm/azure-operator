@@ -1,7 +1,7 @@
 package project
 
 var (
-	bundleVersion        = "2.10.0-dev"
+	bundleVersion        = "3.0.0-dev"
 	description   string = "The azure-operator manages Kubernetes clusters on Azure."
 	gitSHA               = "n/a"
 	name          string = "azure-operator"
