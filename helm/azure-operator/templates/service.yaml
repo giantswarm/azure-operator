@@ -3,9 +3,7 @@ kind: Service
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
   namespace: {{ tpl .Values.resource.default.namespace  . }}
-  labels:
-    app: {{ .Values.project.name }}
-    version: {{ .Values.project.version }}
+  labels: {{ tpl .Values.resource.default.labels  . }}
   annotations:
     prometheus.io/scrape: "true"
 spec:
