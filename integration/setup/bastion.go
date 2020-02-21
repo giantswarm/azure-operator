@@ -57,7 +57,7 @@ func bastion(ctx context.Context, config Config) error {
 
 	// Create bastion virtual machine.
 	{
-		_, err = CreateVM(ctx, location, resourceGroupName, sshKeyData, nic, config)
+		err = CreateVM(ctx, location, resourceGroupName, sshKeyData, nic, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -115,12 +115,12 @@ func CreatePublicIP(ctx context.Context, location, groupName string, ipClient ne
 }
 
 // CreateVM creates a new virtual machine with the specified name using the specified NIC.
-func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic network.Interface, config Config) (vm compute.VirtualMachine, err error) {
+func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic network.Interface, config Config) error {
 	vmName := "bastionE2EVirtualMachine"
 	username := "e2e"
 	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion instance", "vmName", vmName)
 
-	future, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
+	_, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
 		ctx,
 		groupName,
 		vmName,
@@ -168,15 +168,10 @@ func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic n
 		},
 	)
 	if err != nil {
-		return vm, fmt.Errorf("cannot create vm: %v", err)
+		return fmt.Errorf("cannot create vm: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, config.AzureClient.VirtualMachinesClient.Client)
-	if err != nil {
-		return vm, fmt.Errorf("cannot get the vm create or update future response: %v", err)
-	}
-
-	return future.Result(*config.AzureClient.VirtualMachinesClient)
+	return nil
 }
 
 // CreateNIC creates a new network interface in the passed subnet using the passed public ip address.
