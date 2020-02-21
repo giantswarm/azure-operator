@@ -13,11 +13,11 @@ import (
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
@@ -26,7 +26,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
 		return currentState, nil
 	} else if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState

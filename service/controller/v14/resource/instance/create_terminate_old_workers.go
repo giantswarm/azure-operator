@@ -14,7 +14,7 @@ import (
 func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
@@ -27,7 +27,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 			return DeploymentUninitialized, nil
 		} else if err != nil {
-			return "", microerror.Mask(err)
+			return DeploymentUninitialized, microerror.Mask(err)
 		}
 	}
 
@@ -35,7 +35,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
@@ -61,11 +61,11 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	res, err := c.DeleteInstances(ctx, g, s, ids)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 	_, err = c.DeleteInstancesResponder(res.Response())
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminated %d old worker instances", len(*ids.InstanceIds)))
