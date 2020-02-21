@@ -14,12 +14,12 @@ func (m Machine) Execute(ctx context.Context, obj interface{}, currentState Stat
 
 	newState, err := transitionFunc(ctx, obj, currentState)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return newState, microerror.Mask(err)
 	}
 
 	_, exists = m[newState]
 	if !exists {
-		return "", microerror.Maskf(executionFailedError, "State transition returned new unknown state: %q. Input state: %q", newState, currentState)
+		return newState, microerror.Maskf(executionFailedError, "State transition returned new unknown state: %q. Input state: %q", newState, currentState)
 	}
 
 	return newState, nil
