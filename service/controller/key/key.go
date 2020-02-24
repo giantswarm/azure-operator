@@ -44,7 +44,6 @@ const (
 	LabelManagedBy       = "giantswarm.io/managed-by"
 	LabelOperatorVersion = "azure-operator.giantswarm.io/version"
 	LabelOrganization    = "giantswarm.io/organization"
-	LabelVersionBundle   = "giantswarm.io/version-bundle"
 
 	LegacyLabelCluster = "cluster"
 
