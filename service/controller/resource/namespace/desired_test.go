@@ -2,23 +2,29 @@ package namespace
 
 import (
 	"context"
+	"reflect"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
+
+	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
 	t.Parallel()
 	testCases := []struct {
-		Obj          interface{}
-		ExpectedName string
+		Obj            interface{}
+		ExpectedName   string
+		ExpectedLabels map[string]string
 	}{
 		{
 			Obj: &v1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: v1alpha1.AzureConfigSpec{
 					Cluster: v1alpha1.Cluster{
 						ID: "al9qy",
@@ -26,9 +32,18 @@ func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
 				},
 			},
 			ExpectedName: "al9qy",
+			ExpectedLabels: map[string]string{
+				key.LabelApp:             "master",
+				key.LegacyLabelCluster:   "al9qy",
+				key.LabelCustomer:        "",
+				key.LabelCluster:         "al9qy",
+				key.LabelOrganization:    "",
+				key.LabelOperatorVersion: "0.1.0",
+			},
 		},
 		{
 			Obj: &v1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: v1alpha1.AzureConfigSpec{
 					Cluster: v1alpha1.Cluster{
 						ID: "foobar",
@@ -36,6 +51,14 @@ func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
 				},
 			},
 			ExpectedName: "foobar",
+			ExpectedLabels: map[string]string{
+				key.LabelApp:             "master",
+				key.LegacyLabelCluster:   "foobar",
+				key.LabelCustomer:        "",
+				key.LabelCluster:         "foobar",
+				key.LabelOrganization:    "",
+				key.LabelOperatorVersion: "0.1.0",
+			},
 		},
 	}
 
@@ -57,9 +80,13 @@ func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
 		if err != nil {
 			t.Fatal("case", i+1, "expected", nil, "got", err)
 		}
-		name := result.(*corev1.Namespace).Name
-		if tc.ExpectedName != name {
-			t.Fatalf("case %d expected %#v got %#v", i+1, tc.ExpectedName, name)
+		namespace := result.(*corev1.Namespace)
+		if tc.ExpectedName != namespace.Name {
+			t.Fatalf("case %d expected %#v got %#v", i+1, tc.ExpectedName, namespace.Name)
+		}
+
+		if !reflect.DeepEqual(tc.ExpectedLabels, namespace.GetLabels()) {
+			t.Fatalf("case %d expected labels %#v got %#v", i+1, tc.ExpectedLabels, namespace.GetLabels())
 		}
 	}
 }
