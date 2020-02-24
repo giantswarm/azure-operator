@@ -42,10 +42,10 @@ jobs:
     - deploy:
         name: Deploy using architect
         command: |
-          if [ "${CIRCLE_BRANCH}" == "master" ]; then
+          if [ "${CIRCLE_BRANCH}" == "thiccc" ]; then
             ./architect deploy
           fi
-  master:
+  thiccc:
     docker:
       - image: busybox
     steps:
@@ -102,19 +102,19 @@ workflows:
       - build
       - hold:
           type: approval
-      - master:
+      - thiccc:
           requires:
             - build
           filters:
             branches:
-              only: master
+              only: thiccc
       - pr:
           requires:
             - build
             - hold
           filters:
             branches:
-              ignore: master
+              ignore: thiccc
 
       - e2eTestWIPPRClusterState:
           requires:

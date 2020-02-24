@@ -4,6 +4,16 @@
 
 The azure-operator manages Kubernetes clusters running in Giantnetes on Azure.
 
+## Branches
+
+- `thiccc`
+    - Up to and including version v2.9.0.
+    - Contains all versions of legacy controllers (reconciling AzureConfig CRs) up
+      to and including v2.9.0.
+- `master`
+    - From version v3.0.0.
+    - Contains only the latest version of controllers.
+
 ## Getting Project
 
 Clone the git repository: https://github.com/giantswarm/azure-operator.git
