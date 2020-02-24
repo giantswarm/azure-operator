@@ -30,7 +30,12 @@ jobs:
     steps:
       - checkout
 
-      - run: |
+      - run:
+          name: Install architect
+          command: |
+            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+            chmod +x ./architect
+            ./architect version
           wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
           chmod +x ./architect
           ./architect version
@@ -44,7 +49,9 @@ jobs:
             - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}
             - go-cache-v1-{{ checksum "/tmp/year" }}
 
-      - run: ./architect build
+      - run:
+          name: Build using architect
+          command: ./architect build
 
       - store_test_results:
           path: /tmp/results
