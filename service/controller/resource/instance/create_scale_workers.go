@@ -8,10 +8,10 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
-func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state2.State) (state2.State, error) {
+func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -34,7 +34,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	return CordonOldWorkers, nil
 }
 
-func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state2.State) (state2.State, error) {
+func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
