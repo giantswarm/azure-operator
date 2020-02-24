@@ -63,23 +63,7 @@ func bastion(ctx context.Context, config Config) error {
 		}
 	}
 
-	sshCommand := `
-A bastion server is being created. Once is created, you can SSH to the bastion using your public SSH key.
-The public SSH key placed in the bastion server comes from the 'BASTION_PUBLIC_SSH_KEY' CircleCI environment variable.
-
-To SSH type this command:
-
-*****************************
-*                           *
-* ssh -A e2e@%s *
-*                           *
-*****************************
-
-From there you should be able to SSH to any node in the cluster using:
-
-ssh test-user@<node-ip>
-`
-	config.Logger.LogCtx(ctx, "message", "ensuring bastion", "sshCommand", fmt.Sprintf(sshCommand, *ip.IPAddress))
+	config.Logger.LogCtx(ctx, "message", "ensuring bastion", "sshCommand", fmt.Sprintf("ssh -A e2e@%s", *ip.IPAddress))
 
 	return nil
 }
