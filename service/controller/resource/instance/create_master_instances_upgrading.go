@@ -400,7 +400,7 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 	}
 
 	for _, v := range list {
-		desiredVersion := key.VersionBundleVersion(customObject)
+		desiredVersion := key.OperatorVersion(customObject)
 		instanceName := instanceNameFunc(customObject, *v.InstanceID)
 		instanceVersion, ok := versionValue[instanceName]
 		if !ok {

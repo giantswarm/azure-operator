@@ -42,12 +42,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 1: one instance being up to date results in no action",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -75,12 +73,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 2: two instances being up to date results in no action",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -116,12 +112,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 3: one instance not having the latest model applied results in updating the instance",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -155,12 +149,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 4: two instances not having the latest model applied results in updating the first instance",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -202,12 +194,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 5: one instance having the latest model applied and one instance not having the latest model applied results in updating the second instance",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -249,12 +239,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 6: two instances not having the latest version bundle version applied results in reimaging the first instance",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -296,12 +284,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 7: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied results in reimaging the second instance",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -343,12 +329,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 8: two instances not having the latest version bundle version applied and being in provisioning state 'InProgress' results in no action",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -384,12 +368,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 9: one instance having the latest version bundle version applied and one instance not having the latest version bundle version applied and being in provisioning state 'InProgress' results in no action",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -425,12 +407,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 10: instances that should be reimaged should be drained first",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},
@@ -472,12 +452,10 @@ func Test_Resource_Instance_findActionableInstance(t *testing.T) {
 		{
 			Name: "case 11: same as 10 but with different input",
 			CustomObject: providerv1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: providerv1alpha1.AzureConfigSpec{
 					Cluster: providerv1alpha1.Cluster{
 						ID: "al9qy",
-					},
-					VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{
-						Version: "0.1.0",
 					},
 				},
 			},

@@ -22,12 +22,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			Name:      "master",
 			Namespace: key.ClusterID(customObject),
 			Labels: map[string]string{
-				key.LabelApp:           "master",
-				key.LegacyLabelCluster: key.ClusterID(customObject),
-				key.LabelCustomer:      key.ClusterCustomer(customObject),
-				key.LabelCluster:       key.ClusterID(customObject),
-				key.LabelOrganization:  key.ClusterCustomer(customObject),
-				key.LabelVersionBundle: key.VersionBundleVersion(customObject),
+				key.LabelApp:             "master",
+				key.LegacyLabelCluster:   key.ClusterID(customObject),
+				key.LabelCustomer:        key.ClusterCustomer(customObject),
+				key.LabelCluster:         key.ClusterID(customObject),
+				key.LabelOrganization:    key.ClusterCustomer(customObject),
+				key.LabelOperatorVersion: key.OperatorVersion(customObject),
 			},
 			Annotations: map[string]string{
 				key.AnnotationPrometheusCluster: key.ClusterID(customObject),
