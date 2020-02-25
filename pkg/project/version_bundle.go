@@ -11,9 +11,9 @@ func NewVersionBundle() versionbundle.Bundle {
 		Changelogs: []versionbundle.Changelog{
 			{
 				Component:   "azure-operator",
-				Description: "TODO",
-				Kind:        versionbundle.KindChanged,
-				URLs:        []string{},
+				Description: "Fix workers' overprovisioning during cluster creation.",
+				Kind:        versionbundle.KindFixed,
+				URLs:        []string{"https://github.com/giantswarm/azure-operator/pull/679"},
 			},
 		},
 		Components: []versionbundle.Component{
