@@ -16,7 +16,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 )
 
@@ -39,7 +39,7 @@ type Resource struct {
 	g8sClient    versioned.Interface
 	k8sClient    kubernetes.Interface
 	logger       micrologger.Logger
-	stateMachine state2.Machine
+	stateMachine state.Machine
 
 	azure           setting.Azure
 	templateVersion string

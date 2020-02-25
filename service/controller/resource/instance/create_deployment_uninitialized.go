@@ -11,10 +11,10 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
-func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state2.State) (state2.State, error) {
+func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	customObject, err := key.ToCustomObject(obj)
 	if err != nil {
 		return currentState, microerror.Mask(err)

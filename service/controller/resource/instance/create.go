@@ -8,13 +8,13 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
 // configureStateMachine configures and returns state machine that is driven by
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
-	sm := state2.Machine{
+	sm := state.Machine{
 		DeploymentUninitialized:        r.deploymentUninitializedTransition,
 		DeploymentInitialized:          r.deploymentInitializedTransition,
 		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
@@ -49,14 +49,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	var newState state2.State
-	var currentState state2.State
+	var newState state.State
+	var currentState state.State
 	{
 		s, err := r.getResourceStatus(customObject, Stage)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		currentState = state2.State(s)
+		currentState = state.State(s)
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
 		newState, err = r.stateMachine.Execute(ctx, obj, currentState)
