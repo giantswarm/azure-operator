@@ -18,18 +18,32 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 
 	// Check for changes that must not recycle the nodes but just apply the
 	// VMSS deployment.
+	isCreating := r.isClusterCreating(cr)
 	isScaling, err := r.isClusterScaling(ctx, cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	if isScaling {
-		// When cluster is scaling we skip upgrading master node[s] and
-		// re-creating worker instances.
+	if isCreating || isScaling {
+		// When cluster is creating or scaling we skip upgrading master node[s]
+		// and replacing worker instances.
 		return DeploymentCompleted, nil
 	}
 
 	return MasterInstancesUpgrading, nil
+}
+
+func (r *Resource) isClusterCreating(cr providerv1alpha1.AzureConfig) bool {
+	// When cluster creation is in the beginning, it doesn't necessarily have
+	// any status conditions yet.
+	if len(cr.Status.Cluster.Conditions) == 0 {
+		return true
+	}
+	if cr.Status.Cluster.HasCreatingCondition() {
+		return true
+	}
+
+	return false
 }
 
 func (r *Resource) isClusterScaling(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
