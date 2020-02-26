@@ -57,10 +57,10 @@ func (r *Resource) getMasterNICPrivateIPs(ctx context.Context, resourceGroupName
 }
 
 func (r *Resource) getInterfacesClient(ctx context.Context) (*network.InterfacesClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.InterfacesClient, nil
+	return cc.AzureClientSet.InterfacesClient, nil
 }

@@ -71,10 +71,10 @@ func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, 
 }
 
 func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.StorageAccountsClient, nil
+	return cc.AzureClientSet.StorageAccountsClient, nil
 }

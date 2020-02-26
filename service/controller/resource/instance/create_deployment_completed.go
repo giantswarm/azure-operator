@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
@@ -21,7 +21,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.VmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
@@ -34,7 +34,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if key.IsSucceededProvisioningState(s) {
-		computedDeployment, err := r.newDeployment(ctx, customObject, nil)
+		computedDeployment, err := r.newDeployment(ctx, cr, nil)
 		if blobclient.IsBlobNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
@@ -51,12 +51,12 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 				return "", microerror.Mask(err)
 			}
 
-			currentDeploymentTemplateChk, err := r.getResourceStatus(customObject, DeploymentTemplateChecksum)
+			currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
 
-			currentDeploymentParametersChk, err := r.getResourceStatus(customObject, DeploymentParametersChecksum)
+			currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}

@@ -11,7 +11,7 @@ import (
 
 // ApplyCreateChange is never called. We do not like it. It is not idempotent.
 func (r *Resource) ApplyCreateChange(ctx context.Context, obj, change interface{}) error {
-	o, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -21,7 +21,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, change interface{
 		return microerror.Mask(err)
 	}
 
-	return r.applyCreateChange(ctx, o, c)
+	return r.applyCreateChange(ctx, cr, c)
 }
 
 func (r *Resource) applyCreateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {

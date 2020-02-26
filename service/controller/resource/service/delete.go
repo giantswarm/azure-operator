@@ -13,7 +13,7 @@ import (
 )
 
 func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -25,7 +25,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange inte
 	if serviceToDelete != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service")
 
-		namespace := key.ClusterNamespace(customObject)
+		namespace := key.ClusterNamespace(cr)
 		err := r.k8sClient.CoreV1().Services(namespace).Delete(serviceToDelete.Name, &apismetav1.DeleteOptions{})
 		if apierrors.IsNotFound(err) {
 			// fall through

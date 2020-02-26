@@ -44,7 +44,7 @@ func (r *Resource) configureStateMachine() {
 // loop stops until a change in the ARM template or parameters is detected.
 // Check docs/instances-stages-v13.svg file for a grafical representation of this process.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -52,7 +52,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var newState state.State
 	var currentState state.State
 	{
-		s, err := r.getResourceStatus(customObject, Stage)
+		s, err := r.getResourceStatus(cr, Stage)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -68,7 +68,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if newState != currentState {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
-		err = r.setResourceStatus(customObject, Stage, string(newState))
+		err = r.setResourceStatus(cr, Stage, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}

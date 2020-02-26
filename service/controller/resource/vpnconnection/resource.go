@@ -75,12 +75,12 @@ func (r *Resource) getGuestVirtualNetworkGateway(ctx context.Context, resourceGr
 // getGuestVirtualNetworkGatewaysClient return a client to interact with
 // VirtualNetworkGateways on guest cluster.
 func (r *Resource) getGuestVirtualNetworkGatewaysClient(ctx context.Context) (*network.VirtualNetworkGatewaysClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.VirtualNetworkGatewaysClient, nil
+	return cc.AzureClientSet.VirtualNetworkGatewaysClient, nil
 }
 
 func (r *Resource) getGuestVirtualNetworkGatewayConnection(ctx context.Context, resourceGroup, vpnGatewayConnectionName string) (*network.VirtualNetworkGatewayConnection, error) {
@@ -100,12 +100,12 @@ func (r *Resource) getGuestVirtualNetworkGatewayConnection(ctx context.Context, 
 // getGuestVirtualNetworkGatewayConnectionsClient return a client to interact with
 // VirtualNetworkGatewayConnections on guest cluster.
 func (r *Resource) getGuestVirtualNetworkGatewayConnectionsClient(ctx context.Context) (*network.VirtualNetworkGatewayConnectionsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.VirtualNetworkGatewayConnectionsClient, nil
+	return cc.AzureClientSet.VirtualNetworkGatewayConnectionsClient, nil
 }
 
 func (r *Resource) getHostVirtualNetworkGateway(ctx context.Context, resourceGroup, vpnGatewayName string) (*network.VirtualNetworkGateway, error) {

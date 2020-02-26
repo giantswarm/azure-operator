@@ -13,12 +13,12 @@ import (
 
 // GetDesiredState returns the desired resource group for this cluster.
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	o, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return r.getDesiredState(ctx, o)
+	return r.getDesiredState(ctx, cr)
 }
 
 func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.AzureConfig) (dnsRecords, error) {

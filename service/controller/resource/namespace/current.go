@@ -15,7 +15,7 @@ import (
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -24,7 +24,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding the namespace in the Kubernetes API")
 
-		manifest, err := r.k8sClient.CoreV1().Namespaces().Get(key.ClusterNamespace(customObject), metav1.GetOptions{})
+		manifest, err := r.k8sClient.CoreV1().Namespaces().Get(key.ClusterNamespace(cr), metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the namespace in the Kubernetes API")
 			// fall through
@@ -54,7 +54,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, nil
 	}
 
-	if namespace == nil && key.IsDeleted(customObject) {
+	if namespace == nil && key.IsDeleted(cr) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "resource deletion completed")
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")

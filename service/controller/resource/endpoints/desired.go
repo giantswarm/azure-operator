@@ -11,12 +11,12 @@ import (
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, key.ClusterID(customObject), key.MasterVMSSName(customObject))
+	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, key.ClusterID(cr), key.MasterVMSSName(cr))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -24,13 +24,13 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	endpoints := &v1.Endpoints{
 		ObjectMeta: apismetav1.ObjectMeta{
 			Name:      "master",
-			Namespace: key.ClusterID(customObject),
+			Namespace: key.ClusterID(cr),
 			Labels: map[string]string{
 				"app":                        "master",
-				"cluster":                    key.ClusterID(customObject),
-				"customer":                   key.ClusterCustomer(customObject),
-				"giantswarm.io/cluster":      key.ClusterID(customObject),
-				"giantswarm.io/organization": key.ClusterCustomer(customObject),
+				"cluster":                    key.ClusterID(cr),
+				"customer":                   key.ClusterCustomer(cr),
+				"giantswarm.io/cluster":      key.ClusterID(cr),
+				"giantswarm.io/organization": key.ClusterCustomer(cr),
 				"giantswarm.io/managed-by":   "azure-operator",
 			},
 		},

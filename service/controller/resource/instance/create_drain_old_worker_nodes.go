@@ -14,7 +14,7 @@ import (
 )
 
 func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -25,7 +25,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	{
 		n := metav1.NamespaceAll
 		o := metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("%s=%s", key.ClusterIDLabel, key.ClusterID(customObject)),
+			LabelSelector: fmt.Sprintf("%s=%s", key.ClusterIDLabel, key.ClusterID(cr)),
 		}
 
 		list, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
@@ -41,9 +41,9 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs)))
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-	allWorkerInstances, err := r.allInstances(ctx, customObject, key.WorkerVMSSName)
+	allWorkerInstances, err := r.allInstances(ctx, cr, key.WorkerVMSSName)
 	if IsScaleSetNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -57,13 +57,13 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			continue
 		}
 
-		n := key.WorkerInstanceName(customObject, *i.InstanceID)
+		n := key.WorkerInstanceName(cr, *i.InstanceID)
 
 		dc, drainerConfigExists := drainerConfigs[n]
 		if !drainerConfigExists {
 			nodesPendingDraining++
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.createDrainerConfig(ctx, customObject, key.WorkerInstanceName(customObject, *i.InstanceID))
+			err = r.createDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
@@ -83,7 +83,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.createDrainerConfig(ctx, customObject, key.WorkerInstanceName(customObject, *i.InstanceID))
+			err = r.createDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
