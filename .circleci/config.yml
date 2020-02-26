@@ -99,7 +99,31 @@ jobs:
     environment:
       TESTED_VERSION: "wip"
       TEST_DIR: "integration/test/sonobuoy"
-    <<: *e2eTest
+    machine: true
+    working_directory: /home/circleci/.go_workspace/src/github.com/giantswarm/azure-operator
+    steps:
+      - checkout
+      - run: |
+          wget -q $(curl -sS https://api.github.com/repos/giantswarm/e2e-harness/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+          chmod +x ./e2e-harness
+      - run: |
+          K8S_VERSION=1.10.0
+          curl -Lo kubectl https://storage.googleapis.com/kubernetes-release/release/v${K8S_VERSION}/bin/linux/amd64/kubectl
+          chmod ugo+x kubectl
+          sudo mv kubectl /usr/bin/
+      - run: |
+          git clone git@github.com:giantswarm/devctl.git
+          GO111MODULE=on go install -ldflags "-X main.gitCommit=$(git rev-parse HEAD)" .
+      - run: ./e2e-harness localkube
+      - run: ./e2e-harness setup --remote=false
+
+      - store_artifacts:
+          path: .e2e-harness/workdir/logs
+          destination: logs
+
+      - run:
+          command: ./e2e-harness teardown
+          when: always
 
   # Note we only have update tests for the current version because it anyway
   # tests one version transition. Having the same tests for WIP only runs the
