@@ -112,10 +112,21 @@ jobs:
           chmod ugo+x kubectl
           sudo mv kubectl /usr/bin/
       - run: |
-          git clone git@github.com:giantswarm/devctl.git
-          GO111MODULE=on go install -ldflags "-X main.gitCommit=$(git rev-parse HEAD)" .
+          echo "This is the GOPATH: ${GOPATH}"
+          go version
+          cd /home/circleci/.go_workspace/src/github.com/giantswarm && git clone git@github.com:giantswarm/devctl.git
+          cd /home/circleci/.go_workspace/src/github.com/giantswarm/devctl && GO111MODULE=on go build && GO111MODULE=on go install
       - run: ./e2e-harness localkube
       - run: ./e2e-harness setup --remote=false
+      - run: |
+          CLUSTER_ID=`cat /dev/urandom | tr -dc 'a-z0-9' | fold -w 5 | head -n 1`
+          envsubst < ./integration/test/sonobuoy/azureconfig.yaml.tpl > ./integration/test/sonobuoy/azureconfig.yaml
+          kubectl apply -f ./integration/test/azureconfig.yaml
+          sleep 10
+          devctl gen kubeconfig --clusterID ${CLUSTER_ID} --kubeconfig $HOME/.kube/config --output /tmp/kubeconfig
+          ./integration/test/sonobuoy/cluster_ready.sh
+          sonobuoy run --kubeconfig /tmp/kubeconfig --mode=certified-conformance
+          sonobuoy results $(sonobuoy retrieve --kubeconfig /tmp/kubeconfig) | grep -q failed
 
       - store_artifacts:
           path: .e2e-harness/workdir/logs
