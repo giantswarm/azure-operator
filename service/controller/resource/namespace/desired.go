@@ -24,8 +24,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		ObjectMeta: apismetav1.ObjectMeta{
 			Name: key.ClusterNamespace(cr),
 			Labels: map[string]string{
-				"cluster":  key.ClusterID(cr),
-				"customer": key.ClusterCustomer(cr),
+				key.LabelApp:           "master",
+				key.LegacyLabelCluster: key.ClusterID(cr),
+				key.LabelCustomer:      key.ClusterCustomer(cr),
+				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelOrganization:  key.ClusterCustomer(cr),
 			},
 		},
 	}

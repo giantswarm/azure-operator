@@ -27,7 +27,6 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 				key.LabelCustomer:      key.ClusterCustomer(cr),
 				key.LabelCluster:       key.ClusterID(cr),
 				key.LabelOrganization:  key.ClusterCustomer(cr),
-				key.LabelVersionBundle: key.VersionBundleVersion(cr),
 			},
 			Annotations: map[string]string{
 				key.AnnotationPrometheusCluster: key.ClusterID(cr),

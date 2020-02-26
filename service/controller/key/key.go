@@ -38,12 +38,12 @@ const (
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
 
-	LabelApp           = "app"
-	LabelCluster       = "giantswarm.io/cluster"
-	LabelCustomer      = "customer"
-	LabelManagedBy     = "giantswarm.io/managed-by"
-	LabelOrganization  = "giantswarm.io/organization"
-	LabelVersionBundle = "giantswarm.io/version-bundle"
+	LabelApp             = "app"
+	LabelCluster         = "giantswarm.io/cluster"
+	LabelCustomer        = "customer"
+	LabelManagedBy       = "giantswarm.io/managed-by"
+	LabelOperatorVersion = "azure-operator.giantswarm.io/version"
+	LabelOrganization    = "giantswarm.io/organization"
 
 	LegacyLabelCluster = "cluster"
 
@@ -100,7 +100,7 @@ func BlobContainerName() string {
 }
 
 func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
-	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
+	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
 }
 
 func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
@@ -291,6 +291,10 @@ func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master", ClusterID(customObject))
 }
 
+func OperatorVersion(cr providerv1alpha1.AzureConfig) string {
+	return cr.GetLabels()[LabelOperatorVersion]
+}
+
 func PrefixMaster() string {
 	return prefixMaster
 }
@@ -398,6 +402,15 @@ func ToNodeCount(v interface{}) (int, error) {
 	return nodeCount, nil
 }
 
+func ToOperatorVersion(v interface{}) (string, error) {
+	customObject, err := ToCustomResource(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return OperatorVersion(customObject), nil
+}
+
 // ToParameters merges the input maps and converts the result into the
 // structure used by the Azure API. Note that the order of inputs is relevant.
 // Default parameters should be given first. Data of the following maps will
@@ -444,19 +457,6 @@ func ToStringMap(v interface{}) (map[string]string, error) {
 	}
 
 	return stringMap, nil
-}
-
-func ToVersionBundleVersion(v interface{}) (string, error) {
-	cr, err := ToCustomResource(v)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return VersionBundleVersion(cr), nil
-}
-
-func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.VersionBundle.Version
 }
 
 // VnetName returns name of the virtual network.

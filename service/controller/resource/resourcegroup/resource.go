@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
+	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -18,8 +19,6 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "resourcegroup"
-
-	managedBy = "azure-operator"
 )
 
 type Config struct {
@@ -76,7 +75,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	resourceGroup := azureresource.Group{
 		Name:      to.StringPtr(key.ClusterID(cr)),
 		Location:  to.StringPtr(r.azure.Location),
-		ManagedBy: to.StringPtr(managedBy),
+		ManagedBy: to.StringPtr(project.Name()),
 		Tags:      key.ClusterTags(cr, r.installationName),
 	}
 	_, err = groupsClient.CreateOrUpdate(ctx, *resourceGroup.Name, resourceGroup)

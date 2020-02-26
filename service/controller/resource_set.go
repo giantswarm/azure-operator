@@ -135,7 +135,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:                   config.Logger,
 			RESTClient:               config.K8sClient.G8sClient().ProviderV1alpha1().RESTClient(),
 			TenantCluster:            tenantCluster,
-			VersionBundleVersionFunc: key.ToVersionBundleVersion,
+			VersionBundleVersionFunc: key.ToOperatorVersion,
 		}
 
 		statusResource, err = statusresource.NewResource(c)
@@ -403,7 +403,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return false
 		}
 
-		if key.VersionBundleVersion(cr) == project.BundleVersion() {
+		if key.OperatorVersion(cr) == project.BundleVersion() {
 			return true
 		}
 

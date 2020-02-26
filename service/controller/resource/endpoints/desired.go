@@ -7,6 +7,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
@@ -26,12 +27,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			Name:      "master",
 			Namespace: key.ClusterID(cr),
 			Labels: map[string]string{
-				"app":                        "master",
-				"cluster":                    key.ClusterID(cr),
-				"customer":                   key.ClusterCustomer(cr),
-				"giantswarm.io/cluster":      key.ClusterID(cr),
-				"giantswarm.io/organization": key.ClusterCustomer(cr),
-				"giantswarm.io/managed-by":   "azure-operator",
+				key.LabelApp:           "master",
+				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelCustomer:      key.ClusterCustomer(cr),
+				key.LegacyLabelCluster: key.ClusterID(cr),
+				key.LabelManagedBy:     project.Name(),
+				key.LabelOrganization:  key.ClusterCustomer(cr),
 			},
 		},
 	}

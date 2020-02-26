@@ -335,14 +335,14 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b83b2bb7ab046b896022f1a76239664e16dab6c60c05dd445e56c75faad148a1"
+  digest = "1:e88f04bf11ce608935b139217c52d3b2655d925577557a2e11e203e4bd524ac9"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
     "internal/render",
     "pkg/chartvalues",
   ]
   pruneopts = "UT"
-  revision = "a4380f15546bede53707155ea5519b1a20f04cf4"
+  revision = "c9589c3fd751042238c5d7d10bb463698b3ac6ae"
 
 [[projects]]
   branch = "master"
