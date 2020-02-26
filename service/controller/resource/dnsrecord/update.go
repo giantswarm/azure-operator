@@ -14,7 +14,7 @@ import (
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{}) error {
-	o, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -24,7 +24,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 		return microerror.Mask(err)
 	}
 
-	return r.applyUpdateChange(ctx, o, c)
+	return r.applyUpdateChange(ctx, cr, c)
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
@@ -70,7 +70,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 // NewUpdatePatch returns the patch creating resource group for this cluster if
 // it is needed.
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	o, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -83,7 +83,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Mask(err)
 	}
 
-	return r.newUpdatePatch(ctx, o, c, d)
+	return r.newUpdatePatch(ctx, cr, c, d)
 }
 
 func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {

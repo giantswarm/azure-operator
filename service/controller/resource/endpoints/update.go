@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -24,7 +24,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	if endpointsToUpdate != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "updating Kubernetes endpoints")
 
-		namespace := key.ClusterNamespace(customObject)
+		namespace := key.ClusterNamespace(cr)
 		_, err := r.k8sClient.CoreV1().Endpoints(namespace).Update(endpointsToUpdate)
 		if err != nil {
 			return microerror.Mask(err)

@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -20,18 +20,18 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	service := &v1.Service{
 		ObjectMeta: apismetav1.ObjectMeta{
 			Name:      "master",
-			Namespace: key.ClusterID(customObject),
+			Namespace: key.ClusterID(cr),
 			Labels: map[string]string{
 				key.LabelApp:           "master",
-				key.LegacyLabelCluster: key.ClusterID(customObject),
-				key.LabelCustomer:      key.ClusterCustomer(customObject),
-				key.LabelCluster:       key.ClusterID(customObject),
-				key.LabelOrganization:  key.ClusterCustomer(customObject),
-				key.LabelVersionBundle: key.VersionBundleVersion(customObject),
+				key.LegacyLabelCluster: key.ClusterID(cr),
+				key.LabelCustomer:      key.ClusterCustomer(cr),
+				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelOrganization:  key.ClusterCustomer(cr),
+				key.LabelVersionBundle: key.VersionBundleVersion(cr),
 			},
 			Annotations: map[string]string{
-				key.AnnotationPrometheusCluster: key.ClusterID(customObject),
-				key.AnnotationEtcdDomain:        key.ClusterEtcdDomain(customObject),
+				key.AnnotationPrometheusCluster: key.ClusterID(cr),
+				key.AnnotationEtcdDomain:        key.ClusterEtcdDomain(cr),
 			},
 		},
 		Spec: v1.ServiceSpec{

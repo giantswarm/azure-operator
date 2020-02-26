@@ -12,7 +12,7 @@ import (
 
 // NewDeletePatch provide a crud.Patch holding connections to be deleted.
 func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*crud.Patch, error) {
-	a, err := key.ToCustomObject(azureConfig)
+	cr, err := key.ToCustomResource(azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -25,7 +25,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, des
 		return nil, microerror.Mask(err)
 	}
 
-	patch, err := r.newDeletePatch(ctx, a, c, d)
+	patch, err := r.newDeletePatch(ctx, cr, c, d)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -44,7 +44,7 @@ func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alp
 
 // ApplyDeleteChange perform deletion of vpn gateway connection against azure.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change interface{}) error {
-	a, err := key.ToCustomObject(azureConfig)
+	cr, err := key.ToCustomResource(azureConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -53,7 +53,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 		return microerror.Mask(err)
 	}
 
-	err = r.applyDeleteChange(ctx, a, c)
+	err = r.applyDeleteChange(ctx, cr, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}

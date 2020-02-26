@@ -24,7 +24,7 @@ const (
 )
 
 func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -42,9 +42,9 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
+		allWorkerInstances, err = r.allInstances(ctx, cr, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 
 			return currentState, nil
 		} else if err != nil {
@@ -64,7 +64,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		nodes = nodeList.Items
 	}
 
-	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, customObject, key.WorkerInstanceName)
+	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, cr, key.WorkerInstanceName)
 	if len(newNodes) < len(oldNodes) {
 		// Wait until there's enough new nodes up.
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))

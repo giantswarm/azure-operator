@@ -61,7 +61,7 @@ func New(config Config) (*Resource, error) {
 
 // EnsureCreated ensures the resource group is created via the Azure API.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -74,10 +74,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created")
 
 	resourceGroup := azureresource.Group{
-		Name:      to.StringPtr(key.ClusterID(customObject)),
+		Name:      to.StringPtr(key.ClusterID(cr)),
 		Location:  to.StringPtr(r.azure.Location),
 		ManagedBy: to.StringPtr(managedBy),
-		Tags:      key.ClusterTags(customObject, r.installationName),
+		Tags:      key.ClusterTags(cr, r.installationName),
 	}
 	_, err = groupsClient.CreateOrUpdate(ctx, *resourceGroup.Name, resourceGroup)
 	if err != nil {
@@ -91,7 +91,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 // EnsureDeleted ensures the resource group is deleted via the Azure API.
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -103,13 +103,13 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion")
 
-	_, err = groupsClient.Get(ctx, key.ClusterID(customObject))
+	_, err = groupsClient.Get(ctx, key.ClusterID(cr))
 	if IsNotFound(err) {
 		// fall through
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		res, err := groupsClient.Delete(ctx, key.ClusterID(customObject))
+		res, err := groupsClient.Delete(ctx, key.ClusterID(cr))
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {

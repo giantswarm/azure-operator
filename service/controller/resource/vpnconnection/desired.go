@@ -15,7 +15,7 @@ import (
 
 // GetDesiredState return desired vpn gateway connections.
 func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(azureConfig)
+	cr, err := key.ToCustomResource(azureConfig)
 	if err != nil {
 		return connections{}, microerror.Mask(err)
 	}
@@ -27,15 +27,15 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 	// Do not check for vpn gateway when deleting. As we do not require tenant
 	// cluster vpn gateway to be ready in order to delete connection from host
 	// cluster vpn gateway.
-	if !key.IsDeleted(customObject) {
+	if !key.IsDeleted(cr) {
 		// In order to make vpn gateway connection work we need 2 vpn gateway. One
 		// on the host cluster and one on the tenant cluster. Here we check for vpn
 		// gateways readiness. In case one of the vpn gateway is not ready we cancel
 		// the resource and try again on the next resync period.
 		{
 
-			resourceGroup := key.ResourceGroupName(customObject)
-			vpnGatewayName := key.VPNGatewayName(customObject)
+			resourceGroup := key.ResourceGroupName(cr)
+			vpnGatewayName := key.VPNGatewayName(cr)
 
 			guestVPNGateway, err = r.getGuestVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
@@ -82,7 +82,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 		}
 	}
 
-	vpnGatewayConnections, err := r.getDesiredState(ctx, customObject, guestVPNGateway, hostVPNGateway)
+	vpnGatewayConnections, err := r.getDesiredState(ctx, cr, guestVPNGateway, hostVPNGateway)
 	if err != nil {
 		return connections{}, microerror.Mask(err)
 	}

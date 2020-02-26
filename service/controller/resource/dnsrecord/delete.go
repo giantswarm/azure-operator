@@ -14,7 +14,7 @@ import (
 
 // ApplyDeleteChange deletes the resource group via the Azure API.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{}) error {
-	obj, err := key.ToCustomObject(obj)
+	_, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -49,7 +49,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 // NewDeletePatch returns the patch deleting resource group for this cluster if
 // it is needed.
 func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	o, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -62,7 +62,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Mask(err)
 	}
 
-	return r.newDeletePatch(ctx, o, c, d)
+	return r.newDeletePatch(ctx, cr, c, d)
 }
 
 func (r *Resource) newDeletePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {

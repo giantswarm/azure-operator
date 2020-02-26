@@ -12,19 +12,19 @@ import (
 )
 
 func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	desiredWorkerCount := key.WorkerCount(customObject) * 2
+	desiredWorkerCount := key.WorkerCount(cr) * 2
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
 
 	// Double the desired number of nodes in worker VMSS in order to
 	// provide 1:1 mapping between new up-to-date nodes when draining and
 	// terminating old nodes.
-	err = r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, desiredWorkerCount)
+	err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -35,17 +35,17 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 }
 
 func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	desiredWorkerCount := key.WorkerCount(customObject)
+	desiredWorkerCount := key.WorkerCount(cr)
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
 
 	// Scale down to the desired number of nodes in worker VMSS.
-	err = r.scaleVMSS(ctx, customObject, key.WorkerVMSSName, desiredWorkerCount)
+	err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

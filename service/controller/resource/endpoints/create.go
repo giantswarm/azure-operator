@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -23,7 +23,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 	if endpointsToCreate != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints")
 
-		namespace := key.ClusterNamespace(customObject)
+		namespace := key.ClusterNamespace(cr)
 		_, err = r.k8sClient.CoreV1().Endpoints(namespace).Create(endpointsToCreate)
 		if apierrors.IsAlreadyExists(err) {
 			// fall through
