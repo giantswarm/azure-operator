@@ -24,7 +24,6 @@ func Test_Resource_Service_GetDesiredState(t *testing.T) {
 		expectedName       string
 		expectedPort       int
 		expectedTargetPort string
-		expectedVersion    string
 	}{
 		{
 			description: "Get service from custom object",
@@ -40,7 +39,6 @@ func Test_Resource_Service_GetDesiredState(t *testing.T) {
 			expectedName:       "master",
 			expectedPort:       443,
 			expectedTargetPort: "443",
-			expectedVersion:    "0.1.0",
 		},
 	}
 
@@ -82,14 +80,6 @@ func Test_Resource_Service_GetDesiredState(t *testing.T) {
 
 			if intstr.FromInt(tc.expectedPort) != desiredService.Spec.Ports[0].TargetPort {
 				t.Errorf("expected target port %q got %q", intstr.FromInt(tc.expectedPort), desiredService.Spec.Ports[0].TargetPort)
-			}
-
-			operatorVersion, ok := desiredService.GetLabels()[key.LabelOperatorVersion]
-			if !ok {
-				t.Errorf("expected operator version in labels %q got labels %q", tc.expectedVersion, desiredService.GetLabels())
-			}
-			if operatorVersion != tc.expectedVersion {
-				t.Errorf("expected operator version in labels %q got %q", tc.expectedVersion, operatorVersion)
 			}
 		})
 	}
