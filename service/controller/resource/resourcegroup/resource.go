@@ -140,12 +140,12 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.GroupsClient, nil
+	return cc.AzureClientSet.GroupsClient, nil
 }
 
 func toGroup(v interface{}) (Group, error) {

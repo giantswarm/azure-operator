@@ -86,39 +86,39 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.DeploymentsClient, nil
+	return cc.AzureClientSet.DeploymentsClient, nil
 }
 
 func (r *Resource) getScaleSetsClient(ctx context.Context) (*compute.VirtualMachineScaleSetsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.VirtualMachineScaleSetsClient, nil
+	return cc.AzureClientSet.VirtualMachineScaleSetsClient, nil
 }
 
 func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.StorageAccountsClient, nil
+	return cc.AzureClientSet.StorageAccountsClient, nil
 }
 
 func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
+	return cc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
 }
 
 func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {

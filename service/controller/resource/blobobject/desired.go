@@ -17,7 +17,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	ctlCtx, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -44,7 +44,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	output := []ContainerObjectState{}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewMasterCloudConfig(cr, clusterCerts, encrypter)
+		b, err := cc.CloudConfig.NewMasterCloudConfig(cr, clusterCerts, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -60,7 +60,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewWorkerCloudConfig(cr, clusterCerts, encrypter)
+		b, err := cc.CloudConfig.NewWorkerCloudConfig(cr, clusterCerts, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

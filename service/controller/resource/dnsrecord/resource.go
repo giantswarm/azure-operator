@@ -58,19 +58,19 @@ func (r *Resource) getDNSRecordSetsHostClient() (*dns.RecordSetsClient, error) {
 }
 
 func (r *Resource) getDNSRecordSetsGuestClient(ctx context.Context) (*dns.RecordSetsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.DNSRecordSetsClient, nil
+	return cc.AzureClientSet.DNSRecordSetsClient, nil
 }
 
 func (r *Resource) getDNSZonesGuestClient(ctx context.Context) (*dns.ZonesClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.DNSZonesClient, nil
+	return cc.AzureClientSet.DNSZonesClient, nil
 }

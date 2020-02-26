@@ -68,19 +68,19 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.DeploymentsClient, nil
+	return cc.AzureClientSet.DeploymentsClient, nil
 }
 
 func (r *Resource) getVirtualNetworkClient(ctx context.Context) (*network.VirtualNetworksClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.VirtualNetworkClient, nil
+	return cc.AzureClientSet.VirtualNetworkClient, nil
 }

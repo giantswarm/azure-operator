@@ -205,12 +205,12 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 }
 
 func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.DeploymentsClient, nil
+	return cc.AzureClientSet.DeploymentsClient, nil
 }
 
 func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentName string, outputName string) (string, error) {
