@@ -403,7 +403,7 @@ func ToNodeCount(v interface{}) (int, error) {
 }
 
 func ToOperatorVersion(v interface{}) (string, error) {
-	customObject, err := ToCustomObject(v)
+	customObject, err := ToCustomResource(v)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
