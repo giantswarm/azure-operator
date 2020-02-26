@@ -10,7 +10,7 @@ func NewVersionBundle() versionbundle.Bundle {
 	return versionbundle.Bundle{
 		Changelogs: []versionbundle.Changelog{
 			{
-				Component:   "azure-operator",
+				Component:   Name(),
 				Description: "TODO",
 				Kind:        versionbundle.KindChanged,
 				URLs:        []string{},
