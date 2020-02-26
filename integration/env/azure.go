@@ -10,12 +10,8 @@ import (
 )
 
 const (
-	EnvVarAzureAZs              = "AZURE_AZS"
-	EnvVarAzureCIDR             = "AZURE_CIDR"
-	EnvVarAzureCalicoSubnetCIDR = "AZURE_CALICO_SUBNET_CIDR"
-	EnvVarAzureMasterSubnetCIDR = "AZURE_MASTER_SUBNET_CIDR"
-	EnvVarAzureVPNSubnetCIDR    = "AZURE_VPN_SUBNET_CIDR"
-	EnvVarAzureWorkerSubnetCIDR = "AZURE_WORKER_SUBNET_CIDR"
+	EnvVarAzureAZs  = "AZURE_AZS"
+	EnvVarAzureCIDR = "AZURE_CIDR"
 
 	EnvVarAzureClientID       = "AZURE_CLIENTID"
 	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
