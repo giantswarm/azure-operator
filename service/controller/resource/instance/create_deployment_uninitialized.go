@@ -11,11 +11,11 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
-func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state2.State) (state2.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -26,7 +26,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-	computedDeployment, err := r.newDeployment(ctx, customObject, nil)
+	computedDeployment, err := r.newDeployment(ctx, cr, nil)
 	if controllercontext.IsInvalidContext(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")
@@ -40,7 +40,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	} else {
-		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), key.VmssDeploymentName, computedDeployment)
+		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), key.VmssDeploymentName, computedDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
@@ -58,7 +58,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentTemplateChk != "" {
-			err = r.setResourceStatus(customObject, DeploymentTemplateChecksum, deploymentTemplateChk)
+			err = r.setResourceStatus(cr, DeploymentTemplateChecksum, deploymentTemplateChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}
@@ -74,7 +74,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentTemplateChk != "" {
-			err = r.setResourceStatus(customObject, DeploymentParametersChecksum, deploymentParametersChk)
+			err = r.setResourceStatus(cr, DeploymentParametersChecksum, deploymentParametersChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}

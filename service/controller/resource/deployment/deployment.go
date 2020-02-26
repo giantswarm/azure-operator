@@ -13,25 +13,25 @@ import (
 )
 
 func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	defaultParams := map[string]interface{}{
 		"blobContainerName":       key.BlobContainerName(),
-		"calicoSubnetCidr":        sc.AzureNetwork.Calico.String(),
+		"calicoSubnetCidr":        cc.AzureNetwork.Calico.String(),
 		"clusterID":               key.ClusterID(customObject),
 		"dnsZones":                key.DNSZones(customObject),
 		"hostClusterCidr":         r.azure.HostCluster.CIDR,
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
-		"masterSubnetCidr":        sc.AzureNetwork.Master.String(),
+		"masterSubnetCidr":        cc.AzureNetwork.Master.String(),
 		"storageAccountName":      key.StorageAccountName(customObject),
 		"virtualNetworkCidr":      key.VnetCIDR(customObject),
 		"virtualNetworkName":      key.VnetName(customObject),
 		"vnetGatewaySubnetName":   key.VNetGatewaySubnetName(),
-		"vpnSubnetCidr":           sc.AzureNetwork.VPN.String(),
-		"workerSubnetCidr":        sc.AzureNetwork.Worker.String(),
+		"vpnSubnetCidr":           cc.AzureNetwork.VPN.String(),
+		"workerSubnetCidr":        cc.AzureNetwork.Worker.String(),
 	}
 
 	d := azureresource.Deployment{

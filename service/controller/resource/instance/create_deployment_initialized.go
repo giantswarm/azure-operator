@@ -7,11 +7,11 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
-func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj interface{}, currentState state2.State) (state2.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
@@ -20,7 +20,7 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), key.VmssDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.VmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")

@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -31,7 +31,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	containerURL := cc.ContainerURL
 	containerName := key.BlobContainerName()
-	storageAccountName := key.StorageAccountName(customObject)
+	storageAccountName := key.StorageAccountName(cr)
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding blob object's container")
 	// if here is no container account - return and wait for deployment to finish container operation.

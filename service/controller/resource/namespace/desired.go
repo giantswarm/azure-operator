@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -22,13 +22,13 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			APIVersion: "v1",
 		},
 		ObjectMeta: apismetav1.ObjectMeta{
-			Name: key.ClusterNamespace(customObject),
+			Name: key.ClusterNamespace(cr),
 			Labels: map[string]string{
 				key.LabelApp:           "master",
-				key.LegacyLabelCluster: key.ClusterID(customObject),
-				key.LabelCustomer:      key.ClusterCustomer(customObject),
-				key.LabelCluster:       key.ClusterID(customObject),
-				key.LabelOrganization:  key.ClusterCustomer(customObject),
+				key.LegacyLabelCluster: key.ClusterID(cr),
+				key.LabelCustomer:      key.ClusterCustomer(cr),
+				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelOrganization:  key.ClusterCustomer(cr),
 			},
 		},
 	}

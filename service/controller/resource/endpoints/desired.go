@@ -11,12 +11,12 @@ import (
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, key.ClusterID(customObject), key.MasterVMSSName(customObject))
+	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, key.ClusterID(cr), key.MasterVMSSName(cr))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -24,14 +24,14 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	endpoints := &v1.Endpoints{
 		ObjectMeta: apismetav1.ObjectMeta{
 			Name:      "master",
-			Namespace: key.ClusterID(customObject),
+			Namespace: key.ClusterID(cr),
 			Labels: map[string]string{
 				key.LabelApp:           "master",
-				key.LabelCluster:       key.ClusterID(customObject),
-				key.LabelCustomer:      key.ClusterCustomer(customObject),
-				key.LegacyLabelCluster: key.ClusterID(customObject),
+				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelCustomer:      key.ClusterCustomer(cr),
+				key.LegacyLabelCluster: key.ClusterID(cr),
 				key.LabelManagedBy:     "azure-operator",
-				key.LabelOrganization:  key.ClusterCustomer(customObject),
+				key.LabelOrganization:  key.ClusterCustomer(cr),
 			},
 		},
 	}

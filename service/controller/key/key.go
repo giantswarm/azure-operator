@@ -333,33 +333,33 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return customObject.Spec.Cluster.Kubernetes.API.Domain, nil
+	return cr.Spec.Cluster.Kubernetes.API.Domain, nil
 }
 
 func ToClusterID(v interface{}) (string, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return ClusterID(customObject), nil
+	return ClusterID(cr), nil
 }
 
 func ToClusterStatus(v interface{}) (providerv1alpha1.StatusCluster, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return providerv1alpha1.StatusCluster{}, microerror.Mask(err)
 	}
 
-	return customObject.Status.Cluster, nil
+	return cr.Status.Cluster, nil
 }
 
-func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
+func ToCustomResource(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	if v == nil {
 		return providerv1alpha1.AzureConfig{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
 	}
@@ -392,12 +392,12 @@ func ToMap(v interface{}) (map[string]interface{}, error) {
 }
 
 func ToNodeCount(v interface{}) (int, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
 
-	nodeCount := len(customObject.Spec.Azure.Masters) + len(customObject.Spec.Azure.Workers)
+	nodeCount := len(cr.Spec.Azure.Masters) + len(cr.Spec.Azure.Workers)
 
 	return nodeCount, nil
 }

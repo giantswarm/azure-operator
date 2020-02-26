@@ -69,7 +69,7 @@ func New(config Config) (*Resource, error) {
 }
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -83,12 +83,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var deployment azureresource.Deployment
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), mainDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), mainDeploymentName)
 	if IsNotFound(err) {
 		params := map[string]interface{}{
 			"initialProvisioning": "Yes",
 		}
-		deployment, err = r.newDeployment(ctx, customObject, params)
+		deployment, err = r.newDeployment(ctx, cr, params)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -110,18 +110,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		params := map[string]interface{}{
 			"initialProvisioning": "No",
 		}
-		deployment, err = r.newDeployment(ctx, customObject, params)
+		deployment, err = r.newDeployment(ctx, cr, params)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		err = r.enrichControllerContext(ctx, customObject)
+		err = r.enrichControllerContext(ctx, cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(customObject), mainDeploymentName, deployment)
+	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), mainDeploymentName, deployment)
 	if err != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.Stack(microerror.Mask(err)))
 
@@ -205,12 +205,12 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 }
 
 func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
-	sc, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return sc.AzureClientSet.DeploymentsClient, nil
+	return cc.AzureClientSet.DeploymentsClient, nil
 }
 
 func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentName string, outputName string) (string, error) {
