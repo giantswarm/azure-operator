@@ -11,15 +11,15 @@ import (
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding storage account")
 
 	containerName := key.BlobContainerName()
-	groupName := key.ClusterID(customObject)
-	storageAccountName := key.StorageAccountName(customObject)
+	groupName := key.ClusterID(cr)
+	storageAccountName := key.StorageAccountName(cr)
 
 	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
 	if err != nil {

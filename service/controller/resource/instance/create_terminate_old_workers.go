@@ -9,11 +9,11 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
-func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interface{}, currentState state2.State) (state2.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
@@ -21,9 +21,9 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.allInstances(ctx, customObject, key.WorkerVMSSName)
+		allWorkerInstances, err = r.allInstances(ctx, cr, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(customObject)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "restarting upgrade process")
 
 			return DeploymentUninitialized, nil
@@ -41,8 +41,8 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
 
-	g := key.ResourceGroupName(customObject)
-	s := key.WorkerVMSSName(customObject)
+	g := key.ResourceGroupName(cr)
+	s := key.WorkerVMSSName(cr)
 	var ids compute.VirtualMachineScaleSetVMInstanceRequiredIDs
 	{
 		var strIds []string

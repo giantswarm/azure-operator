@@ -14,18 +14,18 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	state2 "github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
-func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state2.State) (state2.State, error) {
-	customObject, err := key.ToCustomObject(obj)
+func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	versionValue := map[string]string{}
 	{
-		for _, node := range customObject.Status.Cluster.Nodes {
+		for _, node := range cr.Status.Cluster.Nodes {
 			versionValue[node.Name] = node.Version
 		}
 	}
@@ -34,7 +34,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	{
 		n := v1.NamespaceAll
 		o := metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("%s=%s", key.ClusterIDLabel, key.ClusterID(customObject)),
+			LabelSelector: fmt.Sprintf("%s=%s", key.ClusterIDLabel, key.ClusterID(cr)),
 		}
 
 		list, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
@@ -47,34 +47,34 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	var masterUpgradeInProgress bool
 	{
-		allMasterInstances, err := r.allInstances(ctx, customObject, key.MasterVMSSName)
+		allMasterInstances, err := r.allInstances(ctx, cr, key.MasterVMSSName)
 		if IsScaleSetNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(customObject)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(cr)))
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
 
-			ws, err := r.nextInstance(ctx, customObject, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
+			ws, err := r.nextInstance(ctx, cr, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
 
-			err = r.updateInstance(ctx, customObject, ws.InstanceToUpdate(), key.MasterVMSSName, key.MasterInstanceName)
+			err = r.updateInstance(ctx, cr, ws.InstanceToUpdate(), key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
 			if ws.InstanceToDrain() != nil {
-				err = r.createDrainerConfig(ctx, customObject, key.MasterInstanceName(customObject, *ws.InstanceToDrain().InstanceID))
+				err = r.createDrainerConfig(ctx, cr, key.MasterInstanceName(cr, *ws.InstanceToDrain().InstanceID))
 				if err != nil {
 					return "", microerror.Mask(err)
 				}
 			}
-			err = r.reimageInstance(ctx, customObject, ws.InstanceToReimage(), key.MasterVMSSName, key.MasterInstanceName)
+			err = r.reimageInstance(ctx, cr, ws.InstanceToReimage(), key.MasterVMSSName, key.MasterInstanceName)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
-			err = r.deleteDrainerConfig(ctx, customObject, ws.InstanceToReimage(), key.MasterInstanceName, drainerConfigs)
+			err = r.deleteDrainerConfig(ctx, cr, ws.InstanceToReimage(), key.MasterInstanceName, drainerConfigs)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
@@ -400,7 +400,7 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 	}
 
 	for _, v := range list {
-		desiredVersion := key.VersionBundleVersion(customObject)
+		desiredVersion := key.OperatorVersion(customObject)
 		instanceName := instanceNameFunc(customObject, *v.InstanceID)
 		instanceVersion, ok := versionValue[instanceName]
 		if !ok {

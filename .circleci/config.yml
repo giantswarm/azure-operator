@@ -105,16 +105,6 @@ jobs:
       TEST_DIR: "integration/test/clusterdeletion"
     <<: *e2eTest
 
-  # Note we only have update tests for the current version because it anyway
-  # tests one version transition. Having the same tests for WIP only runs the
-  # same test twice and we can simply save resources by not doing so.
-  e2eTestCurPRUpdate:
-    environment:
-      TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/update"
-    <<: *e2eTest
-
-
 
 workflows:
   version: 2
@@ -189,9 +179,5 @@ workflows:
           - pr
 
       - e2eTestWIPPRClusterDeletion:
-          requires:
-          - pr
-
-      - e2eTestCurPRUpdate:
           requires:
           - pr

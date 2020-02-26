@@ -5,11 +5,14 @@ import (
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/util/intstr"
 	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
+
+	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 func Test_Resource_Service_GetDesiredState(t *testing.T) {
@@ -25,6 +28,7 @@ func Test_Resource_Service_GetDesiredState(t *testing.T) {
 		{
 			description: "Get service from custom object",
 			obj: &v1alpha1.AzureConfig{
+				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
 				Spec: v1alpha1.AzureConfigSpec{
 					Cluster: v1alpha1.Cluster{
 						ID: "al9qy",

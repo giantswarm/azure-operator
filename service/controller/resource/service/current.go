@@ -12,14 +12,14 @@ import (
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the master service in the Kubernetes API")
 
-	namespace := key.ClusterNamespace(customObject)
+	namespace := key.ClusterNamespace(cr)
 
 	// Lookup the current state of the service.
 	var service *corev1.Service

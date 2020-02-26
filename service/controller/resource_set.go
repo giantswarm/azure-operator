@@ -135,7 +135,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:                   config.Logger,
 			RESTClient:               config.K8sClient.G8sClient().ProviderV1alpha1().RESTClient(),
 			TenantCluster:            tenantCluster,
-			VersionBundleVersionFunc: key.ToVersionBundleVersion,
+			VersionBundleVersionFunc: key.ToOperatorVersion,
 		}
 
 		statusResource, err = statusresource.NewResource(c)
@@ -397,13 +397,13 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	handlesFunc := func(obj interface{}) bool {
-		customObject, err := key.ToCustomObject(obj)
+		cr, err := key.ToCustomResource(obj)
 		if err != nil {
 			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err))
 			return false
 		}
 
-		if key.VersionBundleVersion(customObject) == project.BundleVersion() {
+		if key.OperatorVersion(cr) == project.BundleVersion() {
 			return true
 		}
 
@@ -411,12 +411,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
-		azureConfig, err := key.ToCustomObject(obj)
+		cr, err := key.ToCustomResource(obj)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		_, vnet, err := net.ParseCIDR(key.VnetCIDR(azureConfig))
+		_, vnet, err := net.ParseCIDR(key.VnetCIDR(cr))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -425,7 +425,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient.K8sClient(), key.CredentialName(azureConfig), key.CredentialNamespace(azureConfig))
+		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient.K8sClient(), key.CredentialName(cr), key.CredentialNamespace(cr))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

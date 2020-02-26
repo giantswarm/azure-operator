@@ -17,13 +17,13 @@ const (
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	// Deleting the K8s namespace will take care of cleaning the endpoints.
-	if key.IsDeleted(customObject) {
+	if key.IsDeleted(cr) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting deletion to namespace termination")
 		resourcecanceledcontext.SetCanceled(ctx)
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -43,8 +43,8 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			return nil, microerror.Mask(err)
 		}
 
-		g := key.ClusterID(customObject)
-		s := key.MasterVMSSName(customObject)
+		g := key.ClusterID(cr)
+		s := key.MasterVMSSName(cr)
 		_, err = interfacesClient.ListVirtualMachineScaleSetNetworkInterfaces(ctx, g, s)
 		if IsNetworkInterfacesNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the network interfaces in the Azure API")
@@ -62,7 +62,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the master endpoints in the Kubernetes API")
 
-		n := key.ClusterNamespace(customObject)
+		n := key.ClusterNamespace(cr)
 		manifest, err := r.k8sClient.CoreV1().Endpoints(n).Get(masterEndpointsName, apismetav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the master endpoints in the Kubernetes API")

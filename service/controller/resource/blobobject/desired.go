@@ -12,24 +12,24 @@ import (
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	ctlCtx, err := controllercontext.FromContext(ctx)
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	clusterCerts, err := r.certsSearcher.SearchCluster(key.ClusterID(customObject))
+	clusterCerts, err := r.certsSearcher.SearchCluster(key.ClusterID(cr))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	storageAccountName := key.StorageAccountName(customObject)
+	storageAccountName := key.StorageAccountName(cr)
 	containerName := key.BlobContainerName()
-	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(customObject)
+	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(cr)
 
 	encrypter, err := r.toEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
@@ -44,11 +44,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	output := []ContainerObjectState{}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewMasterCloudConfig(customObject, clusterCerts, encrypter)
+		b, err := cc.CloudConfig.NewMasterCloudConfig(cr, clusterCerts, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		k := key.BlobName(customObject, prefixMaster)
+		k := key.BlobName(cr, prefixMaster)
 		containerObjectState := ContainerObjectState{
 			Body:               b,
 			ContainerName:      containerName,
@@ -60,11 +60,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	}
 
 	{
-		b, err := ctlCtx.CloudConfig.NewWorkerCloudConfig(customObject, clusterCerts, encrypter)
+		b, err := cc.CloudConfig.NewWorkerCloudConfig(cr, clusterCerts, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		k := key.BlobName(customObject, prefixWorker)
+		k := key.BlobName(cr, prefixWorker)
 		containerObjectState := ContainerObjectState{
 			Body:               b,
 			ContainerName:      containerName,

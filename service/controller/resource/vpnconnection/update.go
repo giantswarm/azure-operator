@@ -13,7 +13,7 @@ import (
 
 // NewUpdatePatch provide a crud.Patch holding the needed connections update.
 func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*crud.Patch, error) {
-	a, err := key.ToCustomObject(azureConfig)
+	cr, err := key.ToCustomResource(azureConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -28,7 +28,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, des
 		return nil, microerror.Mask(err)
 	}
 
-	patch, err := r.newUpdatePatch(ctx, a, c, d)
+	patch, err := r.newUpdatePatch(ctx, cr, c, d)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -115,7 +115,7 @@ func needsUpdate(current, desired network.VirtualNetworkGatewayConnection) bool 
 
 // ApplyUpdateChange perform the host cluster vpn gateway connections update against azure.
 func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change interface{}) error {
-	a, err := key.ToCustomObject(azureConfig)
+	cr, err := key.ToCustomResource(azureConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -125,7 +125,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change in
 		return microerror.Mask(err)
 	}
 
-	err = r.applyUpdateChange(ctx, a, c)
+	err = r.applyUpdateChange(ctx, cr, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}

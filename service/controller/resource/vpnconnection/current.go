@@ -13,7 +13,7 @@ import (
 // GetCurrentState retrieve current vpn gateway connection from host to tenant
 // cluster.
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
-	customObject, err := key.ToCustomObject(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return connections{}, microerror.Mask(err)
 	}
@@ -23,7 +23,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding host vpn gateway connection")
 
 		resourceGroup := r.azure.HostCluster.ResourceGroup
-		connectionName := key.ResourceGroupName(customObject)
+		connectionName := key.ResourceGroupName(cr)
 
 		h, err := r.getHostVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)
 		if IsVPNGatewayConnectionNotFound(err) {
@@ -49,7 +49,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding tenant vpn gateway connection")
 
-		resourceGroup := key.ResourceGroupName(customObject)
+		resourceGroup := key.ResourceGroupName(cr)
 		connectionName := r.azure.HostCluster.ResourceGroup
 
 		g, err := r.getGuestVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)

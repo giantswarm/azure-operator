@@ -38,12 +38,12 @@ const (
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
 
-	LabelApp           = "app"
-	LabelCluster       = "giantswarm.io/cluster"
-	LabelCustomer      = "customer"
-	LabelManagedBy     = "giantswarm.io/managed-by"
-	LabelOrganization  = "giantswarm.io/organization"
-	LabelVersionBundle = "giantswarm.io/version-bundle"
+	LabelApp             = "app"
+	LabelCluster         = "giantswarm.io/cluster"
+	LabelCustomer        = "customer"
+	LabelManagedBy       = "giantswarm.io/managed-by"
+	LabelOperatorVersion = "azure-operator.giantswarm.io/version"
+	LabelOrganization    = "giantswarm.io/organization"
 
 	LegacyLabelCluster = "cluster"
 
@@ -100,7 +100,7 @@ func BlobContainerName() string {
 }
 
 func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
-	return fmt.Sprintf("%s-%s-%s", VersionBundleVersion(customObject), cloudConfigVersion, role)
+	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
 }
 
 func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
@@ -291,6 +291,10 @@ func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master", ClusterID(customObject))
 }
 
+func OperatorVersion(cr providerv1alpha1.AzureConfig) string {
+	return cr.GetLabels()[LabelOperatorVersion]
+}
+
 func PrefixMaster() string {
 	return prefixMaster
 }
@@ -329,33 +333,33 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ToClusterEndpoint(v interface{}) (string, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return customObject.Spec.Cluster.Kubernetes.API.Domain, nil
+	return cr.Spec.Cluster.Kubernetes.API.Domain, nil
 }
 
 func ToClusterID(v interface{}) (string, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	return ClusterID(customObject), nil
+	return ClusterID(cr), nil
 }
 
 func ToClusterStatus(v interface{}) (providerv1alpha1.StatusCluster, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return providerv1alpha1.StatusCluster{}, microerror.Mask(err)
 	}
 
-	return customObject.Status.Cluster, nil
+	return cr.Status.Cluster, nil
 }
 
-func ToCustomObject(v interface{}) (providerv1alpha1.AzureConfig, error) {
+func ToCustomResource(v interface{}) (providerv1alpha1.AzureConfig, error) {
 	if v == nil {
 		return providerv1alpha1.AzureConfig{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
 	}
@@ -388,14 +392,23 @@ func ToMap(v interface{}) (map[string]interface{}, error) {
 }
 
 func ToNodeCount(v interface{}) (int, error) {
-	customObject, err := ToCustomObject(v)
+	cr, err := ToCustomResource(v)
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
 
-	nodeCount := len(customObject.Spec.Azure.Masters) + len(customObject.Spec.Azure.Workers)
+	nodeCount := len(cr.Spec.Azure.Masters) + len(cr.Spec.Azure.Workers)
 
 	return nodeCount, nil
+}
+
+func ToOperatorVersion(v interface{}) (string, error) {
+	customObject, err := ToCustomResource(v)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return OperatorVersion(customObject), nil
 }
 
 // ToParameters merges the input maps and converts the result into the
@@ -444,19 +457,6 @@ func ToStringMap(v interface{}) (map[string]string, error) {
 	}
 
 	return stringMap, nil
-}
-
-func ToVersionBundleVersion(v interface{}) (string, error) {
-	customObject, err := ToCustomObject(v)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return VersionBundleVersion(customObject), nil
-}
-
-func VersionBundleVersion(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.VersionBundle.Version
 }
 
 // VnetName returns name of the virtual network.
