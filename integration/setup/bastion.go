@@ -7,7 +7,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/integration/env"
 )
@@ -24,6 +26,11 @@ func bastion(ctx context.Context, config Config) error {
 	// Get subnet for master nodes. It could be the workers subnet as well. We will deploy the bastion in this subnet.
 	var subnet network.Subnet
 	{
+		err = WaitForNetworkToBeCreated(ctx, config.Logger, resourceGroupName, virtualNetworkName, masterSubnetName, *config.AzureClient.SubnetsClient)
+		if err != nil {
+			return nil
+		}
+
 		subnet, err = config.AzureClient.SubnetsClient.Get(ctx, resourceGroupName, virtualNetworkName, masterSubnetName, "")
 		if err != nil {
 			return microerror.Mask(err)
@@ -50,10 +57,31 @@ func bastion(ctx context.Context, config Config) error {
 
 	// Create bastion virtual machine.
 	{
-		_, err = CreateVM(ctx, location, resourceGroupName, sshKeyData, nic, config)
+		err = CreateVM(ctx, location, resourceGroupName, sshKeyData, nic, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+	}
+
+	config.Logger.LogCtx(ctx, "message", "ensuring bastion", "sshCommand", fmt.Sprintf("ssh -A e2e@%s", *ip.IPAddress))
+
+	return nil
+}
+
+func WaitForNetworkToBeCreated(ctx context.Context, logger micrologger.Logger, resourceGroupName, virtualNetworkName, masterSubnetName string, subnetsClient network.SubnetsClient) error {
+	o := func() error {
+		_, err := subnetsClient.Get(ctx, resourceGroupName, virtualNetworkName, masterSubnetName, "")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		return nil
+	}
+	n := backoff.NewNotifier(logger, ctx)
+	b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
+	err := backoff.RetryNotify(o, b, n)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
@@ -89,12 +117,12 @@ func CreatePublicIP(ctx context.Context, location, groupName string, ipClient ne
 }
 
 // CreateVM creates a new virtual machine with the specified name using the specified NIC.
-func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic network.Interface, config Config) (vm compute.VirtualMachine, err error) {
+func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic network.Interface, config Config) error {
 	vmName := "bastionE2EVirtualMachine"
 	username := "e2e"
 	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion instance", "vmName", vmName)
 
-	future, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
+	_, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
 		ctx,
 		groupName,
 		vmName,
@@ -142,15 +170,10 @@ func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic n
 		},
 	)
 	if err != nil {
-		return vm, fmt.Errorf("cannot create vm: %v", err)
+		return fmt.Errorf("cannot create vm: %v", err)
 	}
 
-	err = future.WaitForCompletionRef(ctx, config.AzureClient.VirtualMachinesClient.Client)
-	if err != nil {
-		return vm, fmt.Errorf("cannot get the vm create or update future response: %v", err)
-	}
-
-	return future.Result(*config.AzureClient.VirtualMachinesClient)
+	return nil
 }
 
 // CreateNIC creates a new network interface in the passed subnet using the passed public ip address.
