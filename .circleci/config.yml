@@ -20,31 +20,52 @@ e2eTest: &e2eTest
       command: ./e2e-harness teardown
       when: always
 
+orbs:
+  architect: giantswarm/architect@0.6.0
 
-
-version: 2
+version: 2.1
 jobs:
   build:
     machine: true
     steps:
-    - checkout
-    - run:
-        name: Install architect
-        command: |
-          wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-          chmod +x ./architect
-          ./architect version
-    - run:
-        name: Build using architect
-        command: ./architect build
-    - store_test_results:
-        path: /tmp/results
-    - deploy:
-        name: Deploy using architect
-        command: |
-          if [ "${CIRCLE_BRANCH}" == "master" ]; then
-            ./architect deploy
-          fi
+      - checkout
+
+      - run:
+          name: Install architect
+          command: |
+            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+            chmod +x ./architect
+            ./architect version
+            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+            chmod +x ./architect
+            ./architect version
+      - run: |
+          date +"%Y" > /tmp/year
+          date +"%m" > /tmp/month
+          date +"%d" > /tmp/day
+      - restore_cache:
+          keys:
+            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
+            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}
+            - go-cache-v1-{{ checksum "/tmp/year" }}
+
+      - run:
+          name: Build using architect
+          command: ./architect build
+
+      - store_test_results:
+          path: /tmp/results
+
+      - save_cache:
+          key: go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
+          paths:
+            - /tmp/go/cache
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./azure-operator
+
   master:
     docker:
       - image: busybox
@@ -84,22 +105,51 @@ jobs:
       TEST_DIR: "integration/test/clusterdeletion"
     <<: *e2eTest
 
-  # Note we only have update tests for the current version because it anyway
-  # tests one version transition. Having the same tests for WIP only runs the
-  # same test twice and we can simply save resources by not doing so.
-  e2eTestCurPRUpdate:
-    environment:
-      TESTED_VERSION: "current"
-      TEST_DIR: "integration/test/update"
-    <<: *e2eTest
-
-
 
 workflows:
   version: 2
   build_and_e2eTest:
     jobs:
-      - build
+      # build binary
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
+      # build and push docker image to quay
+      - architect/push-to-docker:
+          name: push-to-docker
+          image: "quay.io/giantswarm/azure-operator"
+          username_envar: "QUAY_USERNAME"
+          password_envar: "QUAY_PASSWORD"
+          requires:
+            - build
+          filters:
+            tags:
+              only: /^v.*/
+      # build and push helm chart to app catalog
+      - architect/push-to-app-catalog:
+          name: push-to-app-catalog
+          app_catalog: "control-plane-catalog"
+          app_catalog_test: "control-plane-test-catalog"
+          chart: "azure-operator"
+          # Make sure docker image is successfully built.
+          requires:
+            - push-to-docker
+          filters:
+            tags:
+              only: /^v.*/
+      # deploy to installations
+      - architect/push-to-app-collection:
+          name: push-to-azure-app-collection
+          app_name: "azure-operator"
+          app_collection_repo: "azure-app-collection"
+          requires:
+            - push-to-app-catalog
+          filters:
+            branches:
+              ignore: /.*/
+            tags:
+              only: /^v.*/
       - hold:
           type: approval
       - master:
@@ -129,9 +179,5 @@ workflows:
           - pr
 
       - e2eTestWIPPRClusterDeletion:
-          requires:
-          - pr
-
-      - e2eTestCurPRUpdate:
           requires:
           - pr
