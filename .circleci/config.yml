@@ -117,37 +117,41 @@ workflows:
               only: /^v.*/
       # build and push docker image to quay
       - architect/push-to-docker:
-          name: push-to-docker
+          name: push-azure-operator-to-quay
           image: "quay.io/giantswarm/azure-operator"
           username_envar: "QUAY_USERNAME"
           password_envar: "QUAY_PASSWORD"
           requires:
             - build
           filters:
+            # Trigger the job also on git tag.
             tags:
               only: /^v.*/
       # build and push helm chart to app catalog
       - architect/push-to-app-catalog:
-          name: push-to-app-catalog
+          name: push-azure-operator-to-control-plane-app-catalog
           app_catalog: "control-plane-catalog"
           app_catalog_test: "control-plane-test-catalog"
           chart: "azure-operator"
           # Make sure docker image is successfully built.
           requires:
-            - push-to-docker
+            - push-azure-operator-to-quay
           filters:
+            # Trigger the job also on git tag.
             tags:
               only: /^v.*/
       # deploy to installations
       - architect/push-to-app-collection:
-          name: push-to-azure-app-collection
+          name: push-azure-operator-to-azure-app-collection
           app_name: "azure-operator"
           app_collection_repo: "azure-app-collection"
           requires:
-            - push-to-app-catalog
+            - push-azure-operator-to-control-plane-app-catalog
           filters:
+            # Do not trigger the job on commit.
             branches:
               ignore: /.*/
+            # Trigger the job also on git tag.
             tags:
               only: /^v.*/
       - hold:
