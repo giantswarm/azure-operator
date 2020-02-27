@@ -6,7 +6,9 @@ import (
 	"os"
 	"strings"
 
-	"github.com/giantswarm/azure-operator/service"
+	"github.com/giantswarm/versionbundle"
+
+	"github.com/giantswarm/azure-operator/pkg/project"
 )
 
 const (
@@ -73,10 +75,10 @@ func init() {
 	{
 		switch testedVersion {
 		case "latest", "wip":
-			vbs := service.NewVersionBundles()
+			vbs := []versionbundle.Bundle{project.NewVersionBundle()}
 			versionBundleVersion = vbs[len(vbs)-1].Version
 		case "previous", "current":
-			vbs := service.NewVersionBundles()
+			vbs := []versionbundle.Bundle{project.NewVersionBundle()}
 			versionBundleVersion = vbs[len(vbs)-2].Version
 		}
 	}

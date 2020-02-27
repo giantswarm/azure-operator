@@ -11,11 +11,13 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/statusresource"
+	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
+	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/collector"
 	"github.com/giantswarm/azure-operator/service/controller"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
@@ -214,7 +216,7 @@ func New(config Config) (*Service, error) {
 			Name:           config.ProjectName,
 			Source:         config.Source,
 			Version:        config.Version,
-			VersionBundles: NewVersionBundles(),
+			VersionBundles: []versionbundle.Bundle{project.NewVersionBundle()},
 		}
 
 		versionService, err = version.New(c)

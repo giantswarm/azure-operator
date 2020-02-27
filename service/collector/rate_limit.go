@@ -15,7 +15,8 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/v14/key"
+	"github.com/giantswarm/azure-operator/pkg/project"
+	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/credential"
 )
 
@@ -179,10 +180,10 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 		var writes float64
 		{
 			resourceGroup := resources.Group{
-				ManagedBy: to.StringPtr("azure-operator"),
+				ManagedBy: to.StringPtr(project.Name()),
 				Location:  to.StringPtr(u.location),
 				Tags: map[string]*string{
-					"collector": to.StringPtr("azure-operator"),
+					"collector": to.StringPtr(project.Name()),
 				},
 			}
 			resourceGroup, err := azureClients.GroupsClient.CreateOrUpdate(ctx, resourceGroupName, resourceGroup)
