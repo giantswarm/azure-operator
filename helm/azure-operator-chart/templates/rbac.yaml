@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: azure-operator
+  name: {{ tpl .Values.resource.default.name  . }}
 rules:
   - apiGroups:
       - apiextensions.k8s.io
@@ -63,7 +63,7 @@ rules:
     resources:
       - configmaps
     resourceNames:
-      - aws-operator-configmap
+      - {{ tpl .Values.resource.default.name  . }}
     verbs:
       - get
   - nonResourceURLs:
@@ -75,20 +75,20 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: azure-operator
+  name: {{ tpl .Values.resource.default.name  . }}
 subjects:
   - kind: ServiceAccount
-    name: azure-operator
-    namespace: {{ .Values.namespace }}
+    name: {{ tpl .Values.resource.default.name  . }}
+    namespace: {{ tpl .Values.resource.default.namespace  . }}
 roleRef:
   kind: ClusterRole
-  name: azure-operator
+  name: {{ tpl .Values.resource.default.name  . }}
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: azure-operator-psp
+  name: {{ tpl .Values.resource.psp.name . }}
 rules:
   - apiGroups:
       - extensions
@@ -97,17 +97,17 @@ rules:
     verbs:
       - use
     resourceNames:
-      - azure-operator-psp
+      - {{ tpl .Values.resource.psp.name . }}
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: azure-operator-psp
+  name: {{ tpl .Values.resource.psp.name . }}
 subjects:
   - kind: ServiceAccount
-    name: azure-operator
-    namespace: {{ .Values.namespace }}
+    name: {{ tpl .Values.resource.default.name  . }}
+    namespace: {{ tpl .Values.resource.default.namespace  . }}
 roleRef:
   kind: ClusterRole
-  name: azure-operator-psp
+  name: {{ tpl .Values.resource.psp.name . }}
   apiGroup: rbac.authorization.k8s.io
