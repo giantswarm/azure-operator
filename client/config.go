@@ -46,5 +46,6 @@ type clientConfig struct {
 	subscriptionID          string
 	partnerIdUserAgent      string
 	resourceManagerEndpoint string
-	servicePrincipalToken   *adal.ServicePrincipalToken
+	serviceManagementToken  *adal.ServicePrincipalToken
+	graphManagementToken    *adal.ServicePrincipalToken
 }
