@@ -403,7 +403,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return false
 		}
 
-		if key.OperatorVersion(cr) == project.BundleVersion() {
+		if key.OperatorVersion(cr) == project.Version() {
 			return true
 		}
 

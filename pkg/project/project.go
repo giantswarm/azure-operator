@@ -1,17 +1,12 @@
 package project
 
 var (
-	bundleVersion        = "3.0.0-dev"
-	description   string = "The azure-operator manages Kubernetes clusters on Azure."
-	gitSHA               = "n/a"
-	name          string = "azure-operator"
-	source        string = "https://github.com/giantswarm/azure-operator"
-	version              = "n/a"
+	description string = "The azure-operator manages Kubernetes clusters on Azure."
+	gitSHA             = "n/a"
+	name        string = "azure-operator"
+	source      string = "https://github.com/giantswarm/azure-operator"
+	version            = "3.0.0-dev"
 )
-
-func BundleVersion() string {
-	return bundleVersion
-}
 
 func Description() string {
 	return description
