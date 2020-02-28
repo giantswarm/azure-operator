@@ -28,9 +28,6 @@ resource:
   default:
     name: '{{ .Release.Name | replace "." "-" | trunc 47 }}'
     namespace: "giantswarm"
-    labels:
-      app: {{ .Values.project.name }}
-      version: {{ .Values.project.version }}
   psp:
     name: '{{ .Release.Name | replace "." "-" | trunc 47 }}-psp'
   pullSecret:

@@ -3,28 +3,34 @@ kind: Deployment
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
   namespace: {{ tpl .Values.resource.default.namespace  . }}
-  labels: {{ tpl .Values.resource.default.labels  . }}
+  labels:
+    app: {{ .Values.project.name }}
+    version: {{ .Values.project.version }}
 spec:
   replicas: 1
   revisionHistoryLimit: 3
   selector:
-    matchLabels: {{ tpl .Values.resource.default.labels  . }}
+    matchLabels:
+      app: {{ .Values.project.name }}
+      version: {{ .Values.project.version }}
   strategy:
     type: RollingUpdate
   template:
     metadata:
       annotations:
         releasetime: {{ $.Release.Time }}
-      labels: {{ tpl .Values.resource.default.labels  . }}
+      labels:
+        app: {{ .Values.project.name }}
+        version: {{ .Values.project.version }}
     spec:
       volumes:
-      - name: {{ .Values.project.name }}-configmap
+      - name: {{ tpl .Values.resource.default.name  . }}-configmap
         configMap:
           name: {{ tpl .Values.resource.default.name  . }}
           items:
           - key: config.yaml
             path: config.yaml
-      - name: {{ .Values.project.name }}-secret
+      - name: {{ tpl .Values.resource.default.name  . }}-secret
         secret:
           secretName: {{ tpl .Values.resource.default.name  . }}
           items:
