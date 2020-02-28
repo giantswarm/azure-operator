@@ -403,6 +403,14 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return false
 		}
 
+		const PausedAnnotation = "cluster.x-k8s.io/paused"
+		annotations := cr.GetAnnotations()
+		if annotations != nil {
+			if _, ok := annotations[PausedAnnotation]; ok {
+				return false
+			}
+		}
+
 		if key.OperatorVersion(cr) == project.BundleVersion() {
 			return true
 		}
