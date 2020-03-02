@@ -2,7 +2,6 @@ package collector
 
 import (
 	"context"
-	"strconv"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -25,7 +24,6 @@ var (
 			labelSubscriptionId,
 			labelApplicationId,
 			labelApplicationName,
-			labelExpirationTS,
 		},
 		nil,
 	)
@@ -83,11 +81,10 @@ func (spt *ServicePrincipalToken) Collect(ch chan<- prometheus.Metric) error {
 					ch <- prometheus.MustNewConstMetric(
 						tokenExpirationDesc,
 						prometheus.GaugeValue,
-						gaugeValue,
+						float64(pc.EndDate.Unix()),
 						clientSet.SubscriptionID,
 						*app.AppID,
 						*app.DisplayName,
-						strconv.FormatInt(pc.EndDate.Unix(), 10),
 					)
 				}
 			}
