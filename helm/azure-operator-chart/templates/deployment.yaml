@@ -24,13 +24,13 @@ spec:
         version: {{ .Values.project.version }}
     spec:
       volumes:
-      - name: {{ .Values.project.name }}-configmap
+      - name: {{ tpl .Values.resource.default.name  . }}-configmap
         configMap:
           name: {{ tpl .Values.resource.default.name  . }}
           items:
           - key: config.yaml
             path: config.yaml
-      - name: {{ .Values.project.name }}-secret
+      - name: {{ tpl .Values.resource.default.name  . }}-secret
         secret:
           secretName: {{ tpl .Values.resource.default.name  . }}
           items:
