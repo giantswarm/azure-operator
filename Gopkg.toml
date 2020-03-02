@@ -30,7 +30,7 @@ required = [
 
 [[constraint]]
   name = "github.com/Azure/azure-sdk-for-go"
-  version = "v38.2.0"
+  version = "v40.0.0"
 
 [[constraint]]
   name = "github.com/Azure/azure-storage-blob-go"
@@ -58,7 +58,7 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/e2eclients"
-  branch = "master"
+  branch = "update_azure_sdk"
 
 [[constraint]]
   name = "github.com/giantswarm/e2etemplates"

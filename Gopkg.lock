@@ -10,20 +10,21 @@
   version = "v0.2.2"
 
 [[projects]]
-  digest = "1:de14e807cf634e74d39c298b466303d96a1c4169f7652bf5e6d7cbeb3a647406"
+  digest = "1:045080d50d475a8e3e615f79bdc953b4d2f498c8da1718f1985f884370c2dc25"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/compute/mgmt/2018-06-01/compute",
+    "services/compute/mgmt/2019-07-01/compute",
     "services/dns/mgmt/2017-10-01/dns",
-    "services/network/mgmt/2018-06-01/network",
+    "services/network/mgmt/2019-11-01/network",
     "services/resources/mgmt/2017-05-10/resources",
     "services/resources/mgmt/2018-05-01/resources",
     "services/storage/mgmt/2018-07-01/storage",
     "version",
   ]
   pruneopts = "UT"
-  revision = "68963eeeb7479a7f78fa571b07d745b49cd8d747"
-  version = "v38.2.0"
+  revision = "090dc0ee4d8d2d60e2a9525774d967a4111a2b0c"
+  version = "v40.0.0"
 
 [[projects]]
   digest = "1:5041865c1d50f6c46e3aa0638741539129d0a48924abdcc850f93c53af5cac36"
@@ -45,7 +46,7 @@
   revision = "d6e3b3328b783f23731bc4d058875b0371ff8109"
 
 [[projects]]
-  digest = "1:5d72be7a7bb557bdd7586edf39984bf990153969d9721e06f8ceafbe4f8312b7"
+  digest = "1:24f3d5aa436b7cf0244efff65e6346602eb0af08e1026bb9d1940b458c5326f9"
   name = "github.com/Azure/go-autorest"
   packages = [
     "autorest",
@@ -58,8 +59,8 @@
     "tracing",
   ]
   pruneopts = "UT"
-  revision = "d3556005bee162041840c107de09f1047b781da4"
-  version = "v13.3.3"
+  revision = "327ff6ce8b902f9afe648d5ea8ff6dc26c26f150"
+  version = "v13.4.0"
 
 [[projects]]
   digest = "1:9f3b30d9f8e0d7040f729b82dcbc8f0dead820a133b3147ce355fc451f32d761"
@@ -326,12 +327,12 @@
   revision = "b2048d8645c15ac583a270c57b95855426e48958"
 
 [[projects]]
-  branch = "master"
-  digest = "1:9f31bb6ea0638ae761de1590856214c3977e39e51654a4362d2715d9ef7dd887"
+  branch = "update_azure_sdk"
+  digest = "1:7f61740f8c5f3408119b470f6f372e2c9f643ad2c71f32c4c1068339540e8168"
   name = "github.com/giantswarm/e2eclients"
   packages = ["azure"]
   pruneopts = "UT"
-  revision = "ea0388753075996907cddfabd8f57f1a66f8fac3"
+  revision = "7d34fa5f11ad280aa8813af4f3c3d95e83060563"
 
 [[projects]]
   branch = "master"
@@ -346,15 +347,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:801444f34dcc6ad0808b61e3ead8b6d0943f58742bcab0aaaefda238aa0d61de"
+  digest = "1:7a75e6dd6c82194b28ced36247cd9df486f05be9370ba1a87c239e0549d0be0a"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
     "clusterstate/provider",
     "scaling",
     "scaling/provider",
-    "update",
-    "update/provider",
   ]
   pruneopts = "UT"
   revision = "208247dafcdeff1443690d271cb9e033c1e134e1"
@@ -2016,8 +2015,9 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute",
+    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute",
     "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
-    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network",
+    "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources",
     "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage",
     "github.com/Azure/azure-storage-blob-go/azblob",
@@ -2040,7 +2040,6 @@
     "github.com/giantswarm/e2etemplates/pkg/chartvalues",
     "github.com/giantswarm/e2etests/clusterstate",
     "github.com/giantswarm/e2etests/scaling",
-    "github.com/giantswarm/e2etests/update",
     "github.com/giantswarm/errors/tenant",
     "github.com/giantswarm/exporterkit/collector",
     "github.com/giantswarm/helmclient",

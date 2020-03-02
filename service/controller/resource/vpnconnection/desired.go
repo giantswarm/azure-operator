@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -48,7 +48,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 				return connections{}, microerror.Mask(err)
 			}
 
-			if provisioningState := *guestVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
+			provisioningState := guestVPNGateway.ProvisioningState
+			if provisioningState != "Succeeded" {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tenant vpn gateway is in state '%s'", provisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -72,7 +73,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 				return connections{}, microerror.Mask(err)
 			}
 
-			if provisioningState := *hostVPNGateway.ProvisioningState; provisioningState != "Succeeded" {
+			if provisioningState := string(hostVPNGateway.ProvisioningState); provisioningState != "Succeeded" {
 				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState))
 				resourcecanceledcontext.SetCanceled(ctx)
 				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
