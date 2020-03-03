@@ -25,7 +25,38 @@ orbs:
 
 version: 2.1
 jobs:
+  build:
+    executor: architect/architect
+    steps:
+      - checkout
 
+      - run: |
+          date +"%Y" > /tmp/year
+          date +"%m" > /tmp/month
+          date +"%d" > /tmp/day
+
+      - restore_cache:
+          keys:
+            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
+            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}
+            - go-cache-v1-{{ checksum "/tmp/year" }}
+
+      - run:
+          name: Build go project
+          command: go build ./...
+
+      - store_test_results:
+          path: /tmp/results
+
+      - save_cache:
+          key: go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
+          paths:
+            - /tmp/go/cache
+
+      - persist_to_workspace:
+          root: .
+          paths:
+            - ./azure-operator
   e2eTestWIPPRClusterState:
     environment:
       IGNITION_DEBUG_ENABLED: "false"
@@ -59,11 +90,7 @@ workflows:
       # build binary
       - architect/go-test-legacy:
           name: test
-      - architect/go-architect-legacy:
-          name: build
-          command: build
-          requires:
-            - test
+      - build
       - architect/go-architect-legacy:
           name: deploy
           command: deploy
