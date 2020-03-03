@@ -58,7 +58,7 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/e2eclients"
-  branch = "update_azure_sdk"
+  branch = "master"
 
 [[constraint]]
   name = "github.com/giantswarm/e2etemplates"

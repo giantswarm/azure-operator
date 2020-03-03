@@ -10,10 +10,9 @@
   version = "v0.2.2"
 
 [[projects]]
-  digest = "1:045080d50d475a8e3e615f79bdc953b4d2f498c8da1718f1985f884370c2dc25"
+  digest = "1:bb6a96253b756b2d71c35a023d61770f9b12b32f3910dd27419948cc5e0b4a7f"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
-    "services/compute/mgmt/2018-06-01/compute",
     "services/compute/mgmt/2019-07-01/compute",
     "services/dns/mgmt/2017-10-01/dns",
     "services/network/mgmt/2019-11-01/network",
@@ -327,12 +326,12 @@
   revision = "b2048d8645c15ac583a270c57b95855426e48958"
 
 [[projects]]
-  branch = "update_azure_sdk"
+  branch = "master"
   digest = "1:7f61740f8c5f3408119b470f6f372e2c9f643ad2c71f32c4c1068339540e8168"
   name = "github.com/giantswarm/e2eclients"
   packages = ["azure"]
   pruneopts = "UT"
-  revision = "7d34fa5f11ad280aa8813af4f3c3d95e83060563"
+  revision = "fd0e933fe47f202feb59af51f1f6148702009b8f"
 
 [[projects]]
   branch = "master"
@@ -2014,7 +2013,6 @@
   analyzer-name = "dep"
   analyzer-version = 1
   input-imports = [
-    "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2018-06-01/compute",
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute",
     "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
     "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network",
