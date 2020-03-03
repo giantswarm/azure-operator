@@ -42,6 +42,9 @@ jobs:
             - go-cache-v1-{{ checksum "/tmp/year" }}
 
       - run:
+          name: Dep ensure
+          command: dep ensure
+      - run:
           name: Build go project
           command: go build
 
