@@ -169,7 +169,7 @@ func (future *CreateOrUpdateFuture) Result(client Client) (gr GenericResource, e
 	return
 }
 
-// DebugSetting ...
+// DebugSetting the debug setting.
 type DebugSetting struct {
 	// DetailLevel - Specifies the type of information to log for debugging. The permitted values are none, requestContent, responseContent, or both requestContent and responseContent separated by a comma. The default is none. When setting this value, carefully consider the type of information you are passing in during deployment. By logging information about the request or response, you could potentially expose sensitive data that is retrieved through the deployment operations.
 	DetailLevel *string `json:"detailLevel,omitempty"`
@@ -430,6 +430,8 @@ type DeploymentOperationProperties struct {
 	ProvisioningState *string `json:"provisioningState,omitempty"`
 	// Timestamp - READ-ONLY; The date and time of the operation.
 	Timestamp *date.Time `json:"timestamp,omitempty"`
+	// Duration - READ-ONLY; The duration of the operation.
+	Duration *string `json:"duration,omitempty"`
 	// ServiceRequestID - READ-ONLY; Deployment operation service request id.
 	ServiceRequestID *string `json:"serviceRequestId,omitempty"`
 	// StatusCode - READ-ONLY; Operation status code.
@@ -617,6 +619,8 @@ type DeploymentPropertiesExtended struct {
 	CorrelationID *string `json:"correlationId,omitempty"`
 	// Timestamp - READ-ONLY; The timestamp of the template deployment.
 	Timestamp *date.Time `json:"timestamp,omitempty"`
+	// Duration - READ-ONLY; The duration of the template deployment.
+	Duration *string `json:"duration,omitempty"`
 	// Outputs - Key/value pairs that represent deployment output.
 	Outputs interface{} `json:"outputs,omitempty"`
 	// Providers - The list of resource providers needed for the deployment.
@@ -637,6 +641,35 @@ type DeploymentPropertiesExtended struct {
 	DebugSetting *DebugSetting `json:"debugSetting,omitempty"`
 	// OnErrorDeployment - The deployment on error behavior.
 	OnErrorDeployment *OnErrorDeploymentExtended `json:"onErrorDeployment,omitempty"`
+}
+
+// DeploymentsCreateOrUpdateAtManagementGroupScopeFuture an abstraction for monitoring and retrieving the
+// results of a long-running operation.
+type DeploymentsCreateOrUpdateAtManagementGroupScopeFuture struct {
+	azure.Future
+}
+
+// Result returns the result of the asynchronous operation.
+// If the operation has not completed it will return an error.
+func (future *DeploymentsCreateOrUpdateAtManagementGroupScopeFuture) Result(client DeploymentsClient) (de DeploymentExtended, err error) {
+	var done bool
+	done, err = future.DoneWithContext(context.Background(), client)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture", "Result", future.Response(), "Polling failure")
+		return
+	}
+	if !done {
+		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture")
+		return
+	}
+	sender := autorest.DecorateSender(client, autorest.DoRetryForStatusCodes(client.RetryAttempts, client.RetryDuration, autorest.StatusCodesForRetry...))
+	if de.Response.Response, err = future.GetResult(sender); err == nil && de.Response.Response.StatusCode != http.StatusNoContent {
+		de, err = client.CreateOrUpdateAtManagementGroupScopeResponder(de.Response.Response)
+		if err != nil {
+			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateAtManagementGroupScopeFuture", "Result", de.Response.Response, "Failure responding to request")
+		}
+	}
+	return
 }
 
 // DeploymentsCreateOrUpdateAtSubscriptionScopeFuture an abstraction for monitoring and retrieving the
@@ -694,6 +727,29 @@ func (future *DeploymentsCreateOrUpdateFuture) Result(client DeploymentsClient) 
 			err = autorest.NewErrorWithError(err, "resources.DeploymentsCreateOrUpdateFuture", "Result", de.Response.Response, "Failure responding to request")
 		}
 	}
+	return
+}
+
+// DeploymentsDeleteAtManagementGroupScopeFuture an abstraction for monitoring and retrieving the results
+// of a long-running operation.
+type DeploymentsDeleteAtManagementGroupScopeFuture struct {
+	azure.Future
+}
+
+// Result returns the result of the asynchronous operation.
+// If the operation has not completed it will return an error.
+func (future *DeploymentsDeleteAtManagementGroupScopeFuture) Result(client DeploymentsClient) (ar autorest.Response, err error) {
+	var done bool
+	done, err = future.DoneWithContext(context.Background(), client)
+	if err != nil {
+		err = autorest.NewErrorWithError(err, "resources.DeploymentsDeleteAtManagementGroupScopeFuture", "Result", future.Response(), "Polling failure")
+		return
+	}
+	if !done {
+		err = azure.NewAsyncOpIncompleteError("resources.DeploymentsDeleteAtManagementGroupScopeFuture")
+		return
+	}
+	ar.Response = future.Response()
 	return
 }
 
@@ -919,7 +975,8 @@ type Group struct {
 	// Name - READ-ONLY; The name of the resource group.
 	Name *string `json:"name,omitempty"`
 	// Type - READ-ONLY; The type of the resource group.
-	Type       *string          `json:"type,omitempty"`
+	Type *string `json:"type,omitempty"`
+	// Properties - The resource group properties.
 	Properties *GroupProperties `json:"properties,omitempty"`
 	// Location - The location of the resource group. It cannot be changed after the resource group has been created. It must be one of the supported Azure locations.
 	Location *string `json:"location,omitempty"`
@@ -1113,7 +1170,8 @@ func NewGroupListResultPage(getNextPage func(context.Context, GroupListResult) (
 // GroupPatchable resource group information.
 type GroupPatchable struct {
 	// Name - The name of the resource group.
-	Name       *string          `json:"name,omitempty"`
+	Name *string `json:"name,omitempty"`
+	// Properties - The resource group properties.
 	Properties *GroupProperties `json:"properties,omitempty"`
 	// ManagedBy - The ID of the resource that manages this resource group.
 	ManagedBy *string `json:"managedBy,omitempty"`
@@ -1608,8 +1666,10 @@ type Provider struct {
 	ID *string `json:"id,omitempty"`
 	// Namespace - The namespace of the resource provider.
 	Namespace *string `json:"namespace,omitempty"`
-	// RegistrationState - READ-ONLY; The registration state of the provider.
+	// RegistrationState - READ-ONLY; The registration state of the resource provider.
 	RegistrationState *string `json:"registrationState,omitempty"`
+	// RegistrationPolicy - READ-ONLY; The registration policy of the resource provider.
+	RegistrationPolicy *string `json:"registrationPolicy,omitempty"`
 	// ResourceTypes - READ-ONLY; The collection of provider resource types.
 	ResourceTypes *[]ProviderResourceType `json:"resourceTypes,omitempty"`
 }
@@ -1784,6 +1844,8 @@ type ProviderResourceType struct {
 	Aliases *[]AliasType `json:"aliases,omitempty"`
 	// APIVersions - The API version.
 	APIVersions *[]string `json:"apiVersions,omitempty"`
+	// Capabilities - The additional capabilities offered by this resource type.
+	Capabilities *string `json:"capabilities,omitempty"`
 	// Properties - The properties.
 	Properties map[string]*string `json:"properties"`
 }
@@ -1802,6 +1864,9 @@ func (prt ProviderResourceType) MarshalJSON() ([]byte, error) {
 	}
 	if prt.APIVersions != nil {
 		objectMap["apiVersions"] = prt.APIVersions
+	}
+	if prt.Capabilities != nil {
+		objectMap["capabilities"] = prt.Capabilities
 	}
 	if prt.Properties != nil {
 		objectMap["properties"] = prt.Properties
