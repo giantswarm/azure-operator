@@ -3,7 +3,7 @@ package containerurl
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2018-07-01/storage"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
@@ -36,7 +36,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName)
+	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName, "")
 	if IsStorageAccountNotProvisioned(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account is not provisioned")
 		resourcecanceledcontext.SetCanceled(ctx)

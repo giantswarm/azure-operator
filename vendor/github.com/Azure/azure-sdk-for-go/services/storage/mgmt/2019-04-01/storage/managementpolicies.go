@@ -43,14 +43,14 @@ func NewManagementPoliciesClientWithBaseURI(baseURI string, subscriptionID strin
 	return ManagementPoliciesClient{NewWithBaseURI(baseURI, subscriptionID)}
 }
 
-// CreateOrUpdate sets the data policy rules associated with the specified storage account.
+// CreateOrUpdate sets the managementpolicy to the specified storage account.
 // Parameters:
 // resourceGroupName - the name of the resource group within the user's subscription. The name is case
 // insensitive.
 // accountName - the name of the storage account within the specified resource group. Storage account names
 // must be between 3 and 24 characters in length and use numbers and lower-case letters only.
-// properties - the data policy rules to set to a storage account.
-func (client ManagementPoliciesClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, accountName string, properties ManagementPoliciesRulesSetParameter) (result AccountManagementPolicies, err error) {
+// properties - the ManagementPolicy set to a storage account.
+func (client ManagementPoliciesClient) CreateOrUpdate(ctx context.Context, resourceGroupName string, accountName string, properties ManagementPolicy) (result ManagementPolicy, err error) {
 	if tracing.IsEnabled() {
 		ctx = tracing.StartSpan(ctx, fqdn+"/ManagementPoliciesClient.CreateOrUpdate")
 		defer func() {
@@ -70,7 +70,12 @@ func (client ManagementPoliciesClient) CreateOrUpdate(ctx context.Context, resou
 			Constraints: []validation.Constraint{{Target: "accountName", Name: validation.MaxLength, Rule: 24, Chain: nil},
 				{Target: "accountName", Name: validation.MinLength, Rule: 3, Chain: nil}}},
 		{TargetValue: client.SubscriptionID,
-			Constraints: []validation.Constraint{{Target: "client.SubscriptionID", Name: validation.MinLength, Rule: 1, Chain: nil}}}}); err != nil {
+			Constraints: []validation.Constraint{{Target: "client.SubscriptionID", Name: validation.MinLength, Rule: 1, Chain: nil}}},
+		{TargetValue: properties,
+			Constraints: []validation.Constraint{{Target: "properties.ManagementPolicyProperties", Name: validation.Null, Rule: false,
+				Chain: []validation.Constraint{{Target: "properties.ManagementPolicyProperties.Policy", Name: validation.Null, Rule: true,
+					Chain: []validation.Constraint{{Target: "properties.ManagementPolicyProperties.Policy.Rules", Name: validation.Null, Rule: true, Chain: nil}}},
+				}}}}}); err != nil {
 		return result, validation.NewError("storage.ManagementPoliciesClient", "CreateOrUpdate", err.Error())
 	}
 
@@ -96,7 +101,7 @@ func (client ManagementPoliciesClient) CreateOrUpdate(ctx context.Context, resou
 }
 
 // CreateOrUpdatePreparer prepares the CreateOrUpdate request.
-func (client ManagementPoliciesClient) CreateOrUpdatePreparer(ctx context.Context, resourceGroupName string, accountName string, properties ManagementPoliciesRulesSetParameter) (*http.Request, error) {
+func (client ManagementPoliciesClient) CreateOrUpdatePreparer(ctx context.Context, resourceGroupName string, accountName string, properties ManagementPolicy) (*http.Request, error) {
 	pathParameters := map[string]interface{}{
 		"accountName":          autorest.Encode("path", accountName),
 		"managementPolicyName": autorest.Encode("path", "default"),
@@ -104,7 +109,7 @@ func (client ManagementPoliciesClient) CreateOrUpdatePreparer(ctx context.Contex
 		"subscriptionId":       autorest.Encode("path", client.SubscriptionID),
 	}
 
-	const APIVersion = "2018-03-01-preview"
+	const APIVersion = "2019-04-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -127,7 +132,7 @@ func (client ManagementPoliciesClient) CreateOrUpdateSender(req *http.Request) (
 
 // CreateOrUpdateResponder handles the response to the CreateOrUpdate request. The method always
 // closes the http.Response Body.
-func (client ManagementPoliciesClient) CreateOrUpdateResponder(resp *http.Response) (result AccountManagementPolicies, err error) {
+func (client ManagementPoliciesClient) CreateOrUpdateResponder(resp *http.Response) (result ManagementPolicy, err error) {
 	err = autorest.Respond(
 		resp,
 		client.ByInspecting(),
@@ -138,7 +143,7 @@ func (client ManagementPoliciesClient) CreateOrUpdateResponder(resp *http.Respon
 	return
 }
 
-// Delete deletes the data policy rules associated with the specified storage account.
+// Delete deletes the managementpolicy associated with the specified storage account.
 // Parameters:
 // resourceGroupName - the name of the resource group within the user's subscription. The name is case
 // insensitive.
@@ -198,7 +203,7 @@ func (client ManagementPoliciesClient) DeletePreparer(ctx context.Context, resou
 		"subscriptionId":       autorest.Encode("path", client.SubscriptionID),
 	}
 
-	const APIVersion = "2018-03-01-preview"
+	const APIVersion = "2019-04-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -229,13 +234,13 @@ func (client ManagementPoliciesClient) DeleteResponder(resp *http.Response) (res
 	return
 }
 
-// Get gets the data policy rules associated with the specified storage account.
+// Get gets the managementpolicy associated with the specified storage account.
 // Parameters:
 // resourceGroupName - the name of the resource group within the user's subscription. The name is case
 // insensitive.
 // accountName - the name of the storage account within the specified resource group. Storage account names
 // must be between 3 and 24 characters in length and use numbers and lower-case letters only.
-func (client ManagementPoliciesClient) Get(ctx context.Context, resourceGroupName string, accountName string) (result AccountManagementPolicies, err error) {
+func (client ManagementPoliciesClient) Get(ctx context.Context, resourceGroupName string, accountName string) (result ManagementPolicy, err error) {
 	if tracing.IsEnabled() {
 		ctx = tracing.StartSpan(ctx, fqdn+"/ManagementPoliciesClient.Get")
 		defer func() {
@@ -289,7 +294,7 @@ func (client ManagementPoliciesClient) GetPreparer(ctx context.Context, resource
 		"subscriptionId":       autorest.Encode("path", client.SubscriptionID),
 	}
 
-	const APIVersion = "2018-03-01-preview"
+	const APIVersion = "2019-04-01"
 	queryParameters := map[string]interface{}{
 		"api-version": APIVersion,
 	}
@@ -310,7 +315,7 @@ func (client ManagementPoliciesClient) GetSender(req *http.Request) (*http.Respo
 
 // GetResponder handles the response to the Get request. The method always
 // closes the http.Response Body.
-func (client ManagementPoliciesClient) GetResponder(resp *http.Response) (result AccountManagementPolicies, err error) {
+func (client ManagementPoliciesClient) GetResponder(resp *http.Response) (result ManagementPolicy, err error) {
 	err = autorest.Respond(
 		resp,
 		client.ByInspecting(),

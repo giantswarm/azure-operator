@@ -68,7 +68,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 
 	groupName := key.ResourceGroupName(obj)
 	storageAccountName := key.StorageAccountName(obj)
-	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName)
+	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName, "")
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
