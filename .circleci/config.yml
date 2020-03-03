@@ -142,7 +142,6 @@ workflows:
           type: approval
           requires:
             - push-azure-operator-to-control-plane-app-catalog
-            - hold
           filters:
             branches:
               ignore: master
