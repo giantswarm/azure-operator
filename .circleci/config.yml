@@ -27,8 +27,12 @@ version: 2.1
 jobs:
   build:
     executor: architect/architect
-    working_directory: /home/circleci/.go_workspace/src/github.com/giantswarm/azure-operator
+    working_directory: /go/src/project
     steps:
+      - run: |
+          mkdir -p /go/src/github.com/${CIRCLE_PROJECT_USERNAME}
+          ln -s /go/src/project /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+
       - checkout
 
       - run: |
