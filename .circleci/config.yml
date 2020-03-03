@@ -25,13 +25,6 @@ orbs:
 
 version: 2.1
 jobs:
-  pr:
-    docker:
-      - image: busybox
-    steps:
-      - run: "true"
-
-
 
   e2eTestWIPPRClusterState:
     environment:
@@ -120,26 +113,25 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval
-      - pr:
           requires:
             - push-azure-operator-to-control-plane-app-catalog
             - hold
-          filters:
-            branches:
-              ignore: master
+            filters:
+              branches:
+                ignore: master
 
       - e2eTestWIPPRClusterState:
           requires:
-          - pr
+          - hold
 
       - e2eTestWIPPRScaling:
           requires:
-          - pr
+          - hold
 
       - e2eTestWIPPRMultiAZ:
           requires:
-          - pr
+          - hold
 
       - e2eTestWIPPRClusterDeletion:
           requires:
-          - pr
+          - hold
