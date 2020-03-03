@@ -10,16 +10,16 @@
   version = "v0.2.2"
 
 [[projects]]
-  digest = "1:9cadf27fa68daa9312d7d043780fdcf8418ba6078db04a1d402cbae1f9c9594d"
+  digest = "1:f930e3a242cab3ff237f1a76e641b400df7a5a1a216b23009f68a6497805de29"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/compute/mgmt/2019-07-01/compute",
     "services/dns/mgmt/2017-10-01/dns",
+    "services/dns/mgmt/2018-05-01/dns",
     "services/network/mgmt/2019-11-01/network",
     "services/resources/mgmt/2017-05-10/resources",
     "services/resources/mgmt/2019-05-01/resources",
     "services/storage/mgmt/2019-04-01/storage",
-    "services/storage/mgmt/2019-06-01/storage",
     "version",
   ]
   pruneopts = "UT"
@@ -2016,9 +2016,9 @@
   input-imports = [
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute",
     "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
+    "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns",
     "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources",
-    "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage",
     "github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage",
     "github.com/Azure/azure-storage-blob-go/azblob",
     "github.com/Azure/go-autorest/autorest",
