@@ -43,7 +43,7 @@ jobs:
 
       - run:
           name: Build go project
-          command: go build ./...
+          command: go build
 
       - store_test_results:
           path: /tmp/results
@@ -143,9 +143,9 @@ workflows:
           requires:
             - push-azure-operator-to-control-plane-app-catalog
             - hold
-            filters:
-              branches:
-                ignore: master
+          filters:
+            branches:
+              ignore: master
 
       - e2eTestWIPPRClusterState:
           requires:
