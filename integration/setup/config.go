@@ -2,7 +2,6 @@ package setup
 
 import (
 	"github.com/giantswarm/apprclient"
-	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/e2e-harness/pkg/harness"
 	"github.com/giantswarm/e2e-harness/pkg/release"
@@ -11,6 +10,8 @@ import (
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+
+	"github.com/giantswarm/azure-operator/integration/env"
 )
 
 const (
