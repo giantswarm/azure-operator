@@ -21,56 +21,10 @@ e2eTest: &e2eTest
       when: always
 
 orbs:
-  architect: giantswarm/architect@0.6.0
+  architect: giantswarm/architect@0.7.0
 
 version: 2.1
 jobs:
-  build:
-    machine: true
-    steps:
-      - checkout
-
-      - run:
-          name: Install architect
-          command: |
-            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-            chmod +x ./architect
-            ./architect version
-            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-            chmod +x ./architect
-            ./architect version
-      - run: |
-          date +"%Y" > /tmp/year
-          date +"%m" > /tmp/month
-          date +"%d" > /tmp/day
-      - restore_cache:
-          keys:
-            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
-            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}
-            - go-cache-v1-{{ checksum "/tmp/year" }}
-
-      - run:
-          name: Build using architect
-          command: ./architect build
-
-      - store_test_results:
-          path: /tmp/results
-
-      - save_cache:
-          key: go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
-          paths:
-            - /tmp/go/cache
-
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./azure-operator
-
-  master:
-    docker:
-      - image: busybox
-    steps:
-      - run: "true"
   pr:
     docker:
       - image: busybox
@@ -105,16 +59,26 @@ jobs:
       TEST_DIR: "integration/test/clusterdeletion"
     <<: *e2eTest
 
-
 workflows:
   version: 2
   build_and_e2eTest:
     jobs:
       # build binary
-      - build:
+      - architect/go-test-legacy:
+          name: test
+      - architect/go-architect-legacy:
+          name: build
+          command: build
+          requires:
+            - test
+      - architect/go-architect-legacy:
+          name: deploy
+          command: deploy
+          requires:
+            - build
           filters:
-            tags:
-              only: /^v.*/
+            branches:
+              only: master
       # build and push docker image to quay
       - architect/push-to-docker:
           name: push-azure-operator-to-quay
@@ -156,12 +120,6 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval
-      - master:
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
       - pr:
           requires:
             - build
