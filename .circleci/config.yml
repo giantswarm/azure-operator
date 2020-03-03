@@ -122,7 +122,7 @@ workflows:
           type: approval
       - pr:
           requires:
-            - build
+            - push-azure-operator-to-control-plane-app-catalog
             - hold
           filters:
             branches:
