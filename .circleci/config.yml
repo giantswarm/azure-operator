@@ -30,7 +30,7 @@ jobs:
     working_directory: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
     steps:
       - checkout:
-          path: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+          path: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}
 
       - run: |
           date +"%Y" > /tmp/year
