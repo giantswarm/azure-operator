@@ -27,10 +27,10 @@ version: 2.1
 jobs:
   build:
     executor: architect/architect
-    working_directory: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
+    working_directory: /go/src/github.com/giantswarm/azure-operator
     steps:
       - checkout:
-          path: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}
+          path: /go/src/github.com/giantswarm
       - run: |
           ls -lah
           pwd
