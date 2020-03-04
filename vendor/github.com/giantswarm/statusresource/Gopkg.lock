@@ -98,16 +98,16 @@
   revision = "e5b9af3cd373291dff7fc430e3f76bfd2b06b98b"
 
 [[projects]]
-  branch = "master"
+  branch = "micrologger-0-1-0"
   digest = "1:5164d17414266145c643e4997dacbc32e6e1ad552c3c70a78837f64d9a0140ea"
   name = "github.com/giantswarm/exporterkit"
   packages = ["collector"]
   pruneopts = "NUT"
-  revision = "9749deade60f7624620aa7158a4f38c87ea23795"
+  revision = "d966b98bc9388ad5efffdcd42aeb6a5c51f7743f"
 
 [[projects]]
   branch = "master"
-  digest = "1:192024336fb15f559cf02be585979b047bc21cbe4adb013bddc1cb4400d05e9b"
+  digest = "1:8aed26bb50764da6e890b206f56b858ad0f820fbbdc2788f3e2879064d0c7b9a"
   name = "github.com/giantswarm/k8sclient"
   packages = [
     ".",
@@ -115,7 +115,7 @@
     "k8srestconfig",
   ]
   pruneopts = "NUT"
-  revision = "6cb127468cd6b30eaf8030b875f796e34b481938"
+  revision = "78de8231ec254eba941e9999c2b13581b2d2103b"
 
 [[projects]]
   branch = "master"
@@ -126,7 +126,6 @@
   revision = "e0ebc4ecf5a515b8f2a33257d08962e387120a77"
 
 [[projects]]
-  branch = "master"
   digest = "1:e3cc69fc27efd2da93ffb4e0493c0f1f398193b1a8e236450d740e9b0f02cae3"
   name = "github.com/giantswarm/micrologger"
   packages = [
@@ -134,7 +133,8 @@
     "loggermeta",
   ]
   pruneopts = "NUT"
-  revision = "d866337f739365a54de5924b8a7b29df17693ef8"
+  revision = "c87486c7d20d7878ad57a09d379d7d59328b472e"
+  version = "v0.1.0"
 
 [[projects]]
   branch = "master"
@@ -153,7 +153,7 @@
   name = "github.com/giantswarm/tenantcluster"
   packages = ["."]
   pruneopts = "NUT"
-  revision = "800974a4d4bffd6f8f521b30f5fd353d1072e518"
+  revision = "3c51c578f6c29d87ba4ce32395b5b092020115e1"
 
 [[projects]]
   digest = "1:cbaf38b2bee7034fdcc5ce2b479d21b6b6a3eac57c9a9aee0d0e5d73b68742b8"

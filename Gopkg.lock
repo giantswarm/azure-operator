@@ -288,11 +288,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:9df3a29f6c60e6a436e53384d94d15fec3187b9bf9463aaa1a7d9d61931e51ba"
+  digest = "1:0b6e8390c8a20214832d477682602576c3d3f9af28651e77694d6156a7a09023"
   name = "github.com/giantswarm/apprclient"
   packages = ["."]
   pruneopts = "UT"
-  revision = "955b7e89e6e212610b2f233082fbe76636c8acf1"
+  revision = "d6357fcac73036aa3d0e6267edffc34bd40c7d51"
 
 [[projects]]
   branch = "master"
@@ -324,7 +324,7 @@
     "pkg/release",
   ]
   pruneopts = "UT"
-  revision = "b2048d8645c15ac583a270c57b95855426e48958"
+  revision = "056fbe4ee7d617af09a5e0faed14af86b32aafea"
 
 [[projects]]
   branch = "master"
@@ -356,7 +356,7 @@
     "scaling/provider",
   ]
   pruneopts = "UT"
-  revision = "208247dafcdeff1443690d271cb9e033c1e134e1"
+  revision = "541d29babeeeb45874ad0429a8994c539debf29f"
 
 [[projects]]
   branch = "master"
@@ -372,15 +372,15 @@
   name = "github.com/giantswarm/exporterkit"
   packages = ["collector"]
   pruneopts = "UT"
-  revision = "9749deade60f7624620aa7158a4f38c87ea23795"
+  revision = "4a78fcf3b86d91e1354f5ebc9f21fe2b4ac3041e"
 
 [[projects]]
   branch = "master"
-  digest = "1:8a480d84a5b98404897c622d3be1eb211f3d890d68e9fd53c154669986c66b33"
+  digest = "1:d3c4629c2a900df5b1d9ca30b4fb509ef35f796be645fa5df929110710c0ee2e"
   name = "github.com/giantswarm/helmclient"
   packages = ["."]
   pruneopts = "UT"
-  revision = "3fa0e80e15d5c6a2e6aea27c769e8b975a579293"
+  revision = "26da7a78a1801bb05f2b47b4b1e833ca22bb423a"
 
 [[projects]]
   branch = "master"
@@ -392,7 +392,7 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:af6e94d6164e1f08498a666f3cfa1ab0934d91d48142b450342c0e240bfa9084"
+  digest = "1:483f1f474e2957d5df32848951c937c44fb4db7807c23ca260e8eb7e7a408ede"
   name = "github.com/giantswarm/k8sclient"
   packages = [
     ".",
@@ -400,7 +400,7 @@
     "k8srestconfig",
   ]
   pruneopts = "UT"
-  revision = "1542917096d6cb2f12745ab24850a930a89dca6c"
+  revision = "78de8231ec254eba941e9999c2b13581b2d2103b"
 
 [[projects]]
   branch = "master"
@@ -422,7 +422,7 @@
   revision = "21368288d82d86aeefb191825df98e7f71e96bb1"
 
 [[projects]]
-  branch = "master"
+  branch = "micrologger-0-1-0"
   digest = "1:568716a2e87ca3f4fb9bce7f65b8491a2ab92c97adee4b2b750b1d76c709b183"
   name = "github.com/giantswarm/microendpoint"
   packages = [
@@ -432,18 +432,18 @@
     "service/version",
   ]
   pruneopts = "UT"
-  revision = "e991deac265373d9347b96ecc56b13f228be144f"
+  revision = "750ffa7cc267d2ad3834cc4f3085ce6c7cf219e8"
 
 [[projects]]
-  branch = "master"
   digest = "1:701a5f5a7297ced0c7b9aeeba6a40ef47663b956d56e7acd09fe0d1c31eb1e4b"
   name = "github.com/giantswarm/microerror"
   packages = ["."]
   pruneopts = "UT"
   revision = "e8fe0fa9c0097ca80d8b773e1d728843447f9233"
+  version = "v0.1.0"
 
 [[projects]]
-  branch = "master"
+  branch = "micrologger-0-1-0"
   digest = "1:aa1c4f2b82faba1e7fb3d532d9c9edc7e4d46ad54a5231c10d0e03461feb624d"
   name = "github.com/giantswarm/microkit"
   packages = [
@@ -463,11 +463,10 @@
     "tls",
   ]
   pruneopts = "UT"
-  revision = "429e22e73d3e1ccfbc9311baa3ea9526423debdf"
+  revision = "7c0ae67f84b119e006019d2d23bc8bb99d6b3454"
 
 [[projects]]
-  branch = "master"
-  digest = "1:c313924ca7110c452a83502384552f4dd2ed25dd0f3ab8aa8a34707315243561"
+  digest = "1:c497795cf3848ef5a655d53f24dfc670c72f9b2fc41eeda495d66542ae6bd017"
   name = "github.com/giantswarm/micrologger"
   packages = [
     ".",
@@ -475,7 +474,8 @@
     "microloggertest",
   ]
   pruneopts = "UT"
-  revision = "d866337f739365a54de5924b8a7b29df17693ef8"
+  revision = "c87486c7d20d7878ad57a09d379d7d59328b472e"
+  version = "v0.1.0"
 
 [[projects]]
   branch = "master"
@@ -506,7 +506,7 @@
     "resource/wrapper/retryresource",
   ]
   pruneopts = "UT"
-  revision = "aa7ed959916171a1bc18c4f5ecf4b680c7e4af9e"
+  revision = "615d47472552790c4bd49898c225a2ecbeb09c7c"
 
 [[projects]]
   branch = "master"
@@ -518,19 +518,19 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:b93f97cc5eae826c035de4cd63249a4f06b51f2e0f25fcdbf79e6cce050f6f2c"
+  digest = "1:42aba37f5b683d7e7fe3777bc510f3a941fc70f7a3a2b1d29002e258922b13f1"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
   pruneopts = "UT"
-  revision = "1c017ce979b34a7f9bd1f46ebaeb2ca95771c758"
+  revision = "8448f69156a9e6b2e289d0cb79907ae789f7a30c"
 
 [[projects]]
   branch = "master"
-  digest = "1:4d08ae70be6ad8d6c88e160ba269f7b16bbdb9d1bbe9f8b997c937c27882db32"
+  digest = "1:bac1b910eab21bd91745a425c69f1cdd4690aa308e7d724cc981a11c1688d6d4"
   name = "github.com/giantswarm/tenantcluster"
   packages = ["."]
   pruneopts = "UT"
-  revision = "800974a4d4bffd6f8f521b30f5fd353d1072e518"
+  revision = "3c51c578f6c29d87ba4ce32395b5b092020115e1"
 
 [[projects]]
   branch = "master"
@@ -542,11 +542,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:73acd15f735e3b1a0230dd9ccb25e95357b8414c22919225e08858e467140824"
+  digest = "1:e6227e79e59fea0321b7206823740cdebfd813ad52b5afec79c836385f91480a"
   name = "github.com/giantswarm/versionbundle"
   packages = ["."]
   pruneopts = "UT"
-  revision = "cd94540b7d5a064d0b106387f85078c0031271d9"
+  revision = "c6a9f18d7762cb6bcc244b6d78adfa1d1eb179f0"
 
 [[projects]]
   digest = "1:83a37f3bd4ccd13469775ef771e943e6c7cfaba6926decff6c83135e56512f08"
