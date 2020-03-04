@@ -32,6 +32,7 @@ jobs:
       - checkout:
           path: /go/src/github.com/giantswarm
       - run: |
+          ls -lah /go/src/github.com/giantswarm
           ls -lah
           pwd
 
