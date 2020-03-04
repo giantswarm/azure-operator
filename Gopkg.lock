@@ -422,7 +422,7 @@
   revision = "21368288d82d86aeefb191825df98e7f71e96bb1"
 
 [[projects]]
-  branch = "micrologger-0-1-0"
+  branch = "master"
   digest = "1:568716a2e87ca3f4fb9bce7f65b8491a2ab92c97adee4b2b750b1d76c709b183"
   name = "github.com/giantswarm/microendpoint"
   packages = [
@@ -432,7 +432,7 @@
     "service/version",
   ]
   pruneopts = "UT"
-  revision = "750ffa7cc267d2ad3834cc4f3085ce6c7cf219e8"
+  revision = "e991deac265373d9347b96ecc56b13f228be144f"
 
 [[projects]]
   digest = "1:701a5f5a7297ced0c7b9aeeba6a40ef47663b956d56e7acd09fe0d1c31eb1e4b"
@@ -443,7 +443,7 @@
   version = "v0.1.0"
 
 [[projects]]
-  branch = "micrologger-0-1-0"
+  branch = "master"
   digest = "1:aa1c4f2b82faba1e7fb3d532d9c9edc7e4d46ad54a5231c10d0e03461feb624d"
   name = "github.com/giantswarm/microkit"
   packages = [
@@ -463,7 +463,7 @@
     "tls",
   ]
   pruneopts = "UT"
-  revision = "7c0ae67f84b119e006019d2d23bc8bb99d6b3454"
+  revision = "400bed3d70f1679e68413eb41e7b45461df9e306"
 
 [[projects]]
   digest = "1:c497795cf3848ef5a655d53f24dfc670c72f9b2fc41eeda495d66542ae6bd017"

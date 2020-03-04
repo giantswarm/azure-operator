@@ -90,7 +90,7 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/microendpoint"
-  branch = "micrologger-0-1-0"
+  branch = "master"
 
 [[override]]
   name = "github.com/giantswarm/microerror"
@@ -98,9 +98,9 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/microkit"
-  branch = "micrologger-0-1-0"
+  branch = "master"
 
-[[constraint]]
+[[override]]
   name = "github.com/giantswarm/micrologger"
   version = "v0.1.0"
 
