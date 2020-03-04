@@ -29,8 +29,7 @@ jobs:
     executor: architect/architect
     working_directory: /go/src/github.com/giantswarm/azure-operator
     steps:
-      - checkout:
-          path: /go/src/github.com/giantswarm/azure-operator
+      - checkout
 
       - run: |
           date +"%Y" > /tmp/year
