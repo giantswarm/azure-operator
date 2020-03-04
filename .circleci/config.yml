@@ -30,11 +30,7 @@ jobs:
     working_directory: /go/src/github.com/giantswarm/azure-operator
     steps:
       - checkout:
-          path: /go/src/github.com/giantswarm
-      - run: |
-          ls -lah /go/src/github.com/giantswarm
-          ls -lah
-          pwd
+          path: /go/src/github.com/giantswarm/azure-operator
 
       - run: |
           date +"%Y" > /tmp/year
