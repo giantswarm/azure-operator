@@ -92,7 +92,9 @@ workflows:
       # build binary
       - architect/go-test-legacy:
           name: test
-      - build
+      - build:
+          requires:
+            - test
       - architect/go-architect-legacy:
           name: deploy
           command: deploy
