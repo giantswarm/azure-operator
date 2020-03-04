@@ -31,6 +31,9 @@ jobs:
     steps:
       - checkout:
           path: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}
+      - run: |
+          ls -lah
+          pwd
 
       - run: |
           date +"%Y" > /tmp/year
