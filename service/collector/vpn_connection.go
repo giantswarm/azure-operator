@@ -3,7 +3,7 @@ package collector
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2018-06-01/network"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -109,7 +109,7 @@ func (v *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 				to.String(connection.Location),
 				string(connection.ConnectionType),
 				string(connection.ConnectionStatus),
-				to.String(connection.ProvisioningState),
+				string(connection.ProvisioningState),
 			)
 
 			return nil

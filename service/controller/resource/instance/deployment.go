@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 
-	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2018-05-01/resources"
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -68,7 +68,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 
 	groupName := key.ResourceGroupName(obj)
 	storageAccountName := key.StorageAccountName(obj)
-	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName)
+	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName, "")
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
