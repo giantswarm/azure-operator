@@ -10,11 +10,10 @@
   version = "v0.2.2"
 
 [[projects]]
-  digest = "1:f930e3a242cab3ff237f1a76e641b400df7a5a1a216b23009f68a6497805de29"
+  digest = "1:7f14ade7654bba8218afdf9e2fff56f8b5909574055250dad8568943ebbfb482"
   name = "github.com/Azure/azure-sdk-for-go"
   packages = [
     "services/compute/mgmt/2019-07-01/compute",
-    "services/dns/mgmt/2017-10-01/dns",
     "services/dns/mgmt/2018-05-01/dns",
     "services/network/mgmt/2019-11-01/network",
     "services/resources/mgmt/2017-05-10/resources",
@@ -2015,7 +2014,6 @@
   analyzer-version = 1
   input-imports = [
     "github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute",
-    "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2017-10-01/dns",
     "github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns",
     "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network",
     "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources",
