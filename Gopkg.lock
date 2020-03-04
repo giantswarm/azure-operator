@@ -346,15 +346,13 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:801444f34dcc6ad0808b61e3ead8b6d0943f58742bcab0aaaefda238aa0d61de"
+  digest = "1:7a75e6dd6c82194b28ced36247cd9df486f05be9370ba1a87c239e0549d0be0a"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
     "clusterstate/provider",
     "scaling",
     "scaling/provider",
-    "update",
-    "update/provider",
   ]
   pruneopts = "UT"
   revision = "208247dafcdeff1443690d271cb9e033c1e134e1"
@@ -405,14 +403,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:398505f1909462f16de55085a7a94d6b51cf8872eac7983fc6acdb38a580dd86"
+  digest = "1:a58323c1c8ce7592890bf7b6b5b4fde2f45aa0e2a1c01e59e993728b71fc22b6"
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "ignition/v_2_2_0",
     "v_5_1_0",
+    "v_5_1_1",
   ]
   pruneopts = "T"
-  revision = "7f6bd4d3da873c836a32fd0b840ea2c796bb0941"
+  revision = "930938411c3c1d8070fb60f11a0abbf9de634850"
 
 [[projects]]
   branch = "master"
@@ -2040,7 +2039,6 @@
     "github.com/giantswarm/e2etemplates/pkg/chartvalues",
     "github.com/giantswarm/e2etests/clusterstate",
     "github.com/giantswarm/e2etests/scaling",
-    "github.com/giantswarm/e2etests/update",
     "github.com/giantswarm/errors/tenant",
     "github.com/giantswarm/exporterkit/collector",
     "github.com/giantswarm/helmclient",
@@ -2048,6 +2046,7 @@
     "github.com/giantswarm/k8sclient",
     "github.com/giantswarm/k8sclient/k8srestconfig",
     "github.com/giantswarm/k8scloudconfig/v_5_1_0",
+    "github.com/giantswarm/k8scloudconfig/v_5_1_1",
     "github.com/giantswarm/microendpoint/endpoint/healthz",
     "github.com/giantswarm/microendpoint/endpoint/version",
     "github.com/giantswarm/microendpoint/service/version",
