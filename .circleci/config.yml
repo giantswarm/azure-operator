@@ -94,14 +94,6 @@ workflows:
       - build:
           requires:
             - test
-      - architect/go-architect-legacy:
-          name: deploy
-          command: deploy
-          requires:
-            - build
-          filters:
-            branches:
-              only: master
       # build and push docker image to quay
       - architect/push-to-docker:
           name: push-azure-operator-to-quay
