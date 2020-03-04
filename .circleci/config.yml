@@ -27,13 +27,10 @@ version: 2.1
 jobs:
   build:
     executor: architect/architect
-    working_directory: /go/src/project
+    working_directory: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
     steps:
-      - run: |
-          mkdir -p /go/src/github.com/${CIRCLE_PROJECT_USERNAME}
-          ln -s /go/src/project /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
-
-      - checkout
+      - checkout:
+          path: /go/src/github.com/${CIRCLE_PROJECT_USERNAME}/${CIRCLE_PROJECT_REPONAME}
 
       - run: |
           date +"%Y" > /tmp/year
