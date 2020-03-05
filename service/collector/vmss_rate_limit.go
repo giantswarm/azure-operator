@@ -145,7 +145,7 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 			// VMSS List VMs specific limits.
 			{
-				// We need to find a resource group for an existing tenant cluster in this subscription.
+				// Calling the VMSS list machines API to get the metrics.
 				result, err := azureClients.VirtualMachineScaleSetVMsClient.ListComplete(ctx, cr.Name, fmt.Sprintf("%s-worker", cr.Name), "", "", "")
 				if err != nil {
 					u.logger.LogCtx(ctx, fmt.Sprintf("Error listing VM instances on %s: %s", cr.Name, err.Error()))
