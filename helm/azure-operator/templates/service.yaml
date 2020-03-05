@@ -4,8 +4,7 @@ metadata:
   name: {{ tpl .Values.resource.default.name  . }}
   namespace: {{ tpl .Values.resource.default.namespace  . }}
   labels:
-    app: {{ .Values.project.name }}
-    version: {{ .Values.project.version }}
+    {{- include "azure-operator.labels" . | nindent 4 }}
   annotations:
     prometheus.io/scrape: "true"
 spec:
@@ -13,5 +12,4 @@ spec:
   ports:
   - port: 8000
   selector:
-    app: {{ .Values.project.name }}
-    version: {{ .Values.project.version }}
+    {{- include "azure-operator.selectorLabels" . | nindent 4 }}
