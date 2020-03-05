@@ -21,11 +21,13 @@ import (
 
 const (
 	vmssVMListHeaderName = "X-Ms-Ratelimit-Remaining-Resource"
+	vmssMetricsNamespace = "azure_operator"
+	vmssMetricsSubsystem = "rate_limit"
 )
 
 var (
 	vmssVMListDesc *prometheus.Desc = prometheus.NewDesc(
-		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "vmss_instance_list"),
+		prometheus.BuildFQName(vmssMetricsNamespace, vmssMetricsSubsystem, "vmss_instance_list"),
 		"Remaining number of VMSS VM list operations.",
 		[]string{
 			"subscription",
@@ -35,8 +37,8 @@ var (
 		nil,
 	)
 	vmssVMListErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace: metricsNamespace,
-		Subsystem: metricsSubsystem,
+		Namespace: vmssMetricsNamespace,
+		Subsystem: vmssMetricsSubsystem,
 		Name:      "vmss_instance_list_parsing_errors",
 		Help:      "Errors trying to parse the remaining requests from the response header",
 	})
