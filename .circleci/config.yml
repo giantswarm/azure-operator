@@ -21,7 +21,7 @@ e2eTest: &e2eTest
       when: always
 
 orbs:
-  architect: giantswarm/architect@0.7.0
+  architect: giantswarm/architect@0.8.0
 
 version: 2.1
 jobs:
@@ -88,10 +88,12 @@ workflows:
   version: 2
   build_and_e2eTest:
     jobs:
-      # build binary
       - architect/go-test-legacy:
           name: test
-      - build:
+      # build binary
+      - architect/go-architect-legacy:
+          name: build
+          command: build
           requires:
             - test
       # build and push docker image to quay
