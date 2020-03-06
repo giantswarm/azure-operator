@@ -35,7 +35,7 @@ func NewVersionBundle() versionbundle.Bundle {
 			},
 			{
 				Name:    "kubernetes",
-				Version: "1.16.3",
+				Version: "1.16.7",
 			},
 		},
 		Name:    Name(),
