@@ -44,20 +44,20 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
-	var resourceGroupCollector *ResourceGroup
-	{
-		c := ResourceGroupConfig{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			EnvironmentName: config.AzureSetting.EnvironmentName,
-		}
-
-		resourceGroupCollector, err = NewResourceGroup(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	//var resourceGroupCollector *ResourceGroup
+	//{
+	//	c := ResourceGroupConfig{
+	//		K8sClient: config.K8sClient.K8sClient(),
+	//		Logger:    config.Logger,
+	//
+	//		EnvironmentName: config.AzureSetting.EnvironmentName,
+	//	}
+	//
+	//	resourceGroupCollector, err = NewResourceGroup(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var usageCollector *Usage
 	{
@@ -133,7 +133,7 @@ func NewSet(config SetConfig) (*Set, error) {
 		c := collector.SetConfig{
 			Collectors: []collector.Interface{
 				deploymentCollector,
-				resourceGroupCollector,
+				//resourceGroupCollector,
 				usageCollector,
 				rateLimitCollector,
 				vmssRateLimitCollector,
