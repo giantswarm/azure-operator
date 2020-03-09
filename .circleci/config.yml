@@ -21,7 +21,7 @@ e2eTest: &e2eTest
       when: always
 
 orbs:
-  architect: giantswarm/architect@0.6.0
+  architect: giantswarm/architect@0.7.0
 
 version: 2.1
 jobs:
@@ -36,13 +36,12 @@ jobs:
             wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
             chmod +x ./architect
             ./architect version
-            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-            chmod +x ./architect
-            ./architect version
+
       - run: |
           date +"%Y" > /tmp/year
           date +"%m" > /tmp/month
           date +"%d" > /tmp/day
+
       - restore_cache:
           keys:
             - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
@@ -65,20 +64,6 @@ jobs:
           root: .
           paths:
             - ./azure-operator
-
-  master:
-    docker:
-      - image: busybox
-    steps:
-      - run: "true"
-  pr:
-    docker:
-      - image: busybox
-    steps:
-      - run: "true"
-
-
-
   e2eTestWIPPRClusterState:
     environment:
       IGNITION_DEBUG_ENABLED: "false"
@@ -105,13 +90,16 @@ jobs:
       TEST_DIR: "integration/test/clusterdeletion"
     <<: *e2eTest
 
-
 workflows:
   version: 2
   build_and_e2eTest:
     jobs:
+      - architect/go-test-legacy:
+          name: test
       # build binary
       - build:
+          requires:
+            - test
           filters:
             tags:
               only: /^v.*/
@@ -156,32 +144,24 @@ workflows:
               only: /^v.*/
       - hold:
           type: approval
-      - master:
           requires:
-            - build
-          filters:
-            branches:
-              only: master
-      - pr:
-          requires:
-            - build
-            - hold
+            - push-azure-operator-to-control-plane-app-catalog
           filters:
             branches:
               ignore: master
 
       - e2eTestWIPPRClusterState:
           requires:
-          - pr
+          - hold
 
       - e2eTestWIPPRScaling:
           requires:
-          - pr
+          - hold
 
       - e2eTestWIPPRMultiAZ:
           requires:
-          - pr
+          - hold
 
       - e2eTestWIPPRClusterDeletion:
           requires:
-          - pr
+          - hold
