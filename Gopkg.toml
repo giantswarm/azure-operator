@@ -92,7 +92,7 @@ required = [
   name = "github.com/giantswarm/microendpoint"
   branch = "master"
 
-[[constraint]]
+[[override]]
   name = "github.com/giantswarm/microerror"
   version = "~0.1.0"
 
@@ -100,7 +100,7 @@ required = [
   name = "github.com/giantswarm/microkit"
   branch = "master"
 
-[[constraint]]
+[[override]]
   name = "github.com/giantswarm/micrologger"
   version = "~0.1.0"
 
