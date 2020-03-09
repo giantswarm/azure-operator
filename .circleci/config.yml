@@ -31,6 +31,13 @@ jobs:
     steps:
       - checkout
 
+      - run:
+          name: Install architect
+          command: |
+            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
+            chmod +x ./architect
+            ./architect version
+
       - run: |
           date +"%Y" > /tmp/year
           date +"%m" > /tmp/month
@@ -43,8 +50,8 @@ jobs:
             - go-cache-v1-{{ checksum "/tmp/year" }}
 
       - run:
-          name: Build go project
-          command: GOCACHE=/go/cache GOPATH=/go CGO_ENABLED=0 go build -a -v -ldflags "-w -linkmode 'auto' -extldflags '-static' -X 'main.gitCommit=${CIRCLE_SHA1}' -X 'github.com/giantswarm/azure-operator/pkg/project.buildTimestamp=`date -I'seconds'`' -X 'github.com/giantswarm/azure-operator/pkg/project.gitSHA=${CIRCLE_SHA1}'"
+          name: Build using architect
+          command: ./architect build
 
       - store_test_results:
           path: /tmp/results
@@ -91,11 +98,10 @@ workflows:
       - architect/go-test-legacy:
           name: test
       # build binary
-      - architect/go-architect-legacy:
-          name: build
-          command: build
-          requires:
-            - test
+      - build:
+          filters:
+            tags:
+              only: /^v.*/
       # build and push docker image to quay
       - architect/push-to-docker:
           name: push-azure-operator-to-quay
