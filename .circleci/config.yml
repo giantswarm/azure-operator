@@ -98,6 +98,8 @@ workflows:
           name: test
       # build binary
       - build:
+          requires:
+            - test
           filters:
             tags:
               only: /^v.*/
