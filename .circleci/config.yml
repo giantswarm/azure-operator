@@ -27,7 +27,6 @@ version: 2.1
 jobs:
   build:
     machine: true
-    working_directory: /go/src/github.com/giantswarm/azure-operator
     steps:
       - checkout
 
