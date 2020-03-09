@@ -26,7 +26,7 @@ orbs:
 version: 2.1
 jobs:
   build:
-    executor: architect/architect
+    machine: true
     working_directory: /go/src/github.com/giantswarm/azure-operator
     steps:
       - checkout
