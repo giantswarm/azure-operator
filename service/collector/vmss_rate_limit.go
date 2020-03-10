@@ -139,6 +139,8 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 			if inArray(doneSubscriptions, config.SubscriptionID) {
 				continue
 			}
+			doneSubscriptions = append(doneSubscriptions, config.SubscriptionID)
+
 			azureClients, err := client.NewAzureClientSet(*config)
 			if err != nil {
 				return microerror.Mask(err)
