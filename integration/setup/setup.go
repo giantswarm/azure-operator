@@ -11,10 +11,6 @@ import (
 	"github.com/giantswarm/azure-operator/integration/env"
 )
 
-const (
-	azureResourceValuesFile = "/tmp/azure-operator-values.yaml"
-)
-
 // WrapTestMain setup and teardown e2e testing environment.
 func WrapTestMain(m *testing.M, c Config) {
 	var r int

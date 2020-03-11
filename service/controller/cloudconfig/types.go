@@ -24,8 +24,6 @@ type calicoAzureFileParams struct {
 	CalicoCIDR string
 }
 
-type cloudProviderConfFileVMType string
-
 type cloudProviderConfFileParams struct {
 	AADClientID                 string
 	AADClientSecret             string

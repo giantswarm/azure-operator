@@ -30,12 +30,12 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 }
 
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	create, err := r.newCreateChange(ctx, obj, currentState, desiredState)
+	create, err := r.newCreateChange(currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	update, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
+	update, err := r.newUpdateChange(ctx, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -48,7 +48,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 }
 
 // Service resources are updated.
-func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredState interface{}) (interface{}, error) {
 	currentService, err := toService(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)

@@ -1,7 +1,6 @@
 package service
 
 import (
-	"context"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -97,7 +96,7 @@ func Test_Resource_Service_newCreateChange(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			result, err := newResource.newCreateChange(context.TODO(), tc.obj, tc.cur, tc.des)
+			result, err := newResource.newCreateChange(tc.cur, tc.des)
 			if err != nil {
 				t.Errorf("expected '%v' got '%#v'", nil, err)
 			}

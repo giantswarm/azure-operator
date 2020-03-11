@@ -227,21 +227,6 @@ func (u *VMSSRateLimit) Describe(ch chan<- *prometheus.Desc) error {
 	return nil
 }
 
-func (u *VMSSRateLimit) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.AzureClientSetConfig, *client.AzureClientSet, error) {
-	config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
-	if err != nil {
-		return nil, nil, microerror.Mask(err)
-	}
-	config.EnvironmentName = u.environmentName
-
-	azureClients, err := client.NewAzureClientSet(*config)
-	if err != nil {
-		return nil, nil, microerror.Mask(err)
-	}
-
-	return config, azureClients, nil
-}
-
 func inArray(a []string, s string) bool {
 	for _, x := range a {
 		if x == s {

@@ -12,11 +12,6 @@ import (
 )
 
 const (
-	component = "azure-operator"
-	provider  = "azure"
-)
-
-const (
 	EnvVarCircleCI             = "CIRCLECI"
 	EnvVarCircleSHA            = "CIRCLE_SHA1"
 	EnvVarGithubBotToken       = "GITHUB_BOT_TOKEN"

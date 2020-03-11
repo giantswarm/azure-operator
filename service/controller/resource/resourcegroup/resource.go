@@ -146,16 +146,3 @@ func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsCl
 
 	return cc.AzureClientSet.GroupsClient, nil
 }
-
-func toGroup(v interface{}) (Group, error) {
-	if v == nil {
-		return Group{}, nil
-	}
-
-	resourceGroup, ok := v.(Group)
-	if !ok {
-		return Group{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", Group{}, v)
-	}
-
-	return resourceGroup, nil
-}

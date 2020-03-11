@@ -167,38 +167,6 @@ func computeForDeleteResourceStatus(customObject providerv1alpha1.AzureConfig, n
 	return customObject
 }
 
-func hasResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) bool {
-	for _, r := range customObject.Status.Cluster.Resources {
-		if r.Name != Name {
-			continue
-		}
-
-		for _, c := range r.Conditions {
-			if c.Type == t && c.Status == s {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func resourceStatusExists(customObject providerv1alpha1.AzureConfig, t string) bool {
-	for _, r := range customObject.Status.Cluster.Resources {
-		if r.Name != Name {
-			continue
-		}
-
-		for _, c := range r.Conditions {
-			if c.Type == t {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
 // unversionedName provides a comparable name without the exact version number
 // suffix. When the resource name should ever change, the mechanism of managing
 // the resource status has to be adapted accordingly. Otherwise unversionedName

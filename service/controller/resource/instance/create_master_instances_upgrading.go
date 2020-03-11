@@ -351,8 +351,7 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 		return ws.WithInstanceAlreadyBeingUpdated(instanceInProgress), nil
 	}
 
-	var instanceToUpdate *compute.VirtualMachineScaleSetVM
-	instanceToUpdate = firstInstanceToUpdate(customObject, instances)
+	instanceToUpdate := firstInstanceToUpdate(instances)
 	if instanceToUpdate != nil {
 		return ws.WithInstanceToUpdate(instanceToUpdate), nil
 	}
@@ -419,7 +418,7 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 // firstInstanceToUpdate return the first instance to be updated. The decision
 // of updating an instance is done by checking if the latest scale set model is
 // applied. In case all instances are updated firstInstanceToUpdate return nil.
-func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
+func firstInstanceToUpdate(list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
 		if *v.LatestModelApplied {
 			continue
