@@ -14,11 +14,6 @@ import (
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{}) error {
-	cr, err := key.ToCustomResource(obj)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	c, err := toDNSRecords(change)
 	if err != nil {
 		return microerror.Mask(err)

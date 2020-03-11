@@ -5,20 +5,10 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
-
-	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 // NewDeletePatch provide a crud.Patch holding connections to be deleted.
 func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, desired interface{}) (*crud.Patch, error) {
-	cr, err := key.ToCustomResource(azureConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	c, err := toVPNGatewayConnections(current)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 	d, err := toVPNGatewayConnections(desired)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -43,10 +33,6 @@ func (r *Resource) newDeletePatch(desired connections) (*crud.Patch, error) {
 
 // ApplyDeleteChange perform deletion of vpn gateway connection against azure.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change interface{}) error {
-	cr, err := key.ToCustomResource(azureConfig)
-	if err != nil {
-		return microerror.Mask(err)
-	}
 	c, err := toVPNGatewayConnections(change)
 	if err != nil {
 		return microerror.Mask(err)

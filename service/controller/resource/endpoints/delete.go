@@ -53,7 +53,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, obj, currentState, desire
 	return patch, nil
 }
 
-func (r *Resource) newDeleteChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newDeleteChange(ctx context.Context, currentState, desiredState interface{}) (interface{}, error) {
 	currentEndpoints, err := toEndpoints(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
