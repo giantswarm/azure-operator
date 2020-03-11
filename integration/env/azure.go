@@ -14,7 +14,7 @@ const (
 	EnvVarAzureCIDR = "AZURE_CIDR"
 
 	EnvVarAzureClientID       = "AZURE_CLIENTID"
-	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
+	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET" // #nosec
 	EnvVarAzureLocation       = "AZURE_LOCATION"
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"

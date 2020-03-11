@@ -14,21 +14,18 @@ func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, des
 		return nil, microerror.Mask(err)
 	}
 
-	patch, err := r.newDeletePatch(d)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	patch := r.newDeletePatch(d)
 
 	return patch, nil
 }
 
 // newDeletePatch use desired as delete patch since it is mostly static and more likely to be present than current.
-func (r *Resource) newDeletePatch(desired connections) (*crud.Patch, error) {
+func (r *Resource) newDeletePatch(desired connections) *crud.Patch {
 	patch := crud.NewPatch()
 
 	patch.SetDeleteChange(desired)
 
-	return patch, nil
+	return patch
 }
 
 // ApplyDeleteChange perform deletion of vpn gateway connection against azure.

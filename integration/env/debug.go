@@ -9,7 +9,7 @@ import (
 const (
 	EnvVarIgnitionDebugEnabled    = "IGNITION_DEBUG_ENABLED"
 	EnvVarIgnitionDebugLogsPrefix = "IGNITION_DEBUG_LOGS_PREFIX"
-	EnvVarIgnitionDebugLogsToken  = "IGNITION_DEBUG_LOGS_TOKEN"
+	EnvVarIgnitionDebugLogsToken  = "IGNITION_DEBUG_LOGS_TOKEN" // #nosec
 )
 
 var (

@@ -13,11 +13,6 @@ import (
 
 // NewUpdatePatch provide a crud.Patch holding the needed connections update.
 func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, desired interface{}) (*crud.Patch, error) {
-	cr, err := key.ToCustomResource(azureConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	c, err := toVPNGatewayConnections(current)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -28,25 +23,18 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, azureConfig, current, des
 		return nil, microerror.Mask(err)
 	}
 
-	patch, err := r.newUpdatePatch(ctx, cr, c, d)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return patch, nil
+	return r.newUpdatePatch(c, d), nil
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
+func (r *Resource) newUpdatePatch(current, desired connections) *crud.Patch {
 	patch := crud.NewPatch()
-
-	change := r.newUpdateChange(ctx, azureConfig, current, desired)
-
+	change := r.newUpdateChange(current, desired)
 	patch.SetUpdateChange(change)
 
-	return patch, nil
+	return patch
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) connections {
+func (r *Resource) newUpdateChange(current, desired connections) connections {
 	var change connections
 
 	if needsUpdate(current.Host, desired.Host) {

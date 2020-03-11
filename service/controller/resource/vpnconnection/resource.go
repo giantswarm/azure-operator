@@ -109,7 +109,7 @@ func (r *Resource) getGuestVirtualNetworkGatewayConnectionsClient(ctx context.Co
 }
 
 func (r *Resource) getHostVirtualNetworkGateway(ctx context.Context, resourceGroup, vpnGatewayName string) (*network.VirtualNetworkGateway, error) {
-	gatewayClient, err := r.getHostVirtualNetworkGatewaysClient(ctx)
+	gatewayClient, err := r.getHostVirtualNetworkGatewaysClient()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -124,7 +124,7 @@ func (r *Resource) getHostVirtualNetworkGateway(ctx context.Context, resourceGro
 
 // getHostVirtualNetworkGatewaysClient return a client to interact with
 // VirtualNetworkGateways on host cluster.
-func (r *Resource) getHostVirtualNetworkGatewaysClient(ctx context.Context) (*network.VirtualNetworkGatewaysClient, error) {
+func (r *Resource) getHostVirtualNetworkGatewaysClient() (*network.VirtualNetworkGatewaysClient, error) {
 	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)

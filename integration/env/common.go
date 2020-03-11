@@ -1,7 +1,7 @@
 package env
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"strings"
@@ -12,11 +12,11 @@ import (
 )
 
 const (
-	EnvVarCircleCI             = "CIRCLECI"
-	EnvVarCircleSHA            = "CIRCLE_SHA1"
-	EnvVarGithubBotToken       = "GITHUB_BOT_TOKEN"
+	EnvVarCircleCI             = "CIRCLECI"         // #nosec
+	EnvVarCircleSHA            = "CIRCLE_SHA1"      // #nosec
+	EnvVarGithubBotToken       = "GITHUB_BOT_TOKEN" // #nosec
 	EnvVarKeepResources        = "KEEP_RESOURCES"
-	EnvVarRegistryPullSecret   = "REGISTRY_PULL_SECRET"
+	EnvVarRegistryPullSecret   = "REGISTRY_PULL_SECRET" // #nosec
 	EnvVarTestedVersion        = "TESTED_VERSION"
 	EnvVarTestDir              = "TEST_DIR"
 	EnvVarVersionBundleVersion = "VERSION_BUNDLE_VERSION"
@@ -133,7 +133,7 @@ func TestHash() string {
 		return ""
 	}
 
-	h := sha1.New()
+	h := sha256.New()
 	h.Write([]byte(TestDir()))
 	s := fmt.Sprintf("%x", h.Sum(nil))[0:5]
 

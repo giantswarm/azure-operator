@@ -6,11 +6,8 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/go-autorest/autorest/to"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
-
-	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{}) error {
@@ -65,10 +62,6 @@ func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) err
 // NewUpdatePatch returns the patch creating resource group for this cluster if
 // it is needed.
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	cr, err := key.ToCustomResource(obj)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 	c, err := toDNSRecords(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -78,22 +71,19 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Mask(err)
 	}
 
-	return r.newUpdatePatch(ctx, cr, c, d)
+	return r.newUpdatePatch(c, d)
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {
+func (r *Resource) newUpdatePatch(currentState, desiredState dnsRecords) (*crud.Patch, error) {
 	patch := crud.NewPatch()
 
-	updateChange, err := r.newUpdateChange(currentState, desiredState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	updateChange := r.newUpdateChange(currentState, desiredState)
 
 	patch.SetUpdateChange(updateChange)
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(currentState, desiredState dnsRecords) (dnsRecords, error) {
+func (r *Resource) newUpdateChange(currentState, desiredState dnsRecords) dnsRecords {
 	var change dnsRecords
 	for _, d := range desiredState {
 		if !currentState.Contains(d) {
@@ -101,5 +91,5 @@ func (r *Resource) newUpdateChange(currentState, desiredState dnsRecords) (dnsRe
 		}
 	}
 
-	return change, nil
+	return change
 }
