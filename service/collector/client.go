@@ -17,8 +17,9 @@ const (
 	credentialLabelSelector = "app=credentiald"
 )
 
-// getClientSets fetches all unique Azure clients.
-func getClientSets(k8sClient kubernetes.Interface, environmentName string) ([]*client.AzureClientSet, error) {
+// getClientSets fetches all Azure clients, grouped by subscription id.
+// If two secrets use the same subscription but different client id, only one is returned
+func getClientSets(k8sClient kubernetes.Interface, environmentName string) (map[string]*client.AzureClientSet, error) {
 	credentialList, err := k8sClient.CoreV1().Secrets(credentialNamespace).List(metav1.ListOptions{
 		LabelSelector: credentialLabelSelector,
 	})
@@ -26,7 +27,7 @@ func getClientSets(k8sClient kubernetes.Interface, environmentName string) ([]*c
 		return nil, microerror.Mask(err)
 	}
 
-	clientSets := []*client.AzureClientSet{}
+	clientSets := map[string]*client.AzureClientSet{}
 
 	for _, secret := range credentialList.Items {
 		config, err := credential.GetAzureConfig(k8sClient, secret.Name, secret.Namespace)
@@ -41,7 +42,7 @@ func getClientSets(k8sClient kubernetes.Interface, environmentName string) ([]*c
 			return nil, microerror.Mask(err)
 		}
 
-		clientSets = append(clientSets, clientSet)
+		clientSets[config.SubscriptionID] = clientSet
 	}
 
 	return clientSets, nil
