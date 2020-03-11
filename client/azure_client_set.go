@@ -47,16 +47,7 @@ type AzureClientSet struct {
 
 func init() {
 	// ONE DOES NOT SIMPLY RETRY ON HTTP 429.
-	for i, sc := range autorest.StatusCodesForRetry {
-		if sc == http.StatusTooManyRequests {
-			// Shift end of slice to the left by one.
-			copy(autorest.StatusCodesForRetry[i:], autorest.StatusCodesForRetry[i+1:])
-			// Truncate the last element.
-			autorest.StatusCodesForRetry = autorest.StatusCodesForRetry[:len(autorest.StatusCodesForRetry)-1]
-			// Call it a day.
-			break
-		}
-	}
+	autorest.StatusCodesForRetry = removeElementFromSlice(autorest.StatusCodesForRetry, http.StatusTooManyRequests)
 }
 
 // NewAzureClientSet returns the Azure API clients.
@@ -339,4 +330,19 @@ func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
 	}
 
 	return env, nil
+}
+
+func removeElementFromSlice(xs []int, x int) []int {
+	for i, v := range xs {
+		if v == x {
+			// Shift end of slice to the left by one.
+			copy(xs[i:], xs[i+1:])
+			// Truncate the last element.
+			xs = xs[:len(xs)-1]
+			// Call it a day.
+			break
+		}
+	}
+
+	return xs
 }
