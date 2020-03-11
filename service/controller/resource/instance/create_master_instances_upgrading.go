@@ -346,7 +346,7 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 
 	var ws *workingSet
 
-	instanceInProgress := firstInstanceInProgress(customObject, instances)
+	instanceInProgress := firstInstanceInProgress(instances)
 	if instanceInProgress != nil {
 		return ws.WithInstanceAlreadyBeingUpdated(instanceInProgress), nil
 	}
@@ -376,7 +376,7 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 // firstInstanceInProgress returns the first instance in the list not having a
 // final state. In case all instances are in a final state
 // firstInstanceInProgress returns nil.
-func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
+func firstInstanceInProgress(list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
 		if v.ProvisioningState == nil || key.IsFinalProvisioningState(*v.ProvisioningState) {
 			continue

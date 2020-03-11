@@ -24,10 +24,10 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 		return microerror.Mask(err)
 	}
 
-	return r.applyUpdateChange(ctx, cr, c)
+	return r.applyUpdateChange(ctx, c)
 }
 
-func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
+func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records")
 
 	recordSetsClient, err := r.getDNSRecordSetsHostClient()
@@ -89,7 +89,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {
 	patch := crud.NewPatch()
 
-	updateChange, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
+	updateChange, err := r.newUpdateChange(currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -98,7 +98,7 @@ func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.Azur
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (dnsRecords, error) {
+func (r *Resource) newUpdateChange(currentState, desiredState dnsRecords) (dnsRecords, error) {
 	var change dnsRecords
 	for _, d := range desiredState {
 		if !currentState.Contains(d) {

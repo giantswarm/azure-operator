@@ -25,7 +25,6 @@ const (
 var (
 	circleCI             string
 	circleSHA            string
-	clusterID            string
 	registryPullSecret   string
 	githubToken          string
 	testDir              string

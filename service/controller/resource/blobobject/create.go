@@ -35,7 +35,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 	return nil
 }
 
-func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newCreateChange(ctx context.Context, currentState, desiredState interface{}) (interface{}, error) {
 	currentContainerObjects, err := toContainerObjectState(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)

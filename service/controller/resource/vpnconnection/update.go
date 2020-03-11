@@ -142,7 +142,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 	}
 
 	{
-		hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient(ctx)
+		hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient()
 		if err != nil {
 			return microerror.Mask(err)
 		}

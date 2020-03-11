@@ -9,11 +9,6 @@ var incorrectNumberNetworkInterfacesError = &microerror.Error{
 	Kind: "incorrectNumberNetworkInterfacesError",
 }
 
-// IsincorrectNumberNetworkInterfacesError asserts incorrectNumberNetworkInterfacesError.
-func IsIncorrectNumberNetworkInterfacesError(err error) bool {
-	return microerror.Cause(err) == incorrectNumberNetworkInterfacesError
-}
-
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }
@@ -34,11 +29,6 @@ func IsNotFound(err error) bool {
 
 var privateIPAddressEmptyError = &microerror.Error{
 	Kind: "privateIPAddressEmptyError",
-}
-
-// IsPrivateIPAddressEmptyError asserts privateIPAddressEmptyError.
-func IsPrivateIPAddressEmptyError(err error) bool {
-	return microerror.Cause(err) == privateIPAddressEmptyError
 }
 
 var networkInterfacesNotFoundError = &microerror.Error{

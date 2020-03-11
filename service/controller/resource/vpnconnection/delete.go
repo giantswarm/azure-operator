@@ -3,7 +3,6 @@ package vpnconnection
 import (
 	"context"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
 
@@ -25,7 +24,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, des
 		return nil, microerror.Mask(err)
 	}
 
-	patch, err := r.newDeletePatch(ctx, cr, c, d)
+	patch, err := r.newDeletePatch(d)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -34,7 +33,7 @@ func (r *Resource) NewDeletePatch(ctx context.Context, azureConfig, current, des
 }
 
 // newDeletePatch use desired as delete patch since it is mostly static and more likely to be present than current.
-func (r *Resource) newDeletePatch(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, current, desired connections) (*crud.Patch, error) {
+func (r *Resource) newDeletePatch(desired connections) (*crud.Patch, error) {
 	patch := crud.NewPatch()
 
 	patch.SetDeleteChange(desired)
@@ -53,7 +52,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 		return microerror.Mask(err)
 	}
 
-	err = r.applyDeleteChange(ctx, cr, c)
+	err = r.applyDeleteChange(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -61,7 +60,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 	return nil
 }
 
-func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
+func (r *Resource) applyDeleteChange(ctx context.Context, change connections) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host vpn gateway connection is deleted")
 
 	if change.isEmpty() {
@@ -69,7 +68,7 @@ func (r *Resource) applyDeleteChange(ctx context.Context, azureConfig providerv1
 		return nil
 	}
 
-	hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient(ctx)
+	hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -30,18 +30,6 @@ const (
 	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
 )
 
-func (r *Resource) deleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
-	customObject = computeForDeleteResourceStatus(customObject, Name, t, s)
-
-	n := customObject.GetNamespace()
-	_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
 	// Get the newest CR version. Otherwise status update may fail because of:
 	//

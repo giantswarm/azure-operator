@@ -83,7 +83,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 		}
 	}
 
-	vpnGatewayConnections, err := r.getDesiredState(ctx, cr, guestVPNGateway, hostVPNGateway)
+	vpnGatewayConnections, err := r.getDesiredState(cr, guestVPNGateway, hostVPNGateway)
 	if err != nil {
 		return connections{}, microerror.Mask(err)
 	}
@@ -91,7 +91,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 	return vpnGatewayConnections, nil
 }
 
-func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) (connections, error) {
+func (r *Resource) getDesiredState(azureConfig providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) (connections, error) {
 	sharedKey := randStringBytes(128)
 
 	host := network.VirtualNetworkGatewayConnection{

@@ -33,7 +33,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 	return nil
 }
 
-func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newCreateChange(currentState, desiredState interface{}) (interface{}, error) {
 	currentNamespace, err := toNamespace(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
