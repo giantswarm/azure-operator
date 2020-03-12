@@ -1,3 +1,5 @@
 name: azure-operator
 version: [[ .Version ]]
-appVersion: [[ .AppVersion ]]
+description: "Azure operator to create k8s clusters on Azure"
+appVersion: [[ .Version ]]
+home: "https://giantswarm.io"
