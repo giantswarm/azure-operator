@@ -134,7 +134,10 @@ func TestHash() string {
 	}
 
 	h := sha256.New()
-	h.Write([]byte(TestDir()))
+	_, err := h.Write([]byte(TestDir()))
+	if err != nil {
+		panic(fmt.Sprintf("couldn't write hash of test dir '%s'", TestDir()))
+	}
 	s := fmt.Sprintf("%x", h.Sum(nil))[0:5]
 
 	return s

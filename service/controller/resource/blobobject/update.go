@@ -23,14 +23,14 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	}
 
 	for _, containerObject := range containerObjectToUpdate {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating container object %#q", containerObject.Key))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating container object %#q", containerObject.Key)) // nolint: errcheck
 
 		_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, cc.ContainerURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated container object %#q", containerObject.Key))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated container object %#q", containerObject.Key)) // nolint: errcheck
 	}
 
 	return nil
@@ -64,15 +64,15 @@ func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredSta
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the container objects should be updated")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the container objects should be updated") // nolint: errcheck
 
 	updateState := []ContainerObjectState{}
 
 	for _, desiredContainerObject := range desiredContainerObjects {
 		if objectInSliceByKeyAndBody(desiredContainerObject, currentContainerObjects) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", desiredContainerObject.Key))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", desiredContainerObject.Key)) // nolint: errcheck
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", desiredContainerObject.Key))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", desiredContainerObject.Key)) // nolint: errcheck
 			updateState = append(updateState, desiredContainerObject)
 		}
 	}

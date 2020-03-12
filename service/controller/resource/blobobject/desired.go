@@ -53,8 +53,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	encrypter, err := r.toEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey resource is not ready")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey resource is not ready") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")                  // nolint: errcheck
 		resourcecanceledcontext.SetCanceled(ctx)
 		return nil, nil
 	} else if err != nil {

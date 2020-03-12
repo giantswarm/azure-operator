@@ -44,10 +44,10 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, azureConfig, change in
 }
 
 func (r *Resource) applyDeleteChange(ctx context.Context, change connections) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host vpn gateway connection is deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host vpn gateway connection is deleted") // nolint: errcheck
 
 	if change.isEmpty() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured host vpn gateway connection is deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured host vpn gateway connection is deleted") // nolint: errcheck
 		return nil
 	}
 
@@ -69,6 +69,6 @@ func (r *Resource) applyDeleteChange(ctx context.Context, change connections) er
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured host vpn gateway connection is deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured host vpn gateway connection is deleted") // nolint: errcheck
 	return nil
 }

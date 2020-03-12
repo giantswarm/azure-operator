@@ -26,7 +26,11 @@ func WrapTestMain(m *testing.M, c Config) {
 	}
 
 	if env.KeepResources() != "true" {
-		Teardown(c)
+		err := Teardown(c)
+		if err != nil {
+			log.Printf("%#v\n", err)
+			r = 1
+		}
 	}
 
 	os.Exit(r)

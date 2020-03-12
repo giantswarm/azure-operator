@@ -131,7 +131,7 @@ func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineSca
 }
 
 func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey") // nolint: errcheck
 
 	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {

@@ -23,7 +23,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange inte
 	}
 
 	if serviceToDelete != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service") // nolint: errcheck
 
 		namespace := key.ClusterNamespace(cr)
 		err := r.k8sClient.CoreV1().Services(namespace).Delete(serviceToDelete.Name, &apismetav1.DeleteOptions{})
@@ -33,9 +33,9 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange inte
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service: deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service: deleted") // nolint: errcheck
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service: already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes service: already deleted") // nolint: errcheck
 	}
 
 	return nil
@@ -63,14 +63,14 @@ func (r *Resource) newDeleteChange(ctx context.Context, currentState, desiredSta
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the service has to be deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the service has to be deleted") // nolint: errcheck
 
 	var serviceToDelete *corev1.Service
 	if currentService != nil && desiredService.Name == currentService.Name {
 		serviceToDelete = desiredService
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out if the service has to be deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out if the service has to be deleted") // nolint: errcheck
 
 	return serviceToDelete, nil
 }

@@ -169,7 +169,7 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 				if err != nil {
 					detailed, ok := err.(autorest.DetailedError)
 					if !ok {
-						u.logger.LogCtx(ctx, fmt.Sprintf("Error listing VM instances on %s: %s", cr.Name, err.Error()))
+						u.logger.LogCtx(ctx, fmt.Sprintf("Error listing VM instances on %s: %s", cr.Name, err.Error())) // nolint: errcheck
 						continue
 					}
 					err = nil
