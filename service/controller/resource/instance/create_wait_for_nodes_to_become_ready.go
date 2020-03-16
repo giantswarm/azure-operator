@@ -124,7 +124,7 @@ func isWorker(n corev1.Node) bool {
 
 func isReady(n corev1.Node) bool {
 	for _, c := range n.Status.Conditions {
-		if c.Type == corev1.NodeReady && c.Reason == "KubeletReady" {
+		if c.Type == corev1.NodeReady && c.Status == corev1.ConditionTrue && c.Reason == "KubeletReady" {
 			return true
 		}
 	}
