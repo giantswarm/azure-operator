@@ -3,9 +3,11 @@ package collector
 import (
 	"context"
 	"fmt"
+	"net/http"
 	"strconv"
 	"strings"
 
+	"github.com/Azure/go-autorest/autorest"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -103,6 +105,19 @@ func NewVMSSRateLimit(config VMSSRateLimitConfig) (*VMSSRateLimit, error) {
 }
 
 func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
+	// Remove 429 from the retriable error codes.
+	original := autorest.StatusCodesForRetry
+	defer func() {
+		autorest.StatusCodesForRetry = original
+	}()
+	var codes []int
+	for code := range autorest.StatusCodesForRetry {
+		if code != http.StatusTooManyRequests {
+			codes = append(codes, code)
+		}
+	}
+	autorest.StatusCodesForRetry = codes
+
 	// We need all CRs to gather all subscriptions below.
 	var crs []providerv1alpha1.AzureConfig
 	{
@@ -147,23 +162,32 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 			// VMSS List VMs specific limits.
 			{
+				var headers []string
+
 				// Calling the VMSS list machines API to get the metrics.
 				result, err := azureClients.VirtualMachineScaleSetVMsClient.ListComplete(ctx, cr.Name, fmt.Sprintf("%s-worker", cr.Name), "", "", "")
 				if err != nil {
-					u.logger.LogCtx(ctx, fmt.Sprintf("Error listing VM instances on %s: %s", cr.Name, err.Error()))
-					continue
+					detailed, ok := err.(autorest.DetailedError)
+					if !ok {
+						u.logger.LogCtx(ctx, fmt.Sprintf("Error listing VM instances on %s: %s", cr.Name, err.Error()))
+						continue
+					}
+					err = nil
+					headers = detailed.Response.Header[vmssVMListHeaderName]
 				}
 
-				limits := result.Response().Response.Header[vmssVMListHeaderName]
+				if len(headers) == 0 {
+					headers = result.Response().Response.Header[vmssVMListHeaderName]
+				}
 
 				// Header not found, we consider this an error.
-				if len(limits) == 0 {
+				if len(headers) == 0 {
 					vmssVMListErrorCounter.Inc()
 					ch <- vmssVMListErrorCounter
 					continue
 				}
 
-				for _, l := range limits {
+				for _, l := range headers {
 					// Limits are a single comma separated string.
 					tokens := strings.SplitN(l, ",", -1)
 					for _, t := range tokens {
