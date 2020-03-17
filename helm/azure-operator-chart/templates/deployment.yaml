@@ -5,6 +5,7 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: azure-operator
+    version: thiccc
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 spec:
@@ -13,7 +14,7 @@ spec:
   selector:
     matchLabels:
       app: azure-operator
-      version: {{ .Chart.Version }}
+      version: thiccc
   strategy:
     type: RollingUpdate
   template:
@@ -22,7 +23,7 @@ spec:
         releasetime: {{ $.Release.Time }}
       labels:
         app: azure-operator
-        version: {{ .Chart.Version }}
+        version: thiccc
     spec:
       volumes:
       - name: azure-operator-configmap
