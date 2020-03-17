@@ -11,5 +11,9 @@ sudo mkdir -p "${shipyard_dir}"
 sudo chmod -R 777 "/workdir"
 kind get kubeconfig --name="kind" > "${shipyard_dir}/config"
 
-curl -L https://git.io/get_helm.sh | bash
+curl -L https://get.helm.sh/helm-v2.16.1-linux-amd64.tar.gz > ./helm.tar.gz
+tar xzvf helm.tar.gz
+chmod u+x linux-amd64/helm
+sudo mv linux-amd64/helm /usr/local/bin/
+
 helm --kubeconfig="${shipyard_dir}/config" init --history-max 5 --wait
