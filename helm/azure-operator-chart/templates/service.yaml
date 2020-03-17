@@ -5,7 +5,7 @@ metadata:
   namespace: {{ .Values.namespace }}
   labels:
     app: azure-operator
-    version: {{ .Chart.Version }}
+    version: thiccc
   annotations:
     prometheus.io/scrape: "true"
 spec:
@@ -14,4 +14,4 @@ spec:
   - port: 8000
   selector:
     app: azure-operator
-    version: {{ .Chart.Version }}
+    version: thiccc
