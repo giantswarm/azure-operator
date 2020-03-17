@@ -6,6 +6,7 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
+	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/integration/env"
@@ -16,6 +17,25 @@ import (
 func common(ctx context.Context, config Config) error {
 	{
 		err := config.K8s.EnsureNamespaceCreated(ctx, namespace)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		c := helmclient.Config{
+			Logger:    config.Logger,
+			K8sClient: config.Guest.K8sClient(),
+
+			RestConfig: config.Guest.RestConfig(),
+		}
+
+		helmClient, err := helmclient.New(c)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = helmClient.EnsureTillerInstalled(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
