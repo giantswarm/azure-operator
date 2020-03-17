@@ -183,7 +183,6 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 				// Header not found, we consider this an error.
 				if len(headers) == 0 {
 					vmssVMListErrorCounter.Inc()
-					ch <- vmssVMListErrorCounter
 					continue
 				}
 
@@ -196,7 +195,6 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 						if len(kv) != 2 {
 							// We expect exactly two tokens, otherwise we consider this a parsing error.
 							vmssVMListErrorCounter.Inc()
-							ch <- vmssVMListErrorCounter
 							continue
 						}
 
@@ -204,7 +202,6 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 						val, err := strconv.ParseFloat(kv[1], 64)
 						if err != nil {
 							vmssVMListErrorCounter.Inc()
-							ch <- vmssVMListErrorCounter
 							continue
 						}
 

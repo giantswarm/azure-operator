@@ -196,7 +196,6 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err)))
 				writes = 0
 				writesErrorCounter.Inc()
-				ch <- writesErrorCounter
 			}
 
 			ch <- prometheus.MustNewConstMetric(
@@ -221,7 +220,6 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err)))
 				reads = 0
 				readsErrorCounter.Inc()
-				ch <- readsErrorCounter
 			}
 
 			ch <- prometheus.MustNewConstMetric(
