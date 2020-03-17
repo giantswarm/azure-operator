@@ -11,4 +11,5 @@ sudo mkdir -p "${shipyard_dir}"
 sudo chmod -R 777 "/workdir"
 kind get kubeconfig --name="kind" > "${shipyard_dir}/config"
 
-helm init --history-max 5 --wait
+curl -L https://git.io/get_helm.sh | bash
+helm --kubeconfig="${shipyard_dir}/config" init --history-max 5 --wait
