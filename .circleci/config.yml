@@ -1,24 +1,3 @@
-e2eTest: &e2eTest
-  machine: true
-  working_directory: /home/circleci/.go_workspace/src/github.com/giantswarm/azure-operator
-  steps:
-  - checkout
-  - run: |
-      wget -q $(curl -sS https://api.github.com/repos/giantswarm/e2e-harness/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-      chmod +x ./e2e-harness
-  - run: ./e2e-harness localkube
-  - run: ./e2e-harness setup --remote=false
-  - run:
-      command: ./e2e-harness test --test-dir=${TEST_DIR}
-      no_output_timeout: 30m
-
-  - store_artifacts:
-      path: .e2e-harness/workdir/logs
-      destination: logs
-
-  - run:
-      command: ./e2e-harness teardown
-      when: always
 
 orbs:
   architect: giantswarm/architect@0.8.3
@@ -64,31 +43,6 @@ jobs:
           root: .
           paths:
             - ./azure-operator
-  e2eTestWIPPRClusterState:
-    environment:
-      IGNITION_DEBUG_ENABLED: "false"
-      IGNITION_DEBUG_LOGS_PREFIX: "wip-pr-clusterstate"
-      TESTED_VERSION: "wip"
-      TEST_DIR: "integration/test/clusterstate"
-    <<: *e2eTest
-
-  e2eTestWIPPRScaling:
-    environment:
-      TESTED_VERSION: "wip"
-      TEST_DIR: "integration/test/scaling"
-    <<: *e2eTest
-
-  e2eTestWIPPRMultiAZ:
-    environment:
-      TESTED_VERSION: "wip"
-      TEST_DIR: "integration/test/multiaz"
-    <<: *e2eTest
-
-  e2eTestWIPPRClusterDeletion:
-    environment:
-      TESTED_VERSION: "wip"
-      TEST_DIR: "integration/test/clusterdeletion"
-    <<: *e2eTest
 
 workflows:
   version: 2
@@ -152,18 +106,26 @@ workflows:
             branches:
               ignore: master
 
-      - e2eTestWIPPRClusterState:
+      - architect/integration-test:
+          name: cluster-state-test
+          test-dir: "integration/test/clusterstate"
           requires:
           - hold
 
-      - e2eTestWIPPRScaling:
+      - architect/integration-test:
+          name: scaling-test
+          test-dir: "integration/test/scaling"
           requires:
           - hold
 
-      - e2eTestWIPPRMultiAZ:
+      - architect/integration-test:
+          name: multiaz-test
+          test-dir: "integration/test/multiaz"
           requires:
           - hold
 
-      - e2eTestWIPPRClusterDeletion:
+      - architect/integration-test:
+          name: cluster-deletion-test
+          test-dir: "integration/test/clusterdeletion"
           requires:
           - hold
