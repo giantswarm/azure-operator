@@ -10,3 +10,5 @@ shipyard_dir="/workdir/.shipyard"
 sudo mkdir -p "${shipyard_dir}"
 sudo chmod -R 777 "/workdir"
 kind get kubeconfig --name="kind" > "${shipyard_dir}/config"
+
+helm init --history-max 5 --wait
