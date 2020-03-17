@@ -108,24 +108,28 @@ workflows:
 
       - architect/integration-test:
           name: cluster-state-test
+          setup-script: "integration/config/setup.sh"
           test-dir: "integration/test/clusterstate"
           requires:
           - hold
 
       - architect/integration-test:
           name: scaling-test
+          setup-script: "integration/config/setup.sh"
           test-dir: "integration/test/scaling"
           requires:
           - hold
 
       - architect/integration-test:
           name: multiaz-test
+          setup-script: "integration/config/setup.sh"
           test-dir: "integration/test/multiaz"
           requires:
           - hold
 
       - architect/integration-test:
           name: cluster-deletion-test
+          setup-script: "integration/config/setup.sh"
           test-dir: "integration/test/clusterdeletion"
           requires:
           - hold
