@@ -9,4 +9,4 @@ kind get kubeconfig --name="kind" | sudo tee "${shipyard_dir}/config" > /dev/nul
 shipyard_dir="/workdir/.shipyard"
 sudo mkdir -p "${shipyard_dir}"
 sudo chmod -R 777 "/workdir"
-kind get kubeconfig --name="kind" | sudo tee "${shipyard_dir}/config" > /dev/null
+kind get kubeconfig --name="kind" > "${shipyard_dir}/config"
