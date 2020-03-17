@@ -1,10 +1,10 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: azure-operator
-  namespace: {{ .Values.namespace }}
+  name: {{ tpl .Values.resource.default.name .}}
+  namespace: {{ tpl .Values.resource.default.namespace . }}
   labels:
-    app: azure-operator
+    app: {{ tpl .Values.resource.default.name . }}
   annotations:
     checksum/config: {{ include (print $.Template.BasePath "/configmap.yaml") . | sha256sum }}
 spec:
@@ -12,7 +12,7 @@ spec:
   revisionHistoryLimit: 3
   selector:
     matchLabels:
-      app: azure-operator
+      app: {{ tpl .Values.resource.default.name . }}
       version: {{ .Chart.Version }}
   strategy:
     type: RollingUpdate
@@ -21,37 +21,37 @@ spec:
       annotations:
         releasetime: {{ $.Release.Time }}
       labels:
-        app: azure-operator
+        app: {{ tpl .Values.resource.default.name . }}
         version: {{ .Chart.Version }}
     spec:
       volumes:
-      - name: azure-operator-configmap
+      - name: {{ .Values.project.name }}-configmap
         configMap:
-          name: azure-operator-configmap
+          name: {{ tpl .Values.resource.default.name . }}
           items:
           - key: config.yaml
             path: config.yaml
-      - name: azure-operator-secret
+      - name: {{ .Values.project.name }}-secret
         secret:
-          secretName: azure-operator-secret
+          secretName: {{ tpl .Values.resource.default.name . }}
           items:
           - key: secret.yaml
             path: secret.yaml
       - name: certs
         hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
-      serviceAccountName: azure-operator
+      serviceAccountName: {{ tpl .Values.resource.default.name . }}
       securityContext:
-        runAsUser: {{ .Values.userID }}
-        runAsGroup: {{ .Values.groupID }}
+        runAsUser: {{ .Values.pod.user.id }}
+        runAsGroup: {{ .Values.pod.group.id }}
       containers:
-      - name: azure-operator
-        image: "{{ .Values.image.registry }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
+      - name: {{ .Values.project.name }}
+        image: "{{ .Values.Installation.V1.Registry.Domain }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
         volumeMounts:
-        - name: azure-operator-configmap
-          mountPath: /var/run/azure-operator/configmap/
-        - name: azure-operator-secret
-          mountPath: /var/run/azure-operator/secret/
+        - name: {{ .Values.project.name }}-configmap
+          mountPath: /var/run/{{ .Values.project.name }}/configmap/
+        - name: {{ .Values.project.name }}-secret
+          mountPath: /var/run/{{ .Values.project.name }}/secret/
           readOnly: true
         - name: certs
           mountPath: /etc/ssl/certs/ca-certificates.crt
@@ -61,8 +61,8 @@ spec:
           containerPort: 8000
         args:
         - daemon
-        - --config.dirs=/var/run/azure-operator/configmap/
-        - --config.dirs=/var/run/azure-operator/secret/
+        - --config.dirs=/var/run/{{ .Values.project.name }}/configmap/
+        - --config.dirs=/var/run/{{ .Values.project.name }}/secret/
         - --config.files=config
         - --config.files=secret
         livenessProbe:
@@ -85,4 +85,4 @@ spec:
             cpu: 250m
             memory: 250Mi
       imagePullSecrets:
-      - name: azure-operator-pull-secret
+      - name: {{ tpl .Values.resource.pullSecret.name . }}

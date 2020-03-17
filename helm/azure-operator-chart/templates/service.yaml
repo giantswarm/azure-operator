@@ -1,10 +1,10 @@
 apiVersion: v1
 kind: Service
 metadata:
-  name: azure-operator
-  namespace: {{ .Values.namespace }}
+  name: {{ tpl .Values.default.resource.name . }}
+  namespace: {{ tpl .Values.default.resource.namespace . }}
   labels:
-    app: azure-operator
+    app: {{ tpl .Values.default.resource.name . }}
     version: {{ .Chart.Version }}
   annotations:
     prometheus.io/scrape: "true"
@@ -13,5 +13,5 @@ spec:
   ports:
   - port: 8000
   selector:
-    app: azure-operator
+    app: {{ tpl .Values.default.resource.name . }}
     version: {{ .Chart.Version }}
