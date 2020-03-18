@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"log"
 	"os"
@@ -115,6 +116,29 @@ func installResources(ctx context.Context, config Config) error {
 	}
 
 	{
+		secretYaml := fmt.Sprintf(`
+service:
+  azure:
+    clientid: %s
+    clientsecret: %s
+    subscriptionid: %s
+    tenantid: %s
+`, env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID())
+		base64secretYaml := base64.StdEncoding.EncodeToString([]byte(secretYaml))
+		values := `
+---
+Installation:
+  V1:
+    Secret:
+      AzureOperator:
+        SecretYaml: %s
+    Provider:
+      Azure:
+        HostCluster:
+          CIDR: ""0.0.0.0/0""
+        MSI:
+          Enabled: true
+`
 		defer func() {
 			fs := afero.NewOsFs()
 			err := fs.Remove(operatorTarballPath)
@@ -129,7 +153,7 @@ func installResources(ctx context.Context, config Config) error {
 			operatorTarballPath,
 			key.Namespace(),
 			helm.ReleaseName(key.ReleaseName()),
-			helm.ValueOverrides([]byte("{}")),
+			helm.ValueOverrides([]byte(fmt.Sprintf(values, base64secretYaml))),
 			helm.InstallWait(true))
 		if err != nil {
 			return microerror.Mask(err)
