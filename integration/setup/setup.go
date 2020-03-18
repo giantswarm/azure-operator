@@ -129,6 +129,7 @@ func installResources(ctx context.Context, config Config) error {
 			operatorTarballPath,
 			key.Namespace(),
 			helm.ReleaseName(key.ReleaseName()),
+			helm.ValueOverrides([]byte("{}")),
 			helm.InstallWait(true))
 		if err != nil {
 			return microerror.Mask(err)
