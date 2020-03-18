@@ -368,7 +368,7 @@
     "pkg/chartvalues",
   ]
   pruneopts = "UT"
-  revision = "c9589c3fd751042238c5d7d10bb463698b3ac6ae"
+  revision = "751eac7541c45f8f9b6f5af16f7e6bdaa3502385"
 
 [[projects]]
   branch = "master"
