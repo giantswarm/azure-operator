@@ -25,7 +25,6 @@ var (
 	circleCI             string
 	circleSHA            string
 	registryPullSecret   string
-	githubToken          string
 	testDir              string
 	testedVersion        string
 	keepResources        string
