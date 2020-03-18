@@ -84,7 +84,7 @@ func installResources(ctx context.Context, config Config) error {
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("getting latest %#q release", project.Name())) // nolint: errcheck
 
-		latestOperatorRelease, err = appcatalog.GetLatestVersion(ctx, key.DefaultCatalogStorageURL(), project.Name())
+		latestOperatorRelease, err = appcatalog.GetLatestVersion(ctx, key.DefaultTestCatalogStorageURL(), project.Name())
 		if err != nil {
 			return microerror.Mask(err)
 		}

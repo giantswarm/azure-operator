@@ -13,11 +13,11 @@ func CertsReleaseName(clusterID string) string {
 }
 
 func DefaultCatalogStorageURL() string {
-	return "https://giantswarm.github.com/default-catalog"
+	return "https://giantswarm.github.com/control-plane-catalog"
 }
 
 func DefaultTestCatalogStorageURL() string {
-	return "https://giantswarm.github.com/default-test-catalog"
+	return "https://giantswarm.github.com/control-plane-test-catalog"
 }
 
 func Namespace() string {
