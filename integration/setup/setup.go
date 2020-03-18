@@ -135,7 +135,7 @@ Installation:
     Provider:
       Azure:
         HostCluster:
-          CIDR: ""0.0.0.0/0""
+          CIDR: "0.0.0.0/0"
         MSI:
           Enabled: true
 `
