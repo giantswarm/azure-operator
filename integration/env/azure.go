@@ -83,7 +83,11 @@ func init() {
 	// otherwise we compute CIDRs base on EnvVarCircleBuildNumber value.
 	azureCDIR := os.Getenv(EnvVarAzureCIDR)
 	if azureCDIR == "" {
-		buildNumber, err := strconv.ParseUint(os.Getenv(EnvVarCircleBuildNumber), 10, 32)
+		circleCIBuildNumber, ok := os.LookupEnv(EnvVarCircleBuildNumber)
+		if !ok {
+			circleCIBuildNumber = "1"
+		}
+		buildNumber, err := strconv.ParseUint(circleCIBuildNumber, 10, 32)
 		if err != nil {
 			panic(err)
 		}
