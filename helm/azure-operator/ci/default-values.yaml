@@ -19,9 +19,6 @@ Installation:
     Secret:
       AzureOperator:
         SecretYaml: ""
-      Registry:
-        PullSecret:
-          DockerConfigJSON: ""
     Provider:
       Azure:
         Cloud: ""
