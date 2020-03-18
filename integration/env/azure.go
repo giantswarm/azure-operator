@@ -35,7 +35,6 @@ var (
 	azureCIDR             string
 	azureCalicoSubnetCIDR string
 	azureMasterSubnetCIDR string
-	azureVPNSubnetCIDR    string
 	azureWorkerSubnetCIDR string
 
 	commonDomainResourceGroup string
@@ -100,7 +99,6 @@ func init() {
 		azureCIDR = subnets.Parent.String()
 		azureCalicoSubnetCIDR = subnets.Calico.String()
 		azureMasterSubnetCIDR = subnets.Master.String()
-		azureVPNSubnetCIDR = subnets.VPN.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
 	}
 }
@@ -161,10 +159,6 @@ func AzureSubscriptionID() string {
 
 func AzureTenantID() string {
 	return azureTenantID
-}
-
-func AzureVPNSubnetCIDR() string {
-	return azureVPNSubnetCIDR
 }
 
 func AzureWorkerSubnetCIDR() string {
