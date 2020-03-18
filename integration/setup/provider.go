@@ -39,35 +39,5 @@ func provider(ctx context.Context, config Config) error {
 		}
 	}
 
-	{
-		c := chartvalues.APIExtensionsAzureConfigE2EConfig{
-			Azure: chartvalues.APIExtensionsAzureConfigE2EConfigAzure{
-				AvailabilityZones: env.AzureAvailabilityZones(),
-				CalicoSubnetCIDR:  env.AzureCalicoSubnetCIDR(),
-				CIDR:              env.AzureCIDR(),
-				Location:          env.AzureLocation(),
-				MasterSubnetCIDR:  env.AzureMasterSubnetCIDR(),
-				VPNSubnetCIDR:     env.AzureVPNSubnetCIDR(),
-				WorkerSubnetCIDR:  env.AzureWorkerSubnetCIDR(),
-			},
-			ClusterName:               env.ClusterID(),
-			CommonDomain:              env.CommonDomain(),
-			CommonDomainResourceGroup: env.CommonDomainResourceGroup(),
-			SSHUser:                   "test-user",
-			SSHPublicKey:              env.SSHPublicKey(),
-			VersionBundleVersion:      env.VersionBundleVersion(),
-		}
-
-		values, err := chartvalues.NewAPIExtensionsAzureConfigE2E(c)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = config.Release.Install(ctx, "apiextensions-azure-config-e2e", release.NewStableVersion(), values)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
 	return nil
 }

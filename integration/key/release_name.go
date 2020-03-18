@@ -29,7 +29,7 @@ func NodeOperatorReleaseName() string {
 }
 
 func ReleaseName() string {
-	return "chart-operator"
+	return "azure-operator"
 }
 
 func TestAppReleaseName() string {
