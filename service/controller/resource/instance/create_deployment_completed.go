@@ -34,7 +34,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if key.IsSucceededProvisioningState(s) {
-		computedDeployment, err := r.newDeployment(ctx, cr, nil)
+		computedDeployment, err := r.newDeployment(ctx, cr, nil, *d.Location)
 		if blobclient.IsBlobNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
