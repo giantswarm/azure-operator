@@ -218,7 +218,7 @@ Installation:
 	{
 		azureConfig := &providerv1alpha1.AzureConfig{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      key.TestAppReleaseName(),
+				Name:      env.ClusterID(),
 				Namespace: "giantswarm",
 				Labels: map[string]string{
 					"azure-operator.giantswarm.io/version": env.VersionBundleVersion(),
