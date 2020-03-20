@@ -247,7 +247,7 @@ Installation:
 					Customer: providerv1alpha1.ClusterCustomer{ID: "example-customer"},
 					Docker:   providerv1alpha1.ClusterDocker{Daemon: providerv1alpha1.ClusterDockerDaemon{CIDR: "172.17.0.1/16"}},
 					Etcd: providerv1alpha1.ClusterEtcd{
-						Domain: "etcd" + env.ClusterID() + ".k8s." + env.CommonDomain(),
+						Domain: "etcd." + env.ClusterID() + ".k8s." + env.CommonDomain(),
 						Port:   2379,
 						Prefix: "giantswarm.io",
 					},
@@ -255,21 +255,21 @@ Installation:
 					Kubernetes: providerv1alpha1.ClusterKubernetes{
 						API: providerv1alpha1.ClusterKubernetesAPI{
 							ClusterIPRange: "172.31.0.0/16",
-							Domain:         "api" + env.ClusterID() + ".k8s." + env.CommonDomain(),
+							Domain:         "api." + env.ClusterID() + ".k8s." + env.CommonDomain(),
 							SecurePort:     443,
 						},
 						CloudProvider: "azure",
 						DNS:           providerv1alpha1.ClusterKubernetesDNS{IP: net.IPv4(172, 31, 0, 10)},
 						Domain:        "cluster.local",
 						IngressController: providerv1alpha1.ClusterKubernetesIngressController{
-							Domain:         "ingress" + env.ClusterID() + ".k8s." + env.CommonDomain(),
-							WildcardDomain: "*" + env.ClusterID() + ".k8s." + env.CommonDomain(),
+							Domain:         "ingress." + env.ClusterID() + ".k8s." + env.CommonDomain(),
+							WildcardDomain: "*." + env.ClusterID() + ".k8s." + env.CommonDomain(),
 							InsecurePort:   30010,
 							SecurePort:     30011,
 						},
 						Kubelet: providerv1alpha1.ClusterKubernetesKubelet{
 							AltNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local",
-							Domain:   "worker" + env.ClusterID() + ".k8s." + env.CommonDomain(),
+							Domain:   "worker." + env.ClusterID() + ".k8s." + env.CommonDomain(),
 							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + env.VersionBundleVersion(),
 							Port:     10250,
 						},
