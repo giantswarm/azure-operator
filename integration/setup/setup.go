@@ -68,10 +68,10 @@ func Setup(ctx context.Context, c Config) error {
 		return microerror.Mask(err)
 	}
 
-	err = bastion(ctx, c)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	//err = bastion(ctx, c)
+	//if err != nil {
+	//	return microerror.Mask(err)
+	//}
 
 	err = c.Guest.Setup(ctx)
 	if err != nil {
