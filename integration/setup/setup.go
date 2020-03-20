@@ -58,12 +58,12 @@ func Setup(ctx context.Context, c Config) error {
 		return microerror.Mask(err)
 	}
 
-	err = installResources(ctx, c)
+	err = provider(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = provider(ctx, c)
+	err = installResources(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
