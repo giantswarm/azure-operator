@@ -247,7 +247,7 @@ Installation:
 					},
 					Masters: []providerv1alpha1.AzureConfigSpecAzureNode{
 						{
-							VMSize: "Standard_A1",
+							VMSize: "Standard_D1_v2",
 						},
 					},
 					VirtualNetwork: providerv1alpha1.AzureConfigSpecAzureVirtualNetwork{
@@ -258,7 +258,7 @@ Installation:
 					},
 					Workers: []providerv1alpha1.AzureConfigSpecAzureNode{
 						{
-							VMSize: "Standard_A1",
+							VMSize: "Standard_D1_v2",
 						},
 					},
 				},
