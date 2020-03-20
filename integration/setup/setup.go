@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/helm"
 
@@ -190,6 +191,28 @@ Installation:
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured chart CRD exists") // nolint: errcheck
+	}
+
+	{
+		encryptionSecret := &v1.Secret{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      fmt.Sprintf("%s-%s", key.TestAppReleaseName(), "encryption"),
+				Namespace: "default",
+				Labels: map[string]string{
+					"giantswarm.io/cluster":   env.ClusterID(),
+					"giantswarm.io/randomkey": "encryption",
+				},
+			},
+			Data: map[string][]byte{
+				"encryption": []byte("QitRZGlWeW5WOFo2YmdvMVRwQUQ2UWoxRHZSVEF4MmovajlFb05sT1AzOD0="),
+			},
+			Type: "Opaque",
+		}
+
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("default").Create(encryptionSecret)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	{
