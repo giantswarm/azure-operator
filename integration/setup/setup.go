@@ -130,7 +130,7 @@ Installation:
             Provider:
               OIDC:
                 ClientID: "%s"
-                IssuerURL: "some"
+                IssuerURL: "https://login.microsoftonline.com/%s/v2.0"
                 UsernameClaim: "email"
                 GroupsClaim: "groups"
       SSH:
@@ -176,7 +176,7 @@ Installation:
 			operatorTarballPath,
 			key.Namespace(),
 			helm.ReleaseName(key.ReleaseName()),
-			helm.ValueOverrides([]byte(fmt.Sprintf(values, env.AzureClientID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA()))),
+			helm.ValueOverrides([]byte(fmt.Sprintf(values, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA()))),
 			helm.InstallWait(true))
 		if err != nil {
 			return microerror.Mask(err)
