@@ -146,7 +146,9 @@ Installation:
           CIDR: "0.0.0.0/0"
         MSI:
           Enabled: true
-        Location: westeurope
+        Location: %s
+    Registry:
+      Domain: quay.io
     Secret:
       AzureOperator:
         SecretYaml: |
@@ -156,6 +158,9 @@ Installation:
               clientsecret: "%s"
               subscriptionid: "%s"
               tenantid: "%s"
+              template:
+                uri:
+                  version: %s
 `
 		defer func() {
 			fs := afero.NewOsFs()
@@ -171,7 +176,7 @@ Installation:
 			operatorTarballPath,
 			key.Namespace(),
 			helm.ReleaseName(key.ReleaseName()),
-			helm.ValueOverrides([]byte(fmt.Sprintf(values, env.AzureClientID(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID()))),
+			helm.ValueOverrides([]byte(fmt.Sprintf(values, env.AzureClientID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA()))),
 			helm.InstallWait(true))
 		if err != nil {
 			return microerror.Mask(err)
@@ -219,8 +224,9 @@ Installation:
 		azureConfig := &providerv1alpha1.AzureConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      env.ClusterID(),
-				Namespace: "giantswarm",
+				Namespace: "default",
 				Labels: map[string]string{
+					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": env.VersionBundleVersion(),
 				},
 			},
@@ -308,7 +314,7 @@ Installation:
 				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: env.VersionBundleVersion()},
 			},
 		}
-		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("giantswarm").Create(azureConfig)
+		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(azureConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
