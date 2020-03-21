@@ -209,7 +209,7 @@ Installation:
 				},
 			},
 			Data: map[string][]byte{
-				"encryption": []byte("QitRZGlWeW5WOFo2YmdvMVRwQUQ2UWoxRHZSVEF4MmovajlFb05sT1AzOD0="),
+				"encryption": []byte("B+QdiVynV8Z6bgo1TpAD6Qj1DvRTAx2j/j9EoNlOP38="),
 			},
 			Type: "Opaque",
 		}
