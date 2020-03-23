@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
+	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -21,20 +22,27 @@ const (
 
 type Config struct {
 	CertsSearcher         certs.Interface
+	G8sClient             versioned.Interface
 	K8sClient             kubernetes.Interface
 	Logger                micrologger.Logger
+	RegistryDomain        string
 	StorageAccountsClient *storage.AccountsClient
 }
 
 type Resource struct {
-	certsSearcher certs.Interface
-	k8sClient     kubernetes.Interface
-	logger        micrologger.Logger
+	certsSearcher  certs.Interface
+	g8sClient      versioned.Interface
+	k8sClient      kubernetes.Interface
+	logger         micrologger.Logger
+	registryDomain string
 }
 
 func New(config Config) (*Resource, error) {
 	if config.CertsSearcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
+	}
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
@@ -42,11 +50,16 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.RegistryDomain == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.RegistryDomain must not be empty", config)
+	}
 
 	r := &Resource{
-		certsSearcher: config.CertsSearcher,
-		k8sClient:     config.K8sClient,
-		logger:        config.Logger,
+		certsSearcher:  config.CertsSearcher,
+		g8sClient:      config.G8sClient,
+		k8sClient:      config.K8sClient,
+		logger:         config.Logger,
+		registryDomain: config.RegistryDomain,
 	}
 
 	return r, nil

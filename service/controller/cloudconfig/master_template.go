@@ -1,12 +1,12 @@
 package cloudconfig
 
 import (
+	"context"
 	"encoding/base64"
 	"fmt"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_5_1_1"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_6_0_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/encrypter"
@@ -15,8 +15,8 @@ import (
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
-func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, clusterCerts certs.Cluster, encrypter encrypter.Interface) (string, error) {
-	apiserverEncryptionKey, err := c.getEncryptionkey(customObject)
+func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
+	apiserverEncryptionKey, err := c.getEncryptionkey(data.CustomObject)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -43,8 +43,8 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 	// phase. The k8scloudconfig templates require certain calico valus to be set
 	// nonetheless. So we set them here. Later when the Calico setup is
 	// straightened out we can improve the handling here.
-	customObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
-	customObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
+	data.CustomObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
+	data.CustomObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
 
 	var params k8scloudconfig.Params
 	{
@@ -52,18 +52,18 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			azure:        c.azure,
 			azureConfig:  c.azureConfig,
 			calicoCIDR:   c.azureNetwork.Calico.String(),
-			clusterCerts: clusterCerts,
-			customObject: customObject,
+			clusterCerts: data.ClusterCerts,
+			customObject: data.CustomObject,
 			encrypter:    encrypter,
-			vnetCIDR:     customObject.Spec.Azure.VirtualNetwork.CIDR,
+			vnetCIDR:     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
 		params = k8scloudconfig.DefaultParams()
 		params.APIServerEncryptionKey = apiserverEncryptionKey
-		params.Cluster = customObject.Spec.Cluster
+		params.Cluster = data.CustomObject.Spec.Cluster
 		params.DisableCalico = true
 		params.DisableIngressControllerService = true
-		params.EtcdPort = customObject.Spec.Cluster.Etcd.Port
+		params.EtcdPort = data.CustomObject.Spec.Cluster.Etcd.Port
 		params.Hyperkube = k8scloudconfig.Hyperkube{
 			Apiserver: k8scloudconfig.HyperkubeApiserver{
 				Pod: k8scloudconfig.HyperkubePod{
@@ -122,6 +122,7 @@ func (c CloudConfig) NewMasterCloudConfig(customObject providerv1alpha1.AzureCon
 			LogsPrefix: c.ignition.LogsPrefix,
 			LogsToken:  c.ignition.LogsToken,
 		}
+		params.Images = data.Images
 		params.SSOPublicKey = c.ssoPublicKey
 	}
 	ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)
