@@ -53,6 +53,7 @@ const (
 	CertificateEncryptionIVName    = "encryptioniv"
 
 	CoreosVersion = "2303.4.0"
+)
 
 // Container image versions for k8scloudconfig.
 const (
