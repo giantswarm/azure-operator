@@ -38,6 +38,7 @@ data:
         {{- end }}
       kubernetes:
         incluster: true
+      registryDomain: '{{ .Values.Installation.V1.Registry.Domain }}'
       tenant:
         ssh:
           ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
