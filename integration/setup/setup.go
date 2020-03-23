@@ -266,6 +266,9 @@ Installation:
 						{
 							VMSize: "Standard_D1_v2",
 						},
+						{
+							VMSize: "Standard_D1_v2",
+						},
 					},
 				},
 				Cluster: providerv1alpha1.Cluster{
