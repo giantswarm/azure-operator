@@ -3,7 +3,7 @@
 Expand the name of the chart.
 */}}
 {{- define "azure-operator.name" -}}
-{{- default .Chart.Name .Values.project.name | trunc 63 | trimSuffix "-" -}}
+{{- .Chart.Name | trunc 63 | trimSuffix "-" -}}
 {{- end -}}
 
 {{/*
@@ -17,22 +17,19 @@ Create chart name and version as used by the chart label.
 Common labels
 */}}
 {{- define "azure-operator.labels" -}}
-helm.sh/chart: {{ include "azure-operator.chart" . }}
+app: {{ include "azure-operator.name" . | quote }}
 {{ include "azure-operator.selectorLabels" . }}
-{{ include "azure-operator.name" . }}.giantswarm.io/branch: {{ .Values.project.branch }}
-{{ include "azure-operator.name" . }}.giantswarm.io/commit: {{ .Values.project.commit }}
-app.kubernetes.io/name: {{ include "azure-operator.name" . }}
-app.kubernetes.io/instance: {{ .Release.Name }}
-{{- if .Chart.AppVersion }}
+app.giantswarm.io/branch: {{ .Values.project.branch | quote }}
+app.giantswarm.io/commit: {{ .Values.project.commit | quote }}
+app.kubernetes.io/managed-by: {{ .Release.Service | quote }}
 app.kubernetes.io/version: {{ .Chart.AppVersion | quote }}
-{{- end }}
-app.kubernetes.io/managed-by: {{ .Release.Service }}
+helm.sh/chart: {{ include "azure-operator.chart" . | quote }}
 {{- end -}}
 
 {{/*
 Selector labels
 */}}
 {{- define "azure-operator.selectorLabels" -}}
-app: {{ include "azure-operator.name" . }}
-{{ include "azure-operator.name" . }}.giantswarm.io/version: {{ .Chart.AppVersion }}
+app.kubernetes.io/name: {{ include "azure-operator.name" . | quote }}
+app.kubernetes.io/instance: {{ .Release.Name | quote }}
 {{- end -}}
