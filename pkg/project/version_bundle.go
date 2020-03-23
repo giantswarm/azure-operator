@@ -17,7 +17,7 @@ func NewVersionBundle() versionbundle.Bundle {
 				Component:   Name(),
 				Description: "Modified to retrieve component versions from releases.",
 				Kind:        versionbundle.KindChanged,
-				URLs:        []string{"https://github.com/giantswarm/azure-operator/pull/<TODO>"},
+				URLs:        []string{"https://github.com/giantswarm/azure-operator/pull/727"},
 			},
 		},
 		Name:    Name(),
