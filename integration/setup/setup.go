@@ -253,7 +253,7 @@ Installation:
 					},
 					Masters: []providerv1alpha1.AzureConfigSpecAzureNode{
 						{
-							VMSize: "Standard_D1_v2",
+							VMSize: "Standard_D4s_v3",
 						},
 					},
 					VirtualNetwork: providerv1alpha1.AzureConfigSpecAzureVirtualNetwork{
