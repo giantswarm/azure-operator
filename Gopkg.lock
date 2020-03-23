@@ -417,7 +417,6 @@
   name = "github.com/giantswarm/k8scloudconfig"
   packages = [
     "ignition/v_2_2_0",
-    "v_5_1_1",
     "v_6_0_0",
   ]
   pruneopts = "T"
@@ -2057,7 +2056,6 @@
     "github.com/giantswarm/ipam",
     "github.com/giantswarm/k8sclient",
     "github.com/giantswarm/k8sclient/k8srestconfig",
-    "github.com/giantswarm/k8scloudconfig/v_5_1_1",
     "github.com/giantswarm/k8scloudconfig/v_6_0_0",
     "github.com/giantswarm/microendpoint/endpoint/healthz",
     "github.com/giantswarm/microendpoint/endpoint/version",
