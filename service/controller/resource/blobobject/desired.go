@@ -71,6 +71,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		defaultVersions := key.DefaultVersions()
 		versions.Kubectl = defaultVersions.Kubectl
 		versions.KubernetesAPIHealthz = defaultVersions.KubernetesAPIHealthz
+		versions.KubernetesNetworkSetupDocker = defaultVersions.KubernetesNetworkSetupDocker
 		images := v_6_0_0.BuildImages(r.registryDomain, versions)
 
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{

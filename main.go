@@ -121,8 +121,6 @@ func mainError() error {
 		}
 	}
 
-	fmt.Println("Trigger CI build and new container image.")
-
 	daemonCommand := newCommand.DaemonCommand().CobraCommand()
 
 	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientID, "", "ID of the Active Directory Service Principal.")
