@@ -1,6 +1,6 @@
 project:
-  name: "azure-operator"
-  version: "[[ .Version ]]"
+  branch: "[[ .Branch ]]"
+  commit: "[[ .SHA ]]"
 image:
   name: "giantswarm/azure-operator"
   tag: "[[ .Version ]]"
