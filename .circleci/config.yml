@@ -1,6 +1,6 @@
 
 orbs:
-  architect: giantswarm/architect@0.8.3
+  architect: giantswarm/architect@0.8.4
 
 version: 2.1
 jobs:
@@ -111,6 +111,7 @@ workflows:
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/clusterstate/.env"
           test-dir: "integration/test/clusterstate"
+          test-timeout: "60m"
           requires:
           - hold
 
@@ -119,6 +120,7 @@ workflows:
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/scaling/.env"
           test-dir: "integration/test/scaling"
+          test-timeout: "60m"
           requires:
           - hold
 
@@ -127,6 +129,7 @@ workflows:
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/multiaz/.env"
           test-dir: "integration/test/multiaz"
+          test-timeout: "60m"
           requires:
           - hold
 
@@ -135,5 +138,6 @@ workflows:
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/clusterdeletion/.env"
           test-dir: "integration/test/clusterdeletion"
+          test-timeout: "60m"
           requires:
           - hold
