@@ -12,7 +12,8 @@ import (
 )
 
 const (
-	EnvVarCircleCI             = "CIRCLECI"    // #nosec
+	DefaultTestedVersion = "wip"
+
 	EnvVarCircleSHA            = "CIRCLE_SHA1" // #nosec
 	EnvVarKeepResources        = "KEEP_RESOURCES"
 	EnvVarRegistryPullSecret   = "REGISTRY_PULL_SECRET" // #nosec
@@ -22,7 +23,6 @@ const (
 )
 
 var (
-	circleCI             string
 	circleSHA            string
 	registryPullSecret   string
 	testDir              string
@@ -32,7 +32,6 @@ var (
 )
 
 func init() {
-	circleCI = os.Getenv(EnvVarCircleCI)
 	keepResources = os.Getenv(EnvVarKeepResources)
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)
@@ -42,7 +41,8 @@ func init() {
 
 	testedVersion = os.Getenv(EnvVarTestedVersion)
 	if testedVersion == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarTestedVersion))
+		testedVersion = DefaultTestedVersion
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarTestedVersion, DefaultTestedVersion)
 	}
 
 	registryPullSecret = os.Getenv(EnvVarRegistryPullSecret)
@@ -70,10 +70,6 @@ func init() {
 		}
 	}
 	os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
-}
-
-func CircleCI() string {
-	return circleCI
 }
 
 func CircleSHA() string {

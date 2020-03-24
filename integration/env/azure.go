@@ -10,6 +10,9 @@ import (
 )
 
 const (
+	DefaultAzureLocation             = "westeurope"
+	DefaultCommonDomainResourceGroup = "root_dns_zone_rg"
+
 	EnvVarAzureAZs  = "AZURE_AZS"
 	EnvVarAzureCIDR = "AZURE_CIDR"
 
@@ -54,7 +57,8 @@ func init() {
 
 	azureLocation = os.Getenv(EnvVarAzureLocation)
 	if azureLocation == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureLocation))
+		azureLocation = DefaultAzureLocation
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarAzureLocation, DefaultAzureLocation)
 	}
 
 	azureSubscriptionID = os.Getenv(EnvVarAzureSubscriptionID)
@@ -69,13 +73,14 @@ func init() {
 
 	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
 	if commonDomainResourceGroup == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomainResourceGroup))
+		commonDomainResourceGroup = DefaultCommonDomainResourceGroup
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarCommonDomainResourceGroup, DefaultCommonDomainResourceGroup)
 	}
 
 	var ok bool
 	sshPublicKey, ok = os.LookupEnv(EnvVarBastionPublicSSHKey)
 	if !ok {
-		fmt.Printf("No public SSH key found in '%s': no keys will be placed on the bastion server", EnvVarBastionPublicSSHKey)
+		fmt.Printf("No value found in '%s': no keys will be placed on the bastion server\n", EnvVarBastionPublicSSHKey)
 	}
 
 	// azureCDIR must be provided along with other CIDRs,
