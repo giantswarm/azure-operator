@@ -62,6 +62,9 @@ const (
 
 	// k8s-api-healthz version.
 	kubernetesAPIHealthzVersion = "0999549a4c334b646288d08bd2c781c6aae2e12f"
+
+	// k8s-setup-network-environment.
+	kubernetesNetworkSetupDocker = "1f4ffc52095ac368847ce3428ea99b257003d9b9"
 )
 
 const (
@@ -186,8 +189,9 @@ func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
 
 func DefaultVersions() v_6_0_0.Versions {
 	return v_6_0_0.Versions{
-		Kubectl:              kubectlVersion,
-		KubernetesAPIHealthz: kubernetesAPIHealthzVersion,
+		Kubectl:                      kubectlVersion,
+		KubernetesAPIHealthz:         kubernetesAPIHealthzVersion,
+		KubernetesNetworkSetupDocker: kubernetesNetworkSetupDocker,
 	}
 }
 
