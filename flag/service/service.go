@@ -9,8 +9,9 @@ import (
 )
 
 type Service struct {
-	Azure        azure.Azure
-	Installation installation.Installation
-	Kubernetes   kubernetes.Kubernetes
-	Tenant       tenant.Tenant
+	Azure          azure.Azure
+	Installation   installation.Installation
+	Kubernetes     kubernetes.Kubernetes
+	RegistryDomain string
+	Tenant         tenant.Tenant
 }

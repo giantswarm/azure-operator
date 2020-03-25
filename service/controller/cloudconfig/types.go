@@ -2,6 +2,9 @@ package cloudconfig
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs"
+	"github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	"github.com/giantswarm/randomkeys"
 )
 
 type templateData struct {
@@ -45,4 +48,11 @@ type certificateDecrypterUnitParams struct {
 
 type ingressLBFileParams struct {
 	ClusterDNSDomain string
+}
+
+type IgnitionTemplateData struct {
+	CustomObject providerv1alpha1.AzureConfig
+	ClusterCerts certs.Cluster
+	ClusterKeys  randomkeys.Cluster
+	Images       v_6_0_0.Images
 }

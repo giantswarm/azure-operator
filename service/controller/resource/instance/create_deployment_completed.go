@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/to"
 
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/key"
@@ -34,6 +35,10 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if key.IsSucceededProvisioningState(s) {
+		if d.Location == nil {
+			d.Location = to.StringP("<unknown>")
+		}
+
 		computedDeployment, err := r.newDeployment(ctx, cr, nil, *d.Location)
 		if blobclient.IsBlobNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
