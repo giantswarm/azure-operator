@@ -249,7 +249,7 @@
                   "managedDisk":{
                     "storageAccountType":"[variables('vmssStorageAccountType')]"
                   },
-                  "lun":"[copyIndex('dataDisks')]"
+                  "lun":"[parameters('vmssVmDataDisks')[copyIndex('dataDisks')].lun]]"
                 }
               }
             ]
