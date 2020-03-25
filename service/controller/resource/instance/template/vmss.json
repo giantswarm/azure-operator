@@ -237,7 +237,22 @@
               "managedDisk":{
                 "storageAccountType":"[variables('vmssStorageAccountType')]"
               }
-            }
+            },
+            "copy":[
+              {
+                "name":"dataDisks",
+                "count":"[length(parameters('vmssVmDataDisks'))]",
+                "input":{
+                  "caching":"ReadWrite",
+                  "createOption":"Empty",
+                  "diskSizeGB":"[parameters('vmssVmDataDisks')[copyIndex('dataDisks')].sizeGB]",
+                  "managedDisk":{
+                    "storageAccountType":"[variables('vmssStorageAccountType')]"
+                  },
+                  "lun":"[copyIndex('dataDisks')]"
+                }
+              }
+            ]
           },
           "networkProfile":{
             "networkInterfaceConfigurations":[
