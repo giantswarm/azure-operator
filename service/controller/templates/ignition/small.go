@@ -31,6 +31,36 @@ const Small = `{
       }
     ],
   "filesystems": [
+      {{ if eq .InstanceRole "master" -}}
+	  {
+        "name": "etcd",
+        "mount": {
+          "device": "/dev/disk/azure/scsi1/lun0",
+          "wipeFilesystem": false,
+          "label": "etcd",
+          "format": "ext4"
+        }
+      },
+      { 
+        "name": "docker",
+        "mount": {
+          "device": "/dev/disk/azure/scsi1/lun1",
+          "wipeFilesystem": true,
+          "label": "docker",
+          "format": "xfs"
+        }
+      },
+      { 
+        "name": "kubelet",
+        "mount": {
+          "device": "/dev/disk/azure/scsi1/lun2",
+          "wipeFilesystem": true,
+          "label": "kubelet",
+          "format": "xfs"
+        }
+      }
+	  {{- end }}
+	  {{ if eq .InstanceRole "worker" -}}
       { 
         "name": "docker",
         "mount": {
@@ -48,17 +78,8 @@ const Small = `{
           "label": "kubelet",
           "format": "xfs"
         }
-      }{{ if eq .InstanceRole "master" -}},
-      {
-        "name": "etcd",
-        "mount": {
-          "device": "/dev/disk/azure/scsi1/lun63",
-          "wipeFilesystem": false,
-          "label": "etcd",
-          "format": "ext4"
-        }
       }
-	   {{- end }}
+	  {{- end }}
     ]
   }
 }

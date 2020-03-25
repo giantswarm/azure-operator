@@ -114,17 +114,17 @@
               {
                 "name":"DockerDisk",
                 "sizeGB":"[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]",
-                "lun":61
+                "lun":1
               },
               {
                 "name":"KubeletDisk",
                 "sizeGB":"[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]",
-                "lun":62
+                "lun":2
               },
               {
                 "name":"EtcdDisk",
                 "sizeGB":100,
-                "lun":63
+                "lun":0
               }
             ]
           },
