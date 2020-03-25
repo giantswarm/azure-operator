@@ -1,9 +1,9 @@
 package blobobject
 
 import (
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs"
+	"context"
 
+	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/encrypter"
 )
 
@@ -11,10 +11,10 @@ type CloudConfigMock struct {
 	template string
 }
 
-func (c *CloudConfigMock) NewMasterCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Interface) (string, error) {
+func (c *CloudConfigMock) NewMasterTemplate(ctx context.Context, data cloudconfig.IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
 	return c.template, nil
 }
 
-func (c *CloudConfigMock) NewWorkerCloudConfig(customObject providerv1alpha1.AzureConfig, certs certs.Cluster, encrypter encrypter.Interface) (string, error) {
+func (c *CloudConfigMock) NewWorkerTemplate(ctx context.Context, data cloudconfig.IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
 	return c.template, nil
 }

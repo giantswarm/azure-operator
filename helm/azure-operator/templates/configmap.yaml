@@ -3,6 +3,8 @@ kind: ConfigMap
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
   namespace: {{ tpl .Values.resource.default.namespace  . }}
+  labels:
+    {{- include "azure-operator.labels" . | nindent 4 }}
 data:
   config.yaml: |
     server:
@@ -38,6 +40,7 @@ data:
         {{- end }}
       kubernetes:
         incluster: true
+      registryDomain: '{{ .Values.Installation.V1.Registry.Domain }}'
       tenant:
         ssh:
           ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'

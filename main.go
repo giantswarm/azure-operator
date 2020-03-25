@@ -147,6 +147,7 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.CAFile, "", "Certificate authority file path to use to authenticate with Kubernetes.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.CrtFile, "", "Certificate file path to use to authenticate with Kubernetes.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.KeyFile, "", "Key file path to use to authenticate with Kubernetes.")
+	daemonCommand.PersistentFlags().String(f.Service.RegistryDomain, "quay.io", "Image registry.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Tenant.Ignition.Debug.Enabled, false, "Enable services which help debugging ignition.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Debug.LogsPrefix, "", "Enable services which help debugging ignition.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Debug.LogsToken, "", "Enable services which help debugging ignition.")

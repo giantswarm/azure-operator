@@ -2,6 +2,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
+  labels:
+    {{- include "azure-operator.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - apiextensions.k8s.io
@@ -33,6 +35,12 @@ rules:
       - create
       - patch
       - update
+  - apiGroups:
+      - release.giantswarm.io
+    resources:
+      - releases
+    verbs:
+      - get
   - apiGroups:
       - ""
     resources:
@@ -76,6 +84,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
+  labels:
+    {{- include "azure-operator.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ tpl .Values.resource.default.name  . }}
@@ -89,6 +99,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
   name: {{ tpl .Values.resource.psp.name . }}
+  labels:
+    {{- include "azure-operator.labels" . | nindent 4 }}
 rules:
   - apiGroups:
       - extensions
@@ -103,6 +115,8 @@ apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
   name: {{ tpl .Values.resource.psp.name . }}
+  labels:
+    {{- include "azure-operator.labels" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ tpl .Values.resource.default.name  . }}

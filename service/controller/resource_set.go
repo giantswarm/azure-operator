@@ -53,6 +53,7 @@ type ResourceSetConfig struct {
 	Ignition                 setting.Ignition
 	InstallationName         string
 	ProjectName              string
+	RegistryDomain           string
 	OIDC                     setting.OIDC
 	SSOPublicKey             string
 	// TemplateVersion is a git branch name to use to get Azure Resource
@@ -201,9 +202,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var blobObjectResource resource.Interface
 	{
 		c := blobobject.Config{
-			CertsSearcher: config.CertsSearcher,
-			K8sClient:     config.K8sClient.K8sClient(),
-			Logger:        config.Logger,
+			CertsSearcher:  config.CertsSearcher,
+			G8sClient:      config.K8sClient.G8sClient(),
+			K8sClient:      config.K8sClient.K8sClient(),
+			Logger:         config.Logger,
+			RegistryDomain: config.RegistryDomain,
 		}
 
 		blobObject, err := blobobject.New(c)

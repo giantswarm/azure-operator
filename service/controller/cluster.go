@@ -18,9 +18,11 @@ type ClusterConfig struct {
 	K8sClient        k8sclient.Interface
 	Logger           micrologger.Logger
 
-	Azure           setting.Azure
-	AzureConfig     client.AzureClientSetConfig
-	ProjectName     string
+	Azure          setting.Azure
+	AzureConfig    client.AzureClientSetConfig
+	ProjectName    string
+	RegistryDomain string
+
 	Ignition        setting.Ignition
 	OIDC            setting.OIDC
 	SSOPublicKey    string
@@ -59,6 +61,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Ignition:                 config.Ignition,
 			InstallationName:         config.InstallationName,
 			ProjectName:              config.ProjectName,
+			RegistryDomain:           config.RegistryDomain,
 			OIDC:                     config.OIDC,
 			SSOPublicKey:             config.SSOPublicKey,
 			TemplateVersion:          config.TemplateVersion,

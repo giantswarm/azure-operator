@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/k8scloudconfig/v_6_0_0"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/templates/ignition"
@@ -20,7 +21,7 @@ const (
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
-	cloudConfigVersion        = "v4.7.0"
+	cloudConfigVersion        = "v6.0.0"
 	storageAccountSuffix      = "gssa"
 	routeTableSuffix          = "RouteTable"
 	masterSecurityGroupSuffix = "MasterSecurityGroup"
@@ -52,7 +53,21 @@ const (
 	CertificateEncryptionIVName    = "encryptioniv"
 
 	CoreosVersion = "2303.4.0"
+)
 
+// Container image versions for k8scloudconfig.
+const (
+	// kubectl container version.
+	kubectlVersion = "1.16.4"
+
+	// k8s-api-healthz version.
+	kubernetesAPIHealthzVersion = "0999549a4c334b646288d08bd2c781c6aae2e12f"
+
+	// k8s-setup-network-environment.
+	kubernetesNetworkSetupDocker = "1f4ffc52095ac368847ce3428ea99b257003d9b9"
+)
+
+const (
 	ClusterIDLabel = "giantswarm.io/cluster"
 )
 
@@ -170,6 +185,14 @@ func CredentialName(customObject providerv1alpha1.AzureConfig) string {
 // CredentialNamespace returns namespace of the credential secret.
 func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.CredentialSecret.Namespace
+}
+
+func DefaultVersions() v_6_0_0.Versions {
+	return v_6_0_0.Versions{
+		Kubectl:                      kubectlVersion,
+		KubernetesAPIHealthz:         kubernetesAPIHealthzVersion,
+		KubernetesNetworkSetupDocker: kubernetesNetworkSetupDocker,
+	}
 }
 
 // DNSZoneAPI returns api parent DNS zone domain name.
