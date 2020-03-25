@@ -112,16 +112,19 @@
           "vmssVmDataDisks":{
             "value":[
               {
-                "name":"EtcdDisk",
-                "sizeGB":100
-              },
-              {
                 "name":"DockerDisk",
-                "sizeGB":"[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]"
+                "sizeGB":"[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]",
+                "lun":61
               },
               {
                 "name":"KubeletDisk",
-                "sizeGB":"[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]"
+                "sizeGB":"[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]",
+                "lun":62
+              },
+              {
+                "name":"EtcdDisk",
+                "sizeGB":100,
+                "lun":63
               }
             ]
           },
@@ -204,11 +207,13 @@
             "value":[
               {
                 "name":"DockerDisk",
-                "sizeGB":"[if(greater(parameters('workerNodes')[0].dockerVolumeSizeGB, 0), parameters('workerNodes')[0].dockerVolumeSizeGB, 50)]"
+                "sizeGB":"[if(greater(parameters('workerNodes')[0].dockerVolumeSizeGB, 0), parameters('workerNodes')[0].dockerVolumeSizeGB, 50)]",
+                "lun":61
               },
               {
                 "name":"KubeletDisk",
-                "sizeGB":"[if(greater(parameters('workerNodes')[0].kubeletVolumeSizeGB, 0), parameters('workerNodes')[0].kubeletVolumeSizeGB, 100)]"
+                "sizeGB":"[if(greater(parameters('workerNodes')[0].kubeletVolumeSizeGB, 0), parameters('workerNodes')[0].kubeletVolumeSizeGB, 100)]",
+                "lun":62
               }
             ]
           },
