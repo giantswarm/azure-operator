@@ -113,7 +113,8 @@
             "value":[
               {
                 "name":"EtcdDisk",
-                "sizeGB":100
+                "sizeGB":100,
+                "lun": 0
               }
             ]
           },
