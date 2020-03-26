@@ -113,15 +113,33 @@
             "value":[
               {
                 "name":"EtcdDisk",
-                "sizeGB":100
+                "diskSizeGB":100,
+                "lun": 0,
+                "caching": "None",
+                "createOption":"Empty",
+                "managedDisk":{
+                  "storageAccountType":"Premium_LRS"
+                }
               },
               {
                 "name":"DockerDisk",
-                "sizeGB":"[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]"
+                "diskSizeGB":"[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]",
+                "lun": 1,
+                "caching": "None",
+                "createOption":"Empty",
+                "managedDisk":{
+                  "storageAccountType":"Premium_LRS"
+                }
               },
               {
                 "name":"KubeletDisk",
-                "sizeGB":"[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]"
+                "diskSizeGB":"[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]",
+                "lun": 2,
+                "caching": "None",
+                "createOption":"Empty",
+                "managedDisk":{
+                  "storageAccountType":"Premium_LRS"
+                }
               }
             ]
           },
@@ -204,11 +222,23 @@
             "value":[
               {
                 "name":"DockerDisk",
-                "sizeGB":"[if(greater(parameters('workerNodes')[0].dockerVolumeSizeGB, 0), parameters('workerNodes')[0].dockerVolumeSizeGB, 50)]"
+                "diskSizeGB":"[if(greater(parameters('workerNodes')[0].dockerVolumeSizeGB, 0), parameters('workerNodes')[0].dockerVolumeSizeGB, 50)]",
+                "lun": 0,
+                "caching": "None",
+                "createOption":"Empty",
+                "managedDisk":{
+                  "storageAccountType":"Premium_LRS"
+                }
               },
               {
                 "name":"KubeletDisk",
-                "sizeGB":"[if(greater(parameters('workerNodes')[0].kubeletVolumeSizeGB, 0), parameters('workerNodes')[0].kubeletVolumeSizeGB, 100)]"
+                "diskSizeGB":"[if(greater(parameters('workerNodes')[0].kubeletVolumeSizeGB, 0), parameters('workerNodes')[0].kubeletVolumeSizeGB, 100)]",
+                "lun": 1,
+                "caching": "None",
+                "createOption":"Empty",
+                "managedDisk":{
+                  "storageAccountType":"Premium_LRS"
+                }
               }
             ]
           },
