@@ -241,6 +241,7 @@
             "copy":[
               {
                 "name":"dataDisks",
+                "condition":"[if(equals(length(parameters('vmssVmDataDisks')), 0), bool('false'), bool('true'))]",
                 "count":"[length(parameters('vmssVmDataDisks'))]",
                 "input":{
                   "caching":"ReadWrite",
