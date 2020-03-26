@@ -161,13 +161,8 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 			Enabled:      true,
 		},
 		{
-			AssetContent: ignition.DockerMountUnit,
-			Name:         "var-lib-docker.mount",
-			Enabled:      true,
-		},
-		{
-			AssetContent: ignition.KubeletMountUnit,
-			Name:         "var-lib-kubelet.mount",
+			AssetContent: ignition.EphemeralDiskMountPointFixUnit,
+			Name:         "ephemeral-disk-mount-point-fix.mount",
 			Enabled:      true,
 		},
 		{

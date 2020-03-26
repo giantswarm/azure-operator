@@ -31,24 +31,7 @@ const Small = `{
       }
     ],
   "filesystems": [
-      { 
-        "name": "docker",
-        "mount": {
-          "device": "/dev/disk/azure/scsi1/{{ if eq .InstanceRole "master"}}lun1{{ else }}lun0{{end}}",
-          "wipeFilesystem": true,
-          "label": "docker",
-          "format": "xfs"
-        }
-      },
-      { 
-        "name": "kubelet",
-        "mount": {
-          "device": "/dev/disk/azure/scsi1/{{ if eq .InstanceRole "master"}}lun2{{ else }}lun1{{end}}",
-          "wipeFilesystem": true,
-          "label": "kubelet",
-          "format": "xfs"
-        }
-      }{{ if eq .InstanceRole "master" -}},
+      {{ if eq .InstanceRole "master" -}}
       {
         "name": "etcd",
         "mount": {
