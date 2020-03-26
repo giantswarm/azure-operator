@@ -190,10 +190,6 @@
           "vmssVmCount":{
             "value":"[length(parameters('workerNodes'))]"
           },
-          "vmssVmDataDisks":{
-            "value":[
-            ]
-          },
           "vmssSshUser":{
             "value":"[parameters('workerNodes')[0].adminUsername]"
           },
