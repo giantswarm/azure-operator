@@ -44,13 +44,6 @@
     "vmssMSIEnabled":{
       "type":"bool"
     },
-    "vmssTemplateFile":{
-      "type":"string",
-      "defaultValue":"vmss.json",
-      "allowedValues": [
-        "vmss.json"
-      ]
-    },
     "workerCloudConfigData":{
       "type":"secureString",
       "metadata":{
@@ -76,8 +69,7 @@
   },
   "variables":{
     "apiVersion":"2016-09-01",
-    "kubernetesLBBackendID":"[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
-    "vmssTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('vmssTemplateFile'))]"
+    "kubernetesLBBackendID":"[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]"
   },
   "resources":[
     {
@@ -87,7 +79,7 @@
       "properties":{
         "mode":"incremental",
         "templateLink":{
-          "uri":"[variables('vmssTemplateURI')]",
+          "uri":"[uri(deployment().properties.templateLink.uri, 'masters.json')]",
           "contentVersion":"1.0.0.0"
         },
         "parameters":{
@@ -176,7 +168,7 @@
       "properties":{
         "mode":"incremental",
         "templateLink":{
-          "uri":"[variables('vmssTemplateURI')]",
+          "uri":"[uri(deployment().properties.templateLink.uri, 'workers.json')]",
           "contentVersion":"1.0.0.0"
         },
         "parameters":{
