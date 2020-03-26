@@ -162,7 +162,7 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		},
 		{
 			AssetContent: ignition.EphemeralDiskMountPointFixUnit,
-			Name:         "ephemeral-disk-mount-point-fix.mount",
+			Name:         "ephemeral-disk-mount-point-fix.service",
 			Enabled:      true,
 		},
 		{
