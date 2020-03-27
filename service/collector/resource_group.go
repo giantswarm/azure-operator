@@ -80,7 +80,7 @@ func NewResourceGroup(config ResourceGroupConfig) (*ResourceGroup, error) {
 }
 
 func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
-	clientSets, err := credential.GetAzureClientSetsFromCredentialSecrets(r.k8sClient, r.environmentName)
+	clientSets, err := credential.GetAzureClientSetsFromCredentialSecretsBySubscription(r.k8sClient, r.environmentName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -91,7 +91,7 @@ func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	clientSets[&r.cpAzureClientSetConfig] = operatorClientSet
+	clientSets[r.cpAzureClientSetConfig.SubscriptionID] = operatorClientSet
 
 	var g errgroup.Group
 

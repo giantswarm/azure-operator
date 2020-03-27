@@ -134,6 +134,21 @@ func GetAzureClientSetsFromCredentialSecrets(k8sclient kubernetes.Interface, env
 	return azureClientSets, nil
 }
 
+func GetAzureClientSetsFromCredentialSecretsBySubscription(k8sclient kubernetes.Interface, environmentName string) (map[string]*client.AzureClientSet, error) {
+	azureClientSets := map[string]*client.AzureClientSet{}
+
+	rawAzureClientSets, err := GetAzureClientSetsFromCredentialSecrets(k8sclient, environmentName)
+	if err != nil {
+		return azureClientSets, microerror.Mask(err)
+	}
+
+	for azureClientSetConfig, azureClientSet := range rawAzureClientSets {
+		azureClientSets[azureClientSetConfig.SubscriptionID] = azureClientSet
+	}
+
+	return azureClientSets, nil
+}
+
 func GetCredentialSecrets(k8sClient kubernetes.Interface) (secrets []v1.Secret, err error) {
 	mark := ""
 	page := 0

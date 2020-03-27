@@ -108,7 +108,7 @@ func NewUsage(config UsageConfig) (*Usage, error) {
 
 func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 	ctx := context.Background()
-	clientSets, err := credential.GetAzureClientSetsFromCredentialSecrets(u.k8sClient, u.environmentName)
+	clientSets, err := credential.GetAzureClientSetsFromCredentialSecretsBySubscription(u.k8sClient, u.environmentName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -119,11 +119,11 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	clientSets[&u.cpAzureClientSetConfig] = operatorClientSet
+	clientSets[u.cpAzureClientSetConfig.SubscriptionID] = operatorClientSet
 
 	// We track usage metrics for each client labeled by subscription.
 	// That way we prevent duplicated metrics.
-	for azureClientSetConfig, azureClientSet := range clientSets {
+	for subscriptionID, azureClientSet := range clientSets {
 		r, err := azureClientSet.UsageClient.List(ctx, u.location)
 		if err != nil {
 			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource usage information", "stack", fmt.Sprintf("%v", err))
@@ -136,14 +136,14 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 						prometheus.GaugeValue,
 						float64(*v.CurrentValue),
 						*v.Name.LocalizedValue,
-						azureClientSetConfig.SubscriptionID,
+						subscriptionID,
 					)
 					ch <- prometheus.MustNewConstMetric(
 						usageLimitDesc,
 						prometheus.GaugeValue,
 						float64(*v.Limit),
 						*v.Name.LocalizedValue,
-						azureClientSetConfig.SubscriptionID,
+						subscriptionID,
 					)
 				}
 
