@@ -10,6 +10,9 @@ import (
 	"github.com/prometheus/client_golang/prometheus"
 	"golang.org/x/sync/errgroup"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/giantswarm/azure-operator/client"
+	"github.com/giantswarm/azure-operator/service/credential"
 )
 
 const (
@@ -41,14 +44,16 @@ type ResourceGroupConfig struct {
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
-	EnvironmentName string
+	EnvironmentName        string
+	CPAzureClientSetConfig client.AzureClientSetConfig
 }
 
 type ResourceGroup struct {
 	k8sClient kubernetes.Interface
 	logger    micrologger.Logger
 
-	environmentName string
+	environmentName        string
+	cpAzureClientSetConfig client.AzureClientSetConfig
 }
 
 func NewResourceGroup(config ResourceGroupConfig) (*ResourceGroup, error) {
@@ -67,17 +72,26 @@ func NewResourceGroup(config ResourceGroupConfig) (*ResourceGroup, error) {
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
-		environmentName: config.EnvironmentName,
+		environmentName:        config.EnvironmentName,
+		cpAzureClientSetConfig: config.CPAzureClientSetConfig,
 	}
 
 	return r, nil
 }
 
 func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
-	clientSets, err := getClientSets(r.k8sClient, r.environmentName)
+	clientSets, err := credential.GetAzureClientSetsFromCredentialSecrets(r.k8sClient, r.environmentName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	// The operator potentially uses a different set of credentials than
+	// tenant clusters, so we add the operator credentials as well.
+	operatorClientSet, err := client.NewAzureClientSet(r.cpAzureClientSetConfig)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	clientSets[&r.cpAzureClientSetConfig] = operatorClientSet
 
 	var g errgroup.Group
 

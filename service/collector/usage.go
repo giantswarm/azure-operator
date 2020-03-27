@@ -4,17 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/credential"
 )
 
@@ -53,8 +49,9 @@ type UsageConfig struct {
 	// EnvironmentName is the name of the Azure environment used to compute the
 	// azure.Environment type. See also
 	// https://godoc.org/github.com/Azure/go-autorest/autorest/azure#Environment.
-	EnvironmentName string
-	Location        string
+	EnvironmentName        string
+	Location               string
+	CPAzureClientSetConfig client.AzureClientSetConfig
 }
 
 type Usage struct {
@@ -64,8 +61,9 @@ type Usage struct {
 
 	usageScrapeError prometheus.Counter
 
-	environmentName string
-	location        string
+	environmentName        string
+	location               string
+	cpAzureClientSetConfig client.AzureClientSetConfig
 }
 
 const namespace = "azure_operator"
@@ -100,52 +98,33 @@ func NewUsage(config UsageConfig) (*Usage, error) {
 
 		usageScrapeError: scrapeErrorCounter,
 
-		environmentName: config.EnvironmentName,
-		location:        config.Location,
+		environmentName:        config.EnvironmentName,
+		location:               config.Location,
+		cpAzureClientSetConfig: config.CPAzureClientSetConfig,
 	}
 
 	return u, nil
 }
 
 func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
-	// We need all CRs to gather all subscriptions below.
-	var crs []providerv1alpha1.AzureConfig
-	{
-		mark := ""
-		page := 0
-		for page == 0 || len(mark) > 0 {
-			opts := metav1.ListOptions{
-				Continue: mark,
-			}
-			list, err := u.g8sClient.ProviderV1alpha1().AzureConfigs("").List(opts)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			crs = append(crs, list.Items...)
-
-			mark = list.Continue
-			page++
-		}
+	ctx := context.Background()
+	clientSets, err := credential.GetAzureClientSetsFromCredentialSecrets(u.k8sClient, u.environmentName)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	// We generate clients and group them by subscription.
-	clients := map[string]*compute.UsageClient{}
-	{
-		for _, cr := range crs {
-			c, err := u.getUsageClient(cr)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			clients[c.SubscriptionID] = c
-		}
+	// The operator potentially uses a different set of credentials than
+	// tenant clusters, so we add the operator credentials as well.
+	operatorClientSet, err := client.NewAzureClientSet(u.cpAzureClientSetConfig)
+	if err != nil {
+		return microerror.Mask(err)
 	}
+	clientSets[&u.cpAzureClientSetConfig] = operatorClientSet
 
 	// We track usage metrics for each client labeled by subscription.
 	// That way we prevent duplicated metrics.
-	for subscriptionID, c := range clients {
-		r, err := c.List(context.Background(), u.location)
+	for azureClientSetConfig, azureClientSet := range clientSets {
+		r, err := azureClientSet.UsageClient.List(ctx, u.location)
 		if err != nil {
 			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource usage information", "stack", fmt.Sprintf("%v", err))
 			u.usageScrapeError.Inc()
@@ -157,18 +136,18 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 						prometheus.GaugeValue,
 						float64(*v.CurrentValue),
 						*v.Name.LocalizedValue,
-						subscriptionID,
+						azureClientSetConfig.SubscriptionID,
 					)
 					ch <- prometheus.MustNewConstMetric(
 						usageLimitDesc,
 						prometheus.GaugeValue,
 						float64(*v.Limit),
 						*v.Name.LocalizedValue,
-						subscriptionID,
+						azureClientSetConfig.SubscriptionID,
 					)
 				}
 
-				err := r.Next()
+				err := r.NextWithContext(ctx)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -183,19 +162,4 @@ func (u *Usage) Describe(ch chan<- *prometheus.Desc) error {
 	ch <- usageCurrentDesc
 	ch <- usageLimitDesc
 	return nil
-}
-
-func (u *Usage) getUsageClient(cr providerv1alpha1.AzureConfig) (*compute.UsageClient, error) {
-	config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	config.EnvironmentName = u.environmentName
-
-	azureClients, err := client.NewAzureClientSet(*config)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return azureClients.UsageClient, nil
 }
