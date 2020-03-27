@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	vmssVMListDesc *prometheus.Desc = prometheus.NewDesc(
+	vmssVMListDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(vmssMetricsNamespace, vmssMetricsSubsystem, "vmss_instance_list"),
 		"Remaining number of VMSS VM list operations.",
 		[]string{
@@ -38,12 +38,18 @@ var (
 		},
 		nil,
 	)
-	vmssVMListErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
-		Namespace: vmssMetricsNamespace,
-		Subsystem: vmssMetricsSubsystem,
-		Name:      "vmss_instance_list_parsing_errors",
-		Help:      "Errors trying to parse the remaining requests from the response header",
-	})
+	vmssVMListErrorCounter = prometheus.NewCounterVec(
+		prometheus.CounterOpts{
+			Namespace: vmssMetricsNamespace,
+			Subsystem: vmssMetricsSubsystem,
+			Name:      "vmss_instance_list_parsing_errors",
+			Help:      "Errors trying to parse the remaining requests from the response header",
+		},
+		[]string{
+			"subscription",
+			"clientid",
+		},
+	)
 )
 
 type VMSSRateLimitConfig struct {
@@ -182,7 +188,7 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 				// Header not found, we consider this an error.
 				if len(headers) == 0 {
-					vmssVMListErrorCounter.Inc()
+					vmssVMListErrorCounter.WithLabelValues(config.SubscriptionID, config.ClientID).Inc()
 					continue
 				}
 
@@ -194,14 +200,14 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 						kv := strings.SplitN(t, ";", 2)
 						if len(kv) != 2 {
 							// We expect exactly two tokens, otherwise we consider this a parsing error.
-							vmssVMListErrorCounter.Inc()
+							vmssVMListErrorCounter.WithLabelValues(config.SubscriptionID, config.ClientID).Inc()
 							continue
 						}
 
 						// The second token must be a number or we don't know what we got from MS.
 						val, err := strconv.ParseFloat(kv[1], 64)
 						if err != nil {
-							vmssVMListErrorCounter.Inc()
+							vmssVMListErrorCounter.WithLabelValues(config.SubscriptionID, config.ClientID).Inc()
 							continue
 						}
 
