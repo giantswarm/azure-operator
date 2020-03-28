@@ -326,6 +326,9 @@
           },
           "zones":{
             "value":"[parameters('zones')]"
+          },
+          "vmssStandardLrsSize": {
+            "value": "[variables('vmssStandardLrsSize')]"
           }
         }
       }
