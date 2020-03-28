@@ -159,7 +159,7 @@
       "Standard_NV24",
       "Standard_NV6"
     ],
-    "vmssStorageAccountType":"[if(contains(variables('vmssStandardLrsSize'), parameters('vmssVmSize')), 'Standard_LRS', 'Premium_LRS')]",
+    "vmssStorageAccountType":"[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]",
     "vmssTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('vmssTemplateFile'))]"
   },
   "resources":[
@@ -186,9 +186,6 @@
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"
           },
-          "vmssVmSize":{
-            "value":"[parameters('masterNodes')[0].vmSize]"
-          },
           "vmssVmCount":{
             "value":"[length(parameters('masterNodes'))]"
           },
@@ -200,7 +197,7 @@
                 "diskSizeGB": 100,
                 "managedDisk":
                 {
-                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('vmssVmSize')), 'Standard_LRS', 'Premium_LRS')]"
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
                 },
                 "lun": 0
               }
@@ -274,9 +271,6 @@
           },
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"
-          },
-          "vmssVmSize":{
-            "value":"[parameters('workerNodes')[0].vmSize]"
           },
           "vmssVmCount":{
             "value":"[length(parameters('workerNodes'))]"
