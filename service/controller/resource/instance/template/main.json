@@ -186,6 +186,9 @@
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"
           },
+          "vmssVmSize":{
+            "value":"[parameters('masterNodes')[0].vmSize]"
+          },
           "vmssVmCount":{
             "value":"[length(parameters('masterNodes'))]"
           },
@@ -271,6 +274,9 @@
           },
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"
+          },
+          "vmssVmSize":{
+            "value":"[parameters('workerNodes')[0].vmSize]"
           },
           "vmssVmCount":{
             "value":"[length(parameters('workerNodes'))]"
