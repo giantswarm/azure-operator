@@ -112,8 +112,13 @@
           "vmssVmDataDisks":{
             "value":[
               {
-                "name":"EtcdDisk",
-                "sizeGB":100,
+                "caching": "ReadWrite",
+                "createOption": "Empty",
+                "diskSizeGB": 100,
+                "managedDisk":
+                {
+                  "storageAccountType": "Standard_LRS"
+                },
                 "lun": 0
               }
             ]
