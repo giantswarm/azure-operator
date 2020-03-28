@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -22,7 +23,7 @@ import (
 const (
 	remainingReadsHeaderName  = "x-ms-ratelimit-remaining-subscription-reads"
 	remainingWritesHeaderName = "x-ms-ratelimit-remaining-subscription-writes"
-	resourceGroupName         = "azure-operator-empty-rg-for-metrics"
+	resourceGroupNamePrefix   = "azure-operator-empty-rg-for-metrics"
 	metricsNamespace          = "azure_operator"
 	metricsSubsystem          = "rate_limit"
 )
@@ -149,7 +150,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 					"collector": to.StringPtr(project.Name()),
 				},
 			}
-			resourceGroup, err := clientSet.GroupsClient.CreateOrUpdate(ctx, resourceGroupName, resourceGroup)
+			resourceGroup, err := clientSet.GroupsClient.CreateOrUpdate(ctx, u.getResourgeGroupName(), resourceGroup)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -173,7 +174,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 		// Remaining read requests can be retrieved sending a read request.
 		var reads float64
 		{
-			groupResponse, err := clientSet.GroupsClient.Get(ctx, resourceGroupName)
+			groupResponse, err := clientSet.GroupsClient.Get(ctx, u.getResourgeGroupName())
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -217,4 +218,8 @@ func (u *RateLimit) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.Az
 	}
 
 	return config, azureClients, nil
+}
+
+func (u *RateLimit) getResourgeGroupName() string {
+	return fmt.Sprintf("%s-%s", resourceGroupNamePrefix, u.location)
 }
