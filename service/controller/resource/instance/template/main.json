@@ -113,12 +113,7 @@
             "value":[
               {
                 "name":"EtcdDisk",
-                "diskSizeGB":100,
-                "caching":"None",
-                "createOption":"Empty",
-                "managedDisk":{
-                  "storageAccountType":"Premium_LRS"
-                },
+                "sizeGB":100,
                 "lun": 0
               }
             ]
