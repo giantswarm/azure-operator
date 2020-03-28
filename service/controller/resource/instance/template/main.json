@@ -306,7 +306,7 @@
             "value":"[parameters('workerNodes')[0].osImage.version]"
           },
           "vmssOverprovision":{
-            "value":"true"
+            "value":"false"
           },
           "vmssVmCustomData":{
             "value":"[parameters('workerCloudConfigData')]"
