@@ -117,7 +117,7 @@
                 "diskSizeGB": 100,
                 "managedDisk":
                 {
-                  "storageAccountType": "Standard_LRS"
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('vmssVmSize')), 'Standard_LRS', 'Premium_LRS')]"
                 },
                 "lun": 0
               }
