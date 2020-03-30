@@ -204,7 +204,7 @@
                 {
                   "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
                 },
-                "lun": 20
+                "lun": 0
               },
               {
                 "caching": "ReadWrite",
@@ -214,7 +214,7 @@
                 {
                   "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
                 },
-                "lun": 21
+                "lun": 1
               },
               {
                 "caching": "ReadWrite",
@@ -224,7 +224,7 @@
                 {
                   "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
                 },
-                "lun": 22
+                "lun": 2
               }
             ]
           },
