@@ -24,6 +24,8 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 
 	// TODO check for rate limit.
 
+	allSucceeded := true
+
 	for iterator.NotDone() {
 		instance := iterator.Value()
 
@@ -51,12 +53,12 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaged instance %s", *instance.Name))
-			return false, nil
+			allSucceeded = false
 		case ProvisioningStateSucceeded:
 			// OK to continue.
 		default:
 			// Just wait.
-			return false, nil
+			allSucceeded = false
 		}
 
 		if err := iterator.Next(); err != nil {
@@ -64,7 +66,7 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 		}
 	}
 
-	return true, nil
+	return allSucceeded, nil
 }
 
 func (r *Resource) startInstanceWatchdog(ctx context.Context, rg string, vmssName string) error {
