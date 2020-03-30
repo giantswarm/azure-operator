@@ -52,7 +52,7 @@ const Small = `{
       {
         "name": "etcd",
         "mount": {
-          "device": "/dev/disk/azure/scsi1/lun20",
+          "device": "/dev/disk/azure/scsi1/lun0",
           "wipeFilesystem": false,
           "label": "etcd",
           "format": "ext4"
