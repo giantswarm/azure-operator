@@ -86,7 +86,7 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/k8scloudconfig"
-  branch = "hardcode-registry"
+  version = "=6.0.0"
 
 [[constraint]]
   name = "github.com/giantswarm/microendpoint"
