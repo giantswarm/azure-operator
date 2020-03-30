@@ -336,6 +336,13 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
 
+	go func() {
+		err := r.startInstanceWatchdog(ctx, g, s)
+		if err != nil {
+			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName))
+		}
+	}()
+
 	return nil
 }
 

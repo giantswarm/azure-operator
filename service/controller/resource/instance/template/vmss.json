@@ -73,7 +73,7 @@
   },
   "variables":{
     "authorizationAPIVersion":"2017-05-01",
-    "computeAPIVersion":"2017-12-01",
+    "computeAPIVersion":"2019-07-01",
     "contributorRoleDefinitionGUID":"b24988ac-6180-42a0-ab88-20f7382dd24c",
     "contributorRoleDefinitionId":"[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleDefinitionGUID'))]",
     "roleAssignmentName":"[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
@@ -238,21 +238,7 @@
                 "storageAccountType":"[variables('vmssStorageAccountType')]"
               }
             },
-            "copy":[
-              {
-                "name":"dataDisks",
-                "count":"[length(parameters('vmssVmDataDisks'))]",
-                "input":{
-                  "caching":"ReadWrite",
-                  "createOption":"Empty",
-                  "diskSizeGB":"[parameters('vmssVmDataDisks')[copyIndex('dataDisks')].sizeGB]",
-                  "managedDisk":{
-                    "storageAccountType":"[variables('vmssStorageAccountType')]"
-                  },
-                  "lun":"[parameters('vmssVmDataDisks')[copyIndex('dataDisks')].lun]]"
-                }
-              }
-            ]
+            "dataDisks":"[parameters('vmssVmDataDisks')]"
           },
           "networkProfile":{
             "networkInterfaceConfigurations":[

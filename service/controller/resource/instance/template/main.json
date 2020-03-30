@@ -75,7 +75,7 @@
     }
   },
   "variables":{
-    "apiVersion":"2016-09-01",
+    "apiVersion":"2017-08-01",
     "kubernetesLBBackendID":"[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
     "vmssTemplateURI":"[uri(deployment().properties.templateLink.uri, parameters('vmssTemplateFile'))]"
   },
@@ -112,16 +112,34 @@
           "vmssVmDataDisks":{
             "value":[
               {
-                "name":"EtcdDisk",
-                "sizeGB":100
+                "caching": "ReadWrite",
+                "createOption": "Empty",
+                "diskSizeGB": 100,
+                "managedDisk":
+                {
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
+                },
+                "lun": 20
               },
               {
-                "name":"DockerDisk",
-                "sizeGB":"[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]"
+                "caching": "ReadWrite",
+                "createOption": "Empty",
+                "diskSizeGB": "[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]",
+                "managedDisk":
+                {
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
+                },
+                "lun": 21
               },
               {
-                "name":"KubeletDisk",
-                "sizeGB":"[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]"
+                "caching": "ReadWrite",
+                "createOption": "Empty",
+                "diskSizeGB": "[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]",
+                "managedDisk":
+                {
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
+                },
+                "lun": 22
               }
             ]
           },
@@ -203,12 +221,24 @@
           "vmssVmDataDisks":{
             "value":[
               {
-                "name":"DockerDisk",
-                "sizeGB":"[if(greater(parameters('workerNodes')[0].dockerVolumeSizeGB, 0), parameters('workerNodes')[0].dockerVolumeSizeGB, 50)]"
+                "caching": "ReadWrite",
+                "createOption": "Empty",
+                "diskSizeGB": "[if(greater(parameters('workerNodes')[0].dockerVolumeSizeGB, 0), parameters('workerNodes')[0].dockerVolumeSizeGB, 50)]",
+                "managedDisk":
+                {
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('workerNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
+                },
+                "lun": 21
               },
               {
-                "name":"KubeletDisk",
-                "sizeGB":"[if(greater(parameters('workerNodes')[0].kubeletVolumeSizeGB, 0), parameters('workerNodes')[0].kubeletVolumeSizeGB, 100)]"
+                "caching": "ReadWrite",
+                "createOption": "Empty",
+                "diskSizeGB": "[if(greater(parameters('workerNodes')[0].kubeletVolumeSizeGB, 0), parameters('workerNodes')[0].kubeletVolumeSizeGB, 100)]",
+                "managedDisk":
+                {
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('workerNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
+                },
+                "lun": 22
               }
             ]
           },
