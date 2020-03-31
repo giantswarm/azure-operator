@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/v13/templates"
 )
 
-func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}, location string) (azureresource.Deployment, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -110,7 +110,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           getWorkerNodesConfiguration(obj),
 		"workerSubnetID":        cc.WorkerSubnetID,
-		"zones":                 key.AvailabilityZones(obj),
+		"zones":                 key.AvailabilityZones(obj, location),
 	}
 
 	d := azureresource.Deployment{

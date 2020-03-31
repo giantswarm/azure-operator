@@ -49,10 +49,14 @@ const (
 	CertificateEncryptionNamespace = "default"
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
+
+	ClusterIDLabel = "giantswarm.io/cluster"
 )
 
-const (
-	ClusterIDLabel = "giantswarm.io/cluster"
+var (
+	LocationsThatDontSupportAZs = []string{
+		"germanywestcentral",
+	}
 )
 
 func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
@@ -307,7 +311,13 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 }
 
 // AvailabilityZones returns the availability zones where the cluster will be created.
-func AvailabilityZones(customObject providerv1alpha1.AzureConfig) []int {
+func AvailabilityZones(customObject providerv1alpha1.AzureConfig, location string) []int {
+	for _, l := range LocationsThatDontSupportAZs {
+		if l == location {
+			return []int{}
+		}
+	}
+
 	if customObject.Spec.Azure.AvailabilityZones == nil {
 		return []int{}
 	}

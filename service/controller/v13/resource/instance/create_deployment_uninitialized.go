@@ -22,10 +22,19 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
+	groupsClient, err := r.getGroupsClient(ctx)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-	computedDeployment, err := r.newDeployment(ctx, customObject, nil)
+	group, err := groupsClient.Get(ctx, key.ClusterID(customObject))
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	computedDeployment, err := r.newDeployment(ctx, customObject, nil, *group.Location)
 	if controllercontext.IsInvalidContext(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")

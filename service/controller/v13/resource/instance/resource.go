@@ -94,6 +94,15 @@ func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.Dep
 	return sc.AzureClientSet.DeploymentsClient, nil
 }
 
+func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cc.AzureClientSet.GroupsClient, nil
+}
+
 func (r *Resource) getScaleSetsClient(ctx context.Context) (*compute.VirtualMachineScaleSetsClient, error) {
 	sc, err := controllercontext.FromContext(ctx)
 	if err != nil {
