@@ -1,10 +1,11 @@
 package vmsscheck
 
 type guardJob struct {
-	id string
-
+	id            string
 	resourceGroup string
 	vmss          string
+
+	onFinished func()
 }
 
 func (gj *guardJob) ID() string {
@@ -18,5 +19,7 @@ func (gj *guardJob) Run() error {
 
 func (gj *guardJob) Finished() bool {
 	// TODO: If any of the VMSS instances are in Failed state, return false here.
+	gj.onFinished()
+
 	return true
 }

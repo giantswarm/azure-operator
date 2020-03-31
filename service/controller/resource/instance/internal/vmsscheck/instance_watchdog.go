@@ -2,6 +2,7 @@ package vmsscheck
 
 import (
 	"context"
+	"sync"
 
 	"github.com/giantswarm/micrologger"
 
@@ -15,7 +16,7 @@ type Config struct {
 }
 
 type concurrentInstanceWatchdog struct {
-	vmssGuards map[string]*guardJob
+	vmssGuards *sync.Map
 	pool       *workerpool.Pool
 }
 
@@ -24,27 +25,29 @@ func NewInstanceWatchdog(config Config) (InstanceWatchdog, error) {
 	}
 
 	wd := &concurrentInstanceWatchdog{
-		pool: workerpool.New(config.NumWorkers, config.Logger),
+		vmssGuards: new(sync.Map),
+		pool:       workerpool.New(config.NumWorkers, config.Logger),
 	}
 
 	return wd, nil
 }
 
 func (wd *concurrentInstanceWatchdog) GuardVMSS(ctx context.Context, resourceGroupName, vmssName string) {
-	guardName := vmssGuardName(resourceGroupName, vmssName)
-	_, exists := wd.vmssGuards[guardName]
+	jobID := vmssGuardName(resourceGroupName, vmssName)
+	job := &guardJob{
+		id:            jobID,
+		resourceGroup: resourceGroupName,
+		vmss:          vmssName,
+
+		onFinished: func() { wd.vmssGuards.Delete(jobID) },
+	}
+
+	_, exists := wd.vmssGuards.LoadOrStore(job.id, job)
 	if exists {
 		return
 	}
 
-	gj := &guardJob{
-		id: guardName,
-
-		resourceGroup: resourceGroupName,
-		vmss:          vmssName,
-	}
-
-	wd.pool.EnqueueJob(gj)
+	wd.pool.EnqueueJob(job)
 }
 
 func vmssGuardName(resourceGroupName, vmssGuardName string) string {
