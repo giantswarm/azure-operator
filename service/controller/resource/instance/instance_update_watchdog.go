@@ -122,25 +122,8 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 	return allSucceeded, nil
 }
 
-func (r *Resource) startInstanceWatchdog(ctx context.Context, rg string, vmssName string) error {
+func (r *Resource) startInstanceWatchdog(ctx context.Context, rg string, vmssName string) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("[WATCHDOG] Starting watchdog for VMSS %s", vmssName))
-
-	// Give some time to Azure for beginning the update.
-	time.Sleep(60 * time.Second)
-
-	for {
-		success, err := r.ensureWorkerInstancesAreAllRunning(ctx, rg, vmssName)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		if success {
-			break
-		}
-
-		time.Sleep(10 * time.Second)
-	}
-
+	r.instanceWatchdog.GuardVMSS(ctx, rg, vmssName)
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("[WATCHDOG] Stopping watchdog for VMSS %s", vmssName))
-	return nil
 }

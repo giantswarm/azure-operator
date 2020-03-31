@@ -1,6 +1,9 @@
 package workerpool
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
@@ -55,6 +58,10 @@ func (p *Pool) startWorker() {
 					break
 				}
 			}
+
+			// random wait time between 10 and 100 milliseconds, so we avoid infinite loop with idling jobs
+			waitTime := time.Duration((rand.Intn(10) + 1) * 10)
+			time.Sleep(waitTime * time.Millisecond)
 		}
 	}()
 }
