@@ -302,7 +302,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 	go func() {
 		err := r.startInstanceWatchdog(ctx, g, s)
 		if err != nil {
-			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName))
+			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName)) // nolint: errcheck
 		}
 	}()
 

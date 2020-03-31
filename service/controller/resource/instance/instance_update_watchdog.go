@@ -73,7 +73,7 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 	// Check for rate limit. If current remaining API calls are less than the desider threshold, we don't proceed.
 	rl3m, rl30m := checkVMSSApiRateLimitThresholds(iterator.Response().Response)
 	if rl3m < threshold3m || rl30m < threshold30m {
-		r.logger.LogCtx(ctx, "level", "warmomg", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, max3m, rl30m, max30m))
+		r.logger.LogCtx(ctx, "level", "warmomg", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, max3m, rl30m, max30m)) // nolint: errcheck
 		return false, nil
 	}
 
@@ -82,18 +82,18 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 	for iterator.NotDone() {
 		instance := iterator.Value()
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState)) // nolint: errcheck
 
 		switch *instance.ProvisioningState {
 		case ProvisioningStateFailed:
 			// Reimage the instance.
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaging instance %s", *instance.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaging instance %s", *instance.Name)) // nolint: errcheck
 
 			retries := 3
 			for retries > 0 {
 				_, err := c.Reimage(ctx, rg, vmssName, *instance.InstanceID, nil)
 				if err != nil {
-					r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error reimaging instance %s: %s", *instance.Name, err.Error()))
+					r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error reimaging instance %s: %s", *instance.Name, err.Error())) // nolint: errcheck
 					if retries == 0 {
 						return false, microerror.Mask(err)
 					}
@@ -105,7 +105,7 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 				break
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaged instance %s", *instance.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaged instance %s", *instance.Name)) // nolint: errcheck
 			allSucceeded = false
 		case ProvisioningStateSucceeded:
 			// OK to continue.
@@ -123,7 +123,7 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 }
 
 func (r *Resource) startInstanceWatchdog(ctx context.Context, rg string, vmssName string) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("[WATCHDOG] Starting watchdog for VMSS %s", vmssName))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("[WATCHDOG] Starting watchdog for VMSS %s", vmssName)) // nolint: errcheck
 
 	// Give some time to Azure for beginning the update.
 	time.Sleep(60 * time.Second)
@@ -141,6 +141,6 @@ func (r *Resource) startInstanceWatchdog(ctx context.Context, rg string, vmssNam
 		time.Sleep(10 * time.Second)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("[WATCHDOG] Stopping watchdog for VMSS %s", vmssName))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("[WATCHDOG] Stopping watchdog for VMSS %s", vmssName)) // nolint: errcheck
 	return nil
 }

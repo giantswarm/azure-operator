@@ -34,7 +34,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount)) // nolint: errcheck
 
 	allReady, err := r.ensureWorkerInstancesAreAllRunning(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if err != nil {
@@ -56,7 +56,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		go func() {
 			err := r.startInstanceWatchdog(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 			if err != nil {
-				r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for VMSS '%s'", key.WorkerVMSSName(cr)))
+				r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for VMSS '%s'", key.WorkerVMSSName(cr))) // nolint: errcheck
 			}
 		}()
 
