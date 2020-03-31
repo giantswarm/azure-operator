@@ -12,9 +12,9 @@ import (
 )
 
 const (
-	vmssVMListHeaderName = "checkVMSSApiRateLimitThresholds"
-	headerKey3m          = "3m"
-	headerKey30m         = "30m"
+	vmssVMListHeaderName = "X-Ms-Ratelimit-Remaining-Resource"
+	headerKey3m          = "Microsoft.Compute/HighCostGetVMScaleSet3Min"
+	headerKey30m         = "Microsoft.Compute/HighCostGetVMScaleSet30Min"
 	max3m                = 190
 	max30m               = 900
 	threshold3m          = max3m * 0.5
