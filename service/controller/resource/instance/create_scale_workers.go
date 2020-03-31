@@ -32,13 +32,13 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 
 	currentWorkerCount, err := r.getInstancesCount(ctx, cr, key.WorkerVMSSName)
 	if err != nil {
-		return ScaleUpWorkerVMSS, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
 	allReady, err := r.ensureWorkerInstancesAreAllRunning(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if err != nil {
-		return ScaleUpWorkerVMSS, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 	// Not all workers are Running in Azure, wait for next reconciliation loop.
 	if !allReady {
@@ -50,7 +50,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		// Raise the worker count by one
 		err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, currentWorkerCount+1)
 		if err != nil {
-			return ScaleUpWorkerVMSS, microerror.Mask(err)
+			return "", microerror.Mask(err)
 		}
 
 		go func() {
@@ -78,7 +78,7 @@ func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv
 
 	vmss, err := c.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
 	if err != nil {
-		return -1, microerror.Mask(err)
+		return 0, microerror.Mask(err)
 	}
 
 	return *vmss.Sku.Capacity, nil
