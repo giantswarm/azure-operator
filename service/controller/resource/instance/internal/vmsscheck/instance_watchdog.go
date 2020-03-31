@@ -38,6 +38,8 @@ func (wd *concurrentInstanceWatchdog) GuardVMSS(ctx context.Context, resourceGro
 	}
 
 	gj := &guardJob{
+		id: guardName,
+
 		resourceGroup: resourceGroupName,
 		vmss:          vmssName,
 	}
