@@ -3,10 +3,58 @@ package instance
 import (
 	"context"
 	"fmt"
+	"strconv"
+	"strings"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
 )
+
+const (
+	vmssVMListHeaderName = "checkVMSSApiRateLimitThresholds"
+	headerKey3m          = "3m"
+	headerKey30m         = "30m"
+	max3m                = 190
+	max30m               = 900
+	threshold3m          = max3m * 0.5
+	threshold30m         = max30m * 0.5
+)
+
+func (r *Resource) checkVMSSApiRateLimitThresholds(response autorest.Response) (int64, int64) {
+	headers := response.Header[vmssVMListHeaderName]
+
+	rl3m := int64(-1)
+	rl30m := int64(-1)
+
+	for _, l := range headers {
+		// Limits are a single comma separated string.
+		tokens := strings.SplitN(l, ",", -1)
+		for _, t := range tokens {
+			// Each limit's name and value are separated by a semicolon.
+			kv := strings.SplitN(t, ";", 2)
+			if len(kv) != 2 {
+				// We expect exactly two tokens, otherwise we ignore this header.
+				continue
+			}
+
+			// The second token must be a number, otherwise we ignore this header.
+			val, err := strconv.ParseInt(kv[1], 10, 32)
+			if err != nil {
+				continue
+			}
+
+			switch kv[0] {
+			case headerKey3m:
+				rl3m = val
+			case headerKey30m:
+				rl30m = val
+			}
+		}
+	}
+
+	return rl3m, rl30m
+}
 
 // If any of the instances is not Succeeded, returns false.
 // It reimages instances that are in "Failed" state.
@@ -22,7 +70,12 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 		return false, microerror.Mask(err)
 	}
 
-	// TODO check for rate limit.
+	// Check for rate limit. If current remaining API calls are less than the desider threshold, we don't proceed.
+	rl3m, rl30m := r.checkVMSSApiRateLimitThresholds(iterator.Response().Response)
+	if rl3m < threshold3m || rl30m < threshold30m {
+		r.logger.LogCtx(ctx, "level", "warmomg", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, max3m, rl30m, max30m))
+		return false, nil
+	}
 
 	allSucceeded := true
 
