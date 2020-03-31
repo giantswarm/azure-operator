@@ -13,6 +13,10 @@ type testJob struct {
 	f func() error
 }
 
+func (tj *testJob) ID() string {
+	return "test job id"
+}
+
 func (tj *testJob) Run() error {
 	return tj.f()
 }

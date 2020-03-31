@@ -1,6 +1,9 @@
 package workerpool
 
-import "github.com/giantswarm/micrologger"
+import (
+	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
+)
 
 type Pool struct {
 	jobQueue chan Job
@@ -38,10 +41,12 @@ func (p *Pool) startWorker() {
 				if j != nil {
 					err := j.Run()
 					if err != nil {
-						p.logger.Log("foobar")
+						p.logger.Log("level", "debug", "message", "job execution failed", "job_id", j.ID(), "stack", microerror.Stack(err))
 					} else {
 						if !j.Finished() {
 							p.EnqueueJob(j)
+						} else {
+							p.logger.Log("level", "debug", "message", "job finished", "job_id", j.ID())
 						}
 					}
 				}

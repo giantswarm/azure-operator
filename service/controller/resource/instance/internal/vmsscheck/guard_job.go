@@ -1,8 +1,14 @@
 package vmsscheck
 
 type guardJob struct {
+	id string
+
 	resourceGroup string
 	vmss          string
+}
+
+func (gj *guardJob) ID() string {
+	return gj.id
 }
 
 func (gj *guardJob) Run() error {
