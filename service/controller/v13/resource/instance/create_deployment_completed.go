@@ -29,11 +29,21 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		return "", microerror.Mask(err)
 	}
 
+	rgClient, err := r.getGroupsClient(ctx)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	rg, err := rgClient.Get(ctx, key.ResourceGroupName(customObject))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
 	s := *d.Properties.ProvisioningState
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if key.IsSucceededProvisioningState(s) {
-		computedDeployment, err := r.newDeployment(ctx, customObject, nil, *d.Location)
+		computedDeployment, err := r.newDeployment(ctx, customObject, nil, *rg.Location)
 		if blobclient.IsBlobNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
