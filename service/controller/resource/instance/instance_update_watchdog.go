@@ -89,8 +89,7 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 			// Reimage the instance.
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaging instance %s", *instance.Name)) // nolint: errcheck
 
-			retries := 3
-			for retries > 0 {
+			for retries := 0; retries <= 3; retries++ {
 				_, err := c.Reimage(ctx, rg, vmssName, *instance.InstanceID, nil)
 				if err != nil {
 					r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error reimaging instance %s: %s", *instance.Name, err.Error())) // nolint: errcheck
@@ -98,11 +97,8 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 						return false, microerror.Mask(err)
 					}
 
-					retries = retries - 1
 					time.Sleep(5 * time.Second)
 				}
-
-				break
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaged instance %s", *instance.Name)) // nolint: errcheck
