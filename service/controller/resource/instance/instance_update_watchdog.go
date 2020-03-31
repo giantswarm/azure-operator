@@ -21,7 +21,7 @@ const (
 	threshold30m         = max30m * 0.5
 )
 
-func (r *Resource) checkVMSSApiRateLimitThresholds(response autorest.Response) (int64, int64) {
+func checkVMSSApiRateLimitThresholds(response autorest.Response) (int64, int64) {
 	headers := response.Header[vmssVMListHeaderName]
 
 	rl3m := int64(-1)
@@ -71,7 +71,7 @@ func (r *Resource) ensureWorkerInstancesAreAllRunning(ctx context.Context, rg st
 	}
 
 	// Check for rate limit. If current remaining API calls are less than the desider threshold, we don't proceed.
-	rl3m, rl30m := r.checkVMSSApiRateLimitThresholds(iterator.Response().Response)
+	rl3m, rl30m := checkVMSSApiRateLimitThresholds(iterator.Response().Response)
 	if rl3m < threshold3m || rl30m < threshold30m {
 		r.logger.LogCtx(ctx, "level", "warmomg", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, max3m, rl30m, max30m))
 		return false, nil
