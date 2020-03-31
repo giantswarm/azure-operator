@@ -58,7 +58,8 @@ type ResourceSetConfig struct {
 	SSOPublicKey             string
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
-	TemplateVersion string
+	TemplateVersion  string
+	VMSSCheckWorkers int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -281,8 +282,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			Azure:           config.Azure,
-			TemplateVersion: config.TemplateVersion,
+			Azure:            config.Azure,
+			TemplateVersion:  config.TemplateVersion,
+			VMSSCheckWorkers: config.VMSSCheckWorkers,
 		}
 
 		instanceResource, err = instance.New(c)
