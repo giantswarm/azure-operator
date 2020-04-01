@@ -51,6 +51,7 @@ workflows:
       # execute linting and run tests
       - architect/go-test-legacy:
           name: test
+
       # build binary
       - build:
           requires:
@@ -58,6 +59,7 @@ workflows:
           filters:
             tags:
               only: /^v.*/
+
       # build and push docker image to quay
       - architect/push-to-docker:
           name: push-azure-operator-to-quay
@@ -70,6 +72,7 @@ workflows:
             # Trigger the job also on git tag.
             tags:
               only: /^v.*/
+
       # build and push helm chart to app catalog
       - architect/push-to-app-catalog:
           name: push-azure-operator-to-control-plane-app-catalog
@@ -83,6 +86,7 @@ workflows:
             # Trigger the job also on git tag.
             tags:
               only: /^v.*/
+
       # deploy to installations
       - architect/push-to-app-collection:
           name: push-azure-operator-to-azure-app-collection
@@ -97,6 +101,7 @@ workflows:
             # Trigger the job also on git tag.
             tags:
               only: /^v.*/
+
       # manual approval to run e2e tests
       - hold:
           type: approval
