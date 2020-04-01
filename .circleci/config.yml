@@ -1,4 +1,3 @@
-
 orbs:
   architect: giantswarm/architect@dev:helm-conftest
 
