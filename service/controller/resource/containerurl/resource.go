@@ -41,8 +41,8 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, groupName, storageAccountName, primaryKey string) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "setting containerurl to context")
+func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, storageAccountName, primaryKey string) error {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "setting containerurl to context") // nolint: errcheck
 
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
@@ -65,7 +65,7 @@ func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, 
 
 	cc.ContainerURL = &containerURL
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "set containerurl to context")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "set containerurl to context") // nolint: errcheck
 
 	return nil
 }

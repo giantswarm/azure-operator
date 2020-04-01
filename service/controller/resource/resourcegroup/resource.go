@@ -70,7 +70,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created") // nolint: errcheck
 
 	resourceGroup := azureresource.Group{
 		Name:      to.StringPtr(key.ClusterID(cr)),
@@ -83,7 +83,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is created") // nolint: errcheck
 
 	return nil
 }
@@ -100,7 +100,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion") // nolint: errcheck
 
 	_, err = groupsClient.Get(ctx, key.ClusterID(cr))
 	if IsNotFound(err) {
@@ -119,16 +119,16 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion in progress")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion in progress") // nolint: errcheck
 			finalizerskeptcontext.SetKept(ctx)
 			reconciliationcanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
 
 			return nil
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group deletion")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group deletion") // nolint: errcheck
 
 	return nil
 }
@@ -145,17 +145,4 @@ func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsCl
 	}
 
 	return cc.AzureClientSet.GroupsClient, nil
-}
-
-func toGroup(v interface{}) (Group, error) {
-	if v == nil {
-		return Group{}, nil
-	}
-
-	resourceGroup, ok := v.(Group)
-	if !ok {
-		return Group{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", Group{}, v)
-	}
-
-	return resourceGroup, nil
 }

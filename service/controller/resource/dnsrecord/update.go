@@ -6,29 +6,21 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/go-autorest/autorest/to"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
-
-	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{}) error {
-	cr, err := key.ToCustomResource(obj)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	c, err := toDNSRecords(change)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	return r.applyUpdateChange(ctx, cr, c)
+	return r.applyUpdateChange(ctx, c)
 }
 
-func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, change dnsRecords) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records")
+func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) error {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records") // nolint: errcheck
 
 	recordSetsClient, err := r.getDNSRecordSetsHostClient()
 	if err != nil {
@@ -36,12 +28,12 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 	}
 
 	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: already ensured")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: already ensured") // nolint: errcheck
 		return nil
 	}
 
 	for _, record := range change {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v", record)) // nolint: errcheck
 
 		var params dns.RecordSet
 		{
@@ -60,20 +52,16 @@ func (r *Resource) applyUpdateChange(ctx context.Context, obj providerv1alpha1.A
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record)) // nolint: errcheck
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: ensured")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: ensured") // nolint: errcheck
 	return nil
 }
 
 // NewUpdatePatch returns the patch creating resource group for this cluster if
 // it is needed.
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	cr, err := key.ToCustomResource(obj)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 	c, err := toDNSRecords(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -83,22 +71,19 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 		return nil, microerror.Mask(err)
 	}
 
-	return r.newUpdatePatch(ctx, cr, c, d)
+	return r.newUpdatePatch(c, d)
 }
 
-func (r *Resource) newUpdatePatch(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (*crud.Patch, error) {
+func (r *Resource) newUpdatePatch(currentState, desiredState dnsRecords) (*crud.Patch, error) {
 	patch := crud.NewPatch()
 
-	updateChange, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	updateChange := r.newUpdateChange(currentState, desiredState)
 
 	patch.SetUpdateChange(updateChange)
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, obj providerv1alpha1.AzureConfig, currentState, desiredState dnsRecords) (dnsRecords, error) {
+func (r *Resource) newUpdateChange(currentState, desiredState dnsRecords) dnsRecords {
 	var change dnsRecords
 	for _, d := range desiredState {
 		if !currentState.Contains(d) {
@@ -106,5 +91,5 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj providerv1alpha1.Azu
 		}
 	}
 
-	return change, nil
+	return change
 }

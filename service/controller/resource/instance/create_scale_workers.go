@@ -28,13 +28,13 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 
 	desiredWorkerCount := int64(key.WorkerCount(cr) * 2)
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount)) // nolint: errcheck
 
 	currentWorkerCount, err := r.getInstancesCount(ctx, cr, key.WorkerVMSSName)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount)) // nolint: errcheck
 
 	allReady, err := r.ensureWorkerInstancesAreAllRunning(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if err != nil {
@@ -56,11 +56,11 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		go func() {
 			err := r.startInstanceWatchdog(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 			if err != nil {
-				r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for VMSS '%s'", key.WorkerVMSSName(cr)))
+				r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for VMSS '%s'", key.WorkerVMSSName(cr))) // nolint: errcheck
 			}
 		}()
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1)) // nolint: errcheck
 
 		// Let's stay in the current state.
 		return ScaleUpWorkerVMSS, nil
@@ -92,7 +92,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 
 	desiredWorkerCount := int64(key.WorkerCount(cr))
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount)) // nolint: errcheck
 
 	// Scale down to the desired number of nodes in worker VMSS.
 	err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount)
@@ -100,7 +100,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount)) // nolint: errcheck
 
 	return DeploymentCompleted, nil
 }

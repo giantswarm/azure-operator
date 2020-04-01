@@ -6,6 +6,8 @@ import (
 )
 
 const (
+	DefaultCommonDomain = "godsmack.westeurope.azure.gigantic.io"
+
 	EnvVarCommonDomain = "COMMON_DOMAIN"
 	EnvVarVaultToken   = "VAULT_TOKEN"
 )
@@ -18,12 +20,14 @@ var (
 func init() {
 	commonDomain = os.Getenv(EnvVarCommonDomain)
 	if commonDomain == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomain))
+		commonDomain = DefaultCommonDomain
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarCommonDomain, DefaultCommonDomain)
 	}
 
 	vaultToken = os.Getenv(EnvVarVaultToken)
 	if vaultToken == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarVaultToken))
+		vaultToken = "token"
+		fmt.Printf("No value found in '%s': using default value\n", EnvVarVaultToken)
 	}
 }
 

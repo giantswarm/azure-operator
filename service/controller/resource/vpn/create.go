@@ -31,15 +31,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring vpn gateway")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring vpn gateway") // nolint: errcheck
 
 	// Wait for virtual network subnet.
 	{
 		vnetName := key.VnetName(cr)
 		vnet, err := vnetClient.Get(ctx, key.ClusterID(cr), vnetName, "")
 		if err != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("virtual network %#q not ready", vnetName))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("virtual network %#q not ready", vnetName)) // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")                                   // nolint: errcheck
 			return nil
 		}
 
@@ -51,8 +51,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 		}
 		if !found {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("subnet %#q not ready", subnetName))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("subnet %#q not ready", subnetName)) // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")                            // nolint: errcheck
 			return nil
 		}
 
@@ -69,13 +69,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			s := *d.Properties.ProvisioningState
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("vpn gateway deployment is in state '%s'", s))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("vpn gateway deployment is in state '%s'", s)) // nolint: errcheck
 
 			if !key.IsSucceededProvisioningState(s) {
 				r.debugger.LogFailedDeployment(ctx, d, err)
 			}
 			if !key.IsFinalProvisioningState(s) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 				return nil
 			}
 		}
@@ -94,7 +94,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured vpn gateway")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured vpn gateway") // nolint: errcheck
 
 	return nil
 }

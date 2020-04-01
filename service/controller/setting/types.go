@@ -11,7 +11,7 @@ type Azure struct {
 
 func (a Azure) Validate() error {
 	if a.EnvironmentName == "" {
-		return fmt.Errorf("Location must not be empty")
+		return fmt.Errorf("EnvironmentName must not be empty")
 	}
 	if err := a.HostCluster.Validate(); err != nil {
 		return fmt.Errorf("HostCluster.%s", err)

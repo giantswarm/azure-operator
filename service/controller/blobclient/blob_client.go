@@ -12,23 +12,9 @@ import (
 )
 
 const (
-	blobFormatString    = `https://%s.blob.core.windows.net`
 	blobSASValidityTime = 4320
 	maxRetriesRequests  = 3
 )
-
-func BlobExists(ctx context.Context, blobName string, containerURL *azblob.ContainerURL) (bool, error) {
-	blobURL := containerURL.NewBlockBlobURL(blobName)
-
-	_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
-	if IsBlobNotFound(err) {
-		return false, nil
-	} else if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	return true, nil
-}
 
 func ContainerExists(ctx context.Context, containerURL *azblob.ContainerURL) (bool, error) {
 	_, err := containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
@@ -80,7 +66,7 @@ func GetBlockBlob(ctx context.Context, blobName string, containerURL *azblob.Con
 	return blobData, nil
 }
 
-func GetBlobURL(ctx context.Context, blobName, containerName, storageAccountName, primaryKey string, containerURL *azblob.ContainerURL) (string, error) {
+func GetBlobURL(blobName, containerName, storageAccountName, primaryKey string, containerURL *azblob.ContainerURL) (string, error) {
 
 	sharedKeyCredential, err := azblob.NewSharedKeyCredential(storageAccountName, primaryKey)
 	if err != nil {

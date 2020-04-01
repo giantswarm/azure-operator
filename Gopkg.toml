@@ -53,10 +53,6 @@ required = [
   branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/e2e-harness"
-  branch = "master"
-
-[[constraint]]
   name = "github.com/giantswarm/e2eclients"
   branch = "master"
 

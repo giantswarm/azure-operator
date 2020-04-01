@@ -79,7 +79,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment") // nolint: errcheck
 
 	var deployment azureresource.Deployment
 
@@ -97,13 +97,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	} else {
 		s := *d.Properties.ProvisioningState
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s)) // nolint: errcheck
 
 		if !key.IsSucceededProvisioningState(s) {
 			r.debugger.LogFailedDeployment(ctx, d, err)
 		}
 		if !key.IsFinalProvisioningState(s) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 			return nil
 		}
 
@@ -123,19 +123,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), mainDeploymentName, deployment)
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.Stack(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.Stack(microerror.Mask(err))) // nolint: errcheck
 
 		return microerror.Mask(err)
 	}
 
 	deploymentExtended, err := deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.Stack(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.Stack(microerror.Mask(err))) // nolint: errcheck
 
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment") // nolint: errcheck
 
 	return nil
 }
@@ -224,9 +224,9 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	}
 
 	if d.Properties.Outputs == nil {
-		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("cannot get output value '%s' of deployment '%s'", outputName, deploymentName))
-		r.logger.LogCtx(ctx, "level", "warning", "message", "assuming deployment is in failed state")
-		r.logger.LogCtx(ctx, "level", "warning", "message", "canceling controller context enrichment")
+		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("cannot get output value '%s' of deployment '%s'", outputName, deploymentName)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "warning", "message", "assuming deployment is in failed state")                                                   // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "warning", "message", "canceling controller context enrichment")                                                  // nolint: errcheck
 		return "", nil
 	}
 

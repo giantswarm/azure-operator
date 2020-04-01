@@ -27,8 +27,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		restConfig, err = r.tenant.NewRestConfig(ctx, key.ClusterID(cr), key.ClusterAPIEndpoint(cr))
 		if tenantcluster.IsTimeout(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")            // nolint: errcheck
 			return nil
 
 		} else if err != nil {
@@ -45,8 +45,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		k8sClient, err = k8sclient.NewClients(c)
 		if tenant.IsAPINotAvailable(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")           // nolint: errcheck
 			return nil
 
 		} else if err != nil {

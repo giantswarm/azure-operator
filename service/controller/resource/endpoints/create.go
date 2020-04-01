@@ -21,7 +21,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 	}
 
 	if endpointsToCreate != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints") // nolint: errcheck
 
 		namespace := key.ClusterNamespace(cr)
 		_, err = r.k8sClient.CoreV1().Endpoints(namespace).Create(endpointsToCreate)
@@ -31,15 +31,15 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints: created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints: created") // nolint: errcheck
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints: already created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints: already created") // nolint: errcheck
 	}
 
 	return nil
 }
 
-func (r *Resource) newCreateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newCreateChange(currentState, desiredState interface{}) (interface{}, error) {
 	currentEndpoints, err := toEndpoints(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
