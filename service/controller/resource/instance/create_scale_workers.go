@@ -9,6 +9,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/vmsscheck"
 )
 
 const (
@@ -36,7 +37,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
-	allReady, err := r.ensureWorkerInstancesAreAllRunning(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.logger, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -53,7 +54,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 			return "", microerror.Mask(err)
 		}
 
-		r.startInstanceWatchdog(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		r.instanceWatchdog.GuardVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
 
 		// Let's stay in the current state.
