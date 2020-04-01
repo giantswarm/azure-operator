@@ -8,9 +8,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+
+	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 )
 
 // Find out provisioning state of all VMSS instances and return true if all are
