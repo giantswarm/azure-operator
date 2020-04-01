@@ -47,11 +47,11 @@ workflows:
   version: 2
   build_and_e2eTest:
     jobs:
-      # execute linting and run tests
+      # execute linting and run tests.
       - architect/go-test-legacy:
           name: test
 
-      # build binary
+      # build binary.
       - build:
           requires:
             - test
@@ -59,7 +59,7 @@ workflows:
             tags:
               only: /^v.*/
 
-      # build and push docker image to quay
+      # build and push docker image to quay.
       - architect/push-to-docker:
           name: push-azure-operator-to-quay
           image: "quay.io/giantswarm/azure-operator"
@@ -72,7 +72,7 @@ workflows:
             tags:
               only: /^v.*/
 
-      # build and push helm chart to app catalog
+      # build and push helm chart to app catalog.
       - architect/push-to-app-catalog:
           name: push-azure-operator-to-control-plane-app-catalog
           app_catalog: "control-plane-catalog"
@@ -86,7 +86,7 @@ workflows:
             tags:
               only: /^v.*/
 
-      # deploy to installations
+      # deploy to installations.
       - architect/push-to-app-collection:
           name: push-azure-operator-to-azure-app-collection
           app_name: "azure-operator"
@@ -101,7 +101,7 @@ workflows:
             tags:
               only: /^v.*/
 
-      # manual approval to run e2e tests
+      # manual approval to run e2e tests.
       - hold:
           type: approval
           requires:
