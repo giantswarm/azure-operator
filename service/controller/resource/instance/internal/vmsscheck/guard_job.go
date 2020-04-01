@@ -97,7 +97,7 @@ func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssN
 	// Check for rate limit. If current remaining API calls are less than the desired threshold, we don't proceed.
 	rl3m, rl30m := rateLimitThresholdsFromResponse(iterator.Response().Response)
 	if rl3m < remainingCallsThreshold3m || rl30m < remainingCallsThreshold30m {
-		gj.logger.LogCtx(ctx, "level", "warmomg", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, remainingCallsMax3m, rl30m, remainingCallsMax30m))
+		gj.logger.LogCtx(ctx, "level", "warmomg", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, remainingCallsMax3m, rl30m, remainingCallsMax30m)) // nolint: errcheck
 		return false, nil
 	}
 
@@ -106,7 +106,7 @@ func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssN
 	for iterator.NotDone() {
 		instance := iterator.Value()
 
-		gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState))
+		gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState)) // nolint: errcheck
 
 		switch *instance.ProvisioningState {
 		case provisioningStateFailed:
@@ -124,6 +124,7 @@ func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssN
 
 					retries = retries - 1
 					time.Sleep(5 * time.Second)
+					continue
 				}
 
 				break

@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/workerpool"
@@ -24,6 +25,7 @@ type concurrentInstanceWatchdog struct {
 
 func NewInstanceWatchdog(config Config) (InstanceWatchdog, error) {
 	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
 	wd := &concurrentInstanceWatchdog{
