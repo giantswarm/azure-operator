@@ -111,13 +111,13 @@ func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssN
 		switch *instance.ProvisioningState {
 		case provisioningStateFailed:
 			// Reimage the instance.
-			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaging instance %s", *instance.Name))
+			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaging instance %s", *instance.Name)) // nolint: errcheck
 
 			retries := 3
 			for retries > 0 {
 				_, err := c.Reimage(ctx, rg, vmssName, *instance.InstanceID, nil)
 				if err != nil {
-					gj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error reimaging instance %s: %s", *instance.Name, err.Error()))
+					gj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error reimaging instance %s: %s", *instance.Name, err.Error())) // nolint: errcheck
 					if retries == 0 {
 						return false, microerror.Mask(err)
 					}
@@ -130,7 +130,7 @@ func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssN
 				break
 			}
 
-			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaged instance %s", *instance.Name))
+			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Reimaged instance %s", *instance.Name)) // nolint: errcheck
 			allSucceeded = false
 		case provisioningStateSucceeded:
 			// OK to continue.
