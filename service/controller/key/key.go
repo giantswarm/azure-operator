@@ -268,11 +268,7 @@ func IsFailedProvisioningState(s string) bool {
 }
 
 func IsSucceededProvisioningState(s string) bool {
-	if s == "Succeeded" {
-		return true
-	}
-
-	return false
+	return s == "Succeeded"
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.

@@ -296,6 +296,14 @@
   version = "v0.1.2"
 
 [[projects]]
+  digest = "1:2e3b996b387af3e4a3346613452f61d03665bcf0db9d1fe0b1220e61d8109917"
+  name = "github.com/giantswarm/appcatalog"
+  packages = ["."]
+  pruneopts = "UT"
+  revision = "3e4ab4e568200b5e847fa7ec9536fc5ed56b2f9b"
+  version = "v0.1.11"
+
+[[projects]]
   branch = "master"
   digest = "1:0b6e8390c8a20214832d477682602576c3d3f9af28651e77694d6156a7a09023"
   name = "github.com/giantswarm/apprclient"
@@ -345,6 +353,14 @@
 
 [[projects]]
   branch = "master"
+  digest = "1:51f2974e21b6b94e40038a50bd226d55682790a3da30934e4c4ba0756fbdb809"
+  name = "github.com/giantswarm/e2esetup"
+  packages = ["chart/env"]
+  pruneopts = "UT"
+  revision = "01b9f9061692ab47301542ea0eba601289880c2c"
+
+[[projects]]
+  branch = "master"
   digest = "1:e88f04bf11ce608935b139217c52d3b2655d925577557a2e11e203e4bd524ac9"
   name = "github.com/giantswarm/e2etemplates"
   packages = [
@@ -352,7 +368,7 @@
     "pkg/chartvalues",
   ]
   pruneopts = "UT"
-  revision = "c9589c3fd751042238c5d7d10bb463698b3ac6ae"
+  revision = "751eac7541c45f8f9b6f5af16f7e6bdaa3502385"
 
 [[projects]]
   branch = "master"
@@ -2034,19 +2050,21 @@
     "github.com/Azure/go-autorest/autorest/azure",
     "github.com/Azure/go-autorest/autorest/to",
     "github.com/docker/distribution/reference",
+    "github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1",
     "github.com/giantswarm/apiextensions/pkg/clientset/versioned",
     "github.com/giantswarm/apiextensions/pkg/clientset/versioned/fake",
+    "github.com/giantswarm/appcatalog",
     "github.com/giantswarm/apprclient",
     "github.com/giantswarm/backoff",
     "github.com/giantswarm/certs",
     "github.com/giantswarm/certs/certstest",
     "github.com/giantswarm/e2e-harness/pkg/framework",
-    "github.com/giantswarm/e2e-harness/pkg/harness",
     "github.com/giantswarm/e2e-harness/pkg/release",
     "github.com/giantswarm/e2eclients/azure",
+    "github.com/giantswarm/e2esetup/chart/env",
     "github.com/giantswarm/e2etemplates/pkg/chartvalues",
     "github.com/giantswarm/e2etests/clusterstate",
     "github.com/giantswarm/e2etests/scaling",
@@ -2082,6 +2100,7 @@
     "github.com/giantswarm/versionbundle",
     "github.com/google/go-cmp/cmp",
     "github.com/prometheus/client_golang/prometheus",
+    "github.com/spf13/afero",
     "github.com/spf13/viper",
     "golang.org/x/sync/errgroup",
     "k8s.io/api/core/v1",
@@ -2093,6 +2112,7 @@
     "k8s.io/client-go/kubernetes",
     "k8s.io/client-go/kubernetes/fake",
     "k8s.io/client-go/rest",
+    "k8s.io/helm/pkg/helm",
   ]
   solver-name = "gps-cdcl"
   solver-version = 1

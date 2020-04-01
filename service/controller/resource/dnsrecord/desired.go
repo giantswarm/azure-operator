@@ -39,9 +39,7 @@ func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.Azu
 		}
 
 		var nameServers []string
-		for _, ns := range *resp.NameServers {
-			nameServers = append(nameServers, ns)
-		}
+		nameServers = append(nameServers, *resp.NameServers...)
 
 		desired[i].NameServers = nameServers
 	}

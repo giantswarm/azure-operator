@@ -39,9 +39,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 
 			guestVPNGateway, err = r.getGuestVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "tenant vpn gateway was not found")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "tenant vpn gateway was not found") // nolint: errcheck
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 
 				return connections{}, nil
 			} else if err != nil {
@@ -50,9 +50,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 
 			provisioningState := guestVPNGateway.ProvisioningState
 			if provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tenant vpn gateway is in state '%s'", provisioningState))
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tenant vpn gateway is in state '%s'", provisioningState)) // nolint: errcheck
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 
 				return connections{}, nil
 			}
@@ -64,9 +64,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 
 			hostVPNGateway, err = r.getHostVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway was not found")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway was not found") // nolint: errcheck
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 
 				return connections{}, nil
 			} else if err != nil {
@@ -74,24 +74,19 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			}
 
 			if provisioningState := string(hostVPNGateway.ProvisioningState); provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState))
+				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState)) // nolint: errcheck
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 
 				return connections{}, nil
 			}
 		}
 	}
 
-	vpnGatewayConnections, err := r.getDesiredState(ctx, cr, guestVPNGateway, hostVPNGateway)
-	if err != nil {
-		return connections{}, microerror.Mask(err)
-	}
-
-	return vpnGatewayConnections, nil
+	return r.getDesiredState(cr, guestVPNGateway, hostVPNGateway), nil
 }
 
-func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) (connections, error) {
+func (r *Resource) getDesiredState(azureConfig providerv1alpha1.AzureConfig, guestVPNGateway, hostVPNGateway *network.VirtualNetworkGateway) connections {
 	sharedKey := randStringBytes(128)
 
 	host := network.VirtualNetworkGatewayConnection{
@@ -125,5 +120,5 @@ func (r *Resource) getDesiredState(ctx context.Context, azureConfig providerv1al
 	return connections{
 		Host:  host,
 		Guest: guest,
-	}, nil
+	}
 }

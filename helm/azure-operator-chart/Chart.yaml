@@ -1,2 +1,6 @@
 name: azure-operator-chart
 version: [[ .Version ]]
+description: "Azure operator to create k8s clusters on Azure"
+appVersion: [[ .Version ]]
+home: "https://github.com/giantswarm/azure-operator"
+apiVersion: v1

@@ -49,11 +49,11 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	{
 		allMasterInstances, err := r.allInstances(ctx, cr, key.MasterVMSSName)
 		if IsScaleSetNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(cr)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(cr))) // nolint: errcheck
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs") // nolint: errcheck
 
 			ws, err := r.nextInstance(ctx, cr, allMasterInstances, drainerConfigs, key.MasterInstanceName, versionValue)
 			if err != nil {
@@ -81,7 +81,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 			masterUpgradeInProgress = ws.IsWIP()
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs") // nolint: errcheck
 		}
 	}
 
@@ -95,7 +95,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 }
 
 func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject))) // nolint: errcheck
 
 	c, err := r.getVMsClient(ctx)
 	if err != nil {
@@ -122,13 +122,13 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject))) // nolint: errcheck
 
 	return instances, nil
 }
 
 func (r *Resource) createDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, nodeName string) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node") // nolint: errcheck
 
 	n := key.ClusterID(customObject)
 	c := &corev1alpha1.DrainerConfig{
@@ -158,12 +158,12 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 
 	_, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Create(c)
 	if errors.IsAlreadyExists(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")     // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist") // nolint: errcheck
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node") // nolint: errcheck
 	}
 
 	return nil
@@ -177,7 +177,7 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
 	if isNodeDrained(drainerConfigs, instanceName) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainer config for tenant cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainer config for tenant cluster node") // nolint: errcheck
 
 		var drainerConfigToRemove corev1alpha1.DrainerConfig
 		for _, n := range drainerConfigs {
@@ -193,15 +193,15 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 
 		err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).Delete(i, o)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist") // nolint: errcheck
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainer config for tenant cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainer config for tenant cluster node") // nolint: errcheck
 		}
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting drainer config for tenant cluster node due to undrained node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting drainer config for tenant cluster node due to undrained node") // nolint: errcheck
 	}
 
 	// TODO implement safety net to delete drainer configs that are over due for e.g. when node-operator fucks up
@@ -230,7 +230,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 
 	var ws *workingSet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated, drained or reimaged")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated, drained or reimaged") // nolint: errcheck
 
 		ws, err = getWorkingSet(customObject, instances, drainerConfigs, instanceNameFunc, versionValue)
 		if IsVersionBlobEmpty(err) {
@@ -239,7 +239,7 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 			// parameters of the tenant cluster's VMSS deployment. In this case we
 			// must not select an instance to be reimaged because we would roll a node
 			// that just got created and is already up to date.
-			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged") // nolint: errcheck
 			return nil, nil
 		} else if err != nil {
 			return nil, microerror.Mask(err)
@@ -248,21 +248,21 @@ func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alph
 		if !ws.IsWIP() {
 			// Neither did we find an instance to be updated nor to be reimaged.
 			// Nothing has to be done or we already processes all instances.
-			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no instance found to be updated, drained or reimaged") // nolint: errcheck
 			return nil, nil
 		}
 
 		if ws.InstanceToUpdate() != nil {
 			instanceName := instanceNameFunc(customObject, *ws.InstanceToUpdate().InstanceID)
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceName))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be updated", instanceName)) // nolint: errcheck
 		}
 		if ws.InstanceToDrain() != nil {
 			instanceName := instanceNameFunc(customObject, *ws.InstanceToDrain().InstanceID)
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be drained", instanceName))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be drained", instanceName)) // nolint: errcheck
 		}
 		if ws.InstanceToReimage() != nil {
 			instanceName := instanceNameFunc(customObject, *ws.InstanceToReimage().InstanceID)
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be reimaged", instanceName))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found instance '%s' has to be reimaged", instanceName)) // nolint: errcheck
 		}
 	}
 
@@ -276,7 +276,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName)) // nolint: errcheck
 
 	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
@@ -302,11 +302,11 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 	go func() {
 		err := r.startInstanceWatchdog(ctx, g, s)
 		if err != nil {
-			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName))
+			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName)) // nolint: errcheck
 		}
 	}()
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName)) // nolint: errcheck
 
 	return nil
 }
@@ -318,7 +318,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName)) // nolint: errcheck
 
 	c, err := r.getScaleSetsClient(ctx)
 	if err != nil {
@@ -341,12 +341,12 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName)) // nolint: errcheck
 
 	go func() {
 		err := r.startInstanceWatchdog(ctx, g, s)
 		if err != nil {
-			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName))
+			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName)) // nolint: errcheck
 		}
 	}()
 
@@ -360,13 +360,12 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 
 	var ws *workingSet
 
-	instanceInProgress := firstInstanceInProgress(customObject, instances)
+	instanceInProgress := firstInstanceInProgress(instances)
 	if instanceInProgress != nil {
 		return ws.WithInstanceAlreadyBeingUpdated(instanceInProgress), nil
 	}
 
-	var instanceToUpdate *compute.VirtualMachineScaleSetVM
-	instanceToUpdate = firstInstanceToUpdate(customObject, instances)
+	instanceToUpdate := firstInstanceToUpdate(instances)
 	if instanceToUpdate != nil {
 		return ws.WithInstanceToUpdate(instanceToUpdate), nil
 	}
@@ -391,7 +390,7 @@ func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []comput
 // firstInstanceInProgress returns the first instance in the list not having a
 // final state. In case all instances are in a final state
 // firstInstanceInProgress returns nil.
-func firstInstanceInProgress(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
+func firstInstanceInProgress(list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
 		if v.ProvisioningState == nil || key.IsFinalProvisioningState(*v.ProvisioningState) {
 			continue
@@ -433,7 +432,7 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 // firstInstanceToUpdate return the first instance to be updated. The decision
 // of updating an instance is done by checking if the latest scale set model is
 // applied. In case all instances are updated firstInstanceToUpdate return nil.
-func firstInstanceToUpdate(customObject providerv1alpha1.AzureConfig, list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
+func firstInstanceToUpdate(list []compute.VirtualMachineScaleSetVM) *compute.VirtualMachineScaleSetVM {
 	for _, v := range list {
 		if *v.LatestModelApplied {
 			continue

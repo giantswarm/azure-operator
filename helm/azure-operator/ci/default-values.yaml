@@ -1,0 +1,31 @@
+---
+Installation:
+  V1:
+    Name: ""
+    Registry:
+      Domain: ""
+    Guest:
+      Kubernetes:
+        API:
+          Auth:
+            Provider:
+              OIDC:
+                ClientID: ""
+                IssuerURL: ""
+                UsernameClaim: ""
+                GroupsClaim: ""
+      SSH:
+        SSOPublicKey: ""
+    Secret:
+      AzureOperator:
+        SecretYaml: ""
+    Provider:
+      Azure:
+        Cloud: ""
+        HostCluster:
+          CIDR: ""
+          VirtualNetwork: ""
+          VirtualNetworkGateway: ""
+        Location: ""
+        MSI:
+          Enabled: true

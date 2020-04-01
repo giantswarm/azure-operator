@@ -1,7 +1,7 @@
 package env
 
 import (
-	"crypto/sha1"
+	"crypto/sha256"
 	"fmt"
 	"os"
 	"strings"
@@ -12,27 +12,19 @@ import (
 )
 
 const (
-	component = "azure-operator"
-	provider  = "azure"
-)
+	DefaultTestedVersion = "wip"
 
-const (
-	EnvVarCircleCI             = "CIRCLECI"
-	EnvVarCircleSHA            = "CIRCLE_SHA1"
-	EnvVarGithubBotToken       = "GITHUB_BOT_TOKEN"
+	EnvVarCircleSHA            = "CIRCLE_SHA1" // #nosec
 	EnvVarKeepResources        = "KEEP_RESOURCES"
-	EnvVarRegistryPullSecret   = "REGISTRY_PULL_SECRET"
+	EnvVarRegistryPullSecret   = "REGISTRY_PULL_SECRET" // #nosec
 	EnvVarTestedVersion        = "TESTED_VERSION"
 	EnvVarTestDir              = "TEST_DIR"
 	EnvVarVersionBundleVersion = "VERSION_BUNDLE_VERSION"
 )
 
 var (
-	circleCI             string
 	circleSHA            string
-	clusterID            string
 	registryPullSecret   string
-	githubToken          string
 	testDir              string
 	testedVersion        string
 	keepResources        string
@@ -40,7 +32,6 @@ var (
 )
 
 func init() {
-	circleCI = os.Getenv(EnvVarCircleCI)
 	keepResources = os.Getenv(EnvVarKeepResources)
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)
@@ -48,14 +39,10 @@ func init() {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCircleSHA))
 	}
 
-	githubToken = os.Getenv(EnvVarGithubBotToken)
-	if githubToken == "" {
-		panic(fmt.Sprintf("env var %q must not be empty", EnvVarGithubBotToken))
-	}
-
 	testedVersion = os.Getenv(EnvVarTestedVersion)
 	if testedVersion == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarTestedVersion))
+		testedVersion = DefaultTestedVersion
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarTestedVersion, DefaultTestedVersion)
 	}
 
 	registryPullSecret = os.Getenv(EnvVarRegistryPullSecret)
@@ -83,10 +70,6 @@ func init() {
 		}
 	}
 	os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
-}
-
-func CircleCI() string {
-	return circleCI
 }
 
 func CircleSHA() string {
@@ -118,10 +101,6 @@ func KeepResources() string {
 	return keepResources
 }
 
-func GithubToken() string {
-	return githubToken
-}
-
 func RegistryPullSecret() string {
 	return registryPullSecret
 }
@@ -139,8 +118,11 @@ func TestHash() string {
 		return ""
 	}
 
-	h := sha1.New()
-	h.Write([]byte(TestDir()))
+	h := sha256.New()
+	_, err := h.Write([]byte(TestDir()))
+	if err != nil {
+		panic(fmt.Sprintf("couldn't write hash of test dir '%s'", TestDir()))
+	}
 	s := fmt.Sprintf("%x", h.Sum(nil))[0:5]
 
 	return s
