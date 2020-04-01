@@ -155,7 +155,5 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Path, "/opt/ignition", "Default path for the ignition base directory.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.SSH.SSOPublicKey, "", "Public key for trusted SSO CA.")
 
-	newCommand.CobraCommand().Execute()
-
-	return nil
+	return newCommand.CobraCommand().Execute()
 }

@@ -23,26 +23,26 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	}
 
 	for _, containerObject := range containerObjectToUpdate {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating container object %#q", containerObject.Key))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating container object %#q", containerObject.Key)) // nolint: errcheck
 
 		_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, cc.ContainerURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated container object %#q", containerObject.Key))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated container object %#q", containerObject.Key)) // nolint: errcheck
 	}
 
 	return nil
 }
 
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	create, err := r.newCreateChange(ctx, obj, currentState, desiredState)
+	create, err := r.newCreateChange(ctx, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	update, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
+	update, err := r.newUpdateChange(ctx, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -54,7 +54,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredState interface{}) (interface{}, error) {
 	currentContainerObjects, err := toContainerObjectState(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -64,15 +64,15 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the container objects should be updated")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the container objects should be updated") // nolint: errcheck
 
 	updateState := []ContainerObjectState{}
 
 	for _, desiredContainerObject := range desiredContainerObjects {
 		if objectInSliceByKeyAndBody(desiredContainerObject, currentContainerObjects) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", desiredContainerObject.Key))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should not be updated", desiredContainerObject.Key)) // nolint: errcheck
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", desiredContainerObject.Key))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("container object %#q should be updated", desiredContainerObject.Key)) // nolint: errcheck
 			updateState = append(updateState, desiredContainerObject)
 		}
 	}

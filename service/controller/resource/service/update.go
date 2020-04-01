@@ -15,27 +15,27 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	}
 
 	if serviceToUpdate != nil && serviceToUpdate.Spec.ClusterIP != "" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updating services")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "updating services") // nolint: errcheck
 
 		_, err := r.k8sClient.CoreV1().Services(serviceToUpdate.Namespace).Update(serviceToUpdate)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updated services")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "updated services") // nolint: errcheck
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "no need to update services")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "no need to update services") // nolint: errcheck
 	}
 	return nil
 }
 
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	create, err := r.newCreateChange(ctx, obj, currentState, desiredState)
+	create, err := r.newCreateChange(currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	update, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
+	update, err := r.newUpdateChange(ctx, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -48,7 +48,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 }
 
 // Service resources are updated.
-func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredState interface{}) (interface{}, error) {
 	currentService, err := toService(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -58,7 +58,7 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out which services have to be updated")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out which services have to be updated") // nolint: errcheck
 
 	if isServiceModified(desiredService, currentService) {
 		// Make a copy and set the resource version so the service can be updated.
@@ -67,11 +67,11 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 			serviceToUpdate.ObjectMeta.ResourceVersion = currentService.ObjectMeta.ResourceVersion
 			serviceToUpdate.Spec.ClusterIP = currentService.Spec.ClusterIP
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found service '%s' that has to be updated", desiredService.GetName()))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found service '%s' that has to be updated", desiredService.GetName())) // nolint: errcheck
 
 		return serviceToUpdate, nil
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "no services needs update")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "no services needs update") // nolint: errcheck
 
 		return nil, nil
 	}

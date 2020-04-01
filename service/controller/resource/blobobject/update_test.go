@@ -185,7 +185,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			}
 			ctx = controllercontext.NewContext(ctx, c)
 
-			result, err := newResource.newUpdateChange(ctx, tc.obj, tc.currentState, tc.desiredState)
+			result, err := newResource.newUpdateChange(ctx, tc.currentState, tc.desiredState)
 			if err != nil {
 				t.Errorf("expected '%v' got '%#v'", nil, err)
 			}

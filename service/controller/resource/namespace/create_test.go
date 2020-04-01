@@ -1,7 +1,6 @@
 package namespace
 
 import (
-	"context"
 	"testing"
 
 	corev1 "k8s.io/api/core/v1"
@@ -109,7 +108,7 @@ func Test_Resource_Namespace_newCreateChange(t *testing.T) {
 	}
 
 	for i, tc := range testCases {
-		result, err := newResource.newCreateChange(context.TODO(), tc.Obj, tc.Cur, tc.Des)
+		result, err := newResource.newCreateChange(tc.Cur, tc.Des)
 		if err != nil {
 			t.Fatal("case", i+1, "expected", nil, "got", err)
 		}

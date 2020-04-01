@@ -404,7 +404,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	handlesFunc := func(obj interface{}) bool {
 		cr, err := key.ToCustomResource(obj)
 		if err != nil {
-			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err))
+			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err)) // nolint: errcheck
 			return false
 		}
 

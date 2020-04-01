@@ -71,7 +71,7 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) toEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey") // nolint: errcheck
 
 	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {

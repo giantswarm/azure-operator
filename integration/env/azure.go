@@ -10,11 +10,14 @@ import (
 )
 
 const (
+	DefaultAzureLocation             = "westeurope"
+	DefaultCommonDomainResourceGroup = "root_dns_zone_rg"
+
 	EnvVarAzureAZs  = "AZURE_AZS"
 	EnvVarAzureCIDR = "AZURE_CIDR"
 
 	EnvVarAzureClientID       = "AZURE_CLIENTID"
-	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET"
+	EnvVarAzureClientSecret   = "AZURE_CLIENTSECRET" // #nosec
 	EnvVarAzureLocation       = "AZURE_LOCATION"
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
@@ -35,7 +38,6 @@ var (
 	azureCIDR             string
 	azureCalicoSubnetCIDR string
 	azureMasterSubnetCIDR string
-	azureVPNSubnetCIDR    string
 	azureWorkerSubnetCIDR string
 
 	commonDomainResourceGroup string
@@ -55,7 +57,8 @@ func init() {
 
 	azureLocation = os.Getenv(EnvVarAzureLocation)
 	if azureLocation == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureLocation))
+		azureLocation = DefaultAzureLocation
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarAzureLocation, DefaultAzureLocation)
 	}
 
 	azureSubscriptionID = os.Getenv(EnvVarAzureSubscriptionID)
@@ -70,20 +73,25 @@ func init() {
 
 	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
 	if commonDomainResourceGroup == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCommonDomainResourceGroup))
+		commonDomainResourceGroup = DefaultCommonDomainResourceGroup
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarCommonDomainResourceGroup, DefaultCommonDomainResourceGroup)
 	}
 
 	var ok bool
 	sshPublicKey, ok = os.LookupEnv(EnvVarBastionPublicSSHKey)
 	if !ok {
-		fmt.Printf("No public SSH key found in '%s': no keys will be placed on the bastion server", EnvVarBastionPublicSSHKey)
+		fmt.Printf("No value found in '%s': no keys will be placed on the bastion server\n", EnvVarBastionPublicSSHKey)
 	}
 
 	// azureCDIR must be provided along with other CIDRs,
 	// otherwise we compute CIDRs base on EnvVarCircleBuildNumber value.
 	azureCDIR := os.Getenv(EnvVarAzureCIDR)
 	if azureCDIR == "" {
-		buildNumber, err := strconv.ParseUint(os.Getenv(EnvVarCircleBuildNumber), 10, 32)
+		circleCIBuildNumber, ok := os.LookupEnv(EnvVarCircleBuildNumber)
+		if !ok {
+			circleCIBuildNumber = "1"
+		}
+		buildNumber, err := strconv.ParseUint(circleCIBuildNumber, 10, 32)
 		if err != nil {
 			panic(err)
 		}
@@ -96,7 +104,6 @@ func init() {
 		azureCIDR = subnets.Parent.String()
 		azureCalicoSubnetCIDR = subnets.Calico.String()
 		azureMasterSubnetCIDR = subnets.Master.String()
-		azureVPNSubnetCIDR = subnets.VPN.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
 	}
 }
@@ -157,10 +164,6 @@ func AzureSubscriptionID() string {
 
 func AzureTenantID() string {
 	return azureTenantID
-}
-
-func AzureVPNSubnetCIDR() string {
-	return azureVPNSubnetCIDR
 }
 
 func AzureWorkerSubnetCIDR() string {

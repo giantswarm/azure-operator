@@ -1,7 +1,6 @@
 package endpoints
 
 import (
-	"context"
 	"testing"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -95,7 +94,7 @@ func Test_Resource_Endpoints_newCreateChange(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-			result, err := newResource.newCreateChange(context.TODO(), tc.obj, tc.cur, tc.des)
+			result, err := newResource.newCreateChange(tc.cur, tc.des)
 			if err != nil {
 				t.Errorf("expected '%v' got '%#v'", nil, err)
 			}

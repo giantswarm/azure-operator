@@ -30,18 +30,6 @@ const (
 	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
 )
 
-func (r *Resource) deleteResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
-	customObject = computeForDeleteResourceStatus(customObject, Name, t, s)
-
-	n := customObject.GetNamespace()
-	_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
 	// Get the newest CR version. Otherwise status update may fail because of:
 	//
@@ -165,38 +153,6 @@ func computeForDeleteResourceStatus(customObject providerv1alpha1.AzureConfig, n
 	customObject.Status.Cluster.Resources = allResources
 
 	return customObject
-}
-
-func hasResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) bool {
-	for _, r := range customObject.Status.Cluster.Resources {
-		if r.Name != Name {
-			continue
-		}
-
-		for _, c := range r.Conditions {
-			if c.Type == t && c.Status == s {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-func resourceStatusExists(customObject providerv1alpha1.AzureConfig, t string) bool {
-	for _, r := range customObject.Status.Cluster.Resources {
-		if r.Name != Name {
-			continue
-		}
-
-		for _, c := range r.Conditions {
-			if c.Type == t {
-				return true
-			}
-		}
-	}
-
-	return false
 }
 
 // unversionedName provides a comparable name without the exact version number

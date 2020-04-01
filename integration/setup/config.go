@@ -3,9 +3,9 @@ package setup
 import (
 	"github.com/giantswarm/apprclient"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
-	"github.com/giantswarm/e2e-harness/pkg/harness"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
+	e2esetupenv "github.com/giantswarm/e2esetup/chart/env"
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -24,8 +24,10 @@ const (
 type Config struct {
 	AzureClient *e2eclientsazure.Client
 	Guest       *framework.Guest
+	HelmClient  helmclient.Interface
 	Host        *framework.Host
 	K8s         *k8sclient.Setup
+	K8sClients  k8sclient.Interface
 	Logger      micrologger.Logger
 	Release     *release.Release
 }
@@ -68,12 +70,10 @@ func NewConfig() (Config, error) {
 
 	var cpK8sClients *k8sclient.Clients
 	{
-		kubeConfigPath := harness.DefaultKubeConfig
-
 		c := k8sclient.ClientsConfig{
 			Logger: logger,
 
-			KubeConfigPath: kubeConfigPath,
+			KubeConfigPath: e2esetupenv.KubeConfigPath(),
 		}
 
 		cpK8sClients, err = k8sclient.NewClients(c)
@@ -162,8 +162,10 @@ func NewConfig() (Config, error) {
 	c := Config{
 		AzureClient: azureClient,
 		Guest:       guest,
+		HelmClient:  helmClient,
 		Host:        host,
 		K8s:         k8sSetup,
+		K8sClients:  cpK8sClients,
 		Logger:      logger,
 		Release:     newRelease,
 	}

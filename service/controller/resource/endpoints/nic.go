@@ -9,10 +9,6 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 )
 
-const (
-	expands = ""
-)
-
 func (r *Resource) getMasterNICPrivateIPs(ctx context.Context, resourceGroupName, virtualMachineScaleSetName string) ([]string, error) {
 	var ips []string
 

@@ -22,7 +22,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	}
 
 	if endpointsToUpdate != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updating Kubernetes endpoints")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "updating Kubernetes endpoints") // nolint: errcheck
 
 		namespace := key.ClusterNamespace(cr)
 		_, err := r.k8sClient.CoreV1().Endpoints(namespace).Update(endpointsToUpdate)
@@ -30,22 +30,22 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updated Kubernetes endpoints")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "updated Kubernetes endpoints") // nolint: errcheck
 
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Kubernetes endpoints do not need to be updated")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Kubernetes endpoints do not need to be updated") // nolint: errcheck
 	}
 
 	return nil
 }
 
 func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desiredState interface{}) (*crud.Patch, error) {
-	create, err := r.newCreateChange(ctx, obj, currentState, desiredState)
+	create, err := r.newCreateChange(currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	update, err := r.newUpdateChange(ctx, obj, currentState, desiredState)
+	update, err := r.newUpdateChange(ctx, currentState, desiredState)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -57,7 +57,7 @@ func (r *Resource) NewUpdatePatch(ctx context.Context, obj, currentState, desire
 	return patch, nil
 }
 
-func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desiredState interface{}) (interface{}, error) {
+func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredState interface{}) (interface{}, error) {
 	currentEndpoints, err := toEndpoints(currentState)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -67,7 +67,7 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the endpoints has to be updated")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the endpoints has to be updated") // nolint: errcheck
 
 	var endpointsToUpdate *corev1.Endpoints
 
@@ -79,7 +79,7 @@ func (r *Resource) newUpdateChange(ctx context.Context, obj, currentState, desir
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out if the endpoints has to be deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out if the endpoints has to be deleted") // nolint: errcheck
 
 	return endpointsToUpdate, nil
 }
