@@ -1,6 +1,9 @@
 package workerpool
 
 import (
+	"math/rand"
+	"time"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
@@ -36,25 +39,28 @@ func (p *Pool) Stop() {
 func (p *Pool) startWorker() {
 	go func() {
 		for {
-			select {
-			case j, closed := <-p.jobQueue:
-				if j != nil {
-					err := j.Run()
-					if err != nil {
-						p.logger.Log("level", "debug", "message", "job execution failed", "job_id", j.ID(), "stack", microerror.Stack(err))
+			j, open := <-p.jobQueue
+			if !open {
+				break
+			}
+
+			if j != nil {
+				err := j.Run()
+				if err != nil {
+					p.logger.Log("level", "debug", "message", "job execution failed", "job_id", j.ID(), "stack", microerror.Stack(err)) // nolint: errcheck
+				} else {
+					if !j.Finished() {
+						p.EnqueueJob(j)
 					} else {
-						if !j.Finished() {
-							p.EnqueueJob(j)
-						} else {
-							p.logger.Log("level", "debug", "message", "job finished", "job_id", j.ID())
-						}
+						p.logger.Log("level", "debug", "message", "job finished", "job_id", j.ID()) // nolint: errcheck
 					}
 				}
-
-				if closed {
-					break
-				}
 			}
+
+			// Random wait time between 10 and 100 milliseconds, so we avoid
+			// infinite loop with idling jobs.
+			waitTime := time.Duration((rand.Intn(10) + 1) * 10)
+			time.Sleep(waitTime * time.Millisecond)
 		}
 	}()
 }
