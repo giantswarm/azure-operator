@@ -17,6 +17,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 )
 
@@ -30,8 +31,9 @@ type Config struct {
 	K8sClient kubernetes.Interface
 	Logger    micrologger.Logger
 
-	Azure           setting.Azure
-	TemplateVersion string
+	Azure            setting.Azure
+	TemplateVersion  string
+	VMSSCheckWorkers int
 }
 
 type Resource struct {
@@ -41,8 +43,9 @@ type Resource struct {
 	logger       micrologger.Logger
 	stateMachine state.Machine
 
-	azure           setting.Azure
-	templateVersion string
+	azure            setting.Azure
+	instanceWatchdog vmsscheck.InstanceWatchdog
+	templateVersion  string
 }
 
 func New(config Config) (*Resource, error) {
@@ -66,14 +69,29 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
 	}
 
+	var iwd vmsscheck.InstanceWatchdog
+	{
+		c := vmsscheck.Config{
+			Logger:     config.Logger,
+			NumWorkers: config.VMSSCheckWorkers,
+		}
+
+		var err error
+		iwd, err = vmsscheck.NewInstanceWatchdog(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	r := &Resource{
 		debugger:  config.Debugger,
 		g8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
 		logger:    config.Logger,
 
-		azure:           config.Azure,
-		templateVersion: config.TemplateVersion,
+		azure:            config.Azure,
+		instanceWatchdog: iwd,
+		templateVersion:  config.TemplateVersion,
 	}
 
 	r.configureStateMachine()
