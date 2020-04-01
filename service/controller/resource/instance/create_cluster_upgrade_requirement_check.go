@@ -3,9 +3,14 @@ package instance
 import (
 	"context"
 
+	"github.com/coreos/go-semver/semver"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/azure-operator/pkg/label"
+	"github.com/giantswarm/azure-operator/pkg/project"
+	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
@@ -16,21 +21,20 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 		return "", microerror.Mask(err)
 	}
 
-	// Check for changes that must not recycle the nodes but just apply the
-	// VMSS deployment.
 	isCreating := r.isClusterCreating(cr)
-	isScaling, err := r.isClusterScaling(ctx, cr)
+	anyOldNodes, err := r.anyNodesOutOfDate(ctx, cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	if isCreating || isScaling {
-		// When cluster is creating or scaling we skip upgrading master node[s]
-		// and replacing worker instances.
-		return DeploymentCompleted, nil
+	if !isCreating && anyOldNodes {
+		// Only continue rolling nodes when cluster is not creating and there
+		// are old nodes in tenant cluster.
+		return MasterInstancesUpgrading, nil
 	}
 
-	return MasterInstancesUpgrading, nil
+	// Skip instance rolling by default.
+	return DeploymentCompleted, nil
 }
 
 func (r *Resource) isClusterCreating(cr providerv1alpha1.AzureConfig) bool {
@@ -46,17 +50,38 @@ func (r *Resource) isClusterCreating(cr providerv1alpha1.AzureConfig) bool {
 	return false
 }
 
-func (r *Resource) isClusterScaling(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
-	c, err := r.getScaleSetsClient(ctx)
+// anyNodesOutOfDate iterates over all nodes in tenant cluster and finds
+// corresponding azure-operator version from node labels. If node doesn't have
+// this label or was created with older version than currently reconciling one,
+// then this function returns true. Otherwise (including on error) false.
+func (r *Resource) anyNodesOutOfDate(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
+	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	vmss, err := c.Get(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+	if cc.Client.TenantCluster.K8s == nil {
+		return false, clientNotFoundError
+	}
+
+	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	isScaling := key.WorkerCount(cr) != int(*vmss.Sku.Capacity)
-	return isScaling, nil
+	myVersion := semver.New(project.Version())
+	for _, n := range nodeList.Items {
+		v, exists := n.GetLabels()[label.OperatorVersion]
+		if !exists {
+			return true, nil
+		}
+
+		nodeVersion := semver.New(v)
+
+		if nodeVersion.LessThan(*myVersion) {
+			return true, nil
+		}
+	}
+
+	return false, nil
 }
