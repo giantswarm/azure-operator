@@ -108,6 +108,7 @@ workflows:
           requires:
             - push-azure-operator-to-control-plane-app-catalog
           filters:
+            # Do not trigger the job when merging to master.
             branches:
               ignore: master
 
