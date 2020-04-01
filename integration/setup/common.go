@@ -2,7 +2,6 @@ package setup
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -113,7 +112,7 @@ func common(ctx context.Context, config Config) error {
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", env.VersionBundleVersion()) // nolint: errcheck
 		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(&releasev1alpha1.Release{
 			ObjectMeta: v1.ObjectMeta{
-				Name:      fmt.Sprintf("v%s", env.VersionBundleVersion()),
+				Name:      "v1.0.0",
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/managed-by": "release-operator",
@@ -121,7 +120,12 @@ func common(ctx context.Context, config Config) error {
 				},
 			},
 			Spec: releasev1alpha1.ReleaseSpec{
+				Apps: []releasev1alpha1.ReleaseSpecApp{},
 				Components: []releasev1alpha1.ReleaseSpecComponent{
+					{
+						Name:    "azure-operator",
+						Version: env.VersionBundleVersion(),
+					},
 					{
 						Name:    "calico",
 						Version: "3.10.1",
@@ -143,6 +147,8 @@ func common(ctx context.Context, config Config) error {
 						Version: "1.16.8",
 					},
 				},
+				Date:  &releasev1alpha1.DeepCopyTime{Time: time.Unix(10, 0)},
+				State: "active",
 			},
 		})
 		if err != nil {

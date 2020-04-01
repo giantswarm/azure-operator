@@ -228,6 +228,7 @@ Installation:
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": env.VersionBundleVersion(),
+					"release.giantswarm.io/version":        "1.0.0",
 				},
 			},
 			Spec: providerv1alpha1.AzureConfigSpec{
