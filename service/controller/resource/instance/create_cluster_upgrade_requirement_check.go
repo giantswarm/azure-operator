@@ -22,7 +22,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	}
 
 	isCreating := r.isClusterCreating(cr)
-	anyOldNodes, err := r.anyNodesOutOfDate(ctx, cr)
+	anyOldNodes, err := r.anyNodesOutOfDate(ctx)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -54,7 +54,7 @@ func (r *Resource) isClusterCreating(cr providerv1alpha1.AzureConfig) bool {
 // corresponding azure-operator version from node labels. If node doesn't have
 // this label or was created with older version than currently reconciling one,
 // then this function returns true. Otherwise (including on error) false.
-func (r *Resource) anyNodesOutOfDate(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
+func (r *Resource) anyNodesOutOfDate(ctx context.Context) (bool, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return false, microerror.Mask(err)
