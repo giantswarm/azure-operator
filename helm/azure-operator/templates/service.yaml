@@ -6,7 +6,7 @@ metadata:
   labels:
     {{- include "azure-operator.labels" . | nindent 4 }}
   annotations:
-    prometheus.io/scrape: "true"
+    prometheus.io/scrape: "false"
 spec:
   type: NodePort
   ports:
