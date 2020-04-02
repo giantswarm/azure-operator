@@ -299,13 +299,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 		return microerror.Mask(err)
 	}
 
-	go func() {
-		err := r.startInstanceWatchdog(ctx, g, s)
-		if err != nil {
-			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName)) // nolint: errcheck
-		}
-	}()
-
+	r.instanceWatchdog.GuardVMSS(ctx, g, s)
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName)) // nolint: errcheck
 
 	return nil
@@ -342,13 +336,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName)) // nolint: errcheck
-
-	go func() {
-		err := r.startInstanceWatchdog(ctx, g, s)
-		if err != nil {
-			r.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Watchdog failed for instance '%s'", instanceName)) // nolint: errcheck
-		}
-	}()
+	r.instanceWatchdog.GuardVMSS(ctx, g, s)
 
 	return nil
 }
