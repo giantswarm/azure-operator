@@ -47,6 +47,7 @@ workflows:
   version: 2
   build_and_e2eTest:
     jobs:
+
       # execute linting and run tests.
       - architect/go-test-legacy:
           name: test
