@@ -49,7 +49,7 @@ func newNodeOSImage(distroVersion string) nodeOSImage {
 	return nodeOSImage{
 		Offer:     "flatcar-container-linux",
 		Publisher: "kinvolk",
-		SKU:       "Stable",
+		SKU:       "stable",
 		Version:   distroVersion,
 	}
 }
