@@ -132,7 +132,7 @@ func common(ctx context.Context, config Config) error {
 					},
 					{
 						Name:    "containerlinux",
-						Version: "2191.5.0",
+						Version: "2345.3.0",
 					},
 					{
 						Name:    "coredns",
