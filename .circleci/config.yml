@@ -51,6 +51,9 @@ workflows:
       # execute linting and run tests
       - architect/go-test-legacy:
           name: test
+          filters:
+            tags:
+              only: /^v.*/
       # build binary
       - build:
           requires:
