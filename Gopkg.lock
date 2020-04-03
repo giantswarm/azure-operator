@@ -385,11 +385,11 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:884bdbe11ea256c792d19f4cac235c0943d30353b08755b017960932f3e2e588"
+  digest = "1:41b910ce2a336a6df4d00fe4db896f433cb675899a3f7bd3ca8992a0bb022758"
   name = "github.com/giantswarm/errors"
   packages = ["tenant"]
   pruneopts = "UT"
-  revision = "96947b409e84afff31ed3cdf804fe076f3ef9aa8"
+  revision = "2bd1816d1f7cce95618fa02d7c551e9f1dd9b3ad"
 
 [[projects]]
   branch = "master"
