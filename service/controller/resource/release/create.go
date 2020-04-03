@@ -29,7 +29,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		releaseName := fmt.Sprintf("v%s", releaseVersion)
 		release, err = r.g8sClient.ReleaseV1alpha1().Releases().Get(releaseName, metav1.GetOptions{})
 		if err != nil {
-			microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 	}
 
