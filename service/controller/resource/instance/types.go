@@ -2,8 +2,6 @@ package instance
 
 import (
 	"github.com/giantswarm/certs"
-
-	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 type node struct {
@@ -35,11 +33,11 @@ type nodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
-func newNode(adminUsername string, adminSSHKeyData string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) node {
+func newNode(adminUsername string, adminSSHKeyData string, distroVersion string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) node {
 	return node{
 		AdminUsername:       adminUsername,
 		AdminSSHKeyData:     adminSSHKeyData,
-		OSImage:             newNodeOSImageCoreOS(),
+		OSImage:             newNodeOSImage(distroVersion),
 		VMSize:              vmSize,
 		DockerVolumeSizeGB:  dockerVolumeSizeGB,
 		KubeletVolumeSizeGB: kubeletVolumeSizeGB,
@@ -47,12 +45,12 @@ func newNode(adminUsername string, adminSSHKeyData string, vmSize string, docker
 }
 
 // newNodeOSImage provides OS information for Container Linux
-func newNodeOSImageCoreOS() nodeOSImage {
+func newNodeOSImage(distroVersion string) nodeOSImage {
 	return nodeOSImage{
-		Offer:     "CoreOS",
-		Publisher: "CoreOS",
+		Offer:     "flatcar-container-linux",
+		Publisher: "kinvolk",
 		SKU:       "Stable",
-		Version:   key.CoreosVersion,
+		Version:   distroVersion,
 	}
 }
 

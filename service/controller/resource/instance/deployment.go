@@ -38,6 +38,16 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		workerBlobName,
 	}
 
+	var distroVersion string
+	{
+		for _, component := range cc.Release.Components {
+			if component.Name == key.ContainerLinuxComponentName {
+				distroVersion = component.Version
+				break
+			}
+		}
+	}
+
 	for _, key := range cloudConfigURLs {
 		blobURL := cc.ContainerURL.NewBlockBlobURL(key)
 		_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
@@ -104,11 +114,11 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"clusterID":             key.ClusterID(obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
 		"masterCloudConfigData": masterCloudConfig,
-		"masterNodes":           getMasterNodesConfiguration(obj),
+		"masterNodes":           getMasterNodesConfiguration(obj, distroVersion),
 		"masterSubnetID":        cc.MasterSubnetID,
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
-		"workerNodes":           getWorkerNodesConfiguration(obj),
+		"workerNodes":           getWorkerNodesConfiguration(obj, distroVersion),
 		"workerSubnetID":        cc.WorkerSubnetID,
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
@@ -142,18 +152,18 @@ func renderCloudConfig(blobURL string, encryptionKey string, initialVector strin
 	return base64.StdEncoding.EncodeToString([]byte(cloudConfig)), nil
 }
 
-func getMasterNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
-	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Masters)
+func getMasterNodesConfiguration(obj providerv1alpha1.AzureConfig, distroVersion string) []node {
+	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), distroVersion, obj.Spec.Azure.Masters)
 }
 
-func getWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
-	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Workers)
+func getWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig, distroVersion string) []node {
+	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), distroVersion, obj.Spec.Azure.Workers)
 }
 
-func getNodesConfiguration(adminUsername string, adminSSHKeyData string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []node {
+func getNodesConfiguration(adminUsername string, adminSSHKeyData string, distroVersion string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []node {
 	var nodes []node
 	for _, m := range nodesSpecs {
-		n := newNode(adminUsername, adminSSHKeyData, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
+		n := newNode(adminUsername, adminSSHKeyData, distroVersion, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
 		nodes = append(nodes, n)
 	}
 	return nodes

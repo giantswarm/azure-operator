@@ -33,6 +33,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/resource/endpoints"
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/service/controller/resource/namespace"
+	"github.com/giantswarm/azure-operator/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/resource/service"
 	"github.com/giantswarm/azure-operator/service/controller/resource/tenantclients"
@@ -154,6 +155,19 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		tenantClientsResource, err = tenantclients.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var releaseResource resource.Interface
+	{
+		c := release.Config{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		releaseResource, err = release.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -367,6 +381,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	resources := []resource.Interface{
 		statusResource,
+		releaseResource,
 		tenantClientsResource,
 		namespaceResource,
 		serviceResource,

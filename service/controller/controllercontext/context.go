@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client"
@@ -24,7 +25,12 @@ type Context struct {
 	ContainerURL        *azblob.ContainerURL
 	EtcdLBBackendPoolID string
 	MasterSubnetID      string
+	Release             ContextRelease
 	WorkerSubnetID      string
+}
+
+type ContextRelease struct {
+	Components []v1alpha1.ReleaseSpecComponent
 }
 
 func (c *Context) Validate() error {
