@@ -98,8 +98,8 @@
       }
     ],
     "vmssResourceId":"[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
-    "vmssSinglePlacementGroup":"true"
-    "vmssVmNamePrefix":"[concat(toLower(parameters('vmssName')), '-')]",
+    "vmssSinglePlacementGroup":"true",
+    "vmssVmNamePrefix":"[concat(toLower(parameters('vmssName')), '-')]"
   },
   "resources":[
     {
