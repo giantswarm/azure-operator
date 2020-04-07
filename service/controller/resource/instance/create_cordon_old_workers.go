@@ -144,7 +144,6 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 			// When VMSS is scaling up there might be VM instances that haven't
 			// registered as nodes in k8s yet. Hence not all instances are
 			// found from node list.
-			oldNodes = append(oldNodes, n)
 			continue
 		}
 
