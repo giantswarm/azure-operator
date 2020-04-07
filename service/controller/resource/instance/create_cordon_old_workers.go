@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/coreos/go-semver/semver"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
@@ -12,6 +13,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
+	"github.com/giantswarm/azure-operator/pkg/label"
+	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
@@ -131,22 +134,32 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 		nodeMap[n.GetName()] = n
 	}
 
+	myVersion := semver.New(project.Version())
+
 	for _, i := range instances {
 		name := instanceNameFunc(customObject, *i.InstanceID)
 
-		if *i.LatestModelApplied {
-			n, found := nodeMap[name]
+		n, found := nodeMap[name]
+		if !found {
 			// When VMSS is scaling up there might be VM instances that haven't
 			// registered as nodes in k8s yet. Hence not all instances are
 			// found from node list.
-			if found {
-				newNodes = append(newNodes, n)
-			}
+			oldNodes = append(oldNodes, n)
+			continue
+		}
+
+		v, exists := n.GetLabels()[label.OperatorVersion]
+		if !exists {
+			// Label does not exist, we consider node as old.
+			oldNodes = append(oldNodes, n)
+			continue
+		}
+
+		nodeVersion := semver.New(v)
+		if nodeVersion.LessThan(*myVersion) {
+			oldNodes = append(oldNodes, n)
 		} else {
-			n, found := nodeMap[name]
-			if found {
-				oldNodes = append(oldNodes, n)
-			}
+			newNodes = append(newNodes, n)
 		}
 	}
 
