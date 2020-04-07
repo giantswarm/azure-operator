@@ -2,7 +2,6 @@ package client
 
 import (
 	"fmt"
-	"net/http"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
@@ -12,6 +11,7 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/Azure/go-autorest/autorest/adal"
 	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/giantswarm/azure-operator/client/senddecorator"
 	"github.com/giantswarm/microerror"
 )
 
@@ -43,11 +43,6 @@ type AzureClientSet struct {
 	VirtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient
 	// VnetPeeringClient manages virtual network peerings.
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
-}
-
-func init() {
-	// ONE DOES NOT SIMPLY RETRY ON HTTP 429.
-	autorest.StatusCodesForRetry = removeElementFromSlice(autorest.StatusCodesForRetry, http.StatusTooManyRequests)
 }
 
 // NewAzureClientSet returns the Azure API clients.
@@ -152,6 +147,7 @@ func newDeploymentsClient(config *clientConfig) (*resources.DeploymentsClient, e
 	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -164,6 +160,7 @@ func newDNSRecordSetsClient(config *clientConfig) (*dns.RecordSetsClient, error)
 	c := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -176,6 +173,7 @@ func newDNSZonesClient(config *clientConfig) (*dns.ZonesClient, error) {
 	c := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -188,6 +186,7 @@ func newGroupsClient(config *clientConfig) (*resources.GroupsClient, error) {
 	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -212,6 +211,7 @@ func newStorageAccountsClient(config *clientConfig) (*storage.AccountsClient, er
 	c := storage.NewAccountsClient(config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -224,6 +224,7 @@ func newUsageClient(config *clientConfig) (*compute.UsageClient, error) {
 	c := compute.NewUsageClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -236,6 +237,7 @@ func newVirtualNetworkClient(config *clientConfig) (*network.VirtualNetworksClie
 	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -248,6 +250,7 @@ func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) (*network.V
 	c := network.NewVirtualNetworkGatewayConnectionsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -260,6 +263,7 @@ func newVirtualNetworkGatewaysClient(config *clientConfig) (*network.VirtualNetw
 	c := network.NewVirtualNetworkGatewaysClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -272,6 +276,7 @@ func newVirtualMachineScaleSetsClient(config *clientConfig) (*compute.VirtualMac
 	c := compute.NewVirtualMachineScaleSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -284,6 +289,7 @@ func newVirtualMachineScaleSetVMsClient(config *clientConfig) (*compute.VirtualM
 	c := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -296,6 +302,7 @@ func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeerings
 	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&gatekeeper.Gatekeeper{}, &c)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -330,19 +337,4 @@ func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
 	}
 
 	return env, nil
-}
-
-func removeElementFromSlice(xs []int, x int) []int {
-	for i, v := range xs {
-		if v == x {
-			// Shift end of slice to the left by one.
-			copy(xs[i:], xs[i+1:])
-			// Truncate the last element.
-			xs = xs[:len(xs)-1]
-			// Call it a day.
-			break
-		}
-	}
-
-	return xs
 }
