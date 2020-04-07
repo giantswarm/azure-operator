@@ -7,11 +7,11 @@ import (
 	"time"
 )
 
-func notBefore(d int) time.Time {
+func notBefore(d int) time.Time { // nolint: unparam
 	return time.Now().UTC().Add(time.Duration(d-1) * time.Second)
 }
 
-func notAfter(d int) time.Time {
+func notAfter(d int) time.Time { // nolint: unparam
 	return time.Now().UTC().Add(time.Duration(d+10) * time.Second)
 }
 
