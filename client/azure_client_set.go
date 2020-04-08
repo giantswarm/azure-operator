@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/client/senddecorator"
+	"github.com/giantswarm/azure-operator/pkg/backpressure"
 )
 
 // AzureClientSet is the collection of Azure API clients.
@@ -148,7 +149,7 @@ func newDeploymentsClient(config *clientConfig) (*resources.DeploymentsClient, e
 	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -161,7 +162,7 @@ func newDNSRecordSetsClient(config *clientConfig) (*dns.RecordSetsClient, error)
 	c := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -174,7 +175,7 @@ func newDNSZonesClient(config *clientConfig) (*dns.ZonesClient, error) {
 	c := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -187,7 +188,7 @@ func newGroupsClient(config *clientConfig) (*resources.GroupsClient, error) {
 	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -212,7 +213,7 @@ func newStorageAccountsClient(config *clientConfig) (*storage.AccountsClient, er
 	c := storage.NewAccountsClient(config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -225,7 +226,7 @@ func newUsageClient(config *clientConfig) (*compute.UsageClient, error) {
 	c := compute.NewUsageClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -238,7 +239,7 @@ func newVirtualNetworkClient(config *clientConfig) (*network.VirtualNetworksClie
 	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -251,7 +252,7 @@ func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) (*network.V
 	c := network.NewVirtualNetworkGatewayConnectionsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -264,7 +265,7 @@ func newVirtualNetworkGatewaysClient(config *clientConfig) (*network.VirtualNetw
 	c := network.NewVirtualNetworkGatewaysClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -277,7 +278,7 @@ func newVirtualMachineScaleSetsClient(config *clientConfig) (*compute.VirtualMac
 	c := compute.NewVirtualMachineScaleSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -290,7 +291,7 @@ func newVirtualMachineScaleSetVMsClient(config *clientConfig) (*compute.VirtualM
 	c := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -303,7 +304,7 @@ func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeerings
 	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
