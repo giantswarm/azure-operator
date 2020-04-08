@@ -199,6 +199,11 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, cust
 		return nil, err
 	}
 
+	if n == nil {
+		// Kubernetes node related to this instance not found, we don't know if it's old or new.
+		return nil, nil
+	}
+
 	myVersion := semver.New(project.Version())
 
 	v, exists := n.GetLabels()[label.OperatorVersion]
