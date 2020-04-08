@@ -165,3 +165,54 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 
 	return
 }
+
+func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	name := key.WorkerInstanceName(customObject, *instance.InstanceID)
+
+	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	nodes := nodeList.Items
+
+	for _, n := range nodes {
+		if n.GetName() == name {
+			return &n, nil
+		}
+	}
+
+	// Node related to this instance was not found.
+	return nil, nil
+}
+
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance compute.VirtualMachineScaleSetVM) (*bool, error) {
+	t := true
+	f := false
+
+	n, err := r.getK8sWorkerNodeForInstance(ctx, customObject, instance)
+	if err != nil {
+		return nil, err
+	}
+
+	myVersion := semver.New(project.Version())
+
+	v, exists := n.GetLabels()[label.OperatorVersion]
+	if !exists {
+		// Label does not exist, this normally happens when a new node is coming up but did not finish
+		// its kubernetes bootstrap yet and thus doesn't have all the needed labels.
+		// We'll ignore this node for now and wait for it to bootstrap correctly.
+		return nil, nil
+	}
+
+	nodeVersion := semver.New(v)
+	if nodeVersion.LessThan(*myVersion) {
+		return &t, nil
+	} else {
+		return &f, nil
+	}
+}

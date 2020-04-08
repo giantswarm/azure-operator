@@ -47,7 +47,12 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	{
 		var strIds []string
 		for _, i := range allWorkerInstances {
-			if !*i.LatestModelApplied {
+			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cr, i)
+			if err != nil {
+				return DeploymentUninitialized, nil
+			}
+
+			if old != nil && *old {
 				strIds = append(strIds, *i.InstanceID)
 			}
 		}
