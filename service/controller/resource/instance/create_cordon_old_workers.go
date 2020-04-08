@@ -149,8 +149,9 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 
 		v, exists := n.GetLabels()[label.OperatorVersion]
 		if !exists {
-			// Label does not exist, we consider node as old.
-			oldNodes = append(oldNodes, n)
+			// Label does not exist, this normally happens when a new node is coming up but did not finish
+			// its kubernetes bootstrap yet and thus doesn't have all the needed labels.
+			// We'll ignore this node for now and wait for it to bootstrap correctly.
 			continue
 		}
 
