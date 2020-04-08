@@ -115,7 +115,7 @@
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
         "cluster-autoscaler-enabled":"true",
         "cluster-autoscaler-name":"[parameters('vmssName')]",
-        "azure-operator.giantswarm.io-version":"[parameters('azureOperatorVersion')]"
+        "gs-azure-operator.giantswarm.io-version":"[parameters('azureOperatorVersion')]"
       },
       "sku":{
         "name":"[parameters('vmssVmSize')]",
