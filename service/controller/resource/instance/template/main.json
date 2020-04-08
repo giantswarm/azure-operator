@@ -183,7 +183,7 @@
             "value":"[resourceGroup().location]"
           },
           "azureOperatorVersion":{
-            "value":""
+            "value":"[parameters('azureOperatorVersion')]"
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
