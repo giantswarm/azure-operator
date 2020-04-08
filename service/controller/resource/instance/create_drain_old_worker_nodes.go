@@ -58,7 +58,8 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			return DeploymentUninitialized, nil
 		}
 
-		if old != nil && *old {
+		if old == nil || !*old {
+			// Node is a new one or we weren't able to check it's status, don't drain it.
 			continue
 		}
 
