@@ -3,8 +3,6 @@
 package update
 
 import (
-	"strings"
-
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -12,6 +10,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/integration/env"
+	"github.com/giantswarm/azure-operator/integration/setup"
 )
 
 type ProviderConfig struct {
@@ -60,11 +59,11 @@ func (p *Provider) CurrentStatus() (v1alpha1.StatusCluster, error) {
 }
 
 func (p *Provider) CurrentVersion() (string, error) {
-	return env.VersionBundleVersion(), nil
+	return setup.GetLatestOperatorRelease(), nil
 }
 
 func (p *Provider) NextVersion() (string, error) {
-	return strings.TrimSuffix(env.VersionBundleVersion(), "-dev"), nil
+	return env.VersionBundleVersion(), nil
 }
 
 func (p *Provider) UpdateVersion(nextVersion string) error {

@@ -68,6 +68,21 @@ Installation:
                   version: %s
 `
 
+var (
+	latestOperatorRelease string
+)
+
+func init() {
+	fmt.Printf("calculating latest %#q release\n", project.Name())
+
+	latestOperatorRelease, err := appcatalog.GetLatestVersion(context.Background(), key.DefaultCatalogStorageURL(), project.Name())
+	if err != nil {
+		panic(fmt.Sprintln("cannot calculate latest operator release from app catalog"))
+	}
+
+	fmt.Printf("latest %#q release is %#q\n", project.Name(), latestOperatorRelease)
+}
+
 // WrapTestMain setup and teardown e2e testing environment.
 func WrapTestMain(m *testing.M, c Config) {
 	var r int
@@ -125,24 +140,16 @@ func Setup(ctx context.Context, c Config) error {
 	return nil
 }
 
+func GetLatestOperatorRelease() string {
+	return latestOperatorRelease
+}
+
 func installResources(ctx context.Context, config Config) error {
 	var err error
 
-	var latestOperatorRelease string
-	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("getting latest %#q release", project.Name())) // nolint: errcheck
-
-		latestOperatorRelease, err = appcatalog.GetLatestVersion(ctx, key.DefaultCatalogStorageURL(), project.Name())
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("latest %#q release is %#q", project.Name(), latestOperatorRelease)) // nolint: errcheck
-	}
-
 	var operatorTarballPath string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for tested version") // nolint: errcheck
 
 		operatorVersion := fmt.Sprintf("%s-%s", latestOperatorRelease, env.CircleSHA())
 		operatorTarballURL, err := appcatalog.NewTarballURL(key.DefaultTestCatalogStorageURL(), project.Name(), operatorVersion)
@@ -150,38 +157,37 @@ func installResources(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL is %#q", operatorTarballURL)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for tested version is %#q", operatorTarballURL)) // nolint: errcheck
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for tested version") // nolint: errcheck
 
 		operatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, operatorTarballURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path is %#q", operatorTarballPath)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath)) // nolint: errcheck
 	}
 
 	var latestReleasedOperatorTarballPath string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for latest release") // nolint: errcheck
 
-		operatorVersion := fmt.Sprintf("%s-%s", latestOperatorRelease, env.CircleSHA())
-		latestReleaseOperatorTarballURL, err := appcatalog.NewTarballURL(key.DefaultTestCatalogStorageURL(), project.Name(), operatorVersion)
+		latestReleaseOperatorTarballURL, err := appcatalog.NewTarballURL(key.DefaultTestCatalogStorageURL(), project.Name(), latestOperatorRelease)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL is %#q", latestReleaseOperatorTarballURL)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest release is %#q", latestReleaseOperatorTarballURL)) // nolint: errcheck
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for latest release") // nolint: errcheck
 
 		operatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, latestReleaseOperatorTarballURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path is %#q", latestReleasedOperatorTarballPath)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest release is %#q", latestReleasedOperatorTarballPath)) // nolint: errcheck
 	}
 
 	{
@@ -217,19 +223,19 @@ func installResources(ctx context.Context, config Config) error {
 			}
 		}()
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q-%s", project.Name(), "previous")) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q-%s", project.Name(), "latest-release")) // nolint: errcheck
 
 		err = config.HelmClient.InstallReleaseFromTarball(ctx,
 			latestReleasedOperatorTarballPath,
 			key.Namespace(),
-			helm.ReleaseName(fmt.Sprintf("%s-%s", key.ReleaseName(), "previous")),
+			helm.ReleaseName(fmt.Sprintf("%s-%s", key.ReleaseName(), "latest-release")),
 			helm.ValueOverrides([]byte(fmt.Sprintf(values, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA()))),
 			helm.InstallWait(true))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q-%s", project.Name(), "previous")) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q-%s", project.Name(), "latest-release")) // nolint: errcheck
 	}
 
 	{
@@ -268,13 +274,17 @@ func installResources(ctx context.Context, config Config) error {
 	}
 
 	{
+		version := env.VersionBundleVersion()
+		if env.TestDir() == "integration/test/update" {
+			version = GetLatestOperatorRelease()
+		}
 		azureConfig := &providerv1alpha1.AzureConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      env.ClusterID(),
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": env.VersionBundleVersion(),
+					"azure-operator.giantswarm.io/version": version,
 					"release.giantswarm.io/version":        "1.0.0",
 				},
 			},
@@ -350,7 +360,7 @@ func installResources(ctx context.Context, config Config) error {
 						Kubelet: providerv1alpha1.ClusterKubernetesKubelet{
 							AltNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local",
 							Domain:   "worker." + env.ClusterID() + ".k8s." + env.CommonDomain(),
-							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + env.VersionBundleVersion(),
+							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + version,
 							Port:     10250,
 						},
 						NetworkSetup: providerv1alpha1.ClusterKubernetesNetworkSetup{Docker: providerv1alpha1.ClusterKubernetesNetworkSetupDocker{Image: "quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9"}},
@@ -362,7 +372,7 @@ func installResources(ctx context.Context, config Config) error {
 						}},
 					},
 				},
-				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: env.VersionBundleVersion()},
+				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: version},
 			},
 		}
 		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(azureConfig)
