@@ -62,6 +62,7 @@ func (p *Provider) CurrentVersion() (string, error) {
 	return setup.GetLatestOperatorRelease(), nil
 }
 
+// NextVersion returns the version which we are going to upgrade to
 func (p *Provider) NextVersion() (string, error) {
 	return env.VersionBundleVersion(), nil
 }
