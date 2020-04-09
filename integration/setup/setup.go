@@ -75,7 +75,8 @@ var (
 func init() {
 	fmt.Printf("calculating latest %#q release\n", project.Name())
 
-	latestOperatorRelease, err := appcatalog.GetLatestVersion(context.Background(), key.DefaultCatalogStorageURL(), project.Name())
+	var err error
+	latestOperatorRelease, err = appcatalog.GetLatestVersion(context.Background(), key.DefaultCatalogStorageURL(), project.Name())
 	if err != nil {
 		panic(fmt.Sprintln("cannot calculate latest operator release from app catalog"))
 	}
