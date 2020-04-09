@@ -183,7 +183,7 @@ func installResources(ctx context.Context, config Config) error {
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for latest release") // nolint: errcheck
 
-		operatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, latestReleaseOperatorTarballURL)
+		latestReleasedOperatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, latestReleaseOperatorTarballURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
