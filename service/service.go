@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -73,13 +74,28 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
+	resourceGroup := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup)
+	if resourceGroup == "" {
+		resourceGroup = config.Viper.GetString(config.Flag.Service.Installation.Name)
+	}
+
+	virtualNetwork := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork)
+	if virtualNetwork == "" {
+		virtualNetwork = resourceGroup
+	}
+
+	virtualNetworkGateway := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetworkGateway)
+	if virtualNetworkGateway == "" {
+		virtualNetworkGateway = fmt.Sprintf("%s-%s", resourceGroup, "vpn-gateway")
+	}
+
 	azure := setting.Azure{
 		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
 		HostCluster: setting.AzureHostCluster{
 			CIDR:                  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
-			ResourceGroup:         config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
-			VirtualNetwork:        config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),
-			VirtualNetworkGateway: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetworkGateway),
+			ResourceGroup:         resourceGroup,
+			VirtualNetwork:        virtualNetwork,
+			VirtualNetworkGateway: virtualNetworkGateway,
 		},
 		MSI: setting.AzureMSI{
 			Enabled: config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
@@ -102,9 +118,19 @@ func New(config Config) (*Service, error) {
 		LogsToken:  config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Debug.LogsToken),
 	}
 
+	oidcClientId := config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.ClientID)
+	if oidcClientId == "" {
+		oidcClientId = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
+	}
+
+	oidcIssuerUrl := config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL)
+	if oidcIssuerUrl == "" {
+		oidcIssuerUrl = fmt.Sprintf("https://login.microsoftonline.com/%s/v2.0", config.Viper.GetString(config.Flag.Service.Azure.TenantID))
+	}
+
 	OIDC := setting.OIDC{
-		ClientID:      config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.ClientID),
-		IssuerURL:     config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL),
+		ClientID:      oidcClientId,
+		IssuerURL:     oidcIssuerUrl,
 		UsernameClaim: config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.UsernameClaim),
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
 	}
