@@ -76,6 +76,10 @@ func (p *Provider) UpdateVersion(nextVersion string) error {
 	customObject.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(customObject.Spec.Cluster.Kubernetes.Kubelet.Labels, "azure-operator.giantswarm.io/version", nextVersion)
 	customObject.Spec.VersionBundle.Version = nextVersion
 
+	labels := customObject.GetLabels()
+	labels["azure-operator.giantswarm.io/version"] = nextVersion
+	customObject.SetLabels(labels)
+
 	_, err = p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Update(customObject)
 	if err != nil {
 		return microerror.Mask(err)
