@@ -53,7 +53,13 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 	var nodesPendingDraining int
 	for _, i := range allWorkerInstances {
-		if *i.LatestModelApplied {
+		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cr, i)
+		if err != nil {
+			return DeploymentUninitialized, nil
+		}
+
+		if old == nil || !*old {
+			// Node is a new one or we weren't able to check it's status, don't drain it.
 			continue
 		}
 

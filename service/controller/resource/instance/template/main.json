@@ -8,6 +8,12 @@
         "description":"Output value of the API load balancer backend pool ID as referenced from the API load balancer setup."
       }
     },
+    "azureOperatorVersion":{
+      "type":"string",
+      "metadata":{
+        "description":"Version of the azure operator that created the deployment."
+      }
+    },
     "clusterID":{
       "type":"string",
       "metadata":{
@@ -176,6 +182,9 @@
           "location":{
             "value":"[resourceGroup().location]"
           },
+          "azureOperatorVersion":{
+            "value":"[parameters('azureOperatorVersion')]"
+          },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
           },
@@ -287,6 +296,9 @@
         "parameters":{
           "location":{
             "value":"[resourceGroup().location]"
+          },
+          "azureOperatorVersion":{
+            "value":"[parameters('azureOperatorVersion')]"
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
