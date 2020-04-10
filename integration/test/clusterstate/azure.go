@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	VirtualMachineSize = "Standard_D16s_v3"
+	VirtualMachineSize = "Standard_D5_v2"
 )
 
 type ProviderConfig struct {
@@ -97,6 +97,7 @@ func (p *Provider) ReplaceMaster() error {
 		return microerror.Mask(err)
 	}
 
+	p.logger.LogCtx(context.Background(), "message", fmt.Sprintf("Changing master VM size from %s to %s", customObject.Spec.Azure.Masters[0].VMSize, VirtualMachineSize))
 	// Change virtual machine size to trigger replacement of existing master node.
 	customObject.Spec.Azure.Masters[0].VMSize = VirtualMachineSize
 
@@ -104,6 +105,7 @@ func (p *Provider) ReplaceMaster() error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	p.logger.LogCtx(context.Background(), "message", "Changed master VM size")
 
 	return nil
 }
