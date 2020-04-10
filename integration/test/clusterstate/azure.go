@@ -16,7 +16,7 @@ import (
 )
 
 const (
-	VirtualMachineSize = "Standard_D4s_v3"
+	VirtualMachineSize = "Standard_D16s_v3"
 )
 
 type ProviderConfig struct {
