@@ -8,6 +8,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/debugger"
@@ -103,7 +104,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			r.debugger.LogFailedDeployment(ctx, d, err)
 		}
 		if !key.IsFinalProvisioningState(s) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
 			return nil
 		}
 
