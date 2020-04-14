@@ -94,6 +94,21 @@ func NewSet(config SetConfig) (*Set, error) {
 		}
 	}
 
+	var spExpirationCollector *SPExpiration
+	{
+		c := SPExpirationConfig{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			EnvironmentName: config.AzureSetting.EnvironmentName,
+		}
+
+		spExpirationCollector, err = NewSPExpiration(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vmssRateLimitCollector *VMSSRateLimit
 	{
 		c := VMSSRateLimitConfig{
@@ -136,6 +151,7 @@ func NewSet(config SetConfig) (*Set, error) {
 				resourceGroupCollector,
 				usageCollector,
 				rateLimitCollector,
+				spExpirationCollector,
 				vmssRateLimitCollector,
 				vpnConnectionCollector,
 			},
