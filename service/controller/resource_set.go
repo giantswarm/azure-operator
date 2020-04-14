@@ -375,9 +375,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		encryptionkeyResource,
 		blobObjectResource,
 		deploymentResource,
+		dnsrecordResource,
 		instanceResource,
 		endpointsResource,
-		dnsrecordResource,
 		vpnResource,
 		vpnconnectionResource,
 	}
