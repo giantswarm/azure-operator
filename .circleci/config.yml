@@ -148,3 +148,12 @@ workflows:
           test-timeout: "70m"
           requires:
           - hold
+
+      - architect/integration-test:
+          name: update-test
+          setup-script: "integration/config/setup.sh"
+          env-file: "integration/test/update/.env"
+          test-dir: "integration/test/update"
+          test-timeout: "120m"
+          requires:
+          - hold
