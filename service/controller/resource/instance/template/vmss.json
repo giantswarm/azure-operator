@@ -5,6 +5,9 @@
     "location":{
       "type":"string"
     },
+    "azureOperatorVersion":{
+      "type":"string"
+    },
     "GiantSwarmTags":{
       "type":"object",
       "defaultValue":{
@@ -98,8 +101,8 @@
       }
     ],
     "vmssResourceId":"[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
-    "vmssVmNamePrefix":"[concat(toLower(parameters('vmssName')), '-')]",
-    "vmssSinglePlacementGroup":"true"
+    "vmssSinglePlacementGroup":"true",
+    "vmssVmNamePrefix":"[concat(toLower(parameters('vmssName')), '-')]"
   },
   "resources":[
     {
@@ -111,7 +114,8 @@
       "tags":{
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
         "cluster-autoscaler-enabled":"true",
-        "cluster-autoscaler-name":"[parameters('vmssName')]"
+        "cluster-autoscaler-name":"[parameters('vmssName')]",
+        "gs-azure-operator.giantswarm.io-version":"[parameters('azureOperatorVersion')]"
       },
       "sku":{
         "name":"[parameters('vmssVmSize')]",
