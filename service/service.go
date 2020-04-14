@@ -118,19 +118,9 @@ func New(config Config) (*Service, error) {
 		LogsToken:  config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Debug.LogsToken),
 	}
 
-	oidcClientId := config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.ClientID)
-	if oidcClientId == "" {
-		oidcClientId = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
-	}
-
-	oidcIssuerUrl := config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL)
-	if oidcIssuerUrl == "" {
-		oidcIssuerUrl = fmt.Sprintf("https://login.microsoftonline.com/%s/v2.0", config.Viper.GetString(config.Flag.Service.Azure.TenantID))
-	}
-
 	OIDC := setting.OIDC{
-		ClientID:      oidcClientId,
-		IssuerURL:     oidcIssuerUrl,
+		ClientID:      config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.ClientID),
+		IssuerURL:     config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL),
 		UsernameClaim: config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.UsernameClaim),
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
 	}
