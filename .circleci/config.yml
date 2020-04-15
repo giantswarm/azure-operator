@@ -113,14 +113,14 @@ workflows:
             branches:
               ignore: master
 
-      - architect/integration-test:
-          name: cluster-state-test
-          setup-script: "integration/config/setup.sh"
-          env-file: "integration/test/clusterstate/.env"
-          test-dir: "integration/test/clusterstate"
-          test-timeout: "90m"
-          requires:
-          - hold
+#      - architect/integration-test:
+#          name: cluster-state-test
+#          setup-script: "integration/config/setup.sh"
+#          env-file: "integration/test/clusterstate/.env"
+#          test-dir: "integration/test/clusterstate"
+#          test-timeout: "90m"
+#          requires:
+#          - hold
 
       - architect/integration-test:
           name: scaling-test
