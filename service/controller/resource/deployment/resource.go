@@ -177,6 +177,31 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment") // nolint: errcheck
 
+	if desiredDeploymentTemplateChk != "" {
+		err = r.setResourceStatus(cr, DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, desiredDeploymentTemplateChk)) // nolint: errcheck
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum)) // nolint: errcheck
+	}
+
+	if desiredDeploymentParametersChk != "" {
+		err = r.setResourceStatus(cr, DeploymentParametersChecksum, desiredDeploymentParametersChk)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, desiredDeploymentParametersChk)) // nolint: errcheck
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum)) // nolint: errcheck
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
+	reconciliationcanceledcontext.SetCanceled(ctx)
+
 	return nil
 }
 
@@ -317,4 +342,61 @@ func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	}
 
 	return "", nil
+}
+
+func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
+	// Get the newest CR version. Otherwise status update may fail because of:
+	//
+	//	 the object has been modified; please apply your changes to the
+	//	 latest version and try again
+	//
+	{
+		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		customObject = *c
+	}
+
+	resourceStatus := providerv1alpha1.StatusClusterResource{
+		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+			{
+				Status: s,
+				Type:   t,
+			},
+		},
+		Name: Name,
+	}
+
+	var set bool
+	for i, r := range customObject.Status.Cluster.Resources {
+		if r.Name != Name {
+			continue
+		}
+
+		for _, c := range r.Conditions {
+			if c.Type == t {
+				continue
+			}
+			resourceStatus.Conditions = append(resourceStatus.Conditions, c)
+		}
+
+		customObject.Status.Cluster.Resources[i] = resourceStatus
+		set = true
+	}
+
+	if !set {
+		customObject.Status.Cluster.Resources = append(customObject.Status.Cluster.Resources, resourceStatus)
+	}
+
+	{
+		n := customObject.GetNamespace()
+		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
 }
