@@ -26,10 +26,12 @@ type azureCredentials struct {
 }
 
 const (
+	labelClientId        = "client_id"
 	labelSubscriptionId  = "subscription_id"
 	labelTenantId        = "tenant_id"
 	labelApplicationId   = "application_id"
 	labelApplicationName = "application_name"
+	labelSecretKeyID     = "secret_key_id"
 )
 
 var (
@@ -37,10 +39,12 @@ var (
 		prometheus.BuildFQName("azure_operator", "service_principal_token", "expiration"),
 		"Expiration date for Azure Access Tokens.",
 		[]string{
+			labelClientId,
 			labelSubscriptionId,
 			labelTenantId,
 			labelApplicationId,
 			labelApplicationName,
+			labelSecretKeyID,
 		},
 		nil,
 	)
@@ -130,10 +134,12 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 					spExpirationDesc,
 					prometheus.GaugeValue,
 					float64(pc.EndDate.Unix()),
+					creds.clientID,
 					creds.subscriptionID,
 					creds.tenantID,
 					*app.AppID,
 					*app.DisplayName,
+					*pc.KeyID,
 				)
 			}
 
