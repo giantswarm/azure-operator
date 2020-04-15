@@ -112,6 +112,7 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 		if err != nil {
 			// Ignore but log
 			v.logger.LogCtx(ctx, "level", "warning", "message", "Unable to create an applications client: ", err.Error())
+			continue
 		}
 
 		app, err := c.Get(ctx, creds.clientID)
