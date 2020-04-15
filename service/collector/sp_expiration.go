@@ -136,6 +136,10 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 					*app.DisplayName,
 				)
 			}
+
+			if err := apps.NextWithContext(ctx); err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
