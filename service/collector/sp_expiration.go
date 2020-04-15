@@ -2,6 +2,7 @@ package collector
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/profiles/latest/graphrbac/graphrbac"
 	"github.com/Azure/go-autorest/autorest"
@@ -115,23 +116,26 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 			continue
 		}
 
-		app, err := c.Get(ctx, creds.clientID)
+		apps, err := c.ListComplete(ctx, fmt.Sprintf("appId eq '%s'", creds.clientID))
 		if err != nil {
 			// Ignore but log
 			v.logger.LogCtx(ctx, "level", "warning", "message", "Unable to get application: ", err.Error())
 			continue
 		}
 
-		for _, pc := range *app.PasswordCredentials {
-			ch <- prometheus.MustNewConstMetric(
-				spExpirationDesc,
-				prometheus.GaugeValue,
-				float64(pc.EndDate.Unix()),
-				creds.subscriptionID,
-				creds.tenantID,
-				*app.AppID,
-				*app.DisplayName,
-			)
+		for apps.NotDone() {
+			app := apps.Value()
+			for _, pc := range *app.PasswordCredentials {
+				ch <- prometheus.MustNewConstMetric(
+					spExpirationDesc,
+					prometheus.GaugeValue,
+					float64(pc.EndDate.Unix()),
+					creds.subscriptionID,
+					creds.tenantID,
+					*app.AppID,
+					*app.DisplayName,
+				)
+			}
 		}
 	}
 
