@@ -24,7 +24,7 @@ const (
 )
 
 var (
-	resourceGroupDesc *prometheus.Desc = prometheus.NewDesc(
+	resourceGroupDesc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "resource_group", "info"),
 		"Resource group information.",
 		[]string{
@@ -80,6 +80,7 @@ func NewResourceGroup(config ResourceGroupConfig) (*ResourceGroup, error) {
 }
 
 func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
+	ctx := context.Background()
 	clientSets, err := credential.GetAzureClientSetsFromCredentialSecretsBySubscription(r.k8sClient, r.environmentName)
 	if err != nil {
 		return microerror.Mask(err)
@@ -99,7 +100,7 @@ func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
 		clientSet := item
 
 		g.Go(func() error {
-			err := r.collectForClientSet(ch, clientSet.GroupsClient)
+			err := r.collectForClientSet(ctx, ch, clientSet.GroupsClient)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -115,7 +116,7 @@ func (r *ResourceGroup) Collect(ch chan<- prometheus.Metric) error {
 	return nil
 }
 
-func (r *ResourceGroup) collectForClientSet(ch chan<- prometheus.Metric, client *resources.GroupsClient) error {
+func (r *ResourceGroup) collectForClientSet(ctx context.Context, ch chan<- prometheus.Metric, client *resources.GroupsClient) error {
 	resultsPage, err := client.ListComplete(context.Background(), "", nil)
 	if err != nil {
 		return microerror.Mask(err)
@@ -134,7 +135,7 @@ func (r *ResourceGroup) collectForClientSet(ch chan<- prometheus.Metric, client 
 			to.String(group.ManagedBy),
 		)
 
-		if err := resultsPage.Next(); err != nil {
+		if err := resultsPage.NextWithContext(ctx); err != nil {
 			return microerror.Mask(err)
 		}
 	}

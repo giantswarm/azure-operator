@@ -15,7 +15,7 @@ import (
 )
 
 var (
-	usageCurrentDesc *prometheus.Desc = prometheus.NewDesc(
+	usageCurrentDesc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "usage", "current"),
 		"Current usage of specific Quotas as defined by Azure.",
 		[]string{
@@ -24,7 +24,7 @@ var (
 		},
 		nil,
 	)
-	usageLimitDesc *prometheus.Desc = prometheus.NewDesc(
+	usageLimitDesc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "usage", "limit"),
 		"Usage limit of specific Quotas as defined by Azure.",
 		[]string{
