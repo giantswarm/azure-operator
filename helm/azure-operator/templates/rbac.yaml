@@ -3,7 +3,7 @@ kind: ClusterRole
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
   labels:
-    {{- include "azure-operator.labels" . | nindent 4 }}
+    {{- include "labels.common" . | nindent 4 }}
 rules:
   - apiGroups:
       - apiextensions.k8s.io
@@ -85,7 +85,7 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
   labels:
-    {{- include "azure-operator.labels" . | nindent 4 }}
+    {{- include "labels.common" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ tpl .Values.resource.default.name  . }}
@@ -100,7 +100,7 @@ kind: ClusterRole
 metadata:
   name: {{ tpl .Values.resource.psp.name . }}
   labels:
-    {{- include "azure-operator.labels" . | nindent 4 }}
+    {{- include "labels.common" . | nindent 4 }}
 rules:
   - apiGroups:
       - extensions
@@ -116,7 +116,7 @@ kind: ClusterRoleBinding
 metadata:
   name: {{ tpl .Values.resource.psp.name . }}
   labels:
-    {{- include "azure-operator.labels" . | nindent 4 }}
+    {{- include "labels.common" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
     name: {{ tpl .Values.resource.default.name  . }}
