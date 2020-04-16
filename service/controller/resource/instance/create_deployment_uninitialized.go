@@ -37,6 +37,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 	computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
 	if controllercontext.IsInvalidContext(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", err.Error())                                              // nolint: errcheck
 		r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context") // nolint: errcheck
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")                              // nolint: errcheck
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")                                     // nolint: errcheck
@@ -82,7 +83,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			return currentState, microerror.Mask(err)
 		}
 
-		if deploymentTemplateChk != "" {
+		if deploymentParametersChk != "" {
 			err = r.setResourceStatus(cr, DeploymentParametersChecksum, deploymentParametersChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
