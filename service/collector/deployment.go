@@ -26,7 +26,7 @@ const (
 )
 
 var (
-	deploymentDesc *prometheus.Desc = prometheus.NewDesc(
+	deploymentDesc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "deployment", "status"),
 		"Cluster status condition as provided by the CR status.",
 		[]string{
@@ -84,6 +84,7 @@ func NewDeployment(config DeploymentConfig) (*Deployment, error) {
 }
 
 func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
+	ctx := context.Background()
 	var crs []providerv1alpha1.AzureConfig
 	{
 		mark := ""
@@ -151,7 +152,7 @@ func (d *Deployment) Collect(ch chan<- prometheus.Metric) error {
 				)
 			}
 
-			err := r.Next()
+			err := r.NextWithContext(ctx)
 			if err != nil {
 				return microerror.Mask(err)
 			}

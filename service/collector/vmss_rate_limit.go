@@ -28,7 +28,7 @@ const (
 )
 
 var (
-	vmssVMListDesc *prometheus.Desc = prometheus.NewDesc(
+	vmssVMListDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(vmssMetricsNamespace, vmssMetricsSubsystem, "vmss_instance_list"),
 		"Remaining number of VMSS VM list operations.",
 		[]string{
@@ -38,7 +38,7 @@ var (
 		},
 		nil,
 	)
-	vmssVMListErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	vmssVMListErrorCounter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: vmssMetricsNamespace,
 		Subsystem: vmssMetricsSubsystem,
 		Name:      "vmss_instance_list_parsing_errors",

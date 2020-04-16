@@ -16,7 +16,7 @@ import (
 )
 
 var (
-	vpnConnectionDesc *prometheus.Desc = prometheus.NewDesc(
+	vpnConnectionDesc = prometheus.NewDesc(
 		prometheus.BuildFQName("azure_operator", "vpn_connection", "info"),
 		"VPN connection informations.",
 		[]string{
@@ -115,7 +115,7 @@ func (v *VPNConnection) Collect(ch chan<- prometheus.Metric) error {
 			return nil
 		})
 
-		if err := connections.Next(); err != nil {
+		if err := connections.NextWithContext(ctx); err != nil {
 			return microerror.Mask(err)
 		}
 	}
