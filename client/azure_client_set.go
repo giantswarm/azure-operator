@@ -316,12 +316,12 @@ func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeerings
 func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
 	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
 	if err != nil {
-		return nil, microerror.Maskf(err, "creating OAuth config")
+		return nil, microerror.Mask(err)
 	}
 
 	token, err := adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, env.ServiceManagementEndpoint)
 	if err != nil {
-		return nil, microerror.Maskf(err, "getting token")
+		return nil, microerror.Mask(err)
 	}
 
 	return token, nil
