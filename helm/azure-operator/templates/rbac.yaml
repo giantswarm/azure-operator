@@ -1,7 +1,7 @@
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
 metadata:
-  name: {{ tpl .Values.resource.default.name  . }}
+  name: {{ include "resource.default.name"  . }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 rules:
@@ -71,7 +71,7 @@ rules:
     resources:
       - configmaps
     resourceNames:
-      - {{ tpl .Values.resource.default.name  . }}
+      - {{ include "resource.default.name"  . }}
     verbs:
       - get
   - nonResourceURLs:
@@ -83,16 +83,16 @@ rules:
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRoleBinding
 metadata:
-  name: {{ tpl .Values.resource.default.name  . }}
+  name: {{ include "resource.default.name"  . }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: {{ tpl .Values.resource.default.name  . }}
+    name: {{ include "resource.default.name"  . }}
     namespace: {{ include "resource.default.namespace"  . }}
 roleRef:
   kind: ClusterRole
-  name: {{ tpl .Values.resource.default.name  . }}
+  name: {{ include "resource.default.name"  . }}
   apiGroup: rbac.authorization.k8s.io
 ---
 apiVersion: rbac.authorization.k8s.io/v1
@@ -119,7 +119,7 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
 subjects:
   - kind: ServiceAccount
-    name: {{ tpl .Values.resource.default.name  . }}
+    name: {{ include "resource.default.name"  . }}
     namespace: {{ include "resource.default.namespace"  . }}
 roleRef:
   kind: ClusterRole

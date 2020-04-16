@@ -1,7 +1,7 @@
 apiVersion: apps/v1
 kind: Deployment
 metadata:
-  name: {{ tpl .Values.resource.default.name  . }}
+  name: {{ include "resource.default.name"  . }}
   namespace: {{ include "resource.default.namespace"  . }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
@@ -21,22 +21,22 @@ spec:
         {{- include "labels.selector" . | nindent 8 }}
     spec:
       volumes:
-      - name: {{ tpl .Values.resource.default.name  . }}-configmap
+      - name: {{ include "resource.default.name"  . }}-configmap
         configMap:
-          name: {{ tpl .Values.resource.default.name  . }}
+          name: {{ include "resource.default.name"  . }}
           items:
           - key: config.yaml
             path: config.yaml
-      - name: {{ tpl .Values.resource.default.name  . }}-secret
+      - name: {{ include "resource.default.name"  . }}-secret
         secret:
-          secretName: {{ tpl .Values.resource.default.name  . }}
+          secretName: {{ include "resource.default.name"  . }}
           items:
           - key: secret.yaml
             path: secret.yaml
       - name: certs
         hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
-      serviceAccountName: {{ tpl .Values.resource.default.name  . }}
+      serviceAccountName: {{ include "resource.default.name"  . }}
       securityContext:
         runAsUser: {{ .Values.pod.user.id }}
         runAsGroup: {{ .Values.pod.group.id }}
@@ -44,9 +44,9 @@ spec:
       - name: {{ .Chart.Name }}
         image: "{{ .Values.Installation.V1.Registry.Domain }}/{{ .Values.image.name }}:{{ .Values.image.tag }}"
         volumeMounts:
-        - name: {{ tpl .Values.resource.default.name  . }}-configmap
+        - name: {{ include "resource.default.name"  . }}-configmap
           mountPath: /var/run/{{ .Chart.Name }}/configmap/
-        - name: {{ tpl .Values.resource.default.name  . }}-secret
+        - name: {{ include "resource.default.name"  . }}-secret
           mountPath: /var/run/{{ .Chart.Name }}/secret/
           readOnly: true
         - name: certs
