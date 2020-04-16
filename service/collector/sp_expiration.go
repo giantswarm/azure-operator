@@ -48,6 +48,17 @@ var (
 		},
 		nil,
 	)
+
+	spExpirationFailedScrapeDesc *prometheus.Desc = prometheus.NewDesc(
+		prometheus.BuildFQName("azure_operator", "service_principal_token", "check_failed"),
+		"Unable to retrieve informations about the service principal expiration date.",
+		[]string{
+			labelClientId,
+			labelSubscriptionId,
+			labelTenantId,
+		},
+		nil,
+	)
 )
 
 type SPExpirationConfig struct {
@@ -98,6 +109,8 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 		return microerror.Mask(err)
 	}
 
+	failedScrapes := make(map[string]azureCredentials)
+
 	for _, secret := range secretList.Items {
 		clientID := string(secret.Data["azure.azureoperator.clientid"])
 		clientSecret := string(secret.Data["azure.azureoperator.clientsecret"])
@@ -117,6 +130,7 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 		if err != nil {
 			// Ignore but log
 			v.logger.LogCtx(ctx, "level", "warning", "message", "Unable to create an applications client: ", err.Error())
+			failedScrapes[creds.clientID] = creds
 			continue
 		}
 
@@ -124,6 +138,7 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 		if err != nil {
 			// Ignore but log
 			v.logger.LogCtx(ctx, "level", "warning", "message", "Unable to get application: ", err.Error())
+			failedScrapes[creds.clientID] = creds
 			continue
 		}
 
@@ -149,11 +164,24 @@ func (v *SPExpiration) Collect(ch chan<- prometheus.Metric) error {
 		}
 	}
 
+	// Send metrics for failed scrapes as well
+	for _, creds := range failedScrapes {
+		ch <- prometheus.MustNewConstMetric(
+			spExpirationFailedScrapeDesc,
+			prometheus.GaugeValue,
+			float64(1),
+			creds.clientID,
+			creds.subscriptionID,
+			creds.tenantID,
+		)
+	}
+
 	return nil
 }
 
 func (v *SPExpiration) Describe(ch chan<- *prometheus.Desc) error {
 	ch <- spExpirationDesc
+	ch <- spExpirationFailedScrapeDesc
 	return nil
 }
 
