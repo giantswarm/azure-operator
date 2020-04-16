@@ -2,7 +2,7 @@ apiVersion: apps/v1
 kind: Deployment
 metadata:
   name: {{ tpl .Values.resource.default.name  . }}
-  namespace: {{ tpl .Values.resource.default.namespace  . }}
+  namespace: {{ include "resource.default.namespace"  . }}
   labels:
     {{- include "labels.common" . | nindent 4 }}
 spec:
