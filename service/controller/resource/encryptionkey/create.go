@@ -50,11 +50,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		},
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey secret")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey secret") // nolint: errcheck
 
 	_, err = r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Create(secret)
 	if apierrors.IsAlreadyExists(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey: already created")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey: already created") // nolint: errcheck
 	} else if err != nil {
 		return microerror.Mask(err)
 	}

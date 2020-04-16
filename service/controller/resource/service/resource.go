@@ -46,16 +46,6 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func getServiceByName(list []*corev1.Service, name string) (*corev1.Service, error) {
-	for _, l := range list {
-		if l.Name == name {
-			return l, nil
-		}
-	}
-
-	return nil, microerror.Mask(notFoundError)
-}
-
 func isServiceModified(a, b *corev1.Service) bool {
 	if a == nil || b == nil {
 		return true

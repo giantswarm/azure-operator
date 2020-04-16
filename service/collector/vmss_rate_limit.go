@@ -169,7 +169,7 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 				if err != nil {
 					detailed, ok := err.(autorest.DetailedError)
 					if !ok {
-						u.logger.LogCtx(ctx, fmt.Sprintf("Error listing VM instances on %s: %s", cr.Name, err.Error()))
+						u.logger.LogCtx(ctx, fmt.Sprintf("Error listing VM instances on %s: %s", cr.Name, err.Error())) // nolint: errcheck
 						continue
 					}
 					err = nil
@@ -225,21 +225,6 @@ func (u *VMSSRateLimit) Collect(ch chan<- prometheus.Metric) error {
 func (u *VMSSRateLimit) Describe(ch chan<- *prometheus.Desc) error {
 	ch <- vmssVMListDesc
 	return nil
-}
-
-func (u *VMSSRateLimit) getAzureClients(cr providerv1alpha1.AzureConfig) (*client.AzureClientSetConfig, *client.AzureClientSet, error) {
-	config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
-	if err != nil {
-		return nil, nil, microerror.Mask(err)
-	}
-	config.EnvironmentName = u.environmentName
-
-	azureClients, err := client.NewAzureClientSet(*config)
-	if err != nil {
-		return nil, nil, microerror.Mask(err)
-	}
-
-	return config, azureClients, nil
 }
 
 func inArray(a []string, s string) bool {

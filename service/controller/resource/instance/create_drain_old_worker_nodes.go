@@ -19,7 +19,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs") // nolint: errcheck
 
 	drainerConfigs := make(map[string]corev1alpha1.DrainerConfig)
 	{
@@ -38,22 +38,28 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs)))
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs))) // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")                         // nolint: errcheck
 
 	allWorkerInstances, err := r.allInstances(ctx, cr, key.WorkerVMSSName)
 	if IsScaleSetNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr))) // nolint: errcheck
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that drainerconfig exists for all old worker nodes")
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances))) // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that drainerconfig exists for all old worker nodes")          // nolint: errcheck
 
 	var nodesPendingDraining int
 	for _, i := range allWorkerInstances {
-		if *i.LatestModelApplied {
+		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cr, i)
+		if err != nil {
+			return DeploymentUninitialized, nil
+		}
+
+		if old == nil || !*old {
+			// Node is a new one or we weren't able to check it's status, don't drain it.
 			continue
 		}
 
@@ -62,7 +68,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		dc, drainerConfigExists := drainerConfigs[n]
 		if !drainerConfigExists {
 			nodesPendingDraining++
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n)) // nolint: errcheck
 			err = r.createDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
@@ -71,18 +77,18 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 		if drainerConfigExists && dc.Status.HasTimeoutCondition() {
 			nodesPendingDraining++
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists but has timed out", n))
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting drainerconfig for %s", n))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists but has timed out", n)) // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting drainerconfig for %s", n))                         // nolint: errcheck
 
 			err = r.g8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
 			if errors.IsNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node")
-				r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist")
+				r.logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node") // nolint: errcheck
+				r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist") // nolint: errcheck
 			} else if err != nil {
 				return "", microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n)) // nolint: errcheck
 			err = r.createDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
@@ -91,19 +97,19 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 		if drainerConfigExists && !dc.Status.HasTimeoutCondition() && !dc.Status.HasDrainedCondition() {
 			nodesPendingDraining++
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists", n))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists", n)) // nolint: errcheck
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that drainerconfig exists for all old worker nodes")
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%d nodes are pending draining", nodesPendingDraining))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that drainerconfig exists for all old worker nodes")       // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%d nodes are pending draining", nodesPendingDraining)) // nolint: errcheck
 
 	if nodesPendingDraining > 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource") // nolint: errcheck
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting all drainerconfigs")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting all drainerconfigs") // nolint: errcheck
 
 	// Delete DrainerConfigs now that all nodes have been DRAINED.
 	for _, dc := range drainerConfigs {
@@ -113,7 +119,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted all drainerconfigs")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted all drainerconfigs") // nolint: errcheck
 
 	return TerminateOldWorkerInstances, nil
 }

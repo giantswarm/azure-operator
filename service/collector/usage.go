@@ -126,7 +126,7 @@ func (u *Usage) Collect(ch chan<- prometheus.Metric) error {
 	for subscriptionID, azureClientSet := range clientSets {
 		r, err := azureClientSet.UsageClient.List(ctx, u.location)
 		if err != nil {
-			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource usage information", "stack", fmt.Sprintf("%v", err))
+			u.logger.Log("level", "warning", "message", "an error occurred during the scraping of current compute resource usage information", "stack", fmt.Sprintf("%v", err)) // nolint: errcheck
 			u.usageScrapeError.Inc()
 		} else {
 			for r.NotDone() {

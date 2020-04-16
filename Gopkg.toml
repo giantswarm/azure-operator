@@ -53,10 +53,6 @@ required = [
   branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/e2e-harness"
-  branch = "master"
-
-[[constraint]]
   name = "github.com/giantswarm/e2eclients"
   branch = "master"
 
@@ -86,7 +82,7 @@ required = [
 
 [[constraint]]
   name = "github.com/giantswarm/k8scloudconfig"
-  branch = "master"
+  version = "=6.0.0"
 
 [[constraint]]
   name = "github.com/giantswarm/microendpoint"

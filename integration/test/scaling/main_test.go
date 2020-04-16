@@ -6,6 +6,7 @@ import (
 	"testing"
 
 	"github.com/giantswarm/e2etests/scaling"
+	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/setup"
@@ -22,7 +23,7 @@ func init() {
 	{
 		config, err = setup.NewConfig()
 		if err != nil {
-			panic(err.Error())
+			panic(microerror.Stack(err))
 		}
 	}
 
@@ -38,7 +39,7 @@ func init() {
 
 		p, err = NewProvider(c)
 		if err != nil {
-			panic(err.Error())
+			panic(microerror.Stack(err))
 		}
 	}
 
@@ -50,7 +51,7 @@ func init() {
 
 		scalingTest, err = scaling.New(c)
 		if err != nil {
-			panic(err.Error())
+			panic(microerror.Stack(err))
 		}
 	}
 }

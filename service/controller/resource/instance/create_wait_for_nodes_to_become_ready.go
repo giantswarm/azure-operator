@@ -12,43 +12,43 @@ import (
 )
 
 func (r *Resource) waitForMastersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready") // nolint: errcheck
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isMaster)
 	if IsClientNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet") // nolint: errcheck
 		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready") // nolint: errcheck
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready") // nolint: errcheck
 
 	return ScaleUpWorkerVMSS, nil
 }
 
 func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready") // nolint: errcheck
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isWorker)
 	if IsClientNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet") // nolint: errcheck
 		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready") // nolint: errcheck
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready") // nolint: errcheck
 
 	return DrainOldWorkerNodes, nil
 }

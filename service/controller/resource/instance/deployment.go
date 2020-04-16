@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
+	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
@@ -50,9 +51,9 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
 	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName) // nolint: errcheck
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 		return azureresource.Deployment{}, nil
 	} else if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -80,7 +81,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	containerName := key.BlobContainerName()
 
 	// Masters cloudconfig
-	masterBlobURL, err := blobclient.GetBlobURL(ctx, masterBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
+	masterBlobURL, err := blobclient.GetBlobURL(masterBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -90,7 +91,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	// Workers cloudconfig
-	workerBlobURL, err := blobclient.GetBlobURL(ctx, workerBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
+	workerBlobURL, err := blobclient.GetBlobURL(workerBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -101,6 +102,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 
 	defaultParams := map[string]interface{}{
 		"apiLBBackendPoolID":    cc.APILBBackendPoolID,
+		"azureOperatorVersion":  project.Version(),
 		"clusterID":             key.ClusterID(obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
 		"masterCloudConfigData": masterCloudConfig,

@@ -58,7 +58,8 @@ type ResourceSetConfig struct {
 	SSOPublicKey             string
 	// TemplateVersion is a git branch name to use to get Azure Resource
 	// Manager templates from.
-	TemplateVersion string
+	TemplateVersion  string
+	VMSSCheckWorkers int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -223,8 +224,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
-			Debugger: newDebugger,
-			Logger:   config.Logger,
+			Debugger:  newDebugger,
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
 
 			Azure:           config.Azure,
 			TemplateVersion: config.TemplateVersion,
@@ -281,8 +283,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			Azure:           config.Azure,
-			TemplateVersion: config.TemplateVersion,
+			Azure:            config.Azure,
+			TemplateVersion:  config.TemplateVersion,
+			VMSSCheckWorkers: config.VMSSCheckWorkers,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -373,9 +376,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		encryptionkeyResource,
 		blobObjectResource,
 		deploymentResource,
+		dnsrecordResource,
 		instanceResource,
 		endpointsResource,
-		dnsrecordResource,
 		vpnResource,
 		vpnconnectionResource,
 	}
@@ -402,7 +405,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	handlesFunc := func(obj interface{}) bool {
 		cr, err := key.ToCustomResource(obj)
 		if err != nil {
-			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err))
+			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err)) // nolint: errcheck
 			return false
 		}
 

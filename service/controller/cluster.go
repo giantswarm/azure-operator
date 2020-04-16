@@ -23,10 +23,11 @@ type ClusterConfig struct {
 	ProjectName    string
 	RegistryDomain string
 
-	Ignition        setting.Ignition
-	OIDC            setting.OIDC
-	SSOPublicKey    string
-	TemplateVersion string
+	Ignition         setting.Ignition
+	OIDC             setting.OIDC
+	SSOPublicKey     string
+	TemplateVersion  string
+	VMSSCheckWorkers int
 }
 
 type Cluster struct {
@@ -65,6 +66,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			OIDC:                     config.OIDC,
 			SSOPublicKey:             config.SSOPublicKey,
 			TemplateVersion:          config.TemplateVersion,
+			VMSSCheckWorkers:         config.VMSSCheckWorkers,
 		}
 
 		resourceSet, err = NewResourceSet(c)

@@ -9,7 +9,7 @@ import (
 const (
 	EnvVarIgnitionDebugEnabled    = "IGNITION_DEBUG_ENABLED"
 	EnvVarIgnitionDebugLogsPrefix = "IGNITION_DEBUG_LOGS_PREFIX"
-	EnvVarIgnitionDebugLogsToken  = "IGNITION_DEBUG_LOGS_TOKEN"
+	EnvVarIgnitionDebugLogsToken  = "IGNITION_DEBUG_LOGS_TOKEN" // #nosec
 )
 
 var (
@@ -24,7 +24,7 @@ func init() {
 	ignitionDebugEnabled, err = strconv.ParseBool(os.Getenv(EnvVarIgnitionDebugEnabled))
 	if err != nil {
 		ignitionDebugEnabled = false
-		fmt.Printf("failed to parse `%s` as boolean value, setting to false", EnvVarIgnitionDebugEnabled)
+		fmt.Printf("failed to parse `%s` as boolean value, setting to false\n", EnvVarIgnitionDebugEnabled)
 	}
 
 	if ignitionDebugEnabled {

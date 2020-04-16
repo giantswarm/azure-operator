@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -73,13 +74,28 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
+	resourceGroup := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup)
+	if resourceGroup == "" {
+		resourceGroup = config.Viper.GetString(config.Flag.Service.Installation.Name)
+	}
+
+	virtualNetwork := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork)
+	if virtualNetwork == "" {
+		virtualNetwork = resourceGroup
+	}
+
+	virtualNetworkGateway := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetworkGateway)
+	if virtualNetworkGateway == "" {
+		virtualNetworkGateway = fmt.Sprintf("%s-%s", resourceGroup, "vpn-gateway")
+	}
+
 	azure := setting.Azure{
 		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
 		HostCluster: setting.AzureHostCluster{
 			CIDR:                  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
-			ResourceGroup:         config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
-			VirtualNetwork:        config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),
-			VirtualNetworkGateway: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetworkGateway),
+			ResourceGroup:         resourceGroup,
+			VirtualNetwork:        virtualNetwork,
+			VirtualNetworkGateway: virtualNetworkGateway,
 		},
 		MSI: setting.AzureMSI{
 			Enabled: config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
@@ -172,6 +188,7 @@ func New(config Config) (*Service, error) {
 			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
 			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
+			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
 		clusterController, err = controller.NewCluster(c)
@@ -240,8 +257,8 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		go s.operatorCollector.Boot(ctx)
-		go s.statusResourceCollector.Boot(ctx)
+		go s.operatorCollector.Boot(ctx)       // nolint: errcheck
+		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
 		go s.clusterController.Boot(ctx)
 	})

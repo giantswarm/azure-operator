@@ -9,6 +9,11 @@ import (
 	"github.com/google/go-cmp/cmp"
 )
 
+const (
+	OpenState   = "open"
+	ClosedState = "closed"
+)
+
 func Test_StateMachine(t *testing.T) {
 	testCases := []struct {
 		name             string
@@ -20,18 +25,18 @@ func Test_StateMachine(t *testing.T) {
 		{
 			name: "case 0: simple state transition",
 			machine: Machine{
-				"open":   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "closed", nil },
-				"closed": func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "open", nil },
+				OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return ClosedState, nil },
+				ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
 			},
-			currentState:     "open",
-			expectedNewState: "closed",
+			currentState:     OpenState,
+			expectedNewState: ClosedState,
 			errorMatcher:     nil,
 		},
 		{
 			name: "case 1: unknown start state",
 			machine: Machine{
-				"open":   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "closed", nil },
-				"closed": func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "open", nil },
+				OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return ClosedState, nil },
+				ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
 			},
 			currentState:     "half-way",
 			expectedNewState: "",
@@ -40,10 +45,10 @@ func Test_StateMachine(t *testing.T) {
 		{
 			name: "case 2: unknown new state",
 			machine: Machine{
-				"open":   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "half-way", nil },
-				"closed": func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "open", nil },
+				OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "half-way", nil },
+				ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
 			},
-			currentState:     "open",
+			currentState:     OpenState,
 			expectedNewState: "half-way",
 			errorMatcher:     IsExecutionFailedError,
 		},

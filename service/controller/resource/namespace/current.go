@@ -22,16 +22,16 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	var namespace *corev1.Namespace
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "finding the namespace in the Kubernetes API")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "finding the namespace in the Kubernetes API") // nolint: errcheck
 
 		manifest, err := r.k8sClient.CoreV1().Namespaces().Get(key.ClusterNamespace(cr), metav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the namespace in the Kubernetes API")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the namespace in the Kubernetes API") // nolint: errcheck
 			// fall through
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "found the namespace in the Kubernetes API")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "found the namespace in the Kubernetes API") // nolint: errcheck
 			namespace = manifest
 		}
 	}
@@ -43,21 +43,21 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// conditions of the watched CR are used to inhibit alerts, for instance when
 	// the cluster is being deleted.
 	if namespace != nil && namespace.Status.Phase == corev1.NamespaceTerminating {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("namespace is %#q", corev1.NamespaceTerminating))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("namespace is %#q", corev1.NamespaceTerminating)) // nolint: errcheck
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "keeping finalizers")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "keeping finalizers") // nolint: errcheck
 		finalizerskeptcontext.SetKept(ctx)
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 		resourcecanceledcontext.SetCanceled(ctx)
 
 		return nil, nil
 	}
 
 	if namespace == nil && key.IsDeleted(cr) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "resource deletion completed")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "resource deletion completed") // nolint: errcheck
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
 		resourcecanceledcontext.SetCanceled(ctx)
 
 		return nil, nil
