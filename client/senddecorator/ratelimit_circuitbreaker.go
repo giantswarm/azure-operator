@@ -46,7 +46,7 @@ func RateLimitCircuitBreaker(g *backpressure.Backpressure) autorest.SendDecorato
 				}
 
 				g.NotBefore(retryAfter)
-				return nil, microerror.Maskf(tooManyRequestsError, "retry after %q", g.RetryAfter)
+				return nil, microerror.Maskf(tooManyRequestsError, "retry after %q", g.RetryAfter())
 			}
 
 			return resp, err

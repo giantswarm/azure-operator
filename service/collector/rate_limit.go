@@ -155,7 +155,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 			writes, err = strconv.ParseFloat(resourceGroup.Response.Header.Get(remainingWritesHeaderName), 64)
 			if err != nil {
-				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.Stack(microerror.Mask(err))) // nolint: errcheck
+				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for write requests", "stack", microerror.JSON(microerror.Mask(err))) // nolint: errcheck
 				writes = 0
 				writesErrorCounter.Inc()
 			}
@@ -179,7 +179,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 
 			reads, err = strconv.ParseFloat(groupResponse.Response.Header.Get(remainingReadsHeaderName), 64)
 			if err != nil {
-				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.Stack(microerror.Mask(err))) // nolint: errcheck
+				u.logger.Log("level", "warning", "message", "an error occurred parsing to float the value inside the rate limiting header for read requests", "stack", microerror.JSON(microerror.Mask(err))) // nolint: errcheck
 				reads = 0
 				readsErrorCounter.Inc()
 			}

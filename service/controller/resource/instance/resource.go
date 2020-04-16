@@ -159,10 +159,10 @@ func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (e
 	var enc *encrypter.Encrypter
 	{
 		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret %q", secret.Name)
 		}
 		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret %q", secret.Name)
 		}
 		c := encrypter.Config{
 			Key: secret.Data[key.CertificateEncryptionKeyName],

@@ -46,6 +46,6 @@ func (d *Debugger) LogFailedDeployment(ctx context.Context, deployment resources
 		"status", deployment.Status,
 		"body", string(body),
 		"name", *deployment.Name,
-		"stack", microerror.Stack(microerror.Mask(err)),
+		"stack", microerror.JSON(microerror.Mask(err)),
 	)
 }
