@@ -50,7 +50,8 @@ func NewSet(config SetConfig) (*Set, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			EnvironmentName: config.AzureSetting.EnvironmentName,
+			EnvironmentName:        config.AzureSetting.EnvironmentName,
+			CPAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
 		resourceGroupCollector, err = NewResourceGroup(c)
@@ -66,8 +67,9 @@ func NewSet(config SetConfig) (*Set, error) {
 			K8sClient: config.K8sClient.K8sClient(),
 			Logger:    config.Logger,
 
-			EnvironmentName: config.AzureSetting.EnvironmentName,
-			Location:        config.AzureSetting.Location,
+			EnvironmentName:        config.AzureSetting.EnvironmentName,
+			Location:               config.AzureSetting.Location,
+			CPAzureClientSetConfig: config.HostAzureClientSetConfig,
 		}
 
 		usageCollector, err = NewUsage(c)

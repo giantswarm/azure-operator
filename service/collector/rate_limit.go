@@ -2,34 +2,32 @@ package collector
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/prometheus/client_golang/prometheus"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/credential"
 )
 
 const (
 	remainingReadsHeaderName  = "x-ms-ratelimit-remaining-subscription-reads"
 	remainingWritesHeaderName = "x-ms-ratelimit-remaining-subscription-writes"
-	resourceGroupName         = "azure-operator-empty-rg-for-metrics"
+	resourceGroupNamePrefix   = "azure-operator-empty-rg-for-metrics"
 	metricsNamespace          = "azure_operator"
 	metricsSubsystem          = "rate_limit"
 )
 
 var (
-	readsDesc *prometheus.Desc = prometheus.NewDesc(
+	readsDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "reads"),
 		"Remaining number of reads allowed.",
 		[]string{
@@ -38,7 +36,7 @@ var (
 		},
 		nil,
 	)
-	writesDesc *prometheus.Desc = prometheus.NewDesc(
+	writesDesc = prometheus.NewDesc(
 		prometheus.BuildFQName(metricsNamespace, metricsSubsystem, "writes"),
 		"Remaining number of writes allowed.",
 		[]string{
@@ -47,13 +45,13 @@ var (
 		},
 		nil,
 	)
-	readsErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	readsErrorCounter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: metricsNamespace,
 		Subsystem: metricsSubsystem,
 		Name:      "reads_parsing_errors",
 		Help:      "Errors trying to parse the remaining requests from the response header",
 	})
-	writesErrorCounter prometheus.Counter = prometheus.NewCounter(prometheus.CounterOpts{
+	writesErrorCounter = prometheus.NewCounter(prometheus.CounterOpts{
 		Namespace: metricsNamespace,
 		Subsystem: metricsSubsystem,
 		Name:      "writes_parsing_errors",
@@ -121,61 +119,25 @@ func NewRateLimit(config RateLimitConfig) (*RateLimit, error) {
 }
 
 func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
-	// We need all CRs to gather all subscriptions below.
-	var crs []providerv1alpha1.AzureConfig
-	{
-		mark := ""
-		page := 0
-		for page == 0 || len(mark) > 0 {
-			opts := metav1.ListOptions{
-				Continue: mark,
-			}
-			list, err := u.g8sClient.ProviderV1alpha1().AzureConfigs(metav1.NamespaceAll).List(opts)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			crs = append(crs, list.Items...)
-
-			mark = list.Continue
-			page++
-		}
+	clientSets, err := credential.GetAzureClientSetsFromCredentialSecrets(u.k8sClient, u.environmentName)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	// We generate clients and group them by subscription.
-	// Subscription is defined by the Secret used to fetch the credentials.
-	clientConfigBySubscription := map[string]client.AzureClientSetConfig{}
-	{
-		for _, cr := range crs {
-			config, err := credential.GetAzureConfig(u.k8sClient, key.CredentialName(cr), key.CredentialNamespace(cr))
-			if err != nil {
-				return microerror.Mask(err)
-			}
-			clientConfigBySubscription[config.SubscriptionID] = *config
-		}
-
-		// The operator potentially uses a different set of credentials than
-		// tenant clusters, so we add the operator credentials as well.
-		config := &client.AzureClientSetConfig{
-			ClientID:       u.cpAzureClientSetConfig.ClientID,
-			ClientSecret:   u.cpAzureClientSetConfig.ClientSecret,
-			SubscriptionID: u.cpAzureClientSetConfig.SubscriptionID,
-			TenantID:       u.cpAzureClientSetConfig.TenantID,
-		}
-		clientConfigBySubscription[config.SubscriptionID] = *config
+	// The operator potentially uses a different set of credentials than
+	// tenant clusters, so we add the operator credentials as well.
+	operatorClientSet, err := client.NewAzureClientSet(u.cpAzureClientSetConfig)
+	if err != nil {
+		return microerror.Mask(err)
 	}
+	clientSets[&u.cpAzureClientSetConfig] = operatorClientSet
 
 	ctx := context.Background()
 
 	// We track RateLimit metrics for each client labeled by SubscriptionID and
 	// ClientID.
 	// That way we prevent duplicated metrics.
-	for _, clientConfig := range clientConfigBySubscription {
-		azureClients, err := client.NewAzureClientSet(clientConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
+	for clientConfig, clientSet := range clientSets {
 		// Remaining write requests can be retrieved sending a write request.
 		var writes float64
 		{
@@ -186,7 +148,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 					"collector": to.StringPtr(project.Name()),
 				},
 			}
-			resourceGroup, err := azureClients.GroupsClient.CreateOrUpdate(ctx, resourceGroupName, resourceGroup)
+			resourceGroup, err := clientSet.GroupsClient.CreateOrUpdate(ctx, u.getResourceGroupName(), resourceGroup)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -202,7 +164,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 				writesDesc,
 				prometheus.GaugeValue,
 				writes,
-				azureClients.GroupsClient.SubscriptionID,
+				clientSet.GroupsClient.SubscriptionID,
 				clientConfig.ClientID,
 			)
 		}
@@ -210,7 +172,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 		// Remaining read requests can be retrieved sending a read request.
 		var reads float64
 		{
-			groupResponse, err := azureClients.GroupsClient.Get(ctx, resourceGroupName)
+			groupResponse, err := clientSet.GroupsClient.Get(ctx, u.getResourceGroupName())
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -226,7 +188,7 @@ func (u *RateLimit) Collect(ch chan<- prometheus.Metric) error {
 				readsDesc,
 				prometheus.GaugeValue,
 				reads,
-				azureClients.GroupsClient.SubscriptionID,
+				clientSet.GroupsClient.SubscriptionID,
 				clientConfig.ClientID,
 			)
 		}
@@ -239,4 +201,8 @@ func (u *RateLimit) Describe(ch chan<- *prometheus.Desc) error {
 	ch <- readsDesc
 	ch <- writesDesc
 	return nil
+}
+
+func (u *RateLimit) getResourceGroupName() string {
+	return fmt.Sprintf("%s-%s", resourceGroupNamePrefix, u.location)
 }
