@@ -6,8 +6,11 @@ import (
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/debugger"
@@ -21,12 +24,15 @@ const (
 )
 
 const (
-	mainDeploymentName = "cluster-main-template"
+	DeploymentTemplateChecksum   = "TemplateChecksum"
+	DeploymentParametersChecksum = "ParametersChecksum"
+	mainDeploymentName           = "cluster-main-template"
 )
 
 type Config struct {
-	Debugger *debugger.Debugger
-	Logger   micrologger.Logger
+	Debugger  *debugger.Debugger
+	G8sClient versioned.Interface
+	Logger    micrologger.Logger
 
 	Azure setting.Azure
 	// TemplateVersion is the ARM template version. Currently is the name
@@ -35,8 +41,9 @@ type Config struct {
 }
 
 type Resource struct {
-	debugger *debugger.Debugger
-	logger   micrologger.Logger
+	debugger  *debugger.Debugger
+	g8sClient versioned.Interface
+	logger    micrologger.Logger
 
 	azure           setting.Azure
 	templateVersion string
@@ -45,6 +52,9 @@ type Resource struct {
 func New(config Config) (*Resource, error) {
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
+	}
+	if config.G8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -58,8 +68,9 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		debugger: config.Debugger,
-		logger:   config.Logger,
+		debugger:  config.Debugger,
+		g8sClient: config.G8sClient,
+		logger:    config.Logger,
 
 		azure:           config.Azure,
 		templateVersion: config.TemplateVersion,
@@ -103,7 +114,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			r.debugger.LogFailedDeployment(ctx, d, err)
 		}
 		if !key.IsFinalProvisioningState(s) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
 			return nil
 		}
 
@@ -121,6 +133,34 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	desiredDeploymentTemplateChk, err := getDeploymentTemplateChecksum(deployment)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	desiredDeploymentParametersChk, err := getDeploymentParametersChecksum(deployment)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged") // nolint: errcheck
+		// As current and desired state differs, start process from the beginning.
+		return nil
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed") // nolint: errcheck
+
 	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), mainDeploymentName, deployment)
 	if err != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.Stack(microerror.Mask(err))) // nolint: errcheck
@@ -136,6 +176,31 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment") // nolint: errcheck
+
+	if desiredDeploymentTemplateChk != "" {
+		err = r.setResourceStatus(cr, DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, desiredDeploymentTemplateChk)) // nolint: errcheck
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum)) // nolint: errcheck
+	}
+
+	if desiredDeploymentParametersChk != "" {
+		err = r.setResourceStatus(cr, DeploymentParametersChecksum, desiredDeploymentParametersChk)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, desiredDeploymentParametersChk)) // nolint: errcheck
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum)) // nolint: errcheck
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
+	reconciliationcanceledcontext.SetCanceled(ctx)
 
 	return nil
 }
@@ -252,4 +317,86 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	}
 
 	return s, nil
+}
+
+func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, t string) (string, error) {
+	{
+		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		customObject = *c
+	}
+
+	for _, r := range customObject.Status.Cluster.Resources {
+		if r.Name != Name {
+			continue
+		}
+
+		for _, c := range r.Conditions {
+			if c.Type == t {
+				return c.Status, nil
+			}
+		}
+	}
+
+	return "", nil
+}
+
+func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
+	// Get the newest CR version. Otherwise status update may fail because of:
+	//
+	//	 the object has been modified; please apply your changes to the
+	//	 latest version and try again
+	//
+	{
+		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		customObject = *c
+	}
+
+	resourceStatus := providerv1alpha1.StatusClusterResource{
+		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+			{
+				Status: s,
+				Type:   t,
+			},
+		},
+		Name: Name,
+	}
+
+	var set bool
+	for i, r := range customObject.Status.Cluster.Resources {
+		if r.Name != Name {
+			continue
+		}
+
+		for _, c := range r.Conditions {
+			if c.Type == t {
+				continue
+			}
+			resourceStatus.Conditions = append(resourceStatus.Conditions, c)
+		}
+
+		customObject.Status.Cluster.Resources[i] = resourceStatus
+		set = true
+	}
+
+	if !set {
+		customObject.Status.Cluster.Resources = append(customObject.Status.Cluster.Resources, resourceStatus)
+	}
+
+	{
+		n := customObject.GetNamespace()
+		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
 }

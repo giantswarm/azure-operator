@@ -224,8 +224,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
-			Debugger: newDebugger,
-			Logger:   config.Logger,
+			Debugger:  newDebugger,
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
 
 			Azure:           config.Azure,
 			TemplateVersion: config.TemplateVersion,
@@ -375,9 +376,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		encryptionkeyResource,
 		blobObjectResource,
 		deploymentResource,
+		dnsrecordResource,
 		instanceResource,
 		endpointsResource,
-		dnsrecordResource,
 		vpnResource,
 		vpnconnectionResource,
 	}
