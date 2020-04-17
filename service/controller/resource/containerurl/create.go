@@ -15,7 +15,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding storage account") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding storage account")
 
 	containerName := key.BlobContainerName()
 	groupName := key.ClusterID(cr)
@@ -28,9 +28,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	_, err = storageAccountsClient.GetProperties(ctx, groupName, storageAccountName, storage.AccountExpandGeoReplicationStats)
 	if IsStorageAccountNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -38,9 +38,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName, "")
 	if IsStorageAccountNotProvisioned(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account is not provisioned") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account is not provisioned")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -51,7 +51,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	primaryKey := *(((*keys.Keys)[0]).Value)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account")
 	err = r.addContainerURLToContext(ctx, containerName, storageAccountName, primaryKey)
 	if err != nil {
 		return microerror.Mask(err)

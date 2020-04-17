@@ -45,12 +45,12 @@ func New(config Config) (*MultiAZ, error) {
 }
 
 func (s *MultiAZ) Test(ctx context.Context) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", "getting current availability zones") // nolint: errcheck
+	s.logger.LogCtx(ctx, "level", "debug", "message", "getting current availability zones")
 	zones, err := s.provider.GetClusterAZs(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", zones) // nolint: errcheck
+	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", zones)
 
 	if len(zones) != 1 {
 		return microerror.Maskf(executionFailedError, "The amount of AZ's used is not correct. Expected %d zones, got %d zones", 1, len(zones))

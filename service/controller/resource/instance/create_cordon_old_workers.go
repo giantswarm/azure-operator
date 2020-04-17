@@ -37,17 +37,17 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	if cc.Client.TenantCluster.K8s == nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
 		allWorkerInstances, err = r.allInstances(ctx, cr, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr))) // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 
 			return currentState, nil
 		} else if err != nil {
@@ -55,8 +55,8 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances))) // nolint: errcheck
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")                                     // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
 
 	var nodes []corev1.Node
 	{
@@ -70,13 +70,13 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, cr, key.WorkerInstanceName)
 	if len(newNodes) < len(oldNodes) {
 		// Wait until there's enough new nodes up.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes))) // nolint: errcheck
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")                                                                                           // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes))) // nolint: errcheck
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")                                                              // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
 
 	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
 	if err != nil {
@@ -84,12 +84,12 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	if oldNodesCordoned < len(oldNodes) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not all old nodes are still cordoned; %d pending", len(oldNodes)-oldNodesCordoned)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not all old nodes are still cordoned; %d pending", len(oldNodes)-oldNodesCordoned))
 
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned)) // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned))
 
 	return WaitForWorkersToBecomeReady, nil
 }
