@@ -38,7 +38,7 @@ func (d *Debugger) LogFailedDeployment(ctx context.Context, deployment resources
 
 	body, _ := ioutil.ReadAll(deployment.Body)
 
-	d.logger.LogCtx(ctx, // nolint: errcheck
+	d.logger.LogCtx(ctx,
 		"correlationID", *deployment.Properties.CorrelationID,
 		"id", *deployment.ID,
 		"level", "error",

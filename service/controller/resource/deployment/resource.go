@@ -90,7 +90,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
 	var deployment azureresource.Deployment
 
@@ -108,14 +108,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	} else {
 		s := *d.Properties.ProvisioningState
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 		if !key.IsSucceededProvisioningState(s) {
 			r.debugger.LogFailedDeployment(ctx, d, err)
 		}
 		if !key.IsFinalProvisioningState(s) {
 			reconciliationcanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 			return nil
 		}
 
@@ -154,12 +154,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
 		// As current and desired state differs, start process from the beginning.
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), mainDeploymentName, deployment)
 	if err != nil {
@@ -175,7 +175,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
 
 	if desiredDeploymentTemplateChk != "" {
 		err = r.setResourceStatus(cr, DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
@@ -183,9 +183,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, desiredDeploymentTemplateChk)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, desiredDeploymentTemplateChk))
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
 	}
 
 	if desiredDeploymentParametersChk != "" {
@@ -194,12 +194,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, desiredDeploymentParametersChk)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, desiredDeploymentParametersChk))
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 	reconciliationcanceledcontext.SetCanceled(ctx)
 
 	return nil
@@ -289,9 +289,9 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	}
 
 	if d.Properties.Outputs == nil {
-		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("cannot get output value '%s' of deployment '%s'", outputName, deploymentName)) // nolint: errcheck
-		r.logger.LogCtx(ctx, "level", "warning", "message", "assuming deployment is in failed state")                                                   // nolint: errcheck
-		r.logger.LogCtx(ctx, "level", "warning", "message", "canceling controller context enrichment")                                                  // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("cannot get output value '%s' of deployment '%s'", outputName, deploymentName))
+		r.logger.LogCtx(ctx, "level", "warning", "message", "assuming deployment is in failed state")
+		r.logger.LogCtx(ctx, "level", "warning", "message", "canceling controller context enrichment")
 		return "", nil
 	}
 

@@ -24,15 +24,15 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.VmssDeploymentName)
 	if IsDeploymentNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found") // nolint: errcheck
-		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
 		return currentState, nil
 	} else if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s)) // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if key.IsSucceededProvisioningState(s) {
 		if d.Location == nil {
@@ -41,7 +41,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 
 		computedDeployment, err := r.newDeployment(ctx, cr, nil, *d.Location)
 		if blobclient.IsBlobNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
 		} else if err != nil {
 			return "", microerror.Mask(err)
@@ -67,12 +67,12 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 			}
 
 			if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed") // nolint: errcheck
+				r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 				// As current and desired state differs, start process from the beginning.
 				return DeploymentUninitialized, nil
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
 
 			return currentState, nil
 		}
@@ -81,7 +81,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "warning", "message", "instances reconciliation process reached unexpected state") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "warning", "message", "instances reconciliation process reached unexpected state")
 
 	// Normally the process should never get here. In case this happens, start
 	// from the beginning.
