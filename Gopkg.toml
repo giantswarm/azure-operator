@@ -65,10 +65,6 @@ required = [
   branch = "master"
 
 [[constraint]]
-  name = "github.com/giantswarm/exporterkit"
-  branch = "master"
-
-[[constraint]]
   name = "github.com/giantswarm/helmclient"
   branch = "master"
 
@@ -123,10 +119,6 @@ required = [
 [[constraint]]
   name = "github.com/google/go-cmp"
   version = "v0.3.1"
-
-[[constraint]]
-  name = "github.com/prometheus/client_golang"
-  version = "v0.9.4"
 
 [[constraint]]
   name = "github.com/spf13/viper"
