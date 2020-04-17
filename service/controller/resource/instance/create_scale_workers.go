@@ -38,13 +38,10 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
 	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.logger, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
-	if err != nil {
+	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
-		if vmsscheck.IsVMSSUnsafeError(err) {
-			return ScaleUpWorkerVMSS, nil
-		}
-
-		// Unexpected error.
+		return ScaleUpWorkerVMSS, nil
+	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 	// Not all workers are Running in Azure, wait for next reconciliation loop.
