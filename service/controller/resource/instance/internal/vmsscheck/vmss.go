@@ -79,7 +79,7 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, rg stri
 		rl3m, rl30m := rateLimitThresholdsFromResponse(iterator.Response().Response)
 		if rl3m < remainingCallsThreshold3m || rl30m < remainingCallsThreshold30m {
 			logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, remainingCallsMax3m, rl30m, remainingCallsMax30m)) // nolint: errcheck
-			return false, nil
+			return false, vmssUnsafeError
 		}
 	}
 
