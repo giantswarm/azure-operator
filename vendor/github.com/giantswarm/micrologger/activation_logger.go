@@ -2,6 +2,7 @@ package micrologger
 
 import (
 	"context"
+	"log"
 
 	"github.com/giantswarm/microerror"
 )
@@ -82,30 +83,26 @@ func NewActivation(config ActivationLoggerConfig) (Logger, error) {
 	return l, nil
 }
 
-func (l *activationLogger) Log(keyVals ...interface{}) error {
+func (l *activationLogger) Log(keyVals ...interface{}) {
 	activated, err := shouldActivate(l.activations, keyVals)
 	if err != nil {
-		return microerror.Mask(err)
+		log.Printf("failed to check activated, reason: %#q", err.Error())
 	}
 
 	if activated {
-		return l.underlying.Log(keyVals...)
+		l.underlying.Log(keyVals...)
 	}
-
-	return nil
 }
 
-func (l *activationLogger) LogCtx(ctx context.Context, keyVals ...interface{}) error {
+func (l *activationLogger) LogCtx(ctx context.Context, keyVals ...interface{}) {
 	activated, err := shouldActivate(l.activations, keyVals)
 	if err != nil {
-		return microerror.Mask(err)
+		log.Printf("failed to check activated, reason: %#q", err.Error())
 	}
 
 	if activated {
-		return l.underlying.LogCtx(ctx, keyVals...)
+		l.underlying.LogCtx(ctx, keyVals...)
 	}
-
-	return nil
 }
 
 func (l *activationLogger) With(keyVals ...interface{}) Logger {

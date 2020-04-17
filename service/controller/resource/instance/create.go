@@ -58,7 +58,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		currentState = state.State(s)
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
 		newState, err = r.stateMachine.Execute(ctx, obj, currentState)
 		if err != nil {
 			return microerror.Mask(err)
@@ -66,17 +66,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if newState != currentState {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))                             // nolint: errcheck
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
 		err = r.setResourceStatus(cr, Stage, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState)) // nolint: errcheck
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")                                     // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "no state change") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "no state change")
 	}
 
 	return nil

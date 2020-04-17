@@ -30,17 +30,17 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 		}
 
 		for _, record := range dnsRecords {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record '%s'", record.RelativeName)) // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record '%s'", record.RelativeName))
 
 			_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted host cluster DNS record '%s'", record.RelativeName)) // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted host cluster DNS record '%s'", record.RelativeName))
 		}
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting host cluster DNS records") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting host cluster DNS records")
 	}
 
 	return nil

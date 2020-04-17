@@ -15,16 +15,16 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	}
 
 	if serviceToUpdate != nil && serviceToUpdate.Spec.ClusterIP != "" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updating services") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "updating services")
 
 		_, err := r.k8sClient.CoreV1().Services(serviceToUpdate.Namespace).Update(serviceToUpdate)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updated services") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "updated services")
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "no need to update services") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "no need to update services")
 	}
 	return nil
 }
@@ -58,7 +58,7 @@ func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredSta
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out which services have to be updated") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out which services have to be updated")
 
 	if isServiceModified(desiredService, currentService) {
 		// Make a copy and set the resource version so the service can be updated.
@@ -67,11 +67,11 @@ func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredSta
 			serviceToUpdate.ObjectMeta.ResourceVersion = currentService.ObjectMeta.ResourceVersion
 			serviceToUpdate.Spec.ClusterIP = currentService.Spec.ClusterIP
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found service '%s' that has to be updated", desiredService.GetName())) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found service '%s' that has to be updated", desiredService.GetName()))
 
 		return serviceToUpdate, nil
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "no services needs update") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "no services needs update")
 
 		return nil, nil
 	}

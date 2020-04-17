@@ -32,7 +32,7 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, rg stri
 
 	for iterator.NotDone() {
 		instance := iterator.Value()
-		logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState)) // nolint: errcheck
+		logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState))
 
 		switch *instance.ProvisioningState {
 		case provisioningStateFailed:

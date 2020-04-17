@@ -87,29 +87,29 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release CRD exists") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, releasev1alpha1.NewReleaseCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release CRD exists") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring ReleaseCycle CRD exists") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring ReleaseCycle CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, releasev1alpha1.NewReleaseCycleCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured ReleaseCycle CRD exists") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured ReleaseCycle CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", env.VersionBundleVersion()) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", env.VersionBundleVersion())
 		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(&releasev1alpha1.Release{
 			ObjectMeta: v1.ObjectMeta{
 				Name:      "v1.0.0",
@@ -154,7 +154,7 @@ func common(ctx context.Context, config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", env.VersionBundleVersion()) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", env.VersionBundleVersion())
 	}
 
 	return nil
