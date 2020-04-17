@@ -150,7 +150,7 @@ func installResources(ctx context.Context, config Config) error {
 
 	var operatorTarballPath string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for tested version") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for tested version")
 
 		operatorVersion := fmt.Sprintf("%s-%s", latestOperatorRelease, env.CircleSHA())
 		operatorTarballURL, err := appcatalog.NewTarballURL(key.DefaultTestCatalogStorageURL(), project.Name(), operatorVersion)
@@ -158,37 +158,37 @@ func installResources(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for tested version is %#q", operatorTarballURL)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for tested version is %#q", operatorTarballURL))
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for tested version") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for tested version")
 
 		operatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, operatorTarballURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath))
 	}
 
 	var latestReleasedOperatorTarballPath string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for latest release") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for latest release")
 
 		latestReleaseOperatorTarballURL, err := appcatalog.NewTarballURL(key.DefaultTestCatalogStorageURL(), project.Name(), latestOperatorRelease)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest release is %#q", latestReleaseOperatorTarballURL)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest release is %#q", latestReleaseOperatorTarballURL))
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for latest release") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for latest release")
 
 		latestReleasedOperatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, latestReleaseOperatorTarballURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest release is %#q", latestReleasedOperatorTarballPath)) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest release is %#q", latestReleasedOperatorTarballPath))
 	}
 
 	{
@@ -196,11 +196,11 @@ func installResources(ctx context.Context, config Config) error {
 			fs := afero.NewOsFs()
 			err := fs.Remove(operatorTarballPath)
 			if err != nil {
-				config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", operatorTarballPath), "stack", fmt.Sprintf("%#v", err)) // nolint: errcheck
+				config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", operatorTarballPath), "stack", fmt.Sprintf("%#v", err))
 			}
 		}()
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q", project.Name())) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q", project.Name()))
 
 		err = config.HelmClient.InstallReleaseFromTarball(ctx,
 			operatorTarballPath,
@@ -212,7 +212,7 @@ func installResources(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q", project.Name())) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q", project.Name()))
 	}
 
 	{
@@ -220,11 +220,11 @@ func installResources(ctx context.Context, config Config) error {
 			fs := afero.NewOsFs()
 			err := fs.Remove(latestReleasedOperatorTarballPath)
 			if err != nil {
-				config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", latestReleasedOperatorTarballPath), "stack", fmt.Sprintf("%#v", err)) // nolint: errcheck
+				config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", latestReleasedOperatorTarballPath), "stack", fmt.Sprintf("%#v", err))
 			}
 		}()
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q-%s", project.Name(), "latest-release")) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q-%s", project.Name(), "latest-release"))
 
 		err = config.HelmClient.InstallReleaseFromTarball(ctx,
 			latestReleasedOperatorTarballPath,
@@ -236,11 +236,11 @@ func installResources(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q-%s", project.Name(), "latest-release")) // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q-%s", project.Name(), "latest-release"))
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring chart CRD exists") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring chart CRD exists")
 
 		// The operator will install the CRD on boot but we create chart CRs
 		// in the tests so this ensures the CRD is present.
@@ -249,7 +249,7 @@ func installResources(ctx context.Context, config Config) error {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured chart CRD exists") // nolint: errcheck
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured chart CRD exists")
 	}
 
 	{
