@@ -26,10 +26,7 @@ func NewCollectorSet(config CollectorSetConfig) (*CollectorSet, error) {
 
 	var legacyStatusCollector *LegacyStatusCollector
 	{
-		c := LegacyStatusCollectorConfig{
-			Logger:  config.Logger,
-			Watcher: config.Watcher,
-		}
+		c := LegacyStatusCollectorConfig(config)
 
 		legacyStatusCollector, err = NewLegacyStatusCollector(c)
 		if err != nil {
