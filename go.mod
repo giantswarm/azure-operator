@@ -22,8 +22,7 @@ require (
 	github.com/giantswarm/e2esetup v0.1.0
 	github.com/giantswarm/e2etemplates v0.2.0
 	github.com/giantswarm/e2etests v0.1.0
-	github.com/giantswarm/errors v0.2.2
-	github.com/giantswarm/exporterkit v0.2.0
+	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/helmclient v0.2.0
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient v0.2.0
@@ -34,7 +33,7 @@ require (
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/giantswarm/operatorkit v0.2.0
 	github.com/giantswarm/randomkeys v0.2.0
-	github.com/giantswarm/statusresource v0.2.0
+	github.com/giantswarm/statusresource v0.2.1
 	github.com/giantswarm/tenantcluster v0.2.0
 	github.com/giantswarm/to v0.2.0
 	github.com/giantswarm/versionbundle v0.2.0
@@ -47,14 +46,13 @@ require (
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
 	github.com/pelletier/go-toml v1.6.0 // indirect
-	github.com/prometheus/client_golang v1.5.0
+	github.com/prometheus/client_golang v1.5.0 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/cobra v0.0.6 // indirect
 	github.com/spf13/viper v1.6.2
 	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/apiserver v0.17.2 // indirect

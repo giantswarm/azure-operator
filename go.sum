@@ -242,8 +242,8 @@ github.com/giantswarm/e2etemplates v0.2.0/go.mod h1:q7aE42HUEdxm6NtLJ/csoMBWoRoI
 github.com/giantswarm/e2etests v0.1.0 h1:VgD3rCoMUytET96eDiySYeVYCVtBQUtP7bO+y/ORxfg=
 github.com/giantswarm/e2etests v0.1.0/go.mod h1:jfE2zMqSmGC5Infyh/DufFRDriS+CwVAVV+lFb/SLWg=
 github.com/giantswarm/errors v0.2.0/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
-github.com/giantswarm/errors v0.2.2 h1:O7shm0kFukHgzuX3iVZvxleu1RZXHFVEro/e8Ge3CgI=
-github.com/giantswarm/errors v0.2.2/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
+github.com/giantswarm/errors v0.2.3 h1:gE1dDSD0RNwYUah5hG6oUQh0unPyZ74tVwR1/PW3ZQ0=
+github.com/giantswarm/errors v0.2.3/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
 github.com/giantswarm/exporterkit v0.2.0 h1:+HTGl4fmT/1OkTox8HbV3JXeavmsZv94+2CDW8cSrq0=
 github.com/giantswarm/exporterkit v0.2.0/go.mod h1:b4fuHVjsvZgznC9OEPfn0y5zvN8SnEKTiI5zTTfck94=
 github.com/giantswarm/helmclient v0.2.0 h1:etBQoz0QN9quIA/blbkIkrfr0CuzwjxA89/1MgE5YoU=
@@ -271,8 +271,8 @@ github.com/giantswarm/operatorkit v0.2.0 h1:OY5NCS4L4MPpZgtzvPlpUXlLK9d7VxHOzDy0
 github.com/giantswarm/operatorkit v0.2.0/go.mod h1:i/yHa01y+d67ZzZBOck56CcZLkbRIx89ZqAoK46+Bjs=
 github.com/giantswarm/randomkeys v0.2.0 h1:e03tqr+OemoyF42BrlQpdeHZ/xvqJd4ALW5IM2X26Ek=
 github.com/giantswarm/randomkeys v0.2.0/go.mod h1:24kbDDO8XgP+nx7SKaX/z5I/qhj4X4n+hiSynpD/9Kk=
-github.com/giantswarm/statusresource v0.2.0 h1:e3AHF4UyUN7ulZZLLVu41J2bq5G+w0O5KAm4SoRDDg4=
-github.com/giantswarm/statusresource v0.2.0/go.mod h1:f4w2A+RpOt7SUD23iHtOP3yUZsjczhtQoA50ehoY8uo=
+github.com/giantswarm/statusresource v0.2.1 h1:B4nlDa57cWo3Ljs+tHlefYcGgay43O34tZH0gMUPw6k=
+github.com/giantswarm/statusresource v0.2.1/go.mod h1:hQP+6rePiub6dO+MYrb0yyADE/WKOCk4Xk/T3TTPw4Q=
 github.com/giantswarm/tenantcluster v0.2.0 h1:NDra7kcxt22w4HwxuVgBGjgG5BHjZ5bxtlYk2YmXaEk=
 github.com/giantswarm/tenantcluster v0.2.0/go.mod h1:YMYyVokto7LbAhl3eezMbpKJtzJ9axqNrvM5VbYWLgs=
 github.com/giantswarm/to v0.2.0 h1:qZj0DUnjUcI/7ajwIVtT6mwmSYQm8g0qBvAPCoS1ZF8=
