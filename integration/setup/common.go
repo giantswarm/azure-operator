@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/integration/env"
 	"github.com/giantswarm/azure-operator/integration/key"
@@ -111,7 +111,7 @@ func common(ctx context.Context, config Config) error {
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", env.VersionBundleVersion())
 		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(&releasev1alpha1.Release{
-			ObjectMeta: v1.ObjectMeta{
+			ObjectMeta: metav1.ObjectMeta{
 				Name:      "v1.0.0",
 				Namespace: "default",
 				Labels: map[string]string{
@@ -147,7 +147,7 @@ func common(ctx context.Context, config Config) error {
 						Version: "1.16.8",
 					},
 				},
-				Date:  &releasev1alpha1.DeepCopyTime{Time: time.Unix(10, 0)},
+				Date:  &metav1.Time{Time: time.Unix(10, 0)},
 				State: "active",
 			},
 		})
