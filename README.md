@@ -64,6 +64,14 @@ Follow [this guide][examples-local].
 See [CONTRIBUTING](CONTRIBUTING.md) for details on submitting patches, the
 contribution workflow as well as reporting bugs.
 
+## Pre-commit hook
+
+- [Install pre-commit](https://pre-commit.com/#installation).
+- [Install the git hook scripts](https://pre-commit.com/#3-install-the-git-hook-scripts)
+
+Now you can [run the pre-commit against all files in the repository](https://pre-commit.com/#4-optional-run-against-all-the-files).
+Or just try to make a commit and the pre-commit will be executed automatically.
+
 ## License
 
 azure-operator is under the Apache 2.0 license. See the [LICENSE](LICENSE) file for

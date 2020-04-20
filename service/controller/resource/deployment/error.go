@@ -68,3 +68,19 @@ var wrongTypeError = &microerror.Error{
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
 }
+
+var nilTemplateLinkError = &microerror.Error{
+	Kind: "nilTemplateLink",
+}
+
+func IsNilTemplateLinkError(err error) bool {
+	return microerror.Cause(err) == nilTemplateLinkError
+}
+
+var unableToGetTemplateError = &microerror.Error{
+	Kind: "unableToGetTemplate",
+}
+
+func IsUnableToGetTemplateError(err error) bool {
+	return microerror.Cause(err) == unableToGetTemplateError
+}

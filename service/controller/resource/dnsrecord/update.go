@@ -20,7 +20,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records")
 
 	recordSetsClient, err := r.getDNSRecordSetsHostClient()
 	if err != nil {
@@ -28,12 +28,12 @@ func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) err
 	}
 
 	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: already ensured") // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: already ensured")
 		return nil
 	}
 
 	for _, record := range change {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v", record)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
 
 		var params dns.RecordSet
 		{
@@ -52,10 +52,10 @@ func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) err
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record)) // nolint: errcheck
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record))
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: ensured") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: ensured")
 	return nil
 }
 

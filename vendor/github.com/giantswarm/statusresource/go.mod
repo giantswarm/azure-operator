@@ -3,7 +3,7 @@ module github.com/giantswarm/statusresource
 go 1.13
 
 require (
-	github.com/giantswarm/apiextensions v0.3.0
+	github.com/giantswarm/apiextensions v0.2.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/exporterkit v0.2.0

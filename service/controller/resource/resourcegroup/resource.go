@@ -70,7 +70,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created")
 
 	resourceGroup := azureresource.Group{
 		Name:      to.StringPtr(key.ClusterID(cr)),
@@ -83,7 +83,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is created") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is created")
 
 	return nil
 }
@@ -100,7 +100,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion")
 
 	_, err = groupsClient.Get(ctx, key.ClusterID(cr))
 	if IsNotFound(err) {
@@ -119,16 +119,16 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion in progress") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "resource group deletion in progress")
 			finalizerskeptcontext.SetKept(ctx)
 			reconciliationcanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation") // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 
 			return nil
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group deletion") // nolint: errcheck
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group deletion")
 
 	return nil
 }

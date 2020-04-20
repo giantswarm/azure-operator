@@ -2,6 +2,7 @@ package service
 
 import (
 	"context"
+	"fmt"
 	"sync"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -18,7 +19,6 @@ import (
 	"github.com/giantswarm/azure-operator/client"
 	"github.com/giantswarm/azure-operator/flag"
 	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/collector"
 	"github.com/giantswarm/azure-operator/service/controller"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 )
@@ -42,7 +42,6 @@ type Service struct {
 
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
-	operatorCollector       *collector.Set
 	statusResourceCollector *statusresource.CollectorSet
 }
 
@@ -73,13 +72,28 @@ func New(config Config) (*Service, error) {
 
 	var err error
 
+	resourceGroup := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup)
+	if resourceGroup == "" {
+		resourceGroup = config.Viper.GetString(config.Flag.Service.Installation.Name)
+	}
+
+	virtualNetwork := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork)
+	if virtualNetwork == "" {
+		virtualNetwork = resourceGroup
+	}
+
+	virtualNetworkGateway := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetworkGateway)
+	if virtualNetworkGateway == "" {
+		virtualNetworkGateway = fmt.Sprintf("%s-%s", resourceGroup, "vpn-gateway")
+	}
+
 	azure := setting.Azure{
 		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
 		HostCluster: setting.AzureHostCluster{
 			CIDR:                  config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR),
-			ResourceGroup:         config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
-			VirtualNetwork:        config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetwork),
-			VirtualNetworkGateway: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.VirtualNetworkGateway),
+			ResourceGroup:         resourceGroup,
+			VirtualNetwork:        virtualNetwork,
+			VirtualNetworkGateway: virtualNetworkGateway,
 		},
 		MSI: setting.AzureMSI{
 			Enabled: config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
@@ -181,22 +195,6 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var operatorCollector *collector.Set
-	{
-		c := collector.SetConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
-
-			AzureSetting:             azure,
-			HostAzureClientSetConfig: azureConfig,
-		}
-
-		operatorCollector, err = collector.NewSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var statusResourceCollector *statusresource.CollectorSet
 	{
 		c := statusresource.CollectorSetConfig{
@@ -232,7 +230,6 @@ func New(config Config) (*Service, error) {
 
 		bootOnce:                sync.Once{},
 		clusterController:       clusterController,
-		operatorCollector:       operatorCollector,
 		statusResourceCollector: statusResourceCollector,
 	}
 
@@ -241,7 +238,6 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		go s.operatorCollector.Boot(ctx)       // nolint: errcheck
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
 		go s.clusterController.Boot(ctx)

@@ -372,13 +372,15 @@
 
 [[projects]]
   branch = "master"
-  digest = "1:7a75e6dd6c82194b28ced36247cd9df486f05be9370ba1a87c239e0549d0be0a"
+  digest = "1:801444f34dcc6ad0808b61e3ead8b6d0943f58742bcab0aaaefda238aa0d61de"
   name = "github.com/giantswarm/e2etests"
   packages = [
     "clusterstate",
     "clusterstate/provider",
     "scaling",
     "scaling/provider",
+    "update",
+    "update/provider",
   ]
   pruneopts = "UT"
   revision = "541d29babeeeb45874ad0429a8994c539debf29f"
@@ -491,7 +493,7 @@
   revision = "400bed3d70f1679e68413eb41e7b45461df9e306"
 
 [[projects]]
-  digest = "1:4e616fe01d486048e77342e2c5e638f8744ec6da802335633740aafb057f50d8"
+  digest = "1:3e0a7e75d7b3490046f4f24ca2c284c0dfb6c60ee1d90bb3f21a8d81895acece"
   name = "github.com/giantswarm/micrologger"
   packages = [
     ".",
@@ -499,8 +501,8 @@
     "microloggertest",
   ]
   pruneopts = "UT"
-  revision = "c4d217562e3d493e3ff571707346a5a2653475cb"
-  version = "v0.1.1"
+  revision = "4b2316afcf7bf293e3a740f994985ee4d64b535a"
+  version = "v0.3.1"
 
 [[projects]]
   branch = "master"
@@ -542,12 +544,12 @@
   revision = "5e18457bd062f9a11d11fe5719ccf28101945ce0"
 
 [[projects]]
-  digest = "1:e231556bd7b69c6e72d2f796006cee5b67cd5033f25fe023a5b0f76e352269f8"
+  digest = "1:e73a6a70eef1fedbb62efdae72747aa947172f2feb67b25058f1f8fe9f44f50d"
   name = "github.com/giantswarm/statusresource"
   packages = ["."]
   pruneopts = "UT"
-  revision = "5a7dead057885466b81d1bb2a092de3ecc4c024d"
-  version = "v0.3.0"
+  revision = "0dfa5b98d3d328c8790d831ff269420946974eb8"
+  version = "v0.2.1"
 
 [[projects]]
   branch = "master"
@@ -2069,8 +2071,8 @@
     "github.com/giantswarm/e2etemplates/pkg/chartvalues",
     "github.com/giantswarm/e2etests/clusterstate",
     "github.com/giantswarm/e2etests/scaling",
+    "github.com/giantswarm/e2etests/update",
     "github.com/giantswarm/errors/tenant",
-    "github.com/giantswarm/exporterkit/collector",
     "github.com/giantswarm/helmclient",
     "github.com/giantswarm/ipam",
     "github.com/giantswarm/k8sclient",
@@ -2100,10 +2102,8 @@
     "github.com/giantswarm/to",
     "github.com/giantswarm/versionbundle",
     "github.com/google/go-cmp/cmp",
-    "github.com/prometheus/client_golang/prometheus",
     "github.com/spf13/afero",
     "github.com/spf13/viper",
-    "golang.org/x/sync/errgroup",
     "k8s.io/api/core/v1",
     "k8s.io/apimachinery/pkg/api/errors",
     "k8s.io/apimachinery/pkg/apis/meta/v1",
