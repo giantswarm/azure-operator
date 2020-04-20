@@ -61,13 +61,13 @@ func New(config Config) (*ClusterDeletion, error) {
 }
 
 func (s *ClusterDeletion) Test(ctx context.Context) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting AzureConfig Custom Resource %#q", s.provider.clusterID)) // nolint: errcheck
+	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting AzureConfig Custom Resource %#q", s.provider.clusterID))
 	err := s.provider.g8sClient.ProviderV1alpha1().AzureConfigs(s.targetNamespace).Delete(s.clusterID, &metav1.DeleteOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring deletion of Azure Resource Group %#q", s.provider.clusterID)) // nolint: errcheck
+	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring deletion of Azure Resource Group %#q", s.provider.clusterID))
 	o := func() error {
 		_, err := s.provider.azureClient.ResourceGroupsClient.Get(ctx, s.provider.clusterID)
 		if err != nil {
@@ -87,7 +87,7 @@ func (s *ClusterDeletion) Test(ctx context.Context) error {
 	n := backoff.NewNotifier(s.logger, ctx)
 	err = backoff.RetryNotify(o, b, n)
 	if err != nil {
-		s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not ensure deletion of Azure Resource Group %#q", s.provider.clusterID)) // nolint: errcheck
+		s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not ensure deletion of Azure Resource Group %#q", s.provider.clusterID))
 		return microerror.Mask(err)
 	}
 

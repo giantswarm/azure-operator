@@ -63,7 +63,7 @@ func bastion(ctx context.Context, config Config) error {
 		}
 	}
 
-	config.Logger.LogCtx(ctx, "message", "ensuring bastion", "sshCommand", fmt.Sprintf("ssh -A e2e@%s", *ip.IPAddress)) // nolint: errcheck
+	config.Logger.LogCtx(ctx, "message", "ensuring bastion", "sshCommand", fmt.Sprintf("ssh -A e2e@%s", *ip.IPAddress))
 
 	return nil
 }
@@ -120,7 +120,7 @@ func CreatePublicIP(ctx context.Context, location, groupName string, ipClient ne
 func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic network.Interface, config Config) error {
 	vmName := "bastionE2EVirtualMachine"
 	username := "e2e"
-	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion instance", "vmName", vmName) // nolint: errcheck
+	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion instance", "vmName", vmName)
 
 	_, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
 		ctx,
