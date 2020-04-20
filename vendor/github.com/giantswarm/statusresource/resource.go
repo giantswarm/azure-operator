@@ -9,7 +9,6 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/tenantcluster"
@@ -56,7 +55,6 @@ type Resource struct {
 	clusterEndpointFunc      func(v interface{}) (string, error)
 	clusterIDFunc            func(v interface{}) (string, error)
 	clusterStatusFunc        func(v interface{}) (providerv1alpha1.StatusCluster, error)
-	k8sClient                k8sclient.Interface
 	logger                   micrologger.Logger
 	nodeCountFunc            func(v interface{}) (int, error)
 	restClient               rest.Interface

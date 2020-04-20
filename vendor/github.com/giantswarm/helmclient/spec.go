@@ -15,8 +15,8 @@ const (
 	// defaultMaxHistory is the maximum number of release versions stored per
 	// release by default.
 	defaultMaxHistory = 10
-	// httpClientTimeout is the timeout when pulling tarballs.
-	httpClientTimeout = 5
+	// defaultHTTPClientTimeout is the timeout when pulling tarballs.
+	defaultHTTPClientTimeout = 5 * time.Second
 	// runReleaseTestTimeout is the timeout in seconds when running tests.
 	runReleaseTestTimout = 300
 

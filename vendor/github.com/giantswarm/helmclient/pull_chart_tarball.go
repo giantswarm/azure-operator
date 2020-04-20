@@ -80,6 +80,11 @@ func (c *Client) doFile(ctx context.Context, req *http.Request) (string, error) 
 				return backoff.Permanent(microerror.Maskf(pullChartNotFoundError, fmt.Sprintf("got StatusCode %d for url %#q", resp.StatusCode, req.URL.String())))
 			}
 
+			// Github Pages 503 produces full HTML page which obscures the logs.
+			if resp.StatusCode == http.StatusServiceUnavailable {
+				return backoff.Permanent(microerror.Maskf(pullChartFailedError, fmt.Sprintf("got StatusCode %d for url %#q", resp.StatusCode, req.URL.String())))
+			}
+
 			return microerror.Maskf(executionFailedError, fmt.Sprintf("got StatusCode %d for url %#q with body %s", resp.StatusCode, req.URL.String(), buf.String()))
 		}
 
