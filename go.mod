@@ -12,7 +12,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/giantswarm/apiextensions v0.3.1-0.20200420110643-b2048a69adb2
+	github.com/giantswarm/apiextensions v0.3.1-0.20200421073737-38a0c4dfe802
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient v0.2.0
 	github.com/giantswarm/backoff v0.2.0
@@ -66,6 +66,7 @@ require (
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.4.0+incompatible
+	github.com/giantswarm/apiextensions => github.com/giantswarm/apiextensions v0.3.1-0.20200421073737-38a0c4dfe802
 	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 	k8s.io/apimachinery => k8s.io/apimachinery v0.16.5-beta.1
