@@ -34,8 +34,6 @@ const (
 	vpnGatewaySubnet          = "GatewaySubnet"
 	vpnGatewaySuffix          = "VPNGateway"
 
-	TemplateContentVersion = "1.0.0.0"
-
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
 
@@ -97,21 +95,6 @@ func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
 
 func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
-}
-
-// ARMTemplateURI returns URI to a resource's template file.
-// The returned URI point to a file hosted on github in this repository
-// under a controller resource's template folder at:
-//
-// service/controller/resource/<resource>/template/<template>
-//
-// version refers to a branch or commit.
-// resource refers to directory name of the resource.
-// template refers to filename under resource's template folder.
-//
-// e.g. ARMTemplateURI("master", "deployment", "main.json")
-func ARMTemplateURI(version, resource, template string) string {
-	return fmt.Sprintf("https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/resource/%s/template/%s", version, resource, template)
 }
 
 func BlobContainerName() string {

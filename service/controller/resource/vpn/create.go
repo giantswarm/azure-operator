@@ -80,7 +80,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 		}
 
-		deployment = r.newDeployment(cr, nil)
+		deployment, err = r.newDeployment(cr, nil)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// Create/Update VPN Gateway deployment
