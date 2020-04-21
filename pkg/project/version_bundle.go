@@ -21,7 +21,7 @@ func NewVersionBundle() versionbundle.Bundle {
 			},
 			{
 				Component:   Name(),
-				Description: "Use Release.Revision in annotation for Helm 3 compatability.",
+				Description: "Use Release.Revision in annotation for Helm 3 compatibility.",
 				Kind:        versionbundle.KindChanged,
 				URLs:        []string{"https://github.com/giantswarm/azure-operator/pull/776"},
 			},
