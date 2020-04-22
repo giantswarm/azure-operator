@@ -25,6 +25,10 @@ func RenderCloudConfig(blobURL string, encryptionKey string, initialVector strin
 	return base64.StdEncoding.EncodeToString([]byte(cloudConfig)), nil
 }
 
+func GetMasterNodesConfiguration(obj providerv1alpha1.AzureConfig) []Node {
+	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Masters)
+}
+
 func GetWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig) []Node {
 	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Workers)
 }
