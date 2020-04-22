@@ -15,10 +15,10 @@ import (
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		DeploymentUninitialized: r.deploymentUninitializedTransition,
-		//DeploymentInitialized:          r.deploymentInitializedTransition,
-		//ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
-		//ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
+		DeploymentUninitialized:        r.deploymentUninitializedTransition,
+		DeploymentInitialized:          r.deploymentInitializedTransition,
+		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
+		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 		//MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
 		//WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
 		//DeploymentCompleted:            r.deploymentCompletedTransition,
