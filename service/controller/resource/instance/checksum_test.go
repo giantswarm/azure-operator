@@ -3,8 +3,6 @@ package instance
 import (
 	"encoding/base64"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"strconv"
 	"testing"
 
@@ -17,55 +15,24 @@ import (
 
 func Test_getDeploymentTemplateChecksum(t *testing.T) {
 	testCases := []struct {
-		name                string
-		templateLinkPresent bool
-		statusCode          int
-		responseBody        string
-		expectedChecksum    string
-		errorMatcher        func(err error) bool
+		name             string
+		template         string
+		expectedChecksum string
+		errorMatcher     func(err error) bool
 	}{
 		{
-			name:                "case 0: Successful checksum calculation",
-			templateLinkPresent: true,
-			statusCode:          http.StatusOK,
-			responseBody:        `{"fake": "json string"}`,
-			expectedChecksum:    "0cfe91509c17c2a9f230cd117d90e837d948639c3a2d559cf1ef6ca6ae24ec79",
-		},
-		{
-			name:                "case 1: Missing template link",
-			templateLinkPresent: false,
-			expectedChecksum:    "",
-			errorMatcher:        IsNilTemplateLinkError,
-		},
-		{
-			name:                "case 2: Error downloading template from external URI",
-			templateLinkPresent: true,
-			expectedChecksum:    "",
-			statusCode:          http.StatusInternalServerError,
-			responseBody:        `{"error": "500 - Internal server error"}`,
-			errorMatcher:        IsUnableToGetTemplateError,
+			name:             "case 0: Successful checksum calculation",
+			template:         getARMTemplateAsString(),
+			expectedChecksum: "ad98490115bf81a3f3df5881b33f9426a59b396a2e08848640c3b357216051bf",
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Log(tc.name)
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(tc.statusCode)
-				_, _ = w.Write([]byte(tc.responseBody))
-			}))
-			defer ts.Close()
-
-			var templateLink *resources.TemplateLink
-			if tc.templateLinkPresent {
-				templateLink = &resources.TemplateLink{
-					URI: to.StringPtr(ts.URL),
-				}
-			}
 
 			properties := resources.DeploymentProperties{
-				TemplateLink: templateLink,
+				Template: tc.template,
 			}
 			deployment := resources.Deployment{
 				Properties: &properties,

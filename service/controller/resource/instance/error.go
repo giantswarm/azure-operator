@@ -109,14 +109,6 @@ func IsVersionBlobEmpty(err error) bool {
 	return microerror.Cause(err) == versionBlobEmptyError
 }
 
-var nilTemplateLinkError = &microerror.Error{
-	Kind: "nilTemplateLink",
-}
-
-func IsNilTemplateLinkError(err error) bool {
-	return microerror.Cause(err) == nilTemplateLinkError
-}
-
 var unableToGetTemplateError = &microerror.Error{
 	Kind: "unableToGetTemplate",
 }

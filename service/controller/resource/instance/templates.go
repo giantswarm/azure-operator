@@ -594,9 +594,13 @@ const main string = `{
 
 func getARMTemplate() (*map[string]interface{}, error) {
 	contents := make(map[string]interface{})
-	template := []byte(fmt.Sprintf(main, vmss, vmss))
+	template := []byte(getARMTemplateAsString())
 	if err := json.Unmarshal(template, &contents); err != nil {
 		return nil, err
 	}
 	return &contents, nil
+}
+
+func getARMTemplateAsString() string {
+	return fmt.Sprintf(main, vmss, vmss)
 }

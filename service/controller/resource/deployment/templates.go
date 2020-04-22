@@ -1526,9 +1526,12 @@ const main string = `{
 
 func getARMTemplate() (*map[string]interface{}, error) {
 	contents := make(map[string]interface{})
-	template := []byte(fmt.Sprintf(main, securityGroups, routeTable, virtualNetwork, publicLoadBalancer, privateLoadBalancer, kubernetesLoadBalanacer, dnsA, dnsA, containerSetup, dnsCname))
-	if err := json.Unmarshal(template, &contents); err != nil {
+	if err := json.Unmarshal([]byte(getARMTemplateAsString()), &contents); err != nil {
 		return nil, err
 	}
 	return &contents, nil
+}
+
+func getARMTemplateAsString() string {
+	return fmt.Sprintf(main, securityGroups, routeTable, virtualNetwork, publicLoadBalancer, privateLoadBalancer, kubernetesLoadBalanacer, dnsA, dnsA, containerSetup, dnsCname)
 }
