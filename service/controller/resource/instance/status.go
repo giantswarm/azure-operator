@@ -21,12 +21,10 @@ const (
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
 	DrainOldWorkerNodes            = "DrainOldWorkerNodes"
-	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
 	ScaleUpWorkerVMSS              = "ScaleUpWorkerVMSS"
 	ScaleDownWorkerVMSS            = "ScaleDownWorkerVMSS"
 	TerminateOldWorkerInstances    = "TerminateOldWorkerInstances"
-	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
 	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
 )
 

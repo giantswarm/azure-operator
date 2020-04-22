@@ -14,10 +14,10 @@ import (
 )
 
 const (
-	clusterTagName      = "GiantSwarmCluster"
-	installationTagName = "GiantSwarmInstallation"
-	organizationTagName = "GiantSwarmOrganization"
-	VmssDeploymentName  = "cluster-vmss-template"
+	clusterTagName            = "GiantSwarmCluster"
+	installationTagName       = "GiantSwarmInstallation"
+	organizationTagName       = "GiantSwarmOrganization"
+	WorkersVmssDeploymentName = "worker-vmss-template"
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name

@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/to"
 
+	"github.com/giantswarm/azure-operator/pkg/checksum"
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
@@ -22,7 +23,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.VmssDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.WorkersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
@@ -46,12 +47,12 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		} else {
-			desiredDeploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
+			desiredDeploymentTemplateChk, err := checksum.GetDeploymentTemplateChecksum(computedDeployment)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
 
-			desiredDeploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
+			desiredDeploymentParametersChk, err := checksum.GetDeploymentParametersChecksum(computedDeployment)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
