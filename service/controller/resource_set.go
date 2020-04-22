@@ -24,6 +24,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/resource/blobobject"
 	"github.com/giantswarm/azure-operator/service/controller/resource/containerurl"
@@ -276,6 +277,20 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var iwd vmsscheck.InstanceWatchdog
+	{
+		c := vmsscheck.Config{
+			Logger:     config.Logger,
+			NumWorkers: config.VMSSCheckWorkers,
+		}
+
+		var err error
+		iwd, err = vmsscheck.NewInstanceWatchdog(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var mastersResource resource.Interface
 	{
 		c := masters.Config{
@@ -285,8 +300,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:    config.Logger,
 
 			Azure:            config.Azure,
+			InstanceWatchdog: iwd,
 			TemplateVersion:  config.TemplateVersion,
-			VMSSCheckWorkers: config.VMSSCheckWorkers,
 		}
 
 		mastersResource, err = masters.New(c)
@@ -304,8 +319,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:    config.Logger,
 
 			Azure:            config.Azure,
+			InstanceWatchdog: iwd,
 			TemplateVersion:  config.TemplateVersion,
-			VMSSCheckWorkers: config.VMSSCheckWorkers,
 		}
 
 		instanceResource, err = instance.New(c)
