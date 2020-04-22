@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -25,7 +25,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	if !isCreating && anyOldNodes {
 		// Only continue rolling nodes when cluster is not creating and there
 		// are old nodes in tenant cluster.
-		return ScaleUpWorkerVMSS, nil
+		return MasterInstancesUpgrading, nil
 	}
 
 	// Skip instance rolling by default.

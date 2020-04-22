@@ -1,4 +1,4 @@
-package instance
+package workingset
 
 import (
 	"testing"
@@ -7,7 +7,7 @@ import (
 )
 
 func Test_workingSet(t *testing.T) {
-	var ws *workingSet
+	var ws *WorkingSet
 
 	if ws.IsWIP() != false {
 		t.Fatal("<nil>.IsWIP() == true")
@@ -16,7 +16,7 @@ func Test_workingSet(t *testing.T) {
 	ws = ws.WithInstanceToUpdate(&compute.VirtualMachineScaleSetVM{})
 
 	if ws.IsWIP() != true {
-		t.Fatal("workingSet{...}.IsWIP() == false")
+		t.Fatal("WorkingSet{...}.IsWIP() == false")
 	}
 
 	ws = nil
@@ -24,7 +24,7 @@ func Test_workingSet(t *testing.T) {
 	ws = ws.WithInstanceToDrain(&compute.VirtualMachineScaleSetVM{})
 
 	if ws.IsWIP() != true {
-		t.Fatal("workingSet{...}.IsWIP() == false")
+		t.Fatal("WorkingSet{...}.IsWIP() == false")
 	}
 
 	ws = nil
@@ -32,7 +32,7 @@ func Test_workingSet(t *testing.T) {
 	ws = ws.WithInstanceToReimage(&compute.VirtualMachineScaleSetVM{})
 
 	if ws.IsWIP() != true {
-		t.Fatal("workingSet{...}.IsWIP() == false")
+		t.Fatal("WorkingSet{...}.IsWIP() == false")
 	}
 
 	ws = nil
@@ -40,7 +40,7 @@ func Test_workingSet(t *testing.T) {
 	ws = ws.WithInstanceAlreadyBeingUpdated(&compute.VirtualMachineScaleSetVM{})
 
 	if ws.IsWIP() != true {
-		t.Fatal("workingSet{...}.IsWIP() == false")
+		t.Fatal("WorkingSet{...}.IsWIP() == false")
 	}
 
 	ws = nil

@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -13,8 +13,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/azure-operator/pkg/helpers"
+	"github.com/giantswarm/azure-operator/pkg/workingset"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
 )
 
 func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -97,7 +99,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
 
-	c, err := r.getVMsClient(ctx)
+	c, err := helpers.GetVMsClient(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -225,10 +227,10 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 //     loop 5: worker 2 drained
 //     loop 6: worker 2 reimage
 //
-func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingSet, error) {
+func (r *Resource) nextInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingset.WorkingSet, error) {
 	var err error
 
-	var ws *workingSet
+	var ws *workingset.WorkingSet
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the next instance to be updated, drained or reimaged")
 
@@ -278,7 +280,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName))
 
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := helpers.GetScaleSetsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -314,7 +316,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
 
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := helpers.GetScaleSetsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -343,10 +345,10 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 // getWorkingSet either returns an instance to update or an instance to
 // reimage, but never both at the same time.
-func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingSet, error) {
+func getWorkingSet(customObject providerv1alpha1.AzureConfig, instances []compute.VirtualMachineScaleSetVM, drainerConfigs []corev1alpha1.DrainerConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string, versionValue map[string]string) (*workingset.WorkingSet, error) {
 	var err error
 
-	var ws *workingSet
+	var ws *workingset.WorkingSet
 
 	instanceInProgress := firstInstanceInProgress(instances)
 	if instanceInProgress != nil {

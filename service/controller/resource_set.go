@@ -32,6 +32,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/service/controller/resource/endpoints"
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/service/controller/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/resource/service"
@@ -275,6 +276,25 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var mastersResource resource.Interface
+	{
+		c := masters.Config{
+			Debugger:  newDebugger,
+			G8sClient: config.K8sClient.G8sClient(),
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			Azure:            config.Azure,
+			TemplateVersion:  config.TemplateVersion,
+			VMSSCheckWorkers: config.VMSSCheckWorkers,
+		}
+
+		mastersResource, err = masters.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var instanceResource resource.Interface
 	{
 		c := instance.Config{
@@ -377,6 +397,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		blobObjectResource,
 		deploymentResource,
 		dnsrecordResource,
+		mastersResource,
 		instanceResource,
 		endpointsResource,
 		vpnResource,

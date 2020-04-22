@@ -1,4 +1,4 @@
-package instance
+package helpers
 
 import (
 	"github.com/giantswarm/certs"
@@ -6,13 +6,13 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
-type node struct {
+type Node struct {
 	// AdminUsername is the vm administrator username
 	AdminUsername string `json:"adminUsername" yaml:"adminUsername"`
 	//  AdminSSHKeyData is the vm administrator ssh public key
 	AdminSSHKeyData string `json:"adminSSHKeyData" yaml:"adminSSHKeyData"`
 	// OSImage is the vm OS image object.
-	OSImage nodeOSImage `json:"osImage" yaml:"osImage"`
+	OSImage NodeOSImage `json:"osImage" yaml:"osImage"`
 	// VMSize is the master vm size (e.g. Standard_A1)
 	VMSize string `json:"vmSize" yaml:"vmSize"`
 	// Size of the Disk mounted in /var/lib/docker
@@ -21,10 +21,10 @@ type node struct {
 	KubeletVolumeSizeGB int `json:"kubeletVolumeSizeGB" yaml:"kubeletVolumeSizeGB"`
 }
 
-// nodeOSImage provides OS information for Microsoft.Compute/virtualMachines
+// NodeOSImage provides OS information for Microsoft.Compute/virtualMachines
 // templates. Official documentation for can be found here
 // https://docs.microsoft.com/en-us/azure/templates/microsoft.compute/virtualmachines#ImageReference.
-type nodeOSImage struct {
+type NodeOSImage struct {
 	// Offer is the image offered by the publisher (e.g. CoreOS).
 	Offer string `json:"offer" yaml:"offer"`
 	// Publisher is the image publisher (e.g GiantSwarm).
@@ -35,11 +35,11 @@ type nodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
-func newNode(adminUsername string, adminSSHKeyData string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) node {
-	return node{
+func NewNode(adminUsername string, adminSSHKeyData string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) Node {
+	return Node{
 		AdminUsername:       adminUsername,
 		AdminSSHKeyData:     adminSSHKeyData,
-		OSImage:             newNodeOSImageCoreOS(),
+		OSImage:             NewNodeOSImageCoreOS(),
 		VMSize:              vmSize,
 		DockerVolumeSizeGB:  dockerVolumeSizeGB,
 		KubeletVolumeSizeGB: kubeletVolumeSizeGB,
@@ -47,8 +47,8 @@ func newNode(adminUsername string, adminSSHKeyData string, vmSize string, docker
 }
 
 // newNodeOSImage provides OS information for Container Linux
-func newNodeOSImageCoreOS() nodeOSImage {
-	return nodeOSImage{
+func NewNodeOSImageCoreOS() NodeOSImage {
+	return NodeOSImage{
 		Offer:     "CoreOS",
 		Publisher: "CoreOS",
 		SKU:       "Stable",

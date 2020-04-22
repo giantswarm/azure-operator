@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -52,7 +52,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	} else {
-		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), key.WorkersVmssDeploymentName, computedDeployment)
+		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName, computedDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}

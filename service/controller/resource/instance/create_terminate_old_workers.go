@@ -8,8 +8,9 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/pkg/helpers"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
 )
 
 func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -34,7 +35,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
 
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := helpers.GetScaleSetsClient(ctx)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

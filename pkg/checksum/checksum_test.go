@@ -1,4 +1,4 @@
-package instance
+package checksum
 
 import (
 	"encoding/base64"
@@ -11,7 +11,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 
+	"github.com/giantswarm/azure-operator/pkg/helpers"
 	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/service/controller/templates"
 )
 
@@ -35,7 +37,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 			name:                "case 1: Missing template link",
 			templateLinkPresent: false,
 			expectedChecksum:    "",
-			errorMatcher:        IsNilTemplateLinkError,
+			errorMatcher:        instance.IsNilTemplateLinkError,
 		},
 		{
 			name:                "case 2: Error downloading template from external URI",
@@ -43,7 +45,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 			expectedChecksum:    "",
 			statusCode:          http.StatusInternalServerError,
 			responseBody:        `{"error": "500 - Internal server error"}`,
-			errorMatcher:        IsUnableToGetTemplateError,
+			errorMatcher:        instance.IsUnableToGetTemplateError,
 		},
 	}
 
@@ -389,11 +391,11 @@ func (td testData) WithcloudConfigSmallTemplates(data []string) testData {
 }
 
 func getDeployment(data testData) (*resources.Deployment, error) {
-	nodes := []node{
+	nodes := []instance.node{
 		{
 			AdminUsername:   data.adminUsername,
 			AdminSSHKeyData: data.adminSSHKeyData,
-			OSImage: nodeOSImage{
+			OSImage: instance.nodeOSImage{
 				Offer:     data.osImageOffer,
 				Publisher: data.osImagePublisher,
 				SKU:       data.osImageSKU,
@@ -407,7 +409,7 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 	_ = struct {
 	}{}
 
-	c := SmallCloudconfigConfig{
+	c := helpers.SmallCloudconfigConfig{
 		BlobURL:       data.masterBlobUrl,
 		EncryptionKey: data.masterEncryptionKey,
 		InitialVector: data.masterInitialVector,
@@ -419,7 +421,7 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 	}
 	encodedMasterCloudConfig := base64.StdEncoding.EncodeToString([]byte(masterCloudConfig))
 
-	c = SmallCloudconfigConfig{
+	c = helpers.SmallCloudconfigConfig{
 		BlobURL:       data.workerBlobUrl,
 		EncryptionKey: data.workerEncryptionKey,
 		InitialVector: data.workerInitialVector,

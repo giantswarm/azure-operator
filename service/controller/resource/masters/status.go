@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"strings"
@@ -16,16 +16,13 @@ const (
 
 	// States
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
-	CordonOldWorkers               = "CordonOldWorkers"
 	DeploymentUninitialized        = ""
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
 	DrainOldWorkerNodes            = "DrainOldWorkerNodes"
+	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
-	ScaleUpWorkerVMSS              = "ScaleUpWorkerVMSS"
-	ScaleDownWorkerVMSS            = "ScaleDownWorkerVMSS"
-	TerminateOldWorkerInstances    = "TerminateOldWorkerInstances"
-	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
+	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
 )
 
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
@@ -158,11 +155,11 @@ func computeForDeleteResourceStatus(customObject providerv1alpha1.AzureConfig, n
 // the resource status has to be adapted accordingly. Otherwise unversionedName
 // will return an empty string and the mechanism will break in unexpected ways.
 func unversionedName(name string) string {
-	if !strings.HasPrefix(name, "instance") {
+	if !strings.HasPrefix(name, "masters") {
 		return ""
 	}
 
-	return "instance"
+	return "masters"
 }
 
 func unversionedNameMatches(a string, b string) bool {

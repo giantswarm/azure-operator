@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -7,6 +7,6 @@ import (
 )
 
 func (r *Resource) provisioningSuccessfulTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Worker VMSS deployment successfully provisioned")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "Master VMSS deployment successfully provisioned")
 	return ClusterUpgradeRequirementCheck, nil
 }

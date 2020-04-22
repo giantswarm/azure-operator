@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -18,7 +18,7 @@ import (
 )
 
 const (
-	Name = "instance"
+	Name = "masters"
 )
 
 type Config struct {

@@ -7,9 +7,10 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/pkg/helpers"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/vmsscheck"
 )
 
 const (
@@ -69,7 +70,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 }
 
 func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) (int64, error) {
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := helpers.GetScaleSetsClient(ctx)
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}
@@ -104,7 +105,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 }
 
 func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, nodeCount int64) error {
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := helpers.GetScaleSetsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
