@@ -2,8 +2,6 @@ package deployment
 
 import (
 	"context"
-	"encoding/json"
-	"io/ioutil"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -35,7 +33,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"workerSubnetCidr":        cc.AzureNetwork.Worker.String(),
 	}
 
-	template, err := getARMTemplate("service/controller/resource/deployment/template/main.json")
+	template, err := getARMTemplate()
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -48,17 +46,4 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 	}
 
 	return d, nil
-}
-
-// getARMTemplate reads a json file, and unmarshals it.
-func getARMTemplate(path string) (*map[string]interface{}, error) {
-	contents := make(map[string]interface{})
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(data, &contents); err != nil {
-		return nil, err
-	}
-	return &contents, nil
 }

@@ -3,8 +3,6 @@ package instance
 import (
 	"context"
 	"encoding/base64"
-	"encoding/json"
-	"io/ioutil"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -116,7 +114,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
 
-	template, err := getARMTemplate("service/controller/resource/instance/template/main.json")
+	template, err := getARMTemplate()
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -130,19 +128,6 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	return d, nil
-}
-
-// getARMTemplate reads a json file, and unmarshals it.
-func getARMTemplate(path string) (*map[string]interface{}, error) {
-	contents := make(map[string]interface{})
-	data, err := ioutil.ReadFile(path)
-	if err != nil {
-		return nil, err
-	}
-	if err := json.Unmarshal(data, &contents); err != nil {
-		return nil, err
-	}
-	return &contents, nil
 }
 
 func renderCloudConfig(blobURL string, encryptionKey string, initialVector string, instanceRole string) (string, error) {
