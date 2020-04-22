@@ -30,7 +30,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	if !isCreating && anyOldNodes {
 		// Only continue rolling nodes when cluster is not creating and there
 		// are old nodes in tenant cluster.
-		return MasterInstancesUpgrading, nil
+		return ScaleUpWorkerVMSS, nil
 	}
 
 	// Skip instance rolling by default.
