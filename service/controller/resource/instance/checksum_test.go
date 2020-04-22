@@ -14,16 +14,20 @@ import (
 )
 
 func Test_getDeploymentTemplateChecksum(t *testing.T) {
+	template, err := getARMTemplate()
+	if err != nil {
+		t.Fatalf("got %#v", err)
+	}
 	testCases := []struct {
 		name             string
-		template         string
+		template         map[string]interface{}
 		expectedChecksum string
 		errorMatcher     func(err error) bool
 	}{
 		{
 			name:             "case 0: Successful checksum calculation",
-			template:         getARMTemplateAsString(),
-			expectedChecksum: "ad98490115bf81a3f3df5881b33f9426a59b396a2e08848640c3b357216051bf",
+			template:         *template,
+			expectedChecksum: "b69bd09d1685ead2d5808aff32d8c08c71c50e4316a8dde3a9f4e7cbe06aff92",
 		},
 	}
 

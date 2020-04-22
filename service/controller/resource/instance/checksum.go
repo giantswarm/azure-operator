@@ -11,7 +11,16 @@ import (
 )
 
 func getDeploymentTemplateChecksum(deployment resources.Deployment) (string, error) {
-	return fmt.Sprintf("%x", sha256.Sum256([]byte(getARMTemplateAsString()))), nil
+	template := deployment.Properties.Template.(map[string]interface{})
+	jsonStr, err := json.Marshal(template)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	// Calculate the sha256 hash of the JSON.
+	hash := fmt.Sprintf("%x", sha256.Sum256(jsonStr))
+
+	return hash, nil
 }
 
 func getDeploymentParametersChecksum(deployment resources.Deployment) (string, error) {
