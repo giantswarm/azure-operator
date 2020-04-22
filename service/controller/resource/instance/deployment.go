@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
+	"github.com/giantswarm/azure-operator/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
@@ -130,7 +131,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 }
 
 func renderCloudConfig(blobURL string, encryptionKey string, initialVector string, instanceRole string) (string, error) {
-	smallCloudconfigConfig := SmallCloudconfigConfig{
+	smallCloudconfigConfig := vmss.SmallCloudconfigConfig{
 		BlobURL:       blobURL,
 		EncryptionKey: encryptionKey,
 		InitialVector: initialVector,
@@ -144,18 +145,18 @@ func renderCloudConfig(blobURL string, encryptionKey string, initialVector strin
 	return base64.StdEncoding.EncodeToString([]byte(cloudConfig)), nil
 }
 
-func getMasterNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
+func getMasterNodesConfiguration(obj providerv1alpha1.AzureConfig) []vmss.Node {
 	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Masters)
 }
 
-func getWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig) []node {
+func getWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig) []vmss.Node {
 	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Workers)
 }
 
-func getNodesConfiguration(adminUsername string, adminSSHKeyData string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []node {
-	var nodes []node
+func getNodesConfiguration(adminUsername string, adminSSHKeyData string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []vmss.Node {
+	var nodes []vmss.Node
 	for _, m := range nodesSpecs {
-		n := newNode(adminUsername, adminSSHKeyData, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
+		n := vmss.NewNode(adminUsername, adminSSHKeyData, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
 		nodes = append(nodes, n)
 	}
 	return nodes

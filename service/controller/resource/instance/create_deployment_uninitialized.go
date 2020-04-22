@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
+	"github.com/giantswarm/azure-operator/pkg/checksum"
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
@@ -50,7 +51,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	} else {
-		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), key.VmssDeploymentName, computedDeployment)
+		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), key.WorkersVmssDeploymentName, computedDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
@@ -62,7 +63,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
 
-		deploymentTemplateChk, err := getDeploymentTemplateChecksum(computedDeployment)
+		deploymentTemplateChk, err := checksum.GetDeploymentTemplateChecksum(computedDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
@@ -78,7 +79,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
 		}
 
-		deploymentParametersChk, err := getDeploymentParametersChecksum(computedDeployment)
+		deploymentParametersChk, err := checksum.GetDeploymentParametersChecksum(computedDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
