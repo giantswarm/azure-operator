@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/vmsscheck"
 )
 
 const (

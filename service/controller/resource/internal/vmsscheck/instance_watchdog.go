@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/workerpool"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/workerpool"
 )
 
 type Config struct {
