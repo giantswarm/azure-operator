@@ -16,8 +16,8 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/resource/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/service/controller/setting"
 )
 
