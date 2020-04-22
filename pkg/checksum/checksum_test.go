@@ -13,7 +13,6 @@ import (
 
 	"github.com/giantswarm/azure-operator/pkg/helpers"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/service/controller/templates"
 )
 
@@ -37,7 +36,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 			name:                "case 1: Missing template link",
 			templateLinkPresent: false,
 			expectedChecksum:    "",
-			errorMatcher:        instance.IsNilTemplateLinkError,
+			errorMatcher:        IsNilTemplateLinkError,
 		},
 		{
 			name:                "case 2: Error downloading template from external URI",
@@ -45,7 +44,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 			expectedChecksum:    "",
 			statusCode:          http.StatusInternalServerError,
 			responseBody:        `{"error": "500 - Internal server error"}`,
-			errorMatcher:        instance.IsUnableToGetTemplateError,
+			errorMatcher:        IsUnableToGetTemplateError,
 		},
 	}
 
@@ -73,7 +72,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 				Properties: &properties,
 			}
 
-			chk, err := getDeploymentTemplateChecksum(deployment)
+			chk, err := GetDeploymentTemplateChecksum(deployment)
 
 			switch {
 			case err == nil && tc.errorMatcher == nil:
@@ -128,7 +127,7 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 				t.Fatalf("Unable to construct a deployment: %v", err)
 			}
 
-			chk, err := getDeploymentParametersChecksum(*deployment)
+			chk, err := GetDeploymentParametersChecksum(*deployment)
 			if err != nil {
 				t.Fatalf("Unexpected error")
 			}
@@ -391,11 +390,11 @@ func (td testData) WithcloudConfigSmallTemplates(data []string) testData {
 }
 
 func getDeployment(data testData) (*resources.Deployment, error) {
-	nodes := []instance.node{
+	nodes := []helpers.Node{
 		{
 			AdminUsername:   data.adminUsername,
 			AdminSSHKeyData: data.adminSSHKeyData,
-			OSImage: instance.nodeOSImage{
+			OSImage: helpers.NodeOSImage{
 				Offer:     data.osImageOffer,
 				Publisher: data.osImagePublisher,
 				SKU:       data.osImageSKU,
