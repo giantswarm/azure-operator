@@ -35,7 +35,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"workerSubnetCidr":        cc.AzureNetwork.Worker.String(),
 	}
 
-	template, err := getARMTemplate("template/main.json")
+	template, err := getARMTemplate("service/controller/resource/deployment/template/main.json")
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}

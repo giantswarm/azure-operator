@@ -116,7 +116,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
 
-	template, err := getARMTemplate("template/main.json")
+	template, err := getARMTemplate("service/controller/resource/instance/template/main.json")
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}

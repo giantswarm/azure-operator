@@ -19,7 +19,7 @@ func (r Resource) newDeployment(customObject providerv1alpha1.AzureConfig, overw
 		"vpnGatewayName":        key.VPNGatewayName(customObject),
 	}
 
-	template, err := getARMTemplate("template/main.json")
+	template, err := getARMTemplate("service/controller/resource/vpn/template/main.json")
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
