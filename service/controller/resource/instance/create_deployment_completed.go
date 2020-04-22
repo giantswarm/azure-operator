@@ -9,8 +9,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/pkg/checksum"
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

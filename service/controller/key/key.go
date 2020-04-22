@@ -17,7 +17,8 @@ const (
 	clusterTagName            = "GiantSwarmCluster"
 	installationTagName       = "GiantSwarmInstallation"
 	organizationTagName       = "GiantSwarmOrganization"
-	WorkersVmssDeploymentName = "worker-vmss-template"
+	MastersVmssDeploymentName = "masters-vmss-template"
+	WorkersVmssDeploymentName = "workers-vmss-template"
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name

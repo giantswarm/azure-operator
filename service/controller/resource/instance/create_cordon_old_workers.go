@@ -16,8 +16,8 @@ import (
 	"github.com/giantswarm/azure-operator/pkg/label"
 	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
 )
 
 const (
