@@ -1524,12 +1524,12 @@ const main string = `{
   ]
 }`
 
-func getARMTemplate() (*map[string]interface{}, error) {
+func getARMTemplate() (map[string]interface{}, error) {
 	contents := make(map[string]interface{})
 	if err := json.Unmarshal([]byte(getARMTemplateAsString()), &contents); err != nil {
 		return nil, err
 	}
-	return &contents, nil
+	return contents, nil
 }
 
 func getARMTemplateAsString() string {
