@@ -11,27 +11,6 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/resource/internal/state"
 )
 
-func (r *Resource) waitForMastersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
-
-	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isMaster)
-	if IsClientNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
-		return currentState, nil
-	} else if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	if !readyForTransitioning {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready")
-		return currentState, nil
-	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
-
-	return ScaleUpWorkerVMSS, nil
-}
-
 func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
 
@@ -86,23 +65,6 @@ func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(c
 	}
 
 	return true, nil
-}
-
-func isMaster(n corev1.Node) bool {
-	for k, v := range n.Labels {
-		switch k {
-		case "role":
-			return v == "master"
-		case "kubernetes.io/role":
-			return v == "master"
-		case "node-role.kubernetes.io/master":
-			return true
-		case "node.kubernetes.io/master":
-			return true
-		}
-	}
-
-	return false
 }
 
 func isWorker(n corev1.Node) bool {
