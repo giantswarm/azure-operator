@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -27,15 +27,15 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	prefixWorker := key.PrefixWorker()
+	prefixMaster := key.PrefixMaster()
 
-	workerBlobName := key.BlobName(obj, prefixWorker)
+	masterBlobName := key.BlobName(obj, prefixMaster)
 	cloudConfigURLs := []string{
-		workerBlobName,
+		masterBlobName,
 	}
 
-	for _, key := range cloudConfigURLs {
-		blobURL := cc.ContainerURL.NewBlockBlobURL(key)
+	for _, k := range cloudConfigURLs {
+		blobURL := cc.ContainerURL.NewBlockBlobURL(k)
 		_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
 		// if blob is not ready - stop instance resource reconciliation
 		if err != nil {
@@ -75,12 +75,12 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	primaryKey := *(((*keys.Keys)[0]).Value)
 	containerName := key.BlobContainerName()
 
-	// Workers cloudconfig
-	workerBlobURL, err := blobclient.GetBlobURL(workerBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
+	// Masters cloudconfig
+	masterBlobURL, err := blobclient.GetBlobURL(masterBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
-	workerCloudConfig, err := vmss.RenderCloudConfig(workerBlobURL, encryptionKey, initialVector, prefixWorker)
+	masterCloudConfig, err := vmss.RenderCloudConfig(masterBlobURL, encryptionKey, initialVector, prefixMaster)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -90,10 +90,10 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"azureOperatorVersion":  project.Version(),
 		"clusterID":             key.ClusterID(obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
+		"masterCloudConfigData": masterCloudConfig,
+		"masterNodes":           vmss.GetMasterNodesConfiguration(obj),
+		"masterSubnetID":        cc.MasterSubnetID,
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
-		"workerCloudConfigData": workerCloudConfig,
-		"workerNodes":           vmss.GetWorkerNodesConfiguration(obj),
-		"workerSubnetID":        cc.WorkerSubnetID,
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
 

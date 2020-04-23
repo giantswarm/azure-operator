@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -8,13 +8,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
+
 	"github.com/giantswarm/azure-operator/service/controller/internal/state"
 )
 
-func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
+func (r *Resource) waitForMastersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
 
-	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isWorker)
+	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isMaster)
 	if IsClientNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
@@ -23,13 +24,13 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	}
 
 	if !readyForTransitioning {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
 
-	return DrainOldWorkerNodes, nil
+	return DeploymentCompleted, nil
 }
 
 func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
@@ -67,16 +68,16 @@ func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(c
 	return true, nil
 }
 
-func isWorker(n corev1.Node) bool {
+func isMaster(n corev1.Node) bool {
 	for k, v := range n.Labels {
 		switch k {
 		case "role":
-			return v == "worker"
+			return v == "master"
 		case "kubernetes.io/role":
-			return v == "worker"
-		case "node-role.kubernetes.io/worker":
+			return v == "master"
+		case "node-role.kubernetes.io/master":
 			return true
-		case "node.kubernetes.io/worker":
+		case "node.kubernetes.io/master":
 			return true
 		}
 	}

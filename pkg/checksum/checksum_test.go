@@ -1,4 +1,4 @@
-package instance
+package checksum
 
 import (
 	"encoding/base64"
@@ -9,15 +9,12 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 
+	"github.com/giantswarm/azure-operator/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/templates"
 )
 
 func Test_getDeploymentTemplateChecksum(t *testing.T) {
-	template, err := getARMTemplate()
-	if err != nil {
-		t.Fatalf("got %#v", err)
-	}
 	testCases := []struct {
 		name             string
 		template         map[string]interface{}
@@ -26,8 +23,8 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 	}{
 		{
 			name:             "case 0: Successful checksum calculation",
-			template:         template,
-			expectedChecksum: "c85eb2e3cf79dbd0f33895771266905f7b687d429fbaff83fb498b45a13c56bd",
+			template:         map[string]interface{}{"bob": "5"},
+			expectedChecksum: "8f3f86c9bc89affcd4eb86effad32055c6b9f575b53d44373e87cbff547b6e51",
 		},
 	}
 
@@ -42,7 +39,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 				Properties: &properties,
 			}
 
-			chk, err := getDeploymentTemplateChecksum(deployment)
+			chk, err := GetDeploymentTemplateChecksum(deployment)
 
 			switch {
 			case err == nil && tc.errorMatcher == nil:
@@ -97,7 +94,7 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 				t.Fatalf("Unable to construct a deployment: %v", err)
 			}
 
-			chk, err := getDeploymentParametersChecksum(*deployment)
+			chk, err := GetDeploymentParametersChecksum(*deployment)
 			if err != nil {
 				t.Fatalf("Unexpected error")
 			}
@@ -360,11 +357,11 @@ func (td testData) WithcloudConfigSmallTemplates(data []string) testData {
 }
 
 func getDeployment(data testData) (*resources.Deployment, error) {
-	nodes := []node{
+	nodes := []vmss.Node{
 		{
 			AdminUsername:   data.adminUsername,
 			AdminSSHKeyData: data.adminSSHKeyData,
-			OSImage: nodeOSImage{
+			OSImage: vmss.NodeOSImage{
 				Offer:     data.osImageOffer,
 				Publisher: data.osImagePublisher,
 				SKU:       data.osImageSKU,
@@ -378,7 +375,7 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 	_ = struct {
 	}{}
 
-	c := SmallCloudconfigConfig{
+	c := vmss.SmallCloudconfigConfig{
 		BlobURL:       data.masterBlobUrl,
 		EncryptionKey: data.masterEncryptionKey,
 		InitialVector: data.masterInitialVector,
@@ -390,7 +387,7 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 	}
 	encodedMasterCloudConfig := base64.StdEncoding.EncodeToString([]byte(masterCloudConfig))
 
-	c = SmallCloudconfigConfig{
+	c = vmss.SmallCloudconfigConfig{
 		BlobURL:       data.workerBlobUrl,
 		EncryptionKey: data.workerEncryptionKey,
 		InitialVector: data.workerInitialVector,

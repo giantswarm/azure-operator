@@ -5,7 +5,7 @@ import (
 	"fmt"
 )
 
-const vmss string = `{
+const vmssTemplate string = `{
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
@@ -250,21 +250,6 @@ const main string = `{
         "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
-    "masterCloudConfigData":{
-      "type":"secureString",
-      "metadata":{
-        "description":"Base64-encoded cloud-config data."
-      }
-    },
-    "masterNodes":{
-      "type":"array"
-    },
-    "masterSubnetID":{
-      "type":"string",
-      "metadata":{
-        "description":"Output value of the master subnet ID as referenced from the virtual network setup."
-      }
-    },
     "vmssMSIEnabled":{
       "type":"bool"
     },
@@ -381,121 +366,6 @@ const main string = `{
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"master-vmss-deploy",
-      "properties":{
-        "expressionEvaluationOptions": {
-          "scope": "inner"
-        },
-        "mode":"incremental",
-        "template": %s,
-        "parameters":{
-          "location":{
-            "value":"[resourceGroup().location]"
-          },
-          "azureOperatorVersion":{
-            "value":"[parameters('azureOperatorVersion')]"
-          },
-          "GiantSwarmTags":{
-            "value":"[parameters('GiantSwarmTags')]"
-          },
-          "vmssName":{
-            "value":"[concat(parameters('clusterID'), '-master')]"
-          },
-          "vmssMSIEnabled":{
-            "value":"[parameters('vmssMSIEnabled')]"
-          },
-          "vmssVmSize":{
-            "value":"[parameters('masterNodes')[0].vmSize]"
-          },
-          "vmssVmCount":{
-            "value":"[length(parameters('masterNodes'))]"
-          },
-          "vmssStorageAccountType":{
-            "value":"[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
-          },
-          "vmssVmDataDisks":{
-            "value":[
-              {
-                "caching": "ReadWrite",
-                "createOption": "Empty",
-                "diskSizeGB": 100,
-                "managedDisk":
-                {
-                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
-                },
-                "lun": 0
-              },
-              {
-                "caching": "ReadWrite",
-                "createOption": "Empty",
-                "diskSizeGB": "[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]",
-                "managedDisk":
-                {
-                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
-                },
-                "lun": 1
-              },
-              {
-                "caching": "ReadWrite",
-                "createOption": "Empty",
-                "diskSizeGB": "[if(greater(parameters('masterNodes')[0].kubeletVolumeSizeGB, 0), parameters('masterNodes')[0].kubeletVolumeSizeGB, 100)]",
-                "managedDisk":
-                {
-                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
-                },
-                "lun": 2
-              }
-            ]
-          },
-          "vmssSshUser":{
-            "value":"[parameters('masterNodes')[0].adminUsername]"
-          },
-          "vmssSshPublicKey":{
-            "value":"[parameters('masterNodes')[0].adminSSHKeyData]"
-          },
-          "vmssOsImagePublisher":{
-            "value":"[parameters('masterNodes')[0].osImage.publisher]"
-          },
-          "vmssOsImageOffer":{
-            "value":"[parameters('masterNodes')[0].osImage.offer]"
-          },
-          "vmssOsImageSKU":{
-            "value":"[parameters('masterNodes')[0].osImage.sku]"
-          },
-          "vmssOsImageVersion":{
-            "value":"[parameters('masterNodes')[0].osImage.version]"
-          },
-          "vmssOverprovision":{
-            "value":"false"
-          },
-          "vmssVmCustomData":{
-            "value":"[parameters('masterCloudConfigData')]"
-          },
-          "vmssLbBackendPools":{
-            "value":[
-              {
-                "id":"[parameters('apiLBBackendPoolID')]"
-              },
-              {
-                "id":"[parameters('etcdLBBackendPoolID')]"
-              }
-            ]
-          },
-          "vmssVnetSubnetId":{
-            "value":"[parameters('masterSubnetID')]"
-          },
-          "vmssUpgradePolicy":{
-            "value":"Manual"
-          },
-          "zones":{
-            "value":"[parameters('zones')]"
-          }
-        }
-      }
-    },
-    {
-      "apiVersion":"[variables('apiVersion')]",
-      "type":"Microsoft.Resources/deployments",
       "name":"worker-vmss-deploy",
       "properties":{
         "expressionEvaluationOptions": {
@@ -608,5 +478,5 @@ func getARMTemplate() (map[string]interface{}, error) {
 }
 
 func getARMTemplateAsString() string {
-	return fmt.Sprintf(main, vmss, vmss)
+	return fmt.Sprintf(main, vmssTemplate)
 }

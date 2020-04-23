@@ -16,8 +16,8 @@ import (
 	"github.com/giantswarm/azure-operator/pkg/label"
 	"github.com/giantswarm/azure-operator/pkg/project"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
 const (
@@ -92,6 +92,39 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned))
 
 	return WaitForWorkersToBecomeReady, nil
+}
+
+func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
+
+	c, err := r.getVMsClient(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	g := key.ResourceGroupName(customObject)
+	s := deploymentNameFunc(customObject)
+	result, err := c.List(ctx, g, s, "", "", "")
+	if IsScaleSetNotFound(err) {
+		return nil, microerror.Mask(scaleSetNotFoundError)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var instances []compute.VirtualMachineScaleSetVM
+
+	for result.NotDone() {
+		instances = append(instances, result.Values()...)
+
+		err := result.Next()
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
+
+	return instances, nil
 }
 
 // ensureNodesCordoned ensures that given tenant cluster nodes are cordoned.
