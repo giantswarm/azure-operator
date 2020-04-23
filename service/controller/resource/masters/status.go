@@ -13,10 +13,12 @@ const (
 	DeploymentParametersChecksum = "ParametersChecksum"
 
 	// States
+	CheckFlatcarMigrationNeeded    = "CheckFlatcarMigrationNeeded"
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
-	DeploymentUninitialized        = ""
+	DeploymentUninitialized        = "DeploymentUninitialized"
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
+	Empty                          = ""
 	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
 	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"

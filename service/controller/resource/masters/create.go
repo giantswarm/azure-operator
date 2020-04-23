@@ -15,6 +15,8 @@ import (
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
+		Empty:                          r.emptyStateTransition,
+		CheckFlatcarMigrationNeeded:    r.checkFlatcarMigrationNeededTransition,
 		DeploymentUninitialized:        r.deploymentUninitializedTransition,
 		DeploymentInitialized:          r.deploymentInitializedTransition,
 		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
