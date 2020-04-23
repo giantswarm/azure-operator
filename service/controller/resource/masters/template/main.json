@@ -156,7 +156,7 @@
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"master-vmss-deploy",
+      "name":"[concat('master-vmss-', parameters('clusterID'))]",
       "properties":{
         "mode":"incremental",
         "templateLink":{
@@ -174,7 +174,7 @@
             "value":"[parameters('GiantSwarmTags')]"
           },
           "vmssName":{
-            "value":"[concat(parameters('clusterID'), '-master')]"
+            "value":"[concat(parameters('clusterID'), '-master-', parameters('clusterID'))]"
           },
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"

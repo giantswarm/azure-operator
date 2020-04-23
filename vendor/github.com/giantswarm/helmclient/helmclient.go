@@ -54,6 +54,7 @@ type Config struct {
 	Logger     micrologger.Logger
 
 	EnsureTillerInstalledMaxWait time.Duration
+	HTTPClientTimeout            time.Duration
 	RestConfig                   *rest.Config
 	TillerImageName              string
 	TillerImageRegistry          string
@@ -91,6 +92,9 @@ func New(config Config) (*Client, error) {
 	if config.EnsureTillerInstalledMaxWait == 0 {
 		config.EnsureTillerInstalledMaxWait = defaultEnsureTillerInstalledMaxWait
 	}
+	if config.HTTPClientTimeout == 0 {
+		config.HTTPClientTimeout = defaultHTTPClientTimeout
+	}
 	if config.RestConfig == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RestConfig must not be empty", config)
 	}
@@ -106,7 +110,7 @@ func New(config Config) (*Client, error) {
 
 	// Set client timeout to prevent leakages.
 	httpClient := &http.Client{
-		Timeout: time.Second * httpClientTimeout,
+		Timeout: time.Second * time.Duration(config.HTTPClientTimeout),
 	}
 
 	// Registry is configurable for AWS China.
@@ -319,6 +323,7 @@ func (c *Client) getReleaseHistory(ctx context.Context, releaseName string) (*Re
 			Description:  release.Info.Description,
 			LastDeployed: lastDeployed,
 			Name:         release.Name,
+			Revision:     int(release.Version),
 			Version:      version,
 		}
 	}
@@ -482,7 +487,7 @@ func (c *Client) LoadChart(ctx context.Context, chartPath string) (Chart, error)
 	return chart, nil
 }
 
-func (c *Client) loadChart(ctx context.Context, chartPath string) (Chart, error) {
+func (c *Client) loadChart(_ context.Context, chartPath string) (Chart, error) {
 	helmChart, err := chartutil.Load(chartPath)
 	if err != nil {
 		return Chart{}, microerror.Mask(err)
@@ -545,7 +550,7 @@ func (c *Client) RunReleaseTest(ctx context.Context, releaseName string, options
 	return nil
 }
 
-func (c *Client) runReleaseTest(ctx context.Context, releaseName string, options ...helmclient.ReleaseTestOption) error {
+func (c *Client) runReleaseTest(ctx context.Context, releaseName string, _ ...helmclient.ReleaseTestOption) error {
 	c.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("running tests for release %#q", releaseName))
 
 	t, err := c.newTunnel()
@@ -616,6 +621,8 @@ func (c *Client) updateReleaseFromTarball(ctx context.Context, releaseName, path
 		} else if IsReleaseNotFound(err) {
 			return backoff.Permanent(microerror.Mask(err))
 		} else if IsEmptyChartTemplates(err) {
+			return backoff.Permanent(microerror.Mask(err))
+		} else if IsTarballNotFound(err) {
 			return backoff.Permanent(microerror.Mask(err))
 		} else if IsYamlConversionFailed(err) {
 			return backoff.Permanent(microerror.Mask(err))

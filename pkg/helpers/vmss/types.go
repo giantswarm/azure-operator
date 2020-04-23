@@ -2,8 +2,6 @@ package vmss
 
 import (
 	"github.com/giantswarm/certs"
-
-	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 type Node struct {
@@ -35,11 +33,11 @@ type NodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
-func NewNode(adminUsername string, adminSSHKeyData string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) Node {
+func NewNode(adminUsername string, adminSSHKeyData string, distroVersion string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) Node {
 	return Node{
 		AdminUsername:       adminUsername,
 		AdminSSHKeyData:     adminSSHKeyData,
-		OSImage:             newNodeOSImageCoreOS(),
+		OSImage:             newNodeOSImageCoreOS(distroVersion),
 		VMSize:              vmSize,
 		DockerVolumeSizeGB:  dockerVolumeSizeGB,
 		KubeletVolumeSizeGB: kubeletVolumeSizeGB,
@@ -47,12 +45,12 @@ func NewNode(adminUsername string, adminSSHKeyData string, vmSize string, docker
 }
 
 // newNodeOSImage provides OS information for Container Linux
-func newNodeOSImageCoreOS() NodeOSImage {
+func newNodeOSImageCoreOS(distroVersion string) NodeOSImage {
 	return NodeOSImage{
-		Offer:     "CoreOS",
-		Publisher: "CoreOS",
-		SKU:       "Stable",
-		Version:   key.CoreosVersion,
+		Offer:     "flatcar-container-linux",
+		Publisher: "kinvolk",
+		SKU:       "stable",
+		Version:   distroVersion,
 	}
 }
 

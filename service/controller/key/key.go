@@ -53,7 +53,7 @@ const (
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
 
-	CoreosVersion = "2303.4.0"
+	ContainerLinuxComponentName = "containerlinux"
 )
 
 // Container image versions for k8scloudconfig.
