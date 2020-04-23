@@ -3,6 +3,7 @@ package masters
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
@@ -140,6 +141,15 @@ func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsCl
 	return cc.AzureClientSet.GroupsClient, nil
 }
 
+func (r *Resource) getScaleSetsClient(ctx context.Context) (*compute.VirtualMachineScaleSetsClient, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cc.AzureClientSet.VirtualMachineScaleSetsClient, nil
+}
+
 func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
@@ -147,4 +157,13 @@ func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.Accou
 	}
 
 	return cc.AzureClientSet.StorageAccountsClient, nil
+}
+
+func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineScaleSetVMsClient, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
 }
