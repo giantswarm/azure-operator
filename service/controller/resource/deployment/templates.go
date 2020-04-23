@@ -467,6 +467,10 @@ const routeTable string = `{
       }
     }
   },
+  "variables":{
+    "name":"[concat(parameters('clusterID'), '-RouteTable')]",
+    "id":"[resourceId('Microsoft.Network/routeTables', variables('name'))]"
+  },
   "resources":[
     {
       "type":"Microsoft.Network/routeTables",
@@ -482,11 +486,11 @@ const routeTable string = `{
   "outputs":{
     "name":{
       "type":"string",
-      "value":"[concat(parameters('clusterID'), '-RouteTable')]"
+      "value":"[variables('name')]"
     },
     "id":{
       "type":"string",
-      "value":"[resourceId('Microsoft.Network/routeTables', variables('name'))]"
+      "value":"[variables('id')]"
     }
   }
 }
@@ -1184,42 +1188,6 @@ const main string = `{
     "kubernetesAPISecurePort":{
       "type":"int"
     },
-    "dnsASetupTemplateFile":{
-      "type":"string",
-      "defaultValue":"dns_a_setup.json"
-    },
-    "dnsCNAMESetupTemplateFile":{
-      "type":"string",
-      "defaultValue":"dns_cname_setup.json"
-    },
-    "containerSetupTemplateFile":{
-      "type":"string",
-      "defaultValue":"container_setup.json"
-    },
-    "kubernetesLoadBalancerTemplateFile":{
-      "type":"string",
-      "defaultValue":"kubernetes_load_balancer_setup.json"
-    },
-    "publicLoadBalancerTemplateFile":{
-      "type":"string",
-      "defaultValue":"public_load_balancer_setup.json"
-    },
-    "privateLoadBalancerTemplateFile":{
-      "type":"string",
-      "defaultValue":"private_load_balancer_setup.json"
-    },
-    "routeTableTemplateFile":{
-      "type":"string",
-      "defaultValue":"route_table_setup.json"
-    },
-    "securityGroupsSetupTemplateFile":{
-      "type":"string",
-      "defaultValue":"security_groups_setup.json"
-    },
-    "virtualNetworkSetupTemplateFile":{
-      "type":"string",
-      "defaultValue":"virtual_network_setup.json"
-    },
     "dnsZones":{
       "type":"object",
       "metadata":{
@@ -1237,6 +1205,9 @@ const main string = `{
       "name":"security_groups_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1275,6 +1246,9 @@ const main string = `{
       "name":"route_table_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1298,6 +1272,9 @@ const main string = `{
         "route_table_setup"
       ],
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
