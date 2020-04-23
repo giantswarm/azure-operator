@@ -148,8 +148,8 @@ func GetLatestOperatorRelease() string {
 func installResources(ctx context.Context, config Config) error {
 	var err error
 
-	var operatorTarballPath string
-	{
+	operatorTarballPath := env.OperatorHelmTarballPath()
+	if operatorTarballPath == "" {
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for tested version")
 
 		operatorVersion := fmt.Sprintf("%s-%s", latestOperatorRelease, env.CircleSHA())
@@ -166,9 +166,9 @@ func installResources(ctx context.Context, config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath))
 	}
+
+	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath))
 
 	var latestReleasedOperatorTarballPath string
 	{
