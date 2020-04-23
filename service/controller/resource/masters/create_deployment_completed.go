@@ -26,9 +26,9 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
-		return currentState, nil
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
+		return DeploymentUninitialized, nil
 	} else if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
