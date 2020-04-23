@@ -54,6 +54,7 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, rg stri
 	}
 
 	allSucceeded := true
+	response := iterator.Response().Response
 
 	for iterator.NotDone() {
 		instance := iterator.Value()
@@ -76,7 +77,7 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, rg stri
 	if allSucceeded {
 		// All instances are succeeded, let's check the VMSS rate is safe.
 		// If current remaining API calls are less than the desired threshold, we don't proceed.
-		rl3m, rl30m := rateLimitThresholdsFromResponse(iterator.Response().Response)
+		rl3m, rl30m := rateLimitThresholdsFromResponse(response)
 		if rl3m < remainingCallsThreshold3m || rl30m < remainingCallsThreshold30m {
 			logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, remainingCallsMax3m, rl30m, remainingCallsMax30m)) // nolint: errcheck
 			return false, vmssUnsafeError
