@@ -27,7 +27,7 @@ func Test_getDeploymentTemplateChecksum(t *testing.T) {
 		{
 			name:             "case 0: Successful checksum calculation",
 			template:         template,
-			expectedChecksum: "b69bd09d1685ead2d5808aff32d8c08c71c50e4316a8dde3a9f4e7cbe06aff92",
+			expectedChecksum: "c85eb2e3cf79dbd0f33895771266905f7b687d429fbaff83fb498b45a13c56bd",
 		},
 	}
 

@@ -9,3 +9,4 @@ TODO
 !/examples/local/*.tmpl.yaml
 
 integration/test/**/*-e2e
+integration/test/**/logs/*.txt

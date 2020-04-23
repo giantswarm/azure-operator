@@ -383,6 +383,9 @@ const main string = `{
       "type":"Microsoft.Resources/deployments",
       "name":"master-vmss-deploy",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -495,6 +498,9 @@ const main string = `{
       "type":"Microsoft.Resources/deployments",
       "name":"worker-vmss-deploy",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
