@@ -24,6 +24,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/service/controller/key"
 	"github.com/giantswarm/azure-operator/service/controller/resource/blobobject"
 	"github.com/giantswarm/azure-operator/service/controller/resource/containerurl"
@@ -32,6 +33,7 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/service/controller/resource/endpoints"
 	"github.com/giantswarm/azure-operator/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/service/controller/resource/namespace"
 	"github.com/giantswarm/azure-operator/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/service/controller/resource/service"
@@ -275,6 +277,39 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var iwd vmsscheck.InstanceWatchdog
+	{
+		c := vmsscheck.Config{
+			Logger:     config.Logger,
+			NumWorkers: config.VMSSCheckWorkers,
+		}
+
+		var err error
+		iwd, err = vmsscheck.NewInstanceWatchdog(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var mastersResource resource.Interface
+	{
+		c := masters.Config{
+			Debugger:  newDebugger,
+			G8sClient: config.K8sClient.G8sClient(),
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			Azure:            config.Azure,
+			InstanceWatchdog: iwd,
+			TemplateVersion:  config.TemplateVersion,
+		}
+
+		mastersResource, err = masters.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var instanceResource resource.Interface
 	{
 		c := instance.Config{
@@ -284,8 +319,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Logger:    config.Logger,
 
 			Azure:            config.Azure,
+			InstanceWatchdog: iwd,
 			TemplateVersion:  config.TemplateVersion,
-			VMSSCheckWorkers: config.VMSSCheckWorkers,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -377,6 +412,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		blobObjectResource,
 		deploymentResource,
 		dnsrecordResource,
+		mastersResource,
 		instanceResource,
 		endpointsResource,
 		vpnResource,

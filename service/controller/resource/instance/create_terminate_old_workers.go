@@ -8,8 +8,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
 )
 
 func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

@@ -1,4 +1,4 @@
-package instance
+package checksum
 
 import (
 	"crypto/sha256"
@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-func getDeploymentTemplateChecksum(deployment resources.Deployment) (string, error) {
+func GetDeploymentTemplateChecksum(deployment resources.Deployment) (string, error) {
 	templateLink := deployment.Properties.TemplateLink
 	if templateLink == nil {
 		return "", microerror.Mask(nilTemplateLinkError)
@@ -40,7 +40,7 @@ func getDeploymentTemplateChecksum(deployment resources.Deployment) (string, err
 	return hash, nil
 }
 
-func getDeploymentParametersChecksum(deployment resources.Deployment) (string, error) {
+func GetDeploymentParametersChecksum(deployment resources.Deployment) (string, error) {
 	params := deployment.Properties.Parameters.(map[string]interface{})
 
 	filteredParams := map[string]interface{}{}

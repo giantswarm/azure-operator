@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -22,7 +22,7 @@ import (
 )
 
 const (
-	Name = "instance"
+	Name = "masters"
 )
 
 type Config struct {
@@ -101,6 +101,37 @@ func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.Dep
 	return cc.AzureClientSet.DeploymentsClient, nil
 }
 
+func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+
+	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var enc *encrypter.Encrypter
+	{
+		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
+			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+		}
+		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
+			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+		}
+		c := encrypter.Config{
+			Key: secret.Data[key.CertificateEncryptionKeyName],
+			IV:  secret.Data[key.CertificateEncryptionIVName],
+		}
+
+		enc, err = encrypter.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+
+		}
+	}
+
+	return enc, nil
+}
+
 func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
@@ -135,35 +166,4 @@ func (r *Resource) getVMsClient(ctx context.Context) (*compute.VirtualMachineSca
 	}
 
 	return cc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
-}
-
-func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
-
-	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var enc *encrypter.Encrypter
-	{
-		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
-		}
-		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
-		}
-		c := encrypter.Config{
-			Key: secret.Data[key.CertificateEncryptionKeyName],
-			IV:  secret.Data[key.CertificateEncryptionIVName],
-		}
-
-		enc, err = encrypter.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-
-		}
-	}
-
-	return enc, nil
 }
