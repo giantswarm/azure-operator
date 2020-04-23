@@ -156,7 +156,7 @@
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"[concat('master-vmss-', parameters('clusterID'))]",
+      "name":"masters-vmss-template",
       "properties":{
         "mode":"incremental",
         "templateLink":{

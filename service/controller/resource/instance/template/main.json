@@ -156,7 +156,7 @@
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"[concat('worker-vmss-', parameters('clusterID'))]",
+      "name":"workers-vmss-template",
       "properties":{
         "mode":"incremental",
         "templateLink":{

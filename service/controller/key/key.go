@@ -303,7 +303,7 @@ func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), idB36)
+	return fmt.Sprintf("%s-master-%s-%06s", ClusterID(customObject), ClusterID(customObject), idB36)
 }
 
 // MasterNICName returns name of the master NIC.
@@ -312,7 +312,7 @@ func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-master", ClusterID(customObject))
+	return fmt.Sprintf("%s-master-%s", ClusterID(customObject), ClusterID(customObject))
 }
 
 func OperatorVersion(cr providerv1alpha1.AzureConfig) string {
@@ -518,11 +518,11 @@ func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36)
+	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(customObject), ClusterID(customObject), idB36)
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker", ClusterID(customObject))
+	return fmt.Sprintf("%s-worker-%s", ClusterID(customObject), ClusterID(customObject))
 }
 
 func vmssInstanceIDBase36(instanceID string) (string, error) {
