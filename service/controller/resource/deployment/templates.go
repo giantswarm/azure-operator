@@ -1351,6 +1351,9 @@ const main string = `{
       "name":"api_load_balancer_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1389,6 +1392,9 @@ const main string = `{
       "name":"etcd_load_balancer_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1420,6 +1426,9 @@ const main string = `{
       "name":"kubernetes_load_balancer_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1434,6 +1443,9 @@ const main string = `{
       "name":"kubernetes_api_dns_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1457,6 +1469,9 @@ const main string = `{
       "name":"kubernetes_etcd_dns_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1480,6 +1495,9 @@ const main string = `{
       "name":"container_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
@@ -1503,6 +1521,9 @@ const main string = `{
       "name":"kubernetes_ingress_wildcard_dns_setup",
       "type":"Microsoft.Resources/deployments",
       "properties":{
+        "expressionEvaluationOptions": {
+          "scope": "inner"
+        },
         "mode":"incremental",
         "template": %s,
         "parameters":{
