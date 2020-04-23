@@ -20,8 +20,8 @@ func (r *Resource) configureStateMachine() {
 		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
 		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 		//MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
-		//WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
-		//DeploymentCompleted:            r.deploymentCompletedTransition,
+		WaitForMastersToBecomeReady: r.waitForMastersToBecomeReadyTransition,
+		DeploymentCompleted:         r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm
