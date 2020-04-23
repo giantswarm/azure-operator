@@ -6,8 +6,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance/internal/state"
 )
 
 func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

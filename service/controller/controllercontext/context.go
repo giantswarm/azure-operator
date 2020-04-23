@@ -6,9 +6,9 @@ import (
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/network"
+	"github.com/giantswarm/azure-operator/v3/client"
+	"github.com/giantswarm/azure-operator/v3/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v3/service/network"
 )
 
 type contextKey string

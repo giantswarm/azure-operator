@@ -7,8 +7,8 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance/internal/state"
 )
 
 func (r *Resource) waitForMastersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

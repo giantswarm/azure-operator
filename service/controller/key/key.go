@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/k8scloudconfig/v6/v_6_0_0"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v3/service/controller/templates/ignition"
 )
 
 const (

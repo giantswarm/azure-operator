@@ -11,7 +11,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 func Test_Resource_Instance_findActionableInstance(t *testing.T) {

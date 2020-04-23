@@ -12,8 +12,8 @@ import (
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/key"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/key"
 )
 
 // common installs components required to run the operator.

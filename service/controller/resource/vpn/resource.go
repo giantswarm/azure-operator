@@ -8,9 +8,9 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
 )
 
 const (

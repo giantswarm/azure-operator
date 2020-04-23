@@ -16,11 +16,11 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v3/client"
+	"github.com/giantswarm/azure-operator/v3/flag"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/service/controller"
+	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
 )
 
 // Config represents the configuration used to create a new service.

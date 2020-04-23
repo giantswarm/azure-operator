@@ -7,7 +7,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 const (

@@ -12,11 +12,11 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/templates"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/templates"
 )
 
 func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}, location string) (azureresource.Deployment, error) {

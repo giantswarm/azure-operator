@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/key"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/key"
 )
 
 func ensureCertConfigsInstalled(ctx context.Context, id string, config Config) error {

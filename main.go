@@ -13,10 +13,10 @@ import (
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 
-	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/server"
-	"github.com/giantswarm/azure-operator/service"
+	"github.com/giantswarm/azure-operator/v3/flag"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/server"
+	"github.com/giantswarm/azure-operator/v3/service"
 )
 
 const (

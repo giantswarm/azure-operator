@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
 )
 
 const (

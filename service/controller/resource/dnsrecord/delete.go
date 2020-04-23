@@ -9,7 +9,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 // ApplyDeleteChange deletes the resource group via the Azure API.

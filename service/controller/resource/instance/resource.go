@@ -12,13 +12,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/state"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance/internal/vmsscheck"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v3/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance/internal/state"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
 )
 
 const (

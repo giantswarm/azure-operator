@@ -12,10 +12,10 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/pkg/label"
-	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/pkg/label"
+	"github.com/giantswarm/azure-operator/v3/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
