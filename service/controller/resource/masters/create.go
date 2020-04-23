@@ -17,8 +17,11 @@ func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
 		Empty:                          r.emptyStateTransition,
 		CheckFlatcarMigrationNeeded:    r.checkFlatcarMigrationNeededTransition,
+		WaitForBackupConfirmation:      r.waitForBackupConfirmationTransition,
+		DeallocateLegacyInstance:       r.deallocateLegacyInstanceTransition,
 		DeploymentUninitialized:        r.deploymentUninitializedTransition,
 		DeploymentInitialized:          r.deploymentInitializedTransition,
+		ManualInterventionRequired:     r.manualInterventionRequiredTransition,
 		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
 		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 		MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,

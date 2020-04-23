@@ -311,6 +311,10 @@ func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(customObject))
 }
 
+func LegacyMasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-master", ClusterID(customObject))
+}
+
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master-%s", ClusterID(customObject), ClusterID(customObject))
 }

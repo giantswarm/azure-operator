@@ -15,12 +15,15 @@ const (
 	// States
 	CheckFlatcarMigrationNeeded    = "CheckFlatcarMigrationNeeded"
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
+	DeallocateLegacyInstance       = "DeallocateLegacyInstance"
 	DeploymentUninitialized        = "DeploymentUninitialized"
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
 	Empty                          = ""
+	ManualInterventionRequired     = "ManualInterventionRequired"
 	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
+	WaitForBackupConfirmation      = "WaitForBackupConfirmation"
 	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
 )
 
