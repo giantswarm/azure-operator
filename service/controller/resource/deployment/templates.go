@@ -54,9 +54,7 @@ const securityGroups string = `
   },
   "variables":{
     "masterSecurityGroupName":"[concat(parameters('clusterID'), '-MasterSecurityGroup')]",
-    "masterSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('masterSecurityGroupName'))]",
     "workerSecurityGroupName":"[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
-    "workerSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
     "cadvisorPort":"4194",
     "etcdPort":"2379",
     "kubeletPort":"10250",
@@ -431,11 +429,11 @@ const securityGroups string = `
   "outputs":{
     "masterSecurityGroupID":{
       "type":"string",
-      "value":"[variables('masterSecurityGroupID')]"
+      "value":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('masterSecurityGroupName'))]"
     },
     "workerSecurityGroupID":{
       "type":"string",
-      "value":"[variables('workerSecurityGroupID')]"
+      "value":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]"
     }
   }
 }
@@ -469,10 +467,6 @@ const routeTable string = `{
       }
     }
   },
-  "variables":{
-    "name":"[concat(parameters('clusterID'), '-RouteTable')]",
-    "id":"[resourceId('Microsoft.Network/routeTables', variables('name'))]"
-  },
   "resources":[
     {
       "type":"Microsoft.Network/routeTables",
@@ -482,23 +476,17 @@ const routeTable string = `{
       "location":"[resourceGroup().location]",
       "tags":{
         "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
-      },
-      "properties":{
-
-      },
-      "dependsOn":[
-
-      ]
+      }
     }
   ],
   "outputs":{
     "name":{
       "type":"string",
-      "value":"[variables('name')]"
+      "value":"[concat(parameters('clusterID'), '-RouteTable')]"
     },
     "id":{
       "type":"string",
-      "value":"[variables('id')]"
+      "value":"[resourceId('Microsoft.Network/routeTables', variables('name'))]"
     }
   }
 }
