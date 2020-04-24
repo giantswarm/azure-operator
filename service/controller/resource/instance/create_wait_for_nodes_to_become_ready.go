@@ -2,6 +2,7 @@ package instance
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
@@ -9,6 +10,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
 func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -28,6 +30,31 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
+
+	cr, err := key.ToCustomResource(obj)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	// If the old VMSS still exists, we want to go to a different state.
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	vmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
+	if IsScaleSetNotFound(err) {
+		return "", microerror.Mask(err)
+	} else if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+
+	// The legacy VMSS was found, check the scaling.
+	if *vmss.Sku.Capacity > 0 {
+		// The legacy VMSS has still instances running, cordon all of them.
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: draining those", key.LegacyWorkerVMSSName(cr), *vmss.Sku.Capacity)) // nolint: errcheck
+		return DrainOldVMSS, nil
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has 0 instances", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 
 	return DrainOldWorkerNodes, nil
 }

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
@@ -26,6 +27,28 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
+	}
+
+	// If the old VMSS is still present, we should skip this step.
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	vmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
+	if IsScaleSetNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is not present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	} else if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	if vmss != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+
+		// The legacy VMSS was found, check the scaling.
+		if *vmss.Sku.Capacity > 0 {
+			// The legacy VMSS has still instances running, skip scaling up.
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: skipping scale up", key.LegacyWorkerVMSSName(cr), *vmss.Sku.Capacity)) // nolint: errcheck
+			return CordonOldVMSS, nil
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has 0 instances", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 	}
 
 	desiredWorkerCount := int64(key.WorkerCount(cr) * 2)
@@ -80,6 +103,20 @@ func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv
 	}
 
 	return *vmss.Sku.Capacity, nil
+}
+
+func (r *Resource) getScaleSet(ctx context.Context, resourceGroup string, scaleSetName string) (*compute.VirtualMachineScaleSet, error) {
+	c, err := r.getScaleSetsClient(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	vmss, err := c.Get(ctx, resourceGroup, scaleSetName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return &vmss, nil
 }
 
 func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

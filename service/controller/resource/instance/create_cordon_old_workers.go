@@ -206,6 +206,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject
 	}
 
 	name := key.WorkerInstanceName(customObject, *instance.InstanceID)
+	legacyName := key.LegacyWorkerInstanceName(customObject, *instance.InstanceID)
 
 	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
@@ -214,7 +215,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject
 	nodes := nodeList.Items
 
 	for _, n := range nodes {
-		if n.GetName() == name {
+		if n.GetName() == name || n.GetName() == legacyName {
 			return &n, nil
 		}
 	}

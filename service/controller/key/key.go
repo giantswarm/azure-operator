@@ -18,7 +18,7 @@ const (
 	installationTagName       = "GiantSwarmInstallation"
 	organizationTagName       = "GiantSwarmOrganization"
 	MastersVmssDeploymentName = "masters-vmss"
-	WorkersVmssDeploymentName = "workers-vmss-template"
+	WorkersVmssDeploymentName = "workers-vmss"
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
@@ -514,6 +514,15 @@ func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) st
 // VPNGatewayName returns name of the vpn gateway.
 func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
+}
+
+func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+	idB36, err := vmssInstanceIDBase36(instanceID)
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36)
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {

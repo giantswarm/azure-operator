@@ -20,12 +20,20 @@ func (r *Resource) configureStateMachine() {
 		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
 		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 		ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
-		CordonOldWorkers:               r.cordonOldWorkersTransition,
-		WaitForWorkersToBecomeReady:    r.waitForWorkersToBecomeReadyTransition,
-		DrainOldWorkerNodes:            r.drainOldWorkerNodesTransition,
-		TerminateOldWorkerInstances:    r.terminateOldWorkersTransition,
-		ScaleDownWorkerVMSS:            r.scaleDownWorkerVMSSTransition,
-		DeploymentCompleted:            r.deploymentCompletedTransition,
+
+		CordonOldVMSS:    r.cordonOldVMSSTransition,
+		CordonOldWorkers: r.cordonOldWorkersTransition,
+
+		WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
+
+		DrainOldVMSS:        r.drainOldVMSSTransition,
+		DrainOldWorkerNodes: r.drainOldWorkerNodesTransition,
+
+		TerminateOldVMSS:            r.terminateOldVmssTransition,
+		TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
+
+		ScaleDownWorkerVMSS: r.scaleDownWorkerVMSSTransition,
+		DeploymentCompleted: r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm

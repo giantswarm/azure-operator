@@ -31,13 +31,15 @@ func (r *Resource) blockAPICallsTransition(ctx context.Context, obj interface{},
 	}
 
 	if !exists {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Security rule not found")
 		// Create security rule
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Creating security rule")
 		err = r.createSecurityRule(ctx, key.ResourceGroupName(cr), key.WorkerSecurityGroupName(cr), temporarySecurityRuleName)
 		if err != nil {
 			// In case of error just retry.
 			return currentState, microerror.Mask(err)
 		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Security rule created")
 
 		// Wait for security rule to be in place.
 		return currentState, nil
