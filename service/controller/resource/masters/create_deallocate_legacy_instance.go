@@ -35,7 +35,7 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 		return currentState, nil
 	}
 
-	return DeploymentUninitialized, nil
+	return BlockAPICalls, nil
 }
 
 func (r *Resource) deallocateAllInstances(ctx context.Context, resourceGroup string, vmssName string) error {

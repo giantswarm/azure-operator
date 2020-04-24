@@ -19,6 +19,7 @@ func (r *Resource) configureStateMachine() {
 		CheckFlatcarMigrationNeeded:    r.checkFlatcarMigrationNeededTransition,
 		WaitForBackupConfirmation:      r.waitForBackupConfirmationTransition,
 		DeallocateLegacyInstance:       r.deallocateLegacyInstanceTransition,
+		BlockAPICalls:                  r.blockAPICallsTransition,
 		DeploymentUninitialized:        r.deploymentUninitializedTransition,
 		DeploymentInitialized:          r.deploymentInitializedTransition,
 		ManualInterventionRequired:     r.manualInterventionRequiredTransition,
@@ -28,6 +29,7 @@ func (r *Resource) configureStateMachine() {
 		WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
 		WaitForRestore:                 r.waitForRestoreTransition,
 		DeleteLegacyVMSS:               r.deleteLegacyVMSSTransition,
+		UnblockAPICalls:                r.unblockAPICallsTransition,
 		DeploymentCompleted:            r.deploymentCompletedTransition,
 	}
 
@@ -74,6 +76,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if newState != DeploymentCompleted {
 		reconciliationcanceledcontext.SetCanceled(ctx)
 	}
+
+	// TODO remove me
+	reconciliationcanceledcontext.SetCanceled(ctx)
 
 	return nil
 }

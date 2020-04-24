@@ -13,6 +13,7 @@ const (
 	DeploymentParametersChecksum = "ParametersChecksum"
 
 	// States
+	BlockAPICalls                  = "BlockAPICalls"
 	CheckFlatcarMigrationNeeded    = "CheckFlatcarMigrationNeeded"
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
 	DeallocateLegacyInstance       = "DeallocateLegacyInstance"
@@ -24,6 +25,7 @@ const (
 	ManualInterventionRequired     = "ManualInterventionRequired"
 	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
+	UnblockAPICalls                = "UnblockAPICalls"
 	WaitForBackupConfirmation      = "WaitForBackupConfirmation"
 	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
 	WaitForRestore                 = "WaitForRestore"
