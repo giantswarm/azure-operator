@@ -16,6 +16,7 @@ const (
 	CheckFlatcarMigrationNeeded    = "CheckFlatcarMigrationNeeded"
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
 	DeallocateLegacyInstance       = "DeallocateLegacyInstance"
+	DeleteLegacyVMSS               = "DeleteLegacyVMSS"
 	DeploymentUninitialized        = "DeploymentUninitialized"
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
@@ -25,6 +26,7 @@ const (
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
 	WaitForBackupConfirmation      = "WaitForBackupConfirmation"
 	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
+	WaitForRestore                 = "WaitForRestore"
 )
 
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {

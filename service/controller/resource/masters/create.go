@@ -26,6 +26,8 @@ func (r *Resource) configureStateMachine() {
 		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 		MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
 		WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
+		WaitForRestore:                 r.waitForRestoreTransition,
+		DeleteLegacyVMSS:               r.deleteLegacyVMSSTransition,
 		DeploymentCompleted:            r.deploymentCompletedTransition,
 	}
 

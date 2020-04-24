@@ -34,7 +34,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	}
 
 	// Skip instance rolling by default.
-	return DeploymentCompleted, nil
+	return WaitForRestore, nil
 }
 
 func (r *Resource) isClusterCreating(cr providerv1alpha1.AzureConfig) bool {
