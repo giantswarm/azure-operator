@@ -1,4 +1,4 @@
-# Running e2e tests locally
+# Running integration tests locally
 
 Build the application, which means compiling the Go code, building the docker image and the helm chart package.
 
