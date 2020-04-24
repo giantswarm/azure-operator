@@ -51,12 +51,6 @@ func (r *Resource) drainOldVMSSTransition(ctx context.Context, obj interface{}, 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances))) // nolint: errcheck
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that drainerconfig exists for all old worker nodes")          // nolint: errcheck
 
-	// TODO remove me
-	if len(allWorkerInstances) == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Expected to find at least one worker to be drained but found 0")
-		return currentState, nil
-	}
-
 	var nodesPendingDraining int
 	for _, i := range allWorkerInstances {
 		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cr, i)
