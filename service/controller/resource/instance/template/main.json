@@ -156,7 +156,7 @@
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"workers-vmss-template",
+      "name":"workers-vmss-deploy",
       "properties":{
         "mode":"incremental",
         "templateLink":{

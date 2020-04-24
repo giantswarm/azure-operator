@@ -25,6 +25,7 @@ const (
 	ManualInterventionRequired     = "ManualInterventionRequired"
 	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
+	RestartKubeletOnWorkers        = "RestartKubeletOnWorkers"
 	UnblockAPICalls                = "UnblockAPICalls"
 	WaitForBackupConfirmation      = "WaitForBackupConfirmation"
 	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"

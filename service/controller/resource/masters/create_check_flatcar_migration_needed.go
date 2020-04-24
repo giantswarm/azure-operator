@@ -60,12 +60,13 @@ func (r *Resource) getScaleSet(ctx context.Context, resourceGroup string, scaleS
 
 func (r *Resource) vmssExistsAndHasActiveInstance(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the VMSS %s exists in resource group %s", vmssName, resourceGroup)) // nolint: errcheck
-	vmss, err := r.getScaleSet(ctx, resourceGroup, vmssName)
+
+	runningInstances, err := r.getRunningInstances(ctx, resourceGroup, vmssName)
 	if IsScaleSetNotFound(err) {
 		return false, nil
 	} else if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	return *vmss.Sku.Capacity > 0, nil
+	return len(runningInstances) > 0, nil
 }

@@ -156,7 +156,7 @@
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"masters-vmss-template",
+      "name":"master-vmss-deploy",
       "properties":{
         "mode":"incremental",
         "templateLink":{

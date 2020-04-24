@@ -24,7 +24,7 @@ func (r *Resource) deleteLegacyVMSSTransition(ctx context.Context, obj interface
 		return Empty, microerror.Mask(err)
 	}
 
-	return DeploymentCompleted, nil
+	return UnblockAPICalls, nil
 }
 
 func (r *Resource) deleteScaleSet(ctx context.Context, resourceGroup string, vmssName string) error {

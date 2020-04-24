@@ -30,6 +30,7 @@ func (r *Resource) configureStateMachine() {
 		WaitForRestore:                 r.waitForRestoreTransition,
 		DeleteLegacyVMSS:               r.deleteLegacyVMSSTransition,
 		UnblockAPICalls:                r.unblockAPICallsTransition,
+		RestartKubeletOnWorkers:        r.restartKubeletOnWorkersTransition,
 		DeploymentCompleted:            r.deploymentCompletedTransition,
 	}
 
@@ -76,9 +77,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if newState != DeploymentCompleted {
 		reconciliationcanceledcontext.SetCanceled(ctx)
 	}
-
-	// TODO remove me
-	reconciliationcanceledcontext.SetCanceled(ctx)
 
 	return nil
 }

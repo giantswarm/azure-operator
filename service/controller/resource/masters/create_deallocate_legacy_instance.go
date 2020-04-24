@@ -12,6 +12,11 @@ import (
 	"github.com/giantswarm/azure-operator/service/controller/key"
 )
 
+const (
+	PowerStateLabelPrefix = "PowerState/"
+	PowerStateDeallocated = "PowerState/deallocated"
+)
+
 func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
@@ -19,8 +24,9 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 	}
 
 	deallocated, err := r.isVMSSInstanceDeallocated(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
-	// TODO Check for not found error because it's ok to continue in that case.
-	if err != nil {
+	if IsNotFound(err) {
+		return BlockAPICalls, nil
+	} else if err != nil {
 		return Empty, microerror.Mask(err)
 	}
 
@@ -94,8 +100,7 @@ func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string
 			}
 
 			for _, instanceState := range *details.Statuses {
-				// TODO move strings elsewhere
-				if strings.HasPrefix(*instanceState.Code, "PowerState/") && *instanceState.Code != "PowerState/deallocated" {
+				if strings.HasPrefix(*instanceState.Code, PowerStateLabelPrefix) && *instanceState.Code != PowerStateDeallocated {
 					r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s is in status %s", *instance.Name, *instanceState.Code))
 					// Machine is not deallocated.
 					instancesRunning = append(instancesRunning, instance)
@@ -111,6 +116,20 @@ func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string
 	}
 
 	return instancesRunning, nil
+}
+
+func (r *Resource) getVMSS(ctx context.Context, resourceGroup string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	c, err := r.getScaleSetsClient(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	vmss, err := c.Get(ctx, resourceGroup, vmssName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return &vmss, nil
 }
 
 func (r *Resource) isVMSSInstanceDeallocated(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {
