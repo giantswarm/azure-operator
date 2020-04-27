@@ -95,6 +95,9 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
 		}
 
+		// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
+		r.instanceWatchdog.GuardVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 
