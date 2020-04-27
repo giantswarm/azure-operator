@@ -3,6 +3,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -362,8 +363,9 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	resourceStatus := providerv1alpha1.StatusClusterResource{
 		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
 			{
-				Status: s,
-				Type:   t,
+				LastTransitionTime: metav1.Time{Time: time.Now()},
+				Status:             s,
+				Type:               t,
 			},
 		},
 		Name: Name,
