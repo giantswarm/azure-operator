@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/service/controller/internal/state"
@@ -42,20 +41,6 @@ func (r *Resource) checkFlatcarMigrationNeededTransition(ctx context.Context, ob
 	}
 
 	return WaitForBackupConfirmation, nil
-}
-
-func (r *Resource) getScaleSet(ctx context.Context, resourceGroup string, scaleSetName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.getScaleSetsClient(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	vmss, err := c.Get(ctx, resourceGroup, scaleSetName)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return &vmss, nil
 }
 
 func (r *Resource) vmssExistsAndHasActiveInstance(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {

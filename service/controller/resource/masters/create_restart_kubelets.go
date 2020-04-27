@@ -42,6 +42,9 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 	}
 
 	allMasterInstances, err := r.allInstances(ctx, cr, key.LegacyWorkerVMSSName)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
 	for _, instance := range allMasterInstances {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sending restart kubelet command to %s", *instance.Name))
