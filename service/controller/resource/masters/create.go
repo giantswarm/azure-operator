@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -19,19 +19,15 @@ func (r *Resource) configureStateMachine() {
 		DeploymentInitialized:          r.deploymentInitializedTransition,
 		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
 		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
-		ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
-		CordonOldWorkers:               r.cordonOldWorkersTransition,
-		WaitForWorkersToBecomeReady:    r.waitForWorkersToBecomeReadyTransition,
-		DrainOldWorkerNodes:            r.drainOldWorkerNodesTransition,
-		TerminateOldWorkerInstances:    r.terminateOldWorkersTransition,
-		ScaleDownWorkerVMSS:            r.scaleDownWorkerVMSSTransition,
+		MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
+		WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
 		DeploymentCompleted:            r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm
 }
 
-// This resource applies the ARM template for the worker instances, monitors the process and handles upgrades.
+// This resource applies the ARM template for the master instances, monitors the process and handles upgrades.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
@@ -63,9 +59,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
-		reconciliationcanceledcontext.SetCanceled(ctx)
 	} else {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "no state change")
+	}
+
+	// We should wait and avoid further resources to reconciliate as long as the masters are not successfully deployed.
+	if newState != DeploymentCompleted {
+		reconciliationcanceledcontext.SetCanceled(ctx)
 	}
 
 	return nil

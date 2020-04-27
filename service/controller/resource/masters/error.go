@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"github.com/Azure/go-autorest/autorest"

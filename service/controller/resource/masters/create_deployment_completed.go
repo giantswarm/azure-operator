@@ -1,4 +1,4 @@
-package instance
+package masters
 
 import (
 	"context"
@@ -7,9 +7,10 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/to"
 
+	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
+
 	"github.com/giantswarm/azure-operator/v3/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v3/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
@@ -23,7 +24,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.WorkersVmssDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
