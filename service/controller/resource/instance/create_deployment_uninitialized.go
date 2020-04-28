@@ -96,7 +96,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
-		r.instanceWatchdog.GuardVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		r.instanceWatchdog.DeleteFailedVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)

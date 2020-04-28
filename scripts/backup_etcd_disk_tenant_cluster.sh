@@ -1,9 +1,22 @@
 #!/bin/bash
 
-set -e
-
 installation=$1
 cluster=$2
+
+check_err () {
+  r=$?
+  if [ $r -eq 0 ]
+  then
+    echo "OK"
+  else
+    echo "ERR"
+    if [ "$2" != "" ]
+    then
+      echo "$2"
+    fi
+    exit 1
+  fi
+}
 
 if [ "$installation" == "" ] || [ "$cluster" == "" ]
 then
@@ -13,23 +26,84 @@ fi
 
 read -p "Installation: $installation, cluster: $cluster. Hit enter to continue, or ctrl+c to abort. "
 
+# check for needed commands
+echo "Checking for presence of mandatory commands in the system."
+for required in gsctl opsctl
+do
+  echo -n "Looking for command $required: "
+  if [ ! -x "$(command -v $required)" ]
+  then
+    echo "ERR"
+    echo "The required command $required was not found in your system. Aborting."
+    exit 1
+  fi
+
+  echo "OK"
+done
+
 echo -n "Creating kubeconfig for $installation: "
 opsctl create kubeconfig -i $installation >/dev/null
-echo "OK"
+check_err $?
 echo -n "Creating kubeconfig for $cluster @ $installation: "
-gsctl create kubeconfig --cluster=$cluster --certificate-organizations system:masters -e $installation >/dev/null
-echo "OK"
+output="$(gsctl create kubeconfig --cluster=$cluster --certificate-organizations system:masters -e $installation --ttl 1d 2>&1)"
+check_err $? "${output}"
 
-echo -n "Getting master node name: "
-master="`kubectl --context=giantswarm-$cluster get no -l role=master|grep -v NAME|awk '{print $1}'`"
+echo -n "Getting master node name from kubernetes API: "
+# try with kubectl
+master=""
+output="$(kubectl --context=giantswarm-$cluster get no -l role=master 2>&1)"
+if [ $? -eq 0 ]
+then
+  master="$(echo "${output}"|grep -v NAME|awk '{print $1}')"
+  if [ $? -ne 0 ] || [ "$master" == "" ]
+  then
+    echo "WARN"
+    echo "Failed getting master node name from kubernetes API, trying with azure CLI client."
+  else
+    echo "OK"
+  fi
+else
+  echo "WARN"
+  echo "${output}"
+fi
 
 if [ "$master" == "" ]
 then
+  echo -n "Checking if 'az' is available: "
+  if [ -x "$(command -v az)" ]
+  then
+    echo "OK"
+    echo -n "Connecting to azure: "
+    output="$(az account list -o table)"
+    check_err $? "${output}"
+
+    echo "Check if the correct subscription is selected."
+    echo "$output"
+
+    echo ""
+    echo "Check in the table above if the subscription your cluster is running on is the one with 'IsDefault' as True"
+    read -p "Hit enter to continue or ctrl+c to abort"
+  else
     echo "ERR"
-    exit 2
+    echo "The az command was not found in your system, can't get master node hostname."
+    exit 1
+  fi
+
+  # try with az
+  echo -n "Getting master node name from azure CLI: "
+  output="$(az vmss list-instances -g "${cluster}" --name "${cluster}-master" 2>&1)"
+  check_err $? "$output"
+  master="$(echo "$output" | jq -r '.[0].osProfile.computerName')"
+  if [ "$master" == "null" ]
+  then
+      echo "Unexpected server name got from Azure, aborting."
+      exit 2
+  fi
 fi
 
-echo "OK"
+echo "Master node name is '$master'"
+
+set -e
 
 echo -n "Stopping API server: "
 opsctl ssh $installation $master --cmd "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true" 2>&1 >/dev/null
@@ -49,3 +123,8 @@ echo "OK"
 echo "Copying ETCD tar archive locally: "
 opsctl scp $installation $master:$remote_tar_path "./$tar_filename"
 echo "Archive copied correctly in $local_tar_path"
+
+cmd="opsctl update status -i $installation -p apis/provider.giantswarm.io/v1alpha1/namespaces/default/azureconfigs/${cluster}/status"
+read -p "The backup process is completed. Do you want to run '$cmd' now? Press enter to continue, ctrl+c to abort."
+
+$cmd

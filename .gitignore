@@ -10,3 +10,5 @@ TODO
 
 integration/test/**/*-e2e
 azure-operator-*.tgz
+
+scripts/*.tar.gz
