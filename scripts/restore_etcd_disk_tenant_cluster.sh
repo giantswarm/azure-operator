@@ -103,50 +103,55 @@ fi
 
 echo "Master node name is '$master'"
 
-set -e
-
 echo -n "Stopping API server: "
-opsctl ssh $installation $master --cmd "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true" 2>&1)"
+check_err $? "$output"
 
 echo -n "Waiting 10 seconds to ensure the api server goes down: "
 sleep 10
 echo "OK"
 
 echo -n "Stopping Kubelet: "
-opsctl ssh $installation $master --cmd "sudo systemctl stop k8s-kubelet" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo systemctl stop k8s-kubelet" 2>&1)"
+check_err $? "$output"
 echo -n "Stopping ETCD: "
-opsctl ssh $installation $master --cmd "sudo systemctl stop etcd3" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo systemctl stop etcd3" 2>&1)"
+check_err $? "$output"
 
 tar_filename="etcd-backup-$cluster.tar.gz"
 remote_tar_path="/tmp/$tar_filename"
 local_tar_path="./$tar_filename"
 
+set -e
+
 echo "Copying ETCD tar archive remotely: "
-opsctl scp $installation "./$tar_filename" $master:$remote_tar_path 
+opsctl scp $installation "$local_tar_path" $master:$remote_tar_path
 echo "Archive copied correctly in $master:$remote_tar_path"
 
+set +e
+
 echo -n "Clearing etcd directory: "
-opsctl ssh $installation $master --cmd "sudo rm -rf /var/lib/etcd/*" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo rm -rf /var/lib/etcd/*" 2>&1)"
+check_err $? "$output"
 
 echo -n "Restoring archive to ETCD directory on $master: "
-opsctl ssh $installation $master --cmd "sudo tar -xf $remote_tar_path -C /var/lib/etcd/" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo tar -xf $remote_tar_path -C /var/lib/etcd/" 2>&1)"
+check_err $? "$output"
 
 echo -n "Starting API server: "
-opsctl ssh $installation $master --cmd "sudo mv /root/k8s-api-server.yaml /etc/kubernetes/manifests/ || true" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo mv /root/k8s-api-server.yaml /etc/kubernetes/manifests/ || true" 2>&1)"
+check_err $? "$output"
 
 set +e
 
 echo -n "Rebooting node "
-opsctl ssh $installation $master --cmd "sudo reboot" 2>&1 >/dev/null
+output="$(opsctl ssh $installation $master --cmd "sudo reboot" 2>&1)"
 echo "OK"
 
 cmd="opsctl update status -i $installation -p apis/provider.giantswarm.io/v1alpha1/namespaces/default/azureconfigs/${cluster}/status"
-read -p "The restore process is completed. Do you want to run '$cmd' now? Press enter to continue, ctrl+c to abort."
+echo "The restore process is completed."
+echo "You now have to set the 'masters' status field to 'DeleteLegacyVMSS'".
+echo "Do you want to run '$cmd' now?"
+read -p "Press enter to continue, ctrl+c to do it manually."
 
 $cmd

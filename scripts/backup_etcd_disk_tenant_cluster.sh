@@ -103,14 +103,12 @@ fi
 
 echo "Master node name is '$master'"
 
-set -e
-
 echo -n "Stopping API server: "
-opsctl ssh $installation $master --cmd "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true" 2>&1)"
+check_err $? "$output"
 echo -n "Stopping ETCD: "
-opsctl ssh $installation $master --cmd "sudo systemctl stop etcd3" 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo systemctl stop etcd3" 2>&1)"
+check_err $? "$output"
 
 tar_filename="etcd-backup-$cluster.tar.gz"
 remote_tar_path="/tmp/$tar_filename"
@@ -118,13 +116,19 @@ local_tar_path="./$tar_filename"
 
 echo -n "Creating tar archive from the ETCD directory on $master: "
 rm -f $local_tar_path
-opsctl ssh $installation $master --cmd "sudo tar -C /var/lib/etcd -czf $remote_tar_path ." 2>&1 >/dev/null
-echo "OK"
+output="$(opsctl ssh $installation $master --cmd "sudo tar -C /var/lib/etcd -czf $remote_tar_path ." 2>&1)"
+check_err $? "$output"
+
+set -e
+
 echo "Copying ETCD tar archive locally: "
 opsctl scp $installation $master:$remote_tar_path "./$tar_filename"
 echo "Archive copied correctly in $local_tar_path"
 
 cmd="opsctl update status -i $installation -p apis/provider.giantswarm.io/v1alpha1/namespaces/default/azureconfigs/${cluster}/status"
-read -p "The backup process is completed. Do you want to run '$cmd' now? Press enter to continue, ctrl+c to abort."
+echo "The restore process is completed."
+echo "You now have to set the 'masters' status field to 'DeallocateLegacyInstance'".
+echo "Do you want to run '$cmd' now?"
+read -p "Press enter to continue, ctrl+c to do it manually."
 
 $cmd
