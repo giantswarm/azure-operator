@@ -133,13 +133,14 @@ opsctl ssh $installation $master --cmd "sudo rm -rf /var/lib/etcd/*" 2>&1 >/dev/
 echo "OK"
 
 echo -n "Restoring archive to ETCD directory on $master: "
-rm -f $local_tar_path
 opsctl ssh $installation $master --cmd "sudo tar -xf $remote_tar_path -C /var/lib/etcd/" 2>&1 >/dev/null
 echo "OK"
 
 echo -n "Starting API server: "
 opsctl ssh $installation $master --cmd "sudo mv /root/k8s-api-server.yaml /etc/kubernetes/manifests/ || true" 2>&1 >/dev/null
 echo "OK"
+
+set +e
 
 echo -n "Rebooting node "
 opsctl ssh $installation $master --cmd "sudo reboot" 2>&1 >/dev/null
