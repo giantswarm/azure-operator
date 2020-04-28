@@ -12,13 +12,13 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/service/controller/internal/vmsscheck"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v3/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v3/service/controller/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
 )
 
 const (
@@ -148,10 +148,10 @@ func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (e
 	var enc *encrypter.Encrypter
 	{
 		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret %q", secret.Name)
 		}
 		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret %q", secret.Name)
 		}
 		c := encrypter.Config{
 			Key: secret.Data[key.CertificateEncryptionKeyName],

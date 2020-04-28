@@ -8,22 +8,24 @@ import (
 
 	"github.com/giantswarm/versionbundle"
 
-	"github.com/giantswarm/azure-operator/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
 
 const (
 	DefaultTestedVersion = "wip"
 
-	EnvVarCircleSHA            = "CIRCLE_SHA1" // #nosec
-	EnvVarKeepResources        = "KEEP_RESOURCES"
-	EnvVarRegistryPullSecret   = "REGISTRY_PULL_SECRET" // #nosec
-	EnvVarTestedVersion        = "TESTED_VERSION"
-	EnvVarTestDir              = "TEST_DIR"
-	EnvVarVersionBundleVersion = "VERSION_BUNDLE_VERSION"
+	EnvVarCircleSHA               = "CIRCLE_SHA1" // #nosec
+	EnvVarKeepResources           = "KEEP_RESOURCES"
+	EnvVarRegistryPullSecret      = "REGISTRY_PULL_SECRET" // #nosec
+	EnvVarOperatorHelmTarballPath = "OPERATOR_HELM_TARBALL_PATH"
+	EnvVarTestedVersion           = "TESTED_VERSION"
+	EnvVarTestDir                 = "TEST_DIR"
+	EnvVarVersionBundleVersion    = "VERSION_BUNDLE_VERSION"
 )
 
 var (
 	circleSHA            string
+	operatorTarballPath  string
 	registryPullSecret   string
 	testDir              string
 	testedVersion        string
@@ -33,6 +35,7 @@ var (
 
 func init() {
 	keepResources = os.Getenv(EnvVarKeepResources)
+	operatorTarballPath = os.Getenv(EnvVarOperatorHelmTarballPath)
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)
 	if circleSHA == "" {
@@ -74,6 +77,10 @@ func init() {
 
 func CircleSHA() string {
 	return circleSHA
+}
+
+func OperatorHelmTarballPath() string {
+	return operatorTarballPath
 }
 
 // ClusterID returns a cluster ID unique to a run integration test. It might

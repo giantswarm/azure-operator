@@ -9,9 +9,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 
-	"github.com/giantswarm/azure-operator/pkg/helpers/vmss"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/templates"
+	"github.com/giantswarm/azure-operator/v3/pkg/helpers/vmss"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/templates"
 )
 
 func Test_getDeploymentTemplateChecksum(t *testing.T) {

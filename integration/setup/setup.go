@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"testing"
 	"time"
@@ -19,9 +18,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/helm"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/key"
-	"github.com/giantswarm/azure-operator/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/key"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
 
 const values = `
@@ -148,8 +147,8 @@ func GetLatestOperatorRelease() string {
 func installResources(ctx context.Context, config Config) error {
 	var err error
 
-	var operatorTarballPath string
-	{
+	operatorTarballPath := env.OperatorHelmTarballPath()
+	if operatorTarballPath == "" {
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for tested version")
 
 		operatorVersion := fmt.Sprintf("%s-%s", latestOperatorRelease, env.CircleSHA())
@@ -166,9 +165,9 @@ func installResources(ctx context.Context, config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath))
 	}
+
+	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath))
 
 	var latestReleasedOperatorTarballPath string
 	{
@@ -274,6 +273,18 @@ func installResources(ctx context.Context, config Config) error {
 		}
 	}
 
+	var sshUserList []providerv1alpha1.ClusterKubernetesSSHUser
+	{
+		if env.SSHPublicKey() != "" {
+			sshUserList = []providerv1alpha1.ClusterKubernetesSSHUser{
+				{
+					Name:      "test-user",
+					PublicKey: env.SSHPublicKey(),
+				},
+			}
+		}
+	}
+
 	{
 		version := env.VersionBundleVersion()
 		if env.TestDir() == "integration/test/update" {
@@ -350,7 +361,7 @@ func installResources(ctx context.Context, config Config) error {
 							SecurePort:     443,
 						},
 						CloudProvider: "azure",
-						DNS:           providerv1alpha1.ClusterKubernetesDNS{IP: net.IPv4(172, 31, 0, 10)},
+						DNS:           providerv1alpha1.ClusterKubernetesDNS{IP: "172.31.0.10"},
 						Domain:        "cluster.local",
 						IngressController: providerv1alpha1.ClusterKubernetesIngressController{
 							Domain:         "ingress." + env.ClusterID() + ".k8s." + env.CommonDomain(),
@@ -365,12 +376,7 @@ func installResources(ctx context.Context, config Config) error {
 							Port:     10250,
 						},
 						NetworkSetup: providerv1alpha1.ClusterKubernetesNetworkSetup{Docker: providerv1alpha1.ClusterKubernetesNetworkSetupDocker{Image: "quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9"}},
-						SSH: providerv1alpha1.ClusterKubernetesSSH{UserList: []providerv1alpha1.ClusterKubernetesSSHUser{
-							{
-								Name:      "test-user",
-								PublicKey: env.SSHPublicKey(),
-							},
-						}},
+						SSH:          providerv1alpha1.ClusterKubernetesSSH{UserList: sshUserList},
 					},
 				},
 				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: version},

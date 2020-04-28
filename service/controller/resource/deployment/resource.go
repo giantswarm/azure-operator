@@ -3,6 +3,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -12,10 +13,10 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
 )
 
 const (
@@ -163,14 +164,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), mainDeploymentName, deployment)
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.Stack(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.JSON(microerror.Mask(err))) // nolint: errcheck
 
 		return microerror.Mask(err)
 	}
 
 	deploymentExtended, err := deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.Stack(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.JSON(microerror.Mask(err))) // nolint: errcheck
 
 		return microerror.Mask(err)
 	}
@@ -362,8 +363,9 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	resourceStatus := providerv1alpha1.StatusClusterResource{
 		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
 			{
-				Status: s,
-				Type:   t,
+				LastTransitionTime: metav1.Time{Time: time.Now()},
+				Status:             s,
+				Type:               t,
 			},
 		},
 		Name: Name,

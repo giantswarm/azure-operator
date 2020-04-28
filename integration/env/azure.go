@@ -6,7 +6,7 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/giantswarm/azure-operator/integration/network"
+	"github.com/giantswarm/azure-operator/v3/integration/network"
 )
 
 const (

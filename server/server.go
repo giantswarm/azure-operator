@@ -12,8 +12,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/spf13/viper"
 
-	"github.com/giantswarm/azure-operator/server/endpoint"
-	"github.com/giantswarm/azure-operator/service"
+	"github.com/giantswarm/azure-operator/v3/server/endpoint"
+	"github.com/giantswarm/azure-operator/v3/service"
 )
 
 type Config struct {

@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/v_6_0_0"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v3/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v3/service/controller/templates/ignition"
 )
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a

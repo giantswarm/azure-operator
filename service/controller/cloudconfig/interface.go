@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	"context"
 
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v3/service/controller/encrypter"
 )
 
 type Interface interface {

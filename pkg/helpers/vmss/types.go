@@ -3,7 +3,7 @@ package vmss
 import (
 	"github.com/giantswarm/certs"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 type Node struct {

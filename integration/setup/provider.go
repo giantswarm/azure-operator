@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
 )
 
 // provider installs the operator and tenant cluster CR.
