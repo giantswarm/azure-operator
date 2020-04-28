@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/azure-operator/v3/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance/template"
 )
 
 func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}, location string) (azureresource.Deployment, error) {
@@ -97,7 +98,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
 
-	template, err := getARMTemplate()
+	armTemplate, err := template.GetARMTemplate()
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -106,7 +107,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		Properties: &azureresource.DeploymentProperties{
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
-			Template:   template,
+			Template:   armTemplate,
 		},
 	}
 

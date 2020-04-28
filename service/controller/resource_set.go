@@ -58,10 +58,7 @@ type ResourceSetConfig struct {
 	RegistryDomain           string
 	OIDC                     setting.OIDC
 	SSOPublicKey             string
-	// TemplateVersion is a git branch name to use to get Azure Resource
-	// Manager templates from.
-	TemplateVersion  string
-	VMSSCheckWorkers int
+	VMSSCheckWorkers         int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -230,8 +227,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			G8sClient: config.K8sClient.G8sClient(),
 			Logger:    config.Logger,
 
-			Azure:           config.Azure,
-			TemplateVersion: config.TemplateVersion,
+			Azure: config.Azure,
 		}
 
 		deploymentResource, err = deployment.New(c)
@@ -301,7 +297,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:            config.Azure,
 			InstanceWatchdog: iwd,
-			TemplateVersion:  config.TemplateVersion,
 		}
 
 		mastersResource, err = masters.New(c)
@@ -320,7 +315,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:            config.Azure,
 			InstanceWatchdog: iwd,
-			TemplateVersion:  config.TemplateVersion,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -371,8 +365,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Debugger: newDebugger,
 			Logger:   config.Logger,
 
-			Azure:           config.Azure,
-			TemplateVersion: config.TemplateVersion,
+			Azure: config.Azure,
 		}
 
 		vpnResource, err = vpn.New(c)

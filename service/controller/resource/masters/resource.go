@@ -33,7 +33,6 @@ type Config struct {
 
 	Azure            setting.Azure
 	InstanceWatchdog vmsscheck.InstanceWatchdog
-	TemplateVersion  string
 }
 
 type Resource struct {
@@ -45,7 +44,6 @@ type Resource struct {
 
 	azure            setting.Azure
 	instanceWatchdog vmsscheck.InstanceWatchdog
-	templateVersion  string
 }
 
 func New(config Config) (*Resource, error) {
@@ -68,9 +66,6 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
-	}
 
 	r := &Resource{
 		debugger:  config.Debugger,
@@ -80,7 +75,6 @@ func New(config Config) (*Resource, error) {
 
 		azure:            config.Azure,
 		instanceWatchdog: config.InstanceWatchdog,
-		templateVersion:  config.TemplateVersion,
 	}
 
 	r.configureStateMachine()

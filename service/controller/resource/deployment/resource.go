@@ -36,9 +36,6 @@ type Config struct {
 	Logger    micrologger.Logger
 
 	Azure setting.Azure
-	// TemplateVersion is the ARM template version. Currently is the name
-	// of the git branch in which the version is stored.
-	TemplateVersion string
 }
 
 type Resource struct {
@@ -46,8 +43,7 @@ type Resource struct {
 	g8sClient versioned.Interface
 	logger    micrologger.Logger
 
-	azure           setting.Azure
-	templateVersion string
+	azure setting.Azure
 }
 
 func New(config Config) (*Resource, error) {
@@ -64,17 +60,13 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
-	}
 
 	r := &Resource{
 		debugger:  config.Debugger,
 		g8sClient: config.G8sClient,
 		logger:    config.Logger,
 
-		azure:           config.Azure,
-		templateVersion: config.TemplateVersion,
+		azure: config.Azure,
 	}
 
 	return r, nil

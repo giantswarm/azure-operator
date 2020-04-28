@@ -273,7 +273,7 @@ func installResources(ctx context.Context, config Config) error {
 		}
 	}
 
-	var sshUserList []providerv1alpha1.ClusterKubernetesSSHUser
+	sshUserList := []providerv1alpha1.ClusterKubernetesSSHUser{}
 	{
 		if env.SSHPublicKey() != "" {
 			sshUserList = []providerv1alpha1.ClusterKubernetesSSHUser{

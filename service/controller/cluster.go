@@ -65,7 +65,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			RegistryDomain:           config.RegistryDomain,
 			OIDC:                     config.OIDC,
 			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
 			VMSSCheckWorkers:         config.VMSSCheckWorkers,
 		}
 
