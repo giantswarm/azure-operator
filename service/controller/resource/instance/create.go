@@ -103,5 +103,5 @@ func isMasterUpgrading(cr providerv1alpha1.AzureConfig) bool {
 		}
 	}
 
-	return status == DeploymentCompleted
+	return status != DeploymentCompleted
 }
