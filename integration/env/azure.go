@@ -11,7 +11,7 @@ import (
 
 const (
 	DefaultAzureLocation             = "westeurope"
-	DefaultCommonDomainResourceGroup = "root_dns_zone_rg"
+	DefaultCommonDomainResourceGroup = "godsmack"
 
 	EnvVarAzureAZs  = "AZURE_AZS"
 	EnvVarAzureCIDR = "AZURE_CIDR"
