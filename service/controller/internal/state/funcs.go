@@ -22,6 +22,6 @@ func (m Machine) Execute(ctx context.Context, obj interface{}, currentState Stat
 		return newState, microerror.Maskf(executionFailedError, "State transition returned new unknown state: %q. Input state: %q", newState, currentState)
 	}
 
-	m.Logger.LogCtx(ctx,"resource", m.ResourceName, "message", "state changed", "oldState", currentState, "newState", newState)
+	m.Logger.LogCtx(ctx, "resource", m.ResourceName, "message", "state changed", "oldState", currentState, "newState", newState)
 	return newState, nil
 }

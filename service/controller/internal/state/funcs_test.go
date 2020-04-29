@@ -25,8 +25,10 @@ func Test_StateMachine(t *testing.T) {
 		{
 			name: "case 0: simple state transition",
 			machine: Machine{
-				OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return ClosedState, nil },
-				ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
+				Transitions: TransitionMap{
+					OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return ClosedState, nil },
+					ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
+				},
 			},
 			currentState:     OpenState,
 			expectedNewState: ClosedState,
@@ -35,8 +37,10 @@ func Test_StateMachine(t *testing.T) {
 		{
 			name: "case 1: unknown start state",
 			machine: Machine{
-				OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return ClosedState, nil },
-				ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
+				Transitions: TransitionMap{
+					OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return ClosedState, nil },
+					ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
+				},
 			},
 			currentState:     "half-way",
 			expectedNewState: "",
@@ -45,8 +49,10 @@ func Test_StateMachine(t *testing.T) {
 		{
 			name: "case 2: unknown new state",
 			machine: Machine{
-				OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "half-way", nil },
-				ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
+				Transitions: TransitionMap{
+					OpenState:   func(ctx context.Context, obj interface{}, currentState State) (State, error) { return "half-way", nil },
+					ClosedState: func(ctx context.Context, obj interface{}, currentState State) (State, error) { return OpenState, nil },
+				},
 			},
 			currentState:     OpenState,
 			expectedNewState: "half-way",

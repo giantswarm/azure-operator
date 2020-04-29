@@ -2,6 +2,7 @@ package state
 
 import (
 	"context"
+
 	"github.com/giantswarm/micrologger"
 )
 
