@@ -14,7 +14,7 @@ import (
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		Logger: r.logger,
+		Logger:       r.logger,
 		ResourceName: Name,
 		Transitions: state.TransitionMap{
 			Empty:                          r.emptyStateTransition,
