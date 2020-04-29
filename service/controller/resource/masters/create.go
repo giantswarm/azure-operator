@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/service/controller/key"
@@ -71,11 +70,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 	} else {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "no state change")
-	}
-
-	// We should wait and avoid further resources to reconciliate as long as the masters are not successfully deployed.
-	if newState != DeploymentCompleted {
-		reconciliationcanceledcontext.SetCanceled(ctx)
 	}
 
 	return nil

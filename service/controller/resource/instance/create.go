@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/service/controller/resource/masters"
 )
 
 // configureStateMachine configures and returns state machine that is driven by
@@ -46,6 +48,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	if isMasterUpgrading(cr) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		return nil
+	}
+
 	var newState state.State
 	var currentState state.State
 	{
@@ -77,4 +85,27 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	return nil
+}
+
+func isMasterUpgrading(cr providerv1alpha1.AzureConfig) bool {
+	var status string
+	{
+		for _, r := range cr.Status.Cluster.Resources {
+			if r.Name != masters.Name {
+				continue
+			}
+
+			for _, c := range r.Conditions {
+				if c.Type == Stage {
+					status = c.Status
+				}
+			}
+		}
+	}
+
+	if status == DeploymentCompleted {
+		return false
+	}
+
+	return true
 }
