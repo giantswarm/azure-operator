@@ -58,19 +58,19 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 
 	allMasterInstances, err := r.allInstances(ctx, cr, key.LegacyWorkerVMSSName)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	for _, instance := range allMasterInstances {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sending restart kubelet command to %s", *instance.Name))
 		runCommandFuture, err := vmssVMsClient.RunCommand(ctx, *group.Name, key.LegacyWorkerVMSSName(cr), *instance.InstanceID, runCommandInput)
 		if err != nil {
-			return currentState, microerror.Mask(err)
+			return "", microerror.Mask(err)
 		}
 
 		_, err = vmssVMsClient.RunCommandResponder(runCommandFuture.Response())
 		if err != nil {
-			return currentState, microerror.Mask(err)
+			return "", microerror.Mask(err)
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sent restart kubelet command to %s", *instance.Name))
