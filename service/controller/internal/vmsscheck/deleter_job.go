@@ -22,39 +22,39 @@ type deleterJob struct {
 	onFinished func()
 }
 
-func (gj *deleterJob) ID() string {
-	return gj.id
+func (dj *deleterJob) ID() string {
+	return dj.id
 }
 
-func (gj *deleterJob) Run() error {
+func (dj *deleterJob) Run() error {
 	// Still not the time to run the check
-	if !time.Now().After(gj.nextExecutionTime) {
+	if !time.Now().After(dj.nextExecutionTime) {
 		return nil
 	}
 
 	var err error
-	gj.allInstancesSucceeded, err = gj.deleteFailedInstances(gj.context, gj.resourceGroup, gj.vmss)
+	dj.allInstancesSucceeded, err = dj.deleteFailedInstances(dj.context, dj.resourceGroup, dj.vmss)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	gj.nextExecutionTime = time.Now().Add(10 * time.Second)
+	dj.nextExecutionTime = time.Now().Add(10 * time.Second)
 	return nil
 }
 
-func (gj *deleterJob) Finished() bool {
+func (dj *deleterJob) Finished() bool {
 	// If any of the VMSS instances are in Failed state, return false here.
-	if !gj.allInstancesSucceeded {
+	if !dj.allInstancesSucceeded {
 		return false
 	}
 
-	gj.onFinished()
+	dj.onFinished()
 	return true
 }
 
 // If any of the instances is not Succeeded, returns false.
 // It deletes instances that are in "Failed" state.
-func (gj *deleterJob) deleteFailedInstances(ctx context.Context, rg string, vmssName string) (bool, error) {
+func (dj *deleterJob) deleteFailedInstances(ctx context.Context, rg string, vmssName string) (bool, error) {
 	c, err := getVMsClient(ctx)
 	if err != nil {
 		return false, microerror.Mask(err)
@@ -71,19 +71,19 @@ func (gj *deleterJob) deleteFailedInstances(ctx context.Context, rg string, vmss
 	for iterator.NotDone() {
 		instance := iterator.Value()
 
-		gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState))
+		dj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState))
 
 		switch *instance.ProvisioningState {
 		case provisioningStateFailed:
 			// Reimage the instance.
-			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleting instance %s", *instance.Name))
+			dj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleting instance %s", *instance.Name))
 			_, err := c.Delete(ctx, rg, vmssName, *instance.InstanceID)
 			if err != nil {
-				gj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error deleting instance %s: %s", *instance.Name, err.Error()))
+				dj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error deleting instance %s: %s", *instance.Name, err.Error()))
 				return false, microerror.Mask(err)
 			}
 
-			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleted instance %s", *instance.Name))
+			dj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleted instance %s", *instance.Name))
 			allSucceeded = false
 		case provisioningStateSucceeded:
 			// OK to continue.
