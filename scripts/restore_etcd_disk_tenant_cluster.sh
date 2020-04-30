@@ -90,9 +90,18 @@ echo "Master node IP is '$master'"
 
 run_cmd_on_server "Stopping API server" $master "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true"
 
-echo -n "Waiting 10 seconds to ensure the api server goes down: "
-sleep 10
-echo "OK"
+# check if kubernetes api server is down
+chk="kubectl --request-timeout=10s --context=giantswarm-$cluster get no"
+a=$($chk 2>&1)
+status=$?
+while [ $status -eq 0 ]
+do
+  a=$($chk 2>&1)
+  status=$?
+  echo "API server is still UP"
+  sleep 1
+done
+echo "API server is down"
 
 run_cmd_on_server "Stopping Kubelet" $master "sudo systemctl stop k8s-kubelet"
 run_cmd_on_server "Stopping ETCD" $master "sudo systemctl stop etcd3"
