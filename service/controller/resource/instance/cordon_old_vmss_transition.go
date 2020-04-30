@@ -39,7 +39,7 @@ func (r *Resource) cordonOldVMSSTransition(ctx context.Context, obj interface{},
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 
 	// The legacy VMSS was found, check the scaling.
-        legacyVmssHasInstancesRunning := *vmss.Sku.Capacity > 0
+	legacyVmssHasInstancesRunning := *vmss.Sku.Capacity > 0
 	if legacyVmssHasInstancesRunning {
 		// The legacy VMSS has still instances running, cordon all of them.
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: cordoning those", key.LegacyWorkerVMSSName(cr), *vmss.Sku.Capacity)) // nolint: errcheck
