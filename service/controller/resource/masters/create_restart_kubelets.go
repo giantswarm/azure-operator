@@ -17,13 +17,12 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 	// Check if API server is up or wait.
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Checking if API server is up")
 	up, err := r.isApiServerUP(ctx)
-	if err != nil || !up {
-		msg := "API server is NOT up."
-		if err != nil {
-			msg = fmt.Sprintf("%s Original error was %s", msg, err.Error())
-		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", msg)
-
+	if err != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("API server is NOT up. Original error was %s", err.Error()))
+		return currentState, nil
+	}
+	if !up {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "API server is NOT up.")
 		return currentState, nil
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", "API server is up")
