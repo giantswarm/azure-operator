@@ -2,7 +2,6 @@ package template
 
 import (
 	"encoding/json"
-	"io/ioutil"
 
 	"github.com/giantswarm/microerror"
 	"github.com/markbates/pkger"
@@ -18,13 +17,9 @@ func GetARMTemplate() (map[string]interface{}, error) {
 	}
 	defer f.Close()
 
-	b, err := ioutil.ReadAll(f)
-	if err != nil {
+	d := json.NewDecoder(f)
+	if err := d.Decode(&contents); err != nil {
 		return contents, microerror.Mask(err)
-	}
-
-	if err := json.Unmarshal(b, &contents); err != nil {
-		return nil, err
 	}
 	return contents, microerror.Mask(err)
 }
