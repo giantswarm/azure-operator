@@ -19,7 +19,7 @@ const (
 func (r *Resource) blockAPICallsTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	workersRule := network.SecurityRule{
@@ -52,12 +52,12 @@ func (r *Resource) blockAPICallsTransition(ctx context.Context, obj interface{},
 
 	workerFound, err := r.ensureSecurityRule(ctx, key.ResourceGroupName(cr), key.WorkerSecurityGroupName(cr), temporarySecurityRuleName, workersRule)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	masterFound, err := r.ensureSecurityRule(ctx, key.ResourceGroupName(cr), key.MasterSecurityGroupName(cr), temporarySecurityRuleName, mastersRule)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return "", microerror.Mask(err)
 	}
 
 	if !masterFound || !workerFound {
