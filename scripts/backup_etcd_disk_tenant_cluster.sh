@@ -103,6 +103,9 @@ fi
 
 echo "Master node name is '$master'"
 
+echo "Removing master node from cluster"
+output="$(kubectl --context=giantswarm-$cluster delete node -l role=master 2>&1)"
+
 echo -n "Stopping API server: "
 output="$(opsctl ssh $installation $master --cmd "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true" 2>&1)"
 check_err $? "$output"

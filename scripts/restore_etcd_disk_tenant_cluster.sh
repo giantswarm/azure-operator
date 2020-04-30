@@ -66,7 +66,7 @@ fi
 echo "Master node IP is '$master'"
 
 echo -n "Stopping API server: "
-output="$(opsctl ssh $installation master1 --cmd "ssh $master \"sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true\"" 2>&1)"
+output="$(opsctl ssh $installation master1 --cmd "ssh -oStrictHostKeyChecking=no $master \"sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true\"" 2>&1)"
 check_err $? "$output"
 
 echo -n "Waiting 10 seconds to ensure the api server goes down: "
@@ -74,10 +74,10 @@ sleep 10
 echo "OK"
 
 echo -n "Stopping Kubelet: "
-output="$(opsctl ssh $installation master1 --cmd "ssh $master \"sudo systemctl stop k8s-kubelet\"" 2>&1)"
+output="$(opsctl ssh $installation master1 --cmd "ssh -oStrictHostKeyChecking=no $master \"sudo systemctl stop k8s-kubelet\"" 2>&1)"
 check_err $? "$output"
 echo -n "Stopping ETCD: "
-output="$(opsctl ssh $installation master1 --cmd "ssh $master \"sudo systemctl stop etcd3\"" 2>&1)"
+output="$(opsctl ssh $installation master1 --cmd "ssh -oStrictHostKeyChecking=no $master \"sudo systemctl stop etcd3\"" 2>&1)"
 check_err $? "$output"
 
 tar_filename="etcd-backup-$cluster.tar.gz"
@@ -94,21 +94,21 @@ echo "Archive copied correctly in $master:$remote_tar_path"
 set +e
 
 echo -n "Clearing etcd directory: "
-output="$(opsctl ssh $installation master1 --cmd "ssh $master \"sudo rm -rf /var/lib/etcd/*\"" 2>&1)"
+output="$(opsctl ssh $installation master1 --cmd "ssh -oStrictHostKeyChecking=no $master \"sudo rm -rf /var/lib/etcd/*\"" 2>&1)"
 check_err $? "$output"
 
 echo -n "Restoring archive to ETCD directory on $master: "
-output="$(opsctl ssh $installation master1 --cmd "ssh $master \"sudo tar -xf $remote_tar_path -C /var/lib/etcd/\"" 2>&1)"
+output="$(opsctl ssh $installation master1 --cmd "ssh -oStrictHostKeyChecking=no $master \"sudo tar -xf $remote_tar_path -C /var/lib/etcd/\"" 2>&1)"
 check_err $? "$output"
 
 echo -n "Starting API server: "
-output="$(opsctl ssh $installation master1 --cmd "ssh $master \"sudo mv /root/k8s-api-server.yaml /etc/kubernetes/manifests/ || true\"" 2>&1)"
+output="$(opsctl ssh $installation master1 --cmd "ssh -oStrictHostKeyChecking=no $master \"sudo mv /root/k8s-api-server.yaml /etc/kubernetes/manifests/ || true\"" 2>&1)"
 check_err $? "$output"
 
 set +e
 
 echo -n "Rebooting node: "
-output="$(opsctl ssh $installation master1 --cmd "ssh $master \"sudo reboot\"" 2>&1)"
+output="$(opsctl ssh $installation master1 --cmd "ssh -oStrictHostKeyChecking=no $master \"sudo reboot\"" 2>&1)"
 check_err $? "$output"
 
 cmd="opsctl update status -i $installation -p apis/provider.giantswarm.io/v1alpha1/namespaces/default/azureconfigs/${cluster}/status"
