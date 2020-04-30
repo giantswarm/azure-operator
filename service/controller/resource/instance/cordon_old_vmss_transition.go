@@ -32,9 +32,7 @@ func (r *Resource) cordonOldVMSSTransition(ctx context.Context, obj interface{},
 	// If the legacy VMSS still exists with at least one replica, we want to cordon its replicas.
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 	vmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
-	if IsScaleSetNotFound(err) {
-		return "", microerror.Mask(err)
-	} else if err != nil {
+	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
