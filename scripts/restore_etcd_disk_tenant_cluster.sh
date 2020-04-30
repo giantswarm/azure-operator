@@ -88,7 +88,7 @@ fi
 
 echo "Master node IP is '$master'"
 
-run_cmd_on_server "Stopping API server" $master "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root"
+run_cmd_on_server "Stopping API server" $master "sudo mv /etc/kubernetes/manifests/k8s-api-server.yaml /root || true"
 
 echo -n "Waiting 10 seconds to ensure the api server goes down: "
 sleep 10
@@ -105,7 +105,7 @@ set -e
 
 echo "Copying ETCD tar archive remotely: "
 opsctl scp $installation "$local_tar_path" master1:$remote_tar_path
-opsctl ssh $installation master1 --cmd "scp $remote_tar_path $master:$remote_tar_path"
+opsctl ssh $installation master1 --cmd "scp -oStrictHostKeyChecking=no $remote_tar_path $master:$remote_tar_path"
 echo "Archive copied correctly in $master:$remote_tar_path"
 
 run_cmd_on_server "Clearing etcd directory" $master "sudo rm -rf /var/lib/etcd/*"
