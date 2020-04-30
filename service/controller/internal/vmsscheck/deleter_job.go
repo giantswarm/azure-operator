@@ -77,22 +77,10 @@ func (gj *deleterJob) deleteFailedInstances(ctx context.Context, rg string, vmss
 		case provisioningStateFailed:
 			// Reimage the instance.
 			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleting instance %s", *instance.Name))
-
-			retries := 3
-			for retries > 0 {
-				_, err := c.Delete(ctx, rg, vmssName, *instance.InstanceID)
-				if err != nil {
-					gj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error deleting instance %s: %s", *instance.Name, err.Error()))
-					if retries == 0 {
-						return false, microerror.Mask(err)
-					}
-
-					retries = retries - 1
-					time.Sleep(5 * time.Second)
-					continue
-				}
-
-				break
+			_, err := c.Delete(ctx, rg, vmssName, *instance.InstanceID)
+			if err != nil {
+				gj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error deleting instance %s: %s", *instance.Name, err.Error()))
+				return false, microerror.Mask(err)
 			}
 
 			gj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleted instance %s", *instance.Name))
