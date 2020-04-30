@@ -31,20 +31,21 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 
 	// If the old VMSS is still present, we should skip this step.
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
-	vmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
+	legacyVmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
 	if IsScaleSetNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is not present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	if vmss != nil {
+	if legacyVmss != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 
 		// The legacy VMSS was found, check the scaling.
-		if *vmss.Sku.Capacity > 0 {
+		legacyVmssHasInstancesRunning := *legacyVmss.Sku.Capacity > 0
+		if legacyVmssHasInstancesRunning {
 			// The legacy VMSS has still instances running, skip scaling up.
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: skipping scale up", key.LegacyWorkerVMSSName(cr), *vmss.Sku.Capacity)) // nolint: errcheck
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: skipping scale up", key.LegacyWorkerVMSSName(cr), *legacyVmss.Sku.Capacity)) // nolint: errcheck
 			return CordonOldVMSS, nil
 		}
 
