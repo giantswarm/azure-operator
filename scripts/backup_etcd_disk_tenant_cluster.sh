@@ -117,7 +117,7 @@ echo "Archive copied correctly in $local_tar_path"
 set +e
 
 cmd="opsctl update status -i $installation -p apis/provider.giantswarm.io/v1alpha1/namespaces/default/azureconfigs/${cluster}/status"
-echo "The restore process is completed."
+echo "The backup process is completed."
 echo "You now have to set the 'masters' status field to 'DeallocateLegacyInstance'".
 echo "Do you want to run '$cmd' now?"
 read -p "Press enter to continue, ctrl+c to do it manually."
