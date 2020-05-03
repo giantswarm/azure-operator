@@ -44,20 +44,7 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		c := chartvalues.CertOperatorConfig{
-			CommonDomain:       env.CommonDomain(),
-			RegistryPullSecret: env.RegistryPullSecret(),
-			Vault: chartvalues.CertOperatorVault{
-				Token: env.VaultToken(),
-			},
-		}
-
-		values, err := chartvalues.NewCertOperator(c)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = config.Release.InstallOperator(ctx, key.CertOperatorReleaseName(), release.NewStableVersion(), values, corev1alpha1.NewCertConfigCRD())
+		err := installCertOperator(ctx, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -82,16 +69,7 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		c := chartvalues.NodeOperatorConfig{
-			RegistryPullSecret: env.RegistryPullSecret(),
-		}
-
-		values, err := chartvalues.NewNodeOperator(c)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = config.Release.InstallOperator(ctx, key.NodeOperatorReleaseName(), release.NewStableVersion(), values, corev1alpha1.NewDrainerConfigCRD())
+		err := installNodeOperator(ctx, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}

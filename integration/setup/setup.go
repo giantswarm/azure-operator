@@ -10,20 +10,18 @@ import (
 
 	appv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/appcatalog"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
-	"github.com/spf13/afero"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/helm/pkg/helm"
 
 	"github.com/giantswarm/azure-operator/v3/integration/env"
 	"github.com/giantswarm/azure-operator/v3/integration/key"
 	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
 
-const values = `
+const (
+	azureOperatorChartValues = `
 ---
 Installation:
   V1:
@@ -66,22 +64,7 @@ Installation:
                 uri:
                   version: %s
 `
-
-var (
-	latestOperatorRelease string
 )
-
-func init() {
-	fmt.Printf("calculating latest %#q release\n", project.Name())
-
-	var err error
-	latestOperatorRelease, err = appcatalog.GetLatestVersion(context.Background(), key.DefaultCatalogStorageURL(), project.Name())
-	if err != nil {
-		panic(fmt.Sprintln("cannot calculate latest operator release from app catalog"))
-	}
-
-	fmt.Printf("latest %#q release is %#q\n", project.Name(), latestOperatorRelease)
-}
 
 // WrapTestMain setup and teardown e2e testing environment.
 func WrapTestMain(m *testing.M, c Config) {
@@ -140,110 +123,27 @@ func Setup(ctx context.Context, c Config) error {
 	return nil
 }
 
-func GetLatestOperatorRelease() string {
-	return latestOperatorRelease
-}
-
 func installResources(ctx context.Context, config Config) error {
-	var err error
+	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
 
-	operatorTarballPath := env.OperatorHelmTarballPath()
-	if operatorTarballPath == "" {
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for tested version")
-
-		operatorVersion := fmt.Sprintf("%s-%s", latestOperatorRelease, env.CircleSHA())
-		operatorTarballURL, err := appcatalog.NewTarballURL(key.DefaultTestCatalogStorageURL(), project.Name(), operatorVersion)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for tested version is %#q", operatorTarballURL))
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for tested version")
-
-		operatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, operatorTarballURL)
+	{
+		err := installChartPackageBeingTested(ctx, config, renderedAzureOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for tested version is %#q", operatorTarballPath))
-
-	var latestReleasedOperatorTarballPath string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for latest release")
-
-		latestReleaseOperatorTarballURL, err := appcatalog.NewTarballURL(key.DefaultTestCatalogStorageURL(), project.Name(), latestOperatorRelease)
+		err := installLatestReleaseChartPackage(ctx, config, project.Name(), renderedAzureOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest release is %#q", latestReleaseOperatorTarballURL))
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for latest release")
-
-		latestReleasedOperatorTarballPath, err = config.HelmClient.PullChartTarball(ctx, latestReleaseOperatorTarballURL)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest release is %#q", latestReleasedOperatorTarballPath))
-	}
-
-	{
-		defer func() {
-			fs := afero.NewOsFs()
-			err := fs.Remove(operatorTarballPath)
-			if err != nil {
-				config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", operatorTarballPath), "stack", fmt.Sprintf("%#v", err))
-			}
-		}()
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q", project.Name()))
-
-		err = config.HelmClient.InstallReleaseFromTarball(ctx,
-			operatorTarballPath,
-			key.Namespace(),
-			helm.ReleaseName(key.ReleaseName()),
-			helm.ValueOverrides([]byte(fmt.Sprintf(values, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA()))),
-			helm.InstallWait(true))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q", project.Name()))
-	}
-
-	{
-		defer func() {
-			fs := afero.NewOsFs()
-			err := fs.Remove(latestReleasedOperatorTarballPath)
-			if err != nil {
-				config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", latestReleasedOperatorTarballPath), "stack", fmt.Sprintf("%#v", err))
-			}
-		}()
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q-%s", project.Name(), "latest-release"))
-
-		err = config.HelmClient.InstallReleaseFromTarball(ctx,
-			latestReleasedOperatorTarballPath,
-			key.Namespace(),
-			helm.ReleaseName(fmt.Sprintf("%s-%s", key.ReleaseName(), "latest-release")),
-			helm.ValueOverrides([]byte(fmt.Sprintf(values, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA()))),
-			helm.InstallWait(true))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q-%s", project.Name(), "latest-release"))
 	}
 
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring chart CRD exists")
 
-		// The operator will install the CRD on boot but we create chart CRs
-		// in the tests so this ensures the CRD is present.
-		err = config.K8sClients.CRDClient().EnsureCreated(ctx, appv1alpha1.NewChartCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, appv1alpha1.NewChartCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
