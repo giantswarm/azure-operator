@@ -9,6 +9,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add network policy.
+
+### Changed
+
+- Move containerPort values from deployment to `values.yaml`.
+
 ## [3.0.7] 2020-04-28
 
 ### Added
