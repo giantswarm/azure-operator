@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
@@ -148,6 +149,15 @@ func (r *Resource) getScaleSetsClient(ctx context.Context) (*compute.VirtualMach
 	}
 
 	return cc.AzureClientSet.VirtualMachineScaleSetsClient, nil
+}
+
+func (r *Resource) getSecurityRulesClient(ctx context.Context) (*network.SecurityRulesClient, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cc.AzureClientSet.SecurityRulesClient, nil
 }
 
 func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {

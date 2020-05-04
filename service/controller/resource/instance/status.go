@@ -17,15 +17,19 @@ const (
 	// States
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
 	CordonOldWorkers               = "CordonOldWorkers"
+	CordonOldVMSS                  = "CordonOldVMSS"
 	DeploymentUninitialized        = ""
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
+	DrainOldVMSS                   = "DrainOldVMSS"
 	DrainOldWorkerNodes            = "DrainOldWorkerNodes"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
 	ScaleUpWorkerVMSS              = "ScaleUpWorkerVMSS"
 	ScaleDownWorkerVMSS            = "ScaleDownWorkerVMSS"
+	TerminateOldVMSS               = "TerminateOldVMSS"
 	TerminateOldWorkerInstances    = "TerminateOldWorkerInstances"
 	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
+	WaitNewVMSSWorkers             = "WaitNewVMSSWorkers"
 )
 
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {

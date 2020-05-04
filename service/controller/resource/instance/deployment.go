@@ -35,6 +35,16 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		workerBlobName,
 	}
 
+	var distroVersion string
+	{
+		for _, component := range cc.Release.Components {
+			if component.Name == key.ContainerLinuxComponentName {
+				distroVersion = component.Version
+				break
+			}
+		}
+	}
+
 	for _, key := range cloudConfigURLs {
 		blobURL := cc.ContainerURL.NewBlockBlobURL(key)
 		_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
@@ -93,7 +103,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
-		"workerNodes":           vmss.GetWorkerNodesConfiguration(obj),
+		"workerNodes":           vmss.GetWorkerNodesConfiguration(obj, distroVersion),
 		"workerSubnetID":        cc.WorkerSubnetID,
 		"zones":                 key.AvailabilityZones(obj, location),
 	}

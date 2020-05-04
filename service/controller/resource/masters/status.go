@@ -13,13 +13,23 @@ const (
 	DeploymentParametersChecksum = "ParametersChecksum"
 
 	// States
+	BlockAPICalls                  = "BlockAPICalls"
+	CheckFlatcarMigrationNeeded    = "CheckFlatcarMigrationNeeded"
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
-	DeploymentUninitialized        = ""
+	DeallocateLegacyInstance       = "DeallocateLegacyInstance"
+	DeleteLegacyVMSS               = "DeleteLegacyVMSS"
+	DeploymentUninitialized        = "DeploymentUninitialized"
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
+	Empty                          = ""
+	ManualInterventionRequired     = "ManualInterventionRequired"
 	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
+	RestartKubeletOnWorkers        = "RestartKubeletOnWorkers"
+	UnblockAPICalls                = "UnblockAPICalls"
+	WaitForBackupConfirmation      = "WaitForBackupConfirmation"
 	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
+	WaitForRestore                 = "WaitForRestore"
 )
 
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {

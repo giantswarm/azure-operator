@@ -13,11 +13,11 @@ import (
 func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		return Empty, microerror.Mask(err)
 	}
 	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		return Empty, microerror.Mask(err)
 	}
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName)
@@ -27,7 +27,7 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		return Empty, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
@@ -41,7 +41,7 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 			// This indicates some kind of error in the deployment template and/or parameters.
 			// Restart state machine on the next loop to apply the deployment once again.
 			// (If the azure operator has been fixed/updated in the meantime that could lead to a fix).
-			return DeploymentUninitialized, nil
+			return Empty, nil
 		} else {
 			return currentState, nil
 		}

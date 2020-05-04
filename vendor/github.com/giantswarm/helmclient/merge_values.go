@@ -20,7 +20,7 @@ import (
 // See https://github.com/go-yaml/yaml/issues/139.
 //
 func MergeValues(destMap, srcMap map[string][]byte) (map[string]interface{}, error) {
-	result := map[string]interface{}{}
+	var result map[string]interface{}
 
 	destVals, err := processYAML(destMap)
 	if err != nil {
