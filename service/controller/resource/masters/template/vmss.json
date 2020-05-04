@@ -125,11 +125,6 @@
       "identity":{
         "type":"[if(parameters('vmssMSIEnabled'), 'systemAssigned', 'None')]"
       },
-      "plan": {
-        "name":"[parameters('vmssOsImageSKU')]",
-        "publisher":"[parameters('vmssOsImagePublisher')]",
-        "product":"[parameters('vmssOsImageOffer')]"
-      },
       "properties":{
         "overprovision":"[parameters('vmssOverprovision')]",
         "upgradePolicy":{
