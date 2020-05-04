@@ -9,6 +9,7 @@ import (
 	"time"
 
 	appv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1"
+	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
@@ -125,6 +126,10 @@ func Setup(ctx context.Context, c Config) error {
 
 func installResources(ctx context.Context, config Config) error {
 	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
+	version := env.VersionBundleVersion()
+	if env.TestDir() == "integration/test/update" {
+		version = GetLatestOperatorRelease()
+	}
 
 	{
 		err := installChartPackageBeingTested(ctx, config, renderedAzureOperatorChartValues)
@@ -149,6 +154,28 @@ func installResources(ctx context.Context, config Config) error {
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured chart CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, providerv1alpha1.NewAzureConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, v1alpha1.NewAzureClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureClusterConfig CRD exists")
 	}
 
 	{
@@ -186,10 +213,6 @@ func installResources(ctx context.Context, config Config) error {
 	}
 
 	{
-		version := env.VersionBundleVersion()
-		if env.TestDir() == "integration/test/update" {
-			version = GetLatestOperatorRelease()
-		}
 		azureConfig := &providerv1alpha1.AzureConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      env.ClusterID(),
@@ -283,6 +306,66 @@ func installResources(ctx context.Context, config Config) error {
 			},
 		}
 		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(azureConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		azureClusterConfig := &v1alpha1.AzureClusterConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      env.ClusterID(),
+				Namespace: "default",
+				Labels: map[string]string{
+					"giantswarm.io/cluster":                env.ClusterID(),
+					"azure-operator.giantswarm.io/version": version,
+					"release.giantswarm.io/version":        "1.0.0",
+				},
+			},
+			Spec: v1alpha1.AzureClusterConfigSpec{
+				Guest: v1alpha1.AzureClusterConfigSpecGuest{
+					ClusterGuestConfig: v1alpha1.ClusterGuestConfig{
+						AvailabilityZones: len(env.AzureAvailabilityZones()),
+						DNSZone:           ".k8s." + env.CommonDomain(),
+						ID:                env.ClusterID(),
+						Name:              env.ClusterID(),
+						Owner:             "giantswarm",
+						ReleaseVersion:    "1.0.0",
+						VersionBundles: []v1alpha1.ClusterGuestConfigVersionBundle{
+							{
+								Name:    "1.0.0",
+								Version: "1.0.0",
+							},
+						},
+					},
+					CredentialSecret: v1alpha1.AzureClusterConfigSpecGuestCredentialSecret{
+						Name:      "credential-default",
+						Namespace: "giantswarm",
+					},
+					Masters: []v1alpha1.AzureClusterConfigSpecGuestMaster{
+						{
+							AzureClusterConfigSpecGuestNode: v1alpha1.AzureClusterConfigSpecGuestNode{
+								ID:     "",
+								VMSize: "",
+							},
+						},
+					},
+					Workers: []v1alpha1.AzureClusterConfigSpecGuestWorker{
+						{
+							AzureClusterConfigSpecGuestNode: v1alpha1.AzureClusterConfigSpecGuestNode{
+								ID:     "",
+								VMSize: "",
+							},
+							Labels: map[string]string{
+								"some": "label",
+							},
+						},
+					},
+				},
+				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: version},
+			},
+		}
+		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(azureClusterConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}

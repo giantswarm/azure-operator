@@ -59,13 +59,6 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		err := ensureCertConfigsInstalled(ctx, env.ClusterID(), config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring drainerconfig CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewDrainerConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
