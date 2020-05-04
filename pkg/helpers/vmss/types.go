@@ -47,7 +47,7 @@ func NewNode(adminUsername string, adminSSHKeyData string, distroVersion string,
 // newNodeOSImage provides OS information for Container Linux
 func newNodeOSImageCoreOS(distroVersion string) NodeOSImage {
 	return NodeOSImage{
-		Offer:     "flatcar-container-linux",
+		Offer:     "flatcar-container-linux-free",
 		Publisher: "kinvolk",
 		SKU:       "stable",
 		Version:   distroVersion,
