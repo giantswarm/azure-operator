@@ -38,7 +38,7 @@ func NewInstanceWatchdog(config Config) (InstanceWatchdog, error) {
 }
 
 func (wd *concurrentInstanceWatchdog) GuardVMSS(ctx context.Context, resourceGroupName, vmssName string) {
-	jobID := vmssGuardName(resourceGroupName, vmssName)
+	jobID := vmssGuardName(resourceGroupName, vmssName, "reimage")
 	job := &guardJob{
 		id:                jobID,
 		resourceGroup:     resourceGroupName,
@@ -58,6 +58,27 @@ func (wd *concurrentInstanceWatchdog) GuardVMSS(ctx context.Context, resourceGro
 	wd.pool.EnqueueJob(job)
 }
 
-func vmssGuardName(resourceGroupName, vmssGuardName string) string {
-	return resourceGroupName + "/" + vmssGuardName
+func (wd *concurrentInstanceWatchdog) DeleteFailedVMSS(ctx context.Context, resourceGroupName, vmssName string) {
+	jobID := vmssGuardName(resourceGroupName, vmssName, "delete")
+	job := &deleterJob{
+		id:                jobID,
+		resourceGroup:     resourceGroupName,
+		vmss:              vmssName,
+		nextExecutionTime: time.Now().Add(60 * time.Second),
+		context:           ctx,
+		logger:            wd.logger,
+
+		onFinished: func() { wd.vmssGuards.Delete(jobID) },
+	}
+
+	_, exists := wd.vmssGuards.LoadOrStore(job.id, job)
+	if exists {
+		return
+	}
+
+	wd.pool.EnqueueJob(job)
+}
+
+func vmssGuardName(resourceGroupName, vmssGuardName string, suffix string) string {
+	return resourceGroupName + "/" + vmssGuardName + "/" + suffix
 }

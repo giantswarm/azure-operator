@@ -158,7 +158,7 @@
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"worker-vmss-deploy",
+      "name":"workers-vmss-deploy",
       "properties":{
         "mode":"incremental",
         "templateLink":{
@@ -176,7 +176,7 @@
             "value":"[parameters('GiantSwarmTags')]"
           },
           "vmssName":{
-            "value":"[concat(parameters('clusterID'), '-worker')]"
+            "value":"[concat(parameters('clusterID'), '-worker-', parameters('clusterID'))]"
           },
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"

@@ -176,7 +176,7 @@
             "value":"[parameters('GiantSwarmTags')]"
           },
           "vmssName":{
-            "value":"[concat(parameters('clusterID'), '-master')]"
+            "value":"[concat(parameters('clusterID'), '-master-', parameters('clusterID'))]"
           },
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"

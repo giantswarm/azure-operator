@@ -29,6 +29,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	//SecurityRulesClient manages networking rules in a security group.
+	SecurityRulesClient *network.SecurityRulesClient
 	//StorageAccountsClient manages blobs in storage containers.
 	StorageAccountsClient *storage.AccountsClient
 	// UsageClient is used to work with limits and quotas.
@@ -93,6 +95,10 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	securityGroupsClient, err := newSecurityGroupsClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	storageAccountsClient, err := newStorageAccountsClient(c)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -132,6 +138,7 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           groupsClient,
 		InterfacesClient:                       interfacesClient,
+		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  storageAccountsClient,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
@@ -201,6 +208,19 @@ func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error
 	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return &c, nil
+}
+
+func newSecurityGroupsClient(config *clientConfig) (*network.SecurityRulesClient, error) {
+	c := network.NewSecurityRulesClient(config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)

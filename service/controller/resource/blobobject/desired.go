@@ -2,17 +2,13 @@ package blobobject
 
 import (
 	"context"
-	"fmt"
 
-	"github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8scloudconfig/v_6_0_0"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/pkg/label"
 	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/service/controller/key"
@@ -27,16 +23,6 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
-	}
-
-	var release *v1alpha1.Release
-	{
-		releaseVersion := cr.Labels[label.ReleaseVersion]
-		releaseName := fmt.Sprintf("v%s", releaseVersion)
-		release, err = r.g8sClient.ReleaseV1alpha1().Releases().Get(releaseName, metav1.GetOptions{})
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
 	}
 
 	var clusterCerts certs.Cluster
@@ -63,7 +49,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData
 	{
-		versions, err := v_6_0_0.ExtractComponentVersions(release.Spec.Components)
+		versions, err := v_6_0_0.ExtractComponentVersions(cc.Release.Components)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
