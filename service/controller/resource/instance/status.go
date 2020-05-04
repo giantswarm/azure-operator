@@ -29,6 +29,7 @@ const (
 	TerminateOldVMSS               = "TerminateOldVMSS"
 	TerminateOldWorkerInstances    = "TerminateOldWorkerInstances"
 	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
+	WaitNewVMSSWorkers             = "WaitNewVMSSWorkers"
 )
 
 func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {

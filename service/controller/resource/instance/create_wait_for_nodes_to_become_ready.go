@@ -59,31 +59,35 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	return DrainOldWorkerNodes, nil
 }
 
-func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
+func countReadyNodes(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
-		return false, microerror.Mask(err)
+		return 0, microerror.Mask(err)
 	}
 
 	if cc.Client.TenantCluster.K8s == nil {
-		return false, clientNotFoundError
+		return 0, clientNotFoundError
 	}
 
 	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
-		return false, microerror.Mask(err)
+		return 0, microerror.Mask(err)
 	}
 
 	var numNodes int
 	for _, n := range nodeList.Items {
-		if nodeRoleMatchFunc(n) {
+		if nodeRoleMatchFunc(n) && isReady(n) {
 			numNodes++
-
-			if !isReady(n) {
-				// If there's even one node that is not ready, then wait.
-				return false, nil
-			}
 		}
+	}
+
+	return numNodes, nil
+}
+
+func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
+	numNodes, err := countReadyNodes(ctx, nodeRoleMatchFunc)
+	if err != nil {
+		return false, microerror.Mask(err)
 	}
 
 	// There must be at least one node registered for the cluster.

@@ -46,7 +46,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		if legacyVmssHasInstancesRunning {
 			// The legacy VMSS has still instances running, skip scaling up.
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: skipping scale up", key.LegacyWorkerVMSSName(cr), *legacyVmss.Sku.Capacity)) // nolint: errcheck
-			return CordonOldVMSS, nil
+			return WaitNewVMSSWorkers, nil
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has 0 instances", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
