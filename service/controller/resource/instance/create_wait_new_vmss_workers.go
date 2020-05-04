@@ -34,6 +34,11 @@ func (r *Resource) waitNewVMSSWorkersTransition(ctx context.Context, obj interfa
 		return "", microerror.Mask(err)
 	}
 
+	if numReadyNodes == 0 {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "There are no new VMSS workers ready. Waiting")
+		return currentState, nil
+	}
+
 	if int64(numReadyNodes) != *vmss.Sku.Capacity {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Found that only %d out of the expected %d workers from the new VMSS are ready. Waiting.", numReadyNodes, *vmss.Sku.Capacity))
 		return currentState, nil
