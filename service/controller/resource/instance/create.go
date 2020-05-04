@@ -23,6 +23,8 @@ func (r *Resource) configureStateMachine() {
 		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 		ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
 
+		WaitNewVMSSWorkers: r.waitNewVMSSWorkersTransition,
+
 		CordonOldVMSS:    r.cordonOldVMSSTransition,
 		CordonOldWorkers: r.cordonOldWorkersTransition,
 
