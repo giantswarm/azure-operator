@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"fmt"
 	"time"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -15,7 +16,10 @@ import (
 
 	"github.com/giantswarm/azure-operator/v3/integration/env"
 	"github.com/giantswarm/azure-operator/v3/integration/key"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
+
+const ReleaseName = "1.0.0"
 
 // common installs components required to run the operator.
 func common(ctx context.Context, config Config) error {
@@ -45,19 +49,100 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("giantswarm").Create(credentialDefault())
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	{
 		err := installCertOperator(ctx, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
+	{
+		err := installNodeOperator(ctx, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		err := createGSReleaseContainingOperatorVersion(ctx, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func installCertOperator(ctx context.Context, config Config) error {
+	certOperatorValues := `Installation:
+  V1:
+    Auth:
+      Vault:
+        Address: http://vault.default.svc.cluster.local:8200
+        Host: ""
+        CA:
+          TTL: 1440h
+        Certificate:
+          TTL: ""
+        Token:
+          TTL: ""
+        Version: ""
+    GiantSwarm:
+      CertOperator:
+        CRD:
+          LabelSelector: ""
+    Guest:
+      Calico:
+        CIDR: ""
+        Subnet: ""
+      Docker:
+        CIDR: ""
+      IPAM:
+        CIDRMask: ""
+        NetworkCIDR: ""
+        PrivateSubnetMask: ""
+        PublicSubnetMask: ""
+      Kubernetes:
+        API:
+          Auth:
+            Provider:
+              OIDC:
+                ClientID: ""
+                IssuerURL: ""
+                UsernameClaim: ""
+                GroupsClaim: ""
+          ClusterIPRange: ""
+          EndpointBase: k8s.%s
+        ClusterDomain: ""
+      SSH:
+        UserList: ""
+    Provider:
+      AWS:
+        Route53:
+          Enabled: false
+        S3AccessLogsExpiration: 0
+        TrustedAdvisor:
+          Enabled: false
+      Kind: ""
+    Secret:
+      CertOperator:
+        Service:
+          Vault:
+            Config:
+              Token: %s
+    Security:
+      RestrictAccess:
+        GuestAPI:
+          Public: false
+`
+	err := installLatestReleaseChartPackage(ctx, config, "cert-operator", fmt.Sprintf(certOperatorValues, env.CommonDomain(), env.VaultToken()))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func installNodeOperator(ctx context.Context, config Config) error {
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring drainerconfig CRD exists")
 
@@ -70,12 +155,43 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		err := installNodeOperator(ctx, config)
+		nodeOperatorValues := `Installation:
+  V1:
+    Registry:
+      Domain: quay.io
+`
+		err := installLatestReleaseChartPackage(ctx, config, "node-operator", nodeOperatorValues)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
+	return nil
+}
+
+func credentialDefault() *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "credential-default",
+			Namespace: "giantswarm",
+			Labels: map[string]string{
+				"app":                        "credentiald",
+				"giantswarm.io/managed-by":   "credentiald",
+				"giantswarm.io/organization": "giantswarm",
+				"giantswarm.io/service-type": "system",
+			},
+		},
+		Data: map[string][]byte{
+			"azure.azureoperator.clientid":       []byte(env.AzureClientID()),
+			"azure.azureoperator.clientsecret":   []byte(env.AzureClientSecret()),
+			"azure.azureoperator.subscriptionid": []byte(env.AzureSubscriptionID()),
+			"azure.azureoperator.tenantid":       []byte(env.AzureTenantID()),
+		},
+		Type: "Opaque",
+	}
+}
+
+func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config) error {
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release CRD exists")
 
@@ -99,10 +215,10 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", env.VersionBundleVersion())
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", fmt.Sprintf("v%s", ReleaseName))
 		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(&releasev1alpha1.Release{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      "v1.0.0",
+				Name:      fmt.Sprintf("v%s", ReleaseName),
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/managed-by": "release-operator",
@@ -113,8 +229,8 @@ func common(ctx context.Context, config Config) error {
 				Apps: []releasev1alpha1.ReleaseSpecApp{},
 				Components: []releasev1alpha1.ReleaseSpecComponent{
 					{
-						Name:    "azure-operator",
-						Version: env.VersionBundleVersion(),
+						Name:    project.Name(),
+						Version: project.Version(),
 					},
 					{
 						Name:    "calico",
@@ -144,30 +260,8 @@ func common(ctx context.Context, config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", env.VersionBundleVersion())
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", fmt.Sprintf("v%s", ReleaseName))
 	}
 
 	return nil
-}
-
-func credentialDefault() *corev1.Secret {
-	return &corev1.Secret{
-		ObjectMeta: metav1.ObjectMeta{
-			Name:      "credential-default",
-			Namespace: "giantswarm",
-			Labels: map[string]string{
-				"app":                        "credentiald",
-				"giantswarm.io/managed-by":   "credentiald",
-				"giantswarm.io/organization": "giantswarm",
-				"giantswarm.io/service-type": "system",
-			},
-		},
-		Data: map[string][]byte{
-			"azure.azureoperator.clientid":       []byte(env.AzureClientID()),
-			"azure.azureoperator.clientsecret":   []byte(env.AzureClientSecret()),
-			"azure.azureoperator.subscriptionid": []byte(env.AzureSubscriptionID()),
-			"azure.azureoperator.tenantid":       []byte(env.AzureTenantID()),
-		},
-		Type: "Opaque",
-	}
 }
