@@ -193,13 +193,13 @@ func installCertOperator(ctx context.Context, config Config) error {
         Service:
           Vault:
             Config:
-              Token: "token"
+              Token: %s
     Security:
       RestrictAccess:
         GuestAPI:
           Public: false
 `
-	err := installLatestReleaseChartPackage(ctx, config, "cert-operator", fmt.Sprintf(certOperatorValues, env.CommonDomain()))
+	err := installLatestReleaseChartPackage(ctx, config, "cert-operator", fmt.Sprintf(certOperatorValues, env.CommonDomain(), env.VaultToken()))
 	if err != nil {
 		return microerror.Mask(err)
 	}

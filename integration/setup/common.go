@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v3/integration/env"
@@ -38,6 +39,13 @@ func common(ctx context.Context, config Config) error {
 		}
 
 		err = config.Release.Install(ctx, key.VaultReleaseName(), release.NewStableVersion(), values, config.Release.Condition().PodExists(ctx, "default", "app=vault"))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("giantswarm").Create(credentialDefault())
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -147,4 +155,26 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	return nil
+}
+
+func credentialDefault() *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "credential-default",
+			Namespace: "giantswarm",
+			Labels: map[string]string{
+				"app":                        "credentiald",
+				"giantswarm.io/managed-by":   "credentiald",
+				"giantswarm.io/organization": "giantswarm",
+				"giantswarm.io/service-type": "system",
+			},
+		},
+		Data: map[string][]byte{
+			"azure.azureoperator.clientid":       []byte(env.AzureClientID()),
+			"azure.azureoperator.clientsecret":   []byte(env.AzureClientSecret()),
+			"azure.azureoperator.subscriptionid": []byte(env.AzureSubscriptionID()),
+			"azure.azureoperator.tenantid":       []byte(env.AzureTenantID()),
+		},
+		Type: "Opaque",
+	}
 }
