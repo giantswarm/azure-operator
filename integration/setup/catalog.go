@@ -39,35 +39,35 @@ func init() {
 	fmt.Printf("latest %#q release is %#q\n", project.Name(), latestOperatorRelease)
 }
 
-func pullLatestReleaseChartPackage(ctx context.Context, config Config, chartName string) (string, error) {
+func pullLatestChart(ctx context.Context, config Config, chartName string) (string, error) {
 	var err error
 
 	var latestRelease string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %s release version", chartName))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %#q release version", chartName))
 		latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("latest %s release is %s", chartName, latestRelease))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("latest %#q release is %#q", chartName, latestRelease))
 	}
 
 	var latestReleaseChartPackagePath string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("getting tarball URL for latest %s release", chartName))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("getting tarball URL for latest %#q release", chartName))
 		latestReleaseTarballURL, err := appcatalog.NewTarballURL(CatalogStorageURL, chartName, latestRelease)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest %s release is %s", chartName, latestReleaseTarballURL))
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for latest %s release", chartName))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest %#q release is %#q", chartName, latestReleaseTarballURL))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for latest %#q release", chartName))
 		latestReleaseChartPackagePath, err = config.HelmClient.PullChartTarball(ctx, latestReleaseTarballURL)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest %s release is %s", chartName, latestReleaseChartPackagePath))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest %#q release is %#q", chartName, latestReleaseChartPackagePath))
 	}
 
 	return latestReleaseChartPackagePath, err
@@ -92,7 +92,7 @@ func pullChartPackageUnderTest(ctx context.Context, config Config) (string, erro
 }
 
 func installLatestReleaseChartPackage(ctx context.Context, config Config, chartName, values string) error {
-	chartPackagePath, err := pullLatestReleaseChartPackage(ctx, config, chartName)
+	chartPackagePath, err := pullLatestChart(ctx, config, chartName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -118,11 +118,11 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 		fs := afero.NewOsFs()
 		err := fs.Remove(chartPackagePath)
 		if err != nil {
-			config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %s failed", chartPackagePath), "stack", fmt.Sprintf("%#v", err))
+			config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", chartPackagePath), "stack", fmt.Sprintf("%#v", err))
 		}
 	}()
 
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %s", releaseName))
+	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q", releaseName))
 	err := config.HelmClient.InstallReleaseFromTarball(ctx,
 		chartPackagePath,
 		key.Namespace(),
@@ -132,7 +132,7 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %s", releaseName))
+	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q", releaseName))
 
 	return err
 }
