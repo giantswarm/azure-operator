@@ -80,6 +80,17 @@ func provider(ctx context.Context, config Config) error {
 	}
 
 	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, providerv1alpha1.NewAzureConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig CRD exists")
+	}
+
+	{
 		err := installChartPackageBeingTested(ctx, config, renderedAzureOperatorChartValues)
 		if err != nil {
 			return microerror.Mask(err)
@@ -102,17 +113,6 @@ func provider(ctx context.Context, config Config) error {
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured chart CRD exists")
-	}
-
-	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
-
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, providerv1alpha1.NewAzureConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig CRD exists")
 	}
 
 	{
@@ -159,7 +159,7 @@ func provider(ctx context.Context, config Config) error {
 				Guest: v1alpha1.AzureClusterConfigSpecGuest{
 					ClusterGuestConfig: v1alpha1.ClusterGuestConfig{
 						AvailabilityZones: len(env.AzureAvailabilityZones()),
-						DNSZone:           ".k8s." + env.CommonDomain(),
+						DNSZone:           env.ClusterID() + ".k8s." + env.CommonDomain(),
 						ID:                env.ClusterID(),
 						Name:              env.ClusterID(),
 						Owner:             "giantswarm",
@@ -204,7 +204,7 @@ func provider(ctx context.Context, config Config) error {
 		}
 	}
 
-	var nodeSSHConfiguration providerv1alpha1.ClusterKubernetesSSH
+	nodeSSHConfiguration := providerv1alpha1.ClusterKubernetesSSH{UserList: []providerv1alpha1.ClusterKubernetesSSHUser{}}
 	{
 		if env.SSHPublicKey() != "" {
 			nodeSSHConfiguration = providerv1alpha1.ClusterKubernetesSSH{

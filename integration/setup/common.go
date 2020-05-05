@@ -92,11 +92,11 @@ func installCertOperator(ctx context.Context, config Config) error {
         Address: http://vault.default.svc.cluster.local:8200
         Host: ""
         CA:
-          TTL: 1440h
+          TTL: 720h
         Certificate:
-          TTL: ""
+          TTL: 24h
         Token:
-          TTL: ""
+          TTL: 24h
         Version: ""
     GiantSwarm:
       CertOperator:
@@ -191,7 +191,7 @@ Installation:
     Auth:
       Vault:
         Certificate:
-          TTL: 1440h
+          TTL: 48h
     GiantSwarm:
       Release:
         App:
