@@ -3,7 +3,6 @@ package setup
 import (
 	"context"
 	"fmt"
-	"net"
 	"time"
 
 	appv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1"
@@ -291,7 +290,7 @@ func provider(ctx context.Context, config Config) error {
 							SecurePort:     443,
 						},
 						CloudProvider: "azure",
-						DNS:           providerv1alpha1.ClusterKubernetesDNS{IP: net.IPv4(172, 31, 0, 10)},
+						DNS:           providerv1alpha1.ClusterKubernetesDNS{IP: "172.31.0.10"},
 						Domain:        "cluster.local",
 						IngressController: providerv1alpha1.ClusterKubernetesIngressController{
 							Domain:         "ingress." + env.ClusterID() + ".k8s." + env.CommonDomain(),

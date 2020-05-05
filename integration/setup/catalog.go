@@ -9,9 +9,9 @@ import (
 	"github.com/spf13/afero"
 	"k8s.io/helm/pkg/helm"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/key"
-	"github.com/giantswarm/azure-operator/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/key"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
 
 const (
