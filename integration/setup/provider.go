@@ -14,9 +14,9 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/key"
-	"github.com/giantswarm/azure-operator/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/key"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
 
 const (
@@ -68,15 +68,15 @@ Installation:
 // provider installs the operator and tenant cluster CR.
 func provider(ctx context.Context, config Config) error {
 	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
-	var version string
+	var operatorVersion string
 	{
-		// version is the link between an operator and a CustomResource.
-		// Operator with version `version` will only reconcile `CustomResources` labeled with `version`.
-		version = project.Version()
+		// `operatorVersion` is the link between an operator and a `CustomResource`.
+		// Operator with version `operatorVersion` will only reconcile `CustomResources` labeled with `operatorVersion`.
+		operatorVersion = project.Version()
 		if env.TestDir() == "integration/test/update" {
 			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
 			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
-			version = GetLatestOperatorRelease()
+			operatorVersion = GetLatestOperatorRelease()
 		}
 	}
 
@@ -117,17 +117,6 @@ func provider(ctx context.Context, config Config) error {
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
-
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, v1alpha1.NewAzureClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureClusterConfig CRD exists")
-	}
-
-	{
 		encryptionSecret := &v1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", key.TestAppReleaseName(), "encryption"),
@@ -156,6 +145,66 @@ func provider(ctx context.Context, config Config) error {
 		}
 	}
 
+	{
+		azureClusterConfig := &v1alpha1.AzureClusterConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      env.ClusterID(),
+				Namespace: "default",
+				Labels: map[string]string{
+					"giantswarm.io/cluster":                env.ClusterID(),
+					"azure-operator.giantswarm.io/version": operatorVersion,
+					"release.giantswarm.io/version":        ReleaseName,
+				},
+			},
+			Spec: v1alpha1.AzureClusterConfigSpec{
+				Guest: v1alpha1.AzureClusterConfigSpecGuest{
+					ClusterGuestConfig: v1alpha1.ClusterGuestConfig{
+						AvailabilityZones: len(env.AzureAvailabilityZones()),
+						DNSZone:           ".k8s." + env.CommonDomain(),
+						ID:                env.ClusterID(),
+						Name:              env.ClusterID(),
+						Owner:             "giantswarm",
+						ReleaseVersion:    ReleaseName,
+						VersionBundles: []v1alpha1.ClusterGuestConfigVersionBundle{
+							{
+								Name:    "cert-operator",
+								Version: "0.1.0",
+							},
+						},
+					},
+					CredentialSecret: v1alpha1.AzureClusterConfigSpecGuestCredentialSecret{
+						Name:      "credential-default",
+						Namespace: "giantswarm",
+					},
+					Masters: []v1alpha1.AzureClusterConfigSpecGuestMaster{
+						{
+							AzureClusterConfigSpecGuestNode: v1alpha1.AzureClusterConfigSpecGuestNode{
+								ID:     "",
+								VMSize: "",
+							},
+						},
+					},
+					Workers: []v1alpha1.AzureClusterConfigSpecGuestWorker{
+						{
+							AzureClusterConfigSpecGuestNode: v1alpha1.AzureClusterConfigSpecGuestNode{
+								ID:     "",
+								VMSize: "",
+							},
+							Labels: map[string]string{
+								"some": "label",
+							},
+						},
+					},
+				},
+				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: ClusterOperatorVersion},
+			},
+		}
+		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(azureClusterConfig)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var nodeSSHConfiguration providerv1alpha1.ClusterKubernetesSSH
 	{
 		if env.SSHPublicKey() != "" {
@@ -177,7 +226,7 @@ func provider(ctx context.Context, config Config) error {
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": version,
+					"azure-operator.giantswarm.io/version": operatorVersion,
 					"release.giantswarm.io/version":        ReleaseName,
 				},
 			},
@@ -237,7 +286,7 @@ func provider(ctx context.Context, config Config) error {
 					ID: env.ClusterID(),
 					Kubernetes: providerv1alpha1.ClusterKubernetes{
 						API: providerv1alpha1.ClusterKubernetesAPI{
-							ClusterIPRange: "172.31.0.0/16",
+							ClusterIPRange: ClusterIPRange,
 							Domain:         "api." + env.ClusterID() + ".k8s." + env.CommonDomain(),
 							SecurePort:     443,
 						},
@@ -253,77 +302,17 @@ func provider(ctx context.Context, config Config) error {
 						Kubelet: providerv1alpha1.ClusterKubernetesKubelet{
 							AltNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local",
 							Domain:   "worker." + env.ClusterID() + ".k8s." + env.CommonDomain(),
-							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + version,
+							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + operatorVersion,
 							Port:     10250,
 						},
 						NetworkSetup: providerv1alpha1.ClusterKubernetesNetworkSetup{Docker: providerv1alpha1.ClusterKubernetesNetworkSetupDocker{Image: "quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9"}},
 						SSH:          nodeSSHConfiguration,
 					},
 				},
-				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: version},
+				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: operatorVersion},
 			},
 		}
 		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(azureConfig)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	{
-		azureClusterConfig := &v1alpha1.AzureClusterConfig{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      env.ClusterID(),
-				Namespace: "default",
-				Labels: map[string]string{
-					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": version,
-					"release.giantswarm.io/version":        ReleaseName,
-				},
-			},
-			Spec: v1alpha1.AzureClusterConfigSpec{
-				Guest: v1alpha1.AzureClusterConfigSpecGuest{
-					ClusterGuestConfig: v1alpha1.ClusterGuestConfig{
-						AvailabilityZones: len(env.AzureAvailabilityZones()),
-						DNSZone:           ".k8s." + env.CommonDomain(),
-						ID:                env.ClusterID(),
-						Name:              env.ClusterID(),
-						Owner:             "giantswarm",
-						ReleaseVersion:    ReleaseName,
-						VersionBundles: []v1alpha1.ClusterGuestConfigVersionBundle{
-							{
-								Name:    ReleaseName,
-								Version: ReleaseName,
-							},
-						},
-					},
-					CredentialSecret: v1alpha1.AzureClusterConfigSpecGuestCredentialSecret{
-						Name:      "credential-default",
-						Namespace: "giantswarm",
-					},
-					Masters: []v1alpha1.AzureClusterConfigSpecGuestMaster{
-						{
-							AzureClusterConfigSpecGuestNode: v1alpha1.AzureClusterConfigSpecGuestNode{
-								ID:     "",
-								VMSize: "",
-							},
-						},
-					},
-					Workers: []v1alpha1.AzureClusterConfigSpecGuestWorker{
-						{
-							AzureClusterConfigSpecGuestNode: v1alpha1.AzureClusterConfigSpecGuestNode{
-								ID:     "",
-								VMSize: "",
-							},
-							Labels: map[string]string{
-								"some": "label",
-							},
-						},
-					},
-				},
-				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: version},
-			},
-		}
-		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(azureClusterConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}

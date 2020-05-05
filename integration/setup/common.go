@@ -19,7 +19,12 @@ import (
 	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
 
-const ReleaseName = "1.0.0"
+const (
+	ClusterIPRange = "172.31.0.0/16"
+	// We need this cluster-operator version until we use ClusterAPI.
+	ClusterOperatorVersion = "0.23.8"
+	ReleaseName            = "1.0.0"
+)
 
 // common installs components required to run the operator.
 func common(ctx context.Context, config Config) error {
@@ -57,6 +62,13 @@ func common(ctx context.Context, config Config) error {
 
 	{
 		err := installNodeOperator(ctx, config)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		err := installClusterOperator(ctx, config)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -110,7 +122,7 @@ func installCertOperator(ctx context.Context, config Config) error {
                 IssuerURL: ""
                 UsernameClaim: ""
                 GroupsClaim: ""
-          ClusterIPRange: ""
+          ClusterIPRange: %s
           EndpointBase: k8s.%s
         ClusterDomain: ""
       SSH:
@@ -134,7 +146,7 @@ func installCertOperator(ctx context.Context, config Config) error {
         GuestAPI:
           Public: false
 `
-	err := installLatestReleaseChartPackage(ctx, config, "cert-operator", fmt.Sprintf(certOperatorValues, env.CommonDomain(), env.VaultToken()))
+	err := installLatestReleaseChartPackage(ctx, config, "cert-operator", fmt.Sprintf(certOperatorValues, ClusterIPRange, env.CommonDomain(), env.VaultToken()))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -161,6 +173,98 @@ func installNodeOperator(ctx context.Context, config Config) error {
       Domain: quay.io
 `
 		err := installLatestReleaseChartPackage(ctx, config, "node-operator", nodeOperatorValues)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+// We can't install cluster-operator "normally" until we use ClusterAPI.
+func installClusterOperator(ctx context.Context, config Config) error {
+	chartName := "cluster-operator"
+	tarballURL := "https://giantswarm.github.com/control-plane-catalog/cluster-operator-0.23.8-1.tgz"
+	chartValues := `---
+Installation:
+  V1:
+    Auth:
+      Vault:
+        Certificate:
+          TTL: 1440h
+    GiantSwarm:
+      Release:
+        App:
+          Config:
+            Default: |
+              catalog: default
+              namespace: kube-system
+              useUpgradeForce: true
+            Override: |
+              chart-operator:
+                chart: chart-operator
+                namespace:  giantswarm
+    Guest:
+      Calico:
+        CIDR: %s
+        Subnet: %s
+      Kubernetes:
+        API:
+          ClusterIPRange: %s
+          EndpointBase: k8s.%s
+        ClusterDomain: ""
+    Provider:
+      Kind: "azure"
+    Registry:
+      Domain: quay.io
+    Secret:
+      Registry:
+        PullSecret:
+          DockerConfigJSON: '{ "auths": { "quay.io": { "auth": "Z2lhbnRzd2FybStnb2RzbWFjazo0MzQ3RTJRSVZaN1Y4TzNUOFk4UlhKNFZGTDU2WjUzQ0FaMEMyVjE1TldJQkNNRkxOUjZCUzRCM1FDMzNWUTk2", "email": "" }}}'
+`
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AWSClusterConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewAWSClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AWSClusterConfig CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewAzureClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureClusterConfig CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring KVMClusterConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewKVMClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured KVMClusterConfig CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest %s release is %s", chartName, tarballURL))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for latest %s release", chartName))
+		chartPackagePath, err := config.HelmClient.PullChartTarball(ctx, tarballURL)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest %s release is %s", chartName, chartPackagePath))
+		err = installChart(ctx, config, chartName, fmt.Sprintf(chartValues, env.AzureCalicoSubnetCIDR(), env.AzureCalicoSubnetCIDR(), ClusterIPRange, env.CommonDomain()), chartPackagePath)
 		if err != nil {
 			return microerror.Mask(err)
 		}
