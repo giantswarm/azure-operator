@@ -7,9 +7,9 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 func (r *Resource) waitNewVMSSWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

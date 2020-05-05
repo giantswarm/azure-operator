@@ -47,7 +47,7 @@ func (p *Pool) startWorker() {
 			if j != nil {
 				err := j.Run()
 				if err != nil {
-					p.logger.Log("level", "debug", "message", "job execution failed", "job_id", j.ID(), "stack", microerror.Stack(err)) // nolint: errcheck
+					p.logger.Log("level", "debug", "message", "job execution failed", "job_id", j.ID(), "stack", microerror.JSON(err)) // nolint: errcheck
 				} else {
 					if !j.Finished() {
 						p.EnqueueJob(j)

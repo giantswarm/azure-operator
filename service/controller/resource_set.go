@@ -19,31 +19,31 @@ import (
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/tenantcluster"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/internal/vmsscheck"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/resource/blobobject"
-	"github.com/giantswarm/azure-operator/service/controller/resource/containerurl"
-	"github.com/giantswarm/azure-operator/service/controller/resource/deployment"
-	"github.com/giantswarm/azure-operator/service/controller/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/service/controller/resource/encryptionkey"
-	"github.com/giantswarm/azure-operator/service/controller/resource/endpoints"
-	"github.com/giantswarm/azure-operator/service/controller/resource/instance"
-	"github.com/giantswarm/azure-operator/service/controller/resource/masters"
-	"github.com/giantswarm/azure-operator/service/controller/resource/namespace"
-	"github.com/giantswarm/azure-operator/service/controller/resource/release"
-	"github.com/giantswarm/azure-operator/service/controller/resource/resourcegroup"
-	"github.com/giantswarm/azure-operator/service/controller/resource/service"
-	"github.com/giantswarm/azure-operator/service/controller/resource/tenantclients"
-	"github.com/giantswarm/azure-operator/service/controller/resource/vpn"
-	"github.com/giantswarm/azure-operator/service/controller/resource/vpnconnection"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/credential"
-	"github.com/giantswarm/azure-operator/service/network"
+	"github.com/giantswarm/azure-operator/v3/client"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v3/service/controller/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/blobobject"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/containerurl"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/deployment"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/encryptionkey"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/endpoints"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/masters"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/namespace"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/release"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/service"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/tenantclients"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/vpn"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/vpnconnection"
+	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v3/service/credential"
+	"github.com/giantswarm/azure-operator/v3/service/network"
 )
 
 type ResourceSetConfig struct {
@@ -59,10 +59,7 @@ type ResourceSetConfig struct {
 	RegistryDomain           string
 	OIDC                     setting.OIDC
 	SSOPublicKey             string
-	// TemplateVersion is a git branch name to use to get Azure Resource
-	// Manager templates from.
-	TemplateVersion  string
-	VMSSCheckWorkers int
+	VMSSCheckWorkers         int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -244,8 +241,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			G8sClient: config.K8sClient.G8sClient(),
 			Logger:    config.Logger,
 
-			Azure:           config.Azure,
-			TemplateVersion: config.TemplateVersion,
+			Azure: config.Azure,
 		}
 
 		deploymentResource, err = deployment.New(c)
@@ -315,7 +311,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:            config.Azure,
 			InstanceWatchdog: iwd,
-			TemplateVersion:  config.TemplateVersion,
 		}
 
 		mastersResource, err = masters.New(c)
@@ -334,7 +329,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			Azure:            config.Azure,
 			InstanceWatchdog: iwd,
-			TemplateVersion:  config.TemplateVersion,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -385,8 +379,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			Debugger: newDebugger,
 			Logger:   config.Logger,
 
-			Azure:           config.Azure,
-			TemplateVersion: config.TemplateVersion,
+			Azure: config.Azure,
 		}
 
 		vpnResource, err = vpn.New(c)

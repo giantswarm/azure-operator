@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"log"
-	"net"
 	"os"
 	"testing"
 	"time"
@@ -19,9 +18,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/helm/pkg/helm"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/key"
-	"github.com/giantswarm/azure-operator/pkg/project"
+	"github.com/giantswarm/azure-operator/v3/integration/env"
+	"github.com/giantswarm/azure-operator/v3/integration/key"
+	"github.com/giantswarm/azure-operator/v3/pkg/project"
 )
 
 const values = `
@@ -274,7 +273,7 @@ func installResources(ctx context.Context, config Config) error {
 		}
 	}
 
-	var sshUserList []providerv1alpha1.ClusterKubernetesSSHUser
+	sshUserList := []providerv1alpha1.ClusterKubernetesSSHUser{}
 	{
 		if env.SSHPublicKey() != "" {
 			sshUserList = []providerv1alpha1.ClusterKubernetesSSHUser{
@@ -362,7 +361,7 @@ func installResources(ctx context.Context, config Config) error {
 							SecurePort:     443,
 						},
 						CloudProvider: "azure",
-						DNS:           providerv1alpha1.ClusterKubernetesDNS{IP: net.IPv4(172, 31, 0, 10)},
+						DNS:           providerv1alpha1.ClusterKubernetesDNS{IP: "172.31.0.10"},
 						Domain:        "cluster.local",
 						IngressController: providerv1alpha1.ClusterKubernetesIngressController{
 							Domain:         "ingress." + env.ClusterID() + ".k8s." + env.CommonDomain(),

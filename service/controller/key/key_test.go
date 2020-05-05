@@ -9,15 +9,6 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 )
 
-func Test_ARMTemplateURI(t *testing.T) {
-	uri := ARMTemplateURI("dev", "deployment", "worker.json")
-	euri := "https://raw.githubusercontent.com/giantswarm/azure-operator/dev/service/controller/resource/deployment/template/worker.json"
-
-	if uri != euri {
-		t.Errorf("expected '%s' got '%s'", euri, uri)
-	}
-}
-
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
 

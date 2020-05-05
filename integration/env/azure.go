@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/giantswarm/azure-operator/integration/network"
+	"github.com/giantswarm/azure-operator/v3/integration/network"
 )
 
 const (
 	DefaultAzureLocation             = "westeurope"
-	DefaultCommonDomainResourceGroup = "root_dns_zone_rg"
+	DefaultCommonDomainResourceGroup = "godsmack"
 
 	EnvVarAzureAZs  = "AZURE_AZS"
 	EnvVarAzureCIDR = "AZURE_CIDR"

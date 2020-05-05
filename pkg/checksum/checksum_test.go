@@ -3,70 +3,37 @@ package checksum
 import (
 	"encoding/base64"
 	"fmt"
-	"net/http"
-	"net/http/httptest"
 	"strconv"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 
-	"github.com/giantswarm/azure-operator/pkg/helpers/vmss"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/templates"
+	"github.com/giantswarm/azure-operator/v3/pkg/helpers/vmss"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/templates"
 )
 
 func Test_getDeploymentTemplateChecksum(t *testing.T) {
 	testCases := []struct {
-		name                string
-		templateLinkPresent bool
-		statusCode          int
-		responseBody        string
-		expectedChecksum    string
-		errorMatcher        func(err error) bool
+		name             string
+		template         map[string]interface{}
+		expectedChecksum string
+		errorMatcher     func(err error) bool
 	}{
 		{
-			name:                "case 0: Successful checksum calculation",
-			templateLinkPresent: true,
-			statusCode:          http.StatusOK,
-			responseBody:        `{"fake": "json string"}`,
-			expectedChecksum:    "0cfe91509c17c2a9f230cd117d90e837d948639c3a2d559cf1ef6ca6ae24ec79",
-		},
-		{
-			name:                "case 1: Missing template link",
-			templateLinkPresent: false,
-			expectedChecksum:    "",
-			errorMatcher:        IsNilTemplateLinkError,
-		},
-		{
-			name:                "case 2: Error downloading template from external URI",
-			templateLinkPresent: true,
-			expectedChecksum:    "",
-			statusCode:          http.StatusInternalServerError,
-			responseBody:        `{"error": "500 - Internal server error"}`,
-			errorMatcher:        IsUnableToGetTemplateError,
+			name:             "case 0: Successful checksum calculation",
+			template:         map[string]interface{}{"bob": "5"},
+			expectedChecksum: "8f3f86c9bc89affcd4eb86effad32055c6b9f575b53d44373e87cbff547b6e51",
 		},
 	}
 
 	for i, tc := range testCases {
 		t.Run(strconv.Itoa(i), func(t *testing.T) {
 			t.Log(tc.name)
-			ts := httptest.NewServer(http.HandlerFunc(func(w http.ResponseWriter, r *http.Request) {
-				w.Header().Set("Content-Type", "application/json")
-				w.WriteHeader(tc.statusCode)
-				_, _ = w.Write([]byte(tc.responseBody))
-			}))
-			defer ts.Close()
-
-			var templateLink *resources.TemplateLink
-			if tc.templateLinkPresent {
-				templateLink = &resources.TemplateLink{
-					URI: to.StringPtr(ts.URL),
-				}
-			}
 
 			properties := resources.DeploymentProperties{
-				TemplateLink: templateLink,
+				Template: tc.template,
 			}
 			deployment := resources.Deployment{
 				Properties: &properties,

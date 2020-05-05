@@ -7,7 +7,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 const (
@@ -80,7 +80,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 		}
 
-		deployment = r.newDeployment(cr, nil)
+		deployment, err = r.newDeployment(cr, nil)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	// Create/Update VPN Gateway deployment

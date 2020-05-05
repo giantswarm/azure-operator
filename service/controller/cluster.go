@@ -9,8 +9,8 @@ import (
 	"github.com/giantswarm/operatorkit/controller"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v3/client"
+	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
 )
 
 type ClusterConfig struct {
@@ -65,7 +65,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			RegistryDomain:           config.RegistryDomain,
 			OIDC:                     config.OIDC,
 			SSOPublicKey:             config.SSOPublicKey,
-			TemplateVersion:          config.TemplateVersion,
 			VMSSCheckWorkers:         config.VMSSCheckWorkers,
 		}
 
