@@ -35,6 +35,16 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		masterBlobName,
 	}
 
+	var distroVersion string
+	{
+		for _, component := range cc.Release.Components {
+			if component.Name == key.ContainerLinuxComponentName {
+				distroVersion = component.Version
+				break
+			}
+		}
+	}
+
 	for _, k := range cloudConfigURLs {
 		blobURL := cc.ContainerURL.NewBlockBlobURL(k)
 		_, err := blobURL.GetProperties(ctx, azblob.BlobAccessConditions{})
@@ -92,7 +102,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"clusterID":             key.ClusterID(obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
 		"masterCloudConfigData": masterCloudConfig,
-		"masterNodes":           vmss.GetMasterNodesConfiguration(obj),
+		"masterNodes":           vmss.GetMasterNodesConfiguration(obj, distroVersion),
 		"masterSubnetID":        cc.MasterSubnetID,
 		"vmssMSIEnabled":        r.azure.MSI.Enabled,
 		"zones":                 key.AvailabilityZones(obj, location),

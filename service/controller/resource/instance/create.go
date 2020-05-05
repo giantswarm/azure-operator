@@ -4,11 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/masters"
 )
 
 // configureStateMachine configures and returns state machine that is driven by
@@ -20,12 +22,22 @@ func (r *Resource) configureStateMachine() {
 		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
 		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 		ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
-		CordonOldWorkers:               r.cordonOldWorkersTransition,
-		WaitForWorkersToBecomeReady:    r.waitForWorkersToBecomeReadyTransition,
-		DrainOldWorkerNodes:            r.drainOldWorkerNodesTransition,
-		TerminateOldWorkerInstances:    r.terminateOldWorkersTransition,
-		ScaleDownWorkerVMSS:            r.scaleDownWorkerVMSSTransition,
-		DeploymentCompleted:            r.deploymentCompletedTransition,
+
+		WaitNewVMSSWorkers: r.waitNewVMSSWorkersTransition,
+
+		CordonOldVMSS:    r.cordonOldVMSSTransition,
+		CordonOldWorkers: r.cordonOldWorkersTransition,
+
+		WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
+
+		DrainOldVMSS:        r.drainOldVMSSTransition,
+		DrainOldWorkerNodes: r.drainOldWorkerNodesTransition,
+
+		TerminateOldVMSS:            r.terminateOldVmssTransition,
+		TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
+
+		ScaleDownWorkerVMSS: r.scaleDownWorkerVMSSTransition,
+		DeploymentCompleted: r.deploymentCompletedTransition,
 	}
 
 	r.stateMachine = sm
@@ -36,6 +48,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if isMasterUpgrading(cr) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		return nil
 	}
 
 	var newState state.State
@@ -69,4 +87,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	return nil
+}
+
+func isMasterUpgrading(cr providerv1alpha1.AzureConfig) bool {
+	var status string
+	{
+		for _, r := range cr.Status.Cluster.Resources {
+			if r.Name != masters.Name {
+				continue
+			}
+
+			for _, c := range r.Conditions {
+				if c.Type == Stage {
+					status = c.Status
+				}
+			}
+		}
+	}
+
+	return status != DeploymentCompleted
 }

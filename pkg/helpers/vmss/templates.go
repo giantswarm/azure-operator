@@ -25,18 +25,18 @@ func RenderCloudConfig(blobURL string, encryptionKey string, initialVector strin
 	return base64.StdEncoding.EncodeToString([]byte(cloudConfig)), nil
 }
 
-func GetMasterNodesConfiguration(obj providerv1alpha1.AzureConfig) []Node {
-	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Masters)
+func GetMasterNodesConfiguration(obj providerv1alpha1.AzureConfig, distroVersion string) []Node {
+	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), distroVersion, obj.Spec.Azure.Masters)
 }
 
-func GetWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig) []Node {
-	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), obj.Spec.Azure.Workers)
+func GetWorkerNodesConfiguration(obj providerv1alpha1.AzureConfig, distroVersion string) []Node {
+	return getNodesConfiguration(key.AdminUsername(obj), key.AdminSSHKeyData(obj), distroVersion, obj.Spec.Azure.Workers)
 }
 
-func getNodesConfiguration(adminUsername string, adminSSHKeyData string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []Node {
+func getNodesConfiguration(adminUsername string, adminSSHKeyData string, distroVersion string, nodesSpecs []providerv1alpha1.AzureConfigSpecAzureNode) []Node {
 	var nodes []Node
 	for _, m := range nodesSpecs {
-		n := NewNode(adminUsername, adminSSHKeyData, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
+		n := NewNode(adminUsername, adminSSHKeyData, distroVersion, m.VMSize, m.DockerVolumeSizeGB, m.KubeletVolumeSizeGB)
 		nodes = append(nodes, n)
 	}
 	return nodes

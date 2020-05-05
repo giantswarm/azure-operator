@@ -7,30 +7,29 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/to"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
-
 	"github.com/giantswarm/azure-operator/v3/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v3/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		return Empty, microerror.Mask(err)
 	}
 	deploymentsClient, err := r.getDeploymentsClient(ctx)
 	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		return Empty, microerror.Mask(err)
 	}
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
-		return DeploymentUninitialized, nil
+		return Empty, nil
 	} else if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		return Empty, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
@@ -71,7 +70,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 			if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 				// As current and desired state differs, start process from the beginning.
-				return DeploymentUninitialized, nil
+				return Empty, nil
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
@@ -80,12 +79,12 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		}
 	} else if key.IsFinalProvisioningState(s) {
 		// Deployment has failed. Restart from beginning.
-		return DeploymentUninitialized, nil
+		return Empty, nil
 	}
 
 	r.logger.LogCtx(ctx, "level", "warning", "message", "instances reconciliation process reached unexpected state")
 
 	// Normally the process should never get here. In case this happens, start
 	// from the beginning.
-	return DeploymentUninitialized, nil
+	return Empty, nil
 }

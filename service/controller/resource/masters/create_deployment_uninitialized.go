@@ -8,11 +8,10 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
-
 	"github.com/giantswarm/azure-operator/v3/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v3/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
@@ -95,6 +94,9 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
 		}
+
+		// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
+		r.instanceWatchdog.DeleteFailedVMSS(ctx, key.ResourceGroupName(cr), key.MasterVMSSName(cr))
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)

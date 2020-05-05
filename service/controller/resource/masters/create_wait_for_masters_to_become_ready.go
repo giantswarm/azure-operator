@@ -8,7 +8,6 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
-
 	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
 )
 

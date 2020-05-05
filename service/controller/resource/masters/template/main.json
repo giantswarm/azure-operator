@@ -283,6 +283,11 @@
               "identity":{
                 "type":"[if(parameters('vmssMSIEnabled'), 'systemAssigned', 'None')]"
               },
+              "plan": {
+                "name":"[parameters('vmssOsImageSKU')]",
+                "publisher":"[parameters('vmssOsImagePublisher')]",
+                "product":"[parameters('vmssOsImageOffer')]"
+              },
               "properties":{
                 "overprovision":"[parameters('vmssOverprovision')]",
                 "upgradePolicy":{
@@ -377,7 +382,7 @@
             "value":"[parameters('GiantSwarmTags')]"
           },
           "vmssName":{
-            "value":"[concat(parameters('clusterID'), '-master')]"
+            "value":"[concat(parameters('clusterID'), '-master-', parameters('clusterID'))]"
           },
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"

@@ -150,7 +150,7 @@
     {
       "apiVersion":"[variables('apiVersion')]",
       "type":"Microsoft.Resources/deployments",
-      "name":"worker-vmss-deploy",
+      "name":"workers-vmss-deploy",
       "properties":{
         "expressionEvaluationOptions":{
           "scope": "inner"
@@ -283,6 +283,11 @@
               "identity":{
                 "type":"[if(parameters('vmssMSIEnabled'), 'systemAssigned', 'None')]"
               },
+              "plan": {
+                "name":"[parameters('vmssOsImageSKU')]",
+                "publisher":"[parameters('vmssOsImagePublisher')]",
+                "product":"[parameters('vmssOsImageOffer')]"
+              },
               "properties":{
                 "overprovision":"[parameters('vmssOverprovision')]",
                 "upgradePolicy":{
@@ -377,7 +382,7 @@
             "value":"[parameters('GiantSwarmTags')]"
           },
           "vmssName":{
-            "value":"[concat(parameters('clusterID'), '-worker')]"
+            "value":"[concat(parameters('clusterID'), '-worker-', parameters('clusterID'))]"
           },
           "vmssMSIEnabled":{
             "value":"[parameters('vmssMSIEnabled')]"

@@ -51,7 +51,7 @@ const (
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
 
-	CoreosVersion = "2303.4.0"
+	ContainerLinuxComponentName = "containerlinux"
 )
 
 // Container image versions for k8scloudconfig.
@@ -286,7 +286,7 @@ func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-master-%06s", ClusterID(customObject), idB36)
+	return fmt.Sprintf("%s-master-%s-%06s", ClusterID(customObject), ClusterID(customObject), idB36)
 }
 
 // MasterNICName returns name of the master NIC.
@@ -294,8 +294,12 @@ func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(customObject))
 }
 
-func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
+func LegacyMasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master", ClusterID(customObject))
+}
+
+func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-master-%s", ClusterID(customObject), ClusterID(customObject))
 }
 
 func OperatorVersion(cr providerv1alpha1.AzureConfig) string {
@@ -495,7 +499,7 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
-func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
 		panic(err)
@@ -504,8 +508,21 @@ func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36)
 }
 
-func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
+func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+	idB36, err := vmssInstanceIDBase36(instanceID)
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(customObject), ClusterID(customObject), idB36)
+}
+
+func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-worker", ClusterID(customObject))
+}
+
+func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-worker-%s", ClusterID(customObject), ClusterID(customObject))
 }
 
 func vmssInstanceIDBase36(instanceID string) (string, error) {
