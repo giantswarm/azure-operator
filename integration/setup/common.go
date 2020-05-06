@@ -337,12 +337,24 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 						Version: project.Version(),
 					},
 					{
+						Name:    "cluster-operator",
+						Version: ClusterOperatorVersion,
+					},
+					{
+						Name:    "cert-operator",
+						Version: "0.1.0",
+					},
+					{
+						Name:    "app-operator",
+						Version: "1.0.0",
+					},
+					{
 						Name:    "calico",
 						Version: "3.10.1",
 					},
 					{
 						Name:    "containerlinux",
-						Version: "2345.3.0",
+						Version: "2345.3.1",
 					},
 					{
 						Name:    "coredns",
