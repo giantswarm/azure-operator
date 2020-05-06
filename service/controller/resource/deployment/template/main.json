@@ -74,7 +74,6 @@
     },
     "natGwZones": {
       "type":"array",
-      "defaultValue":[],
       "metadata":{
         "description":"The availability zones to deploy the nat gateway for workers to."
       }
@@ -714,7 +713,7 @@
                 "publicIPPrefixes": [],
                 "idleTimeoutInMinutes": 4
               },
-              "zones": "[if(greater(length(parameters('zones')),0), parameters('zones'), json('null'))]",
+              "zones": "[if(greater(length(parameters('natGwZones')),0), parameters('natGwZones'), json('null'))]",
               "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]"
               ]
@@ -731,7 +730,7 @@
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
           },
-          "zones":{
+          "natGwZones":{
             "value":"[parameters('natGwZones')]"
           }
         }
