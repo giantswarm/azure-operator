@@ -13,3 +13,5 @@ azure-operator-*.tgz
 integration/test/**/logs/*.txt
 
 scripts/*.tar.gz
+
+telepresence.log
