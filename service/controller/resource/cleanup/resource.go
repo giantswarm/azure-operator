@@ -123,5 +123,10 @@ func (r *Resource) getPublicIPAddressesClient(ctx context.Context) (*network.Pub
 }
 
 func (r *Resource) getLoadBalancersClient(ctx context.Context) (*network.LoadBalancersClient, error) {
-	return nil, nil
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cc.AzureClientSet.LoadBalancersClient, nil
 }
