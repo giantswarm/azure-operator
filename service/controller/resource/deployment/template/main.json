@@ -714,6 +714,7 @@
                 "publicIPPrefixes": [],
                 "idleTimeoutInMinutes": 4
               },
+              "zones": "[if(greater(length(parameters('zones')),0), parameters('zones'), json('null'))]",
               "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]"
               ]
