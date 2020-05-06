@@ -81,7 +81,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Dummy frontend configuration already delete from the ingress load balancer")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "Dummy frontend configuration already deleted from the ingress load balancer")
 
 	// Ensure the Public IP 'dummy-pip' is deleted.
 	publicIpClient, err := r.getPublicIPAddressesClient(ctx)
@@ -92,7 +92,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Checking if the dummy public IP address exists")
 	_, err = publicIpClient.Delete(ctx, key.ResourceGroupName(cr), key.DummyPublicIpName)
 	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "The dummy public IP address already deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "The dummy public IP address is already deleted")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
