@@ -20,4 +20,5 @@ spec:
     port: 443
   selector:
     k8s-app: nginx-ingress-controller
+  externalTrafficPolicy: Local
 `
