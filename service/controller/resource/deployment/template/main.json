@@ -713,7 +713,6 @@
                 "publicIPPrefixes": [],
                 "idleTimeoutInMinutes": 4
               },
-              "zones": "[if(greater(length(parameters('natGwZones')),0), parameters('natGwZones'), json('null'))]",
               "dependsOn": [
                 "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]"
               ]
