@@ -216,9 +216,6 @@
             "vmssVmCustomData":{
               "type":"securestring"
             },
-            "vmssLbBackendPools":{
-              "type":"array"
-            },
             "vmssVnetSubnetId":{
               "type":"string"
             },
