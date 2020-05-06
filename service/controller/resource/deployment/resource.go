@@ -312,15 +312,6 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	return s, nil
 }
 
-func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.GroupsClient, nil
-}
-
 func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, t string) (string, error) {
 	{
 		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})

@@ -71,12 +71,6 @@
       "metadata":{
         "description":"The DNS zones for kubernetes api and ingress."
       }
-    },
-    "natGwZones": {
-      "type":"array",
-      "metadata":{
-        "description":"The availability zones to deploy the nat gateway for workers to."
-      }
     }
   },
   "variables":{
@@ -667,9 +661,6 @@
               "defaultValue":{
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
-            },
-            "natGwZones": {
-              "type": "array"
             }
           },
           "variables":{
@@ -728,9 +719,6 @@
         "parameters":{
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "natGwZones":{
-            "value":"[parameters('natGwZones')]"
           }
         }
       }

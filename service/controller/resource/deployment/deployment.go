@@ -18,16 +18,6 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	groupsClient, err := r.getGroupsClient(ctx)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
-	group, err := groupsClient.Get(ctx, key.ClusterID(customObject))
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	defaultParams := map[string]interface{}{
 		"blobContainerName":       key.BlobContainerName(),
 		"calicoSubnetCidr":        cc.AzureNetwork.Calico.String(),
@@ -36,7 +26,6 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"hostClusterCidr":         r.azure.HostCluster.CIDR,
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
 		"masterSubnetCidr":        cc.AzureNetwork.Master.String(),
-		"natGwZones":              key.AvailabilityZones(customObject, *group.Location),
 		"storageAccountName":      key.StorageAccountName(customObject),
 		"virtualNetworkCidr":      key.VnetCIDR(customObject),
 		"virtualNetworkName":      key.VnetName(customObject),
