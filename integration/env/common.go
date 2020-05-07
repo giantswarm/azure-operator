@@ -16,7 +16,6 @@ const (
 
 	EnvVarCircleSHA               = "CIRCLE_SHA1" // #nosec
 	EnvVarKeepResources           = "KEEP_RESOURCES"
-	EnvVarRegistryPullSecret      = "REGISTRY_PULL_SECRET" // #nosec
 	EnvVarOperatorHelmTarballPath = "OPERATOR_HELM_TARBALL_PATH"
 	EnvVarTestedVersion           = "TESTED_VERSION"
 	EnvVarTestDir                 = "TEST_DIR"
@@ -26,7 +25,6 @@ const (
 var (
 	circleSHA            string
 	operatorTarballPath  string
-	registryPullSecret   string
 	testDir              string
 	testedVersion        string
 	keepResources        string
@@ -46,11 +44,6 @@ func init() {
 	if testedVersion == "" {
 		testedVersion = DefaultTestedVersion
 		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarTestedVersion, DefaultTestedVersion)
-	}
-
-	registryPullSecret = os.Getenv(EnvVarRegistryPullSecret)
-	if registryPullSecret == "" {
-		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarRegistryPullSecret))
 	}
 
 	testDir = os.Getenv(EnvVarTestDir)
@@ -106,10 +99,6 @@ func ClusterID() string {
 
 func KeepResources() string {
 	return keepResources
-}
-
-func RegistryPullSecret() string {
-	return registryPullSecret
 }
 
 func TestedVersion() string {
