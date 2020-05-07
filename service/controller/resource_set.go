@@ -27,7 +27,6 @@ import (
 	"github.com/giantswarm/azure-operator/v3/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/blobobject"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/cleanup"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/containerurl"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/deployment"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/dnsrecord"
@@ -235,18 +234,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var cleanupResource resource.Interface
-	{
-		c := cleanup.Config{
-			Logger: config.Logger,
-		}
-
-		cleanupResource, err = cleanup.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
@@ -438,7 +425,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		endpointsResource,
 		vpnResource,
 		vpnconnectionResource,
-		cleanupResource,
 	}
 
 	{
