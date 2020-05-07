@@ -29,10 +29,6 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
-	// LoadBalancersClient manages Load Balancers.
-	LoadBalancersClient *network.LoadBalancersClient
-	//PublicIPAddressesClient manages public IP addresses.
-	PublicIPAddressesClient *network.PublicIPAddressesClient
 	//SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
 	//StorageAccountsClient manages blobs in storage containers.
@@ -99,14 +95,6 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	loadBalancersClient, err := newLoadBalancersClient(c)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	publicIPAddressesClient, err := newPublicIPAddressesClient(c)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 	securityGroupsClient, err := newSecurityGroupsClient(c)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -150,8 +138,6 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           groupsClient,
 		InterfacesClient:                       interfacesClient,
-		LoadBalancersClient:                    loadBalancersClient,
-		PublicIPAddressesClient:                publicIPAddressesClient,
 		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  storageAccountsClient,
 		UsageClient:                            usageClient,
@@ -222,32 +208,6 @@ func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error
 	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
 	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
 	c.RetryAttempts = 1
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return &c, nil
-}
-
-func newLoadBalancersClient(config *clientConfig) (*network.LoadBalancersClient, error) {
-	c := network.NewLoadBalancersClient(config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return &c, nil
-}
-
-func newPublicIPAddressesClient(config *clientConfig) (*network.PublicIPAddressesClient, error) {
-	c := network.NewPublicIPAddressesClient(config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
 	err := c.AddToUserAgent(config.partnerIdUserAgent)
 	if err != nil {
 		return nil, microerror.Mask(err)
