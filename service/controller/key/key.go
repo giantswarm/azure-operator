@@ -238,13 +238,6 @@ func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureC
 	return customObject.Spec.Azure.DNSZones
 }
 
-func IngressLoadBalancerName(customObject providerv1alpha1.AzureConfig) string {
-	if IsInternalLB(customObject) {
-		return LBNameInternal
-	}
-	return LBNamePublic
-}
-
 func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {
 	return customObject.GetDeletionTimestamp() != nil
 }

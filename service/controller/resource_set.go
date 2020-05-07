@@ -235,18 +235,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var cleanupResource resource.Interface
-	{
-		c := cleanup.Config{
-			Logger: config.Logger,
-		}
-
-		cleanupResource, err = cleanup.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
@@ -438,7 +426,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		endpointsResource,
 		vpnResource,
 		vpnconnectionResource,
-		cleanupResource,
 	}
 
 	{
