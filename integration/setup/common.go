@@ -92,7 +92,7 @@ func installComponentsFromRelease(ctx context.Context, config Config, release re
 }
 
 func installCertOperator(ctx context.Context, config Config, version string) error {
-	chartName := "cluster-operator"
+	chartName := "cert-operator"
 	tarballURL := fmt.Sprintf("https://giantswarm.github.com/control-plane-catalog/%s-%s.tgz", chartName, version)
 	certOperatorValues := `Installation:
   V1:
@@ -200,7 +200,6 @@ func installNodeOperator(ctx context.Context, config Config) error {
 	return nil
 }
 
-// We can't install cluster-operator "normally" until we use ClusterAPI.
 func installClusterOperator(ctx context.Context, config Config, version string) error {
 	chartName := "cluster-operator"
 	tarballURL := fmt.Sprintf("https://giantswarm.github.com/control-plane-catalog/%s-%s.tgz", chartName, version)
@@ -275,14 +274,14 @@ Installation:
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest %s release is %s", chartName, tarballURL))
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for latest %s release", chartName))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for %#q release is %#q", chartName, tarballURL))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for %#q release", chartName))
 		chartPackagePath, err := config.HelmClient.PullChartTarball(ctx, tarballURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest %s release is %s", chartName, chartPackagePath))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for %#q release is %#q", chartName, chartPackagePath))
 		err = installChart(ctx, config, chartName, fmt.Sprintf(chartValues, env.AzureCalicoSubnetCIDR(), env.AzureCalicoSubnetCIDR(), ClusterIPRange, env.CommonDomain()), chartPackagePath)
 		if err != nil {
 			return microerror.Mask(err)
