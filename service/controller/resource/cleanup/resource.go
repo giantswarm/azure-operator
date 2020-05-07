@@ -51,7 +51,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Getting the ingress controller load balancer")
-	lb, err := loadBalancersClient.Get(ctx, key.ResourceGroupName(cr), key.IngressControllerLoadBalancerName, "")
+	lb, err := loadBalancersClient.Get(ctx, key.ResourceGroupName(cr), key.IngressLoadBalancerName(cr), "")
 	if err != nil {
 		return microerror.Mask(err)
 	}

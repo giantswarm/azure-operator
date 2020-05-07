@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v3/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 	"github.com/giantswarm/azure-operator/v3/service/controller/templates/ignition"
 )
 
@@ -140,6 +141,11 @@ type masterExtension struct {
 
 // Files allows files to be injected into the master cloudconfig.
 func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
+	lbTemplate := ignition.IngressLB
+	if key.IsInternalLB(me.customObject) {
+		lbTemplate = ignition.IngressInternalLB
+	}
+
 	filesMeta := []k8scloudconfig.FileMetadata{
 		{
 			AssetContent: ignition.CalicoAzureResources,
@@ -181,7 +187,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			Permissions: FilePermission,
 		},
 		{
-			AssetContent: ignition.IngressLB,
+			AssetContent: lbTemplate,
 			Path:         "/srv/k8s-ingress-loadbalancer.yaml",
 			Owner: k8scloudconfig.Owner{
 				Group: k8scloudconfig.Group{

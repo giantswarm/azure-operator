@@ -53,9 +53,11 @@ const (
 
 	ContainerLinuxComponentName = "containerlinux"
 
-	DummyPublicIpName                 = "dummy-pip"
-	DummyFrontendConfigurationName    = "dummy-frontend"
-	IngressControllerLoadBalancerName = "kubernetes"
+	DummyPublicIpName              = "dummy-pip"
+	DummyFrontendConfigurationName = "dummy-frontend"
+
+	LBNamePublic   = "kubernetes"
+	LBNameInternal = "kubernetes-internal"
 )
 
 // Container image versions for k8scloudconfig.
@@ -236,6 +238,13 @@ func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureC
 	return customObject.Spec.Azure.DNSZones
 }
 
+func IngressLoadBalancerName(customObject providerv1alpha1.AzureConfig) string {
+	if IsInternalLB(customObject) {
+		return LBNameInternal
+	}
+	return LBNamePublic
+}
+
 func IsDeleted(customObject providerv1alpha1.AzureConfig) bool {
 	return customObject.GetDeletionTimestamp() != nil
 }
@@ -253,6 +262,10 @@ func IsFailedProvisioningState(s string) bool {
 	}
 
 	return false
+}
+
+func IsInternalLB(customObject providerv1alpha1.AzureConfig) bool {
+	return customObject.Spec.Cluster.Kubernetes.IngressController.LoadBalancerType == providerv1alpha1.LoadBalancerTypeInternal
 }
 
 func IsSucceededProvisioningState(s string) bool {
