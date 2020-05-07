@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/k8scloudconfig/v6/v_6_0_0"
 	"github.com/giantswarm/microerror"
 
@@ -161,6 +162,16 @@ func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName str
 	return tags
 }
 
+// ComponentVersion returns the version of the given component in the Release.
+func ComponentVersion(release releasev1alpha1.Release, componentName string) (string, error) {
+	for _, component := range release.Spec.Components {
+		if component.Name == componentName {
+			return component.Version, nil
+		}
+	}
+	return "", microerror.Maskf(notFoundError, "version for component %#v not found on release %#v", componentName, release.Name)
+}
+
 // CredentialName returns name of the credential secret.
 func CredentialName(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.CredentialSecret.Name
@@ -258,6 +269,11 @@ func IsSucceededProvisioningState(s string) bool {
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
+}
+
+// OSVersion returns the version of the operating system.
+func OSVersion(release releasev1alpha1.Release) (string, error) {
+	return ComponentVersion(release, ContainerLinuxComponentName)
 }
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.

@@ -37,7 +37,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	cc.Release.Components = release.Spec.Components
+	cc.Release.Release = *release
 
 	return nil
 }
