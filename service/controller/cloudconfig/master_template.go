@@ -115,7 +115,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		}
 		params.ExtraManifests = []string{
 			"calico-azure.yaml",
-			"k8s-ingress-loadbalancer.yaml",
 		}
 		params.Debug = k8scloudconfig.Debug{
 			Enabled:    c.ignition.Debug,
@@ -170,19 +169,6 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		{
 			AssetContent: ignition.DefaultStorageClass,
 			Path:         "/srv/default-storage-class.yaml",
-			Owner: k8scloudconfig.Owner{
-				Group: k8scloudconfig.Group{
-					Name: FileOwnerGroupName,
-				},
-				User: k8scloudconfig.User{
-					Name: FileOwnerUserName,
-				},
-			},
-			Permissions: FilePermission,
-		},
-		{
-			AssetContent: ignition.IngressLB,
-			Path:         "/srv/k8s-ingress-loadbalancer.yaml",
 			Owner: k8scloudconfig.Owner{
 				Group: k8scloudconfig.Group{
 					Name: FileOwnerGroupName,
@@ -280,11 +266,6 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		{
 			AssetContent: ignition.KubeletMountUnit,
 			Name:         "var-lib-kubelet.mount",
-			Enabled:      true,
-		},
-		{
-			AssetContent: ignition.IngressLBUnit,
-			Name:         "ingress-lb.service",
 			Enabled:      true,
 		},
 		{
