@@ -27,7 +27,6 @@ import (
 	"github.com/giantswarm/azure-operator/v3/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/blobobject"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/cleanup"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/containerurl"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/deployment"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/dnsrecord"
