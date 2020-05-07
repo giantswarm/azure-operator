@@ -20,7 +20,7 @@ type Config struct {
 	Logger micrologger.Logger
 }
 
-// Resource manages Azure resource groups.
+// Resource cleans up unused Azure resources.
 type Resource struct {
 	logger micrologger.Logger
 }
