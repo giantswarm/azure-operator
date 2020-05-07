@@ -1,4 +1,4 @@
-package vpn
+package vnetpeering
 
 import (
 	"github.com/Azure/go-autorest/autorest"

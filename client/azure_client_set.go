@@ -22,9 +22,6 @@ const (
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
-	// The subscription ID this client set is configured with.
-	SubscriptionID string
-
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
@@ -35,6 +32,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	//PublicIPAddressesClient manages public IP addresses.
+	PublicIPAddressesClient *network.PublicIPAddressesClient
 	//SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
 	//StorageAccountsClient manages blobs in storage containers.
@@ -91,6 +90,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	publicIPAddressesClient, err := newPublicIPAddressesClient(c)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	storageAccountsClient, err := newStorageAccountsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -130,9 +133,9 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           groupsClient,
 		InterfacesClient:                       interfacesClient,
+		PublicIPAddressesClient:                publicIPAddressesClient,
 		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  storageAccountsClient,
-		SubscriptionID:                         subscriptionID,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
 		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
@@ -174,6 +177,27 @@ func newDNSZonesClient(authorizer autorest.Authorizer, subscriptionID, partnerID
 	return &client, nil
 }
 
+func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error) {
+	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c.RetryAttempts = 1
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return &c, nil
+}
+
+func newPublicIPAddressesClient(config *clientConfig) (*network.PublicIPAddressesClient, error) {
+	c := network.NewPublicIPAddressesClient(config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*resources.GroupsClient, error) {
 	client := resources.NewGroupsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)

@@ -259,6 +259,20 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var vnetPeeringResource resource.Interface
+	{
+		c := vnetpeering.Config{
+			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+			InstallationName:         config.InstallationName,
+			Logger:                   config.Logger,
+		}
+
+		vnetPeeringResource, err = vnetpeering.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
@@ -443,41 +457,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
-	var vpnResource resource.Interface
-	{
-		c := vpn.Config{
-			Debugger: newDebugger,
-			Logger:   config.Logger,
-
-			Azure: config.Azure,
-		}
-
-		vpnResource, err = vpn.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var vpnconnectionResource resource.Interface
-	{
-		c := vpnconnection.Config{
-			Azure:                                    config.Azure,
-			Logger:                                   config.Logger,
-			CPVirtualNetworkGatewaysClient:           *config.CPAzureClientSet.VirtualNetworkGatewaysClient,
-			CPVirtualNetworkGatewayConnectionsClient: *config.CPAzureClientSet.VirtualNetworkGatewayConnectionsClient,
-		}
-
-		ops, err := vpnconnection.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		vpnconnectionResource, err = toCRUDResource(config.Logger, ops)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	resources := []resource.Interface{
 		ipamResource,
 		statusResource,
@@ -490,12 +469,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		encryptionkeyResource,
 		blobObjectResource,
 		deploymentResource,
+		vnetPeeringResource,
 		dnsrecordResource,
 		mastersResource,
 		instanceResource,
 		endpointsResource,
-		vpnResource,
-		vpnconnectionResource,
 	}
 
 	{
