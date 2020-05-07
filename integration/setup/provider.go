@@ -8,6 +8,7 @@ import (
 	appv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
@@ -16,6 +17,7 @@ import (
 	"github.com/giantswarm/azure-operator/v3/integration/env"
 	"github.com/giantswarm/azure-operator/v3/integration/key"
 	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	key2 "github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 const (
@@ -65,7 +67,7 @@ Installation:
 )
 
 // provider installs the operator and tenant cluster CR.
-func provider(ctx context.Context, config Config) error {
+func provider(ctx context.Context, config Config, GiantSwarmRelease releasev1alpha1.Release) error {
 	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
 	var operatorVersion string
 	{
@@ -144,6 +146,11 @@ func provider(ctx context.Context, config Config) error {
 		}
 	}
 
+	clusterOperatorVersion, err := key2.ComponentVersion(GiantSwarmRelease, "cluster-operator")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	{
 		azureClusterConfig := &v1alpha1.AzureClusterConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -152,7 +159,7 @@ func provider(ctx context.Context, config Config) error {
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": operatorVersion,
-					"release.giantswarm.io/version":        ReleaseName,
+					"release.giantswarm.io/version":        GiantSwarmRelease.GetName(),
 				},
 			},
 			Spec: v1alpha1.AzureClusterConfigSpec{
@@ -163,7 +170,7 @@ func provider(ctx context.Context, config Config) error {
 						ID:                env.ClusterID(),
 						Name:              env.ClusterID(),
 						Owner:             "giantswarm",
-						ReleaseVersion:    ReleaseName,
+						ReleaseVersion:    GiantSwarmRelease.GetName(),
 						VersionBundles: []v1alpha1.ClusterGuestConfigVersionBundle{
 							{
 								Name:    "cert-operator",
@@ -195,7 +202,7 @@ func provider(ctx context.Context, config Config) error {
 						},
 					},
 				},
-				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: ClusterOperatorVersion},
+				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: clusterOperatorVersion},
 			},
 		}
 		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(azureClusterConfig)
@@ -226,7 +233,7 @@ func provider(ctx context.Context, config Config) error {
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": operatorVersion,
-					"release.giantswarm.io/version":        ReleaseName,
+					"release.giantswarm.io/version":        GiantSwarmRelease.GetName(),
 				},
 			},
 			Spec: providerv1alpha1.AzureConfigSpec{

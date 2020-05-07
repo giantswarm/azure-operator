@@ -16,18 +16,15 @@ import (
 
 	"github.com/giantswarm/azure-operator/v3/integration/env"
 	"github.com/giantswarm/azure-operator/v3/integration/key"
-	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	key2 "github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 const (
 	ClusterIPRange = "172.31.0.0/16"
-	// We need this cluster-operator version until we use ClusterAPI.
-	ClusterOperatorVersion = "0.23.8"
-	ReleaseName            = "1.0.0"
 )
 
 // common installs components required to run the operator.
-func common(ctx context.Context, config Config) error {
+func common(ctx context.Context, config Config, GiantSwarmRelease releasev1alpha1.Release) error {
 	{
 		err := config.K8s.EnsureNamespaceCreated(ctx, namespace)
 		if err != nil {
@@ -54,7 +51,7 @@ func common(ctx context.Context, config Config) error {
 	}
 
 	{
-		err := installCertOperator(ctx, config)
+		err := installComponentsFromRelease(ctx, config, GiantSwarmRelease)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -67,24 +64,36 @@ func common(ctx context.Context, config Config) error {
 		}
 	}
 
-	{
-		err := installClusterOperator(ctx, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	return nil
+}
+
+func installComponentsFromRelease(ctx context.Context, config Config, release releasev1alpha1.Release) error {
+	clusterOperatorVersion, err := key2.ComponentVersion(release, "cluster-operator")
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	{
-		err := createGSReleaseContainingOperatorVersion(ctx, config)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	err = installClusterOperator(ctx, config, clusterOperatorVersion)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	certOperatorVersion, err := key2.ComponentVersion(release, "cert-operator")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = installCertOperator(ctx, config, certOperatorVersion)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
 }
 
-func installCertOperator(ctx context.Context, config Config) error {
+func installCertOperator(ctx context.Context, config Config, version string) error {
+	chartName := "cluster-operator"
+	tarballURL := fmt.Sprintf("https://giantswarm.github.com/control-plane-catalog/%s-%s.tgz", chartName, version)
 	certOperatorValues := `Installation:
   V1:
     Auth:
@@ -146,9 +155,19 @@ func installCertOperator(ctx context.Context, config Config) error {
         GuestAPI:
           Public: false
 `
-	err := installLatestReleaseChartPackage(ctx, config, "cert-operator", fmt.Sprintf(certOperatorValues, ClusterIPRange, env.CommonDomain(), env.VaultToken()))
-	if err != nil {
-		return microerror.Mask(err)
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for %#q release is %#q", chartName, tarballURL))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for %#q release", chartName))
+		chartPackagePath, err := config.HelmClient.PullChartTarball(ctx, tarballURL)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for %#q release is %#q", chartName, chartPackagePath))
+		err = installChart(ctx, config, chartName, fmt.Sprintf(certOperatorValues, ClusterIPRange, env.CommonDomain(), env.VaultToken()), chartPackagePath)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
@@ -182,9 +201,9 @@ func installNodeOperator(ctx context.Context, config Config) error {
 }
 
 // We can't install cluster-operator "normally" until we use ClusterAPI.
-func installClusterOperator(ctx context.Context, config Config) error {
+func installClusterOperator(ctx context.Context, config Config, version string) error {
 	chartName := "cluster-operator"
-	tarballURL := "https://giantswarm.github.com/control-plane-catalog/cluster-operator-0.23.8-1.tgz"
+	tarballURL := fmt.Sprintf("https://giantswarm.github.com/control-plane-catalog/%s-%s.tgz", chartName, version)
 	chartValues := `---
 Installation:
   V1:
@@ -293,91 +312,4 @@ func credentialDefault() *corev1.Secret {
 		},
 		Type: "Opaque",
 	}
-}
-
-func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config) error {
-	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release CRD exists")
-
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, releasev1alpha1.NewReleaseCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release CRD exists")
-	}
-
-	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring ReleaseCycle CRD exists")
-
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, releasev1alpha1.NewReleaseCycleCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured ReleaseCycle CRD exists")
-	}
-
-	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", fmt.Sprintf("v%s", ReleaseName))
-		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(&releasev1alpha1.Release{
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("v%s", ReleaseName),
-				Namespace: "default",
-				Labels: map[string]string{
-					"giantswarm.io/managed-by": "release-operator",
-					"giantswarm.io/provider":   "azure",
-				},
-			},
-			Spec: releasev1alpha1.ReleaseSpec{
-				Apps: []releasev1alpha1.ReleaseSpecApp{},
-				Components: []releasev1alpha1.ReleaseSpecComponent{
-					{
-						Name:    project.Name(),
-						Version: project.Version(),
-					},
-					{
-						Name:    "cluster-operator",
-						Version: ClusterOperatorVersion,
-					},
-					{
-						Name:    "cert-operator",
-						Version: "0.1.0",
-					},
-					{
-						Name:    "app-operator",
-						Version: "1.0.0",
-					},
-					{
-						Name:    "calico",
-						Version: "3.10.1",
-					},
-					{
-						Name:    "containerlinux",
-						Version: "2345.3.1",
-					},
-					{
-						Name:    "coredns",
-						Version: "1.6.5",
-					},
-					{
-						Name:    "etcd",
-						Version: "3.3.17",
-					},
-					{
-						Name:    "kubernetes",
-						Version: "1.16.8",
-					},
-				},
-				Date:  &metav1.Time{Time: time.Unix(10, 0)},
-				State: "active",
-			},
-		})
-		if err != nil {
-			return microerror.Mask(err)
-		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", fmt.Sprintf("v%s", ReleaseName))
-	}
-
-	return nil
 }

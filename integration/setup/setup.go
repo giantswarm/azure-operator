@@ -40,12 +40,17 @@ func WrapTestMain(m *testing.M, c Config) {
 func Setup(ctx context.Context, c Config) error {
 	var err error
 
-	err = common(ctx, c)
+	release, err := createGSReleaseContainingOperatorVersion(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = provider(ctx, c)
+	err = common(ctx, c, *release)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = provider(ctx, c, *release)
 	if err != nil {
 		return microerror.Mask(err)
 	}
