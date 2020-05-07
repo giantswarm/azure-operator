@@ -60,7 +60,6 @@
   },
   "variables":{
     "apiVersion":"2017-08-01",
-    "kubernetesLBBackendID":"[concat(resourceId('Microsoft.Network/loadBalancers', 'kubernetes'), '/backendAddressPools/kubernetes')]",
     "vmssStandardLrsSize":[
       "Standard_A0",
       "Standard_A1",
@@ -217,9 +216,6 @@
             "vmssVmCustomData":{
               "type":"securestring"
             },
-            "vmssLbBackendPools":{
-              "type":"array"
-            },
             "vmssVnetSubnetId":{
               "type":"string"
             },
@@ -340,8 +336,7 @@
                               "properties":{
                                 "subnet":{
                                   "id":"[parameters('vmssVnetSubnetId')]"
-                                },
-                                "loadBalancerBackendAddressPools":"[parameters('vmssLbBackendPools')]"
+                                }
                               }
                             }
                           ]
@@ -443,13 +438,6 @@
           },
           "vmssVmCustomData":{
             "value":"[parameters('workerCloudConfigData')]"
-          },
-          "vmssLbBackendPools":{
-            "value":[
-              {
-                "id":"[variables('kubernetesLBBackendID')]"
-              }
-            ]
           },
           "vmssVnetSubnetId":{
             "value":"[parameters('workerSubnetID')]"
