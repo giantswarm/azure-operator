@@ -630,6 +630,101 @@
     },
     {
       "apiVersion":"2016-09-01",
+      "name":"workers_nat_gw",
+      "type":"Microsoft.Resources/deployments",
+      "dependsOn":[],
+      "properties":{
+        "expressionEvaluationOptions":{
+          "scope": "inner"
+        },
+        "mode":"incremental",
+        "template":{
+          "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "publicIPAddressesAPIVersion": {
+              "defaultValue": "2018-12-01",
+              "type": "String",
+              "metadata": {
+                "description": "API version used by the Microsoft.Network/publicIPAddresses resource."
+              }
+            },
+            "natGWApiVersion": {
+              "type": "string",
+              "defaultValue":"2019-09-01",
+              "metadata":{
+                "description":"API version used by the Microsoft.Network/natGateways resource."
+              }
+            },
+            "GiantSwarmTags":{
+              "type":"object",
+              "defaultValue":{
+                "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
+              }
+            }
+          },
+          "variables":{
+            "natGWName": "workers-nat-gw",
+            "publicIpName": "workers-nat-gw-ip"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
+              "name": "[variables('publicIpName')]",
+              "location": "[resourceGroup().location]",
+              "tags": {
+                "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+              },
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+              }
+            },
+            {
+              "apiVersion": "[parameters('natGWApiVersion')]",
+              "type": "Microsoft.Network/natGateways",
+              "name": "[variables('natGWName')]",
+              "location": "[resourceGroup().location]",
+              "tags": {
+                "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+              },
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAddresses": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+                  }
+                ],
+                "publicIPPrefixes": [],
+                "idleTimeoutInMinutes": 4
+              },
+              "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "workersNatGWID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/natGateways', variables('natGWName'))]"
+            }
+          }
+        },
+        "parameters":{
+          "GiantSwarmTags":{
+            "value":"[parameters('GiantSwarmTags')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
       "name":"virtual_network_setup",
       "type":"Microsoft.Resources/deployments",
       "dependsOn":[
@@ -683,6 +778,9 @@
             },
             "routeTableID":{
               "type":"string"
+            },
+            "workersNatGWID":{
+              "type":"string"
             }
           },
           "variables":{
@@ -724,6 +822,9 @@
                     "name":"[variables('workerSubnetName')]",
                     "properties":{
                       "addressPrefix":"[parameters('workerSubnetCidr')]",
+                      "natGateway": {
+                        "id":"[parameters('workersNatGWID')]"
+                      },
                       "networkSecurityGroup":{
                         "id":"[parameters('workerSecurityGroupID')]"
                       },
@@ -788,6 +889,9 @@
           },
           "masterSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"
+          },
+          "workersNatGWID":{
+            "value":"[reference('workers_nat_gw').outputs.workersNatGWID.value]"
           },
           "workerSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"
@@ -1134,82 +1238,6 @@
           },
           "masterSubnetID":{
             "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
-          }
-        }
-      }
-    },
-    {
-      "apiVersion":"2016-09-01",
-      "name":"kubernetes_load_balancer_setup",
-      "type":"Microsoft.Resources/deployments",
-      "properties":{
-        "expressionEvaluationOptions":{
-          "scope": "inner"
-        },
-        "mode":"incremental",
-        "template":{
-          "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-          "contentVersion":"1.0.0.0",
-          "parameters":{
-            "initialProvisioning":{
-              "type":"string",
-              "defaultValue":"Yes",
-              "metadata":{
-                "description":"Whether the deployment is provisioned the very first time."
-              }
-            }
-          },
-          "variables":{
-            "loadBalancerSkuName": "Standard"
-          },
-          "resources":[
-            {
-              "apiVersion":"2017-10-01",
-              "type":"Microsoft.Network/publicIPAddresses",
-              "name":"dummy-pip",
-              "sku": {
-                "name": "[variables('loadBalancerSkuName')]"
-              },
-              "location":"[resourceGroup().location]",
-              "properties":{
-                "publicIPAllocationMethod":"Static"
-              }
-            },
-            {
-              "apiVersion":"2017-10-01",
-              "name":"kubernetes",
-              "type":"Microsoft.Network/loadBalancers",
-              "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
-              "location":"[resourceGroup().location]",
-              "sku": {
-                "name": "[variables('loadBalancerSkuName')]"
-              },
-              "dependsOn":[
-                "[concat('Microsoft.Network/publicIPAddresses/', 'dummy-pip')]"
-              ],
-              "properties":{
-                "frontendIPConfigurations":[
-                  {
-                    "name":"dummy-frontend",
-                    "properties":{
-                      "publicIPAddress":{
-                        "id":"[resourceId('Microsoft.Network/publicIPAddresses', 'dummy-pip')]"
-                      }
-                    }
-                  }
-                ],
-                "backendAddressPools":[
-                  {
-                    "name":"kubernetes"
-                  }
-                ]
-              }
-            }
-          ]
-        },
-        "parameters":{
-          "initialProvisioning":{
-            "value":"[parameters('initialProvisioning')]"
           }
         }
       }
