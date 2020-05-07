@@ -52,12 +52,6 @@ const (
 	CertificateEncryptionIVName    = "encryptioniv"
 
 	ContainerLinuxComponentName = "containerlinux"
-
-	DummyPublicIpName              = "dummy-pip"
-	DummyFrontendConfigurationName = "dummy-frontend"
-
-	LBNamePublic   = "kubernetes"
-	LBNameInternal = "kubernetes-internal"
 )
 
 // Container image versions for k8scloudconfig.
