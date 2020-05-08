@@ -173,7 +173,7 @@ func (r *Resource) ensureVnetGatewayIsDeleted(ctx context.Context, cr v1alpha1.A
 			found = true
 		}
 
-		err = results.Next()
+		err = results.NextWithContext(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
