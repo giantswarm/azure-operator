@@ -273,7 +273,11 @@ func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 
 // OSVersion returns the version of the operating system.
 func OSVersion(release releasev1alpha1.Release) (string, error) {
-	return ComponentVersion(release, ContainerLinuxComponentName)
+	v, err := ComponentVersion(release, ContainerLinuxComponentName)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	return v, nil
 }
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.
