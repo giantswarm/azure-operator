@@ -17,7 +17,7 @@ const (
 	ProvisioningStateDeleting = "Deleting"
 )
 
-// This resource applies the ARM template for the worker instances, monitors the process and handles upgrades.
+// This resource manages the VNet peering between the control plane and tenant cluster.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
