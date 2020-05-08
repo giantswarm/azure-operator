@@ -7,7 +7,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v3/pkg/label"
 	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
@@ -24,20 +24,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	var release *v1alpha1.Release
+	var release v1alpha1.Release
 	{
 		releaseVersion := cr.Labels[label.ReleaseVersion]
 		if !strings.HasPrefix(releaseVersion, "v") {
 			releaseVersion = fmt.Sprintf("v%s", releaseVersion)
 		}
 
-		release, err = r.g8sClient.ReleaseV1alpha1().Releases().Get(releaseVersion, metav1.GetOptions{})
+		err = r.k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: "", Name: releaseVersion}, &release)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	cc.Release.Release = *release
+	cc.Release.Release = release
 
 	return nil
 }
