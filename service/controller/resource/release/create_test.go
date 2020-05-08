@@ -13,13 +13,14 @@ import (
 
 	"github.com/giantswarm/azure-operator/v3/pkg/project"
 	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/unittest"
 )
 
 func Test_Resource_Puts_Release_In_Context_When_Release_Has_Leading_V(t *testing.T) {
 	ctx := context.Background()
 	ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
 
-	client := FakeK8sClient()
+	client := unittest.FakeK8sClient()
 
 	config := Config{
 		K8sClient: client,
@@ -57,7 +58,7 @@ func Test_Resource_Puts_Release_In_Context_When_Release_Has_Not_Leading_V(t *tes
 	ctx := context.Background()
 	ctx = controllercontext.NewContext(ctx, controllercontext.Context{})
 
-	client := FakeK8sClient()
+	client := unittest.FakeK8sClient()
 
 	config := Config{
 		K8sClient: client,

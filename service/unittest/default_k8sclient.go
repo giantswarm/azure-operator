@@ -1,4 +1,4 @@
-package release
+package unittest
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
