@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/to"
 
 	"github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
@@ -193,14 +194,12 @@ func (r *Resource) ensureVnetGatewayIsDeleted(ctx context.Context, cr v1alpha1.A
 }
 
 func (r *Resource) getCPVnetPeering(vnetId string) network.VirtualNetworkPeering {
-	t := true
-	f := false
 	peering := network.VirtualNetworkPeering{
 		VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
-			AllowVirtualNetworkAccess: &t,
-			AllowForwardedTraffic:     &f,
-			AllowGatewayTransit:       &f,
-			UseRemoteGateways:         &f,
+			AllowVirtualNetworkAccess: to.BoolP(true),
+			AllowForwardedTraffic:     to.BoolP(false),
+			AllowGatewayTransit:       to.BoolP(false),
+			UseRemoteGateways:         to.BoolP(false),
 			RemoteVirtualNetwork: &network.SubResource{
 				ID: &vnetId,
 			},
@@ -211,14 +210,12 @@ func (r *Resource) getCPVnetPeering(vnetId string) network.VirtualNetworkPeering
 }
 
 func (r *Resource) getTCVnetPeering(vnetId string) network.VirtualNetworkPeering {
-	t := true
-	f := false
 	peering := network.VirtualNetworkPeering{
 		VirtualNetworkPeeringPropertiesFormat: &network.VirtualNetworkPeeringPropertiesFormat{
-			AllowVirtualNetworkAccess: &t,
-			AllowForwardedTraffic:     &f,
-			AllowGatewayTransit:       &f,
-			UseRemoteGateways:         &f,
+			AllowVirtualNetworkAccess: to.BoolP(true),
+			AllowForwardedTraffic:     to.BoolP(false),
+			AllowGatewayTransit:       to.BoolP(false),
+			UseRemoteGateways:         to.BoolP(false),
 			RemoteVirtualNetwork: &network.SubResource{
 				ID: &vnetId,
 			},
