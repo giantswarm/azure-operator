@@ -49,7 +49,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData
 	{
-		versions, err := v_6_0_0.ExtractComponentVersions(cc.Release.Components)
+		versions, err := v_6_0_0.ExtractComponentVersions(cc.Release.Release.Spec.Components)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
