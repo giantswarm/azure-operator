@@ -3,6 +3,7 @@ package release
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -26,8 +27,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var release *v1alpha1.Release
 	{
 		releaseVersion := cr.Labels[label.ReleaseVersion]
-		releaseName := fmt.Sprintf("v%s", releaseVersion)
-		release, err = r.g8sClient.ReleaseV1alpha1().Releases().Get(releaseName, metav1.GetOptions{})
+		if !strings.HasPrefix(releaseVersion, "v") {
+			releaseVersion = fmt.Sprintf("v%s", releaseVersion)
+		}
+
+		release, err = r.g8sClient.ReleaseV1alpha1().Releases().Get(releaseVersion, metav1.GetOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
