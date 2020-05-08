@@ -24,7 +24,7 @@ const (
 )
 
 // common installs components required to run the operator.
-func common(ctx context.Context, config Config, GiantSwarmRelease releasev1alpha1.Release) error {
+func common(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
 	{
 		err := config.K8s.EnsureNamespaceCreated(ctx, namespace)
 		if err != nil {
@@ -51,7 +51,7 @@ func common(ctx context.Context, config Config, GiantSwarmRelease releasev1alpha
 	}
 
 	{
-		err := installComponentsFromRelease(ctx, config, GiantSwarmRelease)
+		err := installComponentsFromRelease(ctx, config, giantSwarmRelease)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -67,8 +67,8 @@ func common(ctx context.Context, config Config, GiantSwarmRelease releasev1alpha
 	return nil
 }
 
-func installComponentsFromRelease(ctx context.Context, config Config, release releasev1alpha1.Release) error {
-	clusterOperatorVersion, err := key2.ComponentVersion(release, "cluster-operator")
+func installComponentsFromRelease(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
+	clusterOperatorVersion, err := key2.ComponentVersion(giantSwarmRelease, "cluster-operator")
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -78,7 +78,7 @@ func installComponentsFromRelease(ctx context.Context, config Config, release re
 		return microerror.Mask(err)
 	}
 
-	certOperatorVersion, err := key2.ComponentVersion(release, "cert-operator")
+	certOperatorVersion, err := key2.ComponentVersion(giantSwarmRelease, "cert-operator")
 	if err != nil {
 		return microerror.Mask(err)
 	}

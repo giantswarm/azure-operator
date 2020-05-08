@@ -2,7 +2,6 @@ package setup
 
 import (
 	"context"
-	"fmt"
 	"time"
 
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
@@ -14,7 +13,7 @@ import (
 )
 
 const (
-	ReleaseName = "1.0.0"
+	ReleaseName = "v1.0.0"
 )
 
 func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config) (*releasev1alpha1.Release, error) {
@@ -42,10 +41,10 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 
 	var release *releasev1alpha1.Release
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", fmt.Sprintf("v%s", ReleaseName))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", ReleaseName)
 		release = &releasev1alpha1.Release{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("v%s", ReleaseName),
+				Name:      ReleaseName,
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/managed-by": "release-operator",
@@ -100,7 +99,7 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 		if err != nil {
 			return &releasev1alpha1.Release{}, microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", fmt.Sprintf("v%s", ReleaseName))
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", ReleaseName)
 	}
 
 	return release, nil

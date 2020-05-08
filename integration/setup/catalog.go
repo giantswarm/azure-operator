@@ -109,8 +109,8 @@ func installChartPackageBeingTested(ctx context.Context, config Config, values s
 		}
 	}
 
-	releaseName := fmt.Sprintf("%s-wip", project.Name())
-	return installChart(ctx, config, releaseName, values, chartPackagePath)
+	helmReleaseName := fmt.Sprintf("%s-wip", project.Name())
+	return installChart(ctx, config, helmReleaseName, values, chartPackagePath)
 }
 
 func installChart(ctx context.Context, config Config, releaseName, values, chartPackagePath string) error {
