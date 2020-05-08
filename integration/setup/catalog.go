@@ -15,8 +15,8 @@ import (
 )
 
 const (
-	CatalogStorageURL     = "https://giantswarm.github.io/control-plane-catalog/"
-	TestCatalogStorageURL = "https://giantswarm.github.io/control-plane-test-catalog/"
+	CatalogStorageURL     = "https://giantswarm.github.io/control-plane-catalog"
+	TestCatalogStorageURL = "https://giantswarm.github.io/control-plane-test-catalog"
 )
 
 var (
