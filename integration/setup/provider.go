@@ -69,7 +69,7 @@ Installation:
 
 // provider installs the operator and tenant cluster CR.
 func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
-	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
+	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
 
