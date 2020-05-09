@@ -5,7 +5,11 @@ image:
   name: "giantswarm/azure-operator"
   tag: "[[ .Version ]]"
 Installation:
-  V1:
+  Provider:
+    Azure:
+      Location: westeurope
+      MSI:
+        Enabled: true
     Registry:
       Domain: quay.io
 pod:
