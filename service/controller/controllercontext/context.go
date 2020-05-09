@@ -30,7 +30,7 @@ type Context struct {
 }
 
 type ContextRelease struct {
-	Components []v1alpha1.ReleaseSpecComponent
+	Release v1alpha1.Release
 }
 
 func (c *Context) Validate() error {

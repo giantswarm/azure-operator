@@ -35,14 +35,9 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		workerBlobName,
 	}
 
-	var distroVersion string
-	{
-		for _, component := range cc.Release.Components {
-			if component.Name == key.ContainerLinuxComponentName {
-				distroVersion = component.Version
-				break
-			}
-		}
+	distroVersion, err := key.OSVersion(cc.Release.Release)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	for _, key := range cloudConfigURLs {

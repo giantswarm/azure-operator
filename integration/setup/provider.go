@@ -3,11 +3,13 @@ package setup
 import (
 	"context"
 	"fmt"
+	"strings"
 	"time"
 
 	appv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
@@ -16,6 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/v3/integration/env"
 	"github.com/giantswarm/azure-operator/v3/integration/key"
 	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	key2 "github.com/giantswarm/azure-operator/v3/service/controller/key"
 )
 
 const (
@@ -65,20 +68,8 @@ Installation:
 )
 
 // provider installs the operator and tenant cluster CR.
-func provider(ctx context.Context, config Config) error {
+func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
 	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
-	var operatorVersion string
-	{
-		// `operatorVersion` is the link between an operator and a `CustomResource`.
-		// Operator with version `operatorVersion` will only reconcile `CustomResources` labeled with `operatorVersion`.
-		operatorVersion = project.Version()
-		if env.TestDir() == "integration/test/update" {
-			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
-			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
-			operatorVersion = GetLatestOperatorRelease()
-		}
-	}
-
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
 
@@ -90,6 +81,18 @@ func provider(ctx context.Context, config Config) error {
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig CRD exists")
 	}
 
+	var operatorVersion string
+	{
+		// `operatorVersion` is the link between an operator and a `CustomResource`.
+		// azure-operator with version `operatorVersion` will only reconcile `AzureConfig` labeled with `operatorVersion`.
+		operatorVersion = project.Version()
+		if env.TestDir() == "integration/test/update" {
+			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
+			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
+			operatorVersion = GetLatestOperatorRelease()
+		}
+	}
+
 	{
 		err := installChartPackageBeingTested(ctx, config, renderedAzureOperatorChartValues)
 		if err != nil {
@@ -98,9 +101,11 @@ func provider(ctx context.Context, config Config) error {
 	}
 
 	{
-		err := installLatestReleaseChartPackage(ctx, config, project.Name(), renderedAzureOperatorChartValues)
-		if err != nil {
-			return microerror.Mask(err)
+		if env.TestDir() == "integration/test/update" {
+			err := installLatestReleaseChartPackage(ctx, config, project.Name(), renderedAzureOperatorChartValues)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
@@ -144,6 +149,11 @@ func provider(ctx context.Context, config Config) error {
 		}
 	}
 
+	clusterOperatorVersion, err := key2.ComponentVersion(giantSwarmRelease, "cluster-operator")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	{
 		azureClusterConfig := &v1alpha1.AzureClusterConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -152,7 +162,7 @@ func provider(ctx context.Context, config Config) error {
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": operatorVersion,
-					"release.giantswarm.io/version":        ReleaseName,
+					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 			},
 			Spec: v1alpha1.AzureClusterConfigSpec{
@@ -163,7 +173,7 @@ func provider(ctx context.Context, config Config) error {
 						ID:                env.ClusterID(),
 						Name:              env.ClusterID(),
 						Owner:             "giantswarm",
-						ReleaseVersion:    ReleaseName,
+						ReleaseVersion:    giantSwarmRelease.GetName(),
 						VersionBundles: []v1alpha1.ClusterGuestConfigVersionBundle{
 							{
 								Name:    "cert-operator",
@@ -195,7 +205,7 @@ func provider(ctx context.Context, config Config) error {
 						},
 					},
 				},
-				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: ClusterOperatorVersion},
+				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: clusterOperatorVersion},
 			},
 		}
 		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(azureClusterConfig)
@@ -226,7 +236,7 @@ func provider(ctx context.Context, config Config) error {
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": operatorVersion,
-					"release.giantswarm.io/version":        ReleaseName,
+					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 			},
 			Spec: providerv1alpha1.AzureConfigSpec{
