@@ -263,7 +263,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	{
 		c := vnetpeering.Config{
 			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
-			InstallationName:         config.InstallationName,
+			HostResourceGroup:        config.Azure.HostCluster.ResourceGroup,
+			HostVirtualNetworkName:   config.Azure.HostCluster.VirtualNetwork,
 			Logger:                   config.Logger,
 		}
 

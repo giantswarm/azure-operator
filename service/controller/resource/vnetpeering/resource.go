@@ -17,13 +17,15 @@ const (
 
 type Config struct {
 	HostAzureClientSetConfig client.AzureClientSetConfig
-	InstallationName         string
+	HostResourceGroup        string
+	HostVirtualNetworkName   string
 	Logger                   micrologger.Logger
 }
 
 type Resource struct {
 	hostAzureClientSetConfig client.AzureClientSetConfig
-	installationName         string
+	hostResourceGroup        string
+	hostVirtualNetworkName   string
 	logger                   micrologger.Logger
 }
 
@@ -32,8 +34,12 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.HostAzureClientSetConfig.%s", err)
 	}
 
-	if config.InstallationName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
+	if config.HostResourceGroup == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.HostResourceGroup must not be empty", config)
+	}
+
+	if config.HostVirtualNetworkName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.HostVirtualNetworkName must not be empty", config)
 	}
 
 	if config.Logger == nil {
@@ -42,7 +48,8 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
-		installationName:         config.InstallationName,
+		hostResourceGroup:        config.HostResourceGroup,
+		hostVirtualNetworkName:   config.HostVirtualNetworkName,
 		logger:                   config.Logger,
 	}
 
