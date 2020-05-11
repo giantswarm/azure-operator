@@ -65,25 +65,26 @@ func New(config Config) (*Connectivity, error) {
 
 func (s *Connectivity) Test(ctx context.Context) error {
 	s.logger.LogCtx(ctx, "level", "debug", "message", "testing connectivity between control plane cluster and tenant cluster")
-	cmd := []string{
-		"wget",
-		"api." + s.clusterID + ".k8s." + env.CommonDomain(),
-	}
+	podName := "e2e-connectivity"
+	podNamespace := "default"
 	pod := &v1.Pod{
-		ObjectMeta: metav1.ObjectMeta{},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      podName,
+			Namespace: podNamespace,
+		},
 		Spec: v1.PodSpec{
-			Containers: []v1.Container{{Name: "connectivity", Image: "busybox", Command: cmd}},
+			Containers: []v1.Container{{Name: "connectivity", Image: "busybox", Command: []string{"wget", "api." + s.clusterID + ".k8s." + env.CommonDomain()}}},
 		},
 	}
-	_, err := s.k8sClient.CoreV1().Pods("default").Create(pod)
+	_, err := s.k8sClient.CoreV1().Pods(podNamespace).Create(pod)
 	if err != nil {
 		return microerror.Maskf(executionFailedError, "error creating pod to test connectivity")
 	}
 
 	o := func() error {
-		pod, err = s.k8sClient.CoreV1().Pods("default").Get("e2e-connectivity", metav1.GetOptions{})
+		pod, err = s.k8sClient.CoreV1().Pods(podNamespace).Get(podName, metav1.GetOptions{})
 		if err != nil {
-			return microerror.Maskf(executionFailedError, "can't find e2e-connectivity pod on control plane")
+			return microerror.Maskf(executionFailedError, "can't find %#q pod on control plane", podName)
 		}
 		if pod.Status.ContainerStatuses[0].State.Terminated.FinishedAt.IsZero() {
 			return microerror.Maskf(executionFailedError, "container didn't finish yet")
