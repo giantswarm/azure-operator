@@ -78,7 +78,7 @@ func (s *Connectivity) Test(ctx context.Context) error {
 	}
 	_, err := s.k8sClient.CoreV1().Pods(podNamespace).Create(pod)
 	if err != nil {
-		return microerror.Maskf(executionFailedError, "error creating pod to test connectivity")
+		return microerror.Mask(err)
 	}
 
 	o := func() error {

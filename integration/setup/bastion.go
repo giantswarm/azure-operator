@@ -122,16 +122,6 @@ func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic n
 	username := "e2e"
 	config.Logger.LogCtx(ctx, "message", "Creating e2e bastion instance", "vmName", vmName)
 
-	publicKeys := &[]compute.SSHPublicKey{}
-	if sshKeyData != "" {
-		publicKeys = &[]compute.SSHPublicKey{
-			{
-				Path:    to.StringPtr(fmt.Sprintf("/home/%s/.ssh/authorized_keys", username)),
-				KeyData: to.StringPtr(sshKeyData),
-			},
-		}
-	}
-
 	_, err := config.AzureClient.VirtualMachinesClient.CreateOrUpdate(
 		ctx,
 		groupName,
@@ -156,7 +146,12 @@ func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic n
 					LinuxConfiguration: &compute.LinuxConfiguration{
 						DisablePasswordAuthentication: to.BoolPtr(true),
 						SSH: &compute.SSHConfiguration{
-							PublicKeys: publicKeys,
+							PublicKeys: &[]compute.SSHPublicKey{
+								{
+									Path:    to.StringPtr(fmt.Sprintf("/home/%s/.ssh/authorized_keys", username)),
+									KeyData: to.StringPtr(sshKeyData),
+								},
+							},
 						},
 					},
 				},
