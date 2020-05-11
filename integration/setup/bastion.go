@@ -154,6 +154,7 @@ func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic n
 					ComputerName:  to.StringPtr(vmName),
 					AdminUsername: to.StringPtr(username),
 					LinuxConfiguration: &compute.LinuxConfiguration{
+						DisablePasswordAuthentication: to.BoolPtr(true),
 						SSH: &compute.SSHConfiguration{
 							PublicKeys: publicKeys,
 						},
