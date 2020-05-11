@@ -73,7 +73,8 @@ func (s *Connectivity) Test(ctx context.Context) error {
 			Namespace: podNamespace,
 		},
 		Spec: v1.PodSpec{
-			Containers: []v1.Container{{Name: "connectivity", Image: "busybox", Command: []string{"nc"}, Args: []string{"-z", "api." + s.clusterID + ".k8s." + env.CommonDomain(), "443"}}},
+			RestartPolicy: v1.RestartPolicyNever,
+			Containers:    []v1.Container{{Name: "connectivity", Image: "busybox", Command: []string{"nc"}, Args: []string{"-z", "api." + s.clusterID + ".k8s." + env.CommonDomain(), "443"}}},
 		},
 	}
 	_, err := s.k8sClient.CoreV1().Pods(podNamespace).Create(pod)
