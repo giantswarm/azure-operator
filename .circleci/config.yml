@@ -59,8 +59,6 @@ workflows:
       # manual approval to run e2e tests.
       - hold:
           type: approval
-          requires:
-            - push-azure-operator-to-control-plane-app-catalog
           filters:
             # Do not trigger the job when merging to master.
             branches:
@@ -74,6 +72,7 @@ workflows:
 #          test-timeout: "90m"
 #          requires:
 #          - hold
+#          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: scaling-test
@@ -83,6 +82,7 @@ workflows:
           test-timeout: "90m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: multiaz-test
@@ -92,6 +92,7 @@ workflows:
           test-timeout: "70m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: cluster-deletion-test
@@ -101,6 +102,7 @@ workflows:
           test-timeout: "70m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: update-test
@@ -110,3 +112,4 @@ workflows:
           test-timeout: "180m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
