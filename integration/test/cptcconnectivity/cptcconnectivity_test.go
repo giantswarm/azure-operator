@@ -86,8 +86,9 @@ func (s *Connectivity) Test(ctx context.Context) error {
 		if err != nil {
 			return microerror.Maskf(executionFailedError, "can't find %#q pod on control plane", podName)
 		}
-		if pod.Status.ContainerStatuses[0].State.Terminated.FinishedAt.IsZero() {
-			return microerror.Maskf(executionFailedError, "container didn't finish yet")
+
+		if pod.Status.Phase != v1.PodSucceeded {
+			return microerror.Maskf(executionFailedError, "container didn't finish yet, pod state is %#q", pod.Status.Phase)
 		}
 
 		if pod.Status.ContainerStatuses[0].LastTerminationState.Terminated.ExitCode != 0 {
