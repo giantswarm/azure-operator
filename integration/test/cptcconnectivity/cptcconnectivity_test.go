@@ -73,7 +73,7 @@ func (s *Connectivity) Test(ctx context.Context) error {
 			Namespace: podNamespace,
 		},
 		Spec: v1.PodSpec{
-			Containers: []v1.Container{{Name: "connectivity", Image: "busybox", Command: []string{"wget", "api." + s.clusterID + ".k8s." + env.CommonDomain()}}},
+			Containers: []v1.Container{{Name: "connectivity", Image: "busybox", Command: []string{"nc"}, Args: []string{"-z", "api." + s.clusterID + ".k8s." + env.CommonDomain(), "443"}}},
 		},
 	}
 	_, err := s.k8sClient.CoreV1().Pods(podNamespace).Create(pod)
@@ -91,7 +91,7 @@ func (s *Connectivity) Test(ctx context.Context) error {
 			return microerror.Maskf(executionFailedError, "container didn't finish yet, pod state is %#q", pod.Status.Phase)
 		}
 
-		if pod.Status.ContainerStatuses[0].LastTerminationState.Terminated.ExitCode != 0 {
+		if pod.Status.ContainerStatuses[0].State.Terminated.ExitCode != 0 {
 			return microerror.Maskf(executionFailedError, "expected container exit code is 0, got %d", pod.Status.ContainerStatuses[0].LastTerminationState.Terminated.ExitCode)
 		}
 
