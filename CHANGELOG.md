@@ -7,11 +7,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-### Changed
-
-- Update version of architect-orb used for builds to 0.8.14.
-
-### Fixed
+## Fixed
 
 - Make the rate limit circuit breaker to only inspect response HTTP status code if there were no errors doing the request.
 
