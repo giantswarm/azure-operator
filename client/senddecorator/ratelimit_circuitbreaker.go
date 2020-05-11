@@ -38,7 +38,7 @@ func RateLimitCircuitBreaker(g *backpressure.Backpressure) autorest.SendDecorato
 
 			// Check if rate-limiting has kicked in and Backpressure needs to be
 			// updated correspondingly.
-			if resp.StatusCode == http.StatusTooManyRequests {
+			if resp != nil && resp.StatusCode == http.StatusTooManyRequests {
 				retryAfter, err := httputil.ParseRetryAfter(resp)
 				if err != nil {
 					// In case parsing fails, it's ok to fall back on default delay.
