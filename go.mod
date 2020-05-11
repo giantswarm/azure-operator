@@ -55,6 +55,7 @@ require (
 	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
 	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
 	k8s.io/api v0.17.2
+	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
 	k8s.io/apiserver v0.17.2 // indirect
 	k8s.io/client-go v0.17.2
@@ -62,7 +63,7 @@ require (
 	k8s.io/helm v2.16.4+incompatible
 	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
 	k8s.io/utils v0.0.0-20200229041039-0a110f9eb7ab // indirect
-	sigs.k8s.io/controller-runtime v0.5.2 // indirect
+	sigs.k8s.io/controller-runtime v0.5.2
 )
 
 replace (
