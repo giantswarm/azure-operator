@@ -8,7 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/k8scloudconfig/v6/v_6_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v3/service/controller/templates/ignition"
@@ -182,8 +182,8 @@ func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.CredentialSecret.Namespace
 }
 
-func DefaultVersions() v_6_0_0.Versions {
-	return v_6_0_0.Versions{
+func DefaultVersions() k8scloudconfig.Versions {
+	return k8scloudconfig.Versions{
 		Kubectl:                      kubectlVersion,
 		KubernetesAPIHealthz:         kubernetesAPIHealthzVersion,
 		KubernetesNetworkSetupDocker: kubernetesNetworkSetupDocker,
