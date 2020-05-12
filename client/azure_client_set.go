@@ -1,8 +1,6 @@
 package client
 
 import (
-	"fmt"
-
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
@@ -177,11 +175,23 @@ func newDNSZonesClient(authorizer autorest.Authorizer, subscriptionID, partnerID
 	return &client, nil
 }
 
-func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error) {
-	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+func newInterfacesClient(config AzureClientSetConfig) (*network.InterfacesClient, error) {
+	// Returns environment object contains all API endpoints for specific Azure
+	// cloud. For empty config.EnvironmentName returns Azure public cloud.
+	env, err := parseAzureEnvironment(config.EnvironmentName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	token, err := newServicePrincipalToken(config, env)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	c := network.NewInterfacesClientWithBaseURI(env.ResourceManagerEndpoint, config.SubscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(token)
 	c.RetryAttempts = 1
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
+	err = c.AddToUserAgent(config.PartnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -189,12 +199,24 @@ func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error
 	return &c, nil
 }
 
-func newPublicIPAddressesClient(config *clientConfig) (*network.PublicIPAddressesClient, error) {
-	c := network.NewPublicIPAddressesClient(config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+func newPublicIPAddressesClient(config AzureClientSetConfig) (*network.PublicIPAddressesClient, error) {
+	// Returns environment object contains all API endpoints for specific Azure
+	// cloud. For empty config.EnvironmentName returns Azure public cloud.
+	env, err := parseAzureEnvironment(config.EnvironmentName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	token, err := newServicePrincipalToken(config, env)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	c := network.NewPublicIPAddressesClient(config.SubscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(token)
 	c.RetryAttempts = 1
 	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
+	err = c.AddToUserAgent(config.PartnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -247,9 +269,15 @@ func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, s
 	return &client, nil
 }
 
-func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewaysClient, error) {
-	client := network.NewVirtualNetworkGatewaysClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeeringsClient, error) {
+	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
+	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
+	c.RetryAttempts = 1
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
+	err := c.AddToUserAgent(config.partnerIdUserAgent)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	return &client, nil
 }
