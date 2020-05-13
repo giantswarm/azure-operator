@@ -265,6 +265,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
 			HostResourceGroup:        config.Azure.HostCluster.ResourceGroup,
 			HostVirtualNetworkName:   config.Azure.HostCluster.VirtualNetwork,
+			K8sClient:                config.K8sClient,
 			Logger:                   config.Logger,
 		}
 

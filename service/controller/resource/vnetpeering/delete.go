@@ -15,13 +15,13 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	cpPeeringClient, err := r.getCPVnetPeeringsClient()
+	cpAzureClientSet, err := r.getCPAzureClientSet(cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Checking if the vnet peering exists on the control plane vnet")
-	_, err = cpPeeringClient.Get(ctx, r.hostVirtualNetworkName, r.hostVirtualNetworkName, key.ResourceGroupName(cr))
+	_, err = cpAzureClientSet.VnetPeeringClient.Get(ctx, r.hostVirtualNetworkName, r.hostVirtualNetworkName, key.ResourceGroupName(cr))
 	if IsNotFound(err) {
 		// This is what we want, all good.
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Vnet peering doesn't exist on the control plane vnet")
@@ -36,7 +36,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	finalizerskeptcontext.SetKept(ctx)
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Requesting deletion vnet peering on the control plane vnet")
-	_, err = cpPeeringClient.Delete(ctx, r.hostVirtualNetworkName, r.hostVirtualNetworkName, key.ResourceGroupName(cr))
+	_, err = cpAzureClientSet.VnetPeeringClient.Delete(ctx, r.hostVirtualNetworkName, r.hostVirtualNetworkName, key.ResourceGroupName(cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

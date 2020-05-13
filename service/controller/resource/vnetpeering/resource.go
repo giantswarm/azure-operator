@@ -4,11 +4,15 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
 	"github.com/giantswarm/azure-operator/v3/client"
 	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v3/service/credential"
 )
 
 const (
@@ -19,6 +23,7 @@ type Config struct {
 	HostAzureClientSetConfig client.AzureClientSetConfig
 	HostResourceGroup        string
 	HostVirtualNetworkName   string
+	K8sClient                k8sclient.Interface
 	Logger                   micrologger.Logger
 }
 
@@ -26,6 +31,7 @@ type Resource struct {
 	hostAzureClientSetConfig client.AzureClientSetConfig
 	hostResourceGroup        string
 	hostVirtualNetworkName   string
+	k8sClient                k8sclient.Interface
 	logger                   micrologger.Logger
 }
 
@@ -42,6 +48,10 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.HostVirtualNetworkName must not be empty", config)
 	}
 
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
+
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -50,6 +60,7 @@ func New(config Config) (*Resource, error) {
 		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
 		hostResourceGroup:        config.HostResourceGroup,
 		hostVirtualNetworkName:   config.HostVirtualNetworkName,
+		k8sClient:                config.K8sClient,
 		logger:                   config.Logger,
 	}
 
@@ -60,22 +71,31 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) getCPVnetPeeringsClient() (*network.VirtualNetworkPeeringsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
+func (r *Resource) getCPAzureClientSet(cr v1alpha1.AzureConfig) (*client.AzureClientSet, error) {
+	guestAzureClientSetConfig, err := credential.GetAzureConfig(r.k8sClient.K8sClient(), key.CredentialName(cr), key.CredentialNamespace(cr))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.VnetPeeringClient, nil
-}
+	cpAzureClientSetConfig := client.AzureClientSetConfig{
+		ClientID:        guestAzureClientSetConfig.ClientID,
+		ClientSecret:    guestAzureClientSetConfig.ClientSecret,
+		EnvironmentName: guestAzureClientSetConfig.EnvironmentName,
+		SubscriptionID:  r.hostAzureClientSetConfig.SubscriptionID,
+		TenantID:        r.hostAzureClientSetConfig.TenantID,
+		PartnerID:       guestAzureClientSetConfig.PartnerID,
+	}
 
-func (r *Resource) getCPVnetClient() (*network.VirtualNetworksClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
+	if len(guestAzureClientSetConfig.AuxiliaryTenantIDs) > 0 {
+		cpAzureClientSetConfig.AuxiliaryTenantIDs = []string{guestAzureClientSetConfig.TenantID}
+	}
+
+	azureClients, err := client.NewAzureClientSet(cpAzureClientSetConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return azureClients.VirtualNetworkClient, nil
+	return azureClients, nil
 }
 
 func (r *Resource) getPublicIPAddressesClient(ctx context.Context) (*network.PublicIPAddressesClient, error) {
