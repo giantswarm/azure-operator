@@ -8,7 +8,7 @@ import (
 
 	"github.com/giantswarm/versionbundle"
 
-	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
 )
 
 const (

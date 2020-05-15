@@ -13,10 +13,10 @@ import (
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 
-	"github.com/giantswarm/azure-operator/v3/flag"
-	"github.com/giantswarm/azure-operator/v3/pkg/project"
-	"github.com/giantswarm/azure-operator/v3/server"
-	"github.com/giantswarm/azure-operator/v3/service"
+	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/server"
+	"github.com/giantswarm/azure-operator/v4/service"
 )
 
 var (

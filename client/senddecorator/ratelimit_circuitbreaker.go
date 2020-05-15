@@ -7,8 +7,8 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v3/pkg/backpressure"
-	"github.com/giantswarm/azure-operator/v3/pkg/httputil"
+	"github.com/giantswarm/azure-operator/v4/pkg/backpressure"
+	"github.com/giantswarm/azure-operator/v4/pkg/httputil"
 )
 
 const (
