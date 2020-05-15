@@ -6,6 +6,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -20,7 +21,6 @@ import (
 	"github.com/giantswarm/tenantcluster"
 
 	"github.com/giantswarm/azure-operator/v4/client"
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
@@ -51,16 +51,21 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure            setting.Azure
-	CPAzureClientSet client.AzureClientSet
-	Ignition         setting.Ignition
-	InstallationName string
-	ProjectName      string
-	RegistryDomain   string
-	OIDC             setting.OIDC
-	SSOPublicKey     string
-	VMSSCheckWorkers int
+	Azure                          setting.Azure
+	CPAzureClientCredentialsConfig auth.ClientCredentialsConfig
+	CPSubscriptionID               string
+	Ignition                       setting.Ignition
+	InstallationName               string
+	ProjectName                    string
+	RegistryDomain                 string
+	OIDC                           setting.OIDC
+	SSOPublicKey                   string
+	VMSSCheckWorkers               int
 }
+
+const (
+	defaultAzureGUID = "37f13270-5c7a-56ff-9211-8426baaeaabd"
+)
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	if config.K8sClient == nil {
@@ -71,6 +76,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	var err error
+
+	cpAzureClients, err := client.NewAzureClientSet(config.CPAzureClientCredentialsConfig, config.CPSubscriptionID, defaultAzureGUID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	var certsSearcher certs.Interface
 	{
@@ -253,7 +263,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
-			CPRecordSetsClient: *config.CPAzureClientSet.DNSRecordSetsClient,
+			CPRecordSetsClient: *cpAzureClients.DNSRecordSetsClient,
 			Logger:             config.Logger,
 		}
 
@@ -392,8 +402,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := vpnconnection.Config{
 			Azure:                                    config.Azure,
 			Logger:                                   config.Logger,
-			CPVirtualNetworkGatewaysClient:           *config.CPAzureClientSet.VirtualNetworkGatewaysClient,
-			CPVirtualNetworkGatewayConnectionsClient: *config.CPAzureClientSet.VirtualNetworkGatewayConnectionsClient,
+			CPVirtualNetworkGatewaysClient:           *cpAzureClients.VirtualNetworkGatewaysClient,
+			CPVirtualNetworkGatewayConnectionsClient: *cpAzureClients.VirtualNetworkGatewayConnectionsClient,
 		}
 
 		ops, err := vpnconnection.New(c)
@@ -474,21 +484,17 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
+		tenantAzureClientCredentialsConfig, err := key.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
+		subscriptionID, partnerID, err := key.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
+		azureClients, err := client.NewAzureClientSet(tenantAzureClientCredentialsConfig, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -506,7 +512,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				Ignition:               config.Ignition,
 				OIDC:                   config.OIDC,
 				SSOPublicKey:           config.SSOPublicKey,
-				SubscriptionID:         subscriptionID,
 			}
 
 			cloudConfig, err = cloudconfig.New(c)

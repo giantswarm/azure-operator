@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/k8sclient"
@@ -17,7 +18,6 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
 
-	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller"
@@ -102,16 +102,7 @@ func New(config Config) (*Service, error) {
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
-	cpAzureClients, err := client.NewAzureClientSet(
-		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
-		config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
-		config.Viper.GetString(config.Flag.Service.Azure.PartnerID),
-	)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	cpAzureClientCredentialsConfig := auth.NewClientCredentialsConfig(config.Flag.Service.Azure.ClientID, config.Flag.Service.Azure.ClientSecret, config.Flag.Service.Azure.TenantID)
 
 	Ignition := setting.Ignition{
 		Path:       config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Path),
@@ -182,15 +173,16 @@ func New(config Config) (*Service, error) {
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 
-			Azure:            azure,
-			CPAzureClientSet: *cpAzureClients,
-			Ignition:         Ignition,
-			OIDC:             OIDC,
-			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
-			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Azure:                          azure,
+			CPAzureClientCredentialsConfig: cpAzureClientCredentialsConfig,
+			CPSubscriptionID:               config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
+			Ignition:                       Ignition,
+			OIDC:                           OIDC,
+			InstallationName:               config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:                    config.ProjectName,
+			RegistryDomain:                 config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SSOPublicKey:                   config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers:               config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
 		clusterController, err = controller.NewCluster(c)
