@@ -13,8 +13,8 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v3/client/senddecorator"
-	"github.com/giantswarm/azure-operator/v3/pkg/backpressure"
+	"github.com/giantswarm/azure-operator/v4/client/senddecorator"
+	"github.com/giantswarm/azure-operator/v4/pkg/backpressure"
 )
 
 // AzureClientSet is the collection of Azure API clients.

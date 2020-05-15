@@ -3,9 +3,9 @@ package service
 import (
 	"github.com/giantswarm/operatorkit/flag/service/kubernetes"
 
-	"github.com/giantswarm/azure-operator/v3/flag/service/azure"
-	"github.com/giantswarm/azure-operator/v3/flag/service/installation"
-	"github.com/giantswarm/azure-operator/v3/flag/service/tenant"
+	"github.com/giantswarm/azure-operator/v4/flag/service/azure"
+	"github.com/giantswarm/azure-operator/v4/flag/service/installation"
+	"github.com/giantswarm/azure-operator/v4/flag/service/tenant"
 )
 
 type Service struct {
