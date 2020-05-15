@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net"
 	"sync"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -19,6 +20,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v3/client"
 	"github.com/giantswarm/azure-operator/v3/flag"
+	"github.com/giantswarm/azure-operator/v3/pkg/locker"
 	"github.com/giantswarm/azure-operator/v3/pkg/project"
 	"github.com/giantswarm/azure-operator/v3/service/controller"
 	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
@@ -124,6 +126,27 @@ func New(config Config) (*Service, error) {
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
 	}
 
+	var restConfig *rest.Config
+	{
+		c := k8srestconfig.Config{
+			Logger: config.Logger,
+
+			Address:    config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
+			InCluster:  config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
+			KubeConfig: config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfig),
+			TLS: k8srestconfig.ConfigTLS{
+				CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
+				CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
+				KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
+			},
+		}
+
+		restConfig, err = k8srestconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var k8sClient *k8sclient.Clients
 	{
 		address := config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
@@ -173,10 +196,33 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var kubeLockLocker locker.Interface
+	{
+		c := locker.KubeLockLockerConfig{
+			Logger:     config.Logger,
+			RestConfig: restConfig,
+		}
+
+		kubeLockLocker, err = locker.NewKubeLockLocker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamNetworkRange net.IPNet
+	{
+		_, ipnet, err := net.ParseCIDR("") //config.Viper.GetString(config.Flag.Service.Installation.Guest.IPAM.Network.CIDR))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		ipamNetworkRange = *ipnet
+	}
+
 	var clusterController *controller.Cluster
 	{
 		c := controller.ClusterConfig{
 			K8sClient: k8sClient,
+			Locker:    kubeLockLocker,
 			Logger:    config.Logger,
 
 			Azure:            azure,
@@ -184,6 +230,7 @@ func New(config Config) (*Service, error) {
 			Ignition:         Ignition,
 			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
+			IPAMNetworkRange: ipamNetworkRange,
 			ProjectName:      config.ProjectName,
 			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
 			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),

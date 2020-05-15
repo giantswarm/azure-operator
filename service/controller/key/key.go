@@ -99,6 +99,10 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
 }
 
+func AzureConfigNetworkCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.CIDR
+}
+
 func BlobContainerName() string {
 	return blobContainerName
 }

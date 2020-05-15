@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/tenantcluster"
 
 	"github.com/giantswarm/azure-operator/v3/client"
+	"github.com/giantswarm/azure-operator/v3/pkg/locker"
 	"github.com/giantswarm/azure-operator/v3/pkg/project"
 	"github.com/giantswarm/azure-operator/v3/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
@@ -33,6 +34,7 @@ import (
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/endpoints"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/v3/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/namespace"
 	"github.com/giantswarm/azure-operator/v3/service/controller/resource/release"
@@ -55,6 +57,8 @@ type ResourceSetConfig struct {
 	HostAzureClientSetConfig client.AzureClientSetConfig
 	Ignition                 setting.Ignition
 	InstallationName         string
+	IPAMNetworkRange         net.IPNet
+	Locker                   locker.Interface
 	ProjectName              string
 	RegistryDomain           string
 	OIDC                     setting.OIDC
@@ -68,6 +72,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.Locker == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Locker must not be empty", config)
 	}
 
 	var err error
@@ -332,6 +339,68 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		instanceResource, err = instance.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var clusterChecker *ipam.ClusterChecker
+	{
+		c := ipam.ClusterCheckerConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		clusterChecker, err = ipam.NewClusterChecker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureConfigPersister *ipam.AzureConfigPersister
+	{
+		c := ipam.AzureConfigPersisterConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetCollector *ipam.SubnetCollector
+	{
+		c := ipam.SubnetCollectorConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+
+			NetworkRange: config.IPAMNetworkRange,
+		}
+
+		subnetCollector, err = ipam.NewSubnetCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamResource resource.Interface
+	{
+		c := ipam.Config{
+			Checker:   clusterChecker,
+			Collector: subnetCollector,
+			Locker:    config.Locker,
+			Logger:    config.Logger,
+			Persister: azureConfigPersister,
+
+			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
+			NetworkRange:            config.IPAMNetworkRange,
+			PrivateSubnetMaskBits:   config.GuestPrivateSubnetMaskBits,
+			PublicSubnetMaskBits:    config.GuestPublicSubnetMaskBits,
+		}
+
+		ipamResource, err = ipam.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
