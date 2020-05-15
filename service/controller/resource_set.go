@@ -6,7 +6,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -51,21 +50,16 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure                          setting.Azure
-	CPAzureClientCredentialsConfig auth.ClientCredentialsConfig
-	CPSubscriptionID               string
-	Ignition                       setting.Ignition
-	InstallationName               string
-	ProjectName                    string
-	RegistryDomain                 string
-	OIDC                           setting.OIDC
-	SSOPublicKey                   string
-	VMSSCheckWorkers               int
+	Azure            setting.Azure
+	CPAzureClientSet client.AzureClientSet
+	Ignition         setting.Ignition
+	InstallationName string
+	ProjectName      string
+	RegistryDomain   string
+	OIDC             setting.OIDC
+	SSOPublicKey     string
+	VMSSCheckWorkers int
 }
-
-const (
-	defaultAzureGUID = "37f13270-5c7a-56ff-9211-8426baaeaabd"
-)
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	if config.K8sClient == nil {
@@ -76,11 +70,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	var err error
-
-	cpAzureClients, err := client.NewAzureClientSet(config.CPAzureClientCredentialsConfig, config.CPSubscriptionID, defaultAzureGUID)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 
 	var certsSearcher certs.Interface
 	{
@@ -263,7 +252,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
-			CPRecordSetsClient: *cpAzureClients.DNSRecordSetsClient,
+			CPRecordSetsClient: *config.CPAzureClientSet.DNSRecordSetsClient,
 			Logger:             config.Logger,
 		}
 
@@ -402,8 +391,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		c := vpnconnection.Config{
 			Azure:                                    config.Azure,
 			Logger:                                   config.Logger,
-			CPVirtualNetworkGatewaysClient:           *cpAzureClients.VirtualNetworkGatewaysClient,
-			CPVirtualNetworkGatewayConnectionsClient: *cpAzureClients.VirtualNetworkGatewayConnectionsClient,
+			CPVirtualNetworkGatewaysClient:           *config.CPAzureClientSet.VirtualNetworkGatewaysClient,
+			CPVirtualNetworkGatewayConnectionsClient: *config.CPAzureClientSet.VirtualNetworkGatewayConnectionsClient,
 		}
 
 		ops, err := vpnconnection.New(c)
