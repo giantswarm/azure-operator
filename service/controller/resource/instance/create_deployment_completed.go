@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/to"
 
 	"github.com/giantswarm/azure-operator/pkg/checksum"
 	"github.com/giantswarm/azure-operator/service/controller/blobclient"
@@ -22,6 +21,10 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
+	groupsClient, err := r.getGroupsClient(ctx)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.WorkersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
@@ -35,12 +38,13 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	s := *d.Properties.ProvisioningState
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
-	if key.IsSucceededProvisioningState(s) {
-		if d.Location == nil {
-			d.Location = to.StringP("<unknown>")
-		}
+	group, err := groupsClient.Get(ctx, key.ClusterID(cr))
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
-		computedDeployment, err := r.newDeployment(ctx, cr, nil, *d.Location)
+	if key.IsSucceededProvisioningState(s) {
+		computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
 		if blobclient.IsBlobNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
