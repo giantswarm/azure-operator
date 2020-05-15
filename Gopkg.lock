@@ -2099,7 +2099,6 @@
     "github.com/giantswarm/randomkeys",
     "github.com/giantswarm/statusresource",
     "github.com/giantswarm/tenantcluster",
-    "github.com/giantswarm/to",
     "github.com/giantswarm/versionbundle",
     "github.com/google/go-cmp/cmp",
     "github.com/spf13/afero",
