@@ -477,13 +477,17 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 
 		subscriptionID, partnerID, err := key.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSet(tenantAzureClientCredentialsConfig, subscriptionID, partnerID)
+		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -501,6 +505,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				Ignition:               config.Ignition,
 				OIDC:                   config.OIDC,
 				SSOPublicKey:           config.SSOPublicKey,
+				SubscriptionID:         subscriptionID,
 			}
 
 			cloudConfig, err = cloudconfig.New(c)

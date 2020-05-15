@@ -1,6 +1,8 @@
 package client
 
 import (
+	"fmt"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
@@ -12,6 +14,10 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/client/senddecorator"
 	"github.com/giantswarm/azure-operator/v4/pkg/backpressure"
+)
+
+const (
+	defaultAzureGUID = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 )
 
 // AzureClientSet is the collection of Azure API clients.
@@ -47,11 +53,39 @@ type AzureClientSet struct {
 }
 
 // NewAzureClientSet returns the Azure API clients.
-func NewAzureClientSet(config auth.ClientCredentialsConfig, subscriptionID, partnerID string) (*AzureClientSet, error) {
-	authorizer, err := config.Authorizer()
+// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
+func NewAzureClientSet(clientid, clientsecret, tenantid, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	settings, err := auth.GetSettingsFromEnvironment()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	if clientid != "" {
+		settings.Values[auth.ClientID] = clientid
+	}
+	if clientsecret != "" {
+		settings.Values[auth.ClientSecret] = clientsecret
+	}
+	if tenantid != "" {
+		settings.Values[auth.TenantID] = tenantid
+	}
+	if subscriptionID != "" {
+		settings.Values[auth.SubscriptionID] = subscriptionID
+	}
+	authorizer, err := settings.GetAuthorizer()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return NewAzureClientSetWithAuthorizer(authorizer, settings.GetSubscriptionID(), partnerID)
+}
+
+// NewAzureClientSetWithAuthorizer returns the Azure API clients using the given Authorizer.
+func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	if partnerID == "" {
+		partnerID = defaultAzureGUID
+	}
+	partnerID = fmt.Sprintf("pid-%s", partnerID)
+
 	deploymentsClient, err := newDeploymentsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
