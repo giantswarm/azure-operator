@@ -27,7 +27,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	var clusterCerts certs.Cluster
 	{
-		clusterCerts, err = r.certsSearcher.SearchCluster(key.ClusterID(cr))
+		clusterCerts, err = r.certsSearcher.SearchCluster(key.ClusterID(&cr))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

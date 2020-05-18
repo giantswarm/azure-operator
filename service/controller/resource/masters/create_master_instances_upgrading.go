@@ -13,6 +13,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -34,7 +35,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	{
 		n := v1.NamespaceAll
 		o := metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("%s=%s", key.ClusterIDLabel, key.ClusterID(cr)),
+			LabelSelector: fmt.Sprintf("%s=%s", label.Cluster, key.ClusterID(&cr)),
 		}
 
 		list, err := r.g8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
@@ -130,11 +131,11 @@ func (r *Resource) allInstances(ctx context.Context, customObject providerv1alph
 func (r *Resource) createDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, nodeName string) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
 
-	n := key.ClusterID(customObject)
+	n := key.ClusterID(&customObject)
 	c := &corev1alpha1.DrainerConfig{
 		ObjectMeta: metav1.ObjectMeta{
 			Labels: map[string]string{
-				key.ClusterIDLabel: key.ClusterID(customObject),
+				label.Cluster: key.ClusterID(&customObject),
 			},
 			Name: nodeName,
 		},
@@ -144,7 +145,7 @@ func (r *Resource) createDrainerConfig(ctx context.Context, customObject provide
 					API: corev1alpha1.DrainerConfigSpecGuestClusterAPI{
 						Endpoint: key.ClusterAPIEndpoint(customObject),
 					},
-					ID: key.ClusterID(customObject),
+					ID: key.ClusterID(&customObject),
 				},
 				Node: corev1alpha1.DrainerConfigSpecGuestNode{
 					Name: nodeName,
@@ -401,7 +402,7 @@ func firstInstanceToReimage(customObject providerv1alpha1.AzureConfig, list []co
 	}
 
 	for _, v := range list {
-		desiredVersion := key.OperatorVersion(customObject)
+		desiredVersion := key.OperatorVersion(&customObject)
 		instanceName := instanceNameFunc(customObject, *v.InstanceID)
 		instanceVersion, ok := versionValue[instanceName]
 		if !ok {

@@ -41,6 +41,7 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
+	azureClusterController  *controller.AzureCluster
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
 	statusResourceCollector *statusresource.CollectorSet
@@ -173,6 +174,32 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var azureClusterController *controller.AzureCluster
+	{
+		c := controller.AzureClusterConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
+			Azure:            azure,
+			AzureConfig:      azureConfig,
+			Ignition:         Ignition,
+			OIDC:             OIDC,
+			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:      config.ProjectName,
+			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+		}
+
+		azureClusterController, err = controller.NewAzureCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var clusterController *controller.Cluster
 	{
 		c := controller.ClusterConfig{
@@ -229,6 +256,7 @@ func New(config Config) (*Service, error) {
 	s := &Service{
 		Version: versionService,
 
+		azureClusterController:  azureClusterController,
 		bootOnce:                sync.Once{},
 		clusterController:       clusterController,
 		statusResourceCollector: statusResourceCollector,

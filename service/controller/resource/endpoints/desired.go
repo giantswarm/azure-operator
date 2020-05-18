@@ -17,7 +17,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, key.ClusterID(cr), key.MasterVMSSName(cr))
+	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, key.ClusterID(&cr), key.MasterVMSSName(cr))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -25,12 +25,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	endpoints := &v1.Endpoints{
 		ObjectMeta: apismetav1.ObjectMeta{
 			Name:      "master",
-			Namespace: key.ClusterID(cr),
+			Namespace: key.ClusterID(&cr),
 			Labels: map[string]string{
 				key.LabelApp:           "master",
-				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelCluster:       key.ClusterID(&cr),
 				key.LabelCustomer:      key.ClusterCustomer(cr),
-				key.LegacyLabelCluster: key.ClusterID(cr),
+				key.LegacyLabelCluster: key.ClusterID(&cr),
 				key.LabelManagedBy:     project.Name(),
 				key.LabelOrganization:  key.ClusterCustomer(cr),
 			},

@@ -36,7 +36,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// Wait for virtual network subnet.
 	{
 		vnetName := key.VnetName(cr)
-		vnet, err := vnetClient.Get(ctx, key.ClusterID(cr), vnetName, "")
+		vnet, err := vnetClient.Get(ctx, key.ClusterID(&cr), vnetName, "")
 		if err != nil {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("virtual network %#q not ready", vnetName))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -61,7 +61,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// Prepare VPN Gateway deployment
 	var deployment azureresource.Deployment
 	{
-		d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), vpnDeploymentName)
+		d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), vpnDeploymentName)
 		if IsNotFound(err) {
 			// fallthrough
 		} else if err != nil {
@@ -87,7 +87,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	// Create/Update VPN Gateway deployment
-	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), vpnDeploymentName, deployment)
+	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), vpnDeploymentName, deployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}

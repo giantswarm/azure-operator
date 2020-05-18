@@ -21,7 +21,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 	defaultParams := map[string]interface{}{
 		"blobContainerName":       key.BlobContainerName(),
 		"calicoSubnetCidr":        cc.AzureNetwork.Calico.String(),
-		"clusterID":               key.ClusterID(customObject),
+		"clusterID":               key.ClusterID(&customObject),
 		"dnsZones":                key.DNSZones(customObject),
 		"hostClusterCidr":         r.azure.HostCluster.CIDR,
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),

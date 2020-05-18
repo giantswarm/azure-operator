@@ -11,7 +11,7 @@ import (
 
 func (r Resource) newDeployment(customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	defaultParams := map[string]interface{}{
-		"clusterID":             key.ClusterID(customObject),
+		"clusterID":             key.ClusterID(&customObject),
 		"virtualNetworkName":    key.VnetName(customObject),
 		"vnetGatewaySubnetName": key.VNetGatewaySubnetName(),
 		"vpnGatewayName":        key.VPNGatewayName(customObject),

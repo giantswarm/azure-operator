@@ -83,7 +83,7 @@ func New(config Config) (*CloudConfig, error) {
 }
 
 func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
-	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(customObject))
+	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(&customObject))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

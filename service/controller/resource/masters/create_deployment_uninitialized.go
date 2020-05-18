@@ -31,7 +31,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-	group, err := groupsClient.Get(ctx, key.ClusterID(cr))
+	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -51,7 +51,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	} else {
-		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName, computedDeployment)
+		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName, computedDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
