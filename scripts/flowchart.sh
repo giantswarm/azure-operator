@@ -33,6 +33,11 @@ while [[ $# -gt 0 ]]; do
             shift
             shift
             ;;
+        -c|--kube-context)
+            kubecontext="$2"
+            shift
+            shift
+        ;;
         *)
             args+=("$1")
             shift
@@ -49,9 +54,14 @@ if [ -z "$azure_operator_app" ]; then
     exit 1
 fi
 
+# set default kube context
+if [ -z "$kubecontext" ]; then
+    kubecontext="$(kubectl config current-context)"
+fi
+
 # get logs
 logfile="/tmp/${azure_operator_app}.logs"
-if ! kubectl -n giantswarm logs deployment/${azure_operator_app} > "${logfile}"; then
+if ! kubectl --context "${kubecontext}" -n giantswarm logs deployment/${azure_operator_app} > "${logfile}"; then
     echo "[err] azure-operator app '$azure_operator_app' not found"
     exit 1
 fi
@@ -62,6 +72,9 @@ query='. | select(.message | test("state changed")) '
 # filter by tenant cluster ID
 if ! [ -z "$tenant_cluster_id" ]; then
     query+="| select(.object | endswith(\"/azureconfigs/$tenant_cluster_id\")) "
+    generated_flowchart="${azure_operator_app}-${tenant_cluster_id}-flowchart.html"
+else
+    generated_flowchart="${azure_operator_app}-flowchart.html"
 fi
 
 # echo state transition in format 'stateX --> stateY'
@@ -81,7 +94,6 @@ ${transitions}"
 
 script_dir="$( cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd )"
 template=$(cat "${script_dir}/flowchart.template.html")
-generated_flowchart="${azure_operator_app}-flowchart.html"
 
 # generate flowchart
 echo "${template/_FLOWCHART_DATA_/$mermaid}" > "${generated_flowchart}"
