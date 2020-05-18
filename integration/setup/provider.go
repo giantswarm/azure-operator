@@ -305,6 +305,8 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 						NetworkSetup: providerv1alpha1.ClusterKubernetesNetworkSetup{Docker: providerv1alpha1.ClusterKubernetesNetworkSetupDocker{Image: "quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9"}},
 						SSH:          nodeSSHConfiguration,
 					},
+					Masters: []providerv1alpha1.ClusterNode{},
+					Workers: []providerv1alpha1.ClusterNode{},
 				},
 				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: operatorVersion},
 			},
