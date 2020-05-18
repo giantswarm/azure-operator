@@ -15,10 +15,10 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v3/integration/env"
-	"github.com/giantswarm/azure-operator/v3/integration/key"
-	"github.com/giantswarm/azure-operator/v3/pkg/project"
-	key2 "github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/integration/env"
+	"github.com/giantswarm/azure-operator/v4/integration/key"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	key2 "github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (

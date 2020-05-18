@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 )
 
 const (

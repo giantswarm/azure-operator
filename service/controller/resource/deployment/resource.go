@@ -13,10 +13,10 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v3/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v3/service/controller/key"
-	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 const (

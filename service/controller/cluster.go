@@ -11,9 +11,9 @@ import (
 	"github.com/giantswarm/operatorkit/controller"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/azure-operator/v3/client"
-	"github.com/giantswarm/azure-operator/v3/pkg/locker"
-	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/locker"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type ClusterConfig struct {

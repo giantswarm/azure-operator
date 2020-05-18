@@ -1,4 +1,4 @@
-module github.com/giantswarm/azure-operator/v3
+module github.com/giantswarm/azure-operator/v4
 
 go 1.14
 
@@ -36,7 +36,6 @@ require (
 	github.com/giantswarm/randomkeys v0.2.0
 	github.com/giantswarm/statusresource v0.3.0
 	github.com/giantswarm/tenantcluster v0.2.0
-	github.com/giantswarm/to v0.2.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/gogo/protobuf v1.3.1 // indirect
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect

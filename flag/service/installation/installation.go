@@ -1,7 +1,7 @@
 package installation
 
 import (
-	"github.com/giantswarm/azure-operator/v3/flag/service/installation/tenant"
+	"github.com/giantswarm/azure-operator/v4/flag/service/installation/tenant"
 )
 
 type Installation struct {

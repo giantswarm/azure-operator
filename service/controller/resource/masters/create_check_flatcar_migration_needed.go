@@ -6,8 +6,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 // This transition function aims at detecting if the master VMSS needs to be migrated from CoreOS to flatcar.

@@ -11,7 +11,7 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
 const (
