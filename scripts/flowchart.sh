@@ -37,7 +37,12 @@ while [[ $# -gt 0 ]]; do
             kubecontext="$2"
             shift
             shift
-        ;;
+            ;;
+        -o|--output)
+            output_file="$2"
+            shift
+            shift
+            ;;
         *)
             args+=("$1")
             shift
@@ -72,9 +77,13 @@ query='. | select(.message | test("state changed")) '
 # filter by tenant cluster ID
 if ! [ -z "$tenant_cluster_id" ]; then
     query+="| select(.object | endswith(\"/azureconfigs/$tenant_cluster_id\")) "
-    generated_flowchart="${azure_operator_app}-${tenant_cluster_id}-flowchart.html"
+    generated_flowchart="${azure_operator_app}.${tenant_cluster_id}.flowchart.generated.html"
 else
-    generated_flowchart="${azure_operator_app}-flowchart.html"
+    generated_flowchart="${azure_operator_app}.flowchart.generated.html"
+fi
+
+if [ -z "$output_file" ]; then
+    output_file="${generated_flowchart}"
 fi
 
 # echo state transition in format 'stateX --> stateY'
@@ -96,14 +105,14 @@ script_dir="$( cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd )"
 template=$(cat "${script_dir}/flowchart.template.html")
 
 # generate flowchart
-echo "${template/_FLOWCHART_DATA_/$mermaid}" > "${generated_flowchart}"
-echo "Generated flowchart in file '${generated_flowchart}'."
+echo "${template/_FLOWCHART_DATA_/$mermaid}" > "${output_file}"
+echo "Generated flowchart in file '${output_file}'."
 
 # open default browser
 if [ "$flag_open_browser" == 1 ]; then
     if which xdg-open > /dev/null; then
-        xdg-open "${generated_flowchart}"
+        xdg-open "${output_file}"
     elif which gnome-open > /dev/null; then
-        gnome-open "${generated_flowchart}"
+        gnome-open "${output_file}"
     fi
 fi
