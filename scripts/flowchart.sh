@@ -9,6 +9,16 @@
 # generated flowchart.
 #
 
+# check if required CLI tools are installed
+for required in kubectl jq
+do
+  if [ ! -x "$(command -v $required)" ]
+  then
+    echo "[err] The required command $required was not found in your system. Aborting."
+    exit 1
+  fi
+done
+
 args=()
 
 while [[ $# -gt 0 ]]; do
@@ -40,7 +50,7 @@ if [ -z "$azure_operator_app" ]; then
 fi
 
 # get logs
-logfile="azop.logs"
+logfile="/tmp/${azure_operator_app}.logs"
 if ! kubectl -n giantswarm logs deployment/${azure_operator_app} > "${logfile}"; then
     echo "[err] azure-operator app '$azure_operator_app' not found"
     exit 1
@@ -69,7 +79,8 @@ transitions=$(cat "${logfile}" \
 mermaid="graph TD
 ${transitions}"
 
-template=$(cat flowchart.template.html)
+script_dir="$( cd "$(dirname "${BASH_SOURCE[0]}")" > /dev/null 2>&1 && pwd )"
+template=$(cat "${script_dir}/flowchart.template.html")
 generated_flowchart="${azure_operator_app}-flowchart.html"
 
 # generate flowchart
