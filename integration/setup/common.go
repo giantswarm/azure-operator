@@ -156,6 +156,17 @@ func installCertOperator(ctx context.Context, config Config, version string) err
           Public: false
 `
 	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring CertConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewCertConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured CertConfig CRD exists")
+	}
+
+	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for %#q release is %#q", chartName, tarballURL))
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for %#q release", chartName))
 		chartPackagePath, err := config.HelmClient.PullChartTarball(ctx, tarballURL)
