@@ -6,6 +6,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -50,15 +51,16 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure            setting.Azure
-	CPAzureClientSet client.AzureClientSet
-	Ignition         setting.Ignition
-	InstallationName string
-	ProjectName      string
-	RegistryDomain   string
-	OIDC             setting.OIDC
-	SSOPublicKey     string
-	VMSSCheckWorkers int
+	Azure                     setting.Azure
+	CPAzureClientSet          client.AzureClientSet
+	GSClientCredentialsConfig auth.ClientCredentialsConfig
+	Ignition                  setting.Ignition
+	InstallationName          string
+	ProjectName               string
+	RegistryDomain            string
+	OIDC                      setting.OIDC
+	SSOPublicKey              string
+	VMSSCheckWorkers          int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -473,7 +475,16 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		tenantAzureClientCredentialsConfig, err := key.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
+		//tenantID, subscriptionID, partnerID, err := key.GetTenant(config.K8sClient.K8sClient(), cr)
+		//if err != nil {
+		//	return nil, microerror.Mask(err)
+		//}
+		//tenantAzureClientCredentialsConfig, err := key.GetTenantAzureClientCredentialsConfig2(config.GSClientCredentialsConfig, tenantID)
+		//if err != nil {
+		//	return nil, microerror.Mask(err)
+		//}
+
+		tenantAzureClientCredentialsConfig, err := key.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

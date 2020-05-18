@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/k8sclient"
@@ -102,13 +103,13 @@ func New(config Config) (*Service, error) {
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
-	cpAzureClients, err := client.NewAzureClientSet(
-		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
-		config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
-		config.Viper.GetString(config.Flag.Service.Azure.PartnerID),
-	)
+	// These credentials will be used when creating AzureClients for Control Plane and Tenant clusters.
+	gsClientCredentialsConfig, err := NewClientCredentialsConfig(config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -182,15 +183,16 @@ func New(config Config) (*Service, error) {
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 
-			Azure:            azure,
-			CPAzureClientSet: *cpAzureClients,
-			Ignition:         Ignition,
-			OIDC:             OIDC,
-			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
-			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Azure:                     azure,
+			CPAzureClientSet:          *cpAzureClientSet,
+			GSClientCredentialsConfig: gsClientCredentialsConfig,
+			Ignition:                  Ignition,
+			OIDC:                      OIDC,
+			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:               config.ProjectName,
+			RegistryDomain:            config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
 		clusterController, err = controller.NewCluster(c)
@@ -268,4 +270,46 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 	}
 
 	return restConfig, nil
+}
+
+// NewAzureClientSet returns the Azure API clients.
+// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
+func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, error) {
+	settings, err := auth.GetSettingsFromEnvironment()
+	if err != nil {
+		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
+	}
+	if config.Viper.GetString(config.Flag.Service.Azure.ClientID) != "" {
+		settings.Values[auth.ClientID] = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
+	}
+	if config.Viper.GetString(config.Flag.Service.Azure.ClientSecret) != "" {
+		settings.Values[auth.ClientSecret] = config.Viper.GetString(config.Flag.Service.Azure.ClientSecret)
+	}
+	if config.Viper.GetString(config.Flag.Service.Azure.TenantID) != "" {
+		settings.Values[auth.TenantID] = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
+	}
+	if config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID) != "" {
+		settings.Values[auth.SubscriptionID] = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
+	}
+
+	return settings.GetClientCredentials()
+}
+
+func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig) (*client.AzureClientSet, error) {
+	cpTenantID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.TenantID)
+	if cpTenantID == "" {
+		cpTenantID = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
+	}
+
+	cpSubscriptionID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.SubscriptionID)
+	if cpSubscriptionID == "" {
+		cpSubscriptionID = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
+	}
+
+	cpPartnerID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.PartnerID)
+	if cpPartnerID == "" {
+		cpPartnerID = config.Viper.GetString(config.Flag.Service.Azure.PartnerID)
+	}
+
+	return client.NewAzureClientSet(gsClientCredentialsConfig, cpTenantID, cpSubscriptionID, cpPartnerID)
 }

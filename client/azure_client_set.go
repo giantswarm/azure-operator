@@ -54,29 +54,23 @@ type AzureClientSet struct {
 
 // NewAzureClientSet returns the Azure API clients.
 // Auth is configured taking values from Environment, but parameters have precedence over environment variables.
-func NewAzureClientSet(clientid, clientsecret, tenantid, subscriptionID, partnerID string) (*AzureClientSet, error) {
-	settings, err := auth.GetSettingsFromEnvironment()
-	if err != nil {
-		return nil, microerror.Mask(err)
+func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, tenantID, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	return NewAzureClientSetFromClientCredentials(clientCredentialsConfig, tenantID, subscriptionID, partnerID)
+}
+
+// NewAzureClientSetFromClientCredentials returns the Azure API clients given a ClientCredentialsConfig already configured.
+// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
+func NewAzureClientSetFromClientCredentials(clientCredentialsConfig auth.ClientCredentialsConfig, auxiliaryTenantID, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	if auxiliaryTenantID != "" {
+		clientCredentialsConfig.AuxTenants = append(clientCredentialsConfig.AuxTenants, auxiliaryTenantID)
 	}
-	if clientid != "" {
-		settings.Values[auth.ClientID] = clientid
-	}
-	if clientsecret != "" {
-		settings.Values[auth.ClientSecret] = clientsecret
-	}
-	if tenantid != "" {
-		settings.Values[auth.TenantID] = tenantid
-	}
-	if subscriptionID != "" {
-		settings.Values[auth.SubscriptionID] = subscriptionID
-	}
-	authorizer, err := settings.GetAuthorizer()
+
+	authorizer, err := clientCredentialsConfig.Authorizer()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return NewAzureClientSetWithAuthorizer(authorizer, settings.GetSubscriptionID(), partnerID)
+	return NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
 }
 
 // NewAzureClientSetWithAuthorizer returns the Azure API clients using the given Authorizer.
