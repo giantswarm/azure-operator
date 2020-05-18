@@ -6,7 +6,6 @@ import (
 	"strings"
 	"time"
 
-	appv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
@@ -107,17 +106,6 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				return microerror.Mask(err)
 			}
 		}
-	}
-
-	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring chart CRD exists")
-
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, appv1alpha1.NewChartCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured chart CRD exists")
 	}
 
 	{

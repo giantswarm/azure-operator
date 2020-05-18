@@ -254,7 +254,7 @@ Installation:
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AWSClusterConfig CRD exists")
 
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewAWSClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewAWSClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -276,7 +276,7 @@ Installation:
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring KVMClusterConfig CRD exists")
 
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewKVMClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewKVMClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
