@@ -7,9 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
-## Fixed
+### Fixed
 
 - Make the rate limit circuit breaker to only inspect response HTTP status code if there were no errors doing the request.
+
+### Removed
+
+- Move NGINX IC LoadBalancer Service management from azure-operator to nginx-ingress-controller app.
 
 ## [4.0.0] 2020-05-05
 
