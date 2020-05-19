@@ -476,16 +476,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		//tenantID, subscriptionID, partnerID, err := key.GetOrganizationTenant(config.K8sClient.K8sClient(), cr)
-		//if err != nil {
-		//	return nil, microerror.Mask(err)
-		//}
-
 		organizationAzureClientCredentialsConfig, err := credential.GetOrganizationAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		authorizer, err := organizationAzureClientCredentialsConfig.Authorizer()
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -495,7 +486,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSet(authorizer, subscriptionID, partnerID)
+		azureClients, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

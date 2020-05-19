@@ -9,6 +9,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/client/senddecorator"
@@ -51,8 +52,13 @@ type AzureClientSet struct {
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
 
-// NewAzureClientSetWithAuthorizer returns the Azure API clients using the given Authorizer.
-func NewAzureClientSet(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*AzureClientSet, error) {
+// NewAzureClientSet returns the Azure API clients using the given Authorizer.
+func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	authorizer, err := clientCredentialsConfig.Authorizer()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	if partnerID == "" {
 		partnerID = defaultAzureGUID
 	}

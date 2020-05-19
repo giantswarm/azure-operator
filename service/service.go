@@ -272,8 +272,9 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 	return restConfig, nil
 }
 
-// NewClientCredentialsConfig returns a ClientCredentialsConfig.
-// Auth is configured taking values from Environment, but operator parameters have precedence over environment variables.
+// NewClientCredentialsConfig returns a `ClientCredentialsConfig` configured taking values from Environment,
+// but operator parameters have precedence over environment variables.
+// These credentials will be used when talking to both Control Plane clusters and Tenant clusters.
 func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, error) {
 	settings, err := auth.GetSettingsFromEnvironment()
 	if err != nil {
@@ -316,10 +317,5 @@ func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCre
 		cpPartnerID = config.Viper.GetString(config.Flag.Service.Azure.PartnerID)
 	}
 
-	authorizer, err := gsClientCredentialsConfig.Authorizer()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return client.NewAzureClientSet(authorizer, cpSubscriptionID, cpPartnerID)
+	return client.NewAzureClientSet(gsClientCredentialsConfig, cpSubscriptionID, cpPartnerID)
 }
