@@ -7,7 +7,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
@@ -18,37 +17,33 @@ const (
 
 // Config is the configuration required by Resource.
 type Config struct {
-	Logger micrologger.Logger
-
-	Azure                    setting.Azure
-	HostAzureClientSetConfig client.AzureClientSetConfig
+	Azure                                    setting.Azure
+	Logger                                   micrologger.Logger
+	CPVirtualNetworkGatewaysClient           network.VirtualNetworkGatewaysClient
+	CPVirtualNetworkGatewayConnectionsClient network.VirtualNetworkGatewayConnectionsClient
 }
 
 // Resource manages Azure virtual network peering.
 type Resource struct {
-	logger micrologger.Logger
-
-	azure                    setting.Azure
-	hostAzureClientSetConfig client.AzureClientSetConfig
+	azure                                    setting.Azure
+	logger                                   micrologger.Logger
+	cpVirtualNetworkGatewaysClient           network.VirtualNetworkGatewaysClient
+	cpVirtualNetworkGatewayConnectionsClient network.VirtualNetworkGatewayConnectionsClient
 }
 
 func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
-	if err := config.HostAzureClientSetConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.HostAzureClientSetConfig.%s", config, err)
-	}
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
 
 	r := &Resource{
-		logger: config.Logger,
-
-		azure:                    config.Azure,
-		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
+		azure:                                    config.Azure,
+		cpVirtualNetworkGatewaysClient:           config.CPVirtualNetworkGatewaysClient,
+		cpVirtualNetworkGatewayConnectionsClient: config.CPVirtualNetworkGatewayConnectionsClient,
+		logger:                                   config.Logger,
 	}
 
 	return r, nil
@@ -109,12 +104,7 @@ func (r *Resource) getGuestVirtualNetworkGatewayConnectionsClient(ctx context.Co
 }
 
 func (r *Resource) getHostVirtualNetworkGateway(ctx context.Context, resourceGroup, vpnGatewayName string) (*network.VirtualNetworkGateway, error) {
-	gatewayClient, err := r.getHostVirtualNetworkGatewaysClient()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	gateway, err := gatewayClient.Get(ctx, resourceGroup, vpnGatewayName)
+	gateway, err := r.cpVirtualNetworkGatewaysClient.Get(ctx, resourceGroup, vpnGatewayName)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -122,38 +112,11 @@ func (r *Resource) getHostVirtualNetworkGateway(ctx context.Context, resourceGro
 	return &gateway, nil
 }
 
-// getHostVirtualNetworkGatewaysClient return a client to interact with
-// VirtualNetworkGateways on host cluster.
-func (r *Resource) getHostVirtualNetworkGatewaysClient() (*network.VirtualNetworkGatewaysClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return azureClients.VirtualNetworkGatewaysClient, nil
-}
-
 func (r *Resource) getHostVirtualNetworkGatewayConnection(ctx context.Context, resourceGroup, vpnGatewayConnectionName string) (*network.VirtualNetworkGatewayConnection, error) {
-	gatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	connection, err := gatewayConnectionClient.Get(ctx, resourceGroup, vpnGatewayConnectionName)
+	connection, err := r.cpVirtualNetworkGatewayConnectionsClient.Get(ctx, resourceGroup, vpnGatewayConnectionName)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
 	return &connection, nil
-}
-
-// getHostVirtualNetworkGatewayConnectionsClient return a client to interact with
-// VirtualNetworkGatewayConnections on host cluster.
-func (r *Resource) getHostVirtualNetworkGatewayConnectionsClient() (*network.VirtualNetworkGatewayConnectionsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return azureClients.VirtualNetworkGatewayConnectionsClient, nil
 }
