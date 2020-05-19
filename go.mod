@@ -11,7 +11,6 @@ require (
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/giantswarm/apiextensions v0.3.4
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient v0.2.0
@@ -19,7 +18,7 @@ require (
 	github.com/giantswarm/certs v0.2.0
 	github.com/giantswarm/e2e-harness v0.2.0
 	github.com/giantswarm/e2eclients v0.2.0
-	github.com/giantswarm/e2esetup v0.1.0
+	github.com/giantswarm/e2esetup v0.2.0
 	github.com/giantswarm/e2etemplates v0.2.0
 	github.com/giantswarm/e2etests v0.1.0
 	github.com/giantswarm/errors v0.2.3

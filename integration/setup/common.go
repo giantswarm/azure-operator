@@ -8,7 +8,7 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/e2e-harness/pkg/release"
+	"github.com/giantswarm/e2esetup/helmrelease"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
@@ -44,7 +44,7 @@ func common(ctx context.Context, config Config, giantSwarmRelease releasev1alpha
 			return microerror.Mask(err)
 		}
 
-		err = config.Release.Install(ctx, key.VaultReleaseName(), release.NewStableVersion(), values, config.Release.Condition().PodExists(ctx, "default", "app=vault"))
+		err = config.Release.Install(ctx, key.VaultReleaseName(), helmrelease.NewStableVersion(), values, config.Release.Condition().PodExists(ctx, "default", "app=vault"))
 		if err != nil {
 			return microerror.Mask(err)
 		}

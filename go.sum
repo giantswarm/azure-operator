@@ -245,8 +245,8 @@ github.com/giantswarm/e2e-harness v0.2.0 h1:M71fV6T3zIjpg63eAbP8d5eHxCLLT4Q6hski
 github.com/giantswarm/e2e-harness v0.2.0/go.mod h1:+2H1VF3hRA75LQHVYno0/GmWxA/f7YEc9Bey03jyGRY=
 github.com/giantswarm/e2eclients v0.2.0 h1:fk3/dU1tAt9NHgSZwz4C9Bm15E9lFuNfYYneLjkw5Sg=
 github.com/giantswarm/e2eclients v0.2.0/go.mod h1:HOsP2xBW2ivFgBb3CNkhckjMNGokj1RDWz+03pIdgv0=
-github.com/giantswarm/e2esetup v0.1.0 h1:ONjRdccVsaopFzeAjlwUDEeX+ul9ujNQmVyp8MMWCN8=
-github.com/giantswarm/e2esetup v0.1.0/go.mod h1:p+cP+0Aa2AtnwKi2A4CeNcIgP4nb1no23hnVqCWegp0=
+github.com/giantswarm/e2esetup v0.2.0 h1:hx6Fpt+8bn18Sfep8pU5oWASBPdp93trys1UbMcORGk=
+github.com/giantswarm/e2esetup v0.2.0/go.mod h1:4zjZ0u/Se1rPF/J2kVfaa0QiEW6Zi1cWp689wvXjyeU=
 github.com/giantswarm/e2etemplates v0.2.0 h1:xwsa8hSirDF8nFdRJZJROPwjiL1vsuhWltz+6k9CQRc=
 github.com/giantswarm/e2etemplates v0.2.0/go.mod h1:q7aE42HUEdxm6NtLJ/csoMBWoRoIfhdy0WC85aRjLi8=
 github.com/giantswarm/e2etests v0.1.0 h1:VgD3rCoMUytET96eDiySYeVYCVtBQUtP7bO+y/ORxfg=
@@ -287,6 +287,7 @@ github.com/giantswarm/tenantcluster v0.2.0 h1:NDra7kcxt22w4HwxuVgBGjgG5BHjZ5bxtl
 github.com/giantswarm/tenantcluster v0.2.0/go.mod h1:YMYyVokto7LbAhl3eezMbpKJtzJ9axqNrvM5VbYWLgs=
 github.com/giantswarm/to v0.2.0 h1:qZj0DUnjUcI/7ajwIVtT6mwmSYQm8g0qBvAPCoS1ZF8=
 github.com/giantswarm/to v0.2.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
+github.com/giantswarm/valuemodifier v0.2.0/go.mod h1:GYMylCMZIu9XrSXD8LE5U0bn1KA1z7U533jTRlN7CEM=
 github.com/giantswarm/versionbundle v0.2.0 h1:6EP3+9uO/9z1xu7g4pHNUyENxE+Ix1bc5aFpUMPz5Yg=
 github.com/giantswarm/versionbundle v0.2.0/go.mod h1:n7GOlSXpX9TpP3EsYhErCjskN++c7uYHEEfV81NCH7s=
 github.com/gliderlabs/ssh v0.1.1/go.mod h1:U7qILu1NlMHj9FlMhZLlkCdDnU1DBEAqr0aevW3Awn0=

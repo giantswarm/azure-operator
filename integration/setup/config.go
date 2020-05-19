@@ -3,9 +3,9 @@ package setup
 import (
 	"github.com/giantswarm/apprclient"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
-	"github.com/giantswarm/e2e-harness/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
 	e2esetupenv "github.com/giantswarm/e2esetup/chart/env"
+	"github.com/giantswarm/e2esetup/helmrelease"
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -29,7 +29,7 @@ type Config struct {
 	K8s         *k8sclient.Setup
 	K8sClients  k8sclient.Interface
 	Logger      micrologger.Logger
-	Release     *release.Release
+	Release     *helmrelease.Release
 }
 
 func NewConfig() (Config, error) {
@@ -140,20 +140,18 @@ func NewConfig() (Config, error) {
 		}
 	}
 
-	var newRelease *release.Release
+	var newRelease *helmrelease.Release
 	{
-		c := release.Config{
+		c := helmrelease.Config{
 			ApprClient: apprClient,
-			ExtClient:  host.ExtClient(),
-			G8sClient:  host.G8sClient(),
 			HelmClient: helmClient,
-			K8sClient:  cpK8sClients.K8sClient(),
+			K8sClients: cpK8sClients,
 			Logger:     logger,
 
 			Namespace: namespace,
 		}
 
-		newRelease, err = release.New(c)
+		newRelease, err = helmrelease.New(c)
 		if err != nil {
 			return Config{}, microerror.Mask(err)
 		}
