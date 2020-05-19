@@ -153,7 +153,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	}
 
 	{
-		cluster, err := r.newCluster(cluster, azureCluster)
+		cluster, err := r.newCluster(cluster, azureCluster, workers)
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
 		}
@@ -246,7 +246,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	return azureConfig, nil
 }
 
-func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster) (providerv1alpha1.Cluster, error) {
+func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster, workers []capzv1alpha3.AzureMachine) (providerv1alpha1.Cluster, error) {
 	commonCluster := providerv1alpha1.Cluster{}
 
 	{
@@ -353,11 +353,8 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
-		// XXX: Statically hard coded cluster workers since we are replacing
-		// this with Node Pools where workers come from MachinePool &
-		// AzureMachinePool.
-		commonCluster.Scaling.Max = 3
-		commonCluster.Scaling.Min = 3
+		commonCluster.Scaling.Max = len(workers)
+		commonCluster.Scaling.Min = len(workers)
 	}
 
 	return commonCluster, nil
