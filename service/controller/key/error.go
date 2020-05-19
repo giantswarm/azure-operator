@@ -40,7 +40,3 @@ var wrongTypeError = &microerror.Error{
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
 }
-
-var missingValueError = &microerror.Error{
-	Kind: "missingValueError",
-}

@@ -21,6 +21,7 @@ import (
 	"github.com/giantswarm/tenantcluster"
 
 	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
@@ -484,7 +485,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		//	return nil, microerror.Mask(err)
 		//}
 
-		tenantAzureClientCredentialsConfig, err := key.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig)
+		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -493,7 +494,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		subscriptionID, partnerID, err := key.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
+		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
