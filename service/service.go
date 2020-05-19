@@ -211,7 +211,7 @@ func New(config Config) (*Service, error) {
 
 	var ipamNetworkRange net.IPNet
 	{
-		_, ipnet, err := net.ParseCIDR("") //config.Viper.GetString(config.Flag.Service.Installation.Guest.IPAM.Network.CIDR))
+		_, ipnet, err := net.ParseCIDR(config.Viper.GetString(config.Flag.Service.Installation.Guest.IPAM.Network.CIDR))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -225,16 +225,19 @@ func New(config Config) (*Service, error) {
 			Locker:    kubeLockLocker,
 			Logger:    config.Logger,
 
-			Azure:            azure,
-			AzureConfig:      azureConfig,
-			Ignition:         Ignition,
-			OIDC:             OIDC,
-			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			IPAMNetworkRange: ipamNetworkRange,
-			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
-			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Azure:                      azure,
+			AzureConfig:                azureConfig,
+			GuestPrivateSubnetMaskBits: config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.PrivateSubnetMaskBits),
+			GuestPublicSubnetMaskBits:  config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.PublicSubnetMaskBits),
+			GuestSubnetMaskBits:        config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			Ignition:                   Ignition,
+			OIDC:                       OIDC,
+			InstallationName:           config.Viper.GetString(config.Flag.Service.Installation.Name),
+			IPAMNetworkRange:           ipamNetworkRange,
+			ProjectName:                config.ProjectName,
+			RegistryDomain:             config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SSOPublicKey:               config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers:           config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
 		clusterController, err = controller.NewCluster(c)

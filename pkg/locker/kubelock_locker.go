@@ -11,7 +11,7 @@ import (
 	"k8s.io/client-go/dynamic"
 	"k8s.io/client-go/rest"
 
-	"github.com/giantswarm/azure-operator/v3/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
 )
 
 const (

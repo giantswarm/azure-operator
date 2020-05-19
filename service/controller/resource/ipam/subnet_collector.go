@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"reflect"
 	"sync"
@@ -13,7 +14,8 @@ import (
 	"golang.org/x/sync/errgroup"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 type SubnetCollectorConfig struct {
@@ -75,6 +77,22 @@ func (c *SubnetCollector) Collect(ctx context.Context) ([]net.IPNet, error) {
 		return nil
 	})
 
+	g.Go(func() error {
+		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets from all resource groups in the subscription")
+
+		subnets, err := c.getSubnetsFromSubscription(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		mutex.Lock()
+		reservedSubnets = append(reservedSubnets, subnets...)
+		mutex.Unlock()
+
+		c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnets from all resource groups in the subscription")
+
+		return nil
+	})
+
 	err = g.Wait()
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -107,4 +125,54 @@ func (c *SubnetCollector) getSubnetsFromAzureConfigs(ctx context.Context) ([]net
 	}
 
 	return results, nil
+}
+
+func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context) ([]net.IPNet, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	groupsClient := cc.AzureClientSet.GroupsClient
+	vnetClient := cc.AzureClientSet.VirtualNetworkClient
+
+	iterator, err := groupsClient.ListComplete(ctx, "tagName eq 'GiantSwarmCluster'", nil)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var ret []net.IPNet
+
+	for iterator.NotDone() {
+		group := iterator.Value()
+
+		fmt.Printf("Group %s is interesting\n", *group.Name)
+
+		// Search a VNET with the expected name.
+		vnetName := fmt.Sprintf("%s-VirtualNetwork", *group.Name)
+
+		vnet, err := vnetClient.Get(ctx, *group.Name, vnetName, "")
+		if key.IsNotFound(err) {
+			// VNET with desired name not found, ignore this resource group.
+			continue
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		for _, cidr := range *vnet.AddressSpace.AddressPrefixes {
+			_, n, err := net.ParseCIDR(cidr)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+			ret = append(ret, *n)
+		}
+
+		err = iterator.NextWithContext(ctx)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return ret, nil
 }

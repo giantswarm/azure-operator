@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/tenantcluster"
 
 	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
@@ -33,6 +34,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/endpoints"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
@@ -51,17 +53,20 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure                    setting.Azure
-	HostAzureClientSetConfig client.AzureClientSetConfig
-	Ignition                 setting.Ignition
-	InstallationName         string
-	IPAMNetworkRange         net.IPNet
-	Locker                   locker.Interface
-	ProjectName              string
-	RegistryDomain           string
-	OIDC                     setting.OIDC
-	SSOPublicKey             string
-	VMSSCheckWorkers         int
+	Azure                      setting.Azure
+	GuestPrivateSubnetMaskBits int
+	GuestPublicSubnetMaskBits  int
+	GuestSubnetMaskBits        int
+	HostAzureClientSetConfig   client.AzureClientSetConfig
+	Ignition                   setting.Ignition
+	InstallationName           string
+	IPAMNetworkRange           net.IPNet
+	Locker                     locker.Interface
+	ProjectName                string
+	RegistryDomain             string
+	OIDC                       setting.OIDC
+	SSOPublicKey               string
+	VMSSCheckWorkers           int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -476,6 +481,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []resource.Interface{
+		ipamResource,
 		statusResource,
 		releaseResource,
 		tenantClientsResource,
