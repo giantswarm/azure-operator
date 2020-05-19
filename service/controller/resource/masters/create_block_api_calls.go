@@ -16,51 +16,25 @@ const (
 	temporarySecurityRuleName = "temporaryFlatcarMigration"
 )
 
+type namedRule struct {
+	name string
+	rule *network.SecurityRule
+}
+
 func (r *Resource) blockAPICallsTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	workersRule := network.SecurityRule{
-		SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
-			Access:                   network.SecurityRuleAccessDeny,
-			Description:              to.StringPtr("Temporarily block API access from workers during flatcar migration"),
-			DestinationPortRange:     to.StringPtr("443"),
-			DestinationAddressPrefix: to.StringPtr("*"),
-			Direction:                network.SecurityRuleDirectionOutbound,
-			Protocol:                 network.SecurityRuleProtocolAsterisk,
-			Priority:                 to.Int32Ptr(3000),
-			SourceAddressPrefix:      to.StringPtr("*"),
-			SourcePortRange:          to.StringPtr("*"),
-		},
-	}
+	rules := getMasterRules()
 
-	mastersRule := network.SecurityRule{
-		SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
-			Access:                   network.SecurityRuleAccessDeny,
-			Description:              to.StringPtr("Temporarily block internet access to masters during flatcar migration"),
-			DestinationPortRange:     to.StringPtr("*"),
-			DestinationAddressPrefix: to.StringPtr("*"),
-			Direction:                network.SecurityRuleDirectionOutbound,
-			Protocol:                 network.SecurityRuleProtocolAsterisk,
-			Priority:                 to.Int32Ptr(3000),
-			SourceAddressPrefix:      to.StringPtr("*"),
-			SourcePortRange:          to.StringPtr("*"),
-		},
-	}
-
-	workerFound, err := r.ensureSecurityRule(ctx, key.ResourceGroupName(cr), key.WorkerSecurityGroupName(cr), temporarySecurityRuleName, workersRule)
+	masterFound, err := r.ensureSecurityRules(ctx, key.ResourceGroupName(cr), key.MasterSecurityGroupName(cr), rules)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	masterFound, err := r.ensureSecurityRule(ctx, key.ResourceGroupName(cr), key.MasterSecurityGroupName(cr), temporarySecurityRuleName, mastersRule)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	if !masterFound || !workerFound {
+	if !masterFound {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Security rules not in place yet")
 		return currentState, nil
 	}
@@ -70,30 +44,33 @@ func (r *Resource) blockAPICallsTransition(ctx context.Context, obj interface{},
 	return DeploymentUninitialized, nil
 }
 
-func (r *Resource) ensureSecurityRule(ctx context.Context, resourceGroup string, securityGroupName string, ruleName string, rule network.SecurityRule) (bool, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Looking for security rule %s in security group %s", ruleName, securityGroupName))
+func (r *Resource) ensureSecurityRules(ctx context.Context, resourceGroup string, securityGroupName string, rules []namedRule) (bool, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Looking for existence of %d security rules in security group %s", len(rules), securityGroupName))
 
-	exists, err := r.securityRuleExists(ctx, resourceGroup, securityGroupName, ruleName)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	if !exists {
-		// Create security rule
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Creating security rule")
-		err = r.createSecurityRule(ctx, resourceGroup, securityGroupName, ruleName, rule)
+	found := true
+	for _, rule := range rules {
+		ruleName := rule.name
+		exists, err := r.securityRuleExists(ctx, resourceGroup, securityGroupName, ruleName)
 		if err != nil {
 			return false, microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Security rule created")
+		if !exists {
+			found = false
 
-		// Wait for security rule to be in place.
-		return false, nil
+			// Create security rule
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Creating security rule %s", *rule.rule.Description))
+			err = r.createSecurityRule(ctx, resourceGroup, securityGroupName, ruleName, *rule.rule)
+			if err != nil {
+				return false, microerror.Mask(err)
+			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Created security rule %s", *rule.rule.Description))
+		}
 	}
 
-	// Security rule in place
-	return true, nil
+	// The 'found' bool is true if all rules are in place, false otherwise.
+	return found, nil
 }
 
 func (r *Resource) unblockAPICallsTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -104,24 +81,18 @@ func (r *Resource) unblockAPICallsTransition(ctx context.Context, obj interface{
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting security rule %s from security group %s", temporarySecurityRuleName, key.WorkerSecurityGroupName(cr)))
 
-	// Delete security rule for workers
-	err = r.deleteSecurityRule(ctx, key.ResourceGroupName(cr), key.WorkerSecurityGroupName(cr), temporarySecurityRuleName)
-	if IsNotFound(err) {
-		// Rule not exists, ok to continue.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("security rule %s from security group %s was not found", temporarySecurityRuleName, key.WorkerSecurityGroupName(cr)))
-	} else if err != nil {
-		// In case of error just retry.
-		return currentState, microerror.Mask(err)
-	}
+	rules := getMasterRules()
 
-	// Delete security rule for masters
-	err = r.deleteSecurityRule(ctx, key.ResourceGroupName(cr), key.MasterSecurityGroupName(cr), temporarySecurityRuleName)
-	if IsNotFound(err) {
-		// Rule not exists, ok to continue.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("security rule %s from security group %s was not found", temporarySecurityRuleName, key.MasterSecurityGroupName(cr)))
-	} else if err != nil {
-		// In case of error just retry.
-		return currentState, microerror.Mask(err)
+	for _, namedRule := range rules {
+		// Delete security rule for masters.
+		err = r.deleteSecurityRule(ctx, key.ResourceGroupName(cr), key.MasterSecurityGroupName(cr), namedRule.name)
+		if IsNotFound(err) {
+			// Rule not exists, ok to continue.
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("security rule %s from security group %s was not found", namedRule.name, key.MasterSecurityGroupName(cr)))
+		} else if err != nil {
+			// In case of error just retry.
+			return currentState, microerror.Mask(err)
+		}
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted temporary security rules")
@@ -171,4 +142,43 @@ func (r *Resource) deleteSecurityRule(ctx context.Context, resourceGroup string,
 	}
 
 	return nil
+}
+
+func getMasterRules() []namedRule {
+	mastersRules := []namedRule{
+		{
+			name: fmt.Sprintf("%s-outbound", temporarySecurityRuleName),
+			rule: &network.SecurityRule{
+				SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
+					Access:                   network.SecurityRuleAccessDeny,
+					Description:              to.StringPtr("Temporarily block internet access to masters during flatcar migration"),
+					DestinationPortRange:     to.StringPtr("*"),
+					DestinationAddressPrefix: to.StringPtr("*"),
+					Direction:                network.SecurityRuleDirectionOutbound,
+					Protocol:                 network.SecurityRuleProtocolAsterisk,
+					Priority:                 to.Int32Ptr(3000),
+					SourceAddressPrefix:      to.StringPtr("*"),
+					SourcePortRange:          to.StringPtr("*"),
+				},
+			},
+		},
+		{
+			name: fmt.Sprintf("%s-inbound", temporarySecurityRuleName),
+			rule: &network.SecurityRule{
+				SecurityRulePropertiesFormat: &network.SecurityRulePropertiesFormat{
+					Access:                   network.SecurityRuleAccessDeny,
+					Description:              to.StringPtr("Temporarily block incoming traffic to masters' 443 port during flatcar migration"),
+					DestinationPortRange:     to.StringPtr("443"),
+					DestinationAddressPrefix: to.StringPtr("*"),
+					Direction:                network.SecurityRuleDirectionInbound,
+					Protocol:                 network.SecurityRuleProtocolAsterisk,
+					Priority:                 to.Int32Ptr(3001),
+					SourceAddressPrefix:      to.StringPtr("*"),
+					SourcePortRange:          to.StringPtr("*"),
+				},
+			},
+		},
+	}
+
+	return mastersRules
 }
