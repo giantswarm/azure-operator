@@ -9,7 +9,6 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/client/senddecorator"
@@ -52,29 +51,8 @@ type AzureClientSet struct {
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
 
-// NewAzureClientSet returns the Azure API clients.
-// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
-func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, tenantID, subscriptionID, partnerID string) (*AzureClientSet, error) {
-	return NewAzureClientSetFromClientCredentials(clientCredentialsConfig, tenantID, subscriptionID, partnerID)
-}
-
-// NewAzureClientSetFromClientCredentials returns the Azure API clients given a ClientCredentialsConfig already configured.
-// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
-func NewAzureClientSetFromClientCredentials(clientCredentialsConfig auth.ClientCredentialsConfig, auxiliaryTenantID, subscriptionID, partnerID string) (*AzureClientSet, error) {
-	if auxiliaryTenantID != "" {
-		clientCredentialsConfig.AuxTenants = append(clientCredentialsConfig.AuxTenants, auxiliaryTenantID)
-	}
-
-	authorizer, err := clientCredentialsConfig.Authorizer()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
-}
-
 // NewAzureClientSetWithAuthorizer returns the Azure API clients using the given Authorizer.
-func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*AzureClientSet, error) {
+func NewAzureClientSet(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*AzureClientSet, error) {
 	if partnerID == "" {
 		partnerID = defaultAzureGUID
 	}

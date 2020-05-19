@@ -476,20 +476,16 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		//tenantID, subscriptionID, partnerID, err := key.GetTenant(config.K8sClient.K8sClient(), cr)
-		//if err != nil {
-		//	return nil, microerror.Mask(err)
-		//}
-		//tenantAzureClientCredentialsConfig, err := key.GetTenantAzureClientCredentialsConfig2(config.GSClientCredentialsConfig, tenantID)
+		//tenantID, subscriptionID, partnerID, err := key.GetOrganizationTenant(config.K8sClient.K8sClient(), cr)
 		//if err != nil {
 		//	return nil, microerror.Mask(err)
 		//}
 
-		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig)
+		organizationAzureClientCredentialsConfig, err := credential.GetOrganizationAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
+		authorizer, err := organizationAzureClientCredentialsConfig.Authorizer()
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -499,7 +495,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
+		azureClients, err := client.NewAzureClientSet(authorizer, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -512,7 +508,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				RandomkeysSearcher: randomkeysSearcher,
 
 				Azure:                  config.Azure,
-				AzureClientCredentials: tenantAzureClientCredentialsConfig,
+				AzureClientCredentials: organizationAzureClientCredentialsConfig,
 				AzureNetwork:           *subnets,
 				Ignition:               config.Ignition,
 				OIDC:                   config.OIDC,

@@ -19,8 +19,10 @@ type ClusterConfig struct {
 	K8sClient        k8sclient.Interface
 	Logger           micrologger.Logger
 
-	Azure                     setting.Azure
-	CPAzureClientSet          client.AzureClientSet
+	Azure setting.Azure
+	// Azure client set used when managing control plane resources
+	CPAzureClientSet client.AzureClientSet
+	// Azure credentials used to create Azure client set for tenant clusters
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	ProjectName               string
 	RegistryDomain            string

@@ -20,11 +20,10 @@ const (
 	defaultAzureGUID  = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 )
 
-// GetTenantAzureClientCredentialsConfig returns ClientCredentialsConfig with the customer TenantID as auxiliary tenant id,
-// so that a multi-tenant service principal can work on subscription linked to the customer Tenant ID.
-// It will use a single tenant service principal if credential secret contains customer clientid and clientsecret.
-func GetTenantAzureClientCredentialsConfig(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig, gsClientCredentialsConfig auth.ClientCredentialsConfig) (auth.ClientCredentialsConfig, error) {
-	// Refactor to only decorate GS ClientCredentialsConfig?
+// GetOrganizationAzureClientCredentialsConfig returns ClientCredentialsConfig with the organization Tenant ID as auxiliary tenant id,
+// so that a Multi-Tenant Service Principal can work on the subscription linked to the organization Tenant ID.
+// It will fallback to a Single Tenant Service Principal when organization's credential secret contains Client ID and Client Secret.
+func GetOrganizationAzureClientCredentialsConfig(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig, gsClientCredentialsConfig auth.ClientCredentialsConfig) (auth.ClientCredentialsConfig, error) {
 	credential, err := k8sClient.CoreV1().Secrets(key.CredentialNamespace(cr)).Get(key.CredentialName(cr), apismetav1.GetOptions{})
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
@@ -37,26 +36,20 @@ func GetTenantAzureClientCredentialsConfig(k8sClient kubernetes.Interface, cr pr
 		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
 	}
 
-	// Use GiantSwarm Multi-tenant SP
-	if clientID == "" && clientSecret == "" {
-		gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, tenantID)
+	// Use SP defined in Organization if credentials are present in credential secret.
+	// This will happen until customer have migrated to the Multi-Tenant Service Principal.
+	if clientID != "" && clientSecret != "" {
+		return auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID), nil
 	}
 
-	// Use customer SP if credentials are present in credential secret
-	gsClientCredentialsConfig = auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
-
-	return gsClientCredentialsConfig, nil
-}
-
-// GetTenantAzureClientCredentialsConfig returns ClientCredentialsConfig with the customer TenantID as auxiliary tenant id,
-// so that a multi-tenant service principal can work on subscription linked to the customer Tenant ID.
-func GetTenantAzureClientCredentialsConfig2(gsClientCredentialsConfig auth.ClientCredentialsConfig, tenantID string) (auth.ClientCredentialsConfig, error) {
+	// Use GiantSwarm Multi-tenant SP otherwise.
 	gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, tenantID)
 
 	return gsClientCredentialsConfig, nil
 }
 
-func GetTenant(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig) (string, string, string, error) {
+// GetOrganizationTenant returns the information that makes up the organization's Azure Tenant: a Tenant ID, a Subscription ID and a Partner ID.
+func GetOrganizationTenant(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig) (string, string, string, error) {
 	credential, err := k8sClient.CoreV1().Secrets(key.CredentialNamespace(cr)).Get(key.CredentialName(cr), apismetav1.GetOptions{})
 	if err != nil {
 		return "", "", "", microerror.Mask(err)
@@ -74,7 +67,7 @@ func GetTenant(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig) 
 
 	partnerID, err := valueFromSecret(credential, PartnerIDKey)
 	if err != nil {
-		// No having partnerID in the secret means that customer has not
+		// No having Partner ID in the secret means that customer has not
 		// upgraded yet to use the Azure Partner Program. In that case we set a
 		// constant random generated GUID that we haven't registered with Azure.
 		// When all customers have migrated, we should error out instead.

@@ -272,8 +272,8 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 	return restConfig, nil
 }
 
-// NewAzureClientSet returns the Azure API clients.
-// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
+// NewClientCredentialsConfig returns a ClientCredentialsConfig.
+// Auth is configured taking values from Environment, but operator parameters have precedence over environment variables.
 func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, error) {
 	settings, err := auth.GetSettingsFromEnvironment()
 	if err != nil {
@@ -295,10 +295,15 @@ func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, er
 	return settings.GetClientCredentials()
 }
 
+// NewCPAzureClientSet return an Azure client set configured for the control plane cluster.
+// If no control plane cluster tenant information has been passed to the operator, auth Azure Tenant will be used as control plane Azure Tenant.
 func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig) (*client.AzureClientSet, error) {
 	cpTenantID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.TenantID)
 	if cpTenantID == "" {
 		cpTenantID = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
+		// We want the code to work both when using Single Tenant Service Principal and Multi Tenant Service Principal,
+		// so we only add the CP Tenant ID as auxiliary id if an explicit CP Tenant ID has been passed.
+		gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, cpTenantID)
 	}
 
 	cpSubscriptionID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.SubscriptionID)
@@ -311,5 +316,10 @@ func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCre
 		cpPartnerID = config.Viper.GetString(config.Flag.Service.Azure.PartnerID)
 	}
 
-	return client.NewAzureClientSet(gsClientCredentialsConfig, cpTenantID, cpSubscriptionID, cpPartnerID)
+	authorizer, err := gsClientCredentialsConfig.Authorizer()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return client.NewAzureClientSet(authorizer, cpSubscriptionID, cpPartnerID)
 }
