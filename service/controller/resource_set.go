@@ -486,7 +486,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		azureClients, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
+		tenantClusterAzureClients, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -514,7 +514,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		c := controllercontext.Context{
-			AzureClientSet: azureClients,
+			AzureClientSet: tenantClusterAzureClients,
 			AzureNetwork:   subnets,
 			CloudConfig:    cloudConfig,
 		}

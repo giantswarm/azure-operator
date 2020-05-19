@@ -293,6 +293,10 @@ func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, er
 		settings.Values[auth.SubscriptionID] = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
 	}
 
+	if settings.Values[auth.ClientID] == "" || settings.Values[auth.ClientSecret] == "" || settings.Values[auth.TenantID] == "" {
+		return auth.ClientCredentialsConfig{}, microerror.Maskf(invalidConfigError, "credentials must not be empty")
+	}
+
 	return settings.GetClientCredentials()
 }
 
