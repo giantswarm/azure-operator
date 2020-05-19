@@ -38,7 +38,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	s := *d.Properties.ProvisioningState
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
-	group, err := groupsClient.Get(ctx, key.ClusterID(cr))
+	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
