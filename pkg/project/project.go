@@ -1,11 +1,16 @@
 package project
 
+import (
+	"fmt"
+)
+
 var (
-	description string = "The azure-operator manages Kubernetes clusters on Azure."
-	gitSHA             = "n/a"
-	name        string = "azure-operator"
-	source      string = "https://github.com/giantswarm/azure-operator"
-	version            = "4.1.0-dev"
+	description = "The azure-operator manages Kubernetes clusters on Azure."
+	gitSHA      = "n/a"
+	name        = "azure-operator"
+	source      = "https://github.com/giantswarm/azure-operator"
+	version     = "4.1.0"
+	wipSuffix   = "-dev"
 )
 
 func Description() string {
@@ -25,5 +30,5 @@ func Source() string {
 }
 
 func Version() string {
-	return version
+	return fmt.Sprintf("%s%s", version, wipSuffix)
 }
