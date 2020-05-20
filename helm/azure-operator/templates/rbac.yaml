@@ -12,6 +12,19 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - cluster.x-k8s.io
+      - infrastructure.cluster.x-k8s.io
+    resources:
+      - clusters
+      - azureclusters
+      - azuremachines
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - core.giantswarm.io
     resources:
       - drainerconfigs
