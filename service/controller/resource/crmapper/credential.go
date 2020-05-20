@@ -17,11 +17,6 @@ import (
 const (
 	credentialDefaultName = "credential-default"
 	credentialNamespace   = "giantswarm"
-	// credentialLabelSelectorFormat searches for secrets that have the labels:
-	// - app=credentiald, which denotes that the secret is a credential
-	// - giantswarm.io/organization=ACME, which denotes which organization the
-	//   credential belongs to
-	credentialLabelSelectorFormat = "app=credentiald,giantswarm.io/organization=%s"
 )
 
 func (r *Resource) getCredentialSecret(ctx context.Context, cluster capiv1alpha3.Cluster) (*v1alpha1.CredentialSecret, error) {

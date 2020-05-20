@@ -1,10 +1,8 @@
 package crmapper
 
 import (
-	"math/rand"
 	"sort"
 	"strconv"
-	"time"
 
 	"github.com/giantswarm/microerror"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -46,36 +44,4 @@ func sortAndUniq(xs []int) []int {
 	}
 
 	return xs
-}
-
-func getRandomAZs(count int) []int {
-	azs := generateRandomIntSlice(count)
-	sort.Ints(sort.IntSlice(azs))
-
-	return azs
-}
-
-func generateRandomIntSlice(length int) []int {
-	rand.Seed(time.Now().UnixNano())
-	randomIntSlice := make([]int, length)
-
-	existingNumbers := map[int]bool{}
-	i := 0
-
-	for i < length {
-		randomNumber := generateRandomNumber(1, length)
-
-		if !existingNumbers[randomNumber] {
-			randomIntSlice[i] = randomNumber
-			existingNumbers[randomNumber] = true
-
-			i++
-		}
-	}
-
-	return randomIntSlice
-}
-
-func generateRandomNumber(min, max int) int {
-	return min + rand.Intn(max-min+1)
 }
