@@ -19,15 +19,17 @@ import (
 )
 
 type SubnetCollectorConfig struct {
-	G8sClient versioned.Interface
-	Logger    micrologger.Logger
+	G8sClient        versioned.Interface
+	InstallationName string
+	Logger           micrologger.Logger
 
 	NetworkRange net.IPNet
 }
 
 type SubnetCollector struct {
-	g8sClient versioned.Interface
-	logger    micrologger.Logger
+	g8sClient        versioned.Interface
+	installationName string
+	logger           micrologger.Logger
 
 	networkRange net.IPNet
 }
@@ -35,6 +37,9 @@ type SubnetCollector struct {
 func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
+	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -45,8 +50,9 @@ func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) 
 	}
 
 	c := &SubnetCollector{
-		g8sClient: config.G8sClient,
-		logger:    config.Logger,
+		g8sClient:        config.G8sClient,
+		installationName: config.InstallationName,
+		logger:           config.Logger,
 
 		networkRange: config.NetworkRange,
 	}
@@ -136,7 +142,8 @@ func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context) ([]net
 	groupsClient := cc.AzureClientSet.GroupsClient
 	vnetClient := cc.AzureClientSet.VirtualNetworkClient
 
-	iterator, err := groupsClient.ListComplete(ctx, "tagName eq 'GiantSwarmCluster'", nil)
+	// Look for all resource groups that have a tag named 'GiantSwarmInstallation' with any value.
+	iterator, err := groupsClient.ListComplete(ctx, fmt.Sprintf("tagName eq 'GiantSwarmInstallation' and tagValue eq '%s'", c.installationName), nil)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -146,26 +153,28 @@ func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context) ([]net
 	for iterator.NotDone() {
 		group := iterator.Value()
 
-		fmt.Printf("Group %s is interesting\n", *group.Name)
-
-		// Search a VNET with the expected name.
-		vnetName := fmt.Sprintf("%s-VirtualNetwork", *group.Name)
-
-		vnet, err := vnetClient.Get(ctx, *group.Name, vnetName, "")
-		if key.IsNotFound(err) {
-			// VNET with desired name not found, ignore this resource group.
-			continue
-		} else if err != nil {
-			return nil, microerror.Mask(err)
+		// Search a VNET with any of the expected names.
+		vnetCandidates := []string{
+			fmt.Sprintf("%s-VirtualNetwork", *group.Name),
+			c.installationName,
 		}
 
-		for _, cidr := range *vnet.AddressSpace.AddressPrefixes {
-			_, n, err := net.ParseCIDR(cidr)
-			if err != nil {
+		for _, vnetName := range vnetCandidates {
+			vnet, err := vnetClient.Get(ctx, *group.Name, vnetName, "")
+			if IsNotFound(err) {
+				// VNET with desired name not found, ignore this resource group.
+			} else if err != nil {
 				return nil, microerror.Mask(err)
-			}
+			} else {
+				for _, cidr := range *vnet.AddressSpace.AddressPrefixes {
+					_, n, err := net.ParseCIDR(cidr)
+					if err != nil {
+						return nil, microerror.Mask(err)
+					}
 
-			ret = append(ret, *n)
+					ret = append(ret, *n)
+				}
+			}
 		}
 
 		err = iterator.NextWithContext(ctx)
