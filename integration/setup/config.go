@@ -7,7 +7,8 @@ import (
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
 	e2esetupenv "github.com/giantswarm/e2esetup/chart/env"
 	"github.com/giantswarm/helmclient"
-	"github.com/giantswarm/k8sclient"
+	k8sclientlegacy "github.com/giantswarm/k8sclient/v2/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -22,14 +23,15 @@ const (
 )
 
 type Config struct {
-	AzureClient *e2eclientsazure.Client
-	Guest       *framework.Guest
-	HelmClient  helmclient.Interface
-	Host        *framework.Host
-	K8s         *k8sclient.Setup
-	K8sClients  k8sclient.Interface
-	Logger      micrologger.Logger
-	Release     *release.Release
+	AzureClient      *e2eclientsazure.Client
+	Guest            *framework.Guest
+	HelmClient       helmclient.Interface
+	Host             *framework.Host
+	K8s              *k8sclient.Setup
+	LegacyK8sClients k8sclientlegacy.Interface
+	K8sClients       k8sclient.Interface
+	Logger           micrologger.Logger
+	Release          *release.Release
 }
 
 func NewConfig() (Config, error) {
@@ -77,6 +79,20 @@ func NewConfig() (Config, error) {
 		}
 
 		cpK8sClients, err = k8sclient.NewClients(c)
+		if err != nil {
+			return Config{}, microerror.Mask(err)
+		}
+	}
+
+	var legacyCPK8sClients *k8sclientlegacy.Clients
+	{
+		c := k8sclientlegacy.ClientsConfig{
+			Logger: logger,
+
+			KubeConfigPath: e2esetupenv.KubeConfigPath(),
+		}
+
+		legacyCPK8sClients, err = k8sclientlegacy.NewClients(c)
 		if err != nil {
 			return Config{}, microerror.Mask(err)
 		}
@@ -160,14 +176,15 @@ func NewConfig() (Config, error) {
 	}
 
 	c := Config{
-		AzureClient: azureClient,
-		Guest:       guest,
-		HelmClient:  helmClient,
-		Host:        host,
-		K8s:         k8sSetup,
-		K8sClients:  cpK8sClients,
-		Logger:      logger,
-		Release:     newRelease,
+		AzureClient:      azureClient,
+		Guest:            guest,
+		HelmClient:       helmClient,
+		Host:             host,
+		K8s:              k8sSetup,
+		K8sClients:       cpK8sClients,
+		LegacyK8sClients: legacyCPK8sClients,
+		Logger:           logger,
+		Release:          newRelease,
 	}
 
 	return c, nil
