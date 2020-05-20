@@ -19,13 +19,13 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/crmapper"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
-	"github.com/giantswarm/azure-operator/v4/service/credential"
 	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
@@ -37,15 +37,15 @@ type AzureClusterResourceSetConfig struct {
 	Flag  *flag.Flag
 	Viper *viper.Viper
 
-	Azure                    setting.Azure
-	HostAzureClientSetConfig client.AzureClientSetConfig
-	Ignition                 setting.Ignition
-	InstallationName         string
-	ProjectName              string
-	RegistryDomain           string
-	OIDC                     setting.OIDC
-	SSOPublicKey             string
-	VMSSCheckWorkers         int
+	Azure            setting.Azure
+	CPAzureClientSet client.AzureClientSet
+	Ignition         setting.Ignition
+	InstallationName string
+	ProjectName      string
+	RegistryDomain   string
+	OIDC             setting.OIDC
+	SSOPublicKey     string
+	VMSSCheckWorkers int
 }
 
 func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controller.ResourceSet, error) {
@@ -155,14 +155,21 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient.K8sClient(), key.CredentialName(cr), key.CredentialNamespace(cr))
+		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig.EnvironmentName = config.Azure.EnvironmentName
+		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 
-		azureClients, err := client.NewAzureClientSet(*guestAzureClientSetConfig)
+		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -174,12 +181,12 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 				Logger:             config.Logger,
 				RandomkeysSearcher: randomkeysSearcher,
 
-				Azure:        config.Azure,
-				AzureConfig:  *guestAzureClientSetConfig,
-				AzureNetwork: *subnets,
-				Ignition:     config.Ignition,
-				OIDC:         config.OIDC,
-				SSOPublicKey: config.SSOPublicKey,
+				Azure:                  config.Azure,
+				AzureClientCredentials: tenantAzureClientCredentialsConfig,
+				AzureNetwork:           *subnets,
+				Ignition:               config.Ignition,
+				OIDC:                   config.OIDC,
+				SSOPublicKey:           config.SSOPublicKey,
 			}
 
 			cloudConfig, err = cloudconfig.New(c)

@@ -24,15 +24,10 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 	}
 
 	if len(dnsRecords) != 0 {
-		recordSetsClient, err := r.getDNSRecordSetsHostClient()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
 		for _, record := range dnsRecords {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record '%s'", record.RelativeName))
 
-			_, err := recordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
+			_, err := r.cpRecordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}

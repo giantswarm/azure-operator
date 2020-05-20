@@ -23,10 +23,10 @@ type AzureClusterConfig struct {
 	Flag  *flag.Flag
 	Viper *viper.Viper
 
-	Azure          setting.Azure
-	AzureConfig    client.AzureClientSetConfig
-	ProjectName    string
-	RegistryDomain string
+	Azure            setting.Azure
+	CPAzureClientSet client.AzureClientSet
+	ProjectName      string
+	RegistryDomain   string
 
 	Ignition         setting.Ignition
 	OIDC             setting.OIDC
@@ -65,15 +65,15 @@ func NewAzureCluster(config AzureClusterConfig) (*AzureCluster, error) {
 			Flag:  config.Flag,
 			Viper: config.Viper,
 
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			Ignition:                 config.Ignition,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			RegistryDomain:           config.RegistryDomain,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			VMSSCheckWorkers:         config.VMSSCheckWorkers,
+			Azure:            config.Azure,
+			CPAzureClientSet: config.CPAzureClientSet,
+			Ignition:         config.Ignition,
+			InstallationName: config.InstallationName,
+			ProjectName:      config.ProjectName,
+			RegistryDomain:   config.RegistryDomain,
+			OIDC:             config.OIDC,
+			SSOPublicKey:     config.SSOPublicKey,
+			VMSSCheckWorkers: config.VMSSCheckWorkers,
 		}
 
 		resourceSet, err = NewAzureClusterResourceSet(c)

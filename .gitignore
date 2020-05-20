@@ -15,3 +15,4 @@ integration/test/**/logs/*.txt
 scripts/*.tar.gz
 
 telepresence.log
+*.flowchart.generated.html
