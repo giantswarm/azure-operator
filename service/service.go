@@ -288,9 +288,6 @@ func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, er
 	if config.Viper.GetString(config.Flag.Service.Azure.TenantID) != "" {
 		settings.Values[auth.TenantID] = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
 	}
-	if config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID) != "" {
-		settings.Values[auth.SubscriptionID] = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
-	}
 
 	if settings.Values[auth.ClientID] == "" || settings.Values[auth.ClientSecret] == "" || settings.Values[auth.TenantID] == "" {
 		return auth.ClientCredentialsConfig{}, microerror.Maskf(invalidConfigError, "credentials must not be empty")
@@ -299,14 +296,12 @@ func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, er
 	return settings.GetClientCredentials()
 }
 
-// NewCPAzureClientSet return an Azure client set configured for the control plane cluster.
-// If no control plane cluster tenant information has been passed to the operator, auth Azure Tenant will be used as control plane Azure Tenant.
+// NewCPAzureClientSet return an Azure client set configured for the Control Plane cluster.
 func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig) (*client.AzureClientSet, error) {
 	cpTenantID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.TenantID)
-	if cpTenantID == "" {
-		cpTenantID = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
-		// We want the code to work both when using Single Tenant Service Principal and Multi Tenant Service Principal,
-		// so we only add the CP Tenant ID as auxiliary id if an explicit CP Tenant ID has been passed.
+	if cpTenantID != "" {
+		// We want the code to work both when using Single Tenant Service Principal and Multi Tenant Service Principal.
+		// We only add the CP Tenant ID as auxiliary id if an explicit CP Tenant ID has been passed.
 		gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, cpTenantID)
 	}
 
