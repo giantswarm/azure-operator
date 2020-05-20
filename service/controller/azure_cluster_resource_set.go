@@ -127,7 +127,7 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 	}
 
 	handlesFunc := func(obj interface{}) bool {
-		cr, err := key.ToCustomResource(obj)
+		cr, err := key.ToAzureCluster(obj)
 		if err != nil {
 			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err)) // nolint: errcheck
 			return false
