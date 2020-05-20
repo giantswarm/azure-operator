@@ -3,8 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"net"
-	"time"
 
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
@@ -14,19 +12,14 @@ import (
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
-	"github.com/giantswarm/randomkeys"
 	"github.com/spf13/viper"
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/crmapper"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
-	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
 type AzureClusterResourceSetConfig struct {
@@ -58,33 +51,35 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 
 	var err error
 
-	var certsSearcher certs.Interface
-	{
-		c := certs.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
+	/*
+		var certsSearcher certs.Interface
+		{
+			c := certs.Config{
+				K8sClient: config.K8sClient.K8sClient(),
+				Logger:    config.Logger,
 
-			WatchTimeout: 5 * time.Second,
+				WatchTimeout: 5 * time.Second,
+			}
+
+			certsSearcher, err = certs.NewSearcher(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		}
 
-		certsSearcher, err = certs.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+		var randomkeysSearcher *randomkeys.Searcher
+		{
+			c := randomkeys.Config{
+				K8sClient: config.K8sClient.K8sClient(),
+				Logger:    config.Logger,
+			}
 
-	var randomkeysSearcher *randomkeys.Searcher
-	{
-		c := randomkeys.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
+			randomkeysSearcher, err = randomkeys.NewSearcher(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		}
-
-		randomkeysSearcher, err = randomkeys.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	*/
 
 	var crMapperResource *crmapper.Resource
 	{
@@ -141,68 +136,7 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
-		cr, err := key.ToCustomResource(obj)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		_, vnet, err := net.ParseCIDR(key.VnetCIDR(cr))
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		subnets, err := network.Compute(*vnet)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		var cloudConfig *cloudconfig.CloudConfig
-		{
-			c := cloudconfig.Config{
-				CertsSearcher:      certsSearcher,
-				Logger:             config.Logger,
-				RandomkeysSearcher: randomkeysSearcher,
-
-				Azure:                  config.Azure,
-				AzureClientCredentials: tenantAzureClientCredentialsConfig,
-				AzureNetwork:           *subnets,
-				Ignition:               config.Ignition,
-				OIDC:                   config.OIDC,
-				SSOPublicKey:           config.SSOPublicKey,
-			}
-
-			cloudConfig, err = cloudconfig.New(c)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		}
-
-		c := controllercontext.Context{
-			AzureClientSet: azureClients,
-			AzureNetwork:   subnets,
-			CloudConfig:    cloudConfig,
-		}
-		ctx = controllercontext.NewContext(ctx, c)
-
-		return ctx, nil
+		return context.Background(), nil
 	}
 
 	var resourceSet *controller.ResourceSet
