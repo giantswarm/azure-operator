@@ -10,11 +10,13 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -50,9 +52,48 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	var masterMachines []capzv1alpha3.AzureMachine
+	var workerMachines []capzv1alpha3.AzureMachine
+	{
+		azureMachineList := &capzv1alpha3.AzureMachineList{}
+		{
+			err := r.ctrlClient.List(
+				ctx,
+				azureMachineList,
+				client.InNamespace(cluster.Namespace),
+				client.MatchingLabels{label.Cluster: key.ClusterID(&cluster)},
+			)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		for _, m := range azureMachineList.Items {
+			if key.IsControlPlaneMachine(&m) {
+				masterMachines = append(masterMachines, m)
+			} else {
+				workerMachines = append(workerMachines, m)
+			}
+		}
+
+		if len(masterMachines) < 1 {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no control plane AzureMachines found for cluster %q", key.ClusterID(&cluster)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			return nil
+		}
+
+		if len(workerMachines) < 1 {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("worker AzureMachines found for cluster %q", key.ClusterID(&cluster)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			return nil
+		}
+	}
+
 	var mappedAzureConfig providerv1alpha1.AzureConfig
 	{
-		mappedAzureConfig, err = r.buildAzureConfig(ctx, cluster, azureCluster)
+		mappedAzureConfig, err = r.buildAzureConfig(ctx, cluster, azureCluster, masterMachines, workerMachines)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -95,7 +136,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster) (providerv1alpha1.AzureConfig, error) {
+func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster, masters, workers []capzv1alpha3.AzureMachine) (providerv1alpha1.AzureConfig, error) {
 	var err error
 
 	azureConfig := providerv1alpha1.AzureConfig{}
@@ -112,7 +153,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	}
 
 	{
-		cluster, err := r.newCluster(cluster, azureCluster)
+		cluster, err := r.newCluster(cluster, azureCluster, workers)
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
 		}
@@ -133,7 +174,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, "giantswarm.io/provider", ProviderAzure)
 		azureConfig.Spec.VersionBundle.Version = key.OperatorVersion(&azureCluster)
 
-		azureConfig.Spec.Azure.AvailabilityZones, err = getAvailabilityZones(azureCluster)
+		azureConfig.Spec.Azure.AvailabilityZones, err = getAvailabilityZones(masters)
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
 		}
@@ -168,18 +209,29 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	azureConfig.Spec.Azure.DNSZones.Ingress.ResourceGroup = hostResourceGroup
 
 	{
-		masters, err := r.getMasters(ctx, cluster, azureCluster)
-		if err != nil {
-			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
+
+		var masterNodes []providerv1alpha1.AzureConfigSpecAzureNode
+		for _, m := range masters {
+			n := providerv1alpha1.AzureConfigSpecAzureNode{
+				VMSize:              m.Spec.VMSize,
+				DockerVolumeSizeGB:  dockerVolumeSizeGB,
+				KubeletVolumeSizeGB: kubeletVolumeSizeGB,
+			}
+			masterNodes = append(masterNodes, n)
 		}
 
-		workers, err := r.getWorkers(ctx, cluster, azureCluster)
-		if err != nil {
-			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
+		var workerNodes []providerv1alpha1.AzureConfigSpecAzureNode
+		for _, m := range workers {
+			n := providerv1alpha1.AzureConfigSpecAzureNode{
+				VMSize:              m.Spec.VMSize,
+				DockerVolumeSizeGB:  dockerVolumeSizeGB,
+				KubeletVolumeSizeGB: kubeletVolumeSizeGB,
+			}
+			workerNodes = append(workerNodes, n)
 		}
 
-		azureConfig.Spec.Azure.Masters = masters
-		azureConfig.Spec.Azure.Workers = workers
+		azureConfig.Spec.Azure.Masters = masterNodes
+		azureConfig.Spec.Azure.Workers = workerNodes
 	}
 
 	{
@@ -194,7 +246,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	return azureConfig, nil
 }
 
-func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster) (providerv1alpha1.Cluster, error) {
+func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1alpha3.AzureCluster, workers []capzv1alpha3.AzureMachine) (providerv1alpha1.Cluster, error) {
 	commonCluster := providerv1alpha1.Cluster{}
 
 	{
@@ -301,14 +353,8 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
-		// XXX: Statically hard coded cluster workers since we are replacing
-		// this with Node Pools where workers come from MachinePool &
-		// AzureMachinePool.
-		commonCluster.Scaling.Max = 3
-		commonCluster.Scaling.Min = 3
-	}
-
-	{
+		commonCluster.Scaling.Max = len(workers)
+		commonCluster.Scaling.Min = len(workers)
 	}
 
 	return commonCluster, nil
