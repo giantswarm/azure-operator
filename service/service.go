@@ -103,7 +103,7 @@ func New(config Config) (*Service, error) {
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
-	// These credentials will be used when creating AzureClients for Control Plane and Tenant clusters.
+	// These credentials will be used when creating AzureClients for Control Plane clusters.
 	gsClientCredentialsConfig, err := NewClientCredentialsConfig(config)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -274,7 +274,6 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 
 // NewClientCredentialsConfig returns a `ClientCredentialsConfig` configured taking values from Environment,
 // but operator parameters have precedence over environment variables.
-// These credentials will be used when talking to both Control Plane clusters and Tenant clusters.
 func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, error) {
 	settings, err := auth.GetSettingsFromEnvironment()
 	if err != nil {

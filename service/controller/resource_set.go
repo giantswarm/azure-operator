@@ -476,17 +476,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		organizationAzureClientCredentialsConfig, err := credential.GetOrganizationAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig)
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig.TenantID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		tenantClusterAzureClients, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
+		tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -514,7 +509,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		c := controllercontext.Context{
-			AzureClientSet: tenantClusterAzureClients,
+			AzureClientSet: tenantClusterAzureClientSet,
 			AzureNetwork:   subnets,
 			CloudConfig:    cloudConfig,
 		}
