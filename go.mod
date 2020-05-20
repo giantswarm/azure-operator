@@ -6,7 +6,7 @@ require (
 	github.com/Azure/azure-sdk-for-go v41.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.10.0
-	github.com/Azure/go-autorest/autorest/adal v0.8.2
+	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/Azure/go-autorest/autorest/to v0.3.0
 	github.com/MakeNowJust/heredoc v1.0.0 // indirect
 	github.com/blang/semver v3.5.1+incompatible // indirect

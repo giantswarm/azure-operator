@@ -13,6 +13,7 @@ type Azure struct {
 	HostCluster      hostcluster.HostCluster
 	MSI              msi.MSI
 	Location         string
+	PartnerID        string
 	SubscriptionID   string
 	TenantID         string
 	Template         template.Template

@@ -18,10 +18,10 @@ type ClusterConfig struct {
 	K8sClient        k8sclient.Interface
 	Logger           micrologger.Logger
 
-	Azure          setting.Azure
-	AzureConfig    client.AzureClientSetConfig
-	ProjectName    string
-	RegistryDomain string
+	Azure            setting.Azure
+	CPAzureClientSet client.AzureClientSet
+	ProjectName      string
+	RegistryDomain   string
 
 	Ignition         setting.Ignition
 	OIDC             setting.OIDC
@@ -57,15 +57,15 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			K8sClient:     config.K8sClient,
 			Logger:        config.Logger,
 
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.AzureConfig,
-			Ignition:                 config.Ignition,
-			InstallationName:         config.InstallationName,
-			ProjectName:              config.ProjectName,
-			RegistryDomain:           config.RegistryDomain,
-			OIDC:                     config.OIDC,
-			SSOPublicKey:             config.SSOPublicKey,
-			VMSSCheckWorkers:         config.VMSSCheckWorkers,
+			Azure:            config.Azure,
+			CPAzureClientSet: config.CPAzureClientSet,
+			Ignition:         config.Ignition,
+			InstallationName: config.InstallationName,
+			ProjectName:      config.ProjectName,
+			RegistryDomain:   config.RegistryDomain,
+			OIDC:             config.OIDC,
+			SSOPublicKey:     config.SSOPublicKey,
+			VMSSCheckWorkers: config.VMSSCheckWorkers,
 		}
 
 		resourceSet, err = NewResourceSet(c)
