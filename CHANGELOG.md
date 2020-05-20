@@ -7,8 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.0.1] 2020-05-20
 
+## Fixed
 
+- Avoid blocking all egress traffic from workers during flatcar migration.
 
 ## [4.0.0] 2020-05-05
 
