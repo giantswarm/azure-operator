@@ -2,7 +2,7 @@ exclude: 'vendor'
 fail_fast: true
 repos:
   - repo: git://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v3.0.1
     hooks:
       - id: no-commit-to-branch
       - id: check-merge-conflict
