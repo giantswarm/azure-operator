@@ -7,19 +7,23 @@ import (
 	"reflect"
 	"sync"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"golang.org/x/sync/errgroup"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam/internal/credential"
 )
 
 type SubnetCollectorConfig struct {
 	G8sClient        versioned.Interface
+	K8sClient        kubernetes.Interface
 	InstallationName string
 	Logger           micrologger.Logger
 
@@ -28,6 +32,7 @@ type SubnetCollectorConfig struct {
 
 type SubnetCollector struct {
 	g8sClient        versioned.Interface
+	k8sclient        kubernetes.Interface
 	installationName string
 	logger           micrologger.Logger
 
@@ -36,7 +41,10 @@ type SubnetCollector struct {
 
 func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) {
 	if config.G8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.k8sClient must not be empty", config)
+	}
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 	if config.InstallationName == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
@@ -51,6 +59,7 @@ func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) 
 
 	c := &SubnetCollector{
 		g8sClient:        config.G8sClient,
+		k8sclient:        config.K8sClient,
 		installationName: config.InstallationName,
 		logger:           config.Logger,
 
@@ -86,7 +95,7 @@ func (c *SubnetCollector) Collect(ctx context.Context) ([]net.IPNet, error) {
 	g.Go(func() error {
 		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets from all resource groups in the subscription")
 
-		subnets, err := c.getSubnetsFromSubscription(ctx)
+		subnets, err := c.getSubnetsFromAllSubscriptions(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -131,6 +140,43 @@ func (c *SubnetCollector) getSubnetsFromAzureConfigs(ctx context.Context) ([]net
 	}
 
 	return results, nil
+}
+
+func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([]net.IPNet, error) {
+	// We need all CRs to gather all subscriptions below.
+	var crs []providerv1alpha1.AzureConfig
+	{
+		mark := ""
+		page := 0
+		for page == 0 || len(mark) > 0 {
+			opts := metav1.ListOptions{
+				Continue: mark,
+			}
+			list, err := c.g8sClient.ProviderV1alpha1().AzureConfigs(metav1.NamespaceAll).List(opts)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+			crs = append(crs, list.Items...)
+
+			mark = list.Continue
+			page++
+		}
+	}
+
+	var doneSubscriptions []string
+	for _, cr := range crs {
+		config, err := credential.GetAzureConfigFromSecretName(c.k8sclient, key.CredentialName(cr), key.CredentialNamespace(cr))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		// We want to check only once per subscriptino
+		if inArray(doneSubscriptions, config.SubscriptionID) {
+			continue
+		}
+		doneSubscriptions = append(doneSubscriptions, config.SubscriptionID)
+	}
 }
 
 func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context) ([]net.IPNet, error) {
@@ -184,4 +230,14 @@ func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context) ([]net
 	}
 
 	return ret, nil
+}
+
+func inArray(a []string, s string) bool {
+	for _, x := range a {
+		if x == s {
+			return true
+		}
+	}
+
+	return false
 }

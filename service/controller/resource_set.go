@@ -377,6 +377,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	{
 		c := ipam.SubnetCollectorConfig{
 			G8sClient:        config.K8sClient.G8sClient(),
+			K8sClient:        config.K8sClient.K8sClient(),
 			InstallationName: config.InstallationName,
 			Logger:           config.Logger,
 
