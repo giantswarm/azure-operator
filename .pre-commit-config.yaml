@@ -2,8 +2,9 @@ exclude: 'vendor'
 fail_fast: true
 repos:
   - repo: git://github.com/pre-commit/pre-commit-hooks
-    rev: v2.5.0
+    rev: v3.0.1
     hooks:
+      - id: no-commit-to-branch
       - id: check-merge-conflict
       - id: mixed-line-ending
       - id: end-of-file-fixer
@@ -13,6 +14,6 @@ repos:
     hooks:
       - id: go-fmt
       - id: go-imports
-      - id: golangci-lint
-      - id: go-unit-tests
       - id: go-build
+      - id: go-unit-tests
+      - id: golangci-lint
