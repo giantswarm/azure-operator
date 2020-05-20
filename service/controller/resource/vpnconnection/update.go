@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 // NewUpdatePatch provide a crud.Patch holding the needed connections update.
@@ -130,19 +130,14 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 	}
 
 	{
-		hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient()
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
 		resourceGroup := r.azure.HostCluster.ResourceGroup
 		connectionName := *change.Host.Name
 		connection := change.Host
-		res, err := hostGatewayConnectionClient.CreateOrUpdate(ctx, resourceGroup, connectionName, connection)
+		res, err := r.cpVirtualNetworkGatewayConnectionsClient.CreateOrUpdate(ctx, resourceGroup, connectionName, connection)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		_, err = hostGatewayConnectionClient.CreateOrUpdateResponder(res.Response())
+		_, err = r.cpVirtualNetworkGatewayConnectionsClient.CreateOrUpdateResponder(res.Response())
 		if err != nil {
 			return microerror.Mask(err)
 		}

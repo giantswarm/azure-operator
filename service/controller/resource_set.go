@@ -19,31 +19,31 @@ import (
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/tenantcluster"
 
-	"github.com/giantswarm/azure-operator/v3/client"
-	"github.com/giantswarm/azure-operator/v3/pkg/project"
-	"github.com/giantswarm/azure-operator/v3/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/v3/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v3/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v3/service/controller/internal/vmsscheck"
-	"github.com/giantswarm/azure-operator/v3/service/controller/key"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/blobobject"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/containerurl"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/deployment"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/encryptionkey"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/endpoints"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/instance"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/masters"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/namespace"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/release"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/resourcegroup"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/service"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/tenantclients"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/vpn"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/vpnconnection"
-	"github.com/giantswarm/azure-operator/v3/service/controller/setting"
-	"github.com/giantswarm/azure-operator/v3/service/credential"
-	"github.com/giantswarm/azure-operator/v3/service/network"
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/encryptionkey"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/endpoints"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/service"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tenantclients"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpn"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpnconnection"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
 type ResourceSetConfig struct {
@@ -51,15 +51,15 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure                    setting.Azure
-	HostAzureClientSetConfig client.AzureClientSetConfig
-	Ignition                 setting.Ignition
-	InstallationName         string
-	ProjectName              string
-	RegistryDomain           string
-	OIDC                     setting.OIDC
-	SSOPublicKey             string
-	VMSSCheckWorkers         int
+	Azure            setting.Azure
+	CPAzureClientSet client.AzureClientSet
+	Ignition         setting.Ignition
+	InstallationName string
+	ProjectName      string
+	RegistryDomain   string
+	OIDC             setting.OIDC
+	SSOPublicKey     string
+	VMSSCheckWorkers int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -253,9 +253,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
-			Logger: config.Logger,
-
-			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+			CPRecordSetsClient: *config.CPAzureClientSet.DNSRecordSetsClient,
+			Logger:             config.Logger,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -391,10 +390,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var vpnconnectionResource resource.Interface
 	{
 		c := vpnconnection.Config{
-			Logger: config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+			Azure:                                    config.Azure,
+			Logger:                                   config.Logger,
+			CPVirtualNetworkGatewaysClient:           *config.CPAzureClientSet.VirtualNetworkGatewaysClient,
+			CPVirtualNetworkGatewayConnectionsClient: *config.CPAzureClientSet.VirtualNetworkGatewayConnectionsClient,
 		}
 
 		ops, err := vpnconnection.New(c)
@@ -475,14 +474,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient.K8sClient(), key.CredentialName(cr), key.CredentialNamespace(cr))
+		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig.EnvironmentName = config.Azure.EnvironmentName
+		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 
-		azureClients, err := client.NewAzureClientSet(*guestAzureClientSetConfig)
+		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -494,12 +500,13 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				Logger:             config.Logger,
 				RandomkeysSearcher: randomkeysSearcher,
 
-				Azure:        config.Azure,
-				AzureConfig:  *guestAzureClientSetConfig,
-				AzureNetwork: *subnets,
-				Ignition:     config.Ignition,
-				OIDC:         config.OIDC,
-				SSOPublicKey: config.SSOPublicKey,
+				Azure:                  config.Azure,
+				AzureClientCredentials: tenantAzureClientCredentialsConfig,
+				AzureNetwork:           *subnets,
+				Ignition:               config.Ignition,
+				OIDC:                   config.OIDC,
+				SSOPublicKey:           config.SSOPublicKey,
+				SubscriptionID:         subscriptionID,
 			}
 
 			cloudConfig, err = cloudconfig.New(c)

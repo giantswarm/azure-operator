@@ -1,12 +1,14 @@
 package credential
 
 import (
+	"github.com/Azure/go-autorest/autorest/azure/auth"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/v3/client"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
@@ -18,30 +20,39 @@ const (
 	defaultAzureGUID  = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 )
 
-func GetAzureConfig(k8sClient kubernetes.Interface, name string, namespace string) (*client.AzureClientSetConfig, error) {
-	credential, err := k8sClient.CoreV1().Secrets(namespace).Get(name, apismetav1.GetOptions{})
+func GetTenantAzureClientCredentialsConfig(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig) (auth.ClientCredentialsConfig, error) {
+	credential, err := k8sClient.CoreV1().Secrets(key.CredentialNamespace(cr)).Get(key.CredentialName(cr), apismetav1.GetOptions{})
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
 	}
 
 	clientID, err := valueFromSecret(credential, ClientIDKey)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
 	}
 
 	clientSecret, err := valueFromSecret(credential, ClientSecretKey)
 	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	subscriptionID, err := valueFromSecret(credential, SubscriptionIDKey)
-	if err != nil {
-		return nil, microerror.Mask(err)
+		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
 	}
 
 	tenantID, err := valueFromSecret(credential, TenantIDKey)
 	if err != nil {
-		return nil, microerror.Mask(err)
+		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
+	}
+
+	return auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID), nil
+}
+
+func GetSubscriptionAndPartnerID(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig) (string, string, error) {
+	credential, err := k8sClient.CoreV1().Secrets(key.CredentialNamespace(cr)).Get(key.CredentialName(cr), apismetav1.GetOptions{})
+	if err != nil {
+		return "", "", microerror.Mask(err)
+	}
+
+	subscriptionID, err := valueFromSecret(credential, SubscriptionIDKey)
+	if err != nil {
+		return "", "", microerror.Mask(err)
 	}
 
 	partnerID, err := valueFromSecret(credential, PartnerIDKey)
@@ -53,15 +64,7 @@ func GetAzureConfig(k8sClient kubernetes.Interface, name string, namespace strin
 		partnerID = defaultAzureGUID
 	}
 
-	c := &client.AzureClientSetConfig{
-		ClientID:       clientID,
-		ClientSecret:   clientSecret,
-		SubscriptionID: subscriptionID,
-		TenantID:       tenantID,
-		PartnerID:      partnerID,
-	}
-
-	return c, nil
+	return subscriptionID, partnerID, nil
 }
 
 func valueFromSecret(secret *v1.Secret, key string) (string, error) {

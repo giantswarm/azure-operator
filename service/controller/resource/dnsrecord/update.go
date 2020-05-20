@@ -22,11 +22,6 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records")
 
-	recordSetsClient, err := r.getDNSRecordSetsHostClient()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	if len(change) == 0 {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: already ensured")
 		return nil
@@ -47,7 +42,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) err
 			}
 		}
 
-		_, err := recordSetsClient.CreateOrUpdate(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
+		_, err := r.cpRecordSetsClient.CreateOrUpdate(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
 		if err != nil {
 			return microerror.Mask(err)
 		}

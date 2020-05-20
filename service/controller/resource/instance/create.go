@@ -8,36 +8,40 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
-	"github.com/giantswarm/azure-operator/v3/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/v3/service/controller/key"
-	"github.com/giantswarm/azure-operator/v3/service/controller/resource/masters"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 )
 
 // configureStateMachine configures and returns state machine that is driven by
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		DeploymentUninitialized:        r.deploymentUninitializedTransition,
-		DeploymentInitialized:          r.deploymentInitializedTransition,
-		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
-		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
-		ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
+		Logger:       r.logger,
+		ResourceName: Name,
+		Transitions: state.TransitionMap{
+			DeploymentUninitialized:        r.deploymentUninitializedTransition,
+			DeploymentInitialized:          r.deploymentInitializedTransition,
+			ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
+			ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
+			ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
 
-		WaitNewVMSSWorkers: r.waitNewVMSSWorkersTransition,
+			WaitNewVMSSWorkers: r.waitNewVMSSWorkersTransition,
 
-		CordonOldVMSS:    r.cordonOldVMSSTransition,
-		CordonOldWorkers: r.cordonOldWorkersTransition,
+			CordonOldVMSS:    r.cordonOldVMSSTransition,
+			CordonOldWorkers: r.cordonOldWorkersTransition,
 
-		WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
+			WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
 
-		DrainOldVMSS:        r.drainOldVMSSTransition,
-		DrainOldWorkerNodes: r.drainOldWorkerNodesTransition,
+			DrainOldVMSS:        r.drainOldVMSSTransition,
+			DrainOldWorkerNodes: r.drainOldWorkerNodesTransition,
 
-		TerminateOldVMSS:            r.terminateOldVmssTransition,
-		TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
+			TerminateOldVMSS:            r.terminateOldVmssTransition,
+			TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
 
-		ScaleDownWorkerVMSS: r.scaleDownWorkerVMSSTransition,
-		DeploymentCompleted: r.deploymentCompletedTransition,
+			ScaleDownWorkerVMSS: r.scaleDownWorkerVMSSTransition,
+			DeploymentCompleted: r.deploymentCompletedTransition,
+		},
 	}
 
 	r.stateMachine = sm
