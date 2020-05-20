@@ -272,6 +272,7 @@ func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
+		go s.azureClusterController.Boot(ctx)
 		go s.clusterController.Boot(ctx)
 	})
 }
