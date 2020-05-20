@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Fixed
 
 - Make the rate limit circuit breaker to only inspect response HTTP status code if there were no errors doing the request.
+- Avoid blocking all egress traffic from workers during flatcar migration.
 
 ## [4.0.0] 2020-05-05
 
