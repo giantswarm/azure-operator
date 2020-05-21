@@ -31,13 +31,13 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 	}
 
 	if !deallocated {
-		r.logger.LogCtx(ctx, "level", "info", "message", "Legacy VMSS instance is not deallocated yet.")
-		r.logger.LogCtx(ctx, "level", "info", "message", "Deallocating legacy VMSS instances.")
+		r.Logger().LogCtx(ctx, "level", "info", "message", "Legacy VMSS instance is not deallocated yet.")
+		r.Logger().LogCtx(ctx, "level", "info", "message", "Deallocating legacy VMSS instances.")
 		err := r.deallocateAllInstances(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
 		if err != nil {
 			return Empty, microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "info", "message", "Deallocated legacy VMSS instances.")
+		r.Logger().LogCtx(ctx, "level", "info", "message", "Deallocated legacy VMSS instances.")
 		return currentState, nil
 	}
 
@@ -45,7 +45,7 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 }
 
 func (r *Resource) deallocateAllInstances(ctx context.Context, resourceGroup string, vmssName string) error {
-	vmssInstancesClient, err := r.getVMsClient(ctx)
+	vmssInstancesClient, err := r.GetVMsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -57,31 +57,31 @@ func (r *Resource) deallocateAllInstances(ctx context.Context, resourceGroup str
 
 	if len(instancesRunning) > 0 {
 		// There are instances still not deallocated.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("There are %d instances to be deallocated.", len(instancesRunning)))
+		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("There are %d instances to be deallocated.", len(instancesRunning)))
 
 		for _, instance := range instancesRunning {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Requesting Deallocate for %s", *instance.Name))
+			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Requesting Deallocate for %s", *instance.Name))
 			_, err = vmssInstancesClient.Deallocate(ctx, resourceGroup, vmssName, *instance.InstanceID)
 			if err != nil {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Error requesting Deallocate for %s: %s", *instance.Name, err.Error()))
+				r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Error requesting Deallocate for %s: %s", *instance.Name, err.Error()))
 				continue
 			}
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Requested Deallocate for %s", *instance.Name))
+			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Requested Deallocate for %s", *instance.Name))
 		}
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "All instances are deallocated.")
+		r.Logger().LogCtx(ctx, "level", "debug", "message", "All instances are deallocated.")
 	}
 
 	return nil
 }
 
 func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
-	vmssInstancesClient, err := r.getVMsClient(ctx)
+	vmssInstancesClient, err := r.GetVMsClient(ctx)
 	if err != nil {
 		return []compute.VirtualMachineScaleSetVM{}, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Iterating on the %s instances to find any instance still running", vmssName))
+	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Iterating on the %s instances to find any instance still running", vmssName))
 
 	result, err := vmssInstancesClient.List(ctx, resourceGroup, vmssName, "", "", "")
 	if err != nil {
@@ -101,7 +101,7 @@ func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string
 
 			for _, instanceState := range *details.Statuses {
 				if strings.HasPrefix(*instanceState.Code, PowerStateLabelPrefix) && *instanceState.Code != PowerStateDeallocated {
-					r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s is in status %s", *instance.Name, *instanceState.Code))
+					r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s is in status %s", *instance.Name, *instanceState.Code))
 					// Machine is not deallocated.
 					instancesRunning = append(instancesRunning, instance)
 					continue
@@ -119,7 +119,7 @@ func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string
 }
 
 func (r *Resource) getVMSS(ctx context.Context, resourceGroup string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := r.GetScaleSetsClient(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

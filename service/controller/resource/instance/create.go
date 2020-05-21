@@ -13,11 +13,11 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 )
 
-// configureStateMachine configures and returns state machine that is driven by
+// createStateMachine configures and returns state machine that is driven by
 // EnsureCreated.
-func (r *Resource) configureStateMachine() {
+func (r *Resource) createStateMachine() state.Machine {
 	sm := state.Machine{
-		Logger:       r.logger,
+		Logger:       r.Logger(),
 		ResourceName: Name,
 		Transitions: state.TransitionMap{
 			DeploymentUninitialized:        r.deploymentUninitializedTransition,
@@ -44,7 +44,7 @@ func (r *Resource) configureStateMachine() {
 		},
 	}
 
-	r.stateMachine = sm
+	return sm
 }
 
 // This resource applies the ARM template for the worker instances, monitors the process and handles upgrades.
@@ -55,8 +55,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if isMasterUpgrading(cr) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger().LogCtx(ctx, "level", "debug", "message", "master is upgrading")
+		r.Logger().LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		return nil
 	}
 
@@ -69,25 +69,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		currentState = state.State(s)
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
-		newState, err = r.stateMachine.Execute(ctx, obj, currentState)
+		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
+		newState, err = r.StateMachine().Execute(ctx, obj, currentState)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	if newState != currentState {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
+		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
+		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
 		err = r.setResourceStatus(cr, Stage, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
+		r.Logger().LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "no state change")
+		r.Logger().LogCtx(ctx, "level", "debug", "message", "no state change")
 	}
 
 	return nil

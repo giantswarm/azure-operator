@@ -2,13 +2,13 @@ package controller
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
@@ -19,12 +19,9 @@ import (
 	"github.com/giantswarm/randomkeys"
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/tenantcluster"
-	"k8s.io/apimachinery/pkg/labels"
-	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
@@ -33,7 +30,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/dnsrecord"
@@ -53,38 +49,40 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
-type ClusterConfig struct {
-	InstallationName string
-	K8sClient        k8sclient.Interface
-	Locker           locker.Interface
-	Logger           micrologger.Logger
+type ResourceSetConfig struct {
+	CertsSearcher certs.Interface
+	K8sClient     k8sclient.Interface
+	Logger        micrologger.Logger
 
-	Azure setting.Azure
-	// Azure client set used when managing control plane resources
-	CPAzureClientSet *client.AzureClientSet
-	// Azure credentials used to create Azure client set for tenant clusters
+	Azure                     setting.Azure
+	CPAzureClientSet          *client.AzureClientSet
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
+	GuestSubnetMaskBits       int
+	Ignition                  setting.Ignition
+	InstallationName          string
+	IPAMNetworkRange          net.IPNet
+	Locker                    locker.Interface
 	ProjectName               string
 	RegistryDomain            string
-
-	GuestSubnetMaskBits int
-
-	Ignition         setting.Ignition
-	IPAMNetworkRange net.IPNet
-	OIDC             setting.OIDC
-	SSOPublicKey     string
-	TemplateVersion  string
-	VMSSCheckWorkers int
+	OIDC                      setting.OIDC
+	SSOPublicKey              string
+	VMSSCheckWorkers          int
 }
 
-type Cluster struct {
-	*controller.Controller
-}
+func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.Locker == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Locker must not be empty", config)
+	}
 
-func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var err error
 
-	var certsSearcher *certs.Searcher
+	var certsSearcher certs.Interface
 	{
 		c := certs.Config{
 			K8sClient: config.K8sClient.K8sClient(),
@@ -94,6 +92,18 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 
 		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var newDebugger *debugger.Debugger
+	{
+		c := debugger.Config{
+			Logger: config.Logger,
+		}
+
+		newDebugger, err = debugger.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -112,115 +122,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	var resources []resource.Interface
-	{
-		resources, err = newClusterResources(config, certsSearcher)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var operatorkitController *controller.Controller
-	{
-		c := controller.Config{
-			InitCtx: func(ctx context.Context, obj interface{}) (context.Context, error) {
-				cr, err := key.ToCustomResource(obj)
-				if err != nil {
-					return nil, microerror.Mask(err)
-				}
-
-				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(ctx, config.K8sClient, cr, config.GSClientCredentialsConfig.TenantID)
-				if err != nil {
-					return nil, microerror.Mask(err)
-				}
-
-				tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
-				if err != nil {
-					return nil, microerror.Mask(err)
-				}
-
-				var cloudConfig *cloudconfig.CloudConfig
-				{
-					c := cloudconfig.Config{
-						CertsSearcher:      certsSearcher,
-						Logger:             config.Logger,
-						RandomkeysSearcher: randomkeysSearcher,
-
-						Azure:                  config.Azure,
-						AzureClientCredentials: organizationAzureClientCredentialsConfig,
-						Ignition:               config.Ignition,
-						OIDC:                   config.OIDC,
-						SSOPublicKey:           config.SSOPublicKey,
-						SubscriptionID:         subscriptionID,
-					}
-
-					cloudConfig, err = cloudconfig.New(c)
-					if err != nil {
-						return nil, microerror.Mask(err)
-					}
-				}
-
-				c := controllercontext.Context{
-					AzureClientSet: tenantClusterAzureClientSet,
-					CloudConfig:    cloudConfig,
-				}
-				ctx = controllercontext.NewContext(ctx, c)
-
-				return ctx, nil
-			},
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-			Name:      project.Name(),
-			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(v1alpha1.AzureConfig)
-			},
-			Resources: resources,
-			Selector: labels.SelectorFromSet(map[string]string{
-				label.OperatorVersion: project.Version(),
-			}),
-		}
-
-		operatorkitController, err = controller.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	return &Cluster{
-		Controller: operatorkitController,
-	}, nil
-}
-
-func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
-	var err error
-
-	var clientFactory *client.Factory
-	{
-		c := client.FactoryConfig{
-			CacheDuration: 30 * time.Minute,
-			K8sClient:     config.K8sClient,
-			Logger:        config.Logger,
-			GSTenantID:    config.GSClientCredentialsConfig.TenantID,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var newDebugger *debugger.Debugger
-	{
-		c := debugger.Config{
-			Logger: config.Logger,
-		}
-
-		newDebugger, err = debugger.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var tenantCluster tenantcluster.Interface
 	{
 		c := tenantcluster.Config{
@@ -231,19 +132,6 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 
 		tenantCluster, err = tenantcluster.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var clusteridResource resource.Interface
-	{
-		c := clusterid.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
-		}
-
-		clusteridResource, err = clusterid.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -338,7 +226,7 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var blobObjectResource resource.Interface
 	{
 		c := blobobject.Config{
-			CertsSearcher:  certsSearcher,
+			CertsSearcher:  config.CertsSearcher,
 			G8sClient:      config.K8sClient.G8sClient(),
 			K8sClient:      config.K8sClient.K8sClient(),
 			Logger:         config.Logger,
@@ -359,13 +247,11 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
-			Debugger:         newDebugger,
-			G8sClient:        config.K8sClient.G8sClient(),
-			InstallationName: config.InstallationName,
-			Logger:           config.Logger,
+			Debugger:  newDebugger,
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
 
-			Azure:                      config.Azure,
-			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
+			Azure: config.Azure,
 		}
 
 		deploymentResource, err = deployment.New(c)
@@ -431,7 +317,6 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		Logger:    config.Logger,
 
 		Azure:            config.Azure,
-		ClientFactory:    clientFactory,
 		InstanceWatchdog: iwd,
 	}
 
@@ -593,18 +478,17 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	}
 
 	resources := []resource.Interface{
-		clusteridResource,
-		namespaceResource,
 		ipamResource,
 		statusResource,
 		releaseResource,
 		tenantClientsResource,
+		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
-		encryptionkeyResource,
-		deploymentResource,
 		containerURLResource,
+		encryptionkeyResource,
 		blobObjectResource,
+		deploymentResource,
 		dnsrecordResource,
 		mastersResource,
 		instanceResource,
@@ -632,7 +516,82 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
-	return resources, nil
+	handlesFunc := func(obj interface{}) bool {
+		cr, err := key.ToCustomResource(obj)
+		if err != nil {
+			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err)) // nolint: errcheck
+			return false
+		}
+
+		if key.OperatorVersion(cr) == project.Version() {
+			return true
+		}
+
+		return false
+	}
+
+	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		cr, err := key.ToCustomResource(obj)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(config.K8sClient, cr, config.GSClientCredentialsConfig.TenantID)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		var cloudConfig *cloudconfig.CloudConfig
+		{
+			c := cloudconfig.Config{
+				CertsSearcher:      certsSearcher,
+				Logger:             config.Logger,
+				RandomkeysSearcher: randomkeysSearcher,
+
+				Azure:                  config.Azure,
+				AzureClientCredentials: organizationAzureClientCredentialsConfig,
+				Ignition:               config.Ignition,
+				OIDC:                   config.OIDC,
+				SSOPublicKey:           config.SSOPublicKey,
+				SubscriptionID:         subscriptionID,
+			}
+
+			cloudConfig, err = cloudconfig.New(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		}
+
+		c := controllercontext.Context{
+			AzureClientSet: tenantClusterAzureClientSet,
+			CloudConfig:    cloudConfig,
+		}
+		ctx = controllercontext.NewContext(ctx, c)
+
+		return ctx, nil
+	}
+
+	var resourceSet *controller.ResourceSet
+	{
+		c := controller.ResourceSetConfig{
+			Handles:   handlesFunc,
+			InitCtx:   initCtxFunc,
+			Logger:    config.Logger,
+			Resources: resources,
+		}
+
+		resourceSet, err = controller.NewResourceSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return resourceSet, nil
 }
 
 func toCRUDResource(logger micrologger.Logger, v crud.Interface) (*crud.Resource, error) {
