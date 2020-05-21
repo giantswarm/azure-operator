@@ -1,33 +1,35 @@
 package credential
 
 import (
+	"context"
+
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
-	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
-	auxiliaryTenantIDKey = "azure.azureoperator.auxiliarytenantid"
-	clientIDKey          = "azure.azureoperator.clientid"
-	clientSecretKey      = "azure.azureoperator.clientsecret"
-	defaultAzureGUID     = "37f13270-5c7a-56ff-9211-8426baaeaabd"
-	partnerIDKey         = "azure.azureoperator.partnerid"
-	singleTenantSPLabel  = "azure-operator.giantswarm.io/single-tenant-sp"
-	subscriptionIDKey    = "azure.azureoperator.subscriptionid"
-	tenantIDKey          = "azure.azureoperator.tenantid"
+	clientIDKey         = "azure.azureoperator.clientid"
+	clientSecretKey     = "azure.azureoperator.clientsecret"
+	defaultAzureGUID    = "37f13270-5c7a-56ff-9211-8426baaeaabd"
+	partnerIDKey        = "azure.azureoperator.partnerid"
+	singleTenantSPLabel = "azure-operator.giantswarm.io/single-tenant-sp"
+	subscriptionIDKey   = "azure.azureoperator.subscriptionid"
+	tenantIDKey         = "azure.azureoperator.tenantid"
 )
 
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // We use a label to identify organizations' secrets that contain Service Principals to still be used as Single Tenant.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
-func GetOrganizationAzureCredentials(k8sClient kubernetes.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
-	credential, err := k8sClient.CoreV1().Secrets(key.CredentialNamespace(cr)).Get(key.CredentialName(cr), apismetav1.GetOptions{})
+func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
+	credential := &v1.Secret{}
+	err := k8sClient.CtrlClient().Get(context.Background(), client.ObjectKey{Namespace: key.CredentialNamespace(cr), Name: key.CredentialName(cr)}, credential)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
@@ -68,13 +70,8 @@ func GetOrganizationAzureCredentials(k8sClient kubernetes.Interface, cr provider
 		return credentials, subscriptionID, partnerID, nil
 	}
 
-	auxiliaryTenantID, err := valueFromSecret(credential, auxiliaryTenantIDKey)
-	if err != nil {
-		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
-	}
-
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, gsTenantID)
-	credentials.AuxTenants = append(credentials.AuxTenants, auxiliaryTenantID)
+	credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
 
 	return credentials, subscriptionID, partnerID, nil
 }

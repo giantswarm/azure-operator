@@ -476,7 +476,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(config.K8sClient.K8sClient(), cr, config.GSClientCredentialsConfig.TenantID)
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(config.K8sClient, cr, config.GSClientCredentialsConfig.TenantID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
