@@ -5,7 +5,8 @@ import (
 	"fmt"
 	"sync"
 
-	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/k8sclient/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
@@ -16,11 +17,11 @@ import (
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 // Config represents the configuration used to create a new service.
@@ -101,12 +102,15 @@ func New(config Config) (*Service, error) {
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
-	azureConfig := client.AzureClientSetConfig{
-		ClientID:        config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		ClientSecret:    config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
-		SubscriptionID:  config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
-		TenantID:        config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+	cpAzureClients, err := client.NewAzureClientSet(
+		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+		config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
+		config.Viper.GetString(config.Flag.Service.Azure.PartnerID),
+	)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	Ignition := setting.Ignition{
@@ -158,7 +162,8 @@ func New(config Config) (*Service, error) {
 		c := k8sclient.ClientsConfig{
 			Logger: config.Logger,
 			SchemeBuilder: k8sclient.SchemeBuilder{
-				v1alpha1.AddToScheme,
+				providerv1alpha1.AddToScheme,
+				releasev1alpha1.AddToScheme,
 			},
 
 			KubeConfigPath: kubeConfigPath,
@@ -178,14 +183,13 @@ func New(config Config) (*Service, error) {
 			Logger:    config.Logger,
 
 			Azure:            azure,
-			AzureConfig:      azureConfig,
+			CPAzureClientSet: *cpAzureClients,
 			Ignition:         Ignition,
 			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,
 			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
 			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 

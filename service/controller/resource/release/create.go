@@ -3,14 +3,15 @@ package release
 import (
 	"context"
 	"fmt"
+	"strings"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/pkg/label"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -23,17 +24,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	var release *v1alpha1.Release
+	var release v1alpha1.Release
 	{
 		releaseVersion := cr.Labels[label.ReleaseVersion]
-		releaseName := fmt.Sprintf("v%s", releaseVersion)
-		release, err = r.g8sClient.ReleaseV1alpha1().Releases().Get(releaseName, metav1.GetOptions{})
+		if !strings.HasPrefix(releaseVersion, "v") {
+			releaseVersion = fmt.Sprintf("v%s", releaseVersion)
+		}
+
+		err = r.k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: "", Name: releaseVersion}, &release)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	cc.Release.Components = release.Spec.Components
+	cc.Release.Release = release
 
 	return nil
 }

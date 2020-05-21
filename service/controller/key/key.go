@@ -7,10 +7,11 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
 const (
@@ -34,8 +35,6 @@ const (
 	virtualNetworkSuffix      = "VirtualNetwork"
 	vpnGatewaySubnet          = "GatewaySubnet"
 	vpnGatewaySuffix          = "VPNGateway"
-
-	TemplateContentVersion = "1.0.0.0"
 
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
@@ -98,21 +97,6 @@ func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
 
 func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
-}
-
-// ARMTemplateURI returns URI to a resource's template file.
-// The returned URI point to a file hosted on github in this repository
-// under a controller resource's template folder at:
-//
-// service/controller/resource/<resource>/template/<template>
-//
-// version refers to a branch or commit.
-// resource refers to directory name of the resource.
-// template refers to filename under resource's template folder.
-//
-// e.g. ARMTemplateURI("master", "deployment", "main.json")
-func ARMTemplateURI(version, resource, template string) string {
-	return fmt.Sprintf("https://raw.githubusercontent.com/giantswarm/azure-operator/%s/service/controller/resource/%s/template/%s", version, resource, template)
 }
 
 func BlobContainerName() string {
@@ -178,6 +162,16 @@ func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName str
 	return tags
 }
 
+// ComponentVersion returns the version of the given component in the Release.
+func ComponentVersion(release releasev1alpha1.Release, componentName string) (string, error) {
+	for _, component := range release.Spec.Components {
+		if component.Name == componentName {
+			return component.Version, nil
+		}
+	}
+	return "", microerror.Maskf(notFoundError, "version for component %#v not found on release %#v", componentName, release.Name)
+}
+
 // CredentialName returns name of the credential secret.
 func CredentialName(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.CredentialSecret.Name
@@ -188,8 +182,8 @@ func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.CredentialSecret.Namespace
 }
 
-func DefaultVersions() v_6_0_0.Versions {
-	return v_6_0_0.Versions{
+func DefaultVersions() k8scloudconfig.Versions {
+	return k8scloudconfig.Versions{
 		Kubectl:                      kubectlVersion,
 		KubernetesAPIHealthz:         kubernetesAPIHealthzVersion,
 		KubernetesNetworkSetupDocker: kubernetesNetworkSetupDocker,
@@ -275,6 +269,15 @@ func IsSucceededProvisioningState(s string) bool {
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
+}
+
+// OSVersion returns the version of the operating system.
+func OSVersion(release releasev1alpha1.Release) (string, error) {
+	v, err := ComponentVersion(release, ContainerLinuxComponentName)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	return v, nil
 }
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.

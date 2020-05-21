@@ -6,11 +6,10 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/internal/state"
-
-	"github.com/giantswarm/azure-operator/pkg/checksum"
-	"github.com/giantswarm/azure-operator/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/pkg/checksum"
+	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

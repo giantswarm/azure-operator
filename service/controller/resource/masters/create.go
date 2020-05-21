@@ -6,31 +6,35 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 // configureStateMachine configures and returns state machine that is driven by
 // EnsureCreated.
 func (r *Resource) configureStateMachine() {
 	sm := state.Machine{
-		Empty:                          r.emptyStateTransition,
-		CheckFlatcarMigrationNeeded:    r.checkFlatcarMigrationNeededTransition,
-		WaitForBackupConfirmation:      r.waitForBackupConfirmationTransition,
-		DeallocateLegacyInstance:       r.deallocateLegacyInstanceTransition,
-		BlockAPICalls:                  r.blockAPICallsTransition,
-		DeploymentUninitialized:        r.deploymentUninitializedTransition,
-		DeploymentInitialized:          r.deploymentInitializedTransition,
-		ManualInterventionRequired:     r.manualInterventionRequiredTransition,
-		ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
-		ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
-		MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
-		WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
-		WaitForRestore:                 r.waitForRestoreTransition,
-		DeleteLegacyVMSS:               r.deleteLegacyVMSSTransition,
-		UnblockAPICalls:                r.unblockAPICallsTransition,
-		RestartKubeletOnWorkers:        r.restartKubeletOnWorkersTransition,
-		DeploymentCompleted:            r.deploymentCompletedTransition,
+		Logger:       r.logger,
+		ResourceName: Name,
+		Transitions: state.TransitionMap{
+			Empty:                          r.emptyStateTransition,
+			CheckFlatcarMigrationNeeded:    r.checkFlatcarMigrationNeededTransition,
+			WaitForBackupConfirmation:      r.waitForBackupConfirmationTransition,
+			DeallocateLegacyInstance:       r.deallocateLegacyInstanceTransition,
+			BlockAPICalls:                  r.blockAPICallsTransition,
+			DeploymentUninitialized:        r.deploymentUninitializedTransition,
+			DeploymentInitialized:          r.deploymentInitializedTransition,
+			ManualInterventionRequired:     r.manualInterventionRequiredTransition,
+			ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
+			ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
+			MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
+			WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
+			WaitForRestore:                 r.waitForRestoreTransition,
+			DeleteLegacyVMSS:               r.deleteLegacyVMSSTransition,
+			UnblockAPICalls:                r.unblockAPICallsTransition,
+			RestartKubeletOnWorkers:        r.restartKubeletOnWorkersTransition,
+			DeploymentCompleted:            r.deploymentCompletedTransition,
+		},
 	}
 
 	r.stateMachine = sm

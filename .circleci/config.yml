@@ -1,62 +1,15 @@
 orbs:
-  architect: giantswarm/architect@0.8.6
+  architect: giantswarm/architect@0.8.14
 
 version: 2.1
-jobs:
-  build:
-    machine: true
-    steps:
-      - checkout
-
-      - run:
-          name: Install architect
-          command: |
-            wget -q $(curl -sS -H "Authorization: token $RELEASE_TOKEN" https://api.github.com/repos/giantswarm/architect/releases/latest | grep browser_download_url | head -n 1 | cut -d '"' -f 4)
-            chmod +x ./architect
-            ./architect version
-
-      - run: |
-          date +"%Y" > /tmp/year
-          date +"%m" > /tmp/month
-          date +"%d" > /tmp/day
-
-      - restore_cache:
-          keys:
-            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
-            - go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}
-            - go-cache-v1-{{ checksum "/tmp/year" }}
-
-      - run:
-          name: Build using architect
-          command: ./architect build
-
-      - store_test_results:
-          path: /tmp/results
-
-      - save_cache:
-          key: go-cache-v1-{{ checksum "/tmp/year" }}-{{ checksum "/tmp/month" }}-{{ checksum "/tmp/day" }}
-          paths:
-            - /tmp/go/cache
-
-      - persist_to_workspace:
-          root: .
-          paths:
-            - ./azure-operator
-
 workflows:
-  version: 2
   build_and_e2eTest:
     jobs:
-      # execute linting and run tests.
-      - architect/go-test-legacy:
-          name: test
-          filters:
-            tags:
-              only: /^v.*/
-      # build binary
-      - build:
-          requires:
-            - test
+      # build operator
+      - architect/go-build:
+          name: go-build
+          binary: azure-operator
+          resource_class: large
           filters:
             tags:
               only: /^v.*/
@@ -68,7 +21,7 @@ workflows:
           username_envar: "QUAY_USERNAME"
           password_envar: "QUAY_PASSWORD"
           requires:
-            - build
+            - go-build
           filters:
             # Trigger the job also on git tag.
             tags:
@@ -106,8 +59,6 @@ workflows:
       # manual approval to run e2e tests.
       - hold:
           type: approval
-          requires:
-            - push-azure-operator-to-control-plane-app-catalog
           filters:
             # Do not trigger the job when merging to master.
             branches:
@@ -121,6 +72,7 @@ workflows:
 #          test-timeout: "90m"
 #          requires:
 #          - hold
+#          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: scaling-test
@@ -130,15 +82,17 @@ workflows:
           test-timeout: "90m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: multiaz-test
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/multiaz/.env"
           test-dir: "integration/test/multiaz"
-          test-timeout: "40m"
+          test-timeout: "70m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: cluster-deletion-test
@@ -148,12 +102,24 @@ workflows:
           test-timeout: "70m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: update-test
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/update/.env"
           test-dir: "integration/test/update"
-          test-timeout: "120m"
+          test-timeout: "180m"
           requires:
           - hold
+          - push-azure-operator-to-control-plane-app-catalog
+
+      - architect/integration-test:
+          name: cp-tc-connectivity-test
+          setup-script: "integration/config/setup.sh"
+          env-file: "integration/test/cptcconnectivity/.env"
+          test-dir: "integration/test/cptcconnectivity"
+          test-timeout: "70m"
+          requires:
+          - hold
+          - push-azure-operator-to-control-plane-app-catalog

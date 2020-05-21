@@ -6,11 +6,11 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
@@ -49,13 +49,14 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 	var params k8scloudconfig.Params
 	{
 		be := baseExtension{
-			azure:        c.azure,
-			azureConfig:  c.azureConfig,
-			calicoCIDR:   c.azureNetwork.Calico.String(),
-			clusterCerts: data.ClusterCerts,
-			customObject: data.CustomObject,
-			encrypter:    encrypter,
-			vnetCIDR:     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
+			azure:                        c.azure,
+			azureClientCredentialsConfig: c.azureClientCredentials,
+			calicoCIDR:                   c.azureNetwork.Calico.String(),
+			clusterCerts:                 data.ClusterCerts,
+			customObject:                 data.CustomObject,
+			encrypter:                    encrypter,
+			subscriptionID:               c.subscriptionID,
+			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
 		params = k8scloudconfig.DefaultParams()
@@ -115,7 +116,6 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		}
 		params.ExtraManifests = []string{
 			"calico-azure.yaml",
-			"k8s-ingress-loadbalancer.yaml",
 		}
 		params.Debug = k8scloudconfig.Debug{
 			Enabled:    c.ignition.Debug,
@@ -170,19 +170,6 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		{
 			AssetContent: ignition.DefaultStorageClass,
 			Path:         "/srv/default-storage-class.yaml",
-			Owner: k8scloudconfig.Owner{
-				Group: k8scloudconfig.Group{
-					Name: FileOwnerGroupName,
-				},
-				User: k8scloudconfig.User{
-					Name: FileOwnerUserName,
-				},
-			},
-			Permissions: FilePermission,
-		},
-		{
-			AssetContent: ignition.IngressLB,
-			Path:         "/srv/k8s-ingress-loadbalancer.yaml",
 			Owner: k8scloudconfig.Owner{
 				Group: k8scloudconfig.Group{
 					Name: FileOwnerGroupName,
@@ -280,11 +267,6 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		{
 			AssetContent: ignition.KubeletMountUnit,
 			Name:         "var-lib-kubelet.mount",
-			Enabled:      true,
-		},
-		{
-			AssetContent: ignition.IngressLBUnit,
-			Name:         "ingress-lb.service",
 			Enabled:      true,
 		},
 		{

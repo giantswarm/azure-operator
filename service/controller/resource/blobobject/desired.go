@@ -4,14 +4,14 @@ import (
 	"context"
 
 	"github.com/giantswarm/certs"
-	"github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
@@ -49,7 +49,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData
 	{
-		versions, err := v_6_0_0.ExtractComponentVersions(cc.Release.Components)
+		versions, err := k8scloudconfig.ExtractComponentVersions(cc.Release.Release.Spec.Components)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -58,7 +58,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		versions.Kubectl = defaultVersions.Kubectl
 		versions.KubernetesAPIHealthz = defaultVersions.KubernetesAPIHealthz
 		versions.KubernetesNetworkSetupDocker = defaultVersions.KubernetesNetworkSetupDocker
-		images := v_6_0_0.BuildImages(r.registryDomain, versions)
+		images := k8scloudconfig.BuildImages(r.registryDomain, versions)
 
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
 			CustomObject: cr,

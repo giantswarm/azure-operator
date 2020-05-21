@@ -5,17 +5,17 @@ import (
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
-	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/giantswarm/azure-operator/pkg/helpers/vmss"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters/template"
 )
 
 func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}, location string) (azureresource.Deployment, error) {
@@ -35,14 +35,9 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		masterBlobName,
 	}
 
-	var distroVersion string
-	{
-		for _, component := range cc.Release.Components {
-			if component.Name == key.ContainerLinuxComponentName {
-				distroVersion = component.Version
-				break
-			}
-		}
+	distroVersion, err := key.OSVersion(cc.Release.Release)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	for _, k := range cloudConfigURLs {
@@ -108,14 +103,16 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
 
+	armTemplate, err := template.GetARMTemplate()
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
 	d := azureresource.Deployment{
 		Properties: &azureresource.DeploymentProperties{
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
-			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(key.ARMTemplateURI(r.templateVersion, "masters", "main.json")),
-				ContentVersion: to.StringPtr(key.TemplateContentVersion),
-			},
+			Template:   armTemplate,
 		},
 	}
 

@@ -11,8 +11,8 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
@@ -81,10 +81,10 @@ func (r *Resource) toEncrypterObject(ctx context.Context, secretName string) (en
 	var enc *encrypter.Encrypter
 	{
 		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret %q", secret.Name)
 		}
 		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret", secret.Name)
+			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret %q", secret.Name)
 		}
 		c := encrypter.Config{
 			Key: secret.Data[key.CertificateEncryptionKeyName],

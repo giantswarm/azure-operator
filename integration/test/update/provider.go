@@ -9,8 +9,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/setup"
+	"github.com/giantswarm/azure-operator/v4/integration/env"
+	"github.com/giantswarm/azure-operator/v4/integration/setup"
 )
 
 type ProviderConfig struct {

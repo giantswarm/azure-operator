@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"net/http"
 	"testing"
+	"time"
 
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/backoff"
@@ -83,7 +84,7 @@ func (s *ClusterDeletion) Test(ctx context.Context) error {
 
 		return microerror.Maskf(executionFailedError, "The resource group still exists")
 	}
-	b := backoff.NewExponential(backoff.LongMaxWait, backoff.LongMaxInterval)
+	b := backoff.NewExponential(60*time.Minute, backoff.LongMaxInterval)
 	n := backoff.NewNotifier(s.logger, ctx)
 	err = backoff.RetryNotify(o, b, n)
 	if err != nil {

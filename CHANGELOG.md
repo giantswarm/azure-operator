@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## Fixed
+
+- Make the rate limit circuit breaker to only inspect response HTTP status code if there were no errors doing the request.
+
 ## [4.0.1] 2020-05-20
 
 ## Fixed
@@ -26,6 +30,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
+### Changed
+
+- Migrated to go modules.
+- Use ARM nested templates instead of relying on Github when using linked templates.
+
+
+
 ## [3.0.7] 2020-04-28
 
 ### Added
@@ -41,6 +52,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reduce number of Azure API calls when creating, updating and scaling clusters which lowers the risk of exceeding Azure API rate limits and hitting error 429.
 - Collectors that expose Azure metrics have been migrated to its own repository.
+
 
 
 ## [3.0.6] 2020-04-09

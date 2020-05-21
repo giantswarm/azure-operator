@@ -23,6 +23,15 @@ func IsMissingOutputValue(err error) bool {
 	return microerror.Cause(err) == missingOutputValueError
 }
 
+var notFoundError = &microerror.Error{
+	Kind: "notFoundError",
+}
+
+// IsNotFound asserts notFoundError.
+func IsNotFound(err error) bool {
+	return microerror.Cause(err) == notFoundError
+}
+
 var wrongTypeError = &microerror.Error{
 	Kind: "wrongTypeError",
 }

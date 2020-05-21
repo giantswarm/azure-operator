@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
@@ -27,12 +27,13 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 	var params k8scloudconfig.Params
 	{
 		be := baseExtension{
-			azure:        c.azure,
-			azureConfig:  c.azureConfig,
-			clusterCerts: data.ClusterCerts,
-			customObject: data.CustomObject,
-			encrypter:    encrypter,
-			vnetCIDR:     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
+			azure:                        c.azure,
+			azureClientCredentialsConfig: c.azureClientCredentials,
+			clusterCerts:                 data.ClusterCerts,
+			customObject:                 data.CustomObject,
+			encrypter:                    encrypter,
+			subscriptionID:               c.subscriptionID,
+			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
 		params = k8scloudconfig.DefaultParams()

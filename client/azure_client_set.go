@@ -9,12 +9,15 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest"
-	"github.com/Azure/go-autorest/autorest/adal"
-	"github.com/Azure/go-autorest/autorest/azure"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/client/senddecorator"
-	"github.com/giantswarm/azure-operator/pkg/backpressure"
+	"github.com/giantswarm/azure-operator/v4/client/senddecorator"
+	"github.com/giantswarm/azure-operator/v4/pkg/backpressure"
+)
+
+const (
+	defaultAzureGUID = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 )
 
 // AzureClientSet is the collection of Azure API clients.
@@ -50,84 +53,92 @@ type AzureClientSet struct {
 }
 
 // NewAzureClientSet returns the Azure API clients.
-func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
-	err := config.Validate()
+// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
+func NewAzureClientSet(clientid, clientsecret, tenantid, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	settings, err := auth.GetSettingsFromEnvironment()
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	if clientid != "" {
+		settings.Values[auth.ClientID] = clientid
+	}
+	if clientsecret != "" {
+		settings.Values[auth.ClientSecret] = clientsecret
+	}
+	if tenantid != "" {
+		settings.Values[auth.TenantID] = tenantid
+	}
+	if subscriptionID != "" {
+		settings.Values[auth.SubscriptionID] = subscriptionID
+	}
+	authorizer, err := settings.GetAuthorizer()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	// Returns environment object contains all API endpoints for specific Azure
-	// cloud. For empty config.EnvironmentName returns Azure public cloud.
-	env, err := parseAzureEnvironment(config.EnvironmentName)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+	return NewAzureClientSetWithAuthorizer(authorizer, settings.GetSubscriptionID(), partnerID)
+}
 
-	servicePrincipalToken, err := newServicePrincipalToken(config, env)
-	if err != nil {
-		return nil, microerror.Mask(err)
+// NewAzureClientSetWithAuthorizer returns the Azure API clients using the given Authorizer.
+func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	if partnerID == "" {
+		partnerID = defaultAzureGUID
 	}
+	partnerID = fmt.Sprintf("pid-%s", partnerID)
 
-	c := &clientConfig{
-		subscriptionID:          config.SubscriptionID,
-		partnerIdUserAgent:      fmt.Sprintf("pid-%s", config.PartnerID),
-		resourceManagerEndpoint: env.ResourceManagerEndpoint,
-		servicePrincipalToken:   servicePrincipalToken,
-	}
-
-	deploymentsClient, err := newDeploymentsClient(c)
+	deploymentsClient, err := newDeploymentsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	dnsRecordSetsClient, err := newDNSRecordSetsClient(c)
+	dnsRecordSetsClient, err := newDNSRecordSetsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	dnsZonesClient, err := newDNSZonesClient(c)
+	dnsZonesClient, err := newDNSZonesClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	groupsClient, err := newGroupsClient(c)
+	groupsClient, err := newGroupsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	interfacesClient, err := newInterfacesClient(c)
+	interfacesClient, err := newInterfacesClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	securityGroupsClient, err := newSecurityGroupsClient(c)
+	securityGroupsClient, err := newSecurityGroupsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	storageAccountsClient, err := newStorageAccountsClient(c)
+	storageAccountsClient, err := newStorageAccountsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	usageClient, err := newUsageClient(c)
+	usageClient, err := newUsageClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualNetworkClient, err := newVirtualNetworkClient(c)
+	virtualNetworkClient, err := newVirtualNetworkClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualNetworkGatewayConnectionsClient, err := newVirtualNetworkGatewayConnectionsClient(c)
+	virtualNetworkGatewayConnectionsClient, err := newVirtualNetworkGatewayConnectionsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualNetworkGatewaysClient, err := newVirtualNetworkGatewaysClient(c)
+	virtualNetworkGatewaysClient, err := newVirtualNetworkGatewaysClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(c)
+	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(c)
+	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	vnetPeeringClient, err := newVnetPeeringClient(c)
+	vnetPeeringClient, err := newVnetPeeringClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -152,211 +163,108 @@ func NewAzureClientSet(config AzureClientSetConfig) (*AzureClientSet, error) {
 	return clientSet, nil
 }
 
-func newDeploymentsClient(config *clientConfig) (*resources.DeploymentsClient, error) {
-	c := resources.NewDeploymentsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func prepareClient(client *autorest.Client, authorizer autorest.Authorizer, partnerID string) *autorest.Client {
+	client.Authorizer = authorizer
+	_ = client.AddToUserAgent(partnerID)
+	senddecorator.ConfigureClient(&backpressure.Backpressure{}, client)
 
-	return &c, nil
+	return client
 }
 
-func newDNSRecordSetsClient(config *clientConfig) (*dns.RecordSetsClient, error) {
-	c := dns.NewRecordSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newDeploymentsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*resources.DeploymentsClient, error) {
+	client := resources.NewDeploymentsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newDNSZonesClient(config *clientConfig) (*dns.ZonesClient, error) {
-	c := dns.NewZonesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newDNSRecordSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*dns.RecordSetsClient, error) {
+	client := dns.NewRecordSetsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newGroupsClient(config *clientConfig) (*resources.GroupsClient, error) {
-	c := resources.NewGroupsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newDNSZonesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*dns.ZonesClient, error) {
+	client := dns.NewZonesClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newInterfacesClient(config *clientConfig) (*network.InterfacesClient, error) {
-	c := network.NewInterfacesClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*resources.GroupsClient, error) {
+	client := resources.NewGroupsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newSecurityGroupsClient(config *clientConfig) (*network.SecurityRulesClient, error) {
-	c := network.NewSecurityRulesClient(config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newInterfacesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.InterfacesClient, error) {
+	client := network.NewInterfacesClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newStorageAccountsClient(config *clientConfig) (*storage.AccountsClient, error) {
-	c := storage.NewAccountsClient(config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newSecurityGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.SecurityRulesClient, error) {
+	client := network.NewSecurityRulesClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newUsageClient(config *clientConfig) (*compute.UsageClient, error) {
-	c := compute.NewUsageClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newStorageAccountsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*storage.AccountsClient, error) {
+	client := storage.NewAccountsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newVirtualNetworkClient(config *clientConfig) (*network.VirtualNetworksClient, error) {
-	c := network.NewVirtualNetworksClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newUsageClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*compute.UsageClient, error) {
+	client := compute.NewUsageClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newVirtualNetworkGatewayConnectionsClient(config *clientConfig) (*network.VirtualNetworkGatewayConnectionsClient, error) {
-	c := network.NewVirtualNetworkGatewayConnectionsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newVirtualNetworkClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworksClient, error) {
+	client := network.NewVirtualNetworksClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newVirtualNetworkGatewaysClient(config *clientConfig) (*network.VirtualNetworkGatewaysClient, error) {
-	c := network.NewVirtualNetworkGatewaysClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+	client := network.NewVirtualNetworkGatewayConnectionsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newVirtualMachineScaleSetsClient(config *clientConfig) (*compute.VirtualMachineScaleSetsClient, error) {
-	c := compute.NewVirtualMachineScaleSetsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewaysClient, error) {
+	client := network.NewVirtualNetworkGatewaysClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newVirtualMachineScaleSetVMsClient(config *clientConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	c := compute.NewVirtualMachineScaleSetVMsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newVirtualMachineScaleSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*compute.VirtualMachineScaleSetsClient, error) {
+	client := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newVnetPeeringClient(config *clientConfig) (*network.VirtualNetworkPeeringsClient, error) {
-	c := network.NewVirtualNetworkPeeringsClientWithBaseURI(config.resourceManagerEndpoint, config.subscriptionID)
-	c.Authorizer = autorest.NewBearerAuthorizer(config.servicePrincipalToken)
-	c.RetryAttempts = 1
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, &c.Client)
-	err := c.AddToUserAgent(config.partnerIdUserAgent)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
+func newVirtualMachineScaleSetVMsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*compute.VirtualMachineScaleSetVMsClient, error) {
+	client := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	return &c, nil
+	return &client, nil
 }
 
-func newServicePrincipalToken(config AzureClientSetConfig, env azure.Environment) (*adal.ServicePrincipalToken, error) {
-	oauthConfig, err := adal.NewOAuthConfig(env.ActiveDirectoryEndpoint, config.TenantID)
-	if err != nil {
-		return nil, microerror.Maskf(err, "creating OAuth config")
-	}
+func newVnetPeeringClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkPeeringsClient, error) {
+	client := network.NewVirtualNetworkPeeringsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
 
-	token, err := adal.NewServicePrincipalToken(*oauthConfig, config.ClientID, config.ClientSecret, env.ServiceManagementEndpoint)
-	if err != nil {
-		return nil, microerror.Maskf(err, "getting token")
-	}
-
-	return token, nil
-}
-
-// parseAzureEnvironment returns azure environment by name.
-func parseAzureEnvironment(cloudName string) (azure.Environment, error) {
-	if cloudName == "" {
-		return azure.PublicCloud, nil
-	}
-
-	env, err := azure.EnvironmentFromName(cloudName)
-	if err != nil {
-		return azure.Environment{}, microerror.Mask(err)
-	}
-
-	return env, nil
+	return &client, nil
 }

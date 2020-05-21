@@ -11,7 +11,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/integration/env"
+	"github.com/giantswarm/azure-operator/v4/integration/env"
 )
 
 func bastion(ctx context.Context, config Config) error {
@@ -144,12 +144,11 @@ func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic n
 					ComputerName:  to.StringPtr(vmName),
 					AdminUsername: to.StringPtr(username),
 					LinuxConfiguration: &compute.LinuxConfiguration{
+						DisablePasswordAuthentication: to.BoolPtr(true),
 						SSH: &compute.SSHConfiguration{
 							PublicKeys: &[]compute.SSHPublicKey{
 								{
-									Path: to.StringPtr(
-										fmt.Sprintf("/home/%s/.ssh/authorized_keys",
-											username)),
+									Path:    to.StringPtr(fmt.Sprintf("/home/%s/.ssh/authorized_keys", username)),
 									KeyData: to.StringPtr(sshKeyData),
 								},
 							},

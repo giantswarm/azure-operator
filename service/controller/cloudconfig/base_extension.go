@@ -1,23 +1,24 @@
 package cloudconfig
 
 import (
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type baseExtension struct {
-	azure        setting.Azure
-	azureConfig  client.AzureClientSetConfig
-	calicoCIDR   string
-	clusterCerts certs.Cluster
-	customObject providerv1alpha1.AzureConfig
-	encrypter    encrypter.Interface
-	vnetCIDR     string
+	azure                        setting.Azure
+	azureClientCredentialsConfig auth.ClientCredentialsConfig
+	calicoCIDR                   string
+	clusterCerts                 certs.Cluster
+	customObject                 providerv1alpha1.AzureConfig
+	encrypter                    encrypter.Interface
+	subscriptionID               string
+	vnetCIDR                     string
 }
 
 func (e *baseExtension) templateData(certFiles certs.Files) templateData {
@@ -36,8 +37,8 @@ func (e *baseExtension) templateData(certFiles certs.Files) templateData {
 			CalicoCIDR: e.calicoCIDR,
 		},
 		cloudProviderConfFileParams{
-			AADClientID:                 e.azureConfig.ClientID,
-			AADClientSecret:             e.azureConfig.ClientSecret,
+			AADClientID:                 e.azureClientCredentialsConfig.ClientID,
+			AADClientSecret:             e.azureClientCredentialsConfig.ClientSecret,
 			EnvironmentName:             e.azure.EnvironmentName,
 			Location:                    e.azure.Location,
 			PrimaryScaleSetName:         key.WorkerVMSSName(e.customObject),
@@ -45,8 +46,8 @@ func (e *baseExtension) templateData(certFiles certs.Files) templateData {
 			RouteTableName:              key.RouteTableName(e.customObject),
 			SecurityGroupName:           key.WorkerSecurityGroupName(e.customObject),
 			SubnetName:                  key.WorkerSubnetName(e.customObject),
-			SubscriptionID:              e.azureConfig.SubscriptionID,
-			TenantID:                    e.azureConfig.TenantID,
+			SubscriptionID:              e.subscriptionID,
+			TenantID:                    e.azureClientCredentialsConfig.TenantID,
 			VnetName:                    key.VnetName(e.customObject),
 			UseManagedIdentityExtension: e.azure.MSI.Enabled,
 		},

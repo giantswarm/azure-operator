@@ -4,12 +4,12 @@ import (
 	"context"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment/template"
 )
 
 func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
@@ -34,14 +34,16 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"workerSubnetCidr":        cc.AzureNetwork.Worker.String(),
 	}
 
+	armTemplate, err := template.GetARMTemplate()
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
 	d := azureresource.Deployment{
 		Properties: &azureresource.DeploymentProperties{
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
-			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(key.ARMTemplateURI(r.templateVersion, "deployment", "main.json")),
-				ContentVersion: to.StringPtr(key.TemplateContentVersion),
-			},
+			Template:   armTemplate,
 		},
 	}
 
