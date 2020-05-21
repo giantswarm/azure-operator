@@ -63,9 +63,8 @@ func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv
 		partnerID = defaultAzureGUID
 	}
 
-	// Having the label means that the Service Principal is single tenant.
-	// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 	if isSingleTenantServicePrincipal(credential) {
+		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
 	}
@@ -76,6 +75,7 @@ func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv
 	return credentials, subscriptionID, partnerID, nil
 }
 
+// Having the label means that the Service Principal is single tenant.
 func isSingleTenantServicePrincipal(secret *v1.Secret) bool {
 	_, exists := secret.GetLabels()[singleTenantSPLabel]
 	return exists
