@@ -7,6 +7,7 @@ import (
 
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/apimachinery/pkg/api/meta"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
@@ -15,6 +16,8 @@ import (
 // EnsureCreated allocates tenant cluster network segments. It gathers existing
 // subnets from existing system resources like Vnets and Cluster CRs.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
+	// TODO remove me
+	reconciliationcanceledcontext.SetCanceled(ctx)
 	var err error
 
 	m, err := meta.Accessor(obj)

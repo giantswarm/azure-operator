@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"sync"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
@@ -143,31 +142,18 @@ func (c *SubnetCollector) getSubnetsFromAzureConfigs(ctx context.Context) ([]net
 }
 
 func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([]net.IPNet, error) {
-	// We need all CRs to gather all subscriptions below.
-	var crs []providerv1alpha1.AzureConfig
-	{
-		mark := ""
-		page := 0
-		for page == 0 || len(mark) > 0 {
-			opts := metav1.ListOptions{
-				Continue: mark,
-			}
-			list, err := c.g8sClient.ProviderV1alpha1().AzureConfigs(metav1.NamespaceAll).List(opts)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-			crs = append(crs, list.Items...)
-
-			mark = list.Continue
-			page++
-		}
+	secretsList, err := c.k8sclient.CoreV1().Secrets(metav1.NamespaceAll).List(metav1.ListOptions{
+		// TODO un-hardcode me
+		LabelSelector: "app=credentiald",
+	})
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	var doneSubscriptions []string
 	var ret []net.IPNet
-	for _, cr := range crs {
-		clientSet, err := credential.GetAzureClientSetFromSecretName(c.k8sclient, key.CredentialName(cr), key.CredentialNamespace(cr))
+	for _, secret := range secretsList.Items {
+		clientSet, err := credential.GetAzureClientSetFromSecretName(c.k8sclient, secret.Name, secret.Namespace)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -176,13 +162,16 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 		if inArray(doneSubscriptions, clientSet.SubscriptionID) {
 			continue
 		}
-		doneSubscriptions = append(doneSubscriptions, clientSet.SubscriptionID)
 
 		nets, err := c.getSubnetsFromSubscription(ctx, clientSet)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			// We can't use this Azure credentials. Might be wrong in the Secret file.
+			// We shouldn't block the network calculation for this reason.
+			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Error getting used subnets for subscription %s: %s", clientSet.SubscriptionID, err))
+			continue
 		}
 
+		doneSubscriptions = append(doneSubscriptions, clientSet.SubscriptionID)
 		ret = append(ret, nets...)
 	}
 

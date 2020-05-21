@@ -45,7 +45,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpn"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpnconnection"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
-	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
 type ResourceSetConfig struct {
@@ -540,15 +539,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		_, vnet, err := net.ParseCIDR(key.VnetCIDR(cr))
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		subnets, err := network.Compute(*vnet)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
 		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -577,7 +567,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 				Azure:                  config.Azure,
 				AzureClientCredentials: tenantAzureClientCredentialsConfig,
-				AzureNetwork:           *subnets,
 				Ignition:               config.Ignition,
 				OIDC:                   config.OIDC,
 				SSOPublicKey:           config.SSOPublicKey,
@@ -592,7 +581,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 		c := controllercontext.Context{
 			AzureClientSet: azureClients,
-			AzureNetwork:   subnets,
 			CloudConfig:    cloudConfig,
 		}
 		ctx = controllercontext.NewContext(ctx, c)

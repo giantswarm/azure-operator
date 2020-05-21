@@ -27,9 +27,7 @@ type ClusterConfig struct {
 	ProjectName      string
 	RegistryDomain   string
 
-	GuestPrivateSubnetMaskBits int
-	GuestPublicSubnetMaskBits  int
-	GuestSubnetMaskBits        int
+	GuestSubnetMaskBits int
 
 	Ignition         setting.Ignition
 	IPAMNetworkRange net.IPNet
@@ -67,19 +65,17 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Locker:        config.Locker,
 			Logger:        config.Logger,
 
-			Azure:                      config.Azure,
-			CPAzureClientSet:           config.CPAzureClientSet,
-			GuestPrivateSubnetMaskBits: config.GuestPrivateSubnetMaskBits,
-			GuestPublicSubnetMaskBits:  config.GuestPublicSubnetMaskBits,
-			GuestSubnetMaskBits:        config.GuestSubnetMaskBits,
-			Ignition:                   config.Ignition,
-			InstallationName:           config.InstallationName,
-			IPAMNetworkRange:           config.IPAMNetworkRange,
-			ProjectName:                config.ProjectName,
-			RegistryDomain:             config.RegistryDomain,
-			OIDC:                       config.OIDC,
-			SSOPublicKey:               config.SSOPublicKey,
-			VMSSCheckWorkers:           config.VMSSCheckWorkers,
+			Azure:               config.Azure,
+			CPAzureClientSet:    config.CPAzureClientSet,
+			GuestSubnetMaskBits: config.GuestSubnetMaskBits,
+			Ignition:            config.Ignition,
+			InstallationName:    config.InstallationName,
+			IPAMNetworkRange:    config.IPAMNetworkRange,
+			ProjectName:         config.ProjectName,
+			RegistryDomain:      config.RegistryDomain,
+			OIDC:                config.OIDC,
+			SSOPublicKey:        config.SSOPublicKey,
+			VMSSCheckWorkers:    config.VMSSCheckWorkers,
 		}
 
 		resourceSet, err = NewResourceSet(c)
