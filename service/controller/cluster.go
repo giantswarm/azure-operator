@@ -22,10 +22,10 @@ type ClusterConfig struct {
 	Locker           locker.Interface
 	Logger           micrologger.Logger
 
-	Azure          setting.Azure
-	AzureConfig    client.AzureClientSetConfig
-	ProjectName    string
-	RegistryDomain string
+	Azure            setting.Azure
+	CPAzureClientSet client.AzureClientSet
+	ProjectName      string
+	RegistryDomain   string
 
 	GuestPrivateSubnetMaskBits int
 	GuestPublicSubnetMaskBits  int
@@ -68,10 +68,10 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Logger:        config.Logger,
 
 			Azure:                      config.Azure,
+			CPAzureClientSet:           config.CPAzureClientSet,
 			GuestPrivateSubnetMaskBits: config.GuestPrivateSubnetMaskBits,
 			GuestPublicSubnetMaskBits:  config.GuestPublicSubnetMaskBits,
 			GuestSubnetMaskBits:        config.GuestSubnetMaskBits,
-			HostAzureClientSetConfig:   config.AzureConfig,
 			Ignition:                   config.Ignition,
 			InstallationName:           config.InstallationName,
 			IPAMNetworkRange:           config.IPAMNetworkRange,

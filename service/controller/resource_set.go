@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/tenantcluster"
 
 	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
@@ -44,7 +45,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpn"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpnconnection"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
-	"github.com/giantswarm/azure-operator/v4/service/credential"
 	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
@@ -54,10 +54,10 @@ type ResourceSetConfig struct {
 	Logger        micrologger.Logger
 
 	Azure                      setting.Azure
+	CPAzureClientSet           client.AzureClientSet
 	GuestPrivateSubnetMaskBits int
 	GuestPublicSubnetMaskBits  int
 	GuestSubnetMaskBits        int
-	HostAzureClientSetConfig   client.AzureClientSetConfig
 	Ignition                   setting.Ignition
 	InstallationName           string
 	IPAMNetworkRange           net.IPNet
@@ -263,9 +263,8 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
-			Logger: config.Logger,
-
-			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+			CPRecordSetsClient: *config.CPAzureClientSet.DNSRecordSetsClient,
+			Logger:             config.Logger,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -465,10 +464,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var vpnconnectionResource resource.Interface
 	{
 		c := vpnconnection.Config{
-			Logger: config.Logger,
-
-			Azure:                    config.Azure,
-			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
+			Azure:                                    config.Azure,
+			Logger:                                   config.Logger,
+			CPVirtualNetworkGatewaysClient:           *config.CPAzureClientSet.VirtualNetworkGatewaysClient,
+			CPVirtualNetworkGatewayConnectionsClient: *config.CPAzureClientSet.VirtualNetworkGatewayConnectionsClient,
 		}
 
 		ops, err := vpnconnection.New(c)
@@ -550,14 +549,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig, err := credential.GetAzureConfig(config.K8sClient.K8sClient(), key.CredentialName(cr), key.CredentialNamespace(cr))
+		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		guestAzureClientSetConfig.EnvironmentName = config.Azure.EnvironmentName
+		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 
-		azureClients, err := client.NewAzureClientSet(*guestAzureClientSetConfig)
+		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -569,12 +575,13 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				Logger:             config.Logger,
 				RandomkeysSearcher: randomkeysSearcher,
 
-				Azure:        config.Azure,
-				AzureConfig:  *guestAzureClientSetConfig,
-				AzureNetwork: *subnets,
-				Ignition:     config.Ignition,
-				OIDC:         config.OIDC,
-				SSOPublicKey: config.SSOPublicKey,
+				Azure:                  config.Azure,
+				AzureClientCredentials: tenantAzureClientCredentialsConfig,
+				AzureNetwork:           *subnets,
+				Ignition:               config.Ignition,
+				OIDC:                   config.OIDC,
+				SSOPublicKey:           config.SSOPublicKey,
+				SubscriptionID:         subscriptionID,
 			}
 
 			cloudConfig, err = cloudconfig.New(c)

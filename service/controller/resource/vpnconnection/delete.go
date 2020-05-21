@@ -51,20 +51,15 @@ func (r *Resource) applyDeleteChange(ctx context.Context, change connections) er
 		return nil
 	}
 
-	hostGatewayConnectionClient, err := r.getHostVirtualNetworkGatewayConnectionsClient()
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	resourceGroup := r.azure.HostCluster.ResourceGroup
 	connectionName := *change.Host.Name
 
-	respFuture, err := hostGatewayConnectionClient.Delete(ctx, resourceGroup, connectionName)
+	respFuture, err := r.cpVirtualNetworkGatewayConnectionsClient.Delete(ctx, resourceGroup, connectionName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	_, err = hostGatewayConnectionClient.DeleteResponder(respFuture.Response())
+	_, err = r.cpVirtualNetworkGatewayConnectionsClient.DeleteResponder(respFuture.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}

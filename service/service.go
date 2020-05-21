@@ -104,12 +104,15 @@ func New(config Config) (*Service, error) {
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
-	azureConfig := client.AzureClientSetConfig{
-		ClientID:        config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		ClientSecret:    config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
-		SubscriptionID:  config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
-		TenantID:        config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+	cpAzureClients, err := client.NewAzureClientSet(
+		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+		config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
+		config.Viper.GetString(config.Flag.Service.Azure.PartnerID),
+	)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	Ignition := setting.Ignition{
@@ -225,19 +228,19 @@ func New(config Config) (*Service, error) {
 			Locker:    kubeLockLocker,
 			Logger:    config.Logger,
 
-			Azure:                      azure,
-			AzureConfig:                azureConfig,
+			Azure:            azure,
+			CPAzureClientSet: *cpAzureClients,
 			GuestPrivateSubnetMaskBits: config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.PrivateSubnetMaskBits),
 			GuestPublicSubnetMaskBits:  config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.PublicSubnetMaskBits),
 			GuestSubnetMaskBits:        config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
-			Ignition:                   Ignition,
-			OIDC:                       OIDC,
-			InstallationName:           config.Viper.GetString(config.Flag.Service.Installation.Name),
+			Ignition:         Ignition,
+			OIDC:             OIDC,
+			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:           ipamNetworkRange,
-			ProjectName:                config.ProjectName,
-			RegistryDomain:             config.Viper.GetString(config.Flag.Service.RegistryDomain),
-			SSOPublicKey:               config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers:           config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			ProjectName:      config.ProjectName,
+			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
 		clusterController, err = controller.NewCluster(c)
