@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam/internal/credential"
 )
@@ -165,28 +165,33 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 	}
 
 	var doneSubscriptions []string
+	var ret []net.IPNet
 	for _, cr := range crs {
-		config, err := credential.GetAzureConfigFromSecretName(c.k8sclient, key.CredentialName(cr), key.CredentialNamespace(cr))
+		clientSet, err := credential.GetAzureClientSetFromSecretName(c.k8sclient, key.CredentialName(cr), key.CredentialNamespace(cr))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		// We want to check only once per subscriptino
-		if inArray(doneSubscriptions, config.SubscriptionID) {
+		// We want to check only once per subscription.
+		if inArray(doneSubscriptions, clientSet.SubscriptionID) {
 			continue
 		}
-		doneSubscriptions = append(doneSubscriptions, config.SubscriptionID)
+		doneSubscriptions = append(doneSubscriptions, clientSet.SubscriptionID)
+
+		nets, err := c.getSubnetsFromSubscription(ctx, clientSet)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		ret = append(ret, nets...)
 	}
+
+	return ret, nil
 }
 
-func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context) ([]net.IPNet, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	groupsClient := cc.AzureClientSet.GroupsClient
-	vnetClient := cc.AzureClientSet.VirtualNetworkClient
+func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context, clientSet *client.AzureClientSet) ([]net.IPNet, error) {
+	groupsClient := clientSet.GroupsClient
+	vnetClient := clientSet.VirtualNetworkClient
 
 	// Look for all resource groups that have a tag named 'GiantSwarmInstallation' with any value.
 	iterator, err := groupsClient.ListComplete(ctx, fmt.Sprintf("tagName eq 'GiantSwarmInstallation' and tagValue eq '%s'", c.installationName), nil)
