@@ -66,6 +66,7 @@ workflows:
 
 #      - architect/integration-test:
 #          name: cluster-state-test
+#          resource_class: large
 #          setup-script: "integration/config/setup.sh"
 #          env-file: "integration/test/clusterstate/.env"
 #          test-dir: "integration/test/clusterstate"
@@ -76,6 +77,7 @@ workflows:
 
       - architect/integration-test:
           name: scaling-test
+          resource_class: large
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/scaling/.env"
           test-dir: "integration/test/scaling"
@@ -86,6 +88,7 @@ workflows:
 
       - architect/integration-test:
           name: multiaz-test
+          resource_class: large
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/multiaz/.env"
           test-dir: "integration/test/multiaz"
@@ -96,6 +99,7 @@ workflows:
 
       - architect/integration-test:
           name: cluster-deletion-test
+          resource_class: large
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/clusterdeletion/.env"
           test-dir: "integration/test/clusterdeletion"
@@ -106,6 +110,7 @@ workflows:
 
       - architect/integration-test:
           name: update-test
+          resource_class: large
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/update/.env"
           test-dir: "integration/test/update"
@@ -116,6 +121,7 @@ workflows:
 
       - architect/integration-test:
           name: cp-tc-connectivity-test
+          resource_class: large
           setup-script: "integration/config/setup.sh"
           env-file: "integration/test/cptcconnectivity/.env"
           test-dir: "integration/test/cptcconnectivity"
