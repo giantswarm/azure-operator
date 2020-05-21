@@ -28,7 +28,7 @@ func (r *Resource) deleteLegacyVMSSTransition(ctx context.Context, obj interface
 }
 
 func (r *Resource) deleteScaleSet(ctx context.Context, resourceGroup string, vmssName string) error {
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := r.GetScaleSetsClient(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}

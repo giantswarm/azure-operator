@@ -39,7 +39,7 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	//	 latest version and try again
 	//
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		c, err := r.G8sClient().ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -80,7 +80,7 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 
 	{
 		n := customObject.GetNamespace()
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
+		_, err := r.G8sClient().ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -91,7 +91,7 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 
 func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, t string) (string, error) {
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		c, err := r.G8sClient().ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
 		if err != nil {
 			return "", microerror.Mask(err)
 		}

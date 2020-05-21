@@ -39,6 +39,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/service"
@@ -309,16 +310,20 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	nodesConfig := nodes.Config{
+		Debugger:  newDebugger,
+		G8sClient: config.K8sClient.G8sClient(),
+		K8sClient: config.K8sClient.K8sClient(),
+		Logger:    config.Logger,
+
+		Azure:            config.Azure,
+		InstanceWatchdog: iwd,
+	}
+
 	var mastersResource resource.Interface
 	{
 		c := masters.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			InstanceWatchdog: iwd,
+			Config: nodesConfig,
 		}
 
 		mastersResource, err = masters.New(c)
@@ -330,13 +335,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var instanceResource resource.Interface
 	{
 		c := instance.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			InstanceWatchdog: iwd,
+			Config: nodesConfig,
 		}
 
 		instanceResource, err = instance.New(c)
