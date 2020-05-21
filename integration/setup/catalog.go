@@ -55,7 +55,7 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 
 func pullChartPackageUnderTest(ctx context.Context, config Config) (string, error) {
 	config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for azure-operator tested version")
-	operatorTarballURL, err := appcatalog.NewTarballURL(TestCatalogStorageURL, project.Name(), fmt.Sprintf("%s-%s", env.GetLatestOperatorRelease(), env.CircleSHA()))
+	operatorTarballURL, err := appcatalog.NewTarballURL(TestCatalogStorageURL, project.Name(), env.GetLatestOperatorRelease())
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
