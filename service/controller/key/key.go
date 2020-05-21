@@ -111,6 +111,10 @@ func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
 }
 
+func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.Calico.Subnet
+}
+
 func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-certificate-encryption", customObject.Spec.Cluster.ID)
 }
@@ -292,6 +296,10 @@ func WorkerSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 // MasterSubnetName returns name of the master subnet.
 func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, masterSubnetSuffix)
+}
+
+func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
 }
 
 // WorkerCount returns the desired number of workers.
@@ -514,10 +522,6 @@ func VNetGatewaySubnetName() string {
 	return vpnGatewaySubnet
 }
 
-func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
-}
-
 // VPNGatewayName returns name of the vpn gateway.
 func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
@@ -547,6 +551,10 @@ func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-worker-%s", ClusterID(customObject), ClusterID(customObject))
+}
+
+func WorkersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
 }
 
 func vmssInstanceIDBase36(instanceID string) (string, error) {
