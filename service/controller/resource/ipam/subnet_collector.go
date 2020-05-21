@@ -181,7 +181,7 @@ func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context, client
 	groupsClient := clientSet.GroupsClient
 	vnetClient := clientSet.VirtualNetworkClient
 
-	// Look for all resource groups that have a tag named 'GiantSwarmInstallation' with any value.
+	// Look for all resource groups that have a tag named 'GiantSwarmInstallation' with installation name as value.
 	iterator, err := groupsClient.ListComplete(ctx, fmt.Sprintf("tagName eq 'GiantSwarmInstallation' and tagValue eq '%s'", c.installationName), nil)
 	if err != nil {
 		return nil, microerror.Mask(err)
