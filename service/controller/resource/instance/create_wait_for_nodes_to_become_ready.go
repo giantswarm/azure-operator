@@ -40,7 +40,8 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 	vmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
 	if IsScaleSetNotFound(err) {
-		return "", microerror.Mask(err)
+		// The old VMSS does not exist. Go on with cleanup.
+		return DrainOldWorkerNodes, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
