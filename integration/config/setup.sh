@@ -14,7 +14,3 @@ sudo mv linux-amd64/helm /usr/local/bin/
 
 kubectl --kubeconfig="${shipyard_dir}/config" create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
 helm --kubeconfig="${shipyard_dir}/config" init --history-max 5 --wait
-
-LATEST_OPERATOR_RELEASE=$(architect project version)
-export LATEST_OPERATOR_RELEASE
-echo "Latest operator release is ${LATEST_OPERATOR_RELEASE}"
