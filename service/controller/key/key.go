@@ -53,6 +53,8 @@ const (
 	CertificateEncryptionIVName    = "encryptioniv"
 
 	ContainerLinuxComponentName = "containerlinux"
+
+	OrganizationSecretsLabelSelector = "app=credentiald"
 )
 
 // Container image versions for k8scloudconfig.

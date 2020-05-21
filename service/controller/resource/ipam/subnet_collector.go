@@ -143,8 +143,7 @@ func (c *SubnetCollector) getSubnetsFromAzureConfigs(ctx context.Context) ([]net
 
 func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([]net.IPNet, error) {
 	secretsList, err := c.k8sclient.CoreV1().Secrets(metav1.NamespaceAll).List(metav1.ListOptions{
-		// TODO un-hardcode me
-		LabelSelector: "app=credentiald",
+		LabelSelector: key.OrganizationSecretsLabelSelector,
 	})
 	if err != nil {
 		return nil, microerror.Mask(err)
