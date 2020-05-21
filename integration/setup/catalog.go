@@ -19,26 +19,6 @@ const (
 	TestCatalogStorageURL = "https://giantswarm.github.io/control-plane-test-catalog"
 )
 
-var (
-	latestOperatorRelease string
-)
-
-func GetLatestOperatorRelease() string {
-	return latestOperatorRelease
-}
-
-func init() {
-	fmt.Printf("calculating latest %#q release\n", project.Name())
-
-	var err error
-	latestOperatorRelease, err = appcatalog.GetLatestVersion(context.Background(), CatalogStorageURL, project.Name())
-	if err != nil {
-		panic(fmt.Sprintln("cannot calculate latest operator release from app catalog"))
-	}
-
-	fmt.Printf("latest %#q release is %#q\n", project.Name(), latestOperatorRelease)
-}
-
 func pullLatestChart(ctx context.Context, config Config, chartName string) (string, error) {
 	var err error
 
@@ -75,7 +55,7 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 
 func pullChartPackageUnderTest(ctx context.Context, config Config) (string, error) {
 	config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for azure-operator tested version")
-	operatorTarballURL, err := appcatalog.NewTarballURL(TestCatalogStorageURL, project.Name(), fmt.Sprintf("%s-%s", latestOperatorRelease, env.CircleSHA()))
+	operatorTarballURL, err := appcatalog.NewTarballURL(TestCatalogStorageURL, project.Name(), fmt.Sprintf("%s-%s", env.GetLatestOperatorRelease(), env.CircleSHA()))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
