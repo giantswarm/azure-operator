@@ -21,7 +21,7 @@ type ClusterConfig struct {
 
 	Azure setting.Azure
 	// Azure client set used when managing control plane resources
-	CPAzureClientSet client.AzureClientSet
+	CPAzureClientSet *client.AzureClientSet
 	// Azure credentials used to create Azure client set for tenant clusters
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	ProjectName               string

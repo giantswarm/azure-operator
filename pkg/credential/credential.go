@@ -92,3 +92,27 @@ func valueFromSecret(secret *v1.Secret, key string) (string, error) {
 
 	return string(v), nil
 }
+
+// NewAzureCredentials returns a `ClientCredentialsConfig` configured taking values from Environment, but parameters
+// have precedence over environment variables.
+func NewAzureCredentials(clientID, clientSecret, tenantID string) (auth.ClientCredentialsConfig, error) {
+	settings, err := auth.GetSettingsFromEnvironment()
+	if err != nil {
+		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
+	}
+	if clientID != "" {
+		settings.Values[auth.ClientID] = clientID
+	}
+	if clientSecret != "" {
+		settings.Values[auth.ClientSecret] = clientSecret
+	}
+	if tenantID != "" {
+		settings.Values[auth.TenantID] = tenantID
+	}
+
+	if settings.Values[auth.ClientID] == "" || settings.Values[auth.ClientSecret] == "" || settings.Values[auth.TenantID] == "" {
+		return auth.ClientCredentialsConfig{}, microerror.Maskf(invalidConfigError, "credentials must not be empty")
+	}
+
+	return settings.GetClientCredentials()
+}

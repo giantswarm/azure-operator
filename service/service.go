@@ -20,6 +20,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
@@ -52,7 +53,6 @@ func New(config Config) (*Service, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
 	if config.Flag == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Flag must not be empty", config)
 	}
@@ -101,17 +101,6 @@ func New(config Config) (*Service, error) {
 			Enabled: config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		},
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
-	}
-
-	// These credentials will be used when creating AzureClients for Control Plane clusters.
-	gsClientCredentialsConfig, err := NewClientCredentialsConfig(config)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
 	}
 
 	Ignition := setting.Ignition{
@@ -179,16 +168,30 @@ func New(config Config) (*Service, error) {
 
 	var clusterController *controller.Cluster
 	{
-		c := controller.ClusterConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
+		// These credentials will be used when creating AzureClients for Control Plane clusters.
+		gsClientCredentialsConfig, err := credential.NewAzureCredentials(
+			config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+			config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+			config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+		)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 
+		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		c := controller.ClusterConfig{
 			Azure:                     azure,
-			CPAzureClientSet:          *cpAzureClientSet,
+			CPAzureClientSet:          cpAzureClientSet,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			Ignition:                  Ignition,
-			OIDC:                      OIDC,
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			K8sClient:                 k8sClient,
+			Logger:                    config.Logger,
+			OIDC:                      OIDC,
 			ProjectName:               config.ProjectName,
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.RegistryDomain),
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
@@ -270,30 +273,6 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 	}
 
 	return restConfig, nil
-}
-
-// NewClientCredentialsConfig returns a `ClientCredentialsConfig` configured taking values from Environment,
-// but operator parameters have precedence over environment variables.
-func NewClientCredentialsConfig(config Config) (auth.ClientCredentialsConfig, error) {
-	settings, err := auth.GetSettingsFromEnvironment()
-	if err != nil {
-		return auth.ClientCredentialsConfig{}, microerror.Mask(err)
-	}
-	if config.Viper.GetString(config.Flag.Service.Azure.ClientID) != "" {
-		settings.Values[auth.ClientID] = config.Viper.GetString(config.Flag.Service.Azure.ClientID)
-	}
-	if config.Viper.GetString(config.Flag.Service.Azure.ClientSecret) != "" {
-		settings.Values[auth.ClientSecret] = config.Viper.GetString(config.Flag.Service.Azure.ClientSecret)
-	}
-	if config.Viper.GetString(config.Flag.Service.Azure.TenantID) != "" {
-		settings.Values[auth.TenantID] = config.Viper.GetString(config.Flag.Service.Azure.TenantID)
-	}
-
-	if settings.Values[auth.ClientID] == "" || settings.Values[auth.ClientSecret] == "" || settings.Values[auth.TenantID] == "" {
-		return auth.ClientCredentialsConfig{}, microerror.Maskf(invalidConfigError, "credentials must not be empty")
-	}
-
-	return settings.GetClientCredentials()
 }
 
 // NewCPAzureClientSet return an Azure client set configured for the Control Plane cluster.

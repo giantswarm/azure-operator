@@ -53,7 +53,7 @@ type ResourceSetConfig struct {
 	Logger        micrologger.Logger
 
 	Azure                     setting.Azure
-	CPAzureClientSet          client.AzureClientSet
+	CPAzureClientSet          *client.AzureClientSet
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	Ignition                  setting.Ignition
 	InstallationName          string
