@@ -52,20 +52,18 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure                      setting.Azure
-	CPAzureClientSet           client.AzureClientSet
-	GuestPrivateSubnetMaskBits int
-	GuestPublicSubnetMaskBits  int
-	GuestSubnetMaskBits        int
-	Ignition                   setting.Ignition
-	InstallationName           string
-	IPAMNetworkRange           net.IPNet
-	Locker                     locker.Interface
-	ProjectName                string
-	RegistryDomain             string
-	OIDC                       setting.OIDC
-	SSOPublicKey               string
-	VMSSCheckWorkers           int
+	Azure               setting.Azure
+	CPAzureClientSet    client.AzureClientSet
+	GuestSubnetMaskBits int
+	Ignition            setting.Ignition
+	InstallationName    string
+	IPAMNetworkRange    net.IPNet
+	Locker              locker.Interface
+	ProjectName         string
+	RegistryDomain      string
+	OIDC                setting.OIDC
+	SSOPublicKey        string
+	VMSSCheckWorkers    int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -399,8 +397,6 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
 			NetworkRange:            config.IPAMNetworkRange,
-			PrivateSubnetMaskBits:   config.GuestPrivateSubnetMaskBits,
-			PublicSubnetMaskBits:    config.GuestPublicSubnetMaskBits,
 		}
 
 		ipamResource, err = ipam.New(c)
