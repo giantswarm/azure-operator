@@ -7,3 +7,7 @@ import (
 var missingValueError = &microerror.Error{
 	Kind: "missingValueError",
 }
+
+var invalidConfigError = &microerror.Error{
+	Kind: "invalidConfigError",
+}

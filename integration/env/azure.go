@@ -185,10 +185,10 @@ func CommonDomainResourceGroup() string {
 	return commonDomainResourceGroup
 }
 
-func SSHPublicKey() string {
-	return sshPublicKey
-}
-
 func GetLatestOperatorRelease() string {
 	return latestOperatorRelease
+}
+
+func SSHPublicKey() string {
+	return sshPublicKey
 }

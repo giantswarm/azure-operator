@@ -3,6 +3,7 @@ package controller
 import (
 	"net"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
@@ -22,10 +23,13 @@ type ClusterConfig struct {
 	Locker           locker.Interface
 	Logger           micrologger.Logger
 
-	Azure            setting.Azure
-	CPAzureClientSet client.AzureClientSet
-	ProjectName      string
-	RegistryDomain   string
+	Azure setting.Azure
+	// Azure client set used when managing control plane resources
+	CPAzureClientSet *client.AzureClientSet
+	// Azure credentials used to create Azure client set for tenant clusters
+	GSClientCredentialsConfig auth.ClientCredentialsConfig
+	ProjectName               string
+	RegistryDomain            string
 
 	GuestSubnetMaskBits int
 
@@ -65,17 +69,18 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Locker:        config.Locker,
 			Logger:        config.Logger,
 
-			Azure:               config.Azure,
-			CPAzureClientSet:    config.CPAzureClientSet,
-			GuestSubnetMaskBits: config.GuestSubnetMaskBits,
-			Ignition:            config.Ignition,
-			InstallationName:    config.InstallationName,
-			IPAMNetworkRange:    config.IPAMNetworkRange,
-			ProjectName:         config.ProjectName,
-			RegistryDomain:      config.RegistryDomain,
-			OIDC:                config.OIDC,
-			SSOPublicKey:        config.SSOPublicKey,
-			VMSSCheckWorkers:    config.VMSSCheckWorkers,
+			Azure:                     config.Azure,
+			CPAzureClientSet:          config.CPAzureClientSet,
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			GuestSubnetMaskBits:       config.GuestSubnetMaskBits,
+			Ignition:                  config.Ignition,
+			InstallationName:          config.InstallationName,
+			IPAMNetworkRange:          config.IPAMNetworkRange,
+			ProjectName:               config.ProjectName,
+			RegistryDomain:            config.RegistryDomain,
+			OIDC:                      config.OIDC,
+			SSOPublicKey:              config.SSOPublicKey,
+			VMSSCheckWorkers:          config.VMSSCheckWorkers,
 		}
 
 		resourceSet, err = NewResourceSet(c)

@@ -6,6 +6,7 @@ import (
 	"net"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -52,18 +53,19 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure               setting.Azure
-	CPAzureClientSet    client.AzureClientSet
-	GuestSubnetMaskBits int
-	Ignition            setting.Ignition
-	InstallationName    string
-	IPAMNetworkRange    net.IPNet
-	Locker              locker.Interface
-	ProjectName         string
-	RegistryDomain      string
-	OIDC                setting.OIDC
-	SSOPublicKey        string
-	VMSSCheckWorkers    int
+	Azure                     setting.Azure
+	CPAzureClientSet          *client.AzureClientSet
+	GSClientCredentialsConfig auth.ClientCredentialsConfig
+	GuestSubnetMaskBits       int
+	Ignition                  setting.Ignition
+	InstallationName          string
+	IPAMNetworkRange          net.IPNet
+	Locker                    locker.Interface
+	ProjectName               string
+	RegistryDomain            string
+	OIDC                      setting.OIDC
+	SSOPublicKey              string
+	VMSSCheckWorkers          int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -372,10 +374,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var subnetCollector *ipam.SubnetCollector
 	{
 		c := ipam.SubnetCollectorConfig{
-			G8sClient:        config.K8sClient.G8sClient(),
-			K8sClient:        config.K8sClient.K8sClient(),
-			InstallationName: config.InstallationName,
-			Logger:           config.Logger,
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			K8sClient:                 config.K8sClient,
+			InstallationName:          config.InstallationName,
+			Logger:                    config.Logger,
 
 			NetworkRange: config.IPAMNetworkRange,
 		}
@@ -535,21 +537,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(config.K8sClient, cr, config.GSClientCredentialsConfig.TenantID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
+		tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -562,7 +555,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				RandomkeysSearcher: randomkeysSearcher,
 
 				Azure:                  config.Azure,
-				AzureClientCredentials: tenantAzureClientCredentialsConfig,
+				AzureClientCredentials: organizationAzureClientCredentialsConfig,
 				Ignition:               config.Ignition,
 				OIDC:                   config.OIDC,
 				SSOPublicKey:           config.SSOPublicKey,
@@ -576,7 +569,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		c := controllercontext.Context{
-			AzureClientSet: azureClients,
+			AzureClientSet: tenantClusterAzureClientSet,
 			CloudConfig:    cloudConfig,
 		}
 		ctx = controllercontext.NewContext(ctx, c)
