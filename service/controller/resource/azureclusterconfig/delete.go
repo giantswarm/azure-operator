@@ -24,7 +24,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	var azureClusterConfig corev1alpha1.AzureClusterConfig
 	{
 		nsName := types.NamespacedName{
-			Name:      key.ClusterID(&azureCluster),
+			Name:      clusterConfigName(key.ClusterID(&azureCluster)),
 			Namespace: metav1.NamespaceDefault,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &azureClusterConfig)

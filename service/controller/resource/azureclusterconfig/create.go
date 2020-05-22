@@ -103,7 +103,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var presentAzureClusterConfig corev1alpha1.AzureClusterConfig
 	{
 		nsName := types.NamespacedName{
-			Name:      clusterConfigName(cluster),
+			Name:      clusterConfigName(key.ClusterID(&cluster)),
 			Namespace: metav1.NamespaceDefault,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureClusterConfig)
@@ -176,7 +176,7 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 			APIVersion: "core.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      clusterConfigName(cluster),
+			Name:      clusterConfigName(key.ClusterID(&cluster)),
 			Namespace: metav1.NamespaceDefault,
 			Labels: map[string]string{
 				label.ClusterOperatorVersion: clusterOperatorVersion,
@@ -232,8 +232,8 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 	return clusterConfig, nil
 }
 
-func clusterConfigName(cluster capiv1alpha3.Cluster) string {
-	return fmt.Sprintf("%s-%s", key.ClusterID(&cluster), "azure-cluster-config")
+func clusterConfigName(clusterID string) string {
+	return fmt.Sprintf("%s-%s", clusterID, "azure-cluster-config")
 }
 
 func dnsZoneFromAPIEndpoint(apiEndpointHost string) string {
