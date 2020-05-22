@@ -3,7 +3,6 @@ package controller
 import (
 	"context"
 	"fmt"
-	"net"
 	"time"
 
 	"github.com/giantswarm/certs"
@@ -465,14 +464,18 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		_, vnet, err := net.ParseCIDR(key.VnetCIDR(cr))
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		subnets, err := network.Compute(*vnet)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
+		/*
+			_, vnet, err := net.ParseCIDR(key.VnetCIDR(cr))
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+			subnets, err := network.Compute(*vnet)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+		*/
+
+		subnets := &network.Subnets{}
 
 		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
 		if err != nil {
