@@ -3,6 +3,7 @@ package service
 import (
 	"context"
 	"fmt"
+	"net"
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -20,7 +21,8 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
+  "github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
@@ -117,6 +119,27 @@ func New(config Config) (*Service, error) {
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
 	}
 
+	var restConfig *rest.Config
+	{
+		c := k8srestconfig.Config{
+			Logger: config.Logger,
+
+			Address:    config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
+			InCluster:  config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
+			KubeConfig: config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfig),
+			TLS: k8srestconfig.ConfigTLS{
+				CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
+				CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
+				KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
+			},
+		}
+
+		restConfig, err = k8srestconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var k8sClient *k8sclient.Clients
 	{
 		address := config.Viper.GetString(config.Flag.Service.Kubernetes.Address)
@@ -166,6 +189,28 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var kubeLockLocker locker.Interface
+	{
+		c := locker.KubeLockLockerConfig{
+			Logger:     config.Logger,
+			RestConfig: restConfig,
+		}
+
+		kubeLockLocker, err = locker.NewKubeLockLocker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamNetworkRange net.IPNet
+	{
+		_, ipnet, err := net.ParseCIDR(config.Viper.GetString(config.Flag.Service.Installation.Guest.IPAM.Network.CIDR))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		ipamNetworkRange = *ipnet
+	}
+
 	var clusterController *controller.Cluster
 	{
 		// These credentials will be used when creating AzureClients for Control Plane clusters.
@@ -187,9 +232,12 @@ func New(config Config) (*Service, error) {
 			Azure:                     azure,
 			CPAzureClientSet:          cpAzureClientSet,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
+      GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			Ignition:                  Ignition,
-			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+      InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			IPAMNetworkRange:          ipamNetworkRange,
 			K8sClient:                 k8sClient,
+      Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
 			OIDC:                      OIDC,
 			ProjectName:               config.ProjectName,

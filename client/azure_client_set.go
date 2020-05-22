@@ -22,6 +22,9 @@ const (
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
+	// The subscription ID this client set is configured with.
+	SubscriptionID string
+
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
@@ -129,6 +132,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		InterfacesClient:                       interfacesClient,
 		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  storageAccountsClient,
+		SubscriptionID:                         subscriptionID,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
 		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,

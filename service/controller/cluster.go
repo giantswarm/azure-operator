@@ -1,7 +1,9 @@
 package controller
 
 import (
-	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"net"
+
+  "github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
@@ -11,12 +13,14 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type ClusterConfig struct {
 	InstallationName string
 	K8sClient        k8sclient.Interface
+	Locker           locker.Interface
 	Logger           micrologger.Logger
 
 	Azure setting.Azure
@@ -27,7 +31,10 @@ type ClusterConfig struct {
 	ProjectName               string
 	RegistryDomain            string
 
+	GuestSubnetMaskBits int
+
 	Ignition         setting.Ignition
+	IPAMNetworkRange net.IPNet
 	OIDC             setting.OIDC
 	SSOPublicKey     string
 	TemplateVersion  string
@@ -59,13 +66,16 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		c := ResourceSetConfig{
 			CertsSearcher: certsSearcher,
 			K8sClient:     config.K8sClient,
+			Locker:        config.Locker,
 			Logger:        config.Logger,
 
 			Azure:                     config.Azure,
 			CPAzureClientSet:          config.CPAzureClientSet,
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+      GuestSubnetMaskBits:       config.GuestSubnetMaskBits,
 			Ignition:                  config.Ignition,
 			InstallationName:          config.InstallationName,
+      IPAMNetworkRange:          config.IPAMNetworkRange,
 			ProjectName:               config.ProjectName,
 			RegistryDomain:            config.RegistryDomain,
 			OIDC:                      config.OIDC,
