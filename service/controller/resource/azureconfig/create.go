@@ -38,6 +38,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding required cluster api types for %q", key.ClusterID(&azureCluster)))
+
 	var cluster capiv1alpha3.Cluster
 	{
 		nsName := types.NamespacedName{
@@ -47,6 +49,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		err = r.ctrlClient.Get(ctx, nsName, &cluster)
 		if errors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("referenced Cluster CR (%q) not found", nsName.String()))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
@@ -91,6 +96,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "building azureconfig from cluster api crs")
+
 	var mappedAzureConfig providerv1alpha1.AzureConfig
 	{
 		mappedAzureConfig, err = r.buildAzureConfig(ctx, cluster, azureCluster, masterMachines, workerMachines)
@@ -98,6 +105,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "built azureconfig from cluster api crs")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding existing azureconfig")
 
 	var presentAzureConfig providerv1alpha1.AzureConfig
 	{
@@ -107,30 +117,41 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if errors.IsNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not found existing azureconfig")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "creating azureconfig")
 			err = r.ctrlClient.Create(ctx, &mappedAzureConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
+			r.logger.LogCtx(ctx, "level", "debug", "message", "created azureconfig")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureconfig needs update")
 	{
 		// Copy object meta data such as Generation, ResourceVersion etc.
 		mappedAzureConfig.ObjectMeta = presentAzureConfig.ObjectMeta
 
 		// Were there any changes that requires CR update?
 		if reflect.DeepEqual(mappedAzureConfig, presentAzureConfig) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no update for existing azureconfig needed")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig needs update")
 
 		err = r.ctrlClient.Update(ctx, &mappedAzureConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig updated")
 	}
 
 	return nil
