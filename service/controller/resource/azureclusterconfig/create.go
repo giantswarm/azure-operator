@@ -23,16 +23,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
-const (
-	dockerVolumeSizeGB  = 50
-	kubeletVolumeSizeGB = 100
-	azureAPIVersion     = "provider.giantswarm.io"
-
-	kubeDNSIPLastOctet = 10
-
-	ProviderAzure = "azure"
-)
-
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	azureCluster, err := key.ToAzureCluster(obj)
 	if err != nil {
