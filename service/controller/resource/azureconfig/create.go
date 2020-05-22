@@ -38,7 +38,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding required cluster api types for %q", key.ClusterID(&azureCluster)))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding required cluster api types")
 
 	var cluster capiv1alpha3.Cluster
 	{
@@ -96,6 +96,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found required cluster api types")
 	r.logger.LogCtx(ctx, "level", "debug", "message", "building azureconfig from cluster api crs")
 
 	var mappedAzureConfig providerv1alpha1.AzureConfig
