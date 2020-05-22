@@ -192,3 +192,7 @@ func GetLatestOperatorRelease() string {
 func SSHPublicKey() string {
 	return sshPublicKey
 }
+
+func GetLatestOperatorRelease() string {
+	return latestOperatorRelease
+}
