@@ -17,13 +17,6 @@ import (
 func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
 	var err error
 
-	// NOTE in Azure we disable Calico right now. This is due to a transitioning
-	// phase. The k8scloudconfig templates require certain calico valus to be set
-	// nonetheless. So we set them here. Later when the Calico setup is
-	// straightened out we can improve the handling here.
-	data.CustomObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
-	data.CustomObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
-
 	var params k8scloudconfig.Params
 	{
 		be := baseExtension{
