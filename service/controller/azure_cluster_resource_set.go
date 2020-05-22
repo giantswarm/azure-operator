@@ -17,6 +17,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
@@ -140,6 +141,12 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 	}
 
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
+		c := controllercontext.Context{
+			AzureClientSet: nil,
+			AzureNetwork:   nil,
+			CloudConfig:    nil,
+		}
+		ctx = controllercontext.NewContext(ctx, c)
 		return context.Background(), nil
 	}
 
