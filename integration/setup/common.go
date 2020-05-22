@@ -312,7 +312,6 @@ func credentialDefault() *corev1.Secret {
 				"giantswarm.io/managed-by":   "credentiald",
 				"giantswarm.io/organization": "giantswarm",
 				"giantswarm.io/service-type": "system",
-				"azure-operator.giantswarm.io/single-tenant-sp": "true",
 			},
 		},
 		Data: map[string][]byte{

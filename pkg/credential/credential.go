@@ -14,18 +14,16 @@ import (
 )
 
 const (
-	clientIDKey         = "azure.azureoperator.clientid"
-	clientSecretKey     = "azure.azureoperator.clientsecret"
-	defaultAzureGUID    = "37f13270-5c7a-56ff-9211-8426baaeaabd"
-	partnerIDKey        = "azure.azureoperator.partnerid"
-	singleTenantSPLabel = "azure-operator.giantswarm.io/single-tenant-sp"
-	subscriptionIDKey   = "azure.azureoperator.subscriptionid"
-	tenantIDKey         = "azure.azureoperator.tenantid"
+	clientIDKey       = "azure.azureoperator.clientid"
+	clientSecretKey   = "azure.azureoperator.clientsecret"
+	defaultAzureGUID  = "37f13270-5c7a-56ff-9211-8426baaeaabd"
+	partnerIDKey      = "azure.azureoperator.partnerid"
+	subscriptionIDKey = "azure.azureoperator.subscriptionid"
+	tenantIDKey       = "azure.azureoperator.tenantid"
 )
 
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
-// We use a label to identify organizations' secrets that contain Service Principals to still be used as Single Tenant.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
 func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
 	credential := &v1.Secret{}
@@ -63,7 +61,7 @@ func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv
 		partnerID = defaultAzureGUID
 	}
 
-	if isSingleTenantServicePrincipal(credential) {
+	if tenantID == gsTenantID {
 		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
@@ -73,12 +71,6 @@ func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv
 	credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
 
 	return credentials, subscriptionID, partnerID, nil
-}
-
-// Having the label means that the Service Principal is single tenant.
-func isSingleTenantServicePrincipal(secret *v1.Secret) bool {
-	_, exists := secret.GetLabels()[singleTenantSPLabel]
-	return exists
 }
 
 func valueFromSecret(secret *v1.Secret, key string) (string, error) {
