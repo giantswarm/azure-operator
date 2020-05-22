@@ -156,7 +156,7 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
 	}
 
-	dnsZone, err := dnsZoneFromAPIEndpoint(azureCluster.Spec.ControlPlaneEndpoint.String())
+	dnsZone, err := dnsZoneFromAPIEndpoint(azureCluster.Spec.ControlPlaneEndpoint.Host)
 	if err != nil {
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
 	}
