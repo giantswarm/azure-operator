@@ -56,11 +56,11 @@ type ResourceSetConfig struct {
 	Azure                     setting.Azure
 	CPAzureClientSet          *client.AzureClientSet
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
-  GuestSubnetMaskBits       int
+	GuestSubnetMaskBits       int
 	Ignition                  setting.Ignition
 	InstallationName          string
-  IPAMNetworkRange          net.IPNet
-  Locker                    locker.Interface
+	IPAMNetworkRange          net.IPNet
+	Locker                    locker.Interface
 	ProjectName               string
 	RegistryDomain            string
 	OIDC                      setting.OIDC
@@ -374,10 +374,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var subnetCollector *ipam.SubnetCollector
 	{
 		c := ipam.SubnetCollectorConfig{
-			G8sClient:        config.K8sClient.G8sClient(),
-			K8sClient:        config.K8sClient.K8sClient(),
-			InstallationName: config.InstallationName,
-			Logger:           config.Logger,
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			K8sClient:                 config.K8sClient,
+			InstallationName:          config.InstallationName,
+			Logger:                    config.Logger,
 
 			NetworkRange: config.IPAMNetworkRange,
 		}

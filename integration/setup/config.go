@@ -144,11 +144,10 @@ func NewConfig() (Config, error) {
 	var helmClient *helmclient.Client
 	{
 		c := helmclient.Config{
-			Logger:               logger,
-			K8sClient:            cpK8sClients.K8sClient(),
-			RestConfig:           host.RestConfig(),
-			TillerNamespace:      tillerNamespace,
-			TillerUpgradeEnabled: true,
+			Logger:          logger,
+			K8sClient:       cpK8sClients.K8sClient(),
+			RestConfig:      host.RestConfig(),
+			TillerNamespace: tillerNamespace,
 		}
 
 		helmClient, err = helmclient.New(c)

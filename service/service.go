@@ -21,7 +21,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
-  "github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller"
@@ -232,12 +232,12 @@ func New(config Config) (*Service, error) {
 			Azure:                     azure,
 			CPAzureClientSet:          cpAzureClientSet,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
-      GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			Ignition:                  Ignition,
-      InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:          ipamNetworkRange,
 			K8sClient:                 k8sClient,
-      Locker:                    kubeLockLocker,
+			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
 			OIDC:                      OIDC,
 			ProjectName:               config.ProjectName,

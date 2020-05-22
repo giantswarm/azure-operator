@@ -3,7 +3,7 @@ package controller
 import (
 	"net"
 
-  "github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
@@ -72,10 +72,10 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Azure:                     config.Azure,
 			CPAzureClientSet:          config.CPAzureClientSet,
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-      GuestSubnetMaskBits:       config.GuestSubnetMaskBits,
+			GuestSubnetMaskBits:       config.GuestSubnetMaskBits,
 			Ignition:                  config.Ignition,
 			InstallationName:          config.InstallationName,
-      IPAMNetworkRange:          config.IPAMNetworkRange,
+			IPAMNetworkRange:          config.IPAMNetworkRange,
 			ProjectName:               config.ProjectName,
 			RegistryDomain:            config.RegistryDomain,
 			OIDC:                      config.OIDC,
