@@ -25,6 +25,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding release from cr")
+
 	var release v1alpha1.Release
 	{
 		releaseVersion := m.GetLabels()[label.ReleaseVersion]
@@ -32,13 +34,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			releaseVersion = fmt.Sprintf("v%s", releaseVersion)
 		}
 
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found release version %q from cr", releaseVersion))
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "reading release object")
 		err = r.k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: "", Name: releaseVersion}, &release)
 		if err != nil {
 			return microerror.Mask(err)
 		}
+		r.logger.LogCtx(ctx, "level", "debug", "message", "read release object")
 	}
 
 	cc.Release.Release = release
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "saved release object in controllercontext")
 
 	return nil
 }
