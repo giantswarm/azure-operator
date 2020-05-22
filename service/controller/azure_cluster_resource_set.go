@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/flag"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/crmapper"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
@@ -81,9 +81,9 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 		}
 	*/
 
-	var crMapperResource *crmapper.Resource
+	var crMapperResource *azureconfig.Resource
 	{
-		c := crmapper.Config{
+		c := azureconfig.Config{
 			Logger: config.Logger,
 
 			Flag:  config.Flag,
@@ -92,7 +92,7 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 			CtrlClient: config.K8sClient.CtrlClient(),
 		}
 
-		crMapperResource, err = crmapper.New(c)
+		crMapperResource, err = azureconfig.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

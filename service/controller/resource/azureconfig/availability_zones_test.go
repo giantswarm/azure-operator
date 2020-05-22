@@ -1,4 +1,4 @@
-package crmapper
+package azureconfig
 
 import (
 	"strconv"

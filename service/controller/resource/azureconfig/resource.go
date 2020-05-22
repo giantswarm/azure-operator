@@ -1,4 +1,4 @@
-package crmapper
+package azureconfig
 
 import (
 	"github.com/giantswarm/microerror"
@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Name = "crmapper"
+	Name = "azureconfig"
 )
 
 type Config struct {
