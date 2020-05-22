@@ -54,7 +54,7 @@ const (
 
 	ContainerLinuxComponentName = "containerlinux"
 
-	OrganizationSecretsLabelSelector = "app=credentiald"
+	OrganizationSecretsLabelSelector = "app=credentiald" // nolint:gosec
 )
 
 // Container image versions for k8scloudconfig.
