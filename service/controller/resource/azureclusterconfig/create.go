@@ -3,7 +3,6 @@ package azureclusterconfig
 import (
 	"context"
 	"fmt"
-	"net/url"
 	"reflect"
 	"strings"
 
@@ -242,13 +241,8 @@ func clusterConfigName(cluster capiv1alpha3.Cluster) string {
 	return fmt.Sprintf("%s-%s", key.ClusterID(&cluster), "azure-cluster-config")
 }
 
-func dnsZoneFromAPIEndpoint(apiEndpoint string) (string, error) {
-	u, err := url.Parse(apiEndpoint)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	domainLabels := strings.Split(u.Hostname(), ".")
+func dnsZoneFromAPIEndpoint(apiEndpointHost string) (string, error) {
+	domainLabels := strings.Split(apiEndpointHost, ".")
 
 	// Drop first label of domain (e.g. api.foobar.com -> foobar.com).
 	return strings.Join(domainLabels[1:], "."), nil
