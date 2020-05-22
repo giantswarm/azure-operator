@@ -139,7 +139,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		mappedAzureConfig.ObjectMeta = presentAzureConfig.ObjectMeta
 
 		// Were there any changes that requires CR update?
-		if reflect.DeepEqual(mappedAzureConfig, presentAzureConfig) {
+		if reflect.DeepEqual(mappedAzureConfig.Spec, presentAzureConfig.Spec) || reflect.DeepEqual(mappedAzureConfig.Labels, presentAzureConfig.Labels) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no update for existing azureconfig needed")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil

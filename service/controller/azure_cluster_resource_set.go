@@ -18,7 +18,9 @@ import (
 	"github.com/giantswarm/azure-operator/v4/flag"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
@@ -51,37 +53,24 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 
 	var err error
 
-	/*
-		var certsSearcher certs.Interface
-		{
-			c := certs.Config{
-				K8sClient: config.K8sClient.K8sClient(),
-				Logger:    config.Logger,
+	var azureClusterConfigResource *azureclusterconfig.Resource
+	{
+		c := azureclusterconfig.Config{
+			Logger: config.Logger,
 
-				WatchTimeout: 5 * time.Second,
-			}
+			Flag:  config.Flag,
+			Viper: config.Viper,
 
-			certsSearcher, err = certs.NewSearcher(c)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
+			CtrlClient: config.K8sClient.CtrlClient(),
 		}
 
-		var randomkeysSearcher *randomkeys.Searcher
-		{
-			c := randomkeys.Config{
-				K8sClient: config.K8sClient.K8sClient(),
-				Logger:    config.Logger,
-			}
-
-			randomkeysSearcher, err = randomkeys.NewSearcher(c)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
+		azureClusterConfigResource, err = azureclusterconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
-	*/
+	}
 
-	var crMapperResource *azureconfig.Resource
+	var azureConfigResource *azureconfig.Resource
 	{
 		c := azureconfig.Config{
 			Logger: config.Logger,
@@ -92,14 +81,29 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 			CtrlClient: config.K8sClient.CtrlClient(),
 		}
 
-		crMapperResource, err = azureconfig.New(c)
+		azureConfigResource, err = azureconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var releaseResource resource.Interface
+	{
+		c := release.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
+
+		releaseResource, err = release.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	resources := []resource.Interface{
-		crMapperResource,
+		releaseResource,
+		azureClusterConfigResource,
+		azureConfigResource,
 	}
 
 	{
