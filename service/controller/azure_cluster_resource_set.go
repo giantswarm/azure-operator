@@ -147,7 +147,7 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 			CloudConfig:    nil,
 		}
 		ctx = controllercontext.NewContext(ctx, c)
-		return context.Background(), nil
+		return ctx, nil
 	}
 
 	var resourceSet *controller.ResourceSet
