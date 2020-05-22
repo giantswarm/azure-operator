@@ -43,8 +43,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/service"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tenantclients"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpn"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpnconnection"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vnetpeering"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
@@ -262,11 +261,11 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var vnetPeeringResource resource.Interface
 	{
 		c := vnetpeering.Config{
-			HostAzureClientSetConfig: config.HostAzureClientSetConfig,
-			HostResourceGroup:        config.Azure.HostCluster.ResourceGroup,
-			HostVirtualNetworkName:   config.Azure.HostCluster.VirtualNetwork,
-			K8sClient:                config.K8sClient,
-			Logger:                   config.Logger,
+			CPAzureClientSet:       config.CPAzureClientSet,
+			HostResourceGroup:      config.Azure.HostCluster.ResourceGroup,
+			HostVirtualNetworkName: config.Azure.HostCluster.VirtualNetwork,
+			K8sClient:              config.K8sClient,
+			Logger:                 config.Logger,
 		}
 
 		vnetPeeringResource, err = vnetpeering.New(c)

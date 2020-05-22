@@ -20,7 +20,7 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release CRD exists")
 
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, releasev1alpha1.NewReleaseCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, releasev1alpha1.NewReleaseCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return &releasev1alpha1.Release{}, microerror.Mask(err)
 		}

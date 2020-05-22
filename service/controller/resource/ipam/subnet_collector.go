@@ -159,7 +159,7 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 		}
 
 		// We want to check only once per subscription.
-		if inArray(doneSubscriptions, organizationAzureClientSet.SubscriptionID) {
+		if inArray(doneSubscriptions, subscriptionID) {
 			continue
 		}
 
@@ -167,11 +167,11 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 		if err != nil {
 			// We can't use this Azure credentials. Might be wrong in the Secret file.
 			// We shouldn't block the network calculation for this reason.
-			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Error getting used subnets for subscription %s: %s", organizationAzureClientSet.SubscriptionID, err))
+			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Error getting used subnets for subscription %s: %s", subscriptionID, err))
 			continue
 		}
 
-		doneSubscriptions = append(doneSubscriptions, organizationAzureClientSet.SubscriptionID)
+		doneSubscriptions = append(doneSubscriptions, subscriptionID)
 		ret = append(ret, nets...)
 	}
 
