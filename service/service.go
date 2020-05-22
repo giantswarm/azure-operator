@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"sync"
 
+	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/k8sclient"
@@ -165,6 +166,7 @@ func New(config Config) (*Service, error) {
 		c := k8sclient.ClientsConfig{
 			Logger: config.Logger,
 			SchemeBuilder: k8sclient.SchemeBuilder{
+				corev1alpha1.AddToScheme,
 				providerv1alpha1.AddToScheme,
 				releasev1alpha1.AddToScheme,
 				capiv1alpha3.AddToScheme,
