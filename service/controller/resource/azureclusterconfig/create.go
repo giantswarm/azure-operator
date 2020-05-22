@@ -155,11 +155,6 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
 	}
 
-	dnsZone, err := dnsZoneFromAPIEndpoint(azureCluster.Spec.ControlPlaneEndpoint.Host)
-	if err != nil {
-		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
-	}
-
 	credentialSecret, err := r.getCredentialSecret(ctx, cluster)
 	if err != nil {
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
@@ -191,7 +186,7 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 			Guest: corev1alpha1.AzureClusterConfigSpecGuest{
 				ClusterGuestConfig: corev1alpha1.ClusterGuestConfig{
 					AvailabilityZones: len(failureDomains),
-					DNSZone:           dnsZone,
+					DNSZone:           dnsZoneFromAPIEndpoint(azureCluster.Spec.ControlPlaneEndpoint.Host),
 					ID:                key.ClusterID(&cluster),
 					Name:              key.ClusterID(&cluster),
 					Owner:             key.OrganizationID(&cluster),
@@ -241,11 +236,18 @@ func clusterConfigName(cluster capiv1alpha3.Cluster) string {
 	return fmt.Sprintf("%s-%s", key.ClusterID(&cluster), "azure-cluster-config")
 }
 
-func dnsZoneFromAPIEndpoint(apiEndpointHost string) (string, error) {
+func dnsZoneFromAPIEndpoint(apiEndpointHost string) string {
 	domainLabels := strings.Split(apiEndpointHost, ".")
 
-	// Drop first label of domain (e.g. api.foobar.com -> foobar.com).
-	return strings.Join(domainLabels[1:], "."), nil
+	switch {
+	case len(domainLabels) < 2:
+		return domainLabels[0]
+	case len(domainLabels[0]) == 0 || len(domainLabels[1]) == 0:
+		return apiEndpointHost
+	default:
+		// Drop first label of domain (e.g. api.foobar.com -> foobar.com).
+		return strings.Join(domainLabels[1:], ".")
+	}
 }
 
 func findComponentVersion(component string, releaseComponents []releasev1alpha1.ReleaseSpecComponent) (string, error) {
