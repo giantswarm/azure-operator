@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 )
 
@@ -17,7 +16,7 @@ const (
 )
 
 type Config struct {
-	CPAzureClientSet       *client.AzureClientSet
+	CPVnetPeeringsClient   *network.VirtualNetworkPeeringsClient
 	HostResourceGroup      string
 	HostVirtualNetworkName string
 	K8sClient              k8sclient.Interface
@@ -25,7 +24,7 @@ type Config struct {
 }
 
 type Resource struct {
-	cpAzureClientSet       *client.AzureClientSet
+	cpVnetPeeringsClient   *network.VirtualNetworkPeeringsClient
 	hostResourceGroup      string
 	hostVirtualNetworkName string
 	k8sClient              k8sclient.Interface
@@ -50,7 +49,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		cpAzureClientSet:       config.CPAzureClientSet,
+		cpVnetPeeringsClient:   config.CPVnetPeeringsClient,
 		hostResourceGroup:      config.HostResourceGroup,
 		hostVirtualNetworkName: config.HostVirtualNetworkName,
 		k8sClient:              config.K8sClient,

@@ -261,7 +261,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var vnetPeeringResource resource.Interface
 	{
 		c := vnetpeering.Config{
-			CPAzureClientSet:       config.CPAzureClientSet,
+			CPVnetPeeringsClient:   config.CPAzureClientSet.VnetPeeringClient,
 			HostResourceGroup:      config.Azure.HostCluster.ResourceGroup,
 			HostVirtualNetworkName: config.Azure.HostCluster.VirtualNetwork,
 			K8sClient:              config.K8sClient,
