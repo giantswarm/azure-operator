@@ -5,6 +5,8 @@ Installation:
     Registry:
       Domain: ""
     Guest:
+      IPAM:
+        NetworkCIDR: "10.1.0.0/8"
       Kubernetes:
         API:
           Auth:

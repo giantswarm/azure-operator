@@ -27,6 +27,10 @@ data:
       installation:
         name: '{{ .Values.Installation.V1.Name }}'
       {{- if .Values.Installation.V1.Guest }}
+        guest:
+          IPAM:
+            Network:
+              CIDR: '{{ .Values.Installation.V1.Guest.IPAM.NetworkCIDR }}'
         tenant:
           kubernetes:
             api:
