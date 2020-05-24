@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/coreos/go-semver/semver"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -13,6 +12,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -21,7 +21,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 		return "", microerror.Mask(err)
 	}
 
-	isCreating := r.isClusterCreating(cr)
+	isCreating := nodes.IsClusterCreating(cr)
 	anyOldNodes, err := r.anyNodesOutOfDate(ctx)
 	if IsClientNotFound(err) {
 		// The kubernetes API is down.
@@ -43,19 +43,6 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 
 	// Skip instance rolling by default.
 	return WaitForRestore, nil
-}
-
-func (r *Resource) isClusterCreating(cr providerv1alpha1.AzureConfig) bool {
-	// When cluster creation is in the beginning, it doesn't necessarily have
-	// any status conditions yet.
-	if len(cr.Status.Cluster.Conditions) == 0 {
-		return true
-	}
-	if cr.Status.Cluster.HasCreatingCondition() {
-		return true
-	}
-
-	return false
 }
 
 // anyNodesOutOfDate iterates over all nodes in tenant cluster and finds
