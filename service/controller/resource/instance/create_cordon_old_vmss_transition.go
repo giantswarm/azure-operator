@@ -51,7 +51,7 @@ func (r *Resource) cordonOldVMSSTransition(ctx context.Context, obj interface{},
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.allInstances(ctx, cr, key.LegacyWorkerVMSSName)
+		allWorkerInstances, err = r.AllInstances(ctx, cr, key.LegacyWorkerVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 

@@ -56,7 +56,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 		Script:    &script,
 	}
 
-	allMasterInstances, err := r.allInstances(ctx, cr, key.LegacyWorkerVMSSName)
+	allMasterInstances, err := r.AllInstances(ctx, cr, key.LegacyWorkerVMSSName)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

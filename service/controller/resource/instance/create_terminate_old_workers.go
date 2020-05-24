@@ -21,7 +21,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	r.Logger().LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.allInstances(ctx, cr, key.WorkerVMSSName)
+		allWorkerInstances, err = r.AllInstances(ctx, cr, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 			r.Logger().LogCtx(ctx, "level", "debug", "message", "restarting upgrade process")
