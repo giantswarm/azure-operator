@@ -26,6 +26,9 @@ const (
 Installation:
   V1:
     Guest:
+      IPAM:
+        NetworkCIDR: "10.1.0.0/8"
+        CIDRMask: 16
       Kubernetes:
         API:
           Auth:
