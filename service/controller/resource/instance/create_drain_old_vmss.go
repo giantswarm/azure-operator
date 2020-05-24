@@ -41,7 +41,7 @@ func (r *Resource) drainOldVMSSTransition(ctx context.Context, obj interface{}, 
 	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs))) // nolint: errcheck
 	r.Logger().LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")                         // nolint: errcheck
 
-	allWorkerInstances, err := r.allInstances(ctx, cr, key.LegacyWorkerVMSSName)
+	allWorkerInstances, err := r.AllInstances(ctx, cr, key.LegacyWorkerVMSSName)
 	if IsScaleSetNotFound(err) {
 		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 	} else if err != nil {

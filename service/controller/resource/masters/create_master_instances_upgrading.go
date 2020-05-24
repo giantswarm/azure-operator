@@ -47,7 +47,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	var masterUpgradeInProgress bool
 	{
-		allMasterInstances, err := r.allInstances(ctx, cr, key.MasterVMSSName)
+		allMasterInstances, err := r.AllInstances(ctx, cr, key.MasterVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(cr)))
 		} else if err != nil {
@@ -92,39 +92,6 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	// Upgrade still in progress. Keep current state.
 	return currentState, nil
-}
-
-func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
-
-	c, err := r.GetVMsClient(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	g := key.ResourceGroupName(customObject)
-	s := deploymentNameFunc(customObject)
-	result, err := c.List(ctx, g, s, "", "", "")
-	if IsScaleSetNotFound(err) {
-		return nil, microerror.Mask(scaleSetNotFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var instances []compute.VirtualMachineScaleSetVM
-
-	for result.NotDone() {
-		instances = append(instances, result.Values()...)
-
-		err := result.Next()
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
-
-	return instances, nil
 }
 
 func (r *Resource) createDrainerConfig(ctx context.Context, customObject providerv1alpha1.AzureConfig, nodeName string) error {

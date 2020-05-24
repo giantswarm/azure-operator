@@ -45,7 +45,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.allInstances(ctx, cr, key.WorkerVMSSName)
+		allWorkerInstances, err = r.AllInstances(ctx, cr, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
 			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 
@@ -92,39 +92,6 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned))
 
 	return WaitForWorkersToBecomeReady, nil
-}
-
-func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
-
-	c, err := r.GetVMsClient(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	g := key.ResourceGroupName(customObject)
-	s := deploymentNameFunc(customObject)
-	result, err := c.List(ctx, g, s, "", "", "")
-	if IsScaleSetNotFound(err) {
-		return nil, microerror.Mask(scaleSetNotFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var instances []compute.VirtualMachineScaleSetVM
-
-	for result.NotDone() {
-		instances = append(instances, result.Values()...)
-
-		err := result.Next()
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
-
-	return instances, nil
 }
 
 // ensureNodesCordoned ensures that given tenant cluster nodes are cordoned.
