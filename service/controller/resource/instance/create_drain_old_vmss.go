@@ -69,7 +69,7 @@ func (r *Resource) drainOldVMSSTransition(ctx context.Context, obj interface{}, 
 		if !drainerConfigExists {
 			nodesPendingDraining++
 			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n)) // nolint: errcheck
-			err = r.createDrainerConfig(ctx, cr, key.LegacyWorkerInstanceName(cr, *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, cr, key.LegacyWorkerInstanceName(cr, *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
@@ -89,7 +89,7 @@ func (r *Resource) drainOldVMSSTransition(ctx context.Context, obj interface{}, 
 			}
 
 			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n)) // nolint: errcheck
-			err = r.createDrainerConfig(ctx, cr, key.LegacyWorkerInstanceName(cr, *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, cr, key.LegacyWorkerInstanceName(cr, *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
