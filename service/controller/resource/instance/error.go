@@ -26,15 +26,6 @@ var executionFailedError = &microerror.Error{
 	Kind: "executionFailedError",
 }
 
-var invalidConfigError = &microerror.Error{
-	Kind: "invalidConfigError",
-}
-
-// IsInvalidConfig asserts invalidConfigError.
-func IsInvalidConfig(err error) bool {
-	return microerror.Cause(err) == invalidConfigError
-}
-
 var deploymentNotFoundError = &microerror.Error{
 	Kind: "deploymentNotFoundError",
 }
@@ -61,15 +52,6 @@ func IsDeploymentNotFound(err error) bool {
 	}
 
 	return false
-}
-
-var missingLabelError = &microerror.Error{
-	Kind: "missingLabelError",
-}
-
-// IsMissingLabel asserts missingLabelError.
-func IsMissingLabel(err error) bool {
-	return microerror.Cause(err) == missingLabelError
 }
 
 var scaleSetNotFoundError = &microerror.Error{
@@ -100,11 +82,3 @@ func IsScaleSetNotFound(err error) bool {
 	return false
 }
 
-var versionBlobEmptyError = &microerror.Error{
-	Kind: "versionBlobEmptyError",
-}
-
-// IsVersionBlobEmpty asserts versionBlobEmptyError.
-func IsVersionBlobEmpty(err error) bool {
-	return microerror.Cause(err) == versionBlobEmptyError
-}
