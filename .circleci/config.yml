@@ -1,5 +1,5 @@
 orbs:
-  architect: giantswarm/architect@0.8.17
+  architect: giantswarm/architect@dev:retry-create-kind
 
 version: 2.1
 workflows:
