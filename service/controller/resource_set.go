@@ -261,11 +261,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var vnetPeeringResource resource.Interface
 	{
 		c := vnetpeering.Config{
-			CPVnetPeeringsClient:   config.CPAzureClientSet.VnetPeeringClient,
-			HostResourceGroup:      config.Azure.HostCluster.ResourceGroup,
-			HostVirtualNetworkName: config.Azure.HostCluster.VirtualNetwork,
-			K8sClient:              config.K8sClient,
-			Logger:                 config.Logger,
+			CPVirtualNetworksClient:        config.CPAzureClientSet.VirtualNetworkClient,
+			CPVirtualNetworkPeeringsClient: config.CPAzureClientSet.VnetPeeringClient,
+			HostResourceGroup:              config.Azure.HostCluster.ResourceGroup,
+			HostVirtualNetworkName:         config.Azure.HostCluster.VirtualNetwork,
+			K8sClient:                      config.K8sClient,
+			Logger:                         config.Logger,
 		}
 
 		vnetPeeringResource, err = vnetpeering.New(c)

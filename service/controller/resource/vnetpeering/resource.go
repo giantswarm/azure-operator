@@ -16,22 +16,32 @@ const (
 )
 
 type Config struct {
-	CPVnetPeeringsClient   *network.VirtualNetworkPeeringsClient
-	HostResourceGroup      string
-	HostVirtualNetworkName string
-	K8sClient              k8sclient.Interface
-	Logger                 micrologger.Logger
+	CPVirtualNetworksClient        *network.VirtualNetworksClient
+	CPVirtualNetworkPeeringsClient *network.VirtualNetworkPeeringsClient
+	HostResourceGroup              string
+	HostVirtualNetworkName         string
+	K8sClient                      k8sclient.Interface
+	Logger                         micrologger.Logger
 }
 
 type Resource struct {
-	cpVnetPeeringsClient   *network.VirtualNetworkPeeringsClient
-	hostResourceGroup      string
-	hostVirtualNetworkName string
-	k8sClient              k8sclient.Interface
-	logger                 micrologger.Logger
+	cpVirtualNetworksClient        *network.VirtualNetworksClient
+	cpVirtualNetworkPeeringsClient *network.VirtualNetworkPeeringsClient
+	hostResourceGroup              string
+	hostVirtualNetworkName         string
+	k8sClient                      k8sclient.Interface
+	logger                         micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
+	if config.CPVirtualNetworksClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CPVirtualNetworksClient must not be empty", config)
+	}
+
+	if config.CPVirtualNetworkPeeringsClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CPVirtualNetworkPeeringsClient must not be empty", config)
+	}
+
 	if config.HostResourceGroup == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.HostResourceGroup must not be empty", config)
 	}
@@ -49,11 +59,12 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		cpVnetPeeringsClient:   config.CPVnetPeeringsClient,
-		hostResourceGroup:      config.HostResourceGroup,
-		hostVirtualNetworkName: config.HostVirtualNetworkName,
-		k8sClient:              config.K8sClient,
-		logger:                 config.Logger,
+		cpVirtualNetworksClient:        config.CPVirtualNetworksClient,
+		cpVirtualNetworkPeeringsClient: config.CPVirtualNetworkPeeringsClient,
+		hostResourceGroup:              config.HostResourceGroup,
+		hostVirtualNetworkName:         config.HostVirtualNetworkName,
+		k8sClient:                      config.K8sClient,
+		logger:                         config.Logger,
 	}
 
 	return r, nil

@@ -24,65 +24,74 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	// Check if TC vnet exists.
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if TC virtual network %#q exists in resource group %#q", key.VnetName(cr), key.ResourceGroupName(cr)))
-	tcVnetClient, err := r.getTCVnetClient(ctx)
-	if err != nil {
-		return microerror.Mask(err)
+	var tcVnet network.VirtualNetwork
+	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if TC virtual network %#q exists in resource group %#q", key.VnetName(cr), key.ResourceGroupName(cr)))
+
+		tenantClusterVirtualNetworkClient, err := r.getTCVnetClient(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		tcVnet, err = tenantClusterVirtualNetworkClient.Get(ctx, key.ResourceGroupName(cr), key.VnetName(cr), "")
+		if IsNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "TC Virtual network does not exist in resource group")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "TC Virtual network exists in resource group")
 	}
 
-	tcVnet, err := tcVnetClient.Get(ctx, key.ResourceGroupName(cr), key.VnetName(cr), "")
-	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "TC Virtual network does not exist in resource group")
-		reconciliationcanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
+	var cpVnet network.VirtualNetwork
+	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if CP virtual network %#q exists in resource group %#q", r.hostVirtualNetworkName, r.hostResourceGroup))
+
+		cpVnet, err = r.cpVirtualNetworksClient.Get(ctx, r.hostResourceGroup, r.hostVirtualNetworkName, "")
+		if IsNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "CP Virtual network does not exist in resource group")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "CP Virtual network exists")
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "TC Virtual network exists in resource group")
+	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the tenant cluster vnet %#q in resource group %#q", r.hostVirtualNetworkName, key.VnetName(cr), key.ResourceGroupName(cr)))
 
-	// Check if CP vnet exists.
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if CP virtual network %#q exists in resource group %#q", r.hostVirtualNetworkName, r.hostResourceGroup))
+		tenantClusterPeeringClient, err := r.getTCVnetPeeringsClient(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	cpVnet, err := r.cpVnetPeeringsClient.Get(ctx, r.hostResourceGroup, r.hostVirtualNetworkName, "")
-	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "CP Virtual network does not exist in resource group")
-		reconciliationcanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
+		tcPeering := r.getTCVnetPeering(*cpVnet.ID)
+		_, err = tenantClusterPeeringClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), key.VnetName(cr), r.hostVirtualNetworkName, tcPeering)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "CP Virtual network exists")
-
-	// Create vnet peering on the tenant cluster side.
-	tcPeering := r.getTCVnetPeering(*cpVnet.ID)
-	tcPeeringClient, err := r.getTCVnetPeeringsClient(ctx)
-	if err != nil {
-		return microerror.Mask(err)
+	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the control plane vnet %#q in resource group %#q", key.ResourceGroupName(cr), r.hostVirtualNetworkName, r.hostResourceGroup))
+		cpPeering := r.getCPVnetPeering(*tcVnet.ID)
+		_, err = r.cpVirtualNetworkPeeringsClient.CreateOrUpdate(ctx, r.hostResourceGroup, r.hostVirtualNetworkName, key.ResourceGroupName(cr), cpPeering)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the tenant cluster vnet %#q in resource group %#q", r.hostVirtualNetworkName, key.VnetName(cr), key.ResourceGroupName(cr)))
-	_, err = tcPeeringClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), key.VnetName(cr), r.hostVirtualNetworkName, tcPeering)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// Create vnet peering on the control plane side.
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the control plane vnet %#q in resource group %#q", key.ResourceGroupName(cr), r.hostVirtualNetworkName, r.hostResourceGroup))
-	cpPeering := r.getCPVnetPeering(*tcVnet.ID)
-	_, err = r.cpVnetPeeringsClient.CreateOrUpdate(ctx, r.hostResourceGroup, r.hostVirtualNetworkName, key.ResourceGroupName(cr), cpPeering)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// Delete VPN Gateway.
-	err = r.ensureVnetGatewayIsDeleted(ctx, cr)
-	if err != nil {
-		return microerror.Mask(err)
+	{
+		err = r.ensureVnetGatewayIsDeleted(ctx, cr)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
