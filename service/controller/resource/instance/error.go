@@ -81,4 +81,3 @@ func IsScaleSetNotFound(err error) bool {
 
 	return false
 }
-
