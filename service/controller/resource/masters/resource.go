@@ -23,6 +23,7 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
+	config.Name = Name
 	nodes, err := nodes.New(config.Config)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -38,7 +39,7 @@ func New(config Config) (*Resource, error) {
 }
 
 func (r *Resource) Name() string {
-	return Name
+	return r.Resource.Name()
 }
 
 func (r *Resource) getSecurityRulesClient(ctx context.Context) (*network.SecurityRulesClient, error) {

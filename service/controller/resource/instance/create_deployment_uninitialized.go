@@ -69,7 +69,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentTemplateChk != "" {
-			err = r.setResourceStatus(cr, DeploymentTemplateChecksum, deploymentTemplateChk)
+			err = r.SetResourceStatus(cr, DeploymentTemplateChecksum, deploymentTemplateChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}
@@ -85,7 +85,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentParametersChk != "" {
-			err = r.setResourceStatus(cr, DeploymentParametersChecksum, deploymentParametersChk)
+			err = r.SetResourceStatus(cr, DeploymentParametersChecksum, deploymentParametersChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}
