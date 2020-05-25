@@ -61,12 +61,12 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 				return "", microerror.Mask(err)
 			}
 
-			currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
+			currentDeploymentTemplateChk, err := r.GetResourceStatus(cr, DeploymentTemplateChecksum)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
 
-			currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
+			currentDeploymentParametersChk, err := r.GetResourceStatus(cr, DeploymentParametersChecksum)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}

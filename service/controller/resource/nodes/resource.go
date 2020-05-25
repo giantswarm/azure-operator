@@ -27,6 +27,7 @@ type Config struct {
 
 	Azure            setting.Azure
 	InstanceWatchdog vmsscheck.InstanceWatchdog
+	Name             string
 }
 
 type Resource struct {
@@ -38,6 +39,7 @@ type Resource struct {
 
 	azure            setting.Azure
 	instanceWatchdog vmsscheck.InstanceWatchdog
+	name             string
 }
 
 func New(config Config) (*Resource, error) {
@@ -61,6 +63,10 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
 
+	if len(config.Name) == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Name must not be empty", config)
+	}
+
 	r := &Resource{
 		debugger:  config.Debugger,
 		g8sClient: config.G8sClient,
@@ -69,6 +75,7 @@ func New(config Config) (*Resource, error) {
 
 		azure:            config.Azure,
 		instanceWatchdog: config.InstanceWatchdog,
+		name:             config.Name,
 	}
 
 	return r, nil
@@ -92,6 +99,10 @@ func (r *Resource) InstanceWatchdog() vmsscheck.InstanceWatchdog {
 
 func (r *Resource) Logger() micrologger.Logger {
 	return r.logger
+}
+
+func (r *Resource) Name() string {
+	return r.name
 }
 
 func (r *Resource) StateMachine() state.Machine {
