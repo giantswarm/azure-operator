@@ -226,15 +226,15 @@ func newVirtualNetworkClient(authorizer autorest.Authorizer, subscriptionID, par
 	return &client, nil
 }
 
-func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewaysClient, error) {
-	client := network.NewVirtualNetworkGatewaysClient(subscriptionID)
+func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+	client := network.NewVirtualNetworkGatewayConnectionsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
 	return &client, nil
 }
 
-func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
-	client := network.NewVirtualNetworkGatewayConnectionsClient(subscriptionID)
+func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewaysClient, error) {
+	client := network.NewVirtualNetworkGatewaysClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
 	return &client, nil
