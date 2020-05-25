@@ -37,6 +37,7 @@ rules:
       - azureconfigs
     verbs:
       - create
+      - delete
       - get
       - list
       - patch
