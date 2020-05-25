@@ -292,6 +292,8 @@ github.com/giantswarm/randomkeys v0.2.0 h1:e03tqr+OemoyF42BrlQpdeHZ/xvqJd4ALW5IM
 github.com/giantswarm/randomkeys v0.2.0/go.mod h1:24kbDDO8XgP+nx7SKaX/z5I/qhj4X4n+hiSynpD/9Kk=
 github.com/giantswarm/statusresource v0.3.0 h1:CAKnwyJbQKCZgV6x4XnGkNOd24h8M8Poas7g5B8xIkU=
 github.com/giantswarm/statusresource v0.3.0/go.mod h1:ox0/G+j5lX2PVRL/H39XUBXAloT7Fuvkx3Jgu1lqdZ8=
+github.com/giantswarm/statusresource v0.3.1-0.20200525125157-80dd5754b97f h1:oB2OEHfoxosailzUFU9JvzuB7/s7ZxU/vWUvA0RuyeU=
+github.com/giantswarm/statusresource v0.3.1-0.20200525125157-80dd5754b97f/go.mod h1:ox0/G+j5lX2PVRL/H39XUBXAloT7Fuvkx3Jgu1lqdZ8=
 github.com/giantswarm/tenantcluster v0.2.0 h1:NDra7kcxt22w4HwxuVgBGjgG5BHjZ5bxtlYk2YmXaEk=
 github.com/giantswarm/tenantcluster v0.2.0/go.mod h1:YMYyVokto7LbAhl3eezMbpKJtzJ9axqNrvM5VbYWLgs=
 github.com/giantswarm/to v0.2.0 h1:qZj0DUnjUcI/7ajwIVtT6mwmSYQm8g0qBvAPCoS1ZF8=
