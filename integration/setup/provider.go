@@ -89,7 +89,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		if env.TestDir() == "integration/test/update" {
 			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
 			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
-			operatorVersion = GetLatestOperatorRelease()
+			operatorVersion = env.GetLatestOperatorRelease()
 		}
 	}
 

@@ -123,6 +123,9 @@ func mainError() error {
 	daemonCommand.PersistentFlags().Int(f.Service.Azure.VMSSCheckWorkers, 5, "Number of workers in VMSS check worker pool.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.CIDR, "10.0.0.0/16", "CIDR of the host cluster virtual network used to create a peering.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.ResourceGroup, "", "Host cluster resource group name.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.TenantID, "", "Tenant ID used for the Control Plane cluster.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.SubscriptionID, "", "Subscription ID used for the Control Plane cluster.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.PartnerID, "", "Partner ID used for the Control Plane cluster.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetwork, "", "Host cluster virtual network name.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetworkGateway, "", "Host cluster virtual network gateway name.")
 
@@ -154,7 +157,8 @@ func mainError() error {
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.Kubelet.Port, 0, "Port to bind guest cluster kubelets on.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.NetworkSetup.Docker.Image, "", "Full docker image of networksetup.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.SSH.UserList, "", "Comma separated list of ssh users and their public key in format `username:publickey`, being installed in the guest cluster nodes.")
-
+	daemonCommand.PersistentFlags().String(f.Service.Installation.Guest.IPAM.Network.CIDR, "", "Guest cluster network segment from which IPAM allocates subnets.")
+	daemonCommand.PersistentFlags().Int(f.Service.Installation.Guest.IPAM.Network.SubnetMaskBits, 16, "Number of bits in guest cluster subnet network mask.")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Name, "", "Installation name for tagging Azure resources.")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.ClientID, "", "OIDC authorization provider ClientID.")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL, "", "OIDC authorization provider IssuerURL.")

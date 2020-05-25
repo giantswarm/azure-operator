@@ -3,8 +3,10 @@ package controller
 import (
 	"context"
 	"fmt"
+	"net"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -20,6 +22,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
@@ -33,6 +36,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/endpoints"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
@@ -42,7 +46,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpn"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/vpnconnection"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
-	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
 type ResourceSetConfig struct {
@@ -50,15 +53,19 @@ type ResourceSetConfig struct {
 	K8sClient     k8sclient.Interface
 	Logger        micrologger.Logger
 
-	Azure            setting.Azure
-	CPAzureClientSet client.AzureClientSet
-	Ignition         setting.Ignition
-	InstallationName string
-	ProjectName      string
-	RegistryDomain   string
-	OIDC             setting.OIDC
-	SSOPublicKey     string
-	VMSSCheckWorkers int
+	Azure                     setting.Azure
+	CPAzureClientSet          *client.AzureClientSet
+	GSClientCredentialsConfig auth.ClientCredentialsConfig
+	GuestSubnetMaskBits       int
+	Ignition                  setting.Ignition
+	InstallationName          string
+	IPAMNetworkRange          net.IPNet
+	Locker                    locker.Interface
+	ProjectName               string
+	RegistryDomain            string
+	OIDC                      setting.OIDC
+	SSOPublicKey              string
+	VMSSCheckWorkers          int
 }
 
 func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
@@ -67,6 +74,9 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.Locker == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Locker must not be empty", config)
 	}
 
 	var err error
@@ -335,6 +345,68 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 	}
 
+	var clusterChecker *ipam.ClusterChecker
+	{
+		c := ipam.ClusterCheckerConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		clusterChecker, err = ipam.NewClusterChecker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureConfigPersister *ipam.AzureConfigPersister
+	{
+		c := ipam.AzureConfigPersisterConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetCollector *ipam.SubnetCollector
+	{
+		c := ipam.SubnetCollectorConfig{
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			K8sClient:                 config.K8sClient,
+			InstallationName:          config.InstallationName,
+			Logger:                    config.Logger,
+
+			NetworkRange: config.IPAMNetworkRange,
+		}
+
+		subnetCollector, err = ipam.NewSubnetCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamResource resource.Interface
+	{
+		c := ipam.Config{
+			Checker:   clusterChecker,
+			Collector: subnetCollector,
+			Locker:    config.Locker,
+			Logger:    config.Logger,
+			Persister: azureConfigPersister,
+
+			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
+			NetworkRange:            config.IPAMNetworkRange,
+		}
+
+		ipamResource, err = ipam.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var namespaceResource resource.Interface
 	{
 		c := namespace.Config{
@@ -407,6 +479,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	}
 
 	resources := []resource.Interface{
+		ipamResource,
 		statusResource,
 		releaseResource,
 		tenantClientsResource,
@@ -475,23 +548,12 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 			}
 		*/
 
-		subnets := &network.Subnets{}
-
-		tenantAzureClientCredentialsConfig, err := credential.GetTenantAzureClientCredentialsConfig(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		authorizer, err := tenantAzureClientCredentialsConfig.Authorizer()
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(config.K8sClient, cr, config.GSClientCredentialsConfig.TenantID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		subscriptionID, partnerID, err := credential.GetSubscriptionAndPartnerID(config.K8sClient.K8sClient(), cr)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		azureClients, err := client.NewAzureClientSetWithAuthorizer(authorizer, subscriptionID, partnerID)
+		tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -504,8 +566,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 				RandomkeysSearcher: randomkeysSearcher,
 
 				Azure:                  config.Azure,
-				AzureClientCredentials: tenantAzureClientCredentialsConfig,
-				AzureNetwork:           *subnets,
+				AzureClientCredentials: organizationAzureClientCredentialsConfig,
 				Ignition:               config.Ignition,
 				OIDC:                   config.OIDC,
 				SSOPublicKey:           config.SSOPublicKey,
@@ -519,8 +580,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		}
 
 		c := controllercontext.Context{
-			AzureClientSet: azureClients,
-			AzureNetwork:   subnets,
+			AzureClientSet: tenantClusterAzureClientSet,
 			CloudConfig:    cloudConfig,
 		}
 		ctx = controllercontext.NewContext(ctx, c)

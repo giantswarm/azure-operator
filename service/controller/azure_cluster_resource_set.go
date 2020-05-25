@@ -143,7 +143,6 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
 		c := controllercontext.Context{
 			AzureClientSet: nil,
-			AzureNetwork:   nil,
 			CloudConfig:    nil,
 		}
 		ctx = controllercontext.NewContext(ctx, c)
