@@ -158,7 +158,7 @@ func installCertOperator(ctx context.Context, config Config, version string) err
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring CertConfig CRD exists")
 
-		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewCertConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewCertConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -188,7 +188,7 @@ func installNodeOperator(ctx context.Context, config Config) error {
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring drainerconfig CRD exists")
 
-		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewDrainerConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewDrainerConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
