@@ -13,6 +13,7 @@ require (
 	github.com/giantswarm/apiextensions v0.3.10-0.20200515062548-b58e4b2ca47e
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient v0.2.0
+	github.com/giantswarm/azure-operator v4.0.1+incompatible
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/certs v0.2.0
 	github.com/giantswarm/e2e-harness v0.2.0
@@ -27,6 +28,7 @@ require (
 	github.com/giantswarm/k8sclient/v2 v2.0.0
 	github.com/giantswarm/k8sclient/v3 v3.0.0
 	github.com/giantswarm/k8scloudconfig/v6 v6.1.1
+	github.com/giantswarm/kubelock v0.2.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/microkit v0.2.0
@@ -40,6 +42,7 @@ require (
 	github.com/markbates/pkger v0.15.1
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/viper v1.6.3
+	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2

@@ -26,6 +26,8 @@ const (
 	EnvVarBastionPublicSSHKey       = "BASTION_PUBLIC_SSH_KEY"
 
 	EnvVarCircleBuildNumber = "CIRCLE_BUILD_NUM"
+
+	EnvVarLatestOperatorRelease = "LATEST_OPERATOR_RELEASE"
 )
 
 var (
@@ -42,6 +44,8 @@ var (
 
 	commonDomainResourceGroup string
 	sshPublicKey              string
+
+	latestOperatorRelease string
 )
 
 func init() {
@@ -106,6 +110,12 @@ func init() {
 		azureCalicoSubnetCIDR = subnets.Calico.String()
 		azureMasterSubnetCIDR = subnets.Master.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
+	}
+
+	var exists bool
+	latestOperatorRelease, exists = os.LookupEnv(EnvVarLatestOperatorRelease)
+	if !exists {
+		panic(fmt.Sprintf("env var %#q must not be empty\n", EnvVarLatestOperatorRelease))
 	}
 }
 
@@ -173,6 +183,10 @@ func AzureWorkerSubnetCIDR() string {
 
 func CommonDomainResourceGroup() string {
 	return commonDomainResourceGroup
+}
+
+func GetLatestOperatorRelease() string {
+	return latestOperatorRelease
 }
 
 func SSHPublicKey() string {

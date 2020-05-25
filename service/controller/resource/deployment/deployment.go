@@ -2,36 +2,40 @@ package deployment
 
 import (
 	"context"
+	"net"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment/template"
+	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
 func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
-	cc, err := controllercontext.FromContext(ctx)
+	// The VPN subnet is not persisted in the AzureConfig so I have to compute it now.
+	// This is suboptimal, but will not be needed anymore once we switch to vnet peering
+	// and that will hopefully happen soon.
+	vpnSubnet, err := getVPNSubnet(customObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	defaultParams := map[string]interface{}{
 		"blobContainerName":       key.BlobContainerName(),
-		"calicoSubnetCidr":        cc.AzureNetwork.Calico.String(),
-		"clusterID":               key.ClusterID(&customObject),
+		"calicoSubnetCidr":        key.CalicoCIDR(customObject),
+		"clusterID":               key.ClusterID(customObject),
 		"dnsZones":                key.DNSZones(customObject),
 		"hostClusterCidr":         r.azure.HostCluster.CIDR,
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
-		"masterSubnetCidr":        cc.AzureNetwork.Master.String(),
+		"masterSubnetCidr":        key.MastersSubnetCIDR(customObject),
 		"storageAccountName":      key.StorageAccountName(customObject),
 		"virtualNetworkCidr":      key.VnetCIDR(customObject),
 		"virtualNetworkName":      key.VnetName(customObject),
 		"vnetGatewaySubnetName":   key.VNetGatewaySubnetName(),
-		"vpnSubnetCidr":           cc.AzureNetwork.VPN.String(),
-		"workerSubnetCidr":        cc.AzureNetwork.Worker.String(),
+		"vpnSubnetCidr":           vpnSubnet.String(),
+		"workerSubnetCidr":        key.WorkersSubnetCIDR(customObject),
 	}
 
 	armTemplate, err := template.GetARMTemplate()
@@ -48,4 +52,18 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 	}
 
 	return d, nil
+}
+
+func getVPNSubnet(customObject providerv1alpha1.AzureConfig) (*net.IPNet, error) {
+	_, netw, err := net.ParseCIDR(customObject.Spec.Azure.VirtualNetwork.CIDR)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	subnets, err := network.Compute(*netw)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return &subnets.VPN, nil
 }

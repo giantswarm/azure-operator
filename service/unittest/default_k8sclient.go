@@ -6,6 +6,7 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/k8sclient/k8scrdclient"
+	v1 "k8s.io/api/core/v1"
 	apiextensionsclient "k8s.io/apiextensions-apiserver/pkg/client/clientset/clientset"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/dynamic"
@@ -25,6 +26,10 @@ func FakeK8sClient() k8sclient.Interface {
 	var k8sClient k8sclient.Interface
 	{
 		scheme := runtime.NewScheme()
+		err = v1.AddToScheme(scheme)
+		if err != nil {
+			panic(err)
+		}
 		err = providerv1alpha1.AddToScheme(scheme)
 		if err != nil {
 			panic(err)

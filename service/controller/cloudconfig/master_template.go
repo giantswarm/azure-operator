@@ -39,19 +39,12 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		}
 	}
 
-	// NOTE in Azure we disable Calico right now. This is due to a transitioning
-	// phase. The k8scloudconfig templates require certain calico valus to be set
-	// nonetheless. So we set them here. Later when the Calico setup is
-	// straightened out we can improve the handling here.
-	data.CustomObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
-	data.CustomObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
-
 	var params k8scloudconfig.Params
 	{
 		be := baseExtension{
 			azure:                        c.azure,
 			azureClientCredentialsConfig: c.azureClientCredentials,
-			calicoCIDR:                   c.azureNetwork.Calico.String(),
+			calicoCIDR:                   data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
 			clusterCerts:                 data.ClusterCerts,
 			customObject:                 data.CustomObject,
 			encrypter:                    encrypter,
@@ -95,7 +88,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 					CommandExtraArgs: []string{
 						"--cloud-config=/etc/kubernetes/config/azure.yaml",
 						"--allocate-node-cidrs=true",
-						"--cluster-cidr=" + c.azureNetwork.Calico.String(),
+						"--cluster-cidr=" + data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
 					},
 				},
 			},

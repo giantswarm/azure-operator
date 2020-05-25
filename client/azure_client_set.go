@@ -22,6 +22,9 @@ const (
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
+	// The subscription ID this client set is configured with.
+	SubscriptionID string
+
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
@@ -52,35 +55,13 @@ type AzureClientSet struct {
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
 
-// NewAzureClientSet returns the Azure API clients.
-// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
-func NewAzureClientSet(clientid, clientsecret, tenantid, subscriptionID, partnerID string) (*AzureClientSet, error) {
-	settings, err := auth.GetSettingsFromEnvironment()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	if clientid != "" {
-		settings.Values[auth.ClientID] = clientid
-	}
-	if clientsecret != "" {
-		settings.Values[auth.ClientSecret] = clientsecret
-	}
-	if tenantid != "" {
-		settings.Values[auth.TenantID] = tenantid
-	}
-	if subscriptionID != "" {
-		settings.Values[auth.SubscriptionID] = subscriptionID
-	}
-	authorizer, err := settings.GetAuthorizer()
+// NewAzureClientSet returns the Azure API clients using the given Authorizer.
+func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	authorizer, err := clientCredentialsConfig.Authorizer()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return NewAzureClientSetWithAuthorizer(authorizer, settings.GetSubscriptionID(), partnerID)
-}
-
-// NewAzureClientSetWithAuthorizer returns the Azure API clients using the given Authorizer.
-func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*AzureClientSet, error) {
 	if partnerID == "" {
 		partnerID = defaultAzureGUID
 	}
@@ -151,6 +132,7 @@ func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptio
 		InterfacesClient:                       interfacesClient,
 		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  storageAccountsClient,
+		SubscriptionID:                         subscriptionID,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
 		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
