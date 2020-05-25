@@ -14,6 +14,9 @@ Installation:
         Version: "0.9.0-beta.11"
       Kubectl:
         Version: "f51f93c30d27927d2b33122994c0929b3e6f2432"
+      IPAM:
+        NetworkCIDR: "10.1.0.0/8"
+        CIDRMask: 16
       Kubernetes:
         API:
           Auth:
