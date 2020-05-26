@@ -8,10 +8,10 @@ import (
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 )
 
-func getAvailabilityZones(masters []capzv1alpha3.AzureMachine) ([]int, error) {
+func getAvailabilityZones(masters, workers []capzv1alpha3.AzureMachine) ([]int, error) {
 	azs := []int{}
 
-	for _, m := range masters {
+	for _, m := range append(masters, workers...) {
 		if m.Spec.FailureDomain == nil {
 			continue
 		}

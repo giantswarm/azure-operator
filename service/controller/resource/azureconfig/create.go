@@ -237,7 +237,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, "giantswarm.io/provider", ProviderAzure)
 		azureConfig.Spec.VersionBundle.Version = key.OperatorVersion(&azureCluster)
 
-		azureConfig.Spec.Azure.AvailabilityZones, err = getAvailabilityZones(masters)
+		azureConfig.Spec.Azure.AvailabilityZones, err = getAvailabilityZones(masters, workers)
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
 		}
