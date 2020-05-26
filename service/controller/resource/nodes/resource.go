@@ -37,7 +37,7 @@ type Resource struct {
 	stateMachine state.Machine
 
 	Azure            setting.Azure
-	instanceWatchdog vmsscheck.InstanceWatchdog
+	InstanceWatchdog vmsscheck.InstanceWatchdog
 	name             string
 }
 
@@ -73,15 +73,11 @@ func New(config Config) (*Resource, error) {
 		Logger:    config.Logger,
 
 		Azure:            config.Azure,
-		instanceWatchdog: config.InstanceWatchdog,
+		InstanceWatchdog: config.InstanceWatchdog,
 		name:             config.Name,
 	}
 
 	return r, nil
-}
-
-func (r *Resource) InstanceWatchdog() vmsscheck.InstanceWatchdog {
-	return r.instanceWatchdog
 }
 
 func (r *Resource) Name() string {

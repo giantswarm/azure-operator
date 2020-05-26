@@ -225,7 +225,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 		return microerror.Mask(err)
 	}
 
-	r.InstanceWatchdog().GuardVMSS(ctx, g, s)
+	r.InstanceWatchdog.GuardVMSS(ctx, g, s)
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName))
 
 	return nil
@@ -262,7 +262,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
-	r.InstanceWatchdog().GuardVMSS(ctx, g, s)
+	r.InstanceWatchdog.GuardVMSS(ctx, g, s)
 
 	return nil
 }
