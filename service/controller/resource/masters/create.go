@@ -14,7 +14,7 @@ import (
 // EnsureCreated.
 func (r *Resource) createStateMachine() state.Machine {
 	sm := state.Machine{
-		Logger:       r.Logger(),
+		Logger:       r.Logger,
 		ResourceName: Name,
 		Transitions: state.TransitionMap{
 			Empty:                          r.emptyStateTransition,
@@ -56,7 +56,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		currentState = state.State(s)
 
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
 		newState, err = r.StateMachine().Execute(ctx, obj, currentState)
 		if err != nil {
 			return microerror.Mask(err)
@@ -64,16 +64,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if newState != currentState {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
 		err = r.SetResourceStatus(cr, Stage, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 	} else {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "no state change")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "no state change")
 	}
 
 	return nil

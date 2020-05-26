@@ -22,16 +22,16 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.WorkersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "deployment not found")
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "waiting for creation")
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if !key.IsSucceededProvisioningState(s) {
 		r.Debugger().LogFailedDeployment(ctx, d, err)

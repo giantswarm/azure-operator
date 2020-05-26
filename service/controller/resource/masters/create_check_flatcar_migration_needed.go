@@ -36,7 +36,7 @@ func (r *Resource) checkFlatcarMigrationNeededTransition(ctx context.Context, ob
 	if newExists {
 		// We have both a running legacy master and a running new master.
 		// Manual intervention is required in order to fix the situation.
-		r.Logger().LogCtx(ctx, "level", "error", "message", "Both an old and a new master VMSS are running. This is critital and must be handled manually.")
+		r.Logger.LogCtx(ctx, "level", "error", "message", "Both an old and a new master VMSS are running. This is critital and must be handled manually.")
 		return ManualInterventionRequired, nil
 	}
 
@@ -44,7 +44,7 @@ func (r *Resource) checkFlatcarMigrationNeededTransition(ctx context.Context, ob
 }
 
 func (r *Resource) vmssExistsAndHasActiveInstance(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the VMSS %s exists in resource group %s", vmssName, resourceGroup)) // nolint: errcheck
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the VMSS %s exists in resource group %s", vmssName, resourceGroup)) // nolint: errcheck
 
 	runningInstances, err := r.getRunningInstances(ctx, resourceGroup, vmssName)
 	if IsScaleSetNotFound(err) {

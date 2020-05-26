@@ -18,13 +18,13 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
 		allWorkerInstances, err = r.AllInstances(ctx, cr, key.WorkerVMSSName)
 		if IsScaleSetNotFound(err) {
-			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
-			r.Logger().LogCtx(ctx, "level", "debug", "message", "restarting upgrade process")
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "restarting upgrade process")
 
 			return DeploymentUninitialized, nil
 		} else if err != nil {
@@ -32,14 +32,14 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		}
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
 
 	c, err := r.GetScaleSetsClient(ctx)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
 
 	g := key.ResourceGroupName(cr)
 	s := key.WorkerVMSSName(cr)
@@ -62,8 +62,8 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		}
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "filtered instance IDs for old instances")
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminating %d old worker instances", len(*ids.InstanceIds)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtered instance IDs for old instances")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminating %d old worker instances", len(*ids.InstanceIds)))
 
 	res, err := c.DeleteInstances(ctx, g, s, ids)
 	if err != nil {
@@ -74,7 +74,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminated %d old worker instances", len(*ids.InstanceIds)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminated %d old worker instances", len(*ids.InstanceIds)))
 
 	return ScaleDownWorkerVMSS, nil
 }
