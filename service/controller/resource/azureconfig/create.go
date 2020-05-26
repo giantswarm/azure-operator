@@ -6,6 +6,7 @@ import (
 	"net"
 	"reflect"
 	"strings"
+	"time"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
@@ -126,8 +127,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "created azureconfig")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return nil
+			presentAzureConfig = mappedAzureConfig
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
@@ -139,20 +139,61 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		mappedAzureConfig.ObjectMeta = presentAzureConfig.ObjectMeta
 
 		// Were there any changes that requires CR update?
-		if reflect.DeepEqual(mappedAzureConfig.Spec, presentAzureConfig.Spec) || reflect.DeepEqual(mappedAzureConfig.Labels, presentAzureConfig.Labels) {
+		if !reflect.DeepEqual(mappedAzureConfig.Spec, presentAzureConfig.Spec) || !reflect.DeepEqual(mappedAzureConfig.Labels, presentAzureConfig.Labels) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig needs update")
+
+			err = r.ctrlClient.Update(ctx, &mappedAzureConfig)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig updated")
+		} else {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no update for existing azureconfig needed")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return nil
 		}
+	}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig needs update")
-
-		err = r.ctrlClient.Update(ctx, &mappedAzureConfig)
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureconfig needs status update")
+	{
+		nsName := types.NamespacedName{
+			Name:      key.ClusterName(&azureCluster),
+			Namespace: azureCluster.Namespace,
+		}
+		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig updated")
+		updateStatus := false
+		if len(presentAzureConfig.Status.Cluster.Conditions) == 0 {
+			c := providerv1alpha1.StatusClusterCondition{
+				Status: "True",
+				Type:   "Creating",
+			}
+			presentAzureConfig.Status.Cluster.Conditions = append(presentAzureConfig.Status.Cluster.Conditions, c)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cluster condition status needs update")
+			updateStatus = true
+		}
+
+		if len(presentAzureConfig.Status.Cluster.Versions) == 0 {
+			v := providerv1alpha1.StatusClusterVersion{
+				LastTransitionTime: metav1.Time{Time: time.Now()},
+				Semver:             key.OperatorVersion(&presentAzureConfig),
+			}
+			presentAzureConfig.Status.Cluster.Versions = append(presentAzureConfig.Status.Cluster.Versions, v)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cluster version status needs update")
+			updateStatus = true
+		}
+
+		if updateStatus {
+			err = r.ctrlClient.Status().Update(ctx, &presentAzureConfig)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			r.logger.LogCtx(ctx, "level", "debug", "message", "status updated")
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "no status update for existing azureconfig needed")
+		}
 	}
 
 	return nil
