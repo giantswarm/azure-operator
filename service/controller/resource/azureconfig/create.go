@@ -227,7 +227,9 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	}
 
 	{
-		azureConfig.Labels[label.ReleaseVersion] = key.ReleaseVersion(&cluster)
+		azureConfig.Labels[label.Cluster] = key.ClusterID(&cluster)
+		azureConfig.Labels[label.XCluster] = key.ClusterID(&cluster)
+		azureConfig.Labels[label.Organization] = key.OrganizationID(&cluster)
 	}
 
 	{
