@@ -19,7 +19,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
@@ -54,22 +53,24 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 
 	var err error
 
-	var azureClusterConfigResource *azureclusterconfig.Resource
-	{
-		c := azureclusterconfig.Config{
-			Logger: config.Logger,
+	/*
+		var azureClusterConfigResource *azureclusterconfig.Resource
+		{
+			c := azureclusterconfig.Config{
+				Logger: config.Logger,
 
-			Flag:  config.Flag,
-			Viper: config.Viper,
+				Flag:  config.Flag,
+				Viper: config.Viper,
 
-			CtrlClient: config.K8sClient.CtrlClient(),
+				CtrlClient: config.K8sClient.CtrlClient(),
+			}
+
+			azureClusterConfigResource, err = azureclusterconfig.New(c)
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
 		}
-
-		azureClusterConfigResource, err = azureclusterconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	*/
 
 	var azureConfigResource *azureconfig.Resource
 	{
