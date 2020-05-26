@@ -103,7 +103,7 @@ func NewAzureClusterResourceSet(config AzureClusterResourceSetConfig) (*controll
 
 	resources := []resource.Interface{
 		releaseResource,
-		azureClusterConfigResource,
+		//azureClusterConfigResource,
 		azureConfigResource,
 	}
 
