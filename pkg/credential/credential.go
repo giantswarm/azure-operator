@@ -5,7 +5,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
