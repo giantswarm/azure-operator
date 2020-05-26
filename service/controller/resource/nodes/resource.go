@@ -34,7 +34,7 @@ type Resource struct {
 	G8sClient    versioned.Interface
 	k8sClient    kubernetes.Interface
 	Logger       micrologger.Logger
-	stateMachine state.Machine
+	StateMachine state.Machine
 
 	Azure            setting.Azure
 	InstanceWatchdog vmsscheck.InstanceWatchdog
@@ -84,12 +84,8 @@ func (r *Resource) Name() string {
 	return r.name
 }
 
-func (r *Resource) StateMachine() state.Machine {
-	return r.stateMachine
-}
-
 func (r *Resource) SetStateMachine(stateMachine state.Machine) {
-	r.stateMachine = stateMachine
+	r.StateMachine = stateMachine
 }
 
 func (r *Resource) GetEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
