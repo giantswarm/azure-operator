@@ -34,7 +34,7 @@ require (
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/giantswarm/operatorkit v0.2.0
 	github.com/giantswarm/randomkeys v0.2.0
-	github.com/giantswarm/statusresource v0.3.1-0.20200525133549-0b029988fb3b
+	github.com/giantswarm/statusresource v0.3.0
 	github.com/giantswarm/tenantcluster v0.2.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/google/go-cmp v0.4.0
