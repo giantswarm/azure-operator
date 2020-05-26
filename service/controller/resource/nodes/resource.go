@@ -30,7 +30,7 @@ type Config struct {
 }
 
 type Resource struct {
-	debugger     *debugger.Debugger
+	Debugger     *debugger.Debugger
 	g8sClient    versioned.Interface
 	k8sClient    kubernetes.Interface
 	Logger       micrologger.Logger
@@ -67,7 +67,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		debugger:  config.Debugger,
+		Debugger:  config.Debugger,
 		g8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
 		Logger:    config.Logger,
@@ -78,10 +78,6 @@ func New(config Config) (*Resource, error) {
 	}
 
 	return r, nil
-}
-
-func (r *Resource) Debugger() *debugger.Debugger {
-	return r.debugger
 }
 
 func (r *Resource) G8sClient() versioned.Interface {

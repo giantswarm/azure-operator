@@ -34,7 +34,7 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if !key.IsSucceededProvisioningState(s) {
-		r.Debugger().LogFailedDeployment(ctx, d, err)
+		r.Debugger.LogFailedDeployment(ctx, d, err)
 
 		if key.IsFinalProvisioningState(s) {
 			// Deployment is not running and not succeeded (Failed?)
