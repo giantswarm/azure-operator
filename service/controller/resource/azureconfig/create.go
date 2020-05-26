@@ -136,10 +136,27 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureconfig needs update")
 	{
 		// Were there any changes that requires CR update?
-		if !reflect.DeepEqual(mappedAzureConfig.Spec, presentAzureConfig.Spec) || !reflect.DeepEqual(mappedAzureConfig.Labels, presentAzureConfig.Labels) {
+		changed := false
+		if !reflect.DeepEqual(mappedAzureConfig.Spec, presentAzureConfig.Spec) {
+			// Copy Spec section as-is. This should always match desired state.
+			presentAzureConfig.Spec = mappedAzureConfig.Spec
+			changed = true
+		}
+
+		// Copy mapped labels if missing or changed, but don't touch labels
+		// that we don't manage.
+		for k, v := range mappedAzureConfig.Labels {
+			old, exists := presentAzureConfig.Labels[k]
+			if old != v || !exists {
+				presentAzureConfig.Labels[k] = v
+				changed = true
+			}
+		}
+
+		if changed {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig needs update")
 
-			err = r.ctrlClient.Update(ctx, &mappedAzureConfig)
+			err = r.ctrlClient.Update(ctx, &presentAzureConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
