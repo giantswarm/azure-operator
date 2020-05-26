@@ -33,7 +33,7 @@ type Resource struct {
 	debugger     *debugger.Debugger
 	g8sClient    versioned.Interface
 	k8sClient    kubernetes.Interface
-	logger       micrologger.Logger
+	Logger       micrologger.Logger
 	stateMachine state.Machine
 
 	azure            setting.Azure
@@ -70,7 +70,7 @@ func New(config Config) (*Resource, error) {
 		debugger:  config.Debugger,
 		g8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
-		logger:    config.Logger,
+		Logger:    config.Logger,
 
 		azure:            config.Azure,
 		instanceWatchdog: config.InstanceWatchdog,
@@ -96,10 +96,6 @@ func (r *Resource) InstanceWatchdog() vmsscheck.InstanceWatchdog {
 	return r.instanceWatchdog
 }
 
-func (r *Resource) Logger() micrologger.Logger {
-	return r.logger
-}
-
 func (r *Resource) Name() string {
 	return r.name
 }
@@ -113,7 +109,7 @@ func (r *Resource) SetStateMachine(stateMachine state.Machine) {
 }
 
 func (r *Resource) GetEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
 
 	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
 	if err != nil {

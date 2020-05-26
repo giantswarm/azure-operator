@@ -15,17 +15,17 @@ import (
 
 func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	// Check if API server is up or wait.
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "Checking if API server is up")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "Checking if API server is up")
 	up, err := r.isApiServerUP(ctx)
 	if err != nil {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("API server is NOT up. Original error was %s", err.Error()))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("API server is NOT up. Original error was %s", err.Error()))
 		return currentState, nil
 	}
 	if !up {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "API server is NOT up.")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "API server is NOT up.")
 		return currentState, nil
 	}
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "API server is up")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "API server is up")
 
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
@@ -62,7 +62,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 	}
 
 	for _, instance := range allMasterInstances {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sending restart kubelet command to %s", *instance.Name))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sending restart kubelet command to %s", *instance.Name))
 		runCommandFuture, err := vmssVMsClient.RunCommand(ctx, *group.Name, key.LegacyWorkerVMSSName(cr), *instance.InstanceID, runCommandInput)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -73,7 +73,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 			return "", microerror.Mask(err)
 		}
 
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sent restart kubelet command to %s", *instance.Name))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sent restart kubelet command to %s", *instance.Name))
 	}
 
 	return DeploymentCompleted, nil

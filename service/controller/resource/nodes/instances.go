@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
 
 	c, err := r.GetVMsClient(ctx)
 	if err != nil {
@@ -39,7 +39,7 @@ func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alph
 		}
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
 
 	return instances, nil
 }

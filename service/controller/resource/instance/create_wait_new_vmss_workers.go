@@ -13,7 +13,7 @@ import (
 )
 
 func (r *Resource) waitNewVMSSWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "checking if the new VMSS workers are ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "checking if the new VMSS workers are ready")
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -28,23 +28,23 @@ func (r *Resource) waitNewVMSSWorkersTransition(ctx context.Context, obj interfa
 
 	numReadyNodes, err := countReadyNodes(ctx, isNewVMSSWorker)
 	if IsClientNotFound(err) {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if numReadyNodes == 0 {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "There are no new VMSS workers ready. Waiting")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "There are no new VMSS workers ready. Waiting")
 		return currentState, nil
 	}
 
 	if int64(numReadyNodes) != *vmss.Sku.Capacity {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Found that only %d out of the expected %d workers from the new VMSS are ready. Waiting.", numReadyNodes, *vmss.Sku.Capacity))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Found that only %d out of the expected %d workers from the new VMSS are ready. Waiting.", numReadyNodes, *vmss.Sku.Capacity))
 		return currentState, nil
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "New workers are all ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "New workers are all ready")
 
 	return CordonOldVMSS, nil
 }

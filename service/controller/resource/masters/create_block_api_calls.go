@@ -35,17 +35,17 @@ func (r *Resource) blockAPICallsTransition(ctx context.Context, obj interface{},
 	}
 
 	if !masterFound {
-		r.Logger().LogCtx(ctx, "level", "debug", "message", "Security rules not in place yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Security rules not in place yet")
 		return currentState, nil
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "Security rules found")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "Security rules found")
 
 	return DeploymentUninitialized, nil
 }
 
 func (r *Resource) ensureSecurityRules(ctx context.Context, resourceGroup string, securityGroupName string, rules []namedRule) (bool, error) {
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Looking for existence of %d security rules in security group %s", len(rules), securityGroupName))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Looking for existence of %d security rules in security group %s", len(rules), securityGroupName))
 
 	found := true
 	for _, rule := range rules {
@@ -59,13 +59,13 @@ func (r *Resource) ensureSecurityRules(ctx context.Context, resourceGroup string
 			found = false
 
 			// Create security rule
-			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Creating security rule %s", *rule.rule.Description))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Creating security rule %s", *rule.rule.Description))
 			err = r.createSecurityRule(ctx, resourceGroup, securityGroupName, ruleName, *rule.rule)
 			if err != nil {
 				return false, microerror.Mask(err)
 			}
 
-			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Created security rule %s", *rule.rule.Description))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Created security rule %s", *rule.rule.Description))
 		}
 	}
 
@@ -79,7 +79,7 @@ func (r *Resource) unblockAPICallsTransition(ctx context.Context, obj interface{
 		return currentState, microerror.Mask(err)
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting security rule %s from security group %s", temporarySecurityRuleName, key.WorkerSecurityGroupName(cr)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting security rule %s from security group %s", temporarySecurityRuleName, key.WorkerSecurityGroupName(cr)))
 
 	rules := getMasterRules()
 
@@ -88,14 +88,14 @@ func (r *Resource) unblockAPICallsTransition(ctx context.Context, obj interface{
 		err = r.deleteSecurityRule(ctx, key.ResourceGroupName(cr), key.MasterSecurityGroupName(cr), namedRule.name)
 		if IsNotFound(err) {
 			// Rule not exists, ok to continue.
-			r.Logger().LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("security rule %s from security group %s was not found", namedRule.name, key.MasterSecurityGroupName(cr)))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("security rule %s from security group %s was not found", namedRule.name, key.MasterSecurityGroupName(cr)))
 		} else if err != nil {
 			// In case of error just retry.
 			return currentState, microerror.Mask(err)
 		}
 	}
 
-	r.Logger().LogCtx(ctx, "level", "debug", "message", "deleted temporary security rules")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "deleted temporary security rules")
 
 	return RestartKubeletOnWorkers, nil
 }
