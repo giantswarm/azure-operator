@@ -31,7 +31,7 @@ type Config struct {
 
 type Resource struct {
 	Debugger     *debugger.Debugger
-	g8sClient    versioned.Interface
+	G8sClient    versioned.Interface
 	k8sClient    kubernetes.Interface
 	Logger       micrologger.Logger
 	stateMachine state.Machine
@@ -68,7 +68,7 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		Debugger:  config.Debugger,
-		g8sClient: config.G8sClient,
+		G8sClient: config.G8sClient,
 		k8sClient: config.K8sClient,
 		Logger:    config.Logger,
 
@@ -78,10 +78,6 @@ func New(config Config) (*Resource, error) {
 	}
 
 	return r, nil
-}
-
-func (r *Resource) G8sClient() versioned.Interface {
-	return r.g8sClient
 }
 
 func (r *Resource) InstanceWatchdog() vmsscheck.InstanceWatchdog {
