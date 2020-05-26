@@ -70,7 +70,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		currentState = state.State(s)
 
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
-		newState, err = r.StateMachine().Execute(ctx, obj, currentState)
+		newState, err = r.StateMachine.Execute(ctx, obj, currentState)
 		if err != nil {
 			return microerror.Mask(err)
 		}
