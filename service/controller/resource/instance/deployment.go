@@ -96,7 +96,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"azureOperatorVersion":  project.Version(),
 		"clusterID":             key.ClusterID(obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
-		"vmssMSIEnabled":        r.Azure().MSI.Enabled,
+		"vmssMSIEnabled":        r.Azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           vmss.GetWorkerNodesConfiguration(obj, distroVersion),
 		"workerSubnetID":        cc.WorkerSubnetID,

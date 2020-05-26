@@ -99,7 +99,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"masterCloudConfigData": masterCloudConfig,
 		"masterNodes":           vmss.GetMasterNodesConfiguration(obj, distroVersion),
 		"masterSubnetID":        cc.MasterSubnetID,
-		"vmssMSIEnabled":        r.Azure().MSI.Enabled,
+		"vmssMSIEnabled":        r.Azure.MSI.Enabled,
 		"zones":                 key.AvailabilityZones(obj, location),
 	}
 
