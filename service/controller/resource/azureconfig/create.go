@@ -135,9 +135,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureconfig needs update")
 	{
-		// Copy object meta data such as Generation, ResourceVersion etc.
-		mappedAzureConfig.ObjectMeta = presentAzureConfig.ObjectMeta
-
 		// Were there any changes that requires CR update?
 		if !reflect.DeepEqual(mappedAzureConfig.Spec, presentAzureConfig.Spec) || !reflect.DeepEqual(mappedAzureConfig.Labels, presentAzureConfig.Labels) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig needs update")
