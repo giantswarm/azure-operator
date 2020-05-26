@@ -16,7 +16,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 		return "", microerror.Mask(err)
 	}
 
-	isCreating := nodes.IsClusterCreating(cr)
+	isCreating := key.IsClusterCreating(cr)
 	anyOldNodes, err := nodes.AnyNodesOutOfDate(ctx)
 	if IsClientNotFound(err) {
 		// The kubernetes API is down.
