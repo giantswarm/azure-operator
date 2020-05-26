@@ -17,7 +17,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	}
 
 	isCreating := key.IsClusterCreating(cr)
-	anyOldNodes, err := nodes.AnyNodesOutOfDate(ctx)
+	anyOldNodes, err := nodes.AnyOutOfDate(ctx)
 	if IsClientNotFound(err) {
 		// The kubernetes API is down.
 		// We check if the Legacy Master VMSS exists and in that case
