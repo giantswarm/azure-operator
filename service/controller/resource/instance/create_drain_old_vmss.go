@@ -29,7 +29,7 @@ func (r *Resource) drainOldVMSSTransition(ctx context.Context, obj interface{}, 
 			LabelSelector: fmt.Sprintf("%s=%s", label.Cluster, key.ClusterID(&cr)),
 		}
 
-		list, err := r.G8sClient().CoreV1alpha1().DrainerConfigs(n).List(o)
+		list, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -81,7 +81,7 @@ func (r *Resource) drainOldVMSSTransition(ctx context.Context, obj interface{}, 
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists but has timed out", n)) // nolint: errcheck
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting drainerconfig for %s", n))                         // nolint: errcheck
 
-			err = r.G8sClient().CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
+			err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
 			if errors.IsNotFound(err) {
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node") // nolint: errcheck
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist") // nolint: errcheck
@@ -114,7 +114,7 @@ func (r *Resource) drainOldVMSSTransition(ctx context.Context, obj interface{}, 
 
 	// Delete DrainerConfigs now that all nodes have been DRAINED.
 	for _, dc := range drainerConfigs {
-		err = r.G8sClient().CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
+		err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
