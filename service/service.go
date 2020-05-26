@@ -47,6 +47,7 @@ type Service struct {
 
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
+	machinePoolController   *controller.MachinePool
 	statusResourceCollector *statusresource.CollectorSet
 }
 
@@ -252,6 +253,19 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var machinePoolController *controller.MachinePool
+	{
+		c := controller.MachinePoolConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+		}
+
+		machinePoolController, err = controller.NewMachinePool(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var statusResourceCollector *statusresource.CollectorSet
 	{
 		c := statusresource.CollectorSetConfig{
@@ -283,10 +297,10 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
-		Version: versionService,
-
+		Version:                 versionService,
 		bootOnce:                sync.Once{},
 		clusterController:       clusterController,
+		machinePoolController:   machinePoolController,
 		statusResourceCollector: statusResourceCollector,
 	}
 
