@@ -12,11 +12,11 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 )
 
-// AnyNodesOutOfDate iterates over all nodes in tenant cluster and finds
+// AnyOutOfDate iterates over all nodes in tenant cluster and finds
 // corresponding azure-operator version from node labels. If node doesn't have
 // this label or was created with older version than currently reconciling one,
 // then this function returns true. Otherwise (including on error) false.
-func AnyNodesOutOfDate(ctx context.Context) (bool, error) {
+func AnyOutOfDate(ctx context.Context) (bool, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return false, microerror.Mask(err)

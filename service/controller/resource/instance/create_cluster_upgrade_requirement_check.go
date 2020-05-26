@@ -17,7 +17,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	}
 
 	isCreating := key.IsClusterCreating(cr)
-	anyOldNodes, err := nodes.AnyNodesOutOfDate(ctx)
+	anyOldNodes, err := nodes.AnyOutOfDate(ctx)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
