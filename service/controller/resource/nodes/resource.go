@@ -36,7 +36,7 @@ type Resource struct {
 	Logger       micrologger.Logger
 	stateMachine state.Machine
 
-	azure            setting.Azure
+	Azure            setting.Azure
 	instanceWatchdog vmsscheck.InstanceWatchdog
 	name             string
 }
@@ -72,16 +72,12 @@ func New(config Config) (*Resource, error) {
 		k8sClient: config.K8sClient,
 		Logger:    config.Logger,
 
-		azure:            config.Azure,
+		Azure:            config.Azure,
 		instanceWatchdog: config.InstanceWatchdog,
 		name:             config.Name,
 	}
 
 	return r, nil
-}
-
-func (r *Resource) Azure() setting.Azure {
-	return r.azure
 }
 
 func (r *Resource) Debugger() *debugger.Debugger {
