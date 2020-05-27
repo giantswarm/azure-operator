@@ -19,10 +19,12 @@ import (
 	"github.com/giantswarm/randomkeys"
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/tenantcluster"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
@@ -119,13 +121,6 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 	var operatorkitController *controller.Controller
 	{
 		c := controller.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-			Name:      project.Name(),
-			Resources: resources,
-			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(v1alpha1.AzureConfig)
-			},
 			InitCtx: func(ctx context.Context, obj interface{}) (context.Context, error) {
 				cr, err := key.ToCustomResource(obj)
 				if err != nil {
@@ -171,6 +166,16 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 				return ctx, nil
 			},
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+			Name:      project.Name(),
+			NewRuntimeObjectFunc: func() runtime.Object {
+				return new(v1alpha1.AzureConfig)
+			},
+			Resources: resources,
+			Selector: labels.SelectorFromSet(map[string]string{
+				label.OperatorVersion: project.Version(),
+			}),
 		}
 
 		operatorkitController, err = controller.New(c)
