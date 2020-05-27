@@ -44,7 +44,7 @@ func Test_sortAndUniqInts(t *testing.T) {
 			expected: []int{1, 2, 3, 4},
 		},
 		{
-			name:     "case 4: multi element unsorted non-uniq slice",
+			name:     "case 6: multi element unsorted non-uniq slice",
 			input:    []int{1, 4, 2, 1, 4, 1, 2, 4, 2, 1, 3},
 			expected: []int{1, 2, 3, 4},
 		},
