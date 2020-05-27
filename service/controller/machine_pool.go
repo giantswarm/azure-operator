@@ -87,13 +87,13 @@ func NewMachinePoolResourceSet(config MachinePoolResourceSetConfig) (*controller
 	var err error
 
 	handlesFunc := func(obj interface{}) bool {
-		cr, err := key.ToCustomResource(obj)
+		cr, err := key.ToAzureMachinePool(obj)
 		if err != nil {
 			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err)) // nolint: errcheck
 			return false
 		}
 
-		if key.OperatorVersion(cr) == project.Version() {
+		if key.MachinePoolOperatorVersion(cr) == project.Version() {
 			return true
 		}
 
