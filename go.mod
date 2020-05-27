@@ -3,13 +3,11 @@ module github.com/giantswarm/azure-operator/v4
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v41.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v42.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
 	github.com/Azure/go-autorest/autorest v0.10.0
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/Azure/go-autorest/autorest/to v0.3.0
-	github.com/MakeNowJust/heredoc v1.0.0 // indirect
-	github.com/blang/semver v3.5.1+incompatible // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
 	github.com/giantswarm/apiextensions v0.3.11-0.20200518144756-844257f8478f
@@ -39,37 +37,21 @@ require (
 	github.com/giantswarm/statusresource v0.3.0
 	github.com/giantswarm/tenantcluster v0.2.0
 	github.com/giantswarm/versionbundle v0.2.0
-	github.com/gogo/protobuf v1.3.1 // indirect
-	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.4.0
-	github.com/google/gofuzz v1.1.0 // indirect
-	github.com/hashicorp/golang-lru v0.5.4 // indirect
-	github.com/imdario/mergo v0.3.8 // indirect
 	github.com/markbates/pkger v0.15.1
-	github.com/onsi/ginkgo v1.12.0 // indirect
-	github.com/onsi/gomega v1.9.0 // indirect
-	github.com/pelletier/go-toml v1.6.0 // indirect
-	github.com/prometheus/client_golang v1.5.0 // indirect
 	github.com/spf13/afero v1.2.2
-	github.com/spf13/cobra v0.0.6 // indirect
-	github.com/spf13/viper v1.6.2
-	golang.org/x/crypto v0.0.0-20200302210943-78000ba7a073 // indirect
-	golang.org/x/net v0.0.0-20200301022130-244492dfa37a // indirect
-	golang.org/x/oauth2 v0.0.0-20200107190931-bf48bf16ab8d // indirect
+	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.17.2
 	k8s.io/apiextensions-apiserver v0.17.2
 	k8s.io/apimachinery v0.17.2
-	k8s.io/apiserver v0.17.2 // indirect
 	k8s.io/client-go v0.17.2
-	k8s.io/component-base v0.17.2 // indirect
 	k8s.io/helm v2.16.4+incompatible
-	k8s.io/kube-openapi v0.0.0-20200121204235-bf4fb3bd569c // indirect
+	sigs.k8s.io/cluster-api-provider-azure v0.4.3
 	sigs.k8s.io/controller-runtime v0.5.2
 )
 
 replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.4.0+incompatible
 	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 	k8s.io/apimachinery => k8s.io/apimachinery v0.16.5-beta.1

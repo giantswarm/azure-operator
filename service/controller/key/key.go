@@ -10,6 +10,7 @@ import (
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
@@ -103,6 +104,20 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 
 func AzureConfigNetworkCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CIDR
+}
+
+func ToAzureMachinePool(v interface{}) (v1alpha3.AzureMachinePool, error) {
+	if v == nil {
+		return v1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+	}
+
+	customObjectPointer, ok := v.(*v1alpha3.AzureMachinePool)
+	if !ok {
+		return v1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
 }
 
 func BlobContainerName() string {
@@ -274,6 +289,10 @@ func IsFailedProvisioningState(s string) bool {
 
 func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
+}
+
+func MachinePoolOperatorVersion(cr v1alpha3.AzureMachinePool) string {
+	return cr.GetLabels()[LabelOperatorVersion]
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
