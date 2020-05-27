@@ -2,23 +2,23 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/echo"
 )
 
@@ -47,9 +47,9 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 
 	var err error
 
-	var resourceSet *controller.ResourceSet
+	var resources []resource.Interface
 	{
-		resourceSet, err = NewMachinePoolResourceSet(config)
+		resources, err = NewMachinePoolResourceSet(config)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -58,17 +58,21 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 	var operatorkitController *controller.Controller
 	{
 		c := controller.Config{
+			InitCtx: func(ctx context.Context, obj interface{}) (context.Context, error) {
+				return ctx, nil
+			},
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(v1alpha3.AzureMachinePool)
-			},
-			ResourceSets: []*controller.ResourceSet{
-				resourceSet,
-			},
 			// Name is used to compute finalizer names. This results in something
 			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
 			Name: project.Name() + "-machine-pool-controller",
+			NewRuntimeObjectFunc: func() runtime.Object {
+				return new(v1alpha3.AzureMachinePool)
+			},
+			Resources: resources,
+			Selector: labels.SelectorFromSet(map[string]string{
+				label.OperatorVersion: project.Version(),
+			}),
 		}
 
 		operatorkitController, err = controller.New(c)
@@ -80,7 +84,7 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 	return &MachinePool{Controller: operatorkitController}, nil
 }
 
-func NewMachinePoolResourceSet(config MachinePoolConfig) (*controller.ResourceSet, error) {
+func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -89,24 +93,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) (*controller.ResourceSe
 	}
 
 	var err error
-
-	handlesFunc := func(obj interface{}) bool {
-		cr, err := key.ToAzureMachinePool(obj)
-		if err != nil {
-			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err))
-			return false
-		}
-
-		if key.MachinePoolOperatorVersion(cr) == project.Version() {
-			return true
-		}
-
-		return false
-	}
-
-	initCtxFunc := func(ctx context.Context, obj interface{}) (context.Context, error) {
-		return ctx, nil
-	}
 
 	var echoResource resource.Interface
 	{
@@ -144,20 +130,5 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) (*controller.ResourceSe
 		}
 	}
 
-	var resourceSet *controller.ResourceSet
-	{
-		c := controller.ResourceSetConfig{
-			Handles:   handlesFunc,
-			InitCtx:   initCtxFunc,
-			Logger:    config.Logger,
-			Resources: resources,
-		}
-
-		resourceSet, err = controller.NewResourceSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	return resourceSet, nil
+	return resources, nil
 }
