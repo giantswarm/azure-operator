@@ -42,7 +42,7 @@ func New(config Config) (*Resource, error) {
 }
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	cr, err := key.ToCustomResource(obj)
+	cr, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
