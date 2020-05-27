@@ -317,6 +317,7 @@ func (s *Service) Boot(ctx context.Context) {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
 		go s.clusterController.Boot(ctx)
+		go s.machinePoolController.Boot(ctx)
 	})
 }
 
