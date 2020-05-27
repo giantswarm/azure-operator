@@ -212,18 +212,18 @@ func New(config Config) (*Service, error) {
 		ipamNetworkRange = *ipnet
 	}
 
+	// These credentials will be used when creating AzureClients for Control Plane clusters.
+	gsClientCredentialsConfig, err := credential.NewAzureCredentials(
+		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+	)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	var clusterController *controller.Cluster
 	{
-		// These credentials will be used when creating AzureClients for Control Plane clusters.
-		gsClientCredentialsConfig, err := credential.NewAzureCredentials(
-			config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-			config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-			config.Viper.GetString(config.Flag.Service.Azure.TenantID),
-		)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
 		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -256,8 +256,13 @@ func New(config Config) (*Service, error) {
 	var machinePoolController *controller.MachinePool
 	{
 		c := controller.MachinePoolConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
+			GSClientCredentialsConfig: gsClientCredentialsConfig,
+			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			IPAMNetworkRange:          ipamNetworkRange,
+			K8sClient:                 k8sClient,
+			Locker:                    kubeLockLocker,
+			Logger:                    config.Logger,
 		}
 
 		machinePoolController, err = controller.NewMachinePool(c)

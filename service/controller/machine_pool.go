@@ -3,7 +3,9 @@ package controller
 import (
 	"context"
 	"fmt"
+	"net"
 
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -14,13 +16,20 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 )
 
 type MachinePoolConfig struct {
-	K8sClient k8sclient.Interface
-	Logger    micrologger.Logger
+	GSClientCredentialsConfig auth.ClientCredentialsConfig
+	GuestSubnetMaskBits       int
+	InstallationName          string
+	IPAMNetworkRange          net.IPNet
+	K8sClient                 k8sclient.Interface
+	Locker                    locker.Interface
+	Logger                    micrologger.Logger
 }
 
 type MachinePool struct {
@@ -40,11 +49,7 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 
 	var resourceSet *controller.ResourceSet
 	{
-		c := MachinePoolResourceSetConfig{
-			Logger: config.Logger,
-		}
-
-		resourceSet, err = NewMachinePoolResourceSet(c)
+		resourceSet, err = NewMachinePoolResourceSet(config)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -75,11 +80,7 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 	return &MachinePool{Controller: operatorkitController}, nil
 }
 
-type MachinePoolResourceSetConfig struct {
-	Logger micrologger.Logger
-}
-
-func NewMachinePoolResourceSet(config MachinePoolResourceSetConfig) (*controller.ResourceSet, error) {
+func NewMachinePoolResourceSet(config MachinePoolConfig) (*controller.ResourceSet, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -104,7 +105,72 @@ func NewMachinePoolResourceSet(config MachinePoolResourceSetConfig) (*controller
 		return ctx, nil
 	}
 
-	var resources []resource.Interface
+	var clusterChecker *ipam.ClusterChecker
+	{
+		c := ipam.ClusterCheckerConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		clusterChecker, err = ipam.NewClusterChecker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureConfigPersister *ipam.AzureConfigPersister
+	{
+		c := ipam.AzureConfigPersisterConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetCollector *ipam.SubnetCollector
+	{
+		c := ipam.SubnetCollectorConfig{
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			K8sClient:                 config.K8sClient,
+			InstallationName:          config.InstallationName,
+			Logger:                    config.Logger,
+
+			NetworkRange: config.IPAMNetworkRange,
+		}
+
+		subnetCollector, err = ipam.NewSubnetCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamResource resource.Interface
+	{
+		c := ipam.Config{
+			Checker:   clusterChecker,
+			Collector: subnetCollector,
+			Locker:    config.Locker,
+			Logger:    config.Logger,
+			Persister: azureConfigPersister,
+
+			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
+			NetworkRange:            config.IPAMNetworkRange,
+		}
+
+		ipamResource, err = ipam.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	resources := []resource.Interface{
+		ipamResource,
+	}
+
 	{
 		c := retryresource.WrapConfig{
 			Logger: config.Logger,
