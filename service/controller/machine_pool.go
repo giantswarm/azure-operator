@@ -19,7 +19,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/echo"
 )
 
 type MachinePoolConfig struct {
@@ -81,6 +81,9 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 }
 
 func NewMachinePoolResourceSet(config MachinePoolConfig) (*controller.ResourceSet, error) {
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -90,7 +93,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) (*controller.ResourceSe
 	handlesFunc := func(obj interface{}) bool {
 		cr, err := key.ToAzureMachinePool(obj)
 		if err != nil {
-			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err)) // nolint: errcheck
+			config.Logger.Log("level", "warning", "message", fmt.Sprintf("invalid object: %s", err), "stack", fmt.Sprintf("%v", err))
 			return false
 		}
 
@@ -105,70 +108,21 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) (*controller.ResourceSe
 		return ctx, nil
 	}
 
-	var clusterChecker *ipam.ClusterChecker
+	var echoResource resource.Interface
 	{
-		c := ipam.ClusterCheckerConfig{
-			G8sClient: config.K8sClient.G8sClient(),
+		c := echo.Config{
 			Logger:    config.Logger,
+			K8sClient: config.K8sClient,
 		}
 
-		clusterChecker, err = ipam.NewClusterChecker(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var azureConfigPersister *ipam.AzureConfigPersister
-	{
-		c := ipam.AzureConfigPersisterConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
-		}
-
-		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var subnetCollector *ipam.SubnetCollector
-	{
-		c := ipam.SubnetCollectorConfig{
-			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-			K8sClient:                 config.K8sClient,
-			InstallationName:          config.InstallationName,
-			Logger:                    config.Logger,
-
-			NetworkRange: config.IPAMNetworkRange,
-		}
-
-		subnetCollector, err = ipam.NewSubnetCollector(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var ipamResource resource.Interface
-	{
-		c := ipam.Config{
-			Checker:   clusterChecker,
-			Collector: subnetCollector,
-			Locker:    config.Locker,
-			Logger:    config.Logger,
-			Persister: azureConfigPersister,
-
-			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
-			NetworkRange:            config.IPAMNetworkRange,
-		}
-
-		ipamResource, err = ipam.New(c)
+		echoResource, err = echo.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	resources := []resource.Interface{
-		ipamResource,
+		echoResource,
 	}
 
 	{
