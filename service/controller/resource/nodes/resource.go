@@ -79,6 +79,7 @@ func New(config Config) (*Resource, error) {
 		Logger:    config.Logger,
 
 		Azure:            config.Azure,
+		ClientFactory:    config.ClientFactory,
 		InstanceWatchdog: config.InstanceWatchdog,
 		name:             config.Name,
 	}
