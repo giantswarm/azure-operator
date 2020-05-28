@@ -19,10 +19,14 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/echo"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tcnp"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type MachinePoolConfig struct {
+	Azure                     setting.Azure
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	GuestSubnetMaskBits       int
 	InstallationName          string
@@ -30,6 +34,7 @@ type MachinePoolConfig struct {
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
+	VMSSCheckWorkers          int
 }
 
 type MachinePool struct {
@@ -94,21 +99,99 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var err error
 
-	var echoResource resource.Interface
+	var newDebugger *debugger.Debugger
 	{
-		c := echo.Config{
-			Logger:    config.Logger,
-			K8sClient: config.K8sClient,
+		c := debugger.Config{
+			Logger: config.Logger,
 		}
 
-		echoResource, err = echo.New(c)
+		newDebugger, err = debugger.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tcnpResource resource.Interface
+	{
+		c := tcnp.Config{
+			Debugger:  newDebugger,
+			G8sClient: config.K8sClient.G8sClient(),
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+			Azure:     setting.Azure{},
+		}
+
+		tcnpResource, err = tcnp.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var clusterChecker *ipam.ClusterChecker
+	{
+		c := ipam.ClusterCheckerConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		clusterChecker, err = ipam.NewClusterChecker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureConfigPersister *ipam.AzureConfigPersister
+	{
+		c := ipam.AzureConfigPersisterConfig{
+			G8sClient: config.K8sClient.G8sClient(),
+			Logger:    config.Logger,
+		}
+
+		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetCollector *ipam.SubnetCollector
+	{
+		c := ipam.SubnetCollectorConfig{
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			K8sClient:                 config.K8sClient,
+			InstallationName:          config.InstallationName,
+			Logger:                    config.Logger,
+
+			NetworkRange: config.IPAMNetworkRange,
+		}
+
+		subnetCollector, err = ipam.NewSubnetCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamResource resource.Interface
+	{
+		c := ipam.Config{
+			Checker:   clusterChecker,
+			Collector: subnetCollector,
+			Locker:    config.Locker,
+			Logger:    config.Logger,
+			Persister: azureConfigPersister,
+
+			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
+			NetworkRange:            config.IPAMNetworkRange,
+		}
+
+		ipamResource, err = ipam.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	resources := []resource.Interface{
-		echoResource,
+		ipamResource,
+		tcnpResource,
 	}
 
 	{
