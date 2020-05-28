@@ -10,15 +10,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 )
 
-func (r *Resource) GetScaleSetsClient(ctx context.Context) (*compute.VirtualMachineScaleSetsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.VirtualMachineScaleSetsClient, nil
-}
-
 func (r *Resource) GetStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {

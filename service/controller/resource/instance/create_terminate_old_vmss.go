@@ -20,7 +20,7 @@ func (r *Resource) terminateOldVmssTransition(ctx context.Context, obj interface
 		return "", microerror.Mask(err)
 	}
 
-	c, err := r.GetScaleSetsClient(ctx)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

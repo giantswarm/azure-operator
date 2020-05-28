@@ -20,7 +20,7 @@ func (r *Resource) waitNewVMSSWorkersTransition(ctx context.Context, obj interfa
 	}
 
 	// Get the count of new VMSS instances.
-	vmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+	vmss, err := r.getScaleSet(ctx, cr, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	// Even in case of a NotFound error, this is unexpected and we should start from scratch.
 	if err != nil {
 		return "", microerror.Mask(err)

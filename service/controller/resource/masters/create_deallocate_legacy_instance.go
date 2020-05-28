@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
@@ -118,8 +119,8 @@ func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string
 	return instancesRunning, nil
 }
 
-func (r *Resource) getVMSS(ctx context.Context, resourceGroup string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.GetScaleSetsClient(ctx)
+func (r *Resource) getVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -3,6 +3,7 @@ package masters
 import (
 	"context"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
@@ -16,7 +17,7 @@ func (r *Resource) deleteLegacyVMSSTransition(ctx context.Context, obj interface
 	}
 
 	// Delete the scaleset
-	err = r.deleteScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
+	err = r.deleteScaleSet(ctx, cr, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
 	if IsScaleSetNotFound(err) {
 		// Scale set not found, all good.
 		return DeploymentCompleted, nil
@@ -27,8 +28,8 @@ func (r *Resource) deleteLegacyVMSSTransition(ctx context.Context, obj interface
 	return UnblockAPICalls, nil
 }
 
-func (r *Resource) deleteScaleSet(ctx context.Context, resourceGroup string, vmssName string) error {
-	c, err := r.GetScaleSetsClient(ctx)
+func (r *Resource) deleteScaleSet(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) error {
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
 	if err != nil {
 		return microerror.Mask(err)
 	}
