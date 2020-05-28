@@ -32,7 +32,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 		return "", microerror.Mask(err)
 	}
 
-	groupsClient, err := r.GetGroupsClient(ctx)
+	groupsClient, err := r.ClientFactory.GetGroupsClient(cr)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

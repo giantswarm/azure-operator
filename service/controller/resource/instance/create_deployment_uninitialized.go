@@ -24,7 +24,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	groupsClient, err := r.GetGroupsClient(ctx)
+	groupsClient, err := r.ClientFactory.GetGroupsClient(cr)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

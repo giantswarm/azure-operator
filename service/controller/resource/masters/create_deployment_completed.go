@@ -21,7 +21,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	groupsClient, err := r.GetGroupsClient(ctx)
+	groupsClient, err := r.ClientFactory.GetGroupsClient(cr)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
