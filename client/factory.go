@@ -20,6 +20,8 @@ type FactoryConfig struct {
 	GSTenantID string
 }
 
+// Factory is creating Azure clients for specified AzureConfig CRs, so basically for specified
+// tenant clusters. All created clients are cached.
 type Factory struct {
 	mutex      sync.Mutex
 	k8sClient  k8sclient.Interface
@@ -30,7 +32,8 @@ type Factory struct {
 
 type clientCreatorFunc func(autorest.Authorizer, string, string) (interface{}, error)
 
-// call NewFactory in EnsureCreated, so it's used in only a single reconciliation loop
+// NewFactory returns a new Azure client factory that is used throughout entire azure-operator
+// lifetime.
 func NewFactory(config FactoryConfig) (*Factory, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
@@ -49,7 +52,8 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 }
 
 // GetDeploymentsClient returns DeploymentsClient that is used for management of deployments and
-// ARM templates.
+// ARM templates. The client (for specified cluster) is cached after creation, so the same client
+// is returned every time.
 func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
 	clientSetKey := key.CredentialName(cr)
 
@@ -71,7 +75,8 @@ func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.Depl
 	return f.clients[clientSetKey].DeploymentsClient, nil
 }
 
-// GetGroupsClient returns GroupsClient that is used for management of resource groups.
+// GetGroupsClient returns GroupsClient that is used for management of resource groups. The client
+// (for specified cluster) is cached after creation, so the same client is returned every time.
 func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsClient, error) {
 	clientSetKey := key.CredentialName(cr)
 
@@ -94,7 +99,8 @@ func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsCli
 }
 
 // GetVirtualMachineScaleSetsClient returns VirtualMachineScaleSetsClient that is used for
-// management of virtual machine scale sets.
+// management of virtual machine scale sets. The client (for specified cluster) is cached after
+// creation, so the same client is returned every time.
 func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetsClient, error) {
 	clientSetKey := key.CredentialName(cr)
 
@@ -117,7 +123,8 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*co
 }
 
 // GetVirtualMachineScaleSetVMsClient returns GetVirtualMachineScaleSetVMsClient that is used for
-// management of virtual machine scale set instances.
+// management of virtual machine scale set instances. The client (for specified cluster) is cached
+// after creation, so the same client is returned every time.
 func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
 	clientSetKey := key.CredentialName(cr)
 
@@ -126,13 +133,13 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*
 		f.clients[clientSetKey] = &AzureClientSet{}
 	}
 	if f.clients[clientSetKey].VirtualMachineScaleSetVMsClient == nil {
-		vmssClient, err := f.createClient(cr, func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
+		vmssVMsClient, err := f.createClient(cr, func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
 			return newVirtualMachineScaleSetVMsClient(authorizer, subscriptionID, partnerID)
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		f.clients[clientSetKey].VirtualMachineScaleSetVMsClient = vmssClient.(*compute.VirtualMachineScaleSetVMsClient)
+		f.clients[clientSetKey].VirtualMachineScaleSetVMsClient = vmssVMsClient.(*compute.VirtualMachineScaleSetVMsClient)
 	}
 	f.mutex.Unlock()
 
