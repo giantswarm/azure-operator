@@ -17,7 +17,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.GetDeploymentsClient(ctx)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(cr)
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}

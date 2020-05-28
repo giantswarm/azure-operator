@@ -35,7 +35,7 @@ func (r *Resource) terminateOldVmssTransition(ctx context.Context, obj interface
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting the legacy VMSS deployment %s", legacyVMSSDeploymentName)) // nolint: errcheck
 
-	dc, err := r.GetDeploymentsClient(ctx)
+	dc, err := r.ClientFactory.GetDeploymentsClient(cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

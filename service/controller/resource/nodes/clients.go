@@ -11,15 +11,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 )
 
-func (r *Resource) GetDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.DeploymentsClient, nil
-}
-
 func (r *Resource) GetGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
