@@ -42,14 +42,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	location := "westeurope"
-
 	var desiredDeployment azureresource.Deployment
 	var desiredDeploymentTemplateChk, desiredDeploymentParametersChk string
 	{
 		currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(cr), mainDeploymentName)
 		if IsNotFound(err) {
-			desiredDeployment, err = r.newDeployment(ctx, cr, map[string]interface{}{}, location)
+			desiredDeployment, err = r.newDeployment(ctx, cr, map[string]interface{}{}, r.location)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -82,7 +80,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			desiredDeployment, err = r.newDeployment(ctx, cr, map[string]interface{}{"initialProvisioning": "No"}, location)
+			desiredDeployment, err = r.newDeployment(ctx, cr, map[string]interface{}{"initialProvisioning": "No"}, r.location)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -354,7 +352,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"azureOperatorVersion":  project.Version(),
 		"clusterID":             key.ClusterID(customObject),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
-		"vmssMSIEnabled":        r.azure.MSI.Enabled,
+		"vmssMSIEnabled":        r.vmssMSIEnabled,
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           vmss.GetWorkerNodesConfiguration(customObject, distroVersion),
 		"workerSubnetID":        cc.WorkerSubnetID,

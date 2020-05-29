@@ -3,42 +3,43 @@ package ipam
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 type ClusterCheckerConfig struct {
-	G8sClient versioned.Interface
-	Logger    micrologger.Logger
+	CtrlClient client.Client
+	Logger     micrologger.Logger
 }
 
 type ClusterChecker struct {
-	g8sClient versioned.Interface
-	logger    micrologger.Logger
+	ctrlClient client.Client
+	logger     micrologger.Logger
 }
 
 func NewClusterChecker(config ClusterCheckerConfig) (*ClusterChecker, error) {
-	if config.G8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
 	a := &ClusterChecker{
-		g8sClient: config.G8sClient,
-		logger:    config.Logger,
+		ctrlClient: config.CtrlClient,
+		logger:     config.Logger,
 	}
 
 	return a, nil
 }
 
 func (c *ClusterChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
-	cr, err := c.g8sClient.ProviderV1alpha1().AzureConfigs(namespace).Get(name, metav1.GetOptions{})
+	azureCluster := &v1alpha1.AzureConfig{}
+	err := c.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureCluster)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -46,7 +47,7 @@ func (c *ClusterChecker) Check(ctx context.Context, namespace string, name strin
 	// We check the subnet we want to ensure in the CR status. In case there is no
 	// subnet tracked so far, we want to proceed with the allocation process. Thus
 	// we return true.
-	if key.AzureConfigNetworkCIDR(*cr) == "" {
+	if key.AzureConfigNetworkCIDR(*azureCluster) == "" {
 		return true, nil
 	}
 

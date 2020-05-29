@@ -11,30 +11,29 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 const (
 	// Name is the identifier of the resource.
-	Name = "deployment"
+	Name = "tcnp"
 )
 
 type Config struct {
-	Debugger  *debugger.Debugger
-	G8sClient versioned.Interface
-	K8sClient kubernetes.Interface
-	Logger    micrologger.Logger
-
-	Azure setting.Azure
+	Debugger       *debugger.Debugger
+	G8sClient      versioned.Interface
+	K8sClient      kubernetes.Interface
+	Location       string
+	Logger         micrologger.Logger
+	VMSSMSIEnabled bool
 }
 
 type Resource struct {
-	debugger  *debugger.Debugger
-	g8sClient versioned.Interface
-	k8sClient kubernetes.Interface
-	logger    micrologger.Logger
-
-	azure setting.Azure
+	debugger       *debugger.Debugger
+	g8sClient      versioned.Interface
+	k8sClient      kubernetes.Interface
+	location       string
+	logger         micrologger.Logger
+	vmssMSIEnabled bool
 }
 
 func New(config Config) (*Resource, error) {
@@ -47,17 +46,16 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
-	if err := config.Azure.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	if config.Location == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
 	}
 
 	r := &Resource{
-		debugger:  config.Debugger,
-		g8sClient: config.G8sClient,
-		logger:    config.Logger,
-
-		azure: config.Azure,
+		debugger:       config.Debugger,
+		g8sClient:      config.G8sClient,
+		location:       config.Location,
+		logger:         config.Logger,
+		vmssMSIEnabled: config.VMSSMSIEnabled,
 	}
 
 	return r, nil

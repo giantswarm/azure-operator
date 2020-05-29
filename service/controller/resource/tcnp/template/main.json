@@ -287,7 +287,13 @@
               "properties":{
                 "overprovision":"[parameters('vmssOverprovision')]",
                 "upgradePolicy":{
-                  "mode":"[parameters('vmssUpgradePolicy')]"
+                  "mode":"[parameters('vmssUpgradePolicy')]",
+                  "rollingUpgradePolicy": {
+                    "maxBatchInstancePercent": "20",
+                    "maxUnhealthyInstancePercent": "20",
+                    "maxUnhealthyUpgradedInstancePercent": "20",
+                    "pauseTimeBetweenBatches": "PT1M"
+                  }
                 },
                 "singlePlacementGroup":"[variables('vmssSinglePlacementGroup')]",
                 "virtualMachineProfile":{
@@ -443,7 +449,7 @@
             "value":"[parameters('workerSubnetID')]"
           },
           "vmssUpgradePolicy":{
-            "value":"Manual"
+            "value":"Rolling"
           },
           "zones":{
             "value":"[parameters('zones')]"

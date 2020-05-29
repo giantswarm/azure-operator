@@ -264,9 +264,11 @@ func New(config Config) (*Service, error) {
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:          ipamNetworkRange,
 			K8sClient:                 k8sClient,
+			Location:                  config.Viper.GetString(config.Flag.Service.Azure.Location),
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		}
 
 		machinePoolController, err = controller.NewMachinePool(c)

@@ -38,7 +38,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/endpoints"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
@@ -412,29 +411,29 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
-	var instanceResource resource.Interface
-	{
-		c := instance.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			InstanceWatchdog: iwd,
-		}
-
-		instanceResource, err = instance.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	//var instanceResource resource.Interface
+	//{
+	//	c := instance.Config{
+	//		Debugger:  newDebugger,
+	//		G8sClient: config.K8sClient.G8sClient(),
+	//		K8sClient: config.K8sClient.K8sClient(),
+	//		Logger:    config.Logger,
+	//
+	//		Azure:            config.Azure,
+	//		InstanceWatchdog: iwd,
+	//	}
+	//
+	//	instanceResource, err = instance.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var clusterChecker *ipam.ClusterChecker
 	{
 		c := ipam.ClusterCheckerConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		clusterChecker, err = ipam.NewClusterChecker(c)
@@ -446,8 +445,8 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var azureConfigPersister *ipam.AzureConfigPersister
 	{
 		c := ipam.AzureConfigPersisterConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
@@ -577,7 +576,7 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		blobObjectResource,
 		dnsrecordResource,
 		mastersResource,
-		instanceResource,
+		//instanceResource,
 		endpointsResource,
 		vpnResource,
 		vpnconnectionResource,

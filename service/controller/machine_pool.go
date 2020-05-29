@@ -32,9 +32,11 @@ type MachinePoolConfig struct {
 	InstallationName          string
 	IPAMNetworkRange          net.IPNet
 	K8sClient                 k8sclient.Interface
+	Location                  string
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
 	VMSSCheckWorkers          int
+	VMSSMSIEnabled            bool
 }
 
 type MachinePool struct {
@@ -42,6 +44,9 @@ type MachinePool struct {
 }
 
 func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
+	if config.Location == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -114,11 +119,12 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var tcnpResource resource.Interface
 	{
 		c := tcnp.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-			Azure:     setting.Azure{},
+			Debugger:       newDebugger,
+			G8sClient:      config.K8sClient.G8sClient(),
+			K8sClient:      config.K8sClient.K8sClient(),
+			Location:       config.Location,
+			Logger:         config.Logger,
+			VMSSMSIEnabled: config.VMSSMSIEnabled,
 		}
 
 		tcnpResource, err = tcnp.New(c)
@@ -130,8 +136,8 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var clusterChecker *ipam.ClusterChecker
 	{
 		c := ipam.ClusterCheckerConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		clusterChecker, err = ipam.NewClusterChecker(c)
@@ -143,8 +149,8 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var azureConfigPersister *ipam.AzureConfigPersister
 	{
 		c := ipam.AzureConfigPersisterConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
