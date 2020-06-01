@@ -85,7 +85,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
-			K8sClient: config.K8sClient,
+			K8sClient:  config.K8sClient,
 			GSTenantID: config.GSClientCredentialsConfig.TenantID,
 		}
 
