@@ -58,6 +58,7 @@ func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.Depl
 	clientSetKey := key.CredentialName(cr)
 
 	f.mutex.Lock()
+	defer f.mutex.Unlock()
 	if _, ok := f.clients[clientSetKey]; !ok {
 		f.clients[clientSetKey] = &AzureClientSet{}
 	}
@@ -70,7 +71,6 @@ func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.Depl
 		}
 		f.clients[clientSetKey].DeploymentsClient = deploymentClient.(*resources.DeploymentsClient)
 	}
-	f.mutex.Unlock()
 
 	return f.clients[clientSetKey].DeploymentsClient, nil
 }
@@ -81,6 +81,7 @@ func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsCli
 	clientSetKey := key.CredentialName(cr)
 
 	f.mutex.Lock()
+	defer f.mutex.Unlock()
 	if _, ok := f.clients[clientSetKey]; !ok {
 		f.clients[clientSetKey] = &AzureClientSet{}
 	}
@@ -93,7 +94,6 @@ func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsCli
 		}
 		f.clients[clientSetKey].GroupsClient = groupClient.(*resources.GroupsClient)
 	}
-	f.mutex.Unlock()
 
 	return f.clients[clientSetKey].GroupsClient, nil
 }
@@ -105,6 +105,7 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*co
 	clientSetKey := key.CredentialName(cr)
 
 	f.mutex.Lock()
+	defer f.mutex.Unlock()
 	if _, ok := f.clients[clientSetKey]; !ok {
 		f.clients[clientSetKey] = &AzureClientSet{}
 	}
@@ -117,7 +118,6 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*co
 		}
 		f.clients[clientSetKey].VirtualMachineScaleSetsClient = vmssClient.(*compute.VirtualMachineScaleSetsClient)
 	}
-	f.mutex.Unlock()
 
 	return f.clients[clientSetKey].VirtualMachineScaleSetsClient, nil
 }
@@ -129,6 +129,7 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*
 	clientSetKey := key.CredentialName(cr)
 
 	f.mutex.Lock()
+	defer f.mutex.Unlock()
 	if _, ok := f.clients[clientSetKey]; !ok {
 		f.clients[clientSetKey] = &AzureClientSet{}
 	}
@@ -141,7 +142,6 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*
 		}
 		f.clients[clientSetKey].VirtualMachineScaleSetVMsClient = vmssVMsClient.(*compute.VirtualMachineScaleSetVMsClient)
 	}
-	f.mutex.Unlock()
 
 	return f.clients[clientSetKey].VirtualMachineScaleSetVMsClient, nil
 }
@@ -153,6 +153,7 @@ func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.Ac
 	clientSetKey := key.CredentialName(cr)
 
 	f.mutex.Lock()
+	defer f.mutex.Unlock()
 	if _, ok := f.clients[clientSetKey]; !ok {
 		f.clients[clientSetKey] = &AzureClientSet{}
 	}
@@ -165,7 +166,6 @@ func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.Ac
 		}
 		f.clients[clientSetKey].StorageAccountsClient = storageAccountsClient.(*storage.AccountsClient)
 	}
-	f.mutex.Unlock()
 
 	return f.clients[clientSetKey].StorageAccountsClient, nil
 }
