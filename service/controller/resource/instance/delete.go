@@ -13,9 +13,6 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	err = r.ClientFactory.RemoveAllClients(cr)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	r.ClientFactory.RemoveAllClients(cr)
 	return nil
 }
