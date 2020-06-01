@@ -170,6 +170,18 @@ func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.Ac
 	return f.clients[clientSetKey].StorageAccountsClient, nil
 }
 
+func (f *Factory) RemoveAllClients(cr v1alpha1.AzureConfig) error {
+	clientSetKey := key.CredentialName(cr)
+
+	f.mutex.Lock()
+	defer f.mutex.Unlock()
+	if _, ok := f.clients[clientSetKey]; !ok {
+		return nil
+	}
+	delete(f.clients, clientSetKey)
+	return nil
+}
+
 func (f *Factory) createClient(cr v1alpha1.AzureConfig, createClient clientCreatorFunc) (interface{}, error) {
 	organizationCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(f.k8sClient, cr, f.gsTenantID)
 	if err != nil {
