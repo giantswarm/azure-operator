@@ -129,7 +129,7 @@ func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 }
 
 func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Cluster.Calico.Subnet
+	return customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR
 }
 
 func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {

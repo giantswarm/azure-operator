@@ -815,7 +815,10 @@
                       },
                       "routeTable":{
                         "id":"[parameters('routeTableID')]"
-                      }
+                      },
+                      "serviceEndpoints": [
+                        { "service": "Microsoft.Storage" }
+                      ]
                     }
                   },
                   {
@@ -1406,6 +1409,9 @@
       "apiVersion":"2016-09-01",
       "name":"container_setup",
       "type":"Microsoft.Resources/deployments",
+      "dependsOn":[
+        "virtual_network_setup"
+      ],
       "properties":{
         "expressionEvaluationOptions":{
           "scope": "inner"
@@ -1427,7 +1433,13 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
+            "masterSubnetID": {
+              "type":"string"
+            },
             "storageAccountName":{
+              "type":"string"
+            },
+            "workerSubnetID": {
               "type":"string"
             }
           },
@@ -1446,7 +1458,14 @@
               "properties": {
                 "accessTier": "[variables('accessTier')]",
                 "accountType": "[variables('accountType')]",
-                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]"
+                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]",
+                "networkAcls":{
+                  "virtualNetworkRules": [
+                    {"id":"[parameters('masterSubnetID')]"},
+                    {"id":"[parameters('workerSubnetID')]"}
+                  ],
+                  "defaultAction":"Deny"
+                }
               },
               "sku": {
                 "name": "[variables('accountType')]"
@@ -1478,6 +1497,12 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
+          },
+          "masterSubnetID":{
+            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
+          },
+          "workerSubnetID":{
+            "value":"[reference('virtual_network_setup').outputs.workerSubnetID.value]"
           },
           "storageAccountName":{
             "value":"[parameters('storageAccountName')]"
