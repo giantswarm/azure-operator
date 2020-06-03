@@ -120,8 +120,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	{
 		c := tcnp.Config{
 			Debugger:       newDebugger,
-			G8sClient:      config.K8sClient.G8sClient(),
-			K8sClient:      config.K8sClient.K8sClient(),
+			CtrlClient:     config.K8sClient.CtrlClient(),
 			Location:       config.Location,
 			Logger:         config.Logger,
 			VMSSMSIEnabled: config.VMSSMSIEnabled,
@@ -146,14 +145,14 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var azureConfigPersister *ipam.AzureConfigPersister
+	var azureMachinePoolPersister *ipam.AzureMachinePoolPersister
 	{
-		c := ipam.AzureConfigPersisterConfig{
+		c := ipam.AzureMachinePoolPersisterConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 		}
 
-		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
+		azureMachinePoolPersister, err = ipam.NewAzureMachinePoolPersister(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -183,7 +182,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 			Collector: subnetCollector,
 			Locker:    config.Locker,
 			Logger:    config.Logger,
-			Persister: azureConfigPersister,
+			Persister: azureMachinePoolPersister,
 
 			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
 			NetworkRange:            config.IPAMNetworkRange,

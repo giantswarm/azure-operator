@@ -47,6 +47,7 @@ require (
 	k8s.io/apimachinery v0.17.2
 	k8s.io/client-go v0.17.2
 	k8s.io/helm v2.16.4+incompatible
+	k8s.io/kubernetes v1.16.6
 	sigs.k8s.io/cluster-api-provider-azure v0.4.3
 	sigs.k8s.io/controller-runtime v0.5.2
 )

@@ -30,7 +30,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 
 	prefixWorker := key.PrefixWorker()
 
-	workerBlobName := key.BlobName(obj, prefixWorker)
+	workerBlobName := key.AzureConfigBlobName(obj, prefixWorker)
 	cloudConfigURLs := []string{
 		workerBlobName,
 	}
