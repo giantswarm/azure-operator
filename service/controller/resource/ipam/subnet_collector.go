@@ -148,7 +148,7 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 	var doneSubscriptions []string
 	var ret []net.IPNet
 	for _, cluster := range tenantClusterList.Items {
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(c.k8sclient, cluster, c.gsClientCredentialsConfig.TenantID)
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(ctx, c.k8sclient, cluster, c.gsClientCredentialsConfig.TenantID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

@@ -18,6 +18,7 @@ const (
 	clientSecretKey   = "azure.azureoperator.clientsecret"
 	defaultAzureGUID  = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 	partnerIDKey      = "azure.azureoperator.partnerid"
+	singleTenantLabel = "giantswarm.io/single-tenant-service-principal"
 	subscriptionIDKey = "azure.azureoperator.subscriptionid"
 	tenantIDKey       = "azure.azureoperator.tenantid"
 )
@@ -25,9 +26,9 @@ const (
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
-func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
+func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
 	credential := &v1.Secret{}
-	err := k8sClient.CtrlClient().Get(context.Background(), client.ObjectKey{Namespace: key.CredentialNamespace(cr), Name: key.CredentialName(cr)}, credential)
+	err := k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: key.CredentialNamespace(cr), Name: key.CredentialName(cr)}, credential)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
@@ -61,7 +62,7 @@ func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv
 		partnerID = defaultAzureGUID
 	}
 
-	if tenantID == gsTenantID {
+	if _, exists := credential.GetLabels()[singleTenantLabel]; exists || tenantID == gsTenantID {
 		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
