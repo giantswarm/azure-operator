@@ -35,6 +35,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	//PublicIpAddressesClient manages public IP addresses.
+	PublicIpAddressesClient *network.PublicIPAddressesClient
 	//SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
 	//StorageAccountsClient manages blobs in storage containers.
@@ -87,6 +89,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	publicIpAddressesClient, err := newPublicIPAddressesClient(authorizer, subscriptionID, partnerID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	securityGroupsClient, err := newSecurityGroupsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -130,6 +136,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           groupsClient,
 		InterfacesClient:                       interfacesClient,
+		PublicIpAddressesClient:                publicIpAddressesClient,
 		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  storageAccountsClient,
 		SubscriptionID:                         subscriptionID,
@@ -183,6 +190,13 @@ func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID s
 
 func newInterfacesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.InterfacesClient, error) {
 	client := network.NewInterfacesClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
+
+	return &client, nil
+}
+
+func newPublicIPAddressesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.PublicIPAddressesClient, error) {
+	client := network.NewPublicIPAddressesClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
 	return &client, nil

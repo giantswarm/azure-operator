@@ -27,6 +27,10 @@
         "description":"Whether the deployment is provisioned the very first time."
       }
     },
+    "storageAccountIpRules":{
+      "type":"array",
+      "defaultValue":[]
+    },
     "storageAccountName":{
       "type":"string",
       "metadata":{
@@ -1433,6 +1437,9 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
+            "ipRules":{
+              "type":"array"
+            },
             "masterSubnetID": {
               "type":"string"
             },
@@ -1464,6 +1471,7 @@
                     {"id":"[parameters('masterSubnetID')]"},
                     {"id":"[parameters('workerSubnetID')]"}
                   ],
+                  "ipRules":"[parameters('ipRules')]",
                   "defaultAction":"Deny"
                 }
               },
@@ -1497,6 +1505,9 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
+          },
+          "ipRules":{
+            "value":"[parameters('storageAccountIpRules')]"
           },
           "masterSubnetID":{
             "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
