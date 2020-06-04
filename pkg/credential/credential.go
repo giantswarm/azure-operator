@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
@@ -18,7 +19,6 @@ const (
 	clientSecretKey   = "azure.azureoperator.clientsecret"
 	defaultAzureGUID  = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 	partnerIDKey      = "azure.azureoperator.partnerid"
-	singleTenantLabel = "giantswarm.io/single-tenant-service-principal"
 	subscriptionIDKey = "azure.azureoperator.subscriptionid"
 	tenantIDKey       = "azure.azureoperator.tenantid"
 )
@@ -62,7 +62,7 @@ func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.In
 		partnerID = defaultAzureGUID
 	}
 
-	if _, exists := credential.GetLabels()[singleTenantLabel]; exists || tenantID == gsTenantID {
+	if _, exists := credential.GetLabels()[label.SingleTenantSP]; exists || tenantID == gsTenantID {
 		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil

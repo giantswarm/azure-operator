@@ -11,6 +11,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/unittest"
 )
 
@@ -280,7 +281,7 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 	expectedTenantID := "TenantIDFromCredentialSecret"
 
 	labels := map[string]string{
-		singleTenantLabel: "true",
+		label.SingleTenantSP: "true",
 	}
 
 	organizationCredentialSecret, err := createOrganizationCredentialSecret(fakeK8sClient, ctx, expectedClientID, expectedClientSecret, expectedTenantID, labels)
