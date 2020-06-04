@@ -16,19 +16,25 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
+const (
+	cacheHitLogKey          = "cacheHit"
+	clientFactoryFuncLogKey = "clientFactoryFunc"
+	clientSetKeyLogKey      = "clientSetKey"
+)
+
 type FactoryConfig struct {
+	GSTenantID string
 	K8sClient  k8sclient.Interface
 	Logger     micrologger.Logger
-	GSTenantID string
 }
 
 // Factory is creating Azure clients for specified AzureConfig CRs, so basically for specified
 // tenant clusters. All created clients are cached.
 type Factory struct {
-	mutex      sync.Mutex
+	gsTenantID string
 	k8sClient  k8sclient.Interface
 	logger     micrologger.Logger
-	gsTenantID string
+	mutex      sync.Mutex
 
 	clients map[credentialID]*AzureClientSet
 }
@@ -64,7 +70,7 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 // is returned every time.
 func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
 	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With("clientFactoryFunc", "GetDeploymentsClient", "clientSetKey", clientSetKey)
+	logger := f.logger.With(clientFactoryFuncLogKey, "GetDeploymentsClient", clientSetKeyLogKey, clientSetKey)
 
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -78,9 +84,9 @@ func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.Depl
 			return nil, microerror.Mask(err)
 		}
 		f.clients[clientSetKey].DeploymentsClient = deploymentClient.(*resources.DeploymentsClient)
-		logger.Log("fromCache", false)
+		logger.Log(cacheHitLogKey, false)
 	} else {
-		logger.Log("fromCache", true)
+		logger.Log(cacheHitLogKey, true)
 	}
 
 	return f.clients[clientSetKey].DeploymentsClient, nil
@@ -90,7 +96,7 @@ func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.Depl
 // (for specified cluster) is cached after creation, so the same client is returned every time.
 func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsClient, error) {
 	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With("clientFactoryFunc", "GetGroupsClient", "clientSetKey", clientSetKey)
+	logger := f.logger.With(clientFactoryFuncLogKey, "GetGroupsClient", clientSetKeyLogKey, clientSetKey)
 
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -104,9 +110,9 @@ func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsCli
 			return nil, microerror.Mask(err)
 		}
 		f.clients[clientSetKey].GroupsClient = groupClient.(*resources.GroupsClient)
-		logger.Log("fromCache", false)
+		logger.Log(cacheHitLogKey, false)
 	} else {
-		logger.Log("fromCache", true)
+		logger.Log(cacheHitLogKey, true)
 	}
 
 	return f.clients[clientSetKey].GroupsClient, nil
@@ -117,7 +123,7 @@ func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsCli
 // creation, so the same client is returned every time.
 func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetsClient, error) {
 	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With("clientFactoryFunc", "GetVirtualMachineScaleSetsClient", "clientSetKey", clientSetKey)
+	logger := f.logger.With(clientFactoryFuncLogKey, "GetVirtualMachineScaleSetsClient", clientSetKeyLogKey, clientSetKey)
 
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -131,9 +137,9 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*co
 			return nil, microerror.Mask(err)
 		}
 		f.clients[clientSetKey].VirtualMachineScaleSetsClient = vmssClient.(*compute.VirtualMachineScaleSetsClient)
-		logger.Log("fromCache", false)
+		logger.Log(cacheHitLogKey, false)
 	} else {
-		logger.Log("fromCache", true)
+		logger.Log(cacheHitLogKey, true)
 	}
 
 	return f.clients[clientSetKey].VirtualMachineScaleSetsClient, nil
@@ -144,7 +150,7 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*co
 // after creation, so the same client is returned every time.
 func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
 	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With("clientFactoryFunc", "GetVirtualMachineScaleSetVMsClient", "clientSetKey", clientSetKey)
+	logger := f.logger.With(clientFactoryFuncLogKey, "GetVirtualMachineScaleSetVMsClient", clientSetKeyLogKey, clientSetKey)
 
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -158,9 +164,9 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*
 			return nil, microerror.Mask(err)
 		}
 		f.clients[clientSetKey].VirtualMachineScaleSetVMsClient = vmssVMsClient.(*compute.VirtualMachineScaleSetVMsClient)
-		logger.Log("fromCache", false)
+		logger.Log(cacheHitLogKey, false)
 	} else {
-		logger.Log("fromCache", true)
+		logger.Log(cacheHitLogKey, true)
 	}
 
 	return f.clients[clientSetKey].VirtualMachineScaleSetVMsClient, nil
@@ -171,7 +177,7 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*
 // client is returned every time.
 func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.AccountsClient, error) {
 	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With("clientFactoryFunc", "GetStorageAccountsClient", "clientSetKey", clientSetKey)
+	logger := f.logger.With(clientFactoryFuncLogKey, "GetStorageAccountsClient", clientSetKeyLogKey, clientSetKey)
 
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -185,26 +191,27 @@ func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.Ac
 			return nil, microerror.Mask(err)
 		}
 		f.clients[clientSetKey].StorageAccountsClient = storageAccountsClient.(*storage.AccountsClient)
-		logger.Log("fromCache", false)
+		logger.Log(cacheHitLogKey, false)
 	} else {
-		logger.Log("fromCache", true)
+		logger.Log(cacheHitLogKey, true)
 	}
 
 	return f.clients[clientSetKey].StorageAccountsClient, nil
 }
 
+// RemoveAllClients removes all cached clients for the specified tenant cluster.
 func (f *Factory) RemoveAllClients(cr v1alpha1.AzureConfig) {
 	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With("clientFactoryFunc", "RemoveAllClients", "clientSetKey", clientSetKey)
+	logger := f.logger.With(clientFactoryFuncLogKey, "RemoveAllClients", clientSetKeyLogKey, clientSetKey)
 
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 	if _, ok := f.clients[clientSetKey]; !ok {
-		logger.Log("clientsRemoved", false)
+		logger.Log(cacheHitLogKey, false)
 		return
 	}
 
-	logger.Log("clientsRemoved", true)
+	logger.Log(cacheHitLogKey, true)
 	delete(f.clients, clientSetKey)
 }
 
@@ -227,9 +234,9 @@ func (f *Factory) createClient(cr v1alpha1.AzureConfig, createClient clientCreat
 
 func (f *Factory) ensureClientSetExists(clientSetKey credentialID, logger micrologger.Logger) {
 	if _, ok := f.clients[clientSetKey]; ok {
-		logger.Log("azureClientSetCached", true)
+		logger.Log("azureClientSetCacheHit", true)
 	} else {
-		logger.Log("azureClientSetCached", false)
+		logger.Log("azureClientSetCacheHit", false)
 		f.clients[clientSetKey] = &AzureClientSet{}
 	}
 }
