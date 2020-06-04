@@ -11,7 +11,17 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/unittest"
+)
+
+const (
+	clientIDFromCredentialSecret     = "clientIDFromCredentialSecret"
+	clientSecretFromCredentialSecret = "clientSecretFromCredentialSecret"
+)
+
+var (
+	noLabels = map[string]string{}
 )
 
 func TestParametersOverwriteCredentialsFromEnvironment(t *testing.T) {
@@ -140,17 +150,17 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 	fakeK8sClient := unittest.FakeK8sClient()
 	ctx := context.Background()
 	tenantID := "sameTenantIDForAuthenticationAndManagingAzureResources"
-	expectedClientID := "clientIDFromCredentialSecret"
-	expectedClientSecret := "clientSecretFromCredentialSecret"
+	expectedClientID := clientIDFromCredentialSecret
+	expectedClientSecret := clientSecretFromCredentialSecret
 	expectedTenantID := tenantID
 
-	organizationCredentialSecret, err := createOrganizationCredentialSecret(fakeK8sClient, ctx, expectedClientID, expectedClientSecret, expectedTenantID)
+	organizationCredentialSecret, err := createOrganizationCredentialSecret(fakeK8sClient, ctx, expectedClientID, expectedClientSecret, expectedTenantID, noLabels)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	clientCredentialsConfig, _, _, err := GetOrganizationAzureCredentials(fakeK8sClient, *azureConfig, tenantID)
+	clientCredentialsConfig, _, _, err := GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, tenantID)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -172,18 +182,18 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePrincipal(t *testing.T) {
 	fakeK8sClient := unittest.FakeK8sClient()
 	ctx := context.Background()
-	expectedClientID := "clientIDFromCredentialSecret"
-	expectedClientSecret := "clientSecretFromCredentialSecret"
+	expectedClientID := clientIDFromCredentialSecret
+	expectedClientSecret := clientSecretFromCredentialSecret
 	expectedTenantID := "giantswarmTenantID"
 	organizationTenantID := "differentTenantID"
 
-	organizationCredentialSecret, err := createOrganizationCredentialSecret(fakeK8sClient, ctx, expectedClientID, expectedClientSecret, organizationTenantID)
+	organizationCredentialSecret, err := createOrganizationCredentialSecret(fakeK8sClient, ctx, expectedClientID, expectedClientSecret, organizationTenantID, noLabels)
 	if err != nil {
 		t.Fatal(err)
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	clientCredentialsConfig, _, _, err := GetOrganizationAzureCredentials(fakeK8sClient, *azureConfig, "giantswarmTenantID")
+	clientCredentialsConfig, _, _, err := GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, "giantswarmTenantID")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -204,9 +214,10 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePr
 
 func TestWhenOrganizationSecretDoesntExistThenCredentialsFailToCreate(t *testing.T) {
 	fakeK8sClient := unittest.FakeK8sClient()
+	ctx := context.Background()
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", &v1.Secret{})
-	_, _, _, err := GetOrganizationAzureCredentials(fakeK8sClient, *azureConfig, "giantswarmTenantID")
+	_, _, _, err := GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, "giantswarmTenantID")
 	if err == nil {
 		t.Fatalf("it should fail when organization credential secret is missing")
 	}
@@ -223,7 +234,7 @@ func TestFailsToCreateCredentialsUsingOrganizationSecretWhenMissingConfigFromSec
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	_, _, _, err = GetOrganizationAzureCredentials(fakeK8sClient, *azureConfig, "giantswarmTenantID")
+	_, _, _, err = GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, "giantswarmTenantID")
 	if err == nil {
 		t.Fatalf("it should fail when key is missing from credential secret: client id is missing")
 	}
@@ -234,7 +245,7 @@ func TestFailsToCreateCredentialsUsingOrganizationSecretWhenMissingConfigFromSec
 		t.Fatal(err)
 	}
 	azureConfig.Spec.Azure.CredentialSecret.Name = organizationCredentialSecret.GetName()
-	_, _, _, err = GetOrganizationAzureCredentials(fakeK8sClient, *azureConfig, "giantswarmTenantID")
+	_, _, _, err = GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, "giantswarmTenantID")
 	if err == nil {
 		t.Fatalf("it should fail when key is missing from credential secret: client secret is missing")
 	}
@@ -245,7 +256,7 @@ func TestFailsToCreateCredentialsUsingOrganizationSecretWhenMissingConfigFromSec
 		t.Fatal(err)
 	}
 	azureConfig.Spec.Azure.CredentialSecret.Name = organizationCredentialSecret.GetName()
-	_, _, _, err = GetOrganizationAzureCredentials(fakeK8sClient, *azureConfig, "giantswarmTenantID")
+	_, _, _, err = GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, "giantswarmTenantID")
 	if err == nil {
 		t.Fatalf("it should fail when key is missing from credential secret: tenant id is missing")
 	}
@@ -256,13 +267,49 @@ func TestFailsToCreateCredentialsUsingOrganizationSecretWhenMissingConfigFromSec
 		t.Fatal(err)
 	}
 	azureConfig.Spec.Azure.CredentialSecret.Name = organizationCredentialSecret.GetName()
-	_, _, _, err = GetOrganizationAzureCredentials(fakeK8sClient, *azureConfig, "giantswarmTenantID")
+	_, _, _, err = GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, "giantswarmTenantID")
 	if err == nil {
 		t.Fatalf("it should fail when key is missing from credential secret: subscription ID is missing")
 	}
 }
 
-func createOrganizationCredentialSecret(k8sclient k8sclient.Interface, ctx context.Context, clientID, clientSecret, tenantID string) (*v1.Secret, error) {
+func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServicePrincipalWhenSecretIsLabeled(t *testing.T) {
+	fakeK8sClient := unittest.FakeK8sClient()
+	ctx := context.Background()
+	expectedClientID := clientIDFromCredentialSecret
+	expectedClientSecret := clientSecretFromCredentialSecret
+	expectedTenantID := "TenantIDFromCredentialSecret"
+
+	labels := map[string]string{
+		label.SingleTenantSP: "true",
+	}
+
+	organizationCredentialSecret, err := createOrganizationCredentialSecret(fakeK8sClient, ctx, expectedClientID, expectedClientSecret, expectedTenantID, labels)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
+	clientCredentialsConfig, _, _, err := GetOrganizationAzureCredentials(ctx, fakeK8sClient, *azureConfig, "giantswarmTenantID")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if clientCredentialsConfig.ClientID != expectedClientID {
+		t.Fatalf("clientID has the wrong value: expected %#q, got %#q", expectedClientID, clientCredentialsConfig.ClientID)
+	}
+	if clientCredentialsConfig.ClientSecret != expectedClientSecret {
+		t.Fatalf("clientSecret has the wrong value: expected %#q, got %#q", expectedClientSecret, clientCredentialsConfig.ClientSecret)
+	}
+	if clientCredentialsConfig.TenantID != expectedTenantID {
+		t.Fatalf("tenantID has the wrong value: expected %#q, got %#q", expectedTenantID, clientCredentialsConfig.TenantID)
+	}
+	if len(clientCredentialsConfig.AuxTenants) != 0 {
+		t.Fatalf("there shouldn't be an auxiliary tenant id when secret is labeled as single tenant: expected 0, got %#q auxiliary tenants", clientCredentialsConfig.AuxTenants)
+	}
+}
+
+func createOrganizationCredentialSecret(k8sclient k8sclient.Interface, ctx context.Context, clientID, clientSecret, tenantID string, labels map[string]string) (*v1.Secret, error) {
 	data := map[string][]byte{
 		clientIDKey:       []byte(clientID),
 		clientSecretKey:   []byte(clientSecret),
@@ -270,7 +317,7 @@ func createOrganizationCredentialSecret(k8sclient k8sclient.Interface, ctx conte
 		subscriptionIDKey: []byte("1a2b3c4d-5e6f-7g8h9i"),
 		partnerIDKey:      []byte("9i8h7g-6g5e-4d3c2b1a"),
 	}
-	organizationCredentialSecret, err := createSecret(k8sclient, ctx, "credential-secret", nil, data)
+	organizationCredentialSecret, err := createSecret(k8sclient, ctx, "credential-secret", labels, data)
 	if err != nil {
 		return &v1.Secret{}, microerror.Mask(err)
 	}
