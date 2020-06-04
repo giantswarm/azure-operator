@@ -329,9 +329,11 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
+			Debugger:                  newDebugger,
+			G8sClient:                 config.K8sClient.G8sClient(),
+			CPPublicIpAddressesClient: config.CPAzureClientSet.PublicIpAddressesClient,
+			InstallationName:          config.InstallationName,
+			Logger:                    config.Logger,
 
 			Azure: config.Azure,
 		}
@@ -569,10 +571,10 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
-		containerURLResource,
 		encryptionkeyResource,
-		blobObjectResource,
 		deploymentResource,
+		containerURLResource,
+		blobObjectResource,
 		dnsrecordResource,
 		mastersResource,
 		instanceResource,

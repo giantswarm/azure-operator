@@ -27,6 +27,10 @@
         "description":"Whether the deployment is provisioned the very first time."
       }
     },
+    "storageAccountIpRules":{
+      "type":"array",
+      "defaultValue":[]
+    },
     "storageAccountName":{
       "type":"string",
       "metadata":{
@@ -815,7 +819,10 @@
                       },
                       "routeTable":{
                         "id":"[parameters('routeTableID')]"
-                      }
+                      },
+                      "serviceEndpoints": [
+                        { "service": "Microsoft.Storage" }
+                      ]
                     }
                   },
                   {
@@ -1406,6 +1413,9 @@
       "apiVersion":"2016-09-01",
       "name":"container_setup",
       "type":"Microsoft.Resources/deployments",
+      "dependsOn":[
+        "virtual_network_setup"
+      ],
       "properties":{
         "expressionEvaluationOptions":{
           "scope": "inner"
@@ -1427,7 +1437,16 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
+            "ipRules":{
+              "type":"array"
+            },
+            "masterSubnetID": {
+              "type":"string"
+            },
             "storageAccountName":{
+              "type":"string"
+            },
+            "workerSubnetID": {
               "type":"string"
             }
           },
@@ -1446,7 +1465,15 @@
               "properties": {
                 "accessTier": "[variables('accessTier')]",
                 "accountType": "[variables('accountType')]",
-                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]"
+                "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]",
+                "networkAcls":{
+                  "virtualNetworkRules": [
+                    {"id":"[parameters('masterSubnetID')]"},
+                    {"id":"[parameters('workerSubnetID')]"}
+                  ],
+                  "ipRules":"[parameters('ipRules')]",
+                  "defaultAction":"Deny"
+                }
               },
               "sku": {
                 "name": "[variables('accountType')]"
@@ -1478,6 +1505,15 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
+          },
+          "ipRules":{
+            "value":"[parameters('storageAccountIpRules')]"
+          },
+          "masterSubnetID":{
+            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
+          },
+          "workerSubnetID":{
+            "value":"[reference('virtual_network_setup').outputs.workerSubnetID.value]"
           },
           "storageAccountName":{
             "value":"[parameters('storageAccountName')]"

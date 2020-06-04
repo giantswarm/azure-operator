@@ -32,7 +32,8 @@ func IsStorageAccountNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound")
+	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound") ||
+		strings.Contains(microerror.Cause(err).Error(), "StorageAccountNotFound")
 }
 
 // IsStorageAccountNotProvisioned asserts storage account not provisioned error from upstream's API message.
