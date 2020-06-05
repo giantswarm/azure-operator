@@ -10,7 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.3.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/giantswarm/apiextensions v0.3.10-0.20200515062548-b58e4b2ca47e
+	github.com/giantswarm/apiextensions v0.4.6
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient v0.2.0
 	github.com/giantswarm/backoff v0.2.0
@@ -25,14 +25,14 @@ require (
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient v0.2.0
 	github.com/giantswarm/k8sclient/v2 v2.0.0
-	github.com/giantswarm/k8sclient/v3 v3.0.0
+	github.com/giantswarm/k8sclient/v3 v3.1.0
 	github.com/giantswarm/k8scloudconfig/v6 v6.1.1
 	github.com/giantswarm/kubelock v0.2.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/microkit v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
-	github.com/giantswarm/operatorkit v0.2.0
+	github.com/giantswarm/operatorkit v1.0.0
 	github.com/giantswarm/randomkeys v0.2.0
 	github.com/giantswarm/statusresource v0.3.0
 	github.com/giantswarm/tenantcluster v0.2.0
@@ -54,7 +54,6 @@ require (
 
 replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.4.0+incompatible
-	github.com/giantswarm/apiextensions => github.com/giantswarm/apiextensions v0.3.2
 	k8s.io/api => k8s.io/api v0.0.0-20191114100352-16d7abae0d2a
 	k8s.io/apiextensions-apiserver => k8s.io/apiextensions-apiserver v0.0.0-20191114105449-027877536833
 	k8s.io/apimachinery => k8s.io/apimachinery v0.16.5-beta.1

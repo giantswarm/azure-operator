@@ -10,7 +10,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/ipam"
-	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"golang.org/x/sync/errgroup"
@@ -148,7 +148,7 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 	var doneSubscriptions []string
 	var ret []net.IPNet
 	for _, cluster := range tenantClusterList.Items {
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(c.k8sclient, cluster, c.gsClientCredentialsConfig.TenantID)
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(ctx, c.k8sclient, cluster, c.gsClientCredentialsConfig.TenantID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

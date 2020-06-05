@@ -69,6 +69,15 @@ rules:
       - create
       - delete
       - update
+  # The operator needs read and write access to all provider specific
+  # infrastructure CRs we manage for Tenant Clusters.
+  - apiGroups:
+      - exp.infrastructure.cluster.x-k8s.io
+    resources:
+      - azuremachinepools
+      - azuremachinepools/status
+    verbs:
+      - "*"
   - apiGroups:
       - ""
     resources:

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
@@ -31,19 +32,28 @@ const (
 )
 
 type Config struct {
-	Debugger  *debugger.Debugger
-	G8sClient versioned.Interface
-	Logger    micrologger.Logger
+	Debugger                  *debugger.Debugger
+	G8sClient                 versioned.Interface
+	InstallationName          string
+	Logger                    micrologger.Logger
+	CPPublicIpAddressesClient *network.PublicIPAddressesClient
 
 	Azure setting.Azure
 }
 
 type Resource struct {
-	debugger  *debugger.Debugger
-	g8sClient versioned.Interface
-	logger    micrologger.Logger
+	debugger                  *debugger.Debugger
+	g8sClient                 versioned.Interface
+	installationName          string
+	logger                    micrologger.Logger
+	cpPublicIpAddressesClient *network.PublicIPAddressesClient
 
 	azure setting.Azure
+}
+
+type StorageAccountIpRule struct {
+	Value  string `json:"value"`
+	Action string `json:"action"`
 }
 
 func New(config Config) (*Resource, error) {
@@ -53,8 +63,14 @@ func New(config Config) (*Resource, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.CPPublicIpAddressesClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CPPublicIpAddressesClient must not be empty", config)
 	}
 
 	if err := config.Azure.Validate(); err != nil {
@@ -62,9 +78,11 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		debugger:  config.Debugger,
-		g8sClient: config.G8sClient,
-		logger:    config.Logger,
+		debugger:                  config.Debugger,
+		g8sClient:                 config.G8sClient,
+		installationName:          config.InstallationName,
+		logger:                    config.Logger,
+		cpPublicIpAddressesClient: config.CPPublicIpAddressesClient,
 
 		azure: config.Azure,
 	}

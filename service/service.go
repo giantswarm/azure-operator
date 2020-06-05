@@ -10,8 +10,8 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/k8sclient/k8srestconfig"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -51,6 +51,7 @@ type Service struct {
 	azureClusterController  *controller.AzureCluster
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
+	machinePoolController   *controller.MachinePool
 	statusResourceCollector *statusresource.CollectorSet
 }
 
@@ -243,18 +244,18 @@ func New(config Config) (*Service, error) {
 		ipamNetworkRange = *ipnet
 	}
 
+	// These credentials will be used when creating AzureClients for Control Plane clusters.
+	gsClientCredentialsConfig, err := credential.NewAzureCredentials(
+		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+	)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	var clusterController *controller.Cluster
 	{
-		// These credentials will be used when creating AzureClients for Control Plane clusters.
-		gsClientCredentialsConfig, err := credential.NewAzureCredentials(
-			config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-			config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-			config.Viper.GetString(config.Flag.Service.Azure.TenantID),
-		)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
 		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -279,6 +280,24 @@ func New(config Config) (*Service, error) {
 		}
 
 		clusterController, err = controller.NewCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var machinePoolController *controller.MachinePool
+	{
+		c := controller.MachinePoolConfig{
+			GSClientCredentialsConfig: gsClientCredentialsConfig,
+			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			IPAMNetworkRange:          ipamNetworkRange,
+			K8sClient:                 k8sClient,
+			Locker:                    kubeLockLocker,
+			Logger:                    config.Logger,
+		}
+
+		machinePoolController, err = controller.NewMachinePool(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -320,6 +339,7 @@ func New(config Config) (*Service, error) {
 		azureClusterController:  azureClusterController,
 		bootOnce:                sync.Once{},
 		clusterController:       clusterController,
+		machinePoolController:   machinePoolController,
 		statusResourceCollector: statusResourceCollector,
 	}
 
@@ -332,6 +352,7 @@ func (s *Service) Boot(ctx context.Context) {
 
 		go s.azureClusterController.Boot(ctx)
 		go s.clusterController.Boot(ctx)
+		go s.machinePoolController.Boot(ctx)
 	})
 }
 

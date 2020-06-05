@@ -22,6 +22,22 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	// We need to authorize the azure operator public IP on the storage account in the tenant cluster.
+	// The azure operator can be running in any of the master or worker nodes in the control plane, so
+	// I have to retrieve the public IP addresses of both node types.
+	var storageAccountIpRules []StorageAccountIpRule
+	publicIps, err := r.getCPPublicIPAddresses(ctx)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
+	for _, ip := range publicIps {
+		storageAccountIpRules = append(storageAccountIpRules, StorageAccountIpRule{
+			Value:  ip,
+			Action: "Allow",
+		})
+	}
+
 	defaultParams := map[string]interface{}{
 		"blobContainerName":       key.BlobContainerName(),
 		"calicoSubnetCidr":        key.CalicoCIDR(customObject),
@@ -31,6 +47,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"kubernetesAPISecurePort": key.APISecurePort(customObject),
 		"masterSubnetCidr":        key.MastersSubnetCIDR(customObject),
 		"storageAccountName":      key.StorageAccountName(customObject),
+		"storageAccountIpRules":   storageAccountIpRules,
 		"virtualNetworkCidr":      key.VnetCIDR(customObject),
 		"virtualNetworkName":      key.VnetName(customObject),
 		"vnetGatewaySubnetName":   key.VNetGatewaySubnetName(),

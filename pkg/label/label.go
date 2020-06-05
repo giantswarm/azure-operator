@@ -16,4 +16,5 @@ const (
 	OperatorVersion        = "azure-operator.giantswarm.io/version"
 	ClusterOperatorVersion = "cluster-operator.giantswarm.io/version"
 	ReleaseVersion         = "release.giantswarm.io/version"
+	SingleTenantSP         = "giantswarm.io/single-tenant-service-principal"
 )

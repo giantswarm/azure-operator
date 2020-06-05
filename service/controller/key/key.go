@@ -9,7 +9,8 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
@@ -102,6 +103,20 @@ func AzureConfigNetworkCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CIDR
 }
 
+func ToAzureMachinePool(v interface{}) (expcapzv1alpha3.AzureMachinePool, error) {
+	if v == nil {
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+	}
+
+	customObjectPointer, ok := v.(*expcapzv1alpha3.AzureMachinePool)
+	if !ok {
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
+}
+
 func BlobContainerName() string {
 	return blobContainerName
 }
@@ -111,7 +126,7 @@ func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 }
 
 func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Cluster.Calico.Subnet
+	return customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR
 }
 
 func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
@@ -258,6 +273,10 @@ func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
 }
 
+func MachinePoolOperatorVersion(cr expcapzv1alpha3.AzureMachinePool) string {
+	return cr.GetLabels()[LabelOperatorVersion]
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), masterSecurityGroupSuffix)
@@ -352,14 +371,14 @@ func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	return strings.Replace(storageAccountName, "-", "", -1)
 }
 
-func ToAzureCluster(v interface{}) (v1alpha3.AzureCluster, error) {
+func ToAzureCluster(v interface{}) (capzv1alpha3.AzureCluster, error) {
 	if v == nil {
-		return v1alpha3.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &v1alpha3.AzureCluster{}, v)
+		return capzv1alpha3.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureCluster{}, v)
 	}
 
-	customObjectPointer, ok := v.(*v1alpha3.AzureCluster)
+	customObjectPointer, ok := v.(*capzv1alpha3.AzureCluster)
 	if !ok {
-		return v1alpha3.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &v1alpha3.AzureCluster{}, v)
+		return capzv1alpha3.AzureCluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureCluster{}, v)
 	}
 	customObject := *customObjectPointer
 

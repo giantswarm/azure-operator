@@ -1,17 +1,29 @@
 package controller
 
 import (
+	"context"
+
 	"github.com/giantswarm/certs"
-	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller"
+	"github.com/giantswarm/operatorkit/resource"
+	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
+	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
 	"github.com/spf13/viper"
+	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureclusterconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
@@ -55,28 +67,9 @@ func NewAzureCluster(config AzureClusterConfig) (*AzureCluster, error) {
 		}
 	}
 
-	var resourceSet *controller.ResourceSet
+	var resources []resource.Interface
 	{
-		c := AzureClusterResourceSetConfig{
-			CertsSearcher: certsSearcher,
-			K8sClient:     config.K8sClient,
-			Logger:        config.Logger,
-
-			Flag:  config.Flag,
-			Viper: config.Viper,
-
-			Azure:            config.Azure,
-			CPAzureClientSet: config.CPAzureClientSet,
-			Ignition:         config.Ignition,
-			InstallationName: config.InstallationName,
-			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.RegistryDomain,
-			OIDC:             config.OIDC,
-			SSOPublicKey:     config.SSOPublicKey,
-			VMSSCheckWorkers: config.VMSSCheckWorkers,
-		}
-
-		resourceSet, err = NewAzureClusterResourceSet(c)
+		resources, err = newAzureClusterResources(config, certsSearcher)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -85,15 +78,21 @@ func NewAzureCluster(config AzureClusterConfig) (*AzureCluster, error) {
 	var operatorkitController *controller.Controller
 	{
 		c := controller.Config{
+			InitCtx: func(ctx context.Context, obj interface{}) (context.Context, error) {
+				return controllercontext.NewContext(ctx, controllercontext.Context{}), nil
+			},
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			Name:      config.ProjectName,
-			ResourceSets: []*controller.ResourceSet{
-				resourceSet,
-			},
+			// Name is used to compute finalizer names. This results in something
+			// like operatorkit.giantswarm.io/azure-operator-azurecluster-controller.
+			Name: project.Name() + "-azurecluster-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
 				return new(v1alpha3.AzureCluster)
 			},
+			Resources: resources,
+			Selector: labels.SelectorFromSet(map[string]string{
+				label.OperatorVersion: project.Version(),
+			}),
 		}
 
 		operatorkitController, err = controller.New(c)
@@ -107,4 +106,82 @@ func NewAzureCluster(config AzureClusterConfig) (*AzureCluster, error) {
 	}
 
 	return c, nil
+}
+
+func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
+	var err error
+
+	var azureClusterConfigResource *azureclusterconfig.Resource
+	{
+		c := azureclusterconfig.Config{
+			Logger: config.Logger,
+
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
+			CtrlClient: config.K8sClient.CtrlClient(),
+		}
+
+		azureClusterConfigResource, err = azureclusterconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureConfigResource *azureconfig.Resource
+	{
+		c := azureconfig.Config{
+			Logger: config.Logger,
+
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
+			CtrlClient: config.K8sClient.CtrlClient(),
+		}
+
+		azureConfigResource, err = azureconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var releaseResource resource.Interface
+	{
+		c := release.Config{
+			K8sClient: config.K8sClient,
+			Logger:    config.Logger,
+		}
+
+		releaseResource, err = release.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	resources := []resource.Interface{
+		releaseResource,
+		azureClusterConfigResource,
+		azureConfigResource,
+	}
+
+	{
+		c := retryresource.WrapConfig{
+			Logger: config.Logger,
+		}
+
+		resources, err = retryresource.Wrap(resources, c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	{
+		c := metricsresource.WrapConfig{}
+		resources, err = metricsresource.Wrap(resources, c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return resources, nil
 }

@@ -5,11 +5,12 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
@@ -25,9 +26,9 @@ const (
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
-func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
+func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
 	credential := &v1.Secret{}
-	err := k8sClient.CtrlClient().Get(context.Background(), client.ObjectKey{Namespace: key.CredentialNamespace(cr), Name: key.CredentialName(cr)}, credential)
+	err := k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: key.CredentialNamespace(cr), Name: key.CredentialName(cr)}, credential)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
@@ -61,7 +62,7 @@ func GetOrganizationAzureCredentials(k8sClient k8sclient.Interface, cr providerv
 		partnerID = defaultAzureGUID
 	}
 
-	if tenantID == gsTenantID {
+	if _, exists := credential.GetLabels()[label.SingleTenantSP]; exists || tenantID == gsTenantID {
 		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
