@@ -12,6 +12,17 @@ const (
 	ingressWildcardDomainPrefix   = "*"
 )
 
+// newIngressDomain constructs new ingress domain with given domainPrefix. It
+// picks up tenant cluster control plane API endpoint from AzureCluster CR,
+// replaces first domain component (usually `api`) with given `domainPrefix`
+// and picks up rest of the domain from configured ingress controller base
+// domain which is usually `k8s.{{.Base}}`.
+//
+// Example:
+//	CR API endpoint: api.g8s.ghost.westeurope.azure.gigantic.io
+//	domainPrefix: ingress
+// Returns:
+//	ingress.k8s.ghost.westeurope.azure.gigantic.io
 func (r *Resource) newIngressDomain(cr capzv1alpha3.AzureCluster, domainPrefix string) (string, error) {
 	split := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
 	if len(split) < 3 {

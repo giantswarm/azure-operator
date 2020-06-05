@@ -160,7 +160,7 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
 	}
 
-	clusterOperatorVersion, err := findComponentVersion("cluster-operator", cc.Release.Release.Spec.Components)
+	clusterOperatorVersion, err := key.ComponentVersion(cc.Release.Release, "cluster-operator")
 	if err != nil {
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
 	}
@@ -248,16 +248,6 @@ func dnsZoneFromAPIEndpoint(apiEndpointHost string) string {
 		// Drop first label of domain (e.g. api.foobar.com -> foobar.com).
 		return strings.Join(domainLabels[1:], ".")
 	}
-}
-
-func findComponentVersion(component string, releaseComponents []releasev1alpha1.ReleaseSpecComponent) (string, error) {
-	for _, c := range releaseComponents {
-		if c.Name == component {
-			return c.Version, nil
-		}
-	}
-
-	return "", microerror.Maskf(notFoundError, "release component: %q", component)
 }
 
 func componentsToClusterGuestConfigVersionBundles(components []releasev1alpha1.ReleaseSpecComponent) []corev1alpha1.ClusterGuestConfigVersionBundle {

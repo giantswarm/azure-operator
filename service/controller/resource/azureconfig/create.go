@@ -90,7 +90,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if len(workerMachines) < 1 {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("worker AzureMachines found for cluster %q", key.ClusterID(&cluster)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no worker AzureMachines found for cluster %q", key.ClusterID(&cluster)))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
@@ -220,11 +220,6 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	azureConfig.Labels = make(map[string]string)
 
 	{
-		azureConfig.TypeMeta.APIVersion = azureAPIVersion
-		azureConfig.TypeMeta.Kind = "AzureConfig"
-	}
-
-	{
 		azureConfig.ObjectMeta.Name = key.ClusterID(&cluster)
 		azureConfig.ObjectMeta.Namespace = cluster.Namespace
 	}
@@ -252,7 +247,6 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 
 		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, label.OperatorVersion, key.OperatorVersion(&azureCluster))
 		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, "giantswarm.io/provider", ProviderAzure)
-		azureConfig.Spec.VersionBundle.Version = key.OperatorVersion(&azureCluster)
 
 		azureConfig.Spec.Azure.AvailabilityZones, err = getAvailabilityZones(masters, workers)
 		if err != nil {
@@ -274,7 +268,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 
 	var (
 		// hostDNSZone is created by stripping 3 first components from
-		// API domain are stipped, e.g.
+		// API domain are e.g.
 		// api.eggs2.k8s.gollum.azure.giantswarm.io becomes
 		// gollum.azure.giantswarm.io.
 		hostDNSZone       = strings.Join(strings.Split(azureConfig.Spec.Cluster.Kubernetes.API.Domain, ".")[3:], ".")
@@ -429,7 +423,7 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 
 	{
 		commonCluster.Masters = newSpecClusterMasterNodes()
-		commonCluster.Workers = newSpecClusterWorkerNodes()
+		commonCluster.Workers = newSpecClusterWorkerNodes(len(workers))
 	}
 
 	{
@@ -481,10 +475,10 @@ func newSpecClusterMasterNodes() []providerv1alpha1.ClusterNode {
 	return masterNodes
 }
 
-func newSpecClusterWorkerNodes() []providerv1alpha1.ClusterNode {
+func newSpecClusterWorkerNodes(numWorkers int) []providerv1alpha1.ClusterNode {
 	var workerNodes []providerv1alpha1.ClusterNode
 
-	for i := 0; i < 3; i++ {
+	for i := 0; i < numWorkers; i++ {
 		n := providerv1alpha1.ClusterNode{
 			ID: fmt.Sprintf("node-%d", i),
 		}
