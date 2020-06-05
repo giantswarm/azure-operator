@@ -9,7 +9,6 @@ import (
 	"time"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -463,12 +462,4 @@ func newSpecClusterKubernetesSSHUsers(userList string) ([]providerv1alpha1.Clust
 	}
 
 	return sshUsers, nil
-}
-
-func newKubeletDomain(cr capzv1alpha3.AzureCluster) (string, error) {
-	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
-	splitted[0] = certs.WorkerCert.String()
-	kubeletDomain := strings.Join(splitted, ".")
-
-	return kubeletDomain, nil
 }
