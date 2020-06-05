@@ -129,7 +129,7 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetwork, "", "Host cluster virtual network name.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetworkGateway, "", "Host cluster virtual network gateway name.")
 
-	daemonCommand.PersistentFlags().String(f.Service.Cluster.BaseDomain, "", "Cluster base domain without k8s/g8s prefixes.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.BaseDomain, "ghost.westeurope.azure.gigantic.io", "Cluster base domain without k8s/g8s prefixes.")
 
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.CIDR, 0, "Calico cidr of guest clusters.")
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.MTU, 0, "Calico MTU of guest clusters.")
