@@ -43,7 +43,12 @@ func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet,
 		return microerror.Mask(err)
 	}
 
-	azureCluster.Spec.NetworkSpec.Vnet.CidrBlock = vnet.String()
+	azureMachinePoolSubnet := &v1alpha33.SubnetSpec{
+		Role:      v1alpha33.SubnetNode,
+		Name:      name,
+		CidrBlock: vnet.String(),
+	}
+	azureCluster.Spec.NetworkSpec.Subnets = append(azureCluster.Spec.NetworkSpec.Subnets, azureMachinePoolSubnet)
 
 	err = p.ctrlClient.Update(ctx, azureCluster)
 	if err != nil {

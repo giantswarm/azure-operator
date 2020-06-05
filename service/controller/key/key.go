@@ -12,7 +12,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
@@ -125,7 +124,7 @@ func BlobContainerName() string {
 	return blobContainerName
 }
 
-func BlobName(customObject LabelsGetter, role string) string {
+func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
 }
 
@@ -134,7 +133,7 @@ func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-certificate-encryption", ClusterID(&customObject))
+	return fmt.Sprintf("%s-certificate-encryption", customObject.Spec.Cluster.ID)
 }
 
 func CloudConfigSmallTemplates() []string {
@@ -162,8 +161,8 @@ func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
 }
 
 // ClusterID returns the unique ID for this cluster.
-func ClusterID(getter LabelsGetter) string {
-	return getter.GetLabels()[label.Cluster]
+func ClusterID(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.ID
 }
 
 // ClusterNamespace returns the cluster Namespace for this cluster.
@@ -180,7 +179,7 @@ func ClusterOrganization(customObject providerv1alpha1.AzureConfig) string {
 // ClusterTags returns a map with the resource tags for this cluster.
 func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName string) map[string]*string {
 	tags := map[string]*string{
-		clusterTagName:      to.StringPtr(ClusterID(&customObject)),
+		clusterTagName:      to.StringPtr(ClusterID(customObject)),
 		installationTagName: to.StringPtr(installationName),
 		organizationTagName: to.StringPtr(ClusterOrganization(customObject)),
 	}
@@ -234,17 +233,17 @@ func DNSZoneIngress(customObject providerv1alpha1.AzureConfig) string {
 
 // DNSZonePrefixAPI returns relative name of the api DNS zone.
 func DNSZonePrefixAPI(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s.k8s", ClusterID(&customObject))
+	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
 }
 
 // DNSZonePrefixEtcd returns relative name of the etcd DNS zone.
 func DNSZonePrefixEtcd(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s.k8s", ClusterID(&customObject))
+	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
 }
 
 // DNSZonePrefixIngress returns relative name of the ingress DNS zone.
 func DNSZonePrefixIngress(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s.k8s", ClusterID(&customObject))
+	return fmt.Sprintf("%s.k8s", ClusterID(customObject))
 }
 
 // DNSZoneResourceGroupAPI returns resource group name of the API
@@ -292,9 +291,13 @@ func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
 }
 
+func MachinePoolOperatorVersion(cr v1alpha3.AzureMachinePool) string {
+	return cr.GetLabels()[LabelOperatorVersion]
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", ClusterID(&customObject), masterSecurityGroupSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
 }
 
 // OSVersion returns the version of the operating system.
@@ -308,12 +311,12 @@ func OSVersion(release releasev1alpha1.Release) (string, error) {
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.
 func WorkerSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", ClusterID(&customObject), workerSecurityGroupSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), workerSecurityGroupSuffix)
 }
 
 // MasterSubnetName returns name of the master subnet.
 func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), virtualNetworkSuffix, masterSubnetSuffix)
+	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, masterSubnetSuffix)
 }
 
 func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
@@ -327,7 +330,7 @@ func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
 
 // WorkerSubnetName returns name of the worker subnet.
 func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), virtualNetworkSuffix, workerSubnetSuffix)
+	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, workerSubnetSuffix)
 }
 
 func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
@@ -336,23 +339,23 @@ func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-master-%s-%06s", ClusterID(&customObject), ClusterID(&customObject), idB36)
+	return fmt.Sprintf("%s-master-%s-%06s", ClusterID(customObject), ClusterID(customObject), idB36)
 }
 
 // MasterNICName returns name of the master NIC.
 func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(&customObject))
+	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(customObject))
 }
 
 func LegacyMasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-master", ClusterID(&customObject))
+	return fmt.Sprintf("%s-master", ClusterID(customObject))
 }
 
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-master-%s", ClusterID(&customObject), ClusterID(&customObject))
+	return fmt.Sprintf("%s-master-%s", ClusterID(customObject), ClusterID(customObject))
 }
 
-func OperatorVersion(cr LabelsGetter) string {
+func OperatorVersion(cr providerv1alpha1.AzureConfig) string {
 	return cr.GetLabels()[LabelOperatorVersion]
 }
 
@@ -365,13 +368,13 @@ func PrefixWorker() string {
 }
 
 // ResourceGroupName returns name of the resource group for this cluster.
-func ResourceGroupName(customObject LabelsGetter) string {
+func ResourceGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return ClusterID(customObject)
 }
 
 // RouteTableName returns name of the route table for this cluster.
 func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", ClusterID(&customObject), routeTableSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), routeTableSuffix)
 }
 
 // AvailabilityZones returns the availability zones where the cluster will be created.
@@ -389,7 +392,7 @@ func AvailabilityZones(customObject providerv1alpha1.AzureConfig, location strin
 	return customObject.Spec.Azure.AvailabilityZones
 }
 
-func StorageAccountName(customObject LabelsGetter) string {
+func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
 	// In integration tests we use hyphens which are not allowed. We also
 	// need to keep the name globaly unique and within 24 character limit.
 	//
@@ -414,7 +417,7 @@ func ToClusterID(v interface{}) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	return ClusterID(&cr), nil
+	return ClusterID(cr), nil
 }
 
 func ToClusterStatus(v interface{}) (providerv1alpha1.StatusCluster, error) {
@@ -475,7 +478,7 @@ func ToOperatorVersion(v interface{}) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	return OperatorVersion(&customObject), nil
+	return OperatorVersion(customObject), nil
 }
 
 // ToParameters merges the input maps and converts the result into the
@@ -528,7 +531,7 @@ func ToStringMap(v interface{}) (map[string]string, error) {
 
 // VnetName returns name of the virtual network.
 func VnetName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", ClusterID(&customObject), virtualNetworkSuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), virtualNetworkSuffix)
 }
 
 func VnetCIDR(customObject providerv1alpha1.AzureConfig) string {
@@ -542,7 +545,7 @@ func VNetGatewaySubnetName() string {
 
 // VPNGatewayName returns name of the vpn gateway.
 func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-%s", ClusterID(&customObject), vpnGatewaySuffix)
+	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
 }
 
 func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
@@ -551,7 +554,7 @@ func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanc
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(&customObject), idB36)
+	return fmt.Sprintf("%s-worker-%06s", ClusterID(customObject), idB36)
 }
 
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
@@ -560,15 +563,15 @@ func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(&customObject), ClusterID(&customObject), idB36)
+	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(customObject), ClusterID(customObject), idB36)
 }
 
 func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker", ClusterID(&customObject))
+	return fmt.Sprintf("%s-worker", ClusterID(customObject))
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker-%s", ClusterID(&customObject), ClusterID(&customObject))
+	return fmt.Sprintf("%s-worker-%s", ClusterID(customObject), ClusterID(customObject))
 }
 
 func WorkersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {

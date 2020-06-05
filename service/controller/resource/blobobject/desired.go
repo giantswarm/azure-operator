@@ -73,7 +73,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		k := key.AzureConfigBlobName(cr, prefixMaster)
+		k := key.BlobName(cr, prefixMaster)
 		containerObjectState := ContainerObjectState{
 			Body:               b,
 			ContainerName:      containerName,
@@ -89,7 +89,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		k := key.AzureConfigBlobName(cr, prefixWorker)
+		k := key.BlobName(cr, prefixWorker)
 		containerObjectState := ContainerObjectState{
 			Body:               b,
 			ContainerName:      containerName,
