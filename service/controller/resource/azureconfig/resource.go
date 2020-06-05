@@ -3,55 +3,60 @@ package azureconfig
 import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/spf13/viper"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/azure-operator/v4/flag"
 )
 
 const (
 	Name = "azureconfig"
 )
 
+type CalicoConfig struct {
+	CIDRSize int
+	MTU      int
+	Subnet   string
+}
+
 type Config struct {
-	Logger micrologger.Logger
-
-	Flag  *flag.Flag
-	Viper *viper.Viper
-
 	CtrlClient client.Client
+	Logger     micrologger.Logger
+
+	APIServerSecurePort            int
+	Calico                         CalicoConfig
+	ClusterIPRange                 string
+	ManagementClusterResourceGroup string
+	SSHUserList                    string
 }
 
 type Resource struct {
-	logger micrologger.Logger
-
-	flag  *flag.Flag
-	viper *viper.Viper
-
 	ctrlClient client.Client
+	logger     micrologger.Logger
+
+	apiServerSecurePort            int
+	calico                         CalicoConfig
+	clusterIPRange                 string
+	managementClusterResourceGroup string
+	sshUserList                    string
 }
 
 func New(config Config) (*Resource, error) {
-	if config.Flag == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Flag must not be empty", config)
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.Viper == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Viper must not be empty", config)
-	}
-	if config.CtrlClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
-	}
+	// No validation for configuration at this point. I'm not fully sure if any
+	// of that is actually needed.
 
 	newResource := &Resource{
-		logger: config.Logger,
-
-		flag:  config.Flag,
-		viper: config.Viper,
-
 		ctrlClient: config.CtrlClient,
+		logger:     config.Logger,
+
+		apiServerSecurePort:            config.APIServerSecurePort,
+		calico:                         config.Calico,
+		clusterIPRange:                 config.ClusterIPRange,
+		managementClusterResourceGroup: config.ManagementClusterResourceGroup,
+		sshUserList:                    config.SSHUserList,
 	}
 
 	return newResource, nil

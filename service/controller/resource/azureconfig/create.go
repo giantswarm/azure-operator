@@ -26,7 +26,6 @@ import (
 const (
 	dockerVolumeSizeGB  = 50
 	kubeletVolumeSizeGB = 100
-	azureAPIVersion     = "provider.giantswarm.io"
 
 	kubeDNSIPLastOctet = 10
 
@@ -272,7 +271,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 		// api.eggs2.k8s.gollum.azure.giantswarm.io becomes
 		// gollum.azure.giantswarm.io.
 		hostDNSZone       = strings.Join(strings.Split(azureConfig.Spec.Cluster.Kubernetes.API.Domain, ".")[3:], ".")
-		hostResourceGroup = r.viper.GetString(r.flag.Service.Azure.HostCluster.ResourceGroup)
+		hostResourceGroup = r.managementClusterResourceGroup
 	)
 
 	azureConfig.Spec.Azure.DNSZones.API.Name = hostDNSZone
@@ -324,9 +323,9 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	commonCluster := providerv1alpha1.Cluster{}
 
 	{
-		commonCluster.Calico.CIDR = r.viper.GetInt(r.flag.Service.Cluster.Calico.CIDR)
-		commonCluster.Calico.MTU = r.viper.GetInt(r.flag.Service.Cluster.Calico.MTU)
-		commonCluster.Calico.Subnet = r.viper.GetString(r.flag.Service.Cluster.Calico.Subnet)
+		commonCluster.Calico.CIDR = r.calico.CIDRSize
+		commonCluster.Calico.MTU = r.calico.MTU
+		commonCluster.Calico.Subnet = r.calico.Subnet
 	}
 
 	{
@@ -338,34 +337,18 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
-		commonCluster.Docker.Daemon.CIDR = r.viper.GetString(r.flag.Service.Cluster.Docker.Daemon.CIDR)
-	}
-
-	{
-		etcdDomain, err := newEtcdDomain(azureCluster)
-		if err != nil {
-			return providerv1alpha1.Cluster{}, microerror.Mask(err)
-		}
-
-		commonCluster.Etcd.AltNames = r.viper.GetString(r.flag.Service.Cluster.Etcd.AltNames)
-		commonCluster.Etcd.Domain = etcdDomain
-		commonCluster.Etcd.Port = r.viper.GetInt(r.flag.Service.Cluster.Etcd.Port)
-		commonCluster.Etcd.Prefix = r.viper.GetString(r.flag.Service.Cluster.Etcd.Prefix)
-	}
-
-	{
 		apiServerDomain, err := newAPIServerDomain(azureCluster)
 		if err != nil {
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}
-		apiServerIPRange := r.viper.GetString(r.flag.Service.Cluster.Kubernetes.API.ClusterIPRange)
+		apiServerIPRange := r.clusterIPRange
 		if apiServerIPRange == "" {
 			return providerv1alpha1.Cluster{}, microerror.Maskf(executionFailedError, "Kubernetes IP range must not be empty")
 		}
 
 		commonCluster.Kubernetes.API.ClusterIPRange = apiServerIPRange // TODO rename (HOST_SUBNET_RANGE in k8s-vm)
 		commonCluster.Kubernetes.API.Domain = apiServerDomain
-		commonCluster.Kubernetes.API.SecurePort = r.viper.GetInt(r.flag.Service.Cluster.Kubernetes.API.SecurePort)
+		commonCluster.Kubernetes.API.SecurePort = r.apiServerSecurePort
 	}
 
 	{
@@ -380,40 +363,7 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
-		commonCluster.Kubernetes.Domain = r.viper.GetString(r.flag.Service.Cluster.Kubernetes.Domain)
-	}
-
-	{
-		ingressControllerDomain, err := r.newIngressControllerDomain(azureCluster)
-		if err != nil {
-			return providerv1alpha1.Cluster{}, microerror.Mask(err)
-		}
-		ingressWildcardDomain, err := r.newIngressWildcardDomain(azureCluster)
-		if err != nil {
-			return providerv1alpha1.Cluster{}, microerror.Mask(err)
-		}
-
-		commonCluster.Kubernetes.IngressController.Domain = ingressControllerDomain
-		commonCluster.Kubernetes.IngressController.Docker.Image = r.viper.GetString(r.flag.Service.Cluster.Kubernetes.IngressController.Docker.Image)
-		commonCluster.Kubernetes.IngressController.WildcardDomain = ingressWildcardDomain
-		commonCluster.Kubernetes.IngressController.InsecurePort = r.viper.GetInt(r.flag.Service.Cluster.Kubernetes.IngressController.InsecurePort)
-		commonCluster.Kubernetes.IngressController.SecurePort = r.viper.GetInt(r.flag.Service.Cluster.Kubernetes.IngressController.SecurePort)
-	}
-
-	{
-		kubeletDomain, err := newKubeletDomain(azureCluster)
-		if err != nil {
-			return providerv1alpha1.Cluster{}, microerror.Mask(err)
-		}
-
-		commonCluster.Kubernetes.Kubelet.AltNames = r.viper.GetString(r.flag.Service.Cluster.Kubernetes.Kubelet.AltNames)
-		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
-		commonCluster.Kubernetes.Kubelet.Labels = r.viper.GetString(r.flag.Service.Cluster.Kubernetes.Kubelet.Labels)
-		commonCluster.Kubernetes.Kubelet.Port = r.viper.GetInt(r.flag.Service.Cluster.Kubernetes.Kubelet.Port)
-	}
-
-	{
-		userList, err := newSpecClusterKubernetesSSHUsers(r.viper.GetString(r.flag.Service.Cluster.Kubernetes.SSH.UserList))
+		userList, err := newSpecClusterKubernetesSSHUsers(r.sshUserList)
 		if err != nil {
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}

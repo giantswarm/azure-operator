@@ -114,12 +114,8 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	var azureClusterConfigResource *azureclusterconfig.Resource
 	{
 		c := azureclusterconfig.Config{
-			Logger: config.Logger,
-
-			Flag:  config.Flag,
-			Viper: config.Viper,
-
 			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		azureClusterConfigResource, err = azureclusterconfig.New(c)
@@ -131,12 +127,18 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	var azureConfigResource *azureconfig.Resource
 	{
 		c := azureconfig.Config{
-			Logger: config.Logger,
-
-			Flag:  config.Flag,
-			Viper: config.Viper,
-
 			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+
+			APIServerSecurePort: config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
+			Calico: azureconfig.CalicoConfig{
+				CIDRSize: config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
+				MTU:      config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
+				Subnet:   config.Viper.GetString(config.Flag.Service.Cluster.Calico.Subnet),
+			},
+			ClusterIPRange:                 config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
+			ManagementClusterResourceGroup: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
+			SSHUserList:                    config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
 		}
 
 		azureConfigResource, err = azureconfig.New(c)
