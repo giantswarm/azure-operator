@@ -19,7 +19,6 @@ const (
 type Config struct {
 	Debugger       *debugger.Debugger
 	CtrlClient     client.Client
-	Location       string
 	Logger         micrologger.Logger
 	VMSSMSIEnabled bool
 }
@@ -27,7 +26,6 @@ type Config struct {
 type Resource struct {
 	debugger       *debugger.Debugger
 	ctrlClient     client.Client
-	location       string
 	logger         micrologger.Logger
 	vmssMSIEnabled bool
 }
@@ -42,14 +40,10 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.Location == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
-	}
 
 	r := &Resource{
 		debugger:       config.Debugger,
 		ctrlClient:     config.CtrlClient,
-		location:       config.Location,
 		logger:         config.Logger,
 		vmssMSIEnabled: config.VMSSMSIEnabled,
 	}

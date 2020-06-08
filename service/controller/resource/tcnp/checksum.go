@@ -40,12 +40,12 @@ func getDeploymentParametersChecksum(deployment resources.Deployment) (string, e
 }
 
 func (r *Resource) getCurrentDeploymentChecksums(ctx context.Context, customObject v1alpha32.AzureMachinePool) (string, string, error) {
-	currentDeploymentTemplateChk, err := r.getResourceStatus(customObject, DeploymentTemplateChecksum)
+	currentDeploymentTemplateChk, err := r.getResourceStatus(ctx, customObject, DeploymentTemplateChecksum)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}
 
-	currentDeploymentParametersChk, err := r.getResourceStatus(customObject, DeploymentParametersChecksum)
+	currentDeploymentParametersChk, err := r.getResourceStatus(ctx, customObject, DeploymentParametersChecksum)
 	if err != nil {
 		return "", "", microerror.Mask(err)
 	}

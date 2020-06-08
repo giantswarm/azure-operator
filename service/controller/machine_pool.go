@@ -22,20 +22,16 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tcnp"
-	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type MachinePoolConfig struct {
-	Azure                     setting.Azure
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	GuestSubnetMaskBits       int
 	InstallationName          string
 	IPAMNetworkRange          net.IPNet
 	K8sClient                 k8sclient.Interface
-	Location                  string
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
-	VMSSCheckWorkers          int
 	VMSSMSIEnabled            bool
 }
 
@@ -44,13 +40,9 @@ type MachinePool struct {
 }
 
 func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
-	if config.Location == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
-	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -121,7 +113,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		c := tcnp.Config{
 			Debugger:       newDebugger,
 			CtrlClient:     config.K8sClient.CtrlClient(),
-			Location:       config.Location,
 			Logger:         config.Logger,
 			VMSSMSIEnabled: config.VMSSMSIEnabled,
 		}

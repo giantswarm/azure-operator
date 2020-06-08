@@ -128,6 +128,10 @@ func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
 }
 
+func WorkerBlobName(operatorVersion string) string {
+	return fmt.Sprintf("%s-%s-%s", operatorVersion, cloudConfigVersion, prefixWorker)
+}
+
 func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR
 }
