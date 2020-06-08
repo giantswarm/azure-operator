@@ -123,14 +123,14 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var clusterChecker *ipam.ClusterChecker
+	var clusterChecker *ipam.AzureMachinePoolChecker
 	{
-		c := ipam.ClusterCheckerConfig{
+		c := ipam.AzureMachinePoolCheckerConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 		}
 
-		clusterChecker, err = ipam.NewClusterChecker(c)
+		clusterChecker, err = ipam.NewAzureMachinePoolChecker(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

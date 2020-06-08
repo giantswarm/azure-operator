@@ -429,14 +429,14 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	//	}
 	//}
 
-	var clusterChecker *ipam.ClusterChecker
+	var clusterChecker *ipam.AzureConfigChecker
 	{
-		c := ipam.ClusterCheckerConfig{
+		c := ipam.AzureConfigCheckerConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 		}
 
-		clusterChecker, err = ipam.NewClusterChecker(c)
+		clusterChecker, err = ipam.NewAzureConfigChecker(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

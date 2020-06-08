@@ -11,17 +11,17 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
-type ClusterCheckerConfig struct {
+type AzureConfigCheckerConfig struct {
 	CtrlClient client.Client
 	Logger     micrologger.Logger
 }
 
-type ClusterChecker struct {
+type AzureConfigChecker struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
 }
 
-func NewClusterChecker(config ClusterCheckerConfig) (*ClusterChecker, error) {
+func NewAzureConfigChecker(config AzureConfigCheckerConfig) (*AzureConfigChecker, error) {
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
@@ -29,7 +29,7 @@ func NewClusterChecker(config ClusterCheckerConfig) (*ClusterChecker, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	a := &ClusterChecker{
+	a := &AzureConfigChecker{
 		ctrlClient: config.CtrlClient,
 		logger:     config.Logger,
 	}
@@ -37,7 +37,7 @@ func NewClusterChecker(config ClusterCheckerConfig) (*ClusterChecker, error) {
 	return a, nil
 }
 
-func (c *ClusterChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
+func (c *AzureConfigChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
 	azureCluster := &v1alpha1.AzureConfig{}
 	err := c.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureCluster)
 	if err != nil {

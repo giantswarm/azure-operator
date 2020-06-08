@@ -6,8 +6,11 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	v1alpha33 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v4/pkg/annotation"
 )
 
 type AzureMachinePoolPersisterConfig struct {
@@ -37,22 +40,43 @@ func NewAzureMachinePoolPersister(config AzureMachinePoolPersisterConfig) (*Azur
 }
 
 func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet, namespace string, name string) error {
-	azureCluster := &v1alpha33.AzureCluster{}
-	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureCluster)
-	if err != nil {
-		return microerror.Mask(err)
+	{
+		azureCluster := &capzv1alpha3.AzureCluster{}
+		err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureCluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		azureMachinePoolSubnet := &capzv1alpha3.SubnetSpec{
+			Role:      capzv1alpha3.SubnetNode,
+			Name:      name,
+			CidrBlock: vnet.String(),
+		}
+		azureCluster.Spec.NetworkSpec.Subnets = append(azureCluster.Spec.NetworkSpec.Subnets, azureMachinePoolSubnet)
+
+		err = p.ctrlClient.Update(ctx, azureCluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	azureMachinePoolSubnet := &v1alpha33.SubnetSpec{
-		Role:      v1alpha33.SubnetNode,
-		Name:      name,
-		CidrBlock: vnet.String(),
-	}
-	azureCluster.Spec.NetworkSpec.Subnets = append(azureCluster.Spec.NetworkSpec.Subnets, azureMachinePoolSubnet)
+	{
+		azureMachinePool := &v1alpha3.AzureMachinePool{}
+		err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	err = p.ctrlClient.Update(ctx, azureCluster)
-	if err != nil {
-		return microerror.Mask(err)
+		if azureMachinePool.GetAnnotations() == nil {
+			azureMachinePool.Annotations = map[string]string{}
+		}
+
+		azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet] = vnet.String()
+
+		err = p.ctrlClient.Update(ctx, azureMachinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
