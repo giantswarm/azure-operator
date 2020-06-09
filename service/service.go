@@ -17,6 +17,7 @@ import (
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -180,6 +181,7 @@ func New(config Config) (*Service, error) {
 		c := k8sclient.ClientsConfig{
 			Logger: config.Logger,
 			SchemeBuilder: k8sclient.SchemeBuilder{
+				corev1.AddToScheme,
 				providerv1alpha1.AddToScheme,
 				releasev1alpha1.AddToScheme,
 				capiexpv1alpha3.AddToScheme,

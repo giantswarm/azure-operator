@@ -32,7 +32,7 @@
       "defaultValue": "100"
     },
     "replicas": {
-      "type": "string",
+      "type": "int",
       "metadata": {
         "description": "Number of VMs in the VMSS."
       }
@@ -82,7 +82,7 @@
     },
     "overprovision": {
       "type": "bool",
-      "defaultValue": "false",
+      "defaultValue": false,
       "metadata": {
         "description": "When turned on, the scale set actually spins up more VMs than you asked for, then deletes the extra VMs once the requested number of VMs are successfully provisioned."
       }
@@ -108,7 +108,7 @@
     },
     "vmssSinglePlacementGroup": {
       "type": "bool",
-      "defaultValue": "true",
+      "defaultValue": true,
       "metadata": {
         "description": "When false, the scale set can be composed of multiple placement groups and has a range of 0-1,000 VMs. When set to the default value of true, a scale set is composed of a single placement group, and has a range of 0-100 VMs."
       }
@@ -245,7 +245,7 @@
       "sku": {
         "name": "[parameters('vmSize')]",
         "tier": "Standard",
-        "capacity": "[int(parameters('replicas'))]"
+        "capacity": "[parameters('replicas')]"
       },
       "identity": {
         "type": "[if(parameters('enableMSI'), 'systemAssigned', 'None')]"
