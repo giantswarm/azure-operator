@@ -22,6 +22,9 @@ const (
 
 // AzureClientSet is the collection of Azure API clients.
 type AzureClientSet struct {
+	// The subscription ID this client set is configured with.
+	SubscriptionID string
+
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
 	// GroupsClient manages ARM resource groups.
@@ -32,6 +35,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	//PublicIpAddressesClient manages public IP addresses.
+	PublicIpAddressesClient *network.PublicIPAddressesClient
 	//SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
 	//StorageAccountsClient manages blobs in storage containers.
@@ -52,35 +57,13 @@ type AzureClientSet struct {
 	VnetPeeringClient *network.VirtualNetworkPeeringsClient
 }
 
-// NewAzureClientSet returns the Azure API clients.
-// Auth is configured taking values from Environment, but parameters have precedence over environment variables.
-func NewAzureClientSet(clientid, clientsecret, tenantid, subscriptionID, partnerID string) (*AzureClientSet, error) {
-	settings, err := auth.GetSettingsFromEnvironment()
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-	if clientid != "" {
-		settings.Values[auth.ClientID] = clientid
-	}
-	if clientsecret != "" {
-		settings.Values[auth.ClientSecret] = clientsecret
-	}
-	if tenantid != "" {
-		settings.Values[auth.TenantID] = tenantid
-	}
-	if subscriptionID != "" {
-		settings.Values[auth.SubscriptionID] = subscriptionID
-	}
-	authorizer, err := settings.GetAuthorizer()
+// NewAzureClientSet returns the Azure API clients using the given Authorizer.
+func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, subscriptionID, partnerID string) (*AzureClientSet, error) {
+	authorizer, err := clientCredentialsConfig.Authorizer()
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return NewAzureClientSetWithAuthorizer(authorizer, settings.GetSubscriptionID(), partnerID)
-}
-
-// NewAzureClientSetWithAuthorizer returns the Azure API clients using the given Authorizer.
-func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*AzureClientSet, error) {
 	if partnerID == "" {
 		partnerID = defaultAzureGUID
 	}
@@ -103,6 +86,10 @@ func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptio
 		return nil, microerror.Mask(err)
 	}
 	interfacesClient, err := newInterfacesClient(authorizer, subscriptionID, partnerID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	publicIpAddressesClient, err := newPublicIPAddressesClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -149,8 +136,10 @@ func NewAzureClientSetWithAuthorizer(authorizer autorest.Authorizer, subscriptio
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           groupsClient,
 		InterfacesClient:                       interfacesClient,
+		PublicIpAddressesClient:                publicIpAddressesClient,
 		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  storageAccountsClient,
+		SubscriptionID:                         subscriptionID,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
 		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
@@ -201,6 +190,13 @@ func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID s
 
 func newInterfacesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.InterfacesClient, error) {
 	client := network.NewInterfacesClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
+
+	return &client, nil
+}
+
+func newPublicIPAddressesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.PublicIPAddressesClient, error) {
+	client := network.NewPublicIPAddressesClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
 	return &client, nil

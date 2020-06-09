@@ -26,6 +26,9 @@ const (
 Installation:
   V1:
     Guest:
+      IPAM:
+        NetworkCIDR: "10.1.0.0/8"
+        CIDRMask: 16
       Kubernetes:
         API:
           Auth:
@@ -88,7 +91,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		if env.TestDir() == "integration/test/update" {
 			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
 			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
-			operatorVersion = GetLatestOperatorRelease()
+			operatorVersion = env.GetLatestOperatorRelease()
 		}
 	}
 
@@ -270,8 +273,9 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				},
 				Cluster: providerv1alpha1.Cluster{
 					Calico: providerv1alpha1.ClusterCalico{
-						CIDR: 16,
-						MTU:  1500,
+						CIDR:   16,
+						MTU:    1500,
+						Subnet: env.AzureCalicoSubnetCIDR(),
 					},
 					Customer: providerv1alpha1.ClusterCustomer{ID: "example-customer"},
 					Docker:   providerv1alpha1.ClusterDocker{Daemon: providerv1alpha1.ClusterDockerDaemon{CIDR: "172.17.0.1/16"}},

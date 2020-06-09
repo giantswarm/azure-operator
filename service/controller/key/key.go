@@ -10,6 +10,7 @@ import (
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
@@ -53,6 +54,8 @@ const (
 	CertificateEncryptionIVName    = "encryptioniv"
 
 	ContainerLinuxComponentName = "containerlinux"
+
+	OrganizationSecretsLabelSelector = "app=credentiald" // nolint:gosec
 )
 
 // Container image versions for k8scloudconfig.
@@ -99,12 +102,34 @@ func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
 }
 
+func AzureConfigNetworkCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.CIDR
+}
+
+func ToAzureMachinePool(v interface{}) (v1alpha3.AzureMachinePool, error) {
+	if v == nil {
+		return v1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+	}
+
+	customObjectPointer, ok := v.(*v1alpha3.AzureMachinePool)
+	if !ok {
+		return v1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
+}
+
 func BlobContainerName() string {
 	return blobContainerName
 }
 
 func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
 	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
+}
+
+func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR
 }
 
 func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
@@ -266,6 +291,10 @@ func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
 }
 
+func MachinePoolOperatorVersion(cr v1alpha3.AzureMachinePool) string {
+	return cr.GetLabels()[LabelOperatorVersion]
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), masterSecurityGroupSuffix)
@@ -288,6 +317,10 @@ func WorkerSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 // MasterSubnetName returns name of the master subnet.
 func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(customObject), virtualNetworkSuffix, masterSubnetSuffix)
+}
+
+func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
 }
 
 // WorkerCount returns the desired number of workers.
@@ -510,10 +543,6 @@ func VNetGatewaySubnetName() string {
 	return vpnGatewaySubnet
 }
 
-func VNetID(customObject providerv1alpha1.AzureConfig, subscriptionID string) string {
-	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s", subscriptionID, ResourceGroupName(customObject), VnetName(customObject))
-}
-
 // VPNGatewayName returns name of the vpn gateway.
 func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(customObject), vpnGatewaySuffix)
@@ -543,6 +572,10 @@ func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-worker-%s", ClusterID(customObject), ClusterID(customObject))
+}
+
+func WorkersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
 }
 
 func vmssInstanceIDBase36(instanceID string) (string, error) {

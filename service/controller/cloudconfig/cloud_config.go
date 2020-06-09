@@ -11,7 +11,6 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
-	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
 const (
@@ -30,7 +29,6 @@ type Config struct {
 
 	Azure                  setting.Azure
 	AzureClientCredentials auth.ClientCredentialsConfig
-	AzureNetwork           network.Subnets
 	Ignition               setting.Ignition
 	OIDC                   setting.OIDC
 	SSOPublicKey           string
@@ -43,7 +41,6 @@ type CloudConfig struct {
 
 	azure                  setting.Azure
 	azureClientCredentials auth.ClientCredentialsConfig
-	azureNetwork           network.Subnets
 	ignition               setting.Ignition
 	OIDC                   setting.OIDC
 	ssoPublicKey           string
@@ -79,7 +76,6 @@ func New(config Config) (*CloudConfig, error) {
 
 		azure:                  config.Azure,
 		azureClientCredentials: config.AzureClientCredentials,
-		azureNetwork:           config.AzureNetwork,
 		ignition:               config.Ignition,
 		OIDC:                   config.OIDC,
 		ssoPublicKey:           config.SSOPublicKey,
