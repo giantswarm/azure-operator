@@ -88,3 +88,16 @@ var unableToGetTemplateError = &microerror.Error{
 func IsUnableToGetTemplateError(err error) bool {
 	return microerror.Cause(err) == unableToGetTemplateError
 }
+
+var tooManyCredentialsError = &microerror.Error{
+	Kind: "tooManyCredentialsError",
+}
+
+// IsTooManyCredentials asserts tooManyCredentialsError.
+func IsTooManyCredentials(err error) bool {
+	return microerror.Cause(err) == tooManyCredentialsError
+}
+
+var missingOrganizationLabel = &microerror.Error{
+	Kind: "missingOrganizationLabel",
+}

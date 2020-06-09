@@ -6,15 +6,17 @@ import (
 	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/kubernetes/pkg/apis/core"
-	v1alpha32 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
@@ -44,13 +46,35 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.getDeploymentsClient(ctx)
+	machinePool := &capiexpv1alpha3.MachinePool{}
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	machinePool := &v1alpha3.MachinePool{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, machinePool)
+	azureCluster := &capzv1alpha3.AzureCluster{}
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, azureCluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	cluster := &capiv1alpha3.Cluster{}
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(r.ctrlClient, azureMachinePool, r.GSClientCredentialsConfig.TenantID)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -130,29 +154,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.DeploymentsClient, nil
-}
-
-func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.StorageAccountsClient, nil
-}
-
 func currentDeploymentIsUpToDate(currentDeploymentTemplateChk, currentDeploymentParametersChk, desiredDeploymentTemplateChk, desiredDeploymentParametersChk string) bool {
 	return currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk
 }
 
-func (r *Resource) saveDeploymentChecksumInStatus(ctx context.Context, customObject v1alpha32.AzureMachinePool, desiredDeploymentTemplateChk, desiredDeploymentParametersChk string) error {
+func (r *Resource) saveDeploymentChecksumInStatus(ctx context.Context, customObject capzexpv1alpha3.AzureMachinePool, desiredDeploymentTemplateChk, desiredDeploymentParametersChk string) error {
 	var err error
 	if desiredDeploymentTemplateChk != "" {
 		err = r.setResourceStatus(ctx, customObject, DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
@@ -201,7 +207,7 @@ func (r *Resource) ensureDeployment(ctx context.Context, deploymentsClient *azur
 	return nil
 }
 
-func (r *Resource) enrichControllerContext(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, customObject v1alpha32.AzureMachinePool) error {
+func (r *Resource) enrichControllerContext(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, customObject capzexpv1alpha3.AzureMachinePool) error {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return microerror.Mask(err)
@@ -254,7 +260,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, deploymentsClien
 	return nil
 }
 
-func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, customObject v1alpha32.AzureMachinePool, deploymentName string, outputName string) (string, error) {
+func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, customObject capzexpv1alpha3.AzureMachinePool, deploymentName string, outputName string) (string, error) {
 	resourceGroupName := customObject.GetName()
 	d, err := deploymentsClient.Get(ctx, resourceGroupName, deploymentName)
 	if err != nil {
@@ -292,7 +298,7 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClie
 	return s, nil
 }
 
-func (r Resource) newDeployment(ctx context.Context, machinePool v1alpha3.MachinePool, azureMachinePool v1alpha32.AzureMachinePool, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -368,8 +374,8 @@ func (r Resource) newDeployment(ctx context.Context, machinePool v1alpha3.Machin
 	return d, nil
 }
 
-func (r *Resource) getFailureDomains(ctx context.Context, customObject v1alpha32.AzureMachinePool) ([]string, error) {
-	machinePool := &v1alpha3.MachinePool{}
+func (r *Resource) getFailureDomains(ctx context.Context, customObject capzexpv1alpha3.AzureMachinePool) ([]string, error) {
+	machinePool := &capiexpv1alpha3.MachinePool{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: customObject.GetNamespace(), Name: customObject.GetName()}, machinePool)
 	if err != nil {
 		return []string{}, microerror.Mask(err)
