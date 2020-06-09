@@ -48,6 +48,7 @@ require (
 	github.com/markbates/pkger v0.15.1
 	github.com/onsi/ginkgo v1.12.0 // indirect
 	github.com/onsi/gomega v1.9.0 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.6.0 // indirect
 	github.com/prometheus/client_golang v1.5.0 // indirect
 	github.com/spf13/afero v1.2.2

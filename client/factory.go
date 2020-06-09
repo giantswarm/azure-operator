@@ -1,7 +1,10 @@
 package client
 
 import (
+	"fmt"
+	"strings"
 	"sync"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -11,21 +14,23 @@ import (
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	gocache "github.com/patrickmn/go-cache"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
-	cacheHitLogKey          = "cacheHit"
-	clientFactoryFuncLogKey = "clientFactoryFunc"
-	clientSetKeyLogKey      = "clientSetKey"
+	cacheHitLogKey       = "cacheHit"
+	clientTypeLogKey     = "clientType"
+	credentialNameLogKey = "credentialName"
 )
 
 type FactoryConfig struct {
-	GSTenantID string
-	K8sClient  k8sclient.Interface
-	Logger     micrologger.Logger
+	CacheDuration time.Duration
+	GSTenantID    string
+	K8sClient     k8sclient.Interface
+	Logger        micrologger.Logger
 }
 
 // Factory is creating Azure clients for specified AzureConfig CRs, so basically for specified
@@ -36,31 +41,38 @@ type Factory struct {
 	logger     micrologger.Logger
 	mutex      sync.Mutex
 
-	clients map[credentialID]*AzureClientSet
+	// map [credentialName + client type] -> client
+	cachedClients *gocache.Cache
 }
 
-type credentialID string
 type clientCreatorFunc func(autorest.Authorizer, string, string) (interface{}, error)
 
 // NewFactory returns a new Azure client factory that is used throughout entire azure-operator
 // lifetime.
 func NewFactory(config FactoryConfig) (*Factory, error) {
+	if config.CacheDuration < 5*time.Minute { // cache at least for one reconciliation loop duration
+		return nil, microerror.Maskf(invalidConfigError, "%T.CacheDuration must be at least 5 minutes", config)
+	}
+	if len(config.GSTenantID) == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "%T.GSTenantID must not be empty", config)
+	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if len(config.GSTenantID) == 0 {
-		return nil, microerror.Maskf(invalidConfigError, "%T.GSTenantID must not be empty", config)
-	}
 
 	factory := &Factory{
-		k8sClient:  config.K8sClient,
-		logger:     config.Logger,
-		gsTenantID: config.GSTenantID,
-		clients:    make(map[credentialID]*AzureClientSet),
+		k8sClient:     config.K8sClient,
+		logger:        config.Logger,
+		gsTenantID:    config.GSTenantID,
+		cachedClients: gocache.New(config.CacheDuration, 2*config.CacheDuration),
 	}
+
+	factory.cachedClients.OnEvicted(func(clientKey string, i interface{}) {
+		factory.onEvicted(clientKey)
+	})
 
 	return factory, nil
 }
@@ -69,150 +81,101 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 // ARM templates. The client (for specified cluster) is cached after creation, so the same client
 // is returned every time.
 func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
-	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With(clientFactoryFuncLogKey, "GetDeploymentsClient", clientSetKeyLogKey, clientSetKey)
-
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-	f.ensureClientSetExists(clientSetKey, logger)
-
-	if f.clients[clientSetKey].DeploymentsClient == nil {
-		deploymentClient, err := f.createClient(cr, func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-			return newDeploymentsClient(authorizer, subscriptionID, partnerID)
-		})
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		f.clients[clientSetKey].DeploymentsClient = deploymentClient.(*resources.DeploymentsClient)
-		logger.Log(cacheHitLogKey, false)
-	} else {
-		logger.Log(cacheHitLogKey, true)
+	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
+		return newDeploymentsClient(authorizer, subscriptionID, partnerID)
+	}
+	client, err := f.getClient(cr, "DeploymentsClient", createClientFunc)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	return f.clients[clientSetKey].DeploymentsClient, nil
+	return client.(*resources.DeploymentsClient), nil
 }
 
-// GetGroupsClient returns GroupsClient that is used for management of resource groups. The client
-// (for specified cluster) is cached after creation, so the same client is returned every time.
+// GetGroupsClient returns GroupsClient that is used for management of resource groups for the
+// specified cluster. The created client is cached for the time period specified in the factory
+// config.
 func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsClient, error) {
-	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With(clientFactoryFuncLogKey, "GetGroupsClient", clientSetKeyLogKey, clientSetKey)
-
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-	f.ensureClientSetExists(clientSetKey, logger)
-
-	if f.clients[clientSetKey].GroupsClient == nil {
-		groupClient, err := f.createClient(cr, func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-			return newGroupsClient(authorizer, subscriptionID, partnerID)
-		})
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		f.clients[clientSetKey].GroupsClient = groupClient.(*resources.GroupsClient)
-		logger.Log(cacheHitLogKey, false)
-	} else {
-		logger.Log(cacheHitLogKey, true)
+	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
+		return newGroupsClient(authorizer, subscriptionID, partnerID)
+	}
+	client, err := f.getClient(cr, "GroupsClient", createClientFunc)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	return f.clients[clientSetKey].GroupsClient, nil
+	return client.(*resources.GroupsClient), nil
 }
 
 // GetVirtualMachineScaleSetsClient returns VirtualMachineScaleSetsClient that is used for
-// management of virtual machine scale sets. The client (for specified cluster) is cached after
-// creation, so the same client is returned every time.
+// management of virtual machine scale sets for the specified cluster. The created client is cached
+// for the time period specified in the factory config.
 func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetsClient, error) {
-	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With(clientFactoryFuncLogKey, "GetVirtualMachineScaleSetsClient", clientSetKeyLogKey, clientSetKey)
-
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-	f.ensureClientSetExists(clientSetKey, logger)
-
-	if f.clients[clientSetKey].VirtualMachineScaleSetsClient == nil {
-		vmssClient, err := f.createClient(cr, func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-			return newVirtualMachineScaleSetsClient(authorizer, subscriptionID, partnerID)
-		})
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		f.clients[clientSetKey].VirtualMachineScaleSetsClient = vmssClient.(*compute.VirtualMachineScaleSetsClient)
-		logger.Log(cacheHitLogKey, false)
-	} else {
-		logger.Log(cacheHitLogKey, true)
+	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
+		return newVirtualMachineScaleSetsClient(authorizer, subscriptionID, partnerID)
+	}
+	client, err := f.getClient(cr, "VirtualMachineScaleSetsClient", createClientFunc)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	return f.clients[clientSetKey].VirtualMachineScaleSetsClient, nil
+	return client.(*compute.VirtualMachineScaleSetsClient), nil
 }
 
 // GetVirtualMachineScaleSetVMsClient returns GetVirtualMachineScaleSetVMsClient that is used for
-// management of virtual machine scale set instances. The client (for specified cluster) is cached
-// after creation, so the same client is returned every time.
+// management of virtual machine scale set instances for the specified cluster. The created client
+// is cached for the time period specified in the factory config.
 func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With(clientFactoryFuncLogKey, "GetVirtualMachineScaleSetVMsClient", clientSetKeyLogKey, clientSetKey)
-
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-	f.ensureClientSetExists(clientSetKey, logger)
-
-	if f.clients[clientSetKey].VirtualMachineScaleSetVMsClient == nil {
-		vmssVMsClient, err := f.createClient(cr, func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-			return newVirtualMachineScaleSetVMsClient(authorizer, subscriptionID, partnerID)
-		})
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		f.clients[clientSetKey].VirtualMachineScaleSetVMsClient = vmssVMsClient.(*compute.VirtualMachineScaleSetVMsClient)
-		logger.Log(cacheHitLogKey, false)
-	} else {
-		logger.Log(cacheHitLogKey, true)
+	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
+		return newVirtualMachineScaleSetVMsClient(authorizer, subscriptionID, partnerID)
+	}
+	client, err := f.getClient(cr, "VirtualMachineScaleSetVMsClient", createClientFunc)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	return f.clients[clientSetKey].VirtualMachineScaleSetVMsClient, nil
+	return client.(*compute.VirtualMachineScaleSetVMsClient), nil
 }
 
 // GetStorageAccountsClient returns *storage.AccountsClient that is used for management of Azure
-// storage accounts. The client (for specified cluster) is cached after creation, so the same
-// client is returned every time.
+// storage accounts for the specified cluster. The created client is cached for the time period
+// specified in the factory config.
 func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.AccountsClient, error) {
-	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With(clientFactoryFuncLogKey, "GetStorageAccountsClient", clientSetKeyLogKey, clientSetKey)
+	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
+		return newStorageAccountsClient(authorizer, subscriptionID, partnerID)
+	}
+	client, err := f.getClient(cr, "StorageAccountsClient", createClientFunc)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
+	return client.(*storage.AccountsClient), nil
+}
+
+func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createClient clientCreatorFunc) (interface{}, error) {
+	l := f.logger.With(credentialNameLogKey, key.CredentialName(cr), clientTypeLogKey, clientType)
+	clientKey := getClientKey(cr, clientType)
+	var client interface{}
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
-	f.ensureClientSetExists(clientSetKey, logger)
 
-	if f.clients[clientSetKey].StorageAccountsClient == nil {
-		storageAccountsClient, err := f.createClient(cr, func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-			return newStorageAccountsClient(authorizer, subscriptionID, partnerID)
-		})
+	if cachedClient, ok := f.cachedClients.Get(clientKey); ok {
+		// client found, it will be refreshed in cache
+		l.Log(cacheHitLogKey, true)
+		client = cachedClient
+	} else {
+		// client not found, create it, it will be saved in cache
+		l.Log(cacheHitLogKey, false)
+		newClient, err := f.createClient(cr, createClient)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-		f.clients[clientSetKey].StorageAccountsClient = storageAccountsClient.(*storage.AccountsClient)
-		logger.Log(cacheHitLogKey, false)
-	} else {
-		logger.Log(cacheHitLogKey, true)
+		client = newClient
 	}
 
-	return f.clients[clientSetKey].StorageAccountsClient, nil
-}
-
-// RemoveAllClients removes all cached clients for the specified tenant cluster.
-func (f *Factory) RemoveAllClients(cr v1alpha1.AzureConfig) {
-	clientSetKey := getClientSetKey(cr)
-	logger := f.logger.With(clientFactoryFuncLogKey, "RemoveAllClients", clientSetKeyLogKey, clientSetKey)
-
-	f.mutex.Lock()
-	defer f.mutex.Unlock()
-	if _, ok := f.clients[clientSetKey]; !ok {
-		logger.Log(cacheHitLogKey, false)
-		return
-	}
-
-	logger.Log(cacheHitLogKey, true)
-	delete(f.clients, clientSetKey)
+	// refresh existing client or set new one
+	f.cachedClients.SetDefault(clientKey, client)
+	return client, nil
 }
 
 func (f *Factory) createClient(cr v1alpha1.AzureConfig, createClient clientCreatorFunc) (interface{}, error) {
@@ -232,15 +195,29 @@ func (f *Factory) createClient(cr v1alpha1.AzureConfig, createClient clientCreat
 	return client, nil
 }
 
-func (f *Factory) ensureClientSetExists(clientSetKey credentialID, logger micrologger.Logger) {
-	if _, ok := f.clients[clientSetKey]; ok {
-		logger.Log("azureClientSetCacheHit", true)
-	} else {
-		logger.Log("azureClientSetCacheHit", false)
-		f.clients[clientSetKey] = &AzureClientSet{}
-	}
+func getClientKey(cr v1alpha1.AzureConfig, clientType string) string {
+	return fmt.Sprintf("%s.%s", key.CredentialName(cr), clientType)
 }
 
-func getClientSetKey(cr v1alpha1.AzureConfig) credentialID {
-	return credentialID(key.CredentialName(cr))
+func getClientKeyParts(clientKey string) (credentialName, clientType string) {
+	parts := strings.Split(clientKey, ".")
+	partsCount := len(parts)
+
+	if partsCount > 2 {
+		credentialName = strings.Join(parts[0:partsCount-1], ".")
+		clientType = parts[partsCount-1]
+	} else if partsCount == 2 {
+		credentialName, clientType = parts[0], parts[1]
+	} else {
+		// this should never happen, don't return error, this is for logging only
+		credentialName, clientType = "unknown", "unknown"
+	}
+
+	return
+}
+
+func (f *Factory) onEvicted(clientKey string) {
+	credentialName, clientType := getClientKeyParts(clientKey)
+	l := f.logger.With(credentialNameLogKey, credentialName, clientTypeLogKey, clientType)
+	l.Log("message", "client evicted")
 }

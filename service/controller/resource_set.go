@@ -85,9 +85,10 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
-			K8sClient:  config.K8sClient,
-			Logger:     config.Logger,
-			GSTenantID: config.GSClientCredentialsConfig.TenantID,
+			CacheDuration: 10 * time.Minute,
+			K8sClient:     config.K8sClient,
+			Logger:        config.Logger,
+			GSTenantID:    config.GSClientCredentialsConfig.TenantID,
 		}
 
 		clientFactory, err = client.NewFactory(c)
