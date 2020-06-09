@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -72,6 +73,9 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 }
 
 func getVPNSubnet(customObject providerv1alpha1.AzureConfig) (*net.IPNet, error) {
+	fmt.Printf("==============================================================")
+	fmt.Printf("CIDR: %q", customObject.Spec.Azure.VirtualNetwork.CIDR)
+	fmt.Printf("==============================================================")
 	_, netw, err := net.ParseCIDR(customObject.Spec.Azure.VirtualNetwork.CIDR)
 	if err != nil {
 		return nil, microerror.Mask(err)
