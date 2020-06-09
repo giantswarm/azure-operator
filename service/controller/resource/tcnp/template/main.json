@@ -2,12 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "apiLBBackendPoolID": {
-      "type": "string",
-      "metadata": {
-        "description": "Output value of the API load balancer backend pool ID as referenced from the API load balancer setup."
-      }
-    },
     "azureOperatorVersion": {
       "type": "string",
       "metadata": {
@@ -26,12 +20,6 @@
     },
     "enableMSI": {
       "type": "bool"
-    },
-    "etcdLBBackendPoolID": {
-      "type": "string",
-      "metadata": {
-        "description": "Output value of the Etcd load balancer backend pool ID as referenced from the Etcd load balancer setup."
-      }
     },
     "GiantSwarmTags": {
       "type": "object",
@@ -57,14 +45,9 @@
     },
     "sshUser": {
       "type": "string",
+      "defaultValue": "giantswarm",
       "metadata": {
         "description": "User to access using SSH."
-      }
-    },
-    "storageAccountType": {
-      "type": "string",
-      "metadata": {
-        "description": "Storage account type."
       }
     },
     "subnetID": {

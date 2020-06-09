@@ -101,3 +101,19 @@ func IsTooManyCredentials(err error) bool {
 var missingOrganizationLabel = &microerror.Error{
 	Kind: "missingOrganizationLabel",
 }
+
+var missingOperatorVersionLabel = &microerror.Error{
+	Kind: "missingOperatorVersionLabel",
+}
+
+var missingReleaseVersionLabel = &microerror.Error{
+	Kind: "missingReleaseVersionLabel",
+}
+
+var missingClusterLabel = &microerror.Error{
+	Kind: "missingClusterLabel",
+}
+
+var missingSubnetLabel = &microerror.Error{
+	Kind: "missingSubnetLabel",
+}

@@ -3,10 +3,12 @@ package tcnp
 import (
 	"context"
 	"fmt"
+	"net/url"
 	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	"k8s.io/kubernetes/pkg/apis/core"
@@ -17,6 +19,7 @@ import (
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
@@ -44,40 +47,65 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	clusterID, exists := azureMachinePool.GetLabels()[label.Cluster]
 	if !exists {
-		return microerror.Mask(err)
+		return microerror.Mask(missingClusterLabel)
 	}
 
-	machinePool := &capiexpv1alpha3.MachinePool{}
-	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, machinePool)
-	if err != nil {
-		return microerror.Mask(err)
+	var machinePool capiexpv1alpha3.MachinePool
+	{
+		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, &machinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	azureCluster := &capzv1alpha3.AzureCluster{}
-	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, azureCluster)
-	if err != nil {
-		return microerror.Mask(err)
+	var azureCluster capzv1alpha3.AzureCluster
+	{
+		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, &azureCluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	cluster := &capiv1alpha3.Cluster{}
-	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, cluster)
-	if err != nil {
-		return microerror.Mask(err)
+	var cluster capiv1alpha3.Cluster
+	{
+		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, &cluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-	if err != nil {
-		return microerror.Mask(err)
+	var release releasev1alpha1.Release
+	{
+		releaseVersion, exists := azureMachinePool.GetLabels()[label.ReleaseVersion]
+		if !exists {
+			return microerror.Mask(missingReleaseVersionLabel)
+		}
+		if !strings.HasPrefix(releaseVersion, "v") {
+			releaseVersion = fmt.Sprintf("v%s", releaseVersion)
+		}
+
+		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: "", Name: releaseVersion}, &release)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentialsFromCredentialSecret(ctx, r.ctrlClient, *credentialSecret, r.gsClientCredentialsConfig.TenantID)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	var tenantClusterAzureClientSet *client.AzureClientSet
+	{
+		credentialSecret, err := r.getCredentialSecret(ctx, cluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
-	if err != nil {
-		return microerror.Mask(err)
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentialsFromCredentialSecret(ctx, r.ctrlClient, *credentialSecret, r.gsClientCredentialsConfig.TenantID)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		tenantClusterAzureClientSet, err = client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	var desiredDeployment azureresource.Deployment
@@ -85,7 +113,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		currentDeployment, err := tenantClusterAzureClientSet.DeploymentsClient.Get(ctx, clusterID, mainDeploymentName)
 		if IsNotFound(err) {
-			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, *machinePool, azureMachinePool, map[string]interface{}{})
+			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool, map[string]interface{}{})
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -118,7 +146,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, *machinePool, azureMachinePool, map[string]interface{}{"initialProvisioning": "No"})
+			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool, map[string]interface{}{"initialProvisioning": "No"})
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -299,19 +327,14 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClie
 	return s, nil
 }
 
-func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.AzureClientSet, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, overwrites map[string]interface{}) (azureresource.Deployment, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
+func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.AzureClientSet, release releasev1alpha1.Release, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	operatorVersion, exists := azureMachinePool.GetLabels()[label.OperatorVersion]
 	if !exists {
-		return azureresource.Deployment{}, microerror.Mask(err)
+		return azureresource.Deployment{}, microerror.Mask(missingOperatorVersionLabel)
 	}
 
 	workerBlobName := key.WorkerBlobName(operatorVersion)
-	err = r.checkCloudConfigBlob(ctx, workerBlobName)
+	err := r.checkCloudConfigBlob(ctx, workerBlobName)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -328,7 +351,7 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	distroVersion, err := key.OSVersion(cc.Release.Release)
+	distroVersion, err := key.OSVersion(release)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -338,23 +361,25 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	subnetID, exists := azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet]
+	if !exists {
+		return azureresource.Deployment{}, microerror.Mask(missingSubnetLabel)
+	}
+
 	templateParams := map[string]interface{}{
-		"apiLBBackendPoolID":   cc.APILBBackendPoolID,
 		"azureOperatorVersion": project.Version(),
 		"clusterID":            azureMachinePool.GetName(),
 		"dockerVolumeSizeGB":   50,
-		"etcdLBBackendPoolID":  cc.EtcdLBBackendPoolID,
 		"enableMSI":            r.vmssMSIEnabled,
 		"kubeletVolumeSizeGB":  100,
 		"vmCustomData":         workerCloudConfig,
-		"sshUser":              "capi",
 		"sshPublicKey":         azureMachinePool.Spec.Template.SSHPublicKey,
 		"osImagePublisher":     "kinvolk",
 		"osImageOffer":         "flatcar-container-linux-free",
 		"osImageSKU":           "stable",
 		"osImageVersion":       distroVersion,
 		"replicas":             machinePool.Spec.Replicas,
-		"subnetID":             cc.WorkerSubnetID,
+		"subnetID":             subnetID,
 		"vmSize":               azureMachinePool.Spec.Template.VMSize,
 		"zones":                zones,
 	}
@@ -410,11 +435,6 @@ func (r *Resource) checkCloudConfigBlob(ctx context.Context, workerBlobName stri
 }
 
 func (r *Resource) getWorkerCloudConfig(ctx context.Context, azureClientSet *client.AzureClientSet, resourceGroupName, storageAccountName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
 	encryptionKey := encrypterObject.GetEncryptionKey()
 	initialVector := encrypterObject.GetInitialVector()
 
@@ -429,8 +449,18 @@ func (r *Resource) getWorkerCloudConfig(ctx context.Context, azureClientSet *cli
 	primaryKey := *(((*keys.Keys)[0]).Value)
 	containerName := key.BlobContainerName()
 
+	sc, err := azblob.NewSharedKeyCredential(storageAccountName, primaryKey)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	p := azblob.NewPipeline(sc, azblob.PipelineOptions{})
+	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", storageAccountName))
+	serviceURL := azblob.NewServiceURL(*u, p)
+	containerURL := serviceURL.NewContainerURL(key.BlobContainerName())
+
 	// Workers cloudconfig
-	workerBlobURL, err := blobclient.GetBlobURL(workerBlobName, containerName, storageAccountName, primaryKey, cc.ContainerURL)
+	workerBlobURL, err := blobclient.GetBlobURL(workerBlobName, containerName, storageAccountName, primaryKey, &containerURL)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

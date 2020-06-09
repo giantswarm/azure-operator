@@ -21,7 +21,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tcnp"
 )
 
@@ -109,19 +108,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var releaseResource resource.Interface
-	{
-		c := release.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-		}
-
-		releaseResource, err = release.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var tcnpResource resource.Interface
 	{
 		c := tcnp.Config{
@@ -202,7 +188,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	resources := []resource.Interface{
 		ipamResource,
-		releaseResource,
 		tcnpResource,
 	}
 
