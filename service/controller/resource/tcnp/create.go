@@ -14,8 +14,9 @@ import (
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
-	"sigs.k8s.io/controller-runtime/pkg/client"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
@@ -47,19 +48,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	machinePool := &capiexpv1alpha3.MachinePool{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, machinePool)
+	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	azureCluster := &capzv1alpha3.AzureCluster{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, azureCluster)
+	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	cluster := &capiv1alpha3.Cluster{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, cluster)
+	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -69,7 +70,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(r.ctrlClient, azureMachinePool, r.GSClientCredentialsConfig.TenantID)
+	organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentialsFromCredentialSecret(ctx, r.ctrlClient, *credentialSecret, r.gsClientCredentialsConfig.TenantID)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -82,9 +83,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var desiredDeployment azureresource.Deployment
 	var desiredDeploymentTemplateChk, desiredDeploymentParametersChk string
 	{
-		currentDeployment, err := deploymentsClient.Get(ctx, clusterID, mainDeploymentName)
+		currentDeployment, err := tenantClusterAzureClientSet.DeploymentsClient.Get(ctx, clusterID, mainDeploymentName)
 		if IsNotFound(err) {
-			desiredDeployment, err = r.newDeployment(ctx, *machinePool, azureMachinePool, map[string]interface{}{})
+			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, *machinePool, azureMachinePool, map[string]interface{}{})
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -107,7 +108,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return nil
 			}
 
-			err = r.enrichControllerContext(ctx, deploymentsClient, azureMachinePool)
+			err = r.enrichControllerContext(ctx, tenantClusterAzureClientSet.DeploymentsClient, azureMachinePool)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -117,7 +118,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			desiredDeployment, err = r.newDeployment(ctx, *machinePool, azureMachinePool, map[string]interface{}{"initialProvisioning": "No"})
+			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, *machinePool, azureMachinePool, map[string]interface{}{"initialProvisioning": "No"})
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -137,7 +138,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	err = r.ensureDeployment(ctx, deploymentsClient, azureMachinePool.GetName(), desiredDeployment)
+	err = r.ensureDeployment(ctx, tenantClusterAzureClientSet.DeploymentsClient, azureMachinePool.GetName(), desiredDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -298,7 +299,7 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClie
 	return s, nil
 }
 
-func (r Resource) newDeployment(ctx context.Context, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, overwrites map[string]interface{}) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.AzureClientSet, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, overwrites map[string]interface{}) (azureresource.Deployment, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -322,7 +323,7 @@ func (r Resource) newDeployment(ctx context.Context, machinePool capiexpv1alpha3
 	}
 
 	storageAccountName := strings.Replace(fmt.Sprintf("%s%s", "gssa", azureMachinePool.GetName()), "-", "", -1)
-	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, azureMachinePool.GetName(), storageAccountName, workerBlobName, encrypterObject)
+	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, azureClientSet, azureMachinePool.GetName(), storageAccountName, workerBlobName, encrypterObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -376,7 +377,7 @@ func (r Resource) newDeployment(ctx context.Context, machinePool capiexpv1alpha3
 
 func (r *Resource) getFailureDomains(ctx context.Context, customObject capzexpv1alpha3.AzureMachinePool) ([]string, error) {
 	machinePool := &capiexpv1alpha3.MachinePool{}
-	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: customObject.GetNamespace(), Name: customObject.GetName()}, machinePool)
+	err := r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: customObject.GetNamespace(), Name: customObject.GetName()}, machinePool)
 	if err != nil {
 		return []string{}, microerror.Mask(err)
 	}
@@ -408,7 +409,7 @@ func (r *Resource) checkCloudConfigBlob(ctx context.Context, workerBlobName stri
 	return nil
 }
 
-func (r *Resource) getWorkerCloudConfig(ctx context.Context, resourceGroupName, storageAccountName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
+func (r *Resource) getWorkerCloudConfig(ctx context.Context, azureClientSet *client.AzureClientSet, resourceGroupName, storageAccountName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -417,12 +418,7 @@ func (r *Resource) getWorkerCloudConfig(ctx context.Context, resourceGroupName, 
 	encryptionKey := encrypterObject.GetEncryptionKey()
 	initialVector := encrypterObject.GetInitialVector()
 
-	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	keys, err := storageAccountsClient.ListKeys(ctx, resourceGroupName, storageAccountName, "")
+	keys, err := azureClientSet.StorageAccountsClient.ListKeys(ctx, resourceGroupName, storageAccountName, "")
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -445,7 +441,7 @@ func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (e
 	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
 
 	secret := &core.Secret{}
-	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: key.CertificateEncryptionNamespace, Name: secretName}, secret)
+	err := r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: key.CertificateEncryptionNamespace, Name: secretName}, secret)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

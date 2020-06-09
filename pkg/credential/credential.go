@@ -33,27 +33,41 @@ func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.In
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	clientID, err := valueFromSecret(credential, clientIDKey)
+	return GetCredentialsFromCredentialSecret(credential, gsTenantID)
+}
+
+func GetOrganizationAzureCredentialsFromCredentialSecret(ctx context.Context, ctrlClient client.Client, credentialSecret providerv1alpha1.CredentialSecret, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
+	credential := &v1.Secret{}
+	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: credentialSecret.Namespace, Name: credentialSecret.Name}, credential)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	clientSecret, err := valueFromSecret(credential, clientSecretKey)
+	return GetCredentialsFromCredentialSecret(credential, gsTenantID)
+}
+
+func GetCredentialsFromCredentialSecret(credentialSecret *v1.Secret, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
+	clientID, err := valueFromSecret(credentialSecret, clientIDKey)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	tenantID, err := valueFromSecret(credential, tenantIDKey)
+	clientSecret, err := valueFromSecret(credentialSecret, clientSecretKey)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	subscriptionID, err := valueFromSecret(credential, subscriptionIDKey)
+	tenantID, err := valueFromSecret(credentialSecret, tenantIDKey)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	partnerID, err := valueFromSecret(credential, partnerIDKey)
+	subscriptionID, err := valueFromSecret(credentialSecret, subscriptionIDKey)
+	if err != nil {
+		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
+	}
+
+	partnerID, err := valueFromSecret(credentialSecret, partnerIDKey)
 	if err != nil {
 		// No having Partner ID in the secret means that customer has not
 		// upgraded yet to use the Azure Partner Program. In that case we set a
@@ -62,7 +76,7 @@ func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.In
 		partnerID = defaultAzureGUID
 	}
 
-	if _, exists := credential.GetLabels()[label.SingleTenantSP]; exists || tenantID == gsTenantID {
+	if _, exists := credentialSecret.GetLabels()[label.SingleTenantSP]; exists || tenantID == gsTenantID {
 		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
