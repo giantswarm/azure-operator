@@ -63,6 +63,13 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - infrastructure.cluster.x-k8s.io
+    resources:
+      - azureclusters
+      - azureclusters/status
+    verbs:
+      - "*"
+  - apiGroups:
       - ""
     resources:
       - endpoints
