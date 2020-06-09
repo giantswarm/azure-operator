@@ -44,11 +44,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	clusterID, exists := azureMachinePool.GetLabels()[label.Cluster]
-	if !exists {
-		return microerror.Mask(missingClusterLabel)
-	}
-
 	var machinePool capiexpv1alpha3.MachinePool
 	{
 		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, &machinePool)
@@ -107,12 +102,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	clusterID, exists := azureMachinePool.GetLabels()[label.Cluster]
+	if !exists {
+		return microerror.Mask(missingClusterLabel)
+	}
+
 	var desiredDeployment azureresource.Deployment
 	var desiredDeploymentTemplateChk, desiredDeploymentParametersChk string
 	{
 		currentDeployment, err := tenantClusterAzureClientSet.DeploymentsClient.Get(ctx, clusterID, mainDeploymentName)
 		if IsNotFound(err) {
-			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool)
+			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool, azureCluster)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -140,7 +140,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool)
+			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool, azureCluster)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -230,7 +230,7 @@ func (r *Resource) ensureDeployment(ctx context.Context, deploymentsClient *azur
 	return nil
 }
 
-func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.AzureClientSet, release releasev1alpha1.Release, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.AzureClientSet, release releasev1alpha1.Release, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, azureCluster capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
 	operatorVersion, exists := azureMachinePool.GetLabels()[label.OperatorVersion]
 	if !exists {
 		return azureresource.Deployment{}, microerror.Mask(missingOperatorVersionLabel)
@@ -258,9 +258,9 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	subnetID, exists := azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet]
-	if !exists {
-		return azureresource.Deployment{}, microerror.Mask(missingSubnetLabel)
+	subnetID, err := r.getSubnetID(ctx, azureClientSet, azureMachinePool, azureCluster)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	templateParams := map[string]interface{}{
@@ -295,6 +295,27 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 	}
 
 	return d, nil
+}
+
+func (r Resource) getSubnetID(ctx context.Context, azureClientSet *client.AzureClientSet, azureMachinePool capzexpv1alpha3.AzureMachinePool, azureCluster capzv1alpha3.AzureCluster) (string, error) {
+	subnetCIDR, exists := azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet]
+	if !exists {
+		return "", microerror.Mask(missingSubnetLabel)
+	}
+
+	subnetsInVnet, err := azureClientSet.SubnetsClient.List(ctx, azureMachinePool.GetName(), azureCluster.Spec.NetworkSpec.Vnet.ID)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	for _, subnet := range subnetsInVnet.Values() {
+		r.logger.LogCtx(ctx, "message", "Comparing CIDR to subnet address prefix", "cidr", subnetCIDR, "addressPrefix", *subnet.AddressPrefix)
+		if *subnet.AddressPrefix == subnetCIDR {
+			return *subnet.ID, nil
+		}
+	}
+
+	return "", microerror.Maskf(notFoundError, "subnet with CIDR %#q was not found in virtual network called %#q", subnetCIDR, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
 func (r *Resource) getFailureDomains(ctx context.Context, customObject capzexpv1alpha3.AzureMachinePool) ([]string, error) {
