@@ -109,13 +109,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "built azureconfig from cluster api crs")
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding existing azureconfig")
 
-	var presentAzureConfig providerv1alpha1.AzureConfig
+	var presentAzureConfig *providerv1alpha1.AzureConfig
 	{
+		presentAzureConfig = new(providerv1alpha1.AzureConfig)
 		nsName := types.NamespacedName{
 			Name:      key.ClusterID(&cluster),
 			Namespace: metav1.NamespaceDefault,
 		}
-		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
+		err = r.ctrlClient.Get(ctx, nsName, presentAzureConfig)
 		if errors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not found existing azureconfig")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "creating azureconfig")
@@ -125,7 +126,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", "created azureconfig")
-			presentAzureConfig = mappedAzureConfig
+			presentAzureConfig = &mappedAzureConfig
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
@@ -145,7 +146,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		// that we don't manage.
 		for k, v := range mappedAzureConfig.Labels {
 			old, exists := presentAzureConfig.Labels[k]
-			if old != v || !exists {
+			if !exists || old != v {
 				presentAzureConfig.Labels[k] = v
 				changed = true
 			}
@@ -154,7 +155,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if changed {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig needs update")
 
-			err = r.ctrlClient.Update(ctx, &presentAzureConfig)
+			err = r.ctrlClient.Update(ctx, presentAzureConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -171,7 +172,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Name:      key.ClusterName(&azureCluster),
 			Namespace: azureCluster.Namespace,
 		}
-		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
+		err = r.ctrlClient.Get(ctx, nsName, presentAzureConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -190,7 +191,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if len(presentAzureConfig.Status.Cluster.Versions) == 0 {
 			v := providerv1alpha1.StatusClusterVersion{
 				LastTransitionTime: metav1.Time{Time: time.Now()},
-				Semver:             key.OperatorVersion(&presentAzureConfig),
+				Semver:             key.OperatorVersion(presentAzureConfig),
 			}
 			presentAzureConfig.Status.Cluster.Versions = append(presentAzureConfig.Status.Cluster.Versions, v)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "cluster version status needs update")
@@ -198,7 +199,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if updateStatus {
-			err = r.ctrlClient.Status().Update(ctx, &presentAzureConfig)
+			err = r.ctrlClient.Status().Update(ctx, presentAzureConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
