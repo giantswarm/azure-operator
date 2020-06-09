@@ -132,6 +132,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureconfig needs update")
 	{
+		// Ensure that present network allocations are kept as-is.
+		mappedAzureConfig.Spec.Azure.VirtualNetwork = presentAzureConfig.Spec.Azure.VirtualNetwork
+
 		// Were there any changes that requires CR update?
 		changed := false
 		if !azureConfigsEqual(mappedAzureConfig, presentAzureConfig) {
