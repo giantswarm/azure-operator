@@ -43,7 +43,7 @@ func azureConfigsEqual(cr1, cr2 providerv1alpha1.AzureConfig) bool {
 	}
 
 	// Legacy version bundle version.
-	if cr1.Spec.VersionBundle != cr2.Spec.VersionBundle {
+	if cr1.Spec.VersionBundle != cr2.Spec.VersionBundle { // nolint: gosimple
 		return false
 	}
 
