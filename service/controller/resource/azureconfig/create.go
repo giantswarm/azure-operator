@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"reflect"
 	"strings"
 	"time"
 
@@ -135,7 +134,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		// Were there any changes that requires CR update?
 		changed := false
-		if !reflect.DeepEqual(mappedAzureConfig.Spec, presentAzureConfig.Spec) {
+		if !azureConfigsEqual(mappedAzureConfig, presentAzureConfig) {
 			// Copy Spec section as-is. This should always match desired state.
 			presentAzureConfig.Spec = mappedAzureConfig.Spec
 			changed = true
