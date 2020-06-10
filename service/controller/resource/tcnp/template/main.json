@@ -142,6 +142,19 @@
           },
           "protectedSettings": {}
         }
+      },
+      {
+        "name": "HealthExtension",
+        "properties": {
+          "publisher": "Microsoft.ManagedServices",
+          "type": "ApplicationHealthLinux",
+          "autoUpgradeMinorVersion": true,
+          "typeHandlerVersion": "1.0",
+          "settings": {
+            "protocol": "tcp",
+            "port": "10250"
+          }
+        }
       }
     ],
     "vmssStandardLrsSize": [
@@ -261,7 +274,7 @@
           "mode": "[parameters('upgradePolicy')]",
           "rollingUpgradePolicy": {
             "maxBatchInstancePercent": "20",
-            "maxUnhealthyInstancePercent": "20",
+            "maxUnhealthyInstancePercent": "100",
             "maxUnhealthyUpgradedInstancePercent": "20",
             "pauseTimeBetweenBatches": "PT1M"
           }
@@ -347,8 +360,11 @@
       }
     },
     {
-      "apiVersion": "2018-11-30",
+      "apiVersion": "2018-07-01",
       "condition": "[parameters('enableMSI')]",
+      "dependsOn": [
+        "[resourceId('Microsoft.Compute/virtualMachineScaleSets/', variables('vmssName'))]"
+      ],
       "type": "Microsoft.Authorization/roleAssignments",
       "name": "[variables('roleAssignmentName')]",
       "tags": {
@@ -356,7 +372,7 @@
       },
       "properties": {
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-        "principalId": "[if(parameters('enableMSI'), reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', variables('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId, '')]",
+        "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', variables('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
         "scope": "[resourceGroup().id]"
       }
     }
