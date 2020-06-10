@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
@@ -17,7 +18,7 @@ func (r *Resource) waitForRestoreTransition(ctx context.Context, obj interface{}
 	}
 
 	// Check if the Legacy master VMSS exists
-	legacyExists, err := r.vmssExists(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
+	legacyExists, err := r.vmssExists(ctx, cr, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
@@ -31,10 +32,10 @@ func (r *Resource) waitForRestoreTransition(ctx context.Context, obj interface{}
 	return currentState, nil
 }
 
-func (r *Resource) vmssExists(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {
+func (r *Resource) vmssExists(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) (bool, error) {
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the VMSS %s exists in resource group %s", vmssName, resourceGroup)) // nolint: errcheck
 
-	_, err := r.getVMSS(ctx, resourceGroup, vmssName)
+	_, err := r.getVMSS(ctx, customObject, resourceGroup, vmssName)
 	if IsScaleSetNotFound(err) {
 		return false, nil
 	} else if err != nil {

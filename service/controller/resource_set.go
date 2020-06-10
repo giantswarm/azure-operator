@@ -82,6 +82,21 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 
 	var err error
 
+	var clientFactory *client.Factory
+	{
+		c := client.FactoryConfig{
+			CacheDuration: 30 * time.Minute,
+			K8sClient:     config.K8sClient,
+			Logger:        config.Logger,
+			GSTenantID:    config.GSClientCredentialsConfig.TenantID,
+		}
+
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var certsSearcher certs.Interface
 	{
 		c := certs.Config{
@@ -317,6 +332,7 @@ func NewResourceSet(config ResourceSetConfig) (*controller.ResourceSet, error) {
 		Logger:    config.Logger,
 
 		Azure:            config.Azure,
+		ClientFactory:    clientFactory,
 		InstanceWatchdog: iwd,
 	}
 

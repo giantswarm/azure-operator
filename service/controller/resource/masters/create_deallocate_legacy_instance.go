@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
@@ -23,7 +24,7 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 		return Empty, microerror.Mask(err)
 	}
 
-	deallocated, err := r.isVMSSInstanceDeallocated(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
+	deallocated, err := r.isVMSSInstanceDeallocated(ctx, cr, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
 	if IsNotFound(err) {
 		return BlockAPICalls, nil
 	} else if err != nil {
@@ -33,7 +34,7 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 	if !deallocated {
 		r.Logger.LogCtx(ctx, "level", "info", "message", "Legacy VMSS instance is not deallocated yet.")
 		r.Logger.LogCtx(ctx, "level", "info", "message", "Deallocating legacy VMSS instances.")
-		err := r.deallocateAllInstances(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
+		err := r.deallocateAllInstances(ctx, cr, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
 		if err != nil {
 			return Empty, microerror.Mask(err)
 		}
@@ -44,13 +45,13 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 	return BlockAPICalls, nil
 }
 
-func (r *Resource) deallocateAllInstances(ctx context.Context, resourceGroup string, vmssName string) error {
-	vmssInstancesClient, err := r.GetVMsClient(ctx)
+func (r *Resource) deallocateAllInstances(ctx context.Context, cr providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) error {
+	vmssInstancesClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	instancesRunning, err := r.getRunningInstances(ctx, resourceGroup, vmssName)
+	instancesRunning, err := r.getRunningInstances(ctx, cr, resourceGroup, vmssName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -75,8 +76,8 @@ func (r *Resource) deallocateAllInstances(ctx context.Context, resourceGroup str
 	return nil
 }
 
-func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
-	vmssInstancesClient, err := r.GetVMsClient(ctx)
+func (r *Resource) getRunningInstances(ctx context.Context, cr providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
+	vmssInstancesClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(cr)
 	if err != nil {
 		return []compute.VirtualMachineScaleSetVM{}, microerror.Mask(err)
 	}
@@ -118,8 +119,8 @@ func (r *Resource) getRunningInstances(ctx context.Context, resourceGroup string
 	return instancesRunning, nil
 }
 
-func (r *Resource) getVMSS(ctx context.Context, resourceGroup string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.GetScaleSetsClient(ctx)
+func (r *Resource) getVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -132,8 +133,8 @@ func (r *Resource) getVMSS(ctx context.Context, resourceGroup string, vmssName s
 	return &vmss, nil
 }
 
-func (r *Resource) isVMSSInstanceDeallocated(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {
-	instancesRunning, err := r.getRunningInstances(ctx, resourceGroup, vmssName)
+func (r *Resource) isVMSSInstanceDeallocated(ctx context.Context, cr providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) (bool, error) {
+	instancesRunning, err := r.getRunningInstances(ctx, cr, resourceGroup, vmssName)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}

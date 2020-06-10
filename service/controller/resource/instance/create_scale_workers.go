@@ -31,7 +31,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 
 	// If the old VMSS is still present, we should skip this step.
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
-	legacyVmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
+	legacyVmss, err := r.getScaleSet(ctx, cr, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
 	if IsScaleSetNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is not present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 	} else if err != nil {
@@ -93,7 +93,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 }
 
 func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) (int64, error) {
-	c, err := r.GetScaleSetsClient(ctx)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}
@@ -106,8 +106,8 @@ func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv
 	return *vmss.Sku.Capacity, nil
 }
 
-func (r *Resource) getScaleSet(ctx context.Context, resourceGroup string, scaleSetName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.GetScaleSetsClient(ctx)
+func (r *Resource) getScaleSet(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, scaleSetName string) (*compute.VirtualMachineScaleSet, error) {
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -142,7 +142,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 }
 
 func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, nodeCount int64) error {
-	c, err := r.GetScaleSetsClient(ctx)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
 	if err != nil {
 		return microerror.Mask(err)
 	}

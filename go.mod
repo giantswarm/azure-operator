@@ -39,6 +39,11 @@ require (
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/google/go-cmp v0.4.0
 	github.com/markbates/pkger v0.17.0
+	github.com/onsi/ginkgo v1.12.0 // indirect
+	github.com/onsi/gomega v1.9.0 // indirect
+	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/pelletier/go-toml v1.6.0 // indirect
+	github.com/prometheus/client_golang v1.5.0 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e

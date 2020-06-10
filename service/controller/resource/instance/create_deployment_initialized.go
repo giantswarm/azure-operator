@@ -15,7 +15,7 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.GetDeploymentsClient(ctx)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(cr)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

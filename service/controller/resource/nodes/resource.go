@@ -9,6 +9,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
+	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 
@@ -25,6 +26,7 @@ type Config struct {
 	Logger    micrologger.Logger
 
 	Azure            setting.Azure
+	ClientFactory    *client.Factory
 	InstanceWatchdog vmsscheck.InstanceWatchdog
 	Name             string
 }
@@ -37,6 +39,7 @@ type Resource struct {
 	StateMachine state.Machine
 
 	Azure            setting.Azure
+	ClientFactory    *client.Factory
 	InstanceWatchdog vmsscheck.InstanceWatchdog
 	name             string
 }
@@ -57,6 +60,9 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.ClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ClientFactory must not be empty", config)
+	}
 
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
@@ -73,6 +79,7 @@ func New(config Config) (*Resource, error) {
 		Logger:    config.Logger,
 
 		Azure:            config.Azure,
+		ClientFactory:    config.ClientFactory,
 		InstanceWatchdog: config.InstanceWatchdog,
 		name:             config.Name,
 	}
