@@ -82,15 +82,12 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 // ARM templates. The client (for specified cluster) is cached after creation, so the same client
 // is returned every time.
 func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
-	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-		return newDeploymentsClient(authorizer, subscriptionID, partnerID)
-	}
-	client, err := f.getClient(cr, "DeploymentsClient", createClientFunc)
+	client, err := f.getClient(cr, "DeploymentsClient", newDeploymentsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return client.(*resources.DeploymentsClient), nil
+	return toDeploymentsClient(client), nil
 }
 
 // GetGroupsClient returns GroupsClient that is used for management of resource groups for the
