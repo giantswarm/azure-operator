@@ -82,7 +82,8 @@ func New(config Config) (*Resource, error) {
 		installationName: config.InstallationName,
 		logger:           config.Logger,
 
-		azure: config.Azure,
+		azure:                      config.Azure,
+		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
 	}
 
 	return r, nil

@@ -9,7 +9,6 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment/template"
 	"github.com/giantswarm/azure-operator/v4/service/network"
@@ -24,14 +23,9 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	subscriptionID, err := r.getControlPlaneSubscriptionID(ctx)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	controlPlaneWorkerSubnetID := fmt.Sprintf(
 		"/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s_worker_subnet",
-		subscriptionID,
+		r.controlPlaneSubscriptionID,
 		r.installationName,
 		r.azure.HostCluster.VirtualNetwork,
 		r.installationName,
@@ -68,15 +62,6 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 	}
 
 	return d, nil
-}
-
-func (r *Resource) getControlPlaneSubscriptionID(ctx context.Context) (string, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.SubscriptionID, nil
 }
 
 func getVPNSubnet(customObject providerv1alpha1.AzureConfig) (*net.IPNet, error) {
