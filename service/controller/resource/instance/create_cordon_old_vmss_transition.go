@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 func (r *Resource) cordonOldVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -52,7 +53,7 @@ func (r *Resource) cordonOldVMSSTransition(ctx context.Context, obj interface{},
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
 		allWorkerInstances, err = r.AllInstances(ctx, cr, key.LegacyWorkerVMSSName)
-		if IsScaleSetNotFound(err) {
+		if nodes.IsScaleSetNotFound(err) {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 
 			return currentState, nil

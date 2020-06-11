@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -43,7 +44,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
 	allWorkerInstances, err := r.AllInstances(ctx, cr, key.WorkerVMSSName)
-	if IsScaleSetNotFound(err) {
+	if nodes.IsScaleSetNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 	} else if err != nil {
 		return "", microerror.Mask(err)

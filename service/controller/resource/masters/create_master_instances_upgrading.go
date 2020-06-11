@@ -16,6 +16,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -49,7 +50,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	var masterUpgradeInProgress bool
 	{
 		allMasterInstances, err := r.AllInstances(ctx, cr, key.MasterVMSSName)
-		if IsScaleSetNotFound(err) {
+		if nodes.IsScaleSetNotFound(err) {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(cr)))
 		} else if err != nil {
 			return "", microerror.Mask(err)
