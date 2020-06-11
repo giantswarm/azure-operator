@@ -334,7 +334,8 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 			InstallationName: config.InstallationName,
 			Logger:           config.Logger,
 
-			Azure: config.Azure,
+			Azure:                      config.Azure,
+			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
 		}
 
 		deploymentResource, err = deployment.New(c)

@@ -36,7 +36,8 @@ type Config struct {
 	InstallationName string
 	Logger           micrologger.Logger
 
-	Azure setting.Azure
+	Azure                      setting.Azure
+	ControlPlaneSubscriptionID string
 }
 
 type Resource struct {
@@ -45,7 +46,8 @@ type Resource struct {
 	installationName string
 	logger           micrologger.Logger
 
-	azure setting.Azure
+	azure                      setting.Azure
+	controlPlaneSubscriptionID string
 }
 
 type StorageAccountIpRule struct {
@@ -69,6 +71,9 @@ func New(config Config) (*Resource, error) {
 
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
+	}
+	if config.ControlPlaneSubscriptionID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ControlPlaneSubscriptionID must not be empty", config)
 	}
 
 	r := &Resource{
