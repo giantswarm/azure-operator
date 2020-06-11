@@ -130,15 +130,12 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*
 // storage accounts for the specified cluster. The created client is cached for the time period
 // specified in the factory config.
 func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.AccountsClient, error) {
-	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-		return newStorageAccountsClient(authorizer, subscriptionID, partnerID)
-	}
-	client, err := f.getClient(cr, "StorageAccountsClient", createClientFunc)
+	client, err := f.getClient(cr, "StorageAccountsClient", newStorageAccountsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return client.(*storage.AccountsClient), nil
+	return toStorageAccountsClient(client), nil
 }
 
 func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createClient clientCreatorFunc) (interface{}, error) {

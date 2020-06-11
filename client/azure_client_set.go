@@ -138,7 +138,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		InterfacesClient:                       interfacesClient,
 		PublicIpAddressesClient:                publicIpAddressesClient,
 		SecurityRulesClient:                    securityGroupsClient,
-		StorageAccountsClient:                  storageAccountsClient,
+		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
 		SubscriptionID:                         subscriptionID,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
@@ -209,7 +209,7 @@ func newSecurityGroupsClient(authorizer autorest.Authorizer, subscriptionID, par
 	return &client, nil
 }
 
-func newStorageAccountsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*storage.AccountsClient, error) {
+func newStorageAccountsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
 	client := storage.NewAccountsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
@@ -279,4 +279,8 @@ func toVirtualMachineScaleSetsClient(client interface{}) *compute.VirtualMachine
 
 func toVirtualMachineScaleSetVMsClient(client interface{}) *compute.VirtualMachineScaleSetVMsClient {
 	return client.(*compute.VirtualMachineScaleSetVMsClient)
+}
+
+func toStorageAccountsClient(client interface{}) *storage.AccountsClient {
+	return client.(*storage.AccountsClient)
 }
