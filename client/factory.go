@@ -24,6 +24,7 @@ import (
 const (
 	cacheHitLogKey       = "cacheHit"
 	clientTypeLogKey     = "clientType"
+	clusterIDLogKey      = "clusterID"
 	credentialNameLogKey = "credentialName"
 )
 
@@ -139,7 +140,7 @@ func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.Ac
 }
 
 func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createClient clientCreatorFunc) (interface{}, error) {
-	l := f.logger.With(credentialNameLogKey, key.CredentialName(cr), clientTypeLogKey, clientType)
+	l := f.logger.With(credentialNameLogKey, key.CredentialName(cr), clusterIDLogKey, key.ClusterID(cr), clientTypeLogKey, clientType)
 	clientKey := getClientKey(cr, clientType)
 	var client interface{}
 	f.mutex.Lock()
