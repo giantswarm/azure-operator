@@ -14,6 +14,12 @@
         "description":"Unique ID of this guest cluster."
       }
     },
+    "controlPlaneWorkerSubnetID":{
+      "type":"string",
+      "metadata":{
+        "description":"ID of the control plane 'worker' subnet."
+      }
+    },
     "GiantSwarmTags":{
       "type":"object",
       "defaultValue":{
@@ -26,10 +32,6 @@
       "metadata":{
         "description":"Whether the deployment is provisioned the very first time."
       }
-    },
-    "storageAccountIpRules":{
-      "type":"array",
-      "defaultValue":[]
     },
     "storageAccountName":{
       "type":"string",
@@ -1431,14 +1433,14 @@
             "clusterID":{
               "type":"string"
             },
+            "controlPlaneWorkerSubnetID":{
+              "type":"string"
+            },
             "GiantSwarmTags":{
               "type":"object",
               "defaultValue":{
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
-            },
-            "ipRules":{
-              "type":"array"
             },
             "masterSubnetID": {
               "type":"string"
@@ -1468,10 +1470,10 @@
                 "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]",
                 "networkAcls":{
                   "virtualNetworkRules": [
+                    {"id":"[parameters('controlPlaneWorkerSubnetID')]"},
                     {"id":"[parameters('masterSubnetID')]"},
                     {"id":"[parameters('workerSubnetID')]"}
                   ],
-                  "ipRules":"[parameters('ipRules')]",
                   "defaultAction":"Deny"
                 }
               },
@@ -1503,11 +1505,11 @@
           "clusterID":{
             "value":"[parameters('clusterID')]"
           },
+          "controlPlaneWorkerSubnetID":{
+            "value":"[parameters('controlPlaneWorkerSubnetID')]"
+          },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "ipRules":{
-            "value":"[parameters('storageAccountIpRules')]"
           },
           "masterSubnetID":{
             "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
