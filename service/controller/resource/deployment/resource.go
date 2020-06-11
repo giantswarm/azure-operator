@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
@@ -32,21 +31,19 @@ const (
 )
 
 type Config struct {
-	Debugger                  *debugger.Debugger
-	G8sClient                 versioned.Interface
-	InstallationName          string
-	Logger                    micrologger.Logger
-	CPPublicIpAddressesClient *network.PublicIPAddressesClient
+	Debugger         *debugger.Debugger
+	G8sClient        versioned.Interface
+	InstallationName string
+	Logger           micrologger.Logger
 
 	Azure setting.Azure
 }
 
 type Resource struct {
-	debugger                  *debugger.Debugger
-	g8sClient                 versioned.Interface
-	installationName          string
-	logger                    micrologger.Logger
-	cpPublicIpAddressesClient *network.PublicIPAddressesClient
+	debugger         *debugger.Debugger
+	g8sClient        versioned.Interface
+	installationName string
+	logger           micrologger.Logger
 
 	azure setting.Azure
 }
@@ -69,20 +66,16 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.CPPublicIpAddressesClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CPPublicIpAddressesClient must not be empty", config)
-	}
 
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
 
 	r := &Resource{
-		debugger:                  config.Debugger,
-		g8sClient:                 config.G8sClient,
-		installationName:          config.InstallationName,
-		logger:                    config.Logger,
-		cpPublicIpAddressesClient: config.CPPublicIpAddressesClient,
+		debugger:         config.Debugger,
+		g8sClient:        config.G8sClient,
+		installationName: config.InstallationName,
+		logger:           config.Logger,
 
 		azure: config.Azure,
 	}
