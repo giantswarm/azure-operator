@@ -26,6 +26,9 @@ const (
 	clientTypeLogKey     = "clientType"
 	clusterIDLogKey      = "clusterID"
 	credentialNameLogKey = "credentialName"
+	logLevelLogKey       = "level"
+	logLevelDebug        = "debug"
+	messageLogKey        = "message"
 )
 
 type FactoryConfig struct {
@@ -140,7 +143,13 @@ func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.Ac
 }
 
 func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createClient clientCreatorFunc) (interface{}, error) {
-	l := f.logger.With(credentialNameLogKey, key.CredentialName(cr), clusterIDLogKey, key.ClusterID(cr), clientTypeLogKey, clientType)
+	l := f.logger.With(
+		logLevelLogKey, logLevelDebug,
+		messageLogKey, "get client",
+		credentialNameLogKey, key.CredentialName(cr),
+		clusterIDLogKey, key.ClusterID(cr),
+		clientTypeLogKey, clientType)
+
 	clientKey := getClientKey(cr, clientType)
 	var client interface{}
 	f.mutex.Lock()
@@ -205,6 +214,9 @@ func getClientKeyParts(clientKey string) (credentialName, clientType string) {
 
 func (f *Factory) onEvicted(clientKey string) {
 	credentialName, clientType := getClientKeyParts(clientKey)
-	l := f.logger.With(credentialNameLogKey, credentialName, clientTypeLogKey, clientType)
-	l.Log("message", "client evicted")
+	f.logger.Log(
+		logLevelLogKey, logLevelDebug,
+		messageLogKey, "client evicted",
+		credentialNameLogKey, credentialName,
+		clientTypeLogKey, clientType)
 }
