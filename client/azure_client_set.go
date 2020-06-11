@@ -145,7 +145,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
 		VirtualNetworkGatewaysClient:           virtualNetworkGatewaysClient,
 		VirtualMachineScaleSetVMsClient:        virtualMachineScaleSetVMsClient,
-		VirtualMachineScaleSetsClient:          virtualMachineScaleSetsClient,
+		VirtualMachineScaleSetsClient:          toVirtualMachineScaleSetsClient(virtualMachineScaleSetsClient),
 		VnetPeeringClient:                      vnetPeeringClient,
 	}
 
@@ -244,7 +244,7 @@ func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, subscriptio
 	return &client, nil
 }
 
-func newVirtualMachineScaleSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*compute.VirtualMachineScaleSetsClient, error) {
+func newVirtualMachineScaleSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
 	client := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
@@ -271,4 +271,8 @@ func toDeploymentsClient(client interface{}) *resources.DeploymentsClient {
 
 func toGroupsClient(client interface{}) *resources.GroupsClient {
 	return client.(*resources.GroupsClient)
+}
+
+func toVirtualMachineScaleSetsClient(client interface{}) *compute.VirtualMachineScaleSetsClient {
+	return client.(*compute.VirtualMachineScaleSetsClient)
 }

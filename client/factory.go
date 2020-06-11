@@ -106,15 +106,12 @@ func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsCli
 // management of virtual machine scale sets for the specified cluster. The created client is cached
 // for the time period specified in the factory config.
 func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetsClient, error) {
-	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-		return newVirtualMachineScaleSetsClient(authorizer, subscriptionID, partnerID)
-	}
-	client, err := f.getClient(cr, "VirtualMachineScaleSetsClient", createClientFunc)
+	client, err := f.getClient(cr, "VirtualMachineScaleSetsClient", newVirtualMachineScaleSetsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return client.(*compute.VirtualMachineScaleSetsClient), nil
+	return toVirtualMachineScaleSetsClient(client), nil
 }
 
 // GetVirtualMachineScaleSetVMsClient returns GetVirtualMachineScaleSetVMsClient that is used for
