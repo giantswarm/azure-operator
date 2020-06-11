@@ -411,24 +411,6 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
-	//var instanceResource resource.Interface
-	//{
-	//	c := instance.Config{
-	//		Debugger:  newDebugger,
-	//		G8sClient: config.K8sClient.G8sClient(),
-	//		K8sClient: config.K8sClient.K8sClient(),
-	//		Logger:    config.Logger,
-	//
-	//		Azure:            config.Azure,
-	//		InstanceWatchdog: iwd,
-	//	}
-	//
-	//	instanceResource, err = instance.New(c)
-	//	if err != nil {
-	//		return nil, microerror.Mask(err)
-	//	}
-	//}
-
 	var clusterChecker *ipam.AzureConfigChecker
 	{
 		c := ipam.AzureConfigCheckerConfig{
@@ -576,7 +558,6 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		blobObjectResource,
 		dnsrecordResource,
 		mastersResource,
-		//instanceResource,
 		endpointsResource,
 		vpnResource,
 		vpnconnectionResource,

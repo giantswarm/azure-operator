@@ -355,7 +355,6 @@ func (r *Resource) getWorkerCloudConfig(ctx context.Context, azureClientSet *cli
 	serviceURL := azblob.NewServiceURL(*u, p)
 	containerURL := serviceURL.NewContainerURL(key.BlobContainerName())
 
-	// Workers cloudconfig
 	workerBlobURL, err := blobclient.GetBlobURL(workerBlobName, containerName, storageAccountName, primaryKey, &containerURL)
 	if err != nil {
 		return "", microerror.Mask(err)

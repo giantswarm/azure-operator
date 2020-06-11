@@ -360,11 +360,8 @@
       }
     },
     {
-      "apiVersion": "2018-07-01",
+      "apiVersion": "2018-09-01-preview",
       "condition": "[parameters('enableMSI')]",
-      "dependsOn": [
-        "[resourceId('Microsoft.Compute/virtualMachineScaleSets/', variables('vmssName'))]"
-      ],
       "type": "Microsoft.Authorization/roleAssignments",
       "name": "[variables('roleAssignmentName')]",
       "tags": {
@@ -372,8 +369,9 @@
       },
       "properties": {
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
-        "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', variables('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId]",
-        "scope": "[resourceGroup().id]"
+        "principalId": "[reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', variables('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2018-11-30').principalId]",
+        "scope": "[resourceGroup().id]",
+        "principalType":  "ServicePrincipal"
       }
     }
   ]
