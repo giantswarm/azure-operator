@@ -118,15 +118,12 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*co
 // management of virtual machine scale set instances for the specified cluster. The created client
 // is cached for the time period specified in the factory config.
 func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-		return newVirtualMachineScaleSetVMsClient(authorizer, subscriptionID, partnerID)
-	}
-	client, err := f.getClient(cr, "VirtualMachineScaleSetVMsClient", createClientFunc)
+	client, err := f.getClient(cr, "VirtualMachineScaleSetVMsClient", newVirtualMachineScaleSetVMsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return client.(*compute.VirtualMachineScaleSetVMsClient), nil
+	return toVirtualMachineScaleSetVMsClient(client), nil
 }
 
 // GetStorageAccountsClient returns *storage.AccountsClient that is used for management of Azure
