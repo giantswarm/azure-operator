@@ -134,7 +134,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		DeploymentsClient:                      toDeploymentsClient(deploymentsClient),
 		DNSRecordSetsClient:                    dnsRecordSetsClient,
 		DNSZonesClient:                         dnsZonesClient,
-		GroupsClient:                           groupsClient,
+		GroupsClient:                           toGroupsClient(groupsClient),
 		InterfacesClient:                       interfacesClient,
 		PublicIpAddressesClient:                publicIpAddressesClient,
 		SecurityRulesClient:                    securityGroupsClient,
@@ -181,7 +181,7 @@ func newDNSZonesClient(authorizer autorest.Authorizer, subscriptionID, partnerID
 	return &client, nil
 }
 
-func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*resources.GroupsClient, error) {
+func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
 	client := resources.NewGroupsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
@@ -267,4 +267,8 @@ func newVnetPeeringClient(authorizer autorest.Authorizer, subscriptionID, partne
 
 func toDeploymentsClient(client interface{}) *resources.DeploymentsClient {
 	return client.(*resources.DeploymentsClient)
+}
+
+func toGroupsClient(client interface{}) *resources.GroupsClient {
+	return client.(*resources.GroupsClient)
 }

@@ -94,15 +94,12 @@ func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.Depl
 // specified cluster. The created client is cached for the time period specified in the factory
 // config.
 func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsClient, error) {
-	createClientFunc := func(authorizer autorest.Authorizer, subscriptionID string, partnerID string) (interface{}, error) {
-		return newGroupsClient(authorizer, subscriptionID, partnerID)
-	}
-	client, err := f.getClient(cr, "GroupsClient", createClientFunc)
+	client, err := f.getClient(cr, "GroupsClient", newGroupsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return client.(*resources.GroupsClient), nil
+	return toGroupsClient(client), nil
 }
 
 // GetVirtualMachineScaleSetsClient returns VirtualMachineScaleSetsClient that is used for
