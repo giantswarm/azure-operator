@@ -10,6 +10,7 @@ import (
 
 type Service struct {
 	Azure          azure.Azure
+	FeatureGates   string
 	Installation   installation.Installation
 	Kubernetes     kubernetes.Kubernetes
 	RegistryDomain string

@@ -4,6 +4,8 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strconv"
+	"strings"
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -14,11 +16,12 @@ import (
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	operatorkitcontroller "github.com/giantswarm/operatorkit/controller"
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
@@ -47,8 +50,7 @@ type Service struct {
 	Version *version.Service
 
 	bootOnce                sync.Once
-	clusterController       *controller.Cluster
-	machinePoolController   *controller.MachinePool
+	controllers             []*operatorkitcontroller.Controller
 	statusResourceCollector *statusresource.CollectorSet
 }
 
@@ -77,6 +79,22 @@ func New(config Config) (*Service, error) {
 	}
 
 	var err error
+
+	features := make(map[string]bool)
+	{
+		// FeatureGates contains a comma separated list like "MachinePool=true,AnotherFeature=false"
+		featureGatesParam := config.Viper.GetString(config.Flag.Service.FeatureGates)
+		if featureGatesParam != "" {
+			featureGates := strings.Split(featureGatesParam, ",")
+			for i := range featureGates {
+				feature := strings.Split(strings.TrimSpace(featureGates[i]), "=")
+				features[feature[0]], err = strconv.ParseBool(feature[1])
+				if err != nil {
+					return nil, microerror.Maskf(invalidConfigError, "feature gate %#q must be either true or false", feature[0])
+				}
+			}
+		}
+	}
 
 	resourceGroup := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup)
 	if resourceGroup == "" {
@@ -174,14 +192,20 @@ func New(config Config) (*Service, error) {
 			}
 		}
 
-		c := k8sclient.ClientsConfig{
-			Logger: config.Logger,
-			SchemeBuilder: k8sclient.SchemeBuilder{
+		schemeBuilder := k8sclient.SchemeBuilder{
+			providerv1alpha1.AddToScheme,
+			releasev1alpha1.AddToScheme,
+		}
+		if features["MachinePool"] {
+			schemeBuilder = k8sclient.SchemeBuilder{
 				providerv1alpha1.AddToScheme,
 				releasev1alpha1.AddToScheme,
-				capzv1alpha3.AddToScheme,
-			},
-
+				capzexpv1alpha3.AddToScheme,
+			}
+		}
+		c := k8sclient.ClientsConfig{
+			Logger:         config.Logger,
+			SchemeBuilder:  schemeBuilder,
 			KubeConfigPath: kubeConfigPath,
 			RestConfig:     restConfig,
 		}
@@ -224,7 +248,9 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	var clusterController *controller.Cluster
+	var controllers []*operatorkitcontroller.Controller
+
+	var clusterController *operatorkitcontroller.Controller
 	{
 		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 		if err != nil {
@@ -253,10 +279,11 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, clusterController)
 	}
 
-	var machinePoolController *controller.MachinePool
-	{
+	if features["MachinePool"] {
 		c := controller.MachinePoolConfig{
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
@@ -267,10 +294,12 @@ func New(config Config) (*Service, error) {
 			Logger:                    config.Logger,
 		}
 
-		machinePoolController, err = controller.NewMachinePool(c)
+		machinePoolController, err := controller.NewMachinePool(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, machinePoolController)
 	}
 
 	var statusResourceCollector *statusresource.CollectorSet
@@ -306,8 +335,7 @@ func New(config Config) (*Service, error) {
 	s := &Service{
 		Version:                 versionService,
 		bootOnce:                sync.Once{},
-		clusterController:       clusterController,
-		machinePoolController:   machinePoolController,
+		controllers:             controllers,
 		statusResourceCollector: statusResourceCollector,
 	}
 
@@ -318,8 +346,9 @@ func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
-		go s.clusterController.Boot(ctx)
-		go s.machinePoolController.Boot(ctx)
+		for _, ctrl := range s.controllers {
+			go ctrl.Boot(ctx)
+		}
 	})
 }
 

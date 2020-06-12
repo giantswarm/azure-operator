@@ -75,11 +75,7 @@ type ClusterConfig struct {
 	VMSSCheckWorkers int
 }
 
-type Cluster struct {
-	*controller.Controller
-}
-
-func NewCluster(config ClusterConfig) (*Cluster, error) {
+func NewCluster(config ClusterConfig) (*controller.Controller, error) {
 	var err error
 
 	var certsSearcher *certs.Searcher
@@ -184,9 +180,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	return &Cluster{
-		Controller: operatorkitController,
-	}, nil
+	return operatorkitController, nil
 }
 
 func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
