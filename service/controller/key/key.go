@@ -60,9 +60,6 @@ const (
 
 // Container image versions for k8scloudconfig.
 const (
-	// kubectl container version.
-	kubectlVersion = "1.16.4"
-
 	// k8s-api-healthz version.
 	kubernetesAPIHealthzVersion = "0999549a4c334b646288d08bd2c781c6aae2e12f"
 
