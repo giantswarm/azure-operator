@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
@@ -57,6 +58,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		}
 
 		params = k8scloudconfig.DefaultParams()
+		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
 		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.DisableCalico = true

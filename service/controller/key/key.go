@@ -143,6 +143,16 @@ func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Kubernetes.API.Domain
 }
 
+func ClusterBaseDomain(customObject providerv1alpha1.AzureConfig) string {
+	apiDomainComponents := strings.Split(ClusterAPIEndpoint(customObject), ".")
+	if len(apiDomainComponents) > 2 {
+		// Drop `api` prefix component.
+		apiDomainComponents = apiDomainComponents[1:]
+	}
+
+	return strings.Join(apiDomainComponents, ".")
+}
+
 // ClusterCustomer returns the customer ID for this cluster.
 func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Customer.ID
