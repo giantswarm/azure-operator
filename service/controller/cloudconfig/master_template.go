@@ -13,6 +13,10 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
+const (
+	defaultEtcdPort = 2379
+)
+
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
@@ -57,49 +61,43 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.DisableCalico = true
 		params.DisableIngressControllerService = true
-		params.EtcdPort = data.CustomObject.Spec.Cluster.Etcd.Port
-		params.Hyperkube = k8scloudconfig.Hyperkube{
-			Apiserver: k8scloudconfig.HyperkubeApiserver{
-				Pod: k8scloudconfig.HyperkubePod{
-					HyperkubePodHostExtraMounts: []k8scloudconfig.HyperkubePodHostMount{
-						{
-							Name:     "k8s-config",
-							Path:     "/etc/kubernetes/config/",
-							ReadOnly: true,
-						},
-						{
-							Name:     "identity-settings",
-							Path:     "/var/lib/waagent/",
-							ReadOnly: true,
-						},
+		params.Etcd.ClientPort = defaultEtcdPort
+		params.Kubernetes = k8scloudconfig.Kubernetes{
+			Apiserver: k8scloudconfig.KubernetesPodOptions{
+				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{
+					{
+						Name:     "k8s-config",
+						Path:     "/etc/kubernetes/config/",
+						ReadOnly: true,
 					},
-					CommandExtraArgs: k8sAPIExtraArgs,
-				},
-			},
-			ControllerManager: k8scloudconfig.HyperkubeControllerManager{
-				Pod: k8scloudconfig.HyperkubePod{
-					HyperkubePodHostExtraMounts: []k8scloudconfig.HyperkubePodHostMount{
-						{
-							Name:     "identity-settings",
-							Path:     "/var/lib/waagent/",
-							ReadOnly: true,
-						},
-					},
-					CommandExtraArgs: []string{
-						"--cloud-config=/etc/kubernetes/config/azure.yaml",
-						"--allocate-node-cidrs=true",
-						"--cluster-cidr=" + data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
+					{
+						Name:     "identity-settings",
+						Path:     "/var/lib/waagent/",
+						ReadOnly: true,
 					},
 				},
+				CommandExtraArgs: k8sAPIExtraArgs,
 			},
-			Kubelet: k8scloudconfig.HyperkubeKubelet{
-				Docker: k8scloudconfig.HyperkubeDocker{
-					RunExtraArgs: []string{
-						"-v /var/lib/waagent:/var/lib/waagent:ro",
+			ControllerManager: k8scloudconfig.KubernetesPodOptions{
+				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{
+					{
+						Name:     "identity-settings",
+						Path:     "/var/lib/waagent/",
+						ReadOnly: true,
 					},
-					CommandExtraArgs: []string{
-						"--cloud-config=/etc/kubernetes/config/azure.yaml",
-					},
+				},
+				CommandExtraArgs: []string{
+					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					"--allocate-node-cidrs=true",
+					"--cluster-cidr=" + data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
+				},
+			},
+			Kubelet: k8scloudconfig.KubernetesDockerOptions{
+				RunExtraArgs: []string{
+					"-v /var/lib/waagent:/var/lib/waagent:ro",
+				},
+				CommandExtraArgs: []string{
+					"--cloud-config=/etc/kubernetes/config/azure.yaml",
 				},
 			},
 		}

@@ -209,7 +209,6 @@ func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
 
 func DefaultVersions() k8scloudconfig.Versions {
 	return k8scloudconfig.Versions{
-		Kubectl:                      kubectlVersion,
 		KubernetesAPIHealthz:         kubernetesAPIHealthzVersion,
 		KubernetesNetworkSetupDocker: kubernetesNetworkSetupDocker,
 	}
