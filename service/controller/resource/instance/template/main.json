@@ -343,25 +343,8 @@
                         }
                       }
                     ]
-                  },
-                  "extensionProfile":{
-                    "extensions":"[if(parameters('vmssMSIEnabled'), variables('vmssExtensions'), json('[]'))]"
                   }
                 }
-              }
-            },
-            {
-              "apiVersion":"[variables('authorizationAPIVersion')]",
-              "condition":"[parameters('vmssMSIEnabled')]",
-              "type":"Microsoft.Authorization/roleAssignments",
-              "name":"[variables('roleAssignmentName')]",
-              "tags":{
-                "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
-              },
-              "properties":{
-                "roleDefinitionId":"[variables('contributorRoleDefinitionId')]",
-                "principalId":"[if(parameters('vmssMSIEnabled'), reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId, '')]",
-                "scope":"[resourceGroup().id]"
               }
             }
           ]
