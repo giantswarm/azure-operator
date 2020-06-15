@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"net"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
@@ -57,10 +59,15 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
+		cr, err := azureConfigWithCalicoSettings(data.CustomObject)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
 		params = k8scloudconfig.DefaultParams()
 		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
 		params.APIServerEncryptionKey = apiserverEncryptionKey
-		params.Cluster = data.CustomObject.Spec.Cluster
+		params.Cluster = cr.Spec.Cluster
 		params.DisableCalico = true
 		params.DisableIngressControllerService = true
 		params.Etcd.ClientPort = defaultEtcdPort
@@ -294,4 +301,20 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 // VerbatimSections allows sections to be embedded in the master cloudconfig.
 func (me *masterExtension) VerbatimSections() []k8scloudconfig.VerbatimSection {
 	return nil
+}
+
+func azureConfigWithCalicoSettings(cr providerv1alpha1.AzureConfig) (providerv1alpha1.AzureConfig, error) {
+	cidr := key.CalicoCIDR(cr)
+	if cidr == "" {
+		return providerv1alpha1.AzureConfig{}, microerror.Maskf(invalidConfigError, "calico CIDR missing")
+	}
+
+	_, calicoNet, err := net.ParseCIDR(cidr)
+	if err != nil {
+		return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
+	}
+
+	cr.Spec.Cluster.Calico.Subnet = calicoNet.IP.String()
+	cr.Spec.Cluster.Calico.CIDR, _ = calicoNet.Mask.Size()
+	return cr, nil
 }
