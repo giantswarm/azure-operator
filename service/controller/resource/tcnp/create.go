@@ -12,10 +12,12 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/client"
@@ -44,62 +46,29 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	var machinePool capiexpv1alpha3.MachinePool
-	{
-		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, &machinePool)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	var azureCluster capzv1alpha3.AzureCluster
-	{
-		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, &azureCluster)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	cluster, err := util.GetClusterFromMetadata(ctx, r.ctrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	var cluster capiv1alpha3.Cluster
-	{
-		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: azureMachinePool.GetNamespace(), Name: azureMachinePool.GetName()}, &cluster)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	azureCluster, err := r.getAzureClusterFromCluster(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	var release releasev1alpha1.Release
-	{
-		releaseVersion, exists := azureMachinePool.GetLabels()[label.ReleaseVersion]
-		if !exists {
-			return microerror.Mask(missingReleaseVersionLabel)
-		}
-		if !strings.HasPrefix(releaseVersion, "v") {
-			releaseVersion = fmt.Sprintf("v%s", releaseVersion)
-		}
-
-		err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: "", Name: releaseVersion}, &release)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	release, err := r.getReleaseFromMetadata(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	var tenantClusterAzureClientSet *client.AzureClientSet
-	{
-		credentialSecret, err := r.getCredentialSecret(ctx, cluster)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentialsFromCredentialSecret(ctx, r.ctrlClient, *credentialSecret, r.gsClientCredentialsConfig.TenantID)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		tenantClusterAzureClientSet, err = client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+	tenantClusterAzureClientSet, err := r.getTenantClusterAzureClientSet(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	clusterID, exists := azureMachinePool.GetLabels()[label.Cluster]
@@ -107,58 +76,44 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(missingClusterLabel)
 	}
 
-	var desiredDeployment azureresource.Deployment
-	var desiredDeploymentTemplateChk, desiredDeploymentParametersChk string
-	{
-		currentDeployment, err := tenantClusterAzureClientSet.DeploymentsClient.Get(ctx, clusterID, mainDeploymentName)
-		if IsNotFound(err) {
-			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool, azureCluster)
-			if err != nil {
-				return microerror.Mask(err)
-			}
+	currentDeployment, err := tenantClusterAzureClientSet.DeploymentsClient.Get(ctx, clusterID, mainDeploymentName)
+	if IsNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "ARM deployment does not exist yet")
+	} else if err != nil {
+		return microerror.Mask(err)
+	} else {
+		provisioningState := *currentDeployment.Properties.ProvisioningState
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", provisioningState))
 
-			desiredDeploymentTemplateChk, desiredDeploymentParametersChk, err = r.getDesiredDeploymentChecksums(ctx, desiredDeployment)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		} else if err != nil {
-			return microerror.Mask(err)
-		} else {
-			provisioningState := *currentDeployment.Properties.ProvisioningState
-
-			r.debugger.LogFailedDeployment(ctx, currentDeployment, err)
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", provisioningState))
-
-			if !key.IsFinalProvisioningState(provisioningState) {
-				reconciliationcanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
-				return nil
-			}
-
-			currentDeploymentTemplateChk, currentDeploymentParametersChk, err := r.getCurrentDeploymentChecksums(ctx, azureMachinePool)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			desiredDeployment, err = r.newDeployment(ctx, tenantClusterAzureClientSet, release, machinePool, azureMachinePool, azureCluster)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			desiredDeploymentTemplateChk, desiredDeploymentParametersChk, err = r.getDesiredDeploymentChecksums(ctx, desiredDeployment)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			if currentDeploymentIsUpToDate(currentDeploymentTemplateChk, desiredDeploymentTemplateChk, currentDeploymentParametersChk, desiredDeploymentParametersChk) {
-				// No need to do anything else if deployment is up to date.
-				r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
-				return nil
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+		if !key.IsFinalProvisioningState(provisioningState) {
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			return nil
 		}
 	}
+
+	desiredDeployment, err := r.newDeployment(ctx, tenantClusterAzureClientSet, release, *machinePool, azureMachinePool, azureCluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	desiredDeploymentTemplateChk, desiredDeploymentParametersChk, err := r.getDesiredDeploymentChecksums(ctx, desiredDeployment)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	currentDeploymentTemplateChk, currentDeploymentParametersChk, err := r.getCurrentDeploymentChecksums(ctx, azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if currentDeploymentIsUpToDate(currentDeploymentTemplateChk, desiredDeploymentTemplateChk, currentDeploymentParametersChk, desiredDeploymentParametersChk) {
+		// No need to do anything else if deployment is up to date.
+		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+		return nil
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
 	err = r.ensureDeployment(ctx, tenantClusterAzureClientSet.DeploymentsClient, azureMachinePool.GetName(), desiredDeployment)
 	if err != nil {
@@ -392,4 +347,78 @@ func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (e
 	}
 
 	return enc, nil
+}
+
+// getMachinePoolByName finds and return a MachinePool object using the specified params.
+func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*capiexpv1alpha3.MachinePool, error) {
+	machinePool := &capiexpv1alpha3.MachinePool{}
+	objectKey := ctrlclient.ObjectKey{Name: name, Namespace: namespace}
+	if err := r.ctrlClient.Get(ctx, objectKey, machinePool); err != nil {
+		return nil, err
+	}
+
+	r.logger = r.logger.With("machinePool", machinePool.Name)
+
+	return machinePool, nil
+}
+
+// getOwnerMachinePool returns the MachinePool object owning the current resource.
+func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*capiexpv1alpha3.MachinePool, error) {
+	for _, ref := range obj.OwnerReferences {
+		if ref.Kind == "MachinePool" && ref.APIVersion == capiexpv1alpha3.GroupVersion.String() {
+			return r.getMachinePoolByName(ctx, obj.Namespace, ref.Name)
+		}
+	}
+
+	return nil, nil
+}
+
+func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (capzv1alpha3.AzureCluster, error) {
+	azureCluster := capzv1alpha3.AzureCluster{}
+	azureClusterName := ctrlclient.ObjectKey{
+		Namespace: cluster.Spec.InfrastructureRef.Namespace,
+		Name:      cluster.Spec.InfrastructureRef.Name,
+	}
+	err := r.ctrlClient.Get(ctx, azureClusterName, &azureCluster)
+	if err != nil {
+		return azureCluster, microerror.Mask(err)
+	}
+
+	r.logger = r.logger.With("azureCluster", azureCluster.Name)
+
+	return azureCluster, nil
+}
+
+func (r *Resource) getReleaseFromMetadata(ctx context.Context, obj metav1.ObjectMeta) (releasev1alpha1.Release, error) {
+	release := releasev1alpha1.Release{}
+	releaseVersion, exists := obj.GetLabels()[label.ReleaseVersion]
+	if !exists {
+		return release, microerror.Mask(missingReleaseVersionLabel)
+	}
+	if !strings.HasPrefix(releaseVersion, "v") {
+		releaseVersion = fmt.Sprintf("v%s", releaseVersion)
+	}
+
+	err := r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: "", Name: releaseVersion}, &release)
+	if err != nil {
+		return release, microerror.Mask(err)
+	}
+
+	r.logger = r.logger.With("release", release.Name)
+
+	return release, nil
+}
+
+func (r *Resource) getTenantClusterAzureClientSet(ctx context.Context, cluster *capiv1alpha3.Cluster) (*client.AzureClientSet, error) {
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return &client.AzureClientSet{}, microerror.Mask(err)
+	}
+
+	organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentialsFromCredentialSecret(ctx, r.ctrlClient, *credentialSecret, r.gsClientCredentialsConfig.TenantID)
+	if err != nil {
+		return &client.AzureClientSet{}, microerror.Mask(err)
+	}
+
+	return client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 }

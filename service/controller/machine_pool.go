@@ -19,7 +19,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tcnp"
 )
@@ -96,23 +95,10 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var err error
 
-	var newDebugger *debugger.Debugger
-	{
-		c := debugger.Config{
-			Logger: config.Logger,
-		}
-
-		newDebugger, err = debugger.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var tcnpResource resource.Interface
 	{
 		c := tcnp.Config{
 			CtrlClient:                config.K8sClient.CtrlClient(),
-			Debugger:                  newDebugger,
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 			Logger:                    config.Logger,
 			VMSSMSIEnabled:            config.VMSSMSIEnabled,
