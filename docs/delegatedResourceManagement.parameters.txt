@@ -1,0 +1,24 @@
+{
+    "$schema": "https://schema.management.azure.com/schemas/2018-05-01/subscriptionDeploymentParameters.json#",
+    "contentVersion": "1.0.0.0",
+    "parameters": {
+        "mspOfferName": {
+            "value": "Giant Swarm"
+        },
+        "mspOfferDescription": {
+            "value": "Giant Swarm - Beyond Managed Kubernetes"
+        },
+        "managedByTenantId": {
+            "value": "31f75bf9-3d8c-4691-95c0-83dd71613db8"
+        },
+        "authorizations": {
+            "value": [
+                {
+                    "principalId": "3d287460-b85e-49ae-9977-64ff65384bc0",
+                    "principalIdDisplayName": "Giant Swarm Support",
+                    "roleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
+                }             
+            ]
+        }
+    }
+}
