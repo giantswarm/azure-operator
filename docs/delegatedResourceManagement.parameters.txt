@@ -9,12 +9,12 @@
             "value": "Giant Swarm - Beyond Managed Kubernetes"
         },
         "managedByTenantId": {
-            "value": "31f75bf9-3d8c-4691-95c0-83dd71613db8"
+            "value": "<GiantswarmTenantID>"
         },
         "authorizations": {
             "value": [
                 {
-                    "principalId": "3d287460-b85e-49ae-9977-64ff65384bc0",
+                    "principalId": "<GiantSwarmPrincipalID>",
                     "principalIdDisplayName": "Giant Swarm Support",
                     "roleDefinitionId": "b24988ac-6180-42a0-ab88-20f7382dd24c"
                 }             
