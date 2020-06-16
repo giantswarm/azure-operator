@@ -115,7 +115,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
-	err = r.ensureDeployment(ctx, tenantClusterAzureClientSet.DeploymentsClient, azureMachinePool.GetName(), desiredDeployment)
+	err = r.ensureDeployment(ctx, tenantClusterAzureClientSet.DeploymentsClient, azureCluster.GetName(), desiredDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -191,14 +191,14 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 		return azureresource.Deployment{}, microerror.Mask(missingOperatorVersionLabel)
 	}
 
-	certificateEncryptionSecretName := fmt.Sprintf("%s-certificate-encryption", azureMachinePool.GetName())
+	certificateEncryptionSecretName := fmt.Sprintf("%s-certificate-encryption", azureCluster.GetName())
 	encrypterObject, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	storageAccountName := strings.Replace(fmt.Sprintf("%s%s", "gssa", azureMachinePool.GetName()), "-", "", -1)
-	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, azureClientSet, azureMachinePool.GetName(), storageAccountName, key.WorkerBlobName(operatorVersion), encrypterObject)
+	storageAccountName := strings.Replace(fmt.Sprintf("%s%s", "gssa", azureCluster.GetName()), "-", "", -1)
+	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, azureClientSet, azureCluster.GetName(), storageAccountName, key.WorkerBlobName(operatorVersion), encrypterObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -220,7 +220,7 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 
 	templateParams := map[string]interface{}{
 		"azureOperatorVersion": project.Version(),
-		"clusterID":            azureMachinePool.GetName(),
+		"clusterID":            azureCluster.GetName(),
 		"dockerVolumeSizeGB":   "50",
 		"enableMSI":            r.vmssMSIEnabled,
 		"kubeletVolumeSizeGB":  "100",
@@ -258,7 +258,7 @@ func (r Resource) getSubnetID(ctx context.Context, azureClientSet *client.AzureC
 		return "", microerror.Mask(missingSubnetLabel)
 	}
 
-	subnetsInVnet, err := azureClientSet.SubnetsClient.List(ctx, azureMachinePool.GetName(), azureCluster.Spec.NetworkSpec.Vnet.ID)
+	subnetsInVnet, err := azureClientSet.SubnetsClient.List(ctx, azureCluster.GetName(), azureCluster.Spec.NetworkSpec.Vnet.ID)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

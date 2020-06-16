@@ -70,7 +70,7 @@ func (r *Resource) setResourceStatus(ctx context.Context, cr v1alpha32.AzureMach
 	}
 
 	{
-		err := r.ctrlClient.Status().Update(ctx, &cr)
+		err := r.ctrlClient.Status().Update(ctx, azureMachinePool)
 		if err != nil {
 			return microerror.Mask(err)
 		}
