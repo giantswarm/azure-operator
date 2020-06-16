@@ -4,11 +4,11 @@ import (
 	"context"
 	"net"
 
-	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
@@ -38,9 +38,8 @@ func NewAzureConfigPersister(config AzureConfigPersisterConfig) (*AzureConfigPer
 	return p, nil
 }
 
-func (p *AzureConfigPersister) Persist(ctx context.Context, vnet net.IPNet, namespace string, name string) error {
-	azureConfig := &v1alpha1.AzureConfig{}
-	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureConfig)
+func (p *AzureConfigPersister) Persist(ctx context.Context, vnet net.IPNet, obj interface{}) error {
+	azureConfig, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -63,7 +62,7 @@ func (p *AzureConfigPersister) Persist(ctx context.Context, vnet net.IPNet, name
 	azureConfig.Spec.Cluster.Calico.Subnet = azureNetwork.Calico.IP.String()
 	azureConfig.Spec.Cluster.Calico.CIDR, _ = azureNetwork.Calico.Mask.Size()
 
-	err = p.ctrlClient.Update(ctx, azureConfig)
+	err = p.ctrlClient.Update(ctx, &azureConfig)
 	if err != nil {
 		return microerror.Mask(err)
 	}
