@@ -9,7 +9,7 @@
             "value": "Giant Swarm - Beyond Managed Kubernetes"
         },
         "managedByTenantId": {
-            "value": "<GiantswarmTenantID>"
+            "value": "<GiantSwarmTenantID>"
         },
         "authorizations": {
             "value": [
