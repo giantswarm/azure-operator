@@ -32,15 +32,13 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		params = k8scloudconfig.DefaultParams()
 
 		params.Cluster = data.CustomObject.Spec.Cluster
-		params.Hyperkube = k8scloudconfig.Hyperkube{
-			Kubelet: k8scloudconfig.HyperkubeKubelet{
-				Docker: k8scloudconfig.HyperkubeDocker{
-					RunExtraArgs: []string{
-						"-v /var/lib/waagent:/var/lib/waagent:ro",
-					},
-					CommandExtraArgs: []string{
-						"--cloud-config=/etc/kubernetes/config/azure.yaml",
-					},
+		params.Kubernetes = k8scloudconfig.Kubernetes{
+			Kubelet: k8scloudconfig.KubernetesDockerOptions{
+				RunExtraArgs: []string{
+					"-v /var/lib/waagent:/var/lib/waagent:ro",
+				},
+				CommandExtraArgs: []string{
+					"--cloud-config=/etc/kubernetes/config/azure.yaml",
 				},
 			},
 		}

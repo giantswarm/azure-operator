@@ -60,9 +60,6 @@ const (
 
 // Container image versions for k8scloudconfig.
 const (
-	// kubectl container version.
-	kubectlVersion = "1.16.4"
-
 	// k8s-api-healthz version.
 	kubernetesAPIHealthzVersion = "0999549a4c334b646288d08bd2c781c6aae2e12f"
 
@@ -146,6 +143,16 @@ func ClusterAPIEndpoint(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Kubernetes.API.Domain
 }
 
+func ClusterBaseDomain(customObject providerv1alpha1.AzureConfig) string {
+	apiDomainComponents := strings.Split(ClusterAPIEndpoint(customObject), ".")
+	if len(apiDomainComponents) > 2 {
+		// Drop `api` prefix component.
+		apiDomainComponents = apiDomainComponents[1:]
+	}
+
+	return strings.Join(apiDomainComponents, ".")
+}
+
 // ClusterCustomer returns the customer ID for this cluster.
 func ClusterCustomer(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Cluster.Customer.ID
@@ -209,7 +216,6 @@ func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
 
 func DefaultVersions() k8scloudconfig.Versions {
 	return k8scloudconfig.Versions{
-		Kubectl:                      kubectlVersion,
 		KubernetesAPIHealthz:         kubernetesAPIHealthzVersion,
 		KubernetesNetworkSetupDocker: kubernetesNetworkSetupDocker,
 	}
