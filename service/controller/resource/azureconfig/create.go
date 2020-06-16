@@ -338,6 +338,15 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
+		etcdServerDomain, err := newEtcdServerDomain(azureCluster)
+		if err != nil {
+			return providerv1alpha1.Cluster{}, microerror.Mask(err)
+		}
+
+		commonCluster.Etcd.Domain = etcdServerDomain
+	}
+
+	{
 		apiServerDomain, err := newAPIServerDomain(azureCluster)
 		if err != nil {
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)

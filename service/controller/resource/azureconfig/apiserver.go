@@ -14,3 +14,11 @@ func newAPIServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
 
 	return apiServerDomain, nil
 }
+
+func newEtcdServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
+	splitted[0] = certs.EtcdCert.String()
+	etcdServerDomain := strings.Join(splitted, ".")
+
+	return etcdServerDomain, nil
+}
