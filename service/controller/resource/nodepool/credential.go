@@ -1,4 +1,4 @@
-package tcnp
+package nodepool
 
 import (
 	"context"

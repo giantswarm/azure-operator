@@ -1,4 +1,4 @@
-package tcnp
+package nodepool
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "tcnp"
+	Name = "nodepool"
 )
 
 type Config struct {

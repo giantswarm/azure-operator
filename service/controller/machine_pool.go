@@ -20,7 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tcnp"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
 )
 
 type MachinePoolConfig struct {
@@ -95,16 +95,16 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var err error
 
-	var tcnpResource resource.Interface
+	var nodepoolResource resource.Interface
 	{
-		c := tcnp.Config{
+		c := nodepool.Config{
 			CtrlClient:                config.K8sClient.CtrlClient(),
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 			Logger:                    config.Logger,
 			VMSSMSIEnabled:            config.VMSSMSIEnabled,
 		}
 
-		tcnpResource, err = tcnp.New(c)
+		nodepoolResource, err = nodepool.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -174,7 +174,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	resources := []resource.Interface{
 		ipamResource,
-		tcnpResource,
+		nodepoolResource,
 	}
 
 	{

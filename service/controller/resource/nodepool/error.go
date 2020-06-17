@@ -1,4 +1,4 @@
-package tcnp
+package nodepool
 
 import (
 	"github.com/Azure/go-autorest/autorest"

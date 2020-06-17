@@ -1,4 +1,4 @@
-package tcnp
+package nodepool
 
 import (
 	"context"
@@ -29,13 +29,13 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	tcnp "github.com/giantswarm/azure-operator/v4/service/controller/resource/tcnp/template"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
 
 const (
 	DeploymentTemplateChecksum   = "TemplateChecksum"
 	DeploymentParametersChecksum = "ParametersChecksum"
-	mainDeploymentName           = "tcnp"
+	mainDeploymentName           = "nodepool"
 )
 
 // EnsureCreated will ensure the Deployment is created.
@@ -236,7 +236,7 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 		"zones":                zones,
 	}
 
-	armTemplate, err := tcnp.GetARMTemplate()
+	armTemplate, err := nodepool.GetARMTemplate()
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
