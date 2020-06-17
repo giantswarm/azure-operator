@@ -151,8 +151,9 @@
           "autoUpgradeMinorVersion": true,
           "typeHandlerVersion": "1.0",
           "settings": {
-            "protocol": "tcp",
-            "port": 10250
+            "requestPath": "healthz",
+            "protocol": "http",
+            "port": 10248
           }
         }
       }
