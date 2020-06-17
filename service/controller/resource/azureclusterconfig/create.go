@@ -3,7 +3,6 @@ package azureclusterconfig
 import (
 	"context"
 	"fmt"
-	"reflect"
 	"strings"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
@@ -125,11 +124,26 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureclusterconfig needs update")
 	{
-		// Copy object meta data such as Generation, ResourceVersion etc.
-		mappedAzureClusterConfig.ObjectMeta = presentAzureClusterConfig.ObjectMeta
+		// Were there any changes that requires CR update?
+		changed := false
+		if !azureClusterConfigsEqual(mappedAzureClusterConfig, presentAzureClusterConfig) {
+			// Copy Spec section as-is. This should always match desired state.
+			presentAzureClusterConfig.Spec = mappedAzureClusterConfig.Spec
+			changed = true
+		}
+
+		// Copy mapped labels if missing or changed, but don't touch labels
+		// that we don't manage.
+		for k, v := range mappedAzureClusterConfig.Labels {
+			old, exists := presentAzureClusterConfig.Labels[k]
+			if old != v || !exists {
+				presentAzureClusterConfig.Labels[k] = v
+				changed = true
+			}
+		}
 
 		// Were there any changes that requires CR update?
-		if reflect.DeepEqual(mappedAzureClusterConfig.Spec, presentAzureClusterConfig.Spec) || reflect.DeepEqual(mappedAzureClusterConfig.Labels, presentAzureClusterConfig.Labels) {
+		if !changed {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "no update for existing azureclusterconfig needed")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
@@ -137,7 +151,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureclusterconfig needs update")
 
-		err = r.ctrlClient.Update(ctx, &mappedAzureClusterConfig)
+		err = r.ctrlClient.Update(ctx, &presentAzureClusterConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
