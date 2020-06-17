@@ -344,6 +344,7 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 		}
 
 		commonCluster.Etcd.Domain = etcdServerDomain
+		commonCluster.Etcd.Prefix = r.etcdPrefix
 	}
 
 	{

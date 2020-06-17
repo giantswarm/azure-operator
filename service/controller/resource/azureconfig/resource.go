@@ -23,6 +23,7 @@ type Config struct {
 	APIServerSecurePort            int
 	Calico                         CalicoConfig
 	ClusterIPRange                 string
+	EtcdPrefix                     string
 	ManagementClusterResourceGroup string
 	SSHUserList                    string
 }
@@ -34,6 +35,7 @@ type Resource struct {
 	apiServerSecurePort            int
 	calico                         CalicoConfig
 	clusterIPRange                 string
+	etcdPrefix                     string
 	managementClusterResourceGroup string
 	sshUserList                    string
 }
@@ -55,6 +57,7 @@ func New(config Config) (*Resource, error) {
 		apiServerSecurePort:            config.APIServerSecurePort,
 		calico:                         config.Calico,
 		clusterIPRange:                 config.ClusterIPRange,
+		etcdPrefix:                     config.EtcdPrefix,
 		managementClusterResourceGroup: config.ManagementClusterResourceGroup,
 		sshUserList:                    config.SSHUserList,
 	}
