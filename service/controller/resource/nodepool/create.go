@@ -29,7 +29,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
+	nodepool "github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
 
 const (
@@ -76,7 +76,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(missingClusterLabel)
 	}
 
-	currentDeployment, err := tenantClusterAzureClientSet.DeploymentsClient.Get(ctx, clusterID, mainDeploymentName)
+	currentDeployment, err := tenantClusterAzureClientSet.DeploymentsClient.Get(ctx, clusterID, fmt.Sprintf("%s-%s", mainDeploymentName, azureMachinePool.Name))
 	if IsNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "ARM deployment does not exist yet")
 	} else if err != nil {
@@ -115,7 +115,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
-	err = r.ensureDeployment(ctx, tenantClusterAzureClientSet.DeploymentsClient, azureCluster.GetName(), desiredDeployment)
+	err = r.ensureDeployment(ctx, azureMachinePool, tenantClusterAzureClientSet.DeploymentsClient, azureCluster.GetName(), desiredDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -163,10 +163,10 @@ func (r *Resource) saveDeploymentChecksumInStatus(ctx context.Context, customObj
 	return nil
 }
 
-func (r *Resource) ensureDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName string, desiredDeployment azureresource.Deployment) error {
+func (r *Resource) ensureDeployment(ctx context.Context, azureMachinePool capzexpv1alpha3.AzureMachinePool, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName string, desiredDeployment azureresource.Deployment) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-	res, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, mainDeploymentName, desiredDeployment)
+	res, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, fmt.Sprintf("%s-%s", mainDeploymentName, azureMachinePool.Name), desiredDeployment)
 	if err != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", desiredDeployment), "stack", microerror.JSON(microerror.Mask(err)))
 
