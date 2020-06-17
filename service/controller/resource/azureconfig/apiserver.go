@@ -22,3 +22,11 @@ func newEtcdServerDomain(cr capzv1alpha3.AzureCluster) (string, error) {
 
 	return etcdServerDomain, nil
 }
+
+func newKubeletDomain(cr capzv1alpha3.AzureCluster) (string, error) {
+	splitted := strings.Split(cr.Spec.ControlPlaneEndpoint.Host, ".")
+	splitted[0] = certs.WorkerCert.String()
+	kubeletDomain := strings.Join(splitted, ".")
+
+	return kubeletDomain, nil
+}

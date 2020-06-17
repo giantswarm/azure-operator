@@ -374,6 +374,16 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
+		kubeletDomain, err := newKubeletDomain(azureCluster)
+		if err != nil {
+			return providerv1alpha1.Cluster{}, microerror.Mask(err)
+		}
+
+		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
+		commonCluster.Kubernetes.Kubelet.Labels = r.kubeletLabels
+	}
+
+	{
 		userList, err := newSpecClusterKubernetesSSHUsers(r.sshUserList)
 		if err != nil {
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)

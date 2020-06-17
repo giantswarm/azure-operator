@@ -24,6 +24,7 @@ type Config struct {
 	Calico                         CalicoConfig
 	ClusterIPRange                 string
 	EtcdPrefix                     string
+	KubeletLabels                  string
 	ManagementClusterResourceGroup string
 	SSHUserList                    string
 }
@@ -36,6 +37,7 @@ type Resource struct {
 	calico                         CalicoConfig
 	clusterIPRange                 string
 	etcdPrefix                     string
+	kubeletLabels                  string
 	managementClusterResourceGroup string
 	sshUserList                    string
 }
@@ -58,6 +60,7 @@ func New(config Config) (*Resource, error) {
 		calico:                         config.Calico,
 		clusterIPRange:                 config.ClusterIPRange,
 		etcdPrefix:                     config.EtcdPrefix,
+		kubeletLabels:                  config.KubeletLabels,
 		managementClusterResourceGroup: config.ManagementClusterResourceGroup,
 		sshUserList:                    config.SSHUserList,
 	}
