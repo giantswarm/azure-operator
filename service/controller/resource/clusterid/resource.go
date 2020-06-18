@@ -83,7 +83,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured resource group is created")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured cluster id label is set")
 
 	return nil
 }
