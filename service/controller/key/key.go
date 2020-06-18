@@ -406,7 +406,7 @@ func ToClusterID(v interface{}) (string, error) {
 		return "", microerror.Mask(err)
 	}
 
-	return cr.Spec.Cluster.ID, nil
+	return ClusterID(&cr), nil
 }
 
 func ToClusterStatus(v interface{}) (providerv1alpha1.StatusCluster, error) {
