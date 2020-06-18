@@ -104,7 +104,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var deployment azureresource.Deployment
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), mainDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), mainDeploymentName)
 	if IsNotFound(err) {
 		params := map[string]interface{}{
 			"initialProvisioning": "Yes",
@@ -171,7 +171,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
-	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), mainDeploymentName, deployment)
+	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), mainDeploymentName, deployment)
 	if err != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.JSON(microerror.Mask(err)))
 
@@ -293,7 +293,7 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), deploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(&customObject), deploymentName)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

@@ -33,6 +33,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/dnsrecord"
@@ -214,6 +215,19 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 
 		tenantCluster, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var clusteridResource resource.Interface
+	{
+		c := clusterid.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		clusteridResource, err = clusterid.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -564,11 +578,12 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	}
 
 	resources := []resource.Interface{
+		clusteridResource,
+		namespaceResource,
 		ipamResource,
 		statusResource,
 		releaseResource,
 		tenantClientsResource,
-		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
 		encryptionkeyResource,

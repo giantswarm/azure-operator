@@ -94,7 +94,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	defaultParams := map[string]interface{}{
 		"apiLBBackendPoolID":    cc.APILBBackendPoolID,
 		"azureOperatorVersion":  project.Version(),
-		"clusterID":             key.ClusterID(obj),
+		"clusterID":             key.ClusterID(&obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
 		"masterCloudConfigData": masterCloudConfig,
 		"masterNodes":           vmss.GetMasterNodesConfiguration(obj, distroVersion),

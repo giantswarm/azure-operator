@@ -7,10 +7,11 @@ import (
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/k8sclient/k8srestconfig"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -18,7 +19,10 @@ import (
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
@@ -46,6 +50,7 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
+	azureClusterController  *controller.AzureCluster
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
 	machinePoolController   *controller.MachinePool
@@ -177,9 +182,13 @@ func New(config Config) (*Service, error) {
 		c := k8sclient.ClientsConfig{
 			Logger: config.Logger,
 			SchemeBuilder: k8sclient.SchemeBuilder{
+				corev1alpha1.AddToScheme,
 				providerv1alpha1.AddToScheme,
 				releasev1alpha1.AddToScheme,
+				capiv1alpha3.AddToScheme,
 				capzv1alpha3.AddToScheme,
+				expcapiv1alpha3.AddToScheme,
+				expcapzv1alpha3.AddToScheme,
 			},
 
 			KubeConfigPath: kubeConfigPath,
@@ -187,6 +196,31 @@ func New(config Config) (*Service, error) {
 		}
 
 		k8sClient, err = k8sclient.NewClients(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureClusterController *controller.AzureCluster
+	{
+		c := controller.AzureClusterConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
+			Azure:            azure,
+			Ignition:         Ignition,
+			OIDC:             OIDC,
+			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:      config.ProjectName,
+			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+		}
+
+		azureClusterController, err = controller.NewAzureCluster(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -304,7 +338,9 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
-		Version:                 versionService,
+		Version: versionService,
+
+		azureClusterController:  azureClusterController,
 		bootOnce:                sync.Once{},
 		clusterController:       clusterController,
 		machinePoolController:   machinePoolController,
@@ -318,6 +354,7 @@ func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
+		go s.azureClusterController.Boot(ctx)
 		go s.clusterController.Boot(ctx)
 		go s.machinePoolController.Boot(ctx)
 	})

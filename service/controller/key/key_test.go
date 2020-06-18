@@ -7,12 +7,20 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 )
 
 func Test_ClusterID(t *testing.T) {
 	expectedID := "test-cluster"
 
 	customObject := providerv1alpha1.AzureConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				label.Cluster: expectedID,
+			},
+		},
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: expectedID,
@@ -23,8 +31,8 @@ func Test_ClusterID(t *testing.T) {
 		},
 	}
 
-	if ClusterID(customObject) != expectedID {
-		t.Fatalf("Expected cluster ID %s but was %s", expectedID, ClusterID(customObject))
+	if ClusterID(&customObject) != expectedID {
+		t.Fatalf("Expected cluster ID %s but was %s", expectedID, ClusterID(&customObject))
 	}
 }
 
@@ -93,6 +101,11 @@ func Test_ClusterTags(t *testing.T) {
 	}
 
 	customObject := providerv1alpha1.AzureConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				label.Cluster: "test-cluster",
+			},
+		},
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: "test-cluster",
@@ -147,6 +160,11 @@ func Test_Functions_for_AzureResourceKeys(t *testing.T) {
 	}
 
 	customObject := providerv1alpha1.AzureConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				label.Cluster: clusterID,
+			},
+		},
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: clusterID,
@@ -214,6 +232,11 @@ func Test_Functions_for_DNSKeys(t *testing.T) {
 	}
 
 	customObject := providerv1alpha1.AzureConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				label.Cluster: clusterID,
+			},
+		},
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Azure: providerv1alpha1.AzureConfigSpecAzure{
 				DNSZones: providerv1alpha1.AzureConfigSpecAzureDNSZones{
@@ -249,6 +272,11 @@ func Test_MasterNICName(t *testing.T) {
 	expectedMasterNICName := "3p5j2-Master-1-NIC"
 
 	customObject := providerv1alpha1.AzureConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				label.Cluster: "3p5j2",
+			},
+		},
 		Spec: providerv1alpha1.AzureConfigSpec{
 			Cluster: providerv1alpha1.Cluster{
 				ID: "3p5j2",

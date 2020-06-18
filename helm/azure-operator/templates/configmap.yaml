@@ -24,6 +24,44 @@ data:
         location: '{{ .Values.Installation.V1.Provider.Azure.Location }}'
         msi:
           enabled: '{{ .Values.Installation.V1.Provider.Azure.MSI.Enabled }}'
+      cluster:
+        baseDomain: '{{ .Values.Installation.V1.BaseDomain }}'
+        calico:
+          cidr: '{{ .Values.Installation.V1.Guest.Calico.CIDR }}'
+          mtu: 1430
+          subnet: '{{ .Values.Installation.V1.Guest.Calico.Subnet }}'
+        docker:
+          daemon:
+            cidr: '{{ .Values.Installation.V1.Guest.Docker.CIDR }}'
+            extraArgs: '--log-opt max-size=25m --log-opt max-file=2 --log-opt labels=io.kubernetes.container.hash,io.kubernetes.container.name,io.kubernetes.pod.name,io.kubernetes.pod.namespace,io.kubernetes.pod.uid'
+        etcd:
+          altNames: ''
+          port: 2379
+          prefix: 'giantswarm.io'
+        kubernetes:
+          api:
+            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.{{ .Values.Installation.V1.Guest.Kubernetes.API.Domain }}'
+            clusterIPRange: '{{ .Values.Installation.V1.Guest.Kubernetes.API.ClusterIPRange }}'
+            securePort: 443
+          domain: '{{ .Values.Installation.V1.Guest.Kubernetes.ClusterDomain }}'
+          ingressController:
+            baseDomain:  '{{ .Values.Installation.V1.Guest.Kubernetes.IngressController.BaseDomain }}'
+            docker:
+              image: 'quay.io/giantswarm/nginx-ingress-controller:{{ .Values.Installation.V1.Guest.Ingress.Version }}'
+            insecurePort: 30010
+            securePort: 30011
+          kubectl:
+            docker:
+              image: 'quay.io/giantswarm/docker-kubectl:{{ .Values.Installation.V1.Guest.Kubectl.Version }}'
+          kubelet:
+            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.{{ .Values.Installation.V1.Guest.Kubernetes.ClusterDomain }}'
+            labels: ''
+            port: 10250
+          networkSetup:
+            docker:
+              image: '{{ .Values.Installation.V1.Registry.Domain }}/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9'
+          ssh:
+            userList: '{{ .Values.Installation.V1.Guest.SSH.UserList }}'
       installation:
         name: '{{ .Values.Installation.V1.Name }}'
       {{- if .Values.Installation.V1.Guest }}

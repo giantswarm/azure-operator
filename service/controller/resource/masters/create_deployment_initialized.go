@@ -20,7 +20,7 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 		return Empty, microerror.Mask(err)
 	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")

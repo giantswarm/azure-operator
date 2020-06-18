@@ -35,7 +35,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"blobContainerName":          key.BlobContainerName(),
 		"calicoSubnetCidr":           key.CalicoCIDR(customObject),
 		"controlPlaneWorkerSubnetID": controlPlaneWorkerSubnetID,
-		"clusterID":                  key.ClusterID(customObject),
+		"clusterID":                  key.ClusterID(&customObject),
 		"dnsZones":                   key.DNSZones(customObject),
 		"hostClusterCidr":            r.azure.HostCluster.CIDR,
 		"kubernetesAPISecurePort":    key.APISecurePort(customObject),
