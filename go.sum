@@ -297,8 +297,6 @@ github.com/giantswarm/operatorkit v1.0.0 h1:eJ0qg7eXucnyOZGyh/dCSaQmZteya6ugHibe
 github.com/giantswarm/operatorkit v1.0.0/go.mod h1:kPuokmqJCXJwd7KKrERDgs8EBhLFovDSokvWCRSZTvY=
 github.com/giantswarm/randomkeys v0.2.0 h1:e03tqr+OemoyF42BrlQpdeHZ/xvqJd4ALW5IM2X26Ek=
 github.com/giantswarm/randomkeys v0.2.0/go.mod h1:24kbDDO8XgP+nx7SKaX/z5I/qhj4X4n+hiSynpD/9Kk=
-github.com/giantswarm/statusresource v0.3.1-0.20200618100634-c5050440cf3b h1:ccCAR1X9oP5seSkoSgJDENaHzszQ5QVqZYpIEFbNrdg=
-github.com/giantswarm/statusresource v0.3.1-0.20200618100634-c5050440cf3b/go.mod h1:kImFjK5j6dXvHZjA7SxFboNqCBdWf+UkeytU3m1QsRc=
 github.com/giantswarm/statusresource v0.3.1-0.20200618114353-a38ab1d9371d h1:dr5pojuz47wYh1EPrvRolskbMk7JUyD5unjw0tpHUsI=
 github.com/giantswarm/statusresource v0.3.1-0.20200618114353-a38ab1d9371d/go.mod h1:C6h6DE3udBf+LFzHigz+xVB0uGKiiKuHIafamyuDkeU=
 github.com/giantswarm/tenantcluster v0.2.0 h1:NDra7kcxt22w4HwxuVgBGjgG5BHjZ5bxtlYk2YmXaEk=
