@@ -346,6 +346,21 @@
                   }
                 }
               }
+            },
+            {
+              "apiVersion":"[variables('authorizationAPIVersion')]",
+              "condition":"[parameters('vmssMSIEnabled')]",
+              "type":"Microsoft.Authorization/roleAssignments",
+              "name":"[variables('roleAssignmentName')]",
+              "tags":{
+                "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+              },
+              "properties":{
+                "roleDefinitionId":"[variables('contributorRoleDefinitionId')]",
+                "principalId":"[if(parameters('vmssMSIEnabled'), reference(resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName')), variables('computeAPIVersion'), 'Full').Identity.tenantId, '')]",
+
+                "scope":"[resourceGroup().id]"
+              }
             }
           ]
         },
