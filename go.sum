@@ -248,6 +248,8 @@ github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdF
 github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYasoY2OSfNOk=
 github.com/giantswarm/certs v0.2.0 h1:IWxNmheSV1hg2H5AZJast25IM01XOXRGA9wkUT7PLg8=
 github.com/giantswarm/certs v0.2.0/go.mod h1:Axozt4pVBuaLKDzH8TwMEDGil4y2c4/2XvUnsGNeYg8=
+github.com/giantswarm/certs/v2 v2.0.0 h1:8OJoIKphN7TXSOgZKNHiMOsckn5Rt0HH4lpHLLfl6+8=
+github.com/giantswarm/certs/v2 v2.0.0/go.mod h1:23/sZZKqWxrmADOvGeIbQQ8mtVZrFOBnklxvTl3K9xY=
 github.com/giantswarm/e2e-harness v0.2.0 h1:M71fV6T3zIjpg63eAbP8d5eHxCLLT4Q6hskiWelw6jM=
 github.com/giantswarm/e2e-harness v0.2.0/go.mod h1:+2H1VF3hRA75LQHVYno0/GmWxA/f7YEc9Bey03jyGRY=
 github.com/giantswarm/e2eclients v0.2.0 h1:fk3/dU1tAt9NHgSZwz4C9Bm15E9lFuNfYYneLjkw5Sg=
@@ -297,8 +299,12 @@ github.com/giantswarm/randomkeys v0.2.0 h1:e03tqr+OemoyF42BrlQpdeHZ/xvqJd4ALW5IM
 github.com/giantswarm/randomkeys v0.2.0/go.mod h1:24kbDDO8XgP+nx7SKaX/z5I/qhj4X4n+hiSynpD/9Kk=
 github.com/giantswarm/statusresource v0.3.1-0.20200618100634-c5050440cf3b h1:ccCAR1X9oP5seSkoSgJDENaHzszQ5QVqZYpIEFbNrdg=
 github.com/giantswarm/statusresource v0.3.1-0.20200618100634-c5050440cf3b/go.mod h1:kImFjK5j6dXvHZjA7SxFboNqCBdWf+UkeytU3m1QsRc=
+github.com/giantswarm/statusresource v0.3.1-0.20200618114353-a38ab1d9371d h1:dr5pojuz47wYh1EPrvRolskbMk7JUyD5unjw0tpHUsI=
+github.com/giantswarm/statusresource v0.3.1-0.20200618114353-a38ab1d9371d/go.mod h1:C6h6DE3udBf+LFzHigz+xVB0uGKiiKuHIafamyuDkeU=
 github.com/giantswarm/tenantcluster v0.2.0 h1:NDra7kcxt22w4HwxuVgBGjgG5BHjZ5bxtlYk2YmXaEk=
 github.com/giantswarm/tenantcluster v0.2.0/go.mod h1:YMYyVokto7LbAhl3eezMbpKJtzJ9axqNrvM5VbYWLgs=
+github.com/giantswarm/tenantcluster/v2 v2.0.0 h1:4Nj4ARq753tYKjd2VWH7NR0akc/S2mVYHSGxUTFTfCs=
+github.com/giantswarm/tenantcluster/v2 v2.0.0/go.mod h1:pmwAkQidm4EEtHBd0Zi/NJMygN5Fem/pWU9o7hYb9mA=
 github.com/giantswarm/to v0.2.0 h1:qZj0DUnjUcI/7ajwIVtT6mwmSYQm8g0qBvAPCoS1ZF8=
 github.com/giantswarm/to v0.2.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
 github.com/giantswarm/versionbundle v0.2.0 h1:6EP3+9uO/9z1xu7g4pHNUyENxE+Ix1bc5aFpUMPz5Yg=
