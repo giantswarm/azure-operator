@@ -20,16 +20,16 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	service := &v1.Service{
 		ObjectMeta: apismetav1.ObjectMeta{
 			Name:      "master",
-			Namespace: key.ClusterID(cr),
+			Namespace: key.ClusterID(&cr),
 			Labels: map[string]string{
 				key.LabelApp:           "master",
-				key.LegacyLabelCluster: key.ClusterID(cr),
+				key.LegacyLabelCluster: key.ClusterID(&cr),
 				key.LabelCustomer:      key.ClusterCustomer(cr),
-				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelCluster:       key.ClusterID(&cr),
 				key.LabelOrganization:  key.ClusterCustomer(cr),
 			},
 			Annotations: map[string]string{
-				key.AnnotationPrometheusCluster: key.ClusterID(cr),
+				key.AnnotationPrometheusCluster: key.ClusterID(&cr),
 				key.AnnotationEtcdDomain:        key.ClusterEtcdDomain(cr),
 			},
 		},

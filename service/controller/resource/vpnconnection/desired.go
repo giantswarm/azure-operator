@@ -27,7 +27,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 	// Do not check for vpn gateway when deleting. As we do not require tenant
 	// cluster vpn gateway to be ready in order to delete connection from host
 	// cluster vpn gateway.
-	if !key.IsDeleted(cr) {
+	if !key.IsDeleted(&cr) {
 		// In order to make vpn gateway connection work we need 2 vpn gateway. One
 		// on the host cluster and one on the tenant cluster. Here we check for vpn
 		// gateways readiness. In case one of the vpn gateway is not ready we cancel

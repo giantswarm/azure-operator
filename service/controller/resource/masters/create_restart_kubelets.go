@@ -37,7 +37,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	group, err := groupsClient.Get(ctx, key.ClusterID(cr))
+	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
