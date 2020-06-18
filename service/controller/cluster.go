@@ -564,11 +564,11 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	}
 
 	resources := []resource.Interface{
+		namespaceResource,
 		ipamResource,
 		statusResource,
 		releaseResource,
 		tenantClientsResource,
-		namespaceResource,
 		serviceResource,
 		resourceGroupResource,
 		encryptionkeyResource,
