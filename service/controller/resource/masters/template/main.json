@@ -347,7 +347,8 @@
               "properties":{
                 "roleDefinitionId":"[variables('contributorRoleDefinitionId')]",
                 "principalId":"[if(parameters('vmssMSIEnabled'), reference(resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName')), variables('computeAPIVersion'), 'Full').Identity.principalId, '')]",
-                "scope":"[resourceGroup().id]"
+                "scope":"[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
               }
             }
           ]
