@@ -61,7 +61,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
 		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
-		params.DisableCalico = true
+		params.CalicoPolicyOnly = true
 		params.DisableIngressControllerService = true
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Kubernetes = k8scloudconfig.Kubernetes{
