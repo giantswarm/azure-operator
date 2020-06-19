@@ -25,10 +25,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	anyOldNodes, err := r.anyNodesOutOfDate(ctx)
 	if IsClientNotFound(err) {
 		// The kubernetes API is down.
-		// We check if the Legacy Master VMSS exists and in that case
-		// we assume this is because we're migrating to Flatcar.
-		exists, err := r.vmssExists(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
-		if err != nil || !exists {
+		if err != nil {
 			return "", microerror.Mask(err)
 		}
 	} else if err != nil {
@@ -42,7 +39,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	}
 
 	// Skip instance rolling by default.
-	return WaitForRestore, nil
+	return WaitForMastersToBecomeReady, nil
 }
 
 func (r *Resource) isClusterCreating(cr providerv1alpha1.AzureConfig) bool {

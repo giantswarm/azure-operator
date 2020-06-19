@@ -7,5 +7,5 @@ import (
 )
 
 func (r *Resource) emptyStateTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	return CheckFlatcarMigrationNeeded, nil
+	return DeploymentUninitialized, nil
 }
