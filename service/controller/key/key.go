@@ -533,15 +533,6 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), vpnGatewaySuffix)
 }
 
-func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	idB36, err := vmssInstanceIDBase36(instanceID)
-	if err != nil {
-		panic(err)
-	}
-
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(&customObject), idB36)
-}
-
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
@@ -549,10 +540,6 @@ func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 	}
 
 	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(&customObject), ClusterID(&customObject), idB36)
-}
-
-func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker", ClusterID(&customObject))
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
