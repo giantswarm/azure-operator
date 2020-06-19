@@ -241,23 +241,7 @@
             "contributorRoleDefinitionGUID":"b24988ac-6180-42a0-ab88-20f7382dd24c",
             "contributorRoleDefinitionId":"[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleDefinitionGUID'))]",
             "roleAssignmentName":"[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
-            "vmssExtensions":[
-              {
-                "name":"MSILinuxExtension",
-                "properties":{
-                  "publisher":"Microsoft.ManagedIdentity",
-                  "type":"ManagedIdentityExtensionForLinux",
-                  "typeHandlerVersion":"1.0",
-                  "autoUpgradeMinorVersion":true,
-                  "settings":{
-                    "port":50342
-                  },
-                  "protectedSettings":{
-
-                  }
-                }
-              }
-            ],
+            "vmssExtensions":[],
             "vmssResourceId":"[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
             "vmssSinglePlacementGroup":"true",
             "vmssVmNamePrefix":"[concat(toLower(parameters('vmssName')), '-')]"
@@ -348,9 +332,6 @@
                         }
                       }
                     ]
-                  },
-                  "extensionProfile":{
-                    "extensions":"[if(parameters('vmssMSIEnabled'), variables('vmssExtensions'), json('[]'))]"
                   }
                 }
               }
@@ -365,8 +346,9 @@
               },
               "properties":{
                 "roleDefinitionId":"[variables('contributorRoleDefinitionId')]",
-                "principalId":"[if(parameters('vmssMSIEnabled'), reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId, '')]",
-                "scope":"[resourceGroup().id]"
+                "principalId":"[if(parameters('vmssMSIEnabled'), reference(resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName')), variables('computeAPIVersion'), 'Full').Identity.principalId, '')]",
+                "scope":"[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
               }
             }
           ]

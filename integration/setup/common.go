@@ -7,6 +7,7 @@ import (
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/apiextensions/pkg/crd"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/e2e-harness/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
@@ -158,7 +159,7 @@ func installCertOperator(ctx context.Context, config Config, version string) err
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring CertConfig CRD exists")
 
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewCertConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "CertConfig"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -188,7 +189,7 @@ func installNodeOperator(ctx context.Context, config Config) error {
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring drainerconfig CRD exists")
 
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewDrainerConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "DrainerConfig"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -265,7 +266,7 @@ Installation:
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
 
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewAzureClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "AzureClusterConfig"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}

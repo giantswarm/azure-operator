@@ -343,9 +343,6 @@
                         }
                       }
                     ]
-                  },
-                  "extensionProfile":{
-                    "extensions":"[if(parameters('vmssMSIEnabled'), variables('vmssExtensions'), json('[]'))]"
                   }
                 }
               }
@@ -360,8 +357,9 @@
               },
               "properties":{
                 "roleDefinitionId":"[variables('contributorRoleDefinitionId')]",
-                "principalId":"[if(parameters('vmssMSIEnabled'), reference(concat(resourceId('Microsoft.Compute/virtualMachineScaleSets/', parameters('vmssName')),'/providers/Microsoft.ManagedIdentity/Identities/default'),'2015-08-31-PREVIEW').principalId, '')]",
-                "scope":"[resourceGroup().id]"
+                "principalId":"[if(parameters('vmssMSIEnabled'), reference(resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName')), variables('computeAPIVersion'), 'Full').Identity.principalId, '')]",
+                "scope":"[resourceGroup().id]",
+                "principalType": "ServicePrincipal"
               }
             }
           ]
