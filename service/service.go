@@ -126,6 +126,8 @@ func New(config Config) (*Service, error) {
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
 	}
 
+	sentryDSN := config.Viper.GetString(config.Flag.Service.Sentry.DSN)
+
 	var restConfig *rest.Config
 	{
 		c := k8srestconfig.Config{
@@ -218,6 +220,8 @@ func New(config Config) (*Service, error) {
 			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
 			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+
+			SentryDSN: sentryDSN,
 		}
 
 		azureClusterController, err = controller.NewAzureCluster(c)
@@ -279,6 +283,7 @@ func New(config Config) (*Service, error) {
 			OIDC:                      OIDC,
 			ProjectName:               config.ProjectName,
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SentryDSN:                 sentryDSN,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
@@ -299,6 +304,7 @@ func New(config Config) (*Service, error) {
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
+			SentryDSN:                 sentryDSN,
 		}
 
 		machinePoolController, err = controller.NewMachinePool(c)
