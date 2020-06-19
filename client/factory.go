@@ -147,7 +147,7 @@ func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createCl
 		logLevelLogKey, logLevelDebug,
 		messageLogKey, "get client",
 		credentialNameLogKey, key.CredentialName(cr),
-		clusterIDLogKey, key.ClusterID(cr),
+		clusterIDLogKey, key.ClusterID(&cr),
 		clientTypeLogKey, clientType)
 
 	clientKey := getClientKey(cr, clientType)
