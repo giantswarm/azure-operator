@@ -23,12 +23,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 
 	isCreating := r.isClusterCreating(cr)
 	anyOldNodes, err := r.anyNodesOutOfDate(ctx)
-	if IsClientNotFound(err) {
-		// The kubernetes API is down.
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-	} else if err != nil {
+	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
