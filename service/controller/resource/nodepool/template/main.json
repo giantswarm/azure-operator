@@ -356,6 +356,12 @@
           },
           "extensionProfile": {
             "extensions": "[if(parameters('enableMSI'), variables('vmssExtensions'), json('[]'))]"
+          },
+          "scheduledEventsProfile": {
+            "terminateNotificationProfile": {
+              "notBeforeTimeout": "PT5M",
+              "enable": "true"
+            }
           }
         }
       }
