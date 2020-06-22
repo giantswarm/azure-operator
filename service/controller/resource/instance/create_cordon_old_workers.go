@@ -6,13 +6,14 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
@@ -28,7 +29,7 @@ const (
 )
 
 func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -44,11 +45,13 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
+	organizationCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(context.Background(), r.k8sClient, credentialSecret, f.gsTenantID)
+
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.AllInstances(ctx, cr, key.WorkerVMSSName)
+		allWorkerInstances, err = r.AllWorkerInstances(ctx, azureMachinePool, key.WorkerVMSSName)
 		if nodes.IsScaleSetNotFound(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(azureMachinePool)))
 
 			return currentState, nil
 		} else if err != nil {
@@ -68,7 +71,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		nodes = nodeList.Items
 	}
 
-	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, cr, key.WorkerInstanceName)
+	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, azureMachinePool, key.WorkerInstanceName)
 	if len(newNodes) < len(oldNodes) {
 		// Wait until there's enough new nodes up.
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
@@ -129,7 +132,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 	return count, nil
 }
 
-func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, customObject providerv1alpha1.AzureConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) (oldNodes []corev1.Node, newNodes []corev1.Node) {
+func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, azureMachinePool v1alpha3.AzureMachinePool, instanceNameFunc func(azureMachinePool v1alpha3.AzureMachinePool, instanceID string) string) (oldNodes []corev1.Node, newNodes []corev1.Node) {
 	nodeMap := make(map[string]corev1.Node)
 	for _, n := range nodes {
 		nodeMap[n.GetName()] = n
@@ -138,7 +141,7 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 	myVersion := semver.New(project.Version())
 
 	for _, i := range instances {
-		name := instanceNameFunc(customObject, *i.InstanceID)
+		name := instanceNameFunc(azureMachinePool, *i.InstanceID)
 
 		n, found := nodeMap[name]
 		if !found {
@@ -167,14 +170,13 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 	return
 }
 
-func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
+func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	name := key.WorkerInstanceName(customObject, *instance.InstanceID)
-	legacyName := key.LegacyWorkerInstanceName(customObject, *instance.InstanceID)
+	name := key.WorkerInstanceName(azureMachinePool, *instance.InstanceID)
 
 	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
@@ -183,7 +185,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject
 	nodes := nodeList.Items
 
 	for _, n := range nodes {
-		if n.GetName() == name || n.GetName() == legacyName {
+		if n.GetName() == name {
 			return &n, nil
 		}
 	}
@@ -192,11 +194,11 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject
 	return nil, nil
 }
 
-func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance compute.VirtualMachineScaleSetVM) (*bool, error) {
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool, instance compute.VirtualMachineScaleSetVM) (*bool, error) {
 	t := true
 	f := false
 
-	n, err := r.getK8sWorkerNodeForInstance(ctx, customObject, instance)
+	n, err := r.getK8sWorkerNodeForInstance(ctx, azureMachinePool, instance)
 	if err != nil {
 		return nil, err
 	}

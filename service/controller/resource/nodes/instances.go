@@ -43,3 +43,32 @@ func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alph
 
 	return instances, nil
 }
+
+func (r *Resource) AllWorkerInstances(ctx context.Context, resourceGroupName, deploymentName string) ([]compute.VirtualMachineScaleSetVM, error) {
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentName))
+
+	client, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(customObject)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	result, err := client.List(ctx, resourceGroupName, deploymentName, "", "", "")
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var instances []compute.VirtualMachineScaleSetVM
+
+	for result.NotDone() {
+		instances = append(instances, result.Values()...)
+
+		err := result.NextWithContext(ctx)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentName))
+
+	return instances, nil
+}

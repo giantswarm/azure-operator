@@ -11,7 +11,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
@@ -23,12 +22,21 @@ const (
 	tenantIDKey       = "azure.azureoperator.tenantid"
 )
 
+type Secret struct {
+	Namespace string
+	Name      string
+}
+
+func toObjectKey(credential Secret) client.ObjectKey {
+	return client.ObjectKey{Namespace: credential.Namespace, Name: credential.Name}
+}
+
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
-func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
+func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.Interface, credentialSecret Secret, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
 	credential := &v1.Secret{}
-	err := k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: key.CredentialNamespace(cr), Name: key.CredentialName(cr)}, credential)
+	err := k8sClient.CtrlClient().Get(ctx, toObjectKey(credentialSecret), credential)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}

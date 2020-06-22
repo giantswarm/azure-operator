@@ -25,22 +25,12 @@ func (r *Resource) createStateMachine() state.Machine {
 			ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
 			ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 			ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
-
-			WaitNewVMSSWorkers: r.waitNewVMSSWorkersTransition,
-
-			CordonOldVMSS:    r.cordonOldVMSSTransition,
-			CordonOldWorkers: r.cordonOldWorkersTransition,
-
-			WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
-
-			DrainOldVMSS:        r.drainOldVMSSTransition,
-			DrainOldWorkerNodes: r.drainOldWorkerNodesTransition,
-
-			TerminateOldVMSS:            r.terminateOldVmssTransition,
-			TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
-
-			ScaleDownWorkerVMSS: r.scaleDownWorkerVMSSTransition,
-			DeploymentCompleted: r.deploymentCompletedTransition,
+			CordonOldWorkers:               r.cordonOldWorkersTransition,
+			WaitForWorkersToBecomeReady:    r.waitForWorkersToBecomeReadyTransition,
+			DrainOldWorkerNodes:            r.drainOldWorkerNodesTransition,
+			TerminateOldWorkerInstances:    r.terminateOldWorkersTransition,
+			ScaleDownWorkerVMSS:            r.scaleDownWorkerVMSSTransition,
+			DeploymentCompleted:            r.deploymentCompletedTransition,
 		},
 	}
 

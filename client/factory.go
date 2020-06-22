@@ -86,7 +86,7 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 // ARM templates. The client (for specified cluster) is cached after creation, so the same client
 // is returned every time.
 func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.DeploymentsClient, error) {
-	client, err := f.getClient(cr, "DeploymentsClient", newDeploymentsClient)
+	client, err := f.getClient(cr, getClientKey(key.CredentialName(cr), "DeploymentsClient"), newDeploymentsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -98,7 +98,7 @@ func (f *Factory) GetDeploymentsClient(cr v1alpha1.AzureConfig) (*resources.Depl
 // specified cluster. The created client is cached for the time period specified in the factory
 // config.
 func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsClient, error) {
-	client, err := f.getClient(cr, "GroupsClient", newGroupsClient)
+	client, err := f.getClient(cr, getClientKey(key.CredentialName(cr), "GroupsClient"), newGroupsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -110,7 +110,7 @@ func (f *Factory) GetGroupsClient(cr v1alpha1.AzureConfig) (*resources.GroupsCli
 // management of virtual machine scale sets for the specified cluster. The created client is cached
 // for the time period specified in the factory config.
 func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetsClient, error) {
-	client, err := f.getClient(cr, "VirtualMachineScaleSetsClient", newVirtualMachineScaleSetsClient)
+	client, err := f.getClient(cr, getClientKey(key.CredentialName(cr), "VirtualMachineScaleSetsClient"), newVirtualMachineScaleSetsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -122,7 +122,7 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(cr v1alpha1.AzureConfig) (*co
 // management of virtual machine scale set instances for the specified cluster. The created client
 // is cached for the time period specified in the factory config.
 func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	client, err := f.getClient(cr, "VirtualMachineScaleSetVMsClient", newVirtualMachineScaleSetVMsClient)
+	client, err := f.getClient(cr, getClientKey(key.CredentialName(cr), "VirtualMachineScaleSetVMsClient"), newVirtualMachineScaleSetVMsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -133,8 +133,8 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(cr v1alpha1.AzureConfig) (*
 // GetStorageAccountsClient returns *storage.AccountsClient that is used for management of Azure
 // storage accounts for the specified cluster. The created client is cached for the time period
 // specified in the factory config.
-func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.AccountsClient, error) {
-	client, err := f.getClient(cr, "StorageAccountsClient", newStorageAccountsClient)
+func (f *Factory) GetStorageAccountsClient(credentialSecret credential.Secret) (*storage.AccountsClient, error) {
+	client, err := f.getClient(credentialSecret, getClientKey(credentialSecret.Name, "StorageAccountsClient"), newStorageAccountsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -142,15 +142,12 @@ func (f *Factory) GetStorageAccountsClient(cr v1alpha1.AzureConfig) (*storage.Ac
 	return toStorageAccountsClient(client), nil
 }
 
-func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createClient clientCreatorFunc) (interface{}, error) {
+func (f *Factory) getClient(credentialSecret credential.Secret, clientKey string, createClient clientCreatorFunc) (interface{}, error) {
 	l := f.logger.With(
 		logLevelLogKey, logLevelDebug,
 		messageLogKey, "get client",
-		credentialNameLogKey, key.CredentialName(cr),
-		clusterIDLogKey, key.ClusterID(&cr),
-		clientTypeLogKey, clientType)
+		clusterIDLogKey, clientKey)
 
-	clientKey := getClientKey(cr, clientType)
 	var client interface{}
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -162,7 +159,7 @@ func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createCl
 	} else {
 		// client not found, create it, it will be saved in cache
 		l.Log(cacheHitLogKey, false)
-		newClient, err := f.createClient(cr, createClient)
+		newClient, err := f.createClient(credentialSecret, createClient)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -174,8 +171,8 @@ func (f *Factory) getClient(cr v1alpha1.AzureConfig, clientType string, createCl
 	return client, nil
 }
 
-func (f *Factory) createClient(cr v1alpha1.AzureConfig, createClient clientCreatorFunc) (interface{}, error) {
-	organizationCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(context.Background(), f.k8sClient, cr, f.gsTenantID)
+func (f *Factory) createClient(credentialSecret credential.Secret, createClient clientCreatorFunc) (interface{}, error) {
+	organizationCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(context.Background(), f.k8sClient, credentialSecret, f.gsTenantID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -191,8 +188,8 @@ func (f *Factory) createClient(cr v1alpha1.AzureConfig, createClient clientCreat
 	return client, nil
 }
 
-func getClientKey(cr v1alpha1.AzureConfig, clientType string) string {
-	return fmt.Sprintf("%s.%s", key.CredentialName(cr), clientType)
+func getClientKey(credentialName string, clientType string) string {
+	return fmt.Sprintf("%s.%s", credentialName, clientType)
 }
 
 func getClientKeyParts(clientKey string) (credentialName, clientType string) {

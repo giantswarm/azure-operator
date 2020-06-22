@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -11,12 +12,12 @@ import (
 )
 
 func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	isCreating := key.IsClusterCreating(cr)
+	isCreating := *azureMachinePool.Status.ProvisioningState == v1alpha3.VMStateCreating
 	anyOldNodes, err := nodes.AnyOutOfDate(ctx)
 	if err != nil {
 		return "", microerror.Mask(err)
