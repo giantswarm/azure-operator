@@ -42,6 +42,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/service"
@@ -191,6 +192,21 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
+
+	var clientFactory *client.Factory
+	{
+		c := client.FactoryConfig{
+			CacheDuration: 30 * time.Minute,
+			K8sClient:     config.K8sClient,
+			Logger:        config.Logger,
+			GSTenantID:    config.GSClientCredentialsConfig.TenantID,
+		}
+
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var newDebugger *debugger.Debugger
 	{
@@ -407,16 +423,21 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
+	nodesConfig := nodes.Config{
+		Debugger:  newDebugger,
+		G8sClient: config.K8sClient.G8sClient(),
+		K8sClient: config.K8sClient.K8sClient(),
+		Logger:    config.Logger,
+
+		Azure:            config.Azure,
+		ClientFactory:    clientFactory,
+		InstanceWatchdog: iwd,
+	}
+
 	var mastersResource resource.Interface
 	{
 		c := masters.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			InstanceWatchdog: iwd,
+			Config: nodesConfig,
 		}
 
 		mastersResource, err = masters.New(c)
@@ -425,6 +446,7 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
+	var clusterChecker *ipam.ClusterChecker
 	var clusterChecker *ipam.AzureConfigChecker
 	{
 		c := ipam.AzureConfigCheckerConfig{

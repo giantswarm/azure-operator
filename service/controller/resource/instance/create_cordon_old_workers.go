@@ -18,6 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 const (
@@ -37,17 +38,17 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	if cc.Client.TenantCluster.K8s == nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.allInstances(ctx, cr, key.WorkerVMSSName)
-		if IsScaleSetNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
+		allWorkerInstances, err = r.AllInstances(ctx, cr, key.WorkerVMSSName)
+		if nodes.IsScaleSetNotFound(err) {
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
 
 			return currentState, nil
 		} else if err != nil {
@@ -55,8 +56,8 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
 
 	var nodes []corev1.Node
 	{
@@ -70,13 +71,13 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, cr, key.WorkerInstanceName)
 	if len(newNodes) < len(oldNodes) {
 		// Wait until there's enough new nodes up.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
 
 	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
 	if err != nil {
@@ -84,47 +85,14 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	if oldNodesCordoned < len(oldNodes) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not all old nodes are still cordoned; %d pending", len(oldNodes)-oldNodesCordoned))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not all old nodes are still cordoned; %d pending", len(oldNodes)-oldNodesCordoned))
 
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned))
 
 	return WaitForWorkersToBecomeReady, nil
-}
-
-func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
-
-	c, err := r.getVMsClient(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	g := key.ResourceGroupName(customObject)
-	s := deploymentNameFunc(customObject)
-	result, err := c.List(ctx, g, s, "", "", "")
-	if IsScaleSetNotFound(err) {
-		return nil, microerror.Mask(scaleSetNotFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var instances []compute.VirtualMachineScaleSetVM
-
-	for result.NotDone() {
-		instances = append(instances, result.Values()...)
-
-		err := result.Next()
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
-
-	return instances, nil
 }
 
 // ensureNodesCordoned ensures that given tenant cluster nodes are cordoned.

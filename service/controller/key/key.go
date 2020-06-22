@@ -264,6 +264,20 @@ func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureC
 	return customObject.Spec.Azure.DNSZones
 }
 
+// IsClusterCreating check if the cluster is being created.
+func IsClusterCreating(cr providerv1alpha1.AzureConfig) bool {
+	// When cluster creation is in the beginning, it doesn't necessarily have
+	// any status conditions yet.
+	if len(cr.Status.Cluster.Conditions) == 0 {
+		return true
+	}
+	if cr.Status.Cluster.HasCreatingCondition() {
+		return true
+	}
+
+	return false
+}
+
 func IsFinalProvisioningState(s string) bool {
 	return IsFailedProvisioningState(s) || IsSucceededProvisioningState(s)
 }

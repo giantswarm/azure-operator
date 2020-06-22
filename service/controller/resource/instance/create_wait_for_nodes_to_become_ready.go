@@ -14,22 +14,22 @@ import (
 )
 
 func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isWorker)
 	if IsClientNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
 
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
@@ -37,25 +37,25 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	}
 
 	// If the old VMSS still exists, we want to go to a different state.
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
-	vmss, err := r.getScaleSet(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	vmss, err := r.getScaleSet(ctx, cr, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
 	if IsScaleSetNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s was not found", key.LegacyWorkerVMSSName(cr)))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s was not found", key.LegacyWorkerVMSSName(cr)))
 		return DrainOldWorkerNodes, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s is still present", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 
 	// The legacy VMSS was found, check the scaling.
 	if *vmss.Sku.Capacity > 0 {
 		// The legacy VMSS has still instances running, cordon all of them.
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: draining those", key.LegacyWorkerVMSSName(cr), *vmss.Sku.Capacity)) // nolint: errcheck
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has %d instances: draining those", key.LegacyWorkerVMSSName(cr), *vmss.Sku.Capacity)) // nolint: errcheck
 		return DrainOldVMSS, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has 0 instances", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The legacy VMSS %s has 0 instances", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 
 	return DrainOldWorkerNodes, nil
 }
