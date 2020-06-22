@@ -20,22 +20,22 @@ func (r *Resource) terminateOldVmssTransition(ctx context.Context, obj interface
 		return "", microerror.Mask(err)
 	}
 
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting the legacy VMSS %s", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting the legacy VMSS %s", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 	_, err = c.Delete(ctx, key.ResourceGroupName(cr), key.LegacyWorkerVMSSName(cr))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted the legacy VMSS %s", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted the legacy VMSS %s", key.LegacyWorkerVMSSName(cr))) // nolint: errcheck
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting the legacy VMSS deployment %s", legacyVMSSDeploymentName)) // nolint: errcheck
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting the legacy VMSS deployment %s", legacyVMSSDeploymentName)) // nolint: errcheck
 
-	dc, err := r.getDeploymentsClient(ctx)
+	dc, err := r.ClientFactory.GetDeploymentsClient(cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -45,7 +45,7 @@ func (r *Resource) terminateOldVmssTransition(ctx context.Context, obj interface
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted the legacy VMSS deployment %s", legacyVMSSDeploymentName)) // nolint: errcheck
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted the legacy VMSS deployment %s", legacyVMSSDeploymentName)) // nolint: errcheck
 
 	return DeploymentCompleted, nil
 }

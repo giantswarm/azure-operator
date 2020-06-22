@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
@@ -17,7 +18,7 @@ func (r *Resource) checkFlatcarMigrationNeededTransition(ctx context.Context, ob
 		return Empty, microerror.Mask(err)
 	}
 
-	legacyExists, err := r.vmssExistsAndHasActiveInstance(ctx, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
+	legacyExists, err := r.vmssExistsAndHasActiveInstance(ctx, cr, key.ResourceGroupName(cr), key.LegacyMasterVMSSName(cr))
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
@@ -28,7 +29,7 @@ func (r *Resource) checkFlatcarMigrationNeededTransition(ctx context.Context, ob
 		return DeploymentUninitialized, nil
 	}
 
-	newExists, err := r.vmssExistsAndHasActiveInstance(ctx, key.ResourceGroupName(cr), key.MasterVMSSName(cr))
+	newExists, err := r.vmssExistsAndHasActiveInstance(ctx, cr, key.ResourceGroupName(cr), key.MasterVMSSName(cr))
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
@@ -36,17 +37,17 @@ func (r *Resource) checkFlatcarMigrationNeededTransition(ctx context.Context, ob
 	if newExists {
 		// We have both a running legacy master and a running new master.
 		// Manual intervention is required in order to fix the situation.
-		r.logger.LogCtx(ctx, "level", "error", "message", "Both an old and a new master VMSS are running. This is critital and must be handled manually.")
+		r.Logger.LogCtx(ctx, "level", "error", "message", "Both an old and a new master VMSS are running. This is critital and must be handled manually.")
 		return ManualInterventionRequired, nil
 	}
 
 	return WaitForBackupConfirmation, nil
 }
 
-func (r *Resource) vmssExistsAndHasActiveInstance(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the VMSS %s exists in resource group %s", vmssName, resourceGroup)) // nolint: errcheck
+func (r *Resource) vmssExistsAndHasActiveInstance(ctx context.Context, cr providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) (bool, error) {
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if the VMSS %s exists in resource group %s", vmssName, resourceGroup)) // nolint: errcheck
 
-	runningInstances, err := r.getRunningInstances(ctx, resourceGroup, vmssName)
+	runningInstances, err := r.getRunningInstances(ctx, cr, resourceGroup, vmssName)
 	if IsScaleSetNotFound(err) {
 		return false, nil
 	} else if err != nil {

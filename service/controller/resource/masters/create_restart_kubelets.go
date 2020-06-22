@@ -15,24 +15,24 @@ import (
 
 func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	// Check if API server is up or wait.
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Checking if API server is up")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "Checking if API server is up")
 	up, err := r.isApiServerUP(ctx)
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("API server is NOT up. Original error was %s", err.Error()))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("API server is NOT up. Original error was %s", err.Error()))
 		return currentState, nil
 	}
 	if !up {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "API server is NOT up.")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "API server is NOT up.")
 		return currentState, nil
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "API server is up")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "API server is up")
 
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	groupsClient, err := r.getGroupsClient(ctx)
+	groupsClient, err := r.ClientFactory.GetGroupsClient(cr)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -42,7 +42,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	vmssVMsClient, err := r.getVMsClient(ctx)
+	vmssVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -56,13 +56,13 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 		Script:    &script,
 	}
 
-	allMasterInstances, err := r.allInstances(ctx, cr, key.LegacyWorkerVMSSName)
+	allMasterInstances, err := r.AllInstances(ctx, cr, key.LegacyWorkerVMSSName)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	for _, instance := range allMasterInstances {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sending restart kubelet command to %s", *instance.Name))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sending restart kubelet command to %s", *instance.Name))
 		runCommandFuture, err := vmssVMsClient.RunCommand(ctx, *group.Name, key.LegacyWorkerVMSSName(cr), *instance.InstanceID, runCommandInput)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -73,7 +73,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 			return "", microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sent restart kubelet command to %s", *instance.Name))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Sent restart kubelet command to %s", *instance.Name))
 	}
 
 	return DeploymentCompleted, nil
