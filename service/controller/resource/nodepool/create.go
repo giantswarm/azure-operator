@@ -208,7 +208,7 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	zones, err := r.getFailureDomains(ctx, azureMachinePool)
+	zones, err := r.getFailureDomains(ctx, azureCluster, machinePool)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -222,22 +222,18 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 		"azureOperatorVersion": project.Version(),
 		"clusterID":            azureCluster.GetName(),
 		"dockerVolumeSizeGB":   "50",
-		"enableMSI":            r.vmssMSIEnabled,
 		"kubeletVolumeSizeGB":  "100",
-		"vmCustomData":         workerCloudConfig,
 		"sshPublicKey":         azureMachinePool.Spec.Template.SSHPublicKey,
-		//"osImagePublisher":     azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
-		//"osImageOffer":         azureMachinePool.Spec.Template.Image.Marketplace.Offer,
-		//"osImageSKU":           azureMachinePool.Spec.Template.Image.Marketplace.SKU,
-		//"osImageVersion":       azureMachinePool.Spec.Template.Image.Marketplace.Version,
-		"osImagePublisher": "kinvolk",
-		"osImageOffer":     "flatcar-container-linux-free",
-		"osImageSKU":       "stable",
-		"osImageVersion":   distroVersion,
-		"replicas":         machinePool.Spec.Replicas,
-		"subnetID":         subnetID,
-		"vmSize":           azureMachinePool.Spec.Template.VMSize,
-		"zones":            zones,
+		"osImagePublisher":     "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
+		"osImageOffer":         "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,
+		"osImageSKU":           "stable",                       // azureMachinePool.Spec.Template.Image.Marketplace.SKU,
+		"osImageVersion":       distroVersion,                  // azureMachinePool.Spec.Template.Image.Marketplace.Version,
+		"replicas":             machinePool.Spec.Replicas,
+		"subnetID":             subnetID,
+		// This should come from the bootstrap operator.
+		"vmCustomData": workerCloudConfig,
+		"vmSize":       azureMachinePool.Spec.Template.VMSize,
+		"zones":        zones,
 	}
 
 	armTemplate, err := nodepool.GetARMTemplate()
@@ -262,29 +258,39 @@ func (r Resource) getSubnetID(ctx context.Context, azureClientSet *client.AzureC
 		return "", microerror.Mask(missingSubnetLabel)
 	}
 
-	subnetsInVnet, err := azureClientSet.SubnetsClient.List(ctx, azureCluster.GetName(), azureCluster.Spec.NetworkSpec.Vnet.ID)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	for _, subnet := range subnetsInVnet.Values() {
-		r.logger.LogCtx(ctx, "message", "Comparing CIDR to subnet address prefix", "cidr", subnetCIDR, "addressPrefix", *subnet.AddressPrefix)
-		if *subnet.AddressPrefix == subnetCIDR {
-			return *subnet.ID, nil
+	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
+		if subnetCIDR == subnet.CidrBlock {
+			return subnet.ID, nil
 		}
 	}
+
+	//subnetsInVnet, err := azureClientSet.SubnetsClient.List(ctx, azureCluster.GetName(), azureCluster.Spec.NetworkSpec.Vnet.ID)
+	//if err != nil {
+	//	return "", microerror.Mask(err)
+	//}
+	//
+	//for _, subnet := range subnetsInVnet.Values() {
+	//	r.logger.LogCtx(ctx, "message", "Comparing CIDR to subnet address prefix", "cidr", subnetCIDR, "addressPrefix", *subnet.AddressPrefix)
+	//	if *subnet.AddressPrefix == subnetCIDR {
+	//		return *subnet.ID, nil
+	//	}
+	//}
 
 	return "", microerror.Maskf(notFoundError, "subnet with CIDR %#q was not found in virtual network called %#q", subnetCIDR, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
-func (r *Resource) getFailureDomains(ctx context.Context, customObject capzexpv1alpha3.AzureMachinePool) ([]string, error) {
-	machinePool := &capiexpv1alpha3.MachinePool{}
-	err := r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: customObject.GetNamespace(), Name: customObject.GetName()}, machinePool)
-	if err != nil {
-		return []string{}, microerror.Mask(err)
+func (r *Resource) getFailureDomains(ctx context.Context, azureCluster capzv1alpha3.AzureCluster, machinePool capiexpv1alpha3.MachinePool) ([]string, error) {
+	var validFailureDomain bool
+	allowedFailureDomains := azureCluster.Status.FailureDomains.GetIDs()
+	for _, id := range allowedFailureDomains {
+		if id == machinePool.Spec.Template.Spec.FailureDomain {
+			validFailureDomain = true
+		}
 	}
 
-	// TODO: check FailureDomains are present in AzureCluster object. Those are the valid ones.
+	if !validFailureDomain {
+		return []string{}, microerror.Maskf(notAvailableFailureDomain, "nodepool availability zone %#q is not available in the region", *machinePool.Spec.Template.Spec.FailureDomain)
+	}
 
 	return []string{*machinePool.Spec.Template.Spec.FailureDomain}, nil
 }

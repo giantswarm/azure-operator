@@ -101,7 +101,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 			CtrlClient:                config.K8sClient.CtrlClient(),
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 			Logger:                    config.Logger,
-			VMSSMSIEnabled:            config.VMSSMSIEnabled,
 		}
 
 		nodepoolResource, err = nodepool.New(c)

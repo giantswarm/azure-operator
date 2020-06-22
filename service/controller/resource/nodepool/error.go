@@ -117,3 +117,7 @@ var missingClusterLabel = &microerror.Error{
 var missingSubnetLabel = &microerror.Error{
 	Kind: "missingSubnetLabel",
 }
+
+var notAvailableFailureDomain = &microerror.Error{
+	Kind: "notAvailableFailureDomain",
+}

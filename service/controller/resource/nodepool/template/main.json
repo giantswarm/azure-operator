@@ -18,9 +18,6 @@
       "type": "string",
       "defaultValue": "50"
     },
-    "enableMSI": {
-      "type": "bool"
-    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
@@ -262,7 +259,7 @@
         "capacity": "[parameters('replicas')]"
       },
       "identity": {
-        "type": "[if(parameters('enableMSI'), 'systemAssigned', 'None')]"
+        "type": "systemAssigned"
       },
       "plan": {
         "name": "[parameters('osImageSKU')]",
@@ -355,20 +352,13 @@
             ]
           },
           "extensionProfile": {
-            "extensions": "[if(parameters('enableMSI'), variables('vmssExtensions'), json('[]'))]"
-          },
-          "scheduledEventsProfile": {
-            "terminateNotificationProfile": {
-              "notBeforeTimeout": "PT5M",
-              "enable": "true"
-            }
+            "extensions": "[variables('vmssExtensions')]"
           }
         }
       }
     },
     {
       "apiVersion": "2017-05-01",
-      "condition": "[parameters('enableMSI')]",
       "type": "Microsoft.Authorization/roleAssignments",
       "name": "[variables('roleAssignmentName')]",
       "tags": {

@@ -19,14 +19,12 @@ type Config struct {
 	CtrlClient                client.Client
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	Logger                    micrologger.Logger
-	VMSSMSIEnabled            bool
 }
 
 type Resource struct {
 	ctrlClient                client.Client
 	gsClientCredentialsConfig auth.ClientCredentialsConfig
 	logger                    micrologger.Logger
-	vmssMSIEnabled            bool
 }
 
 func New(config Config) (*Resource, error) {
@@ -41,7 +39,6 @@ func New(config Config) (*Resource, error) {
 		ctrlClient:                config.CtrlClient,
 		gsClientCredentialsConfig: config.GSClientCredentialsConfig,
 		logger:                    config.Logger,
-		vmssMSIEnabled:            config.VMSSMSIEnabled,
 	}
 
 	return r, nil
