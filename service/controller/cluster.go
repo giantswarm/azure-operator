@@ -198,8 +198,9 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
-			CacheDuration: 30 * time.Minute,
-			Logger:        config.Logger,
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
 		}
 
 		clientFactory, err = client.NewFactory(c)
@@ -487,9 +488,10 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var subnetCollector *ipam.SubnetCollector
 	{
 		c := ipam.SubnetCollectorConfig{
-			K8sClient:        config.K8sClient,
-			InstallationName: config.InstallationName,
-			Logger:           config.Logger,
+			CredentialProvider: config.CredentialProvider,
+			K8sClient:          config.K8sClient,
+			InstallationName:   config.InstallationName,
+			Logger:             config.Logger,
 
 			NetworkRange: config.IPAMNetworkRange,
 		}

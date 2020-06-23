@@ -26,6 +26,13 @@ type K8SCredential struct {
 	gsTenantID string
 }
 
+func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string) Provider {
+	return K8SCredential{
+		k8sclient:  k8sclient,
+		gsTenantID: gsTenantID,
+	}
+}
+
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
