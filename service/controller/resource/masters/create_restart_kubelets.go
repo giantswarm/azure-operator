@@ -32,7 +32,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 		return "", microerror.Mask(err)
 	}
 
-	groupsClient, err := r.ClientFactory.GetGroupsClient(cr)
+	groupsClient, err := r.ClientFactory.GetGroupsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -42,7 +42,7 @@ func (r *Resource) restartKubeletOnWorkersTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	vmssVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(cr)
+	vmssVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

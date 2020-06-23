@@ -20,7 +20,7 @@ func (r *Resource) terminateOldVmssTransition(ctx context.Context, obj interface
 		return "", microerror.Mask(err)
 	}
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(cr)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -35,7 +35,7 @@ func (r *Resource) terminateOldVmssTransition(ctx context.Context, obj interface
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting the legacy VMSS deployment %s", legacyVMSSDeploymentName)) // nolint: errcheck
 
-	dc, err := r.ClientFactory.GetDeploymentsClient(cr)
+	dc, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
