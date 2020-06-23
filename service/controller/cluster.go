@@ -53,10 +53,11 @@ import (
 )
 
 type ClusterConfig struct {
-	InstallationName string
-	K8sClient        k8sclient.Interface
-	Locker           locker.Interface
-	Logger           micrologger.Logger
+	CredentialProvider credential.Provider
+	InstallationName   string
+	K8sClient          k8sclient.Interface
+	Locker             locker.Interface
+	Logger             micrologger.Logger
 
 	Azure setting.Azure
 	// Azure client set used when managing control plane resources
@@ -128,7 +129,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 					return nil, microerror.Mask(err)
 				}
 
-				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(ctx, config.K8sClient, cr, config.GSClientCredentialsConfig.TenantID)
+				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cr), key.CredentialName(cr))
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}
@@ -196,10 +197,9 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
-			CacheDuration: 30 * time.Minute,
-			K8sClient:     config.K8sClient,
-			Logger:        config.Logger,
-			GSTenantID:    config.GSClientCredentialsConfig.TenantID,
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
 		}
 
 		clientFactory, err = client.NewFactory(c)
@@ -476,10 +476,10 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var subnetCollector *ipam.SubnetCollector
 	{
 		c := ipam.SubnetCollectorConfig{
-			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-			K8sClient:                 config.K8sClient,
-			InstallationName:          config.InstallationName,
-			Logger:                    config.Logger,
+			CredentialProvider: config.CredentialProvider,
+			K8sClient:          config.K8sClient,
+			InstallationName:   config.InstallationName,
+			Logger:             config.Logger,
 
 			NetworkRange: config.IPAMNetworkRange,
 		}

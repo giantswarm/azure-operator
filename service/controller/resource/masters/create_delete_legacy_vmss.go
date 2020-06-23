@@ -29,7 +29,7 @@ func (r *Resource) deleteLegacyVMSSTransition(ctx context.Context, obj interface
 }
 
 func (r *Resource) deleteScaleSet(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) error {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return microerror.Mask(err)
 	}

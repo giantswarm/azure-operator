@@ -7,7 +7,6 @@ import (
 	"reflect"
 	"sync"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
@@ -23,24 +22,27 @@ import (
 )
 
 type SubnetCollectorConfig struct {
-	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	K8sClient                 k8sclient.Interface
-	InstallationName          string
-	Logger                    micrologger.Logger
+	CredentialProvider credential.Provider
+	K8sClient          k8sclient.Interface
+	InstallationName   string
+	Logger             micrologger.Logger
 
 	NetworkRange net.IPNet
 }
 
 type SubnetCollector struct {
-	gsClientCredentialsConfig auth.ClientCredentialsConfig
-	k8sclient                 k8sclient.Interface
-	installationName          string
-	logger                    micrologger.Logger
+	credentialProvider credential.Provider
+	k8sclient          k8sclient.Interface
+	installationName   string
+	logger             micrologger.Logger
 
 	networkRange net.IPNet
 }
 
 func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) {
+	if config.CredentialProvider == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
+	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -56,9 +58,10 @@ func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) 
 	}
 
 	c := &SubnetCollector{
-		k8sclient:        config.K8sClient,
-		installationName: config.InstallationName,
-		logger:           config.Logger,
+		credentialProvider: config.CredentialProvider,
+		k8sclient:          config.K8sClient,
+		installationName:   config.InstallationName,
+		logger:             config.Logger,
 
 		networkRange: config.NetworkRange,
 	}
@@ -148,7 +151,7 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 	var doneSubscriptions []string
 	var ret []net.IPNet
 	for _, cluster := range tenantClusterList.Items {
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(ctx, c.k8sclient, cluster, c.gsClientCredentialsConfig.TenantID)
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := c.credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cluster), key.CredentialName(cluster))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

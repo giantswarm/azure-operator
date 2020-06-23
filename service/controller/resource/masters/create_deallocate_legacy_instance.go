@@ -46,7 +46,7 @@ func (r *Resource) deallocateLegacyInstanceTransition(ctx context.Context, obj i
 }
 
 func (r *Resource) deallocateAllInstances(ctx context.Context, cr providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) error {
-	vmssInstancesClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(cr)
+	vmssInstancesClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -77,7 +77,7 @@ func (r *Resource) deallocateAllInstances(ctx context.Context, cr providerv1alph
 }
 
 func (r *Resource) getRunningInstances(ctx context.Context, cr providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
-	vmssInstancesClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(cr)
+	vmssInstancesClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return []compute.VirtualMachineScaleSetVM{}, microerror.Mask(err)
 	}
@@ -120,7 +120,7 @@ func (r *Resource) getRunningInstances(ctx context.Context, cr providerv1alpha1.
 }
 
 func (r *Resource) getVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

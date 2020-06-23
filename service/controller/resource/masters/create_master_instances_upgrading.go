@@ -205,7 +205,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName))
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -241,7 +241,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(customObject)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return microerror.Mask(err)
 	}
