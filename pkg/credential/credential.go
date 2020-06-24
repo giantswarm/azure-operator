@@ -4,14 +4,12 @@ import (
 	"context"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
@@ -23,37 +21,49 @@ const (
 	tenantIDKey       = "azure.azureoperator.tenantid"
 )
 
+type K8SCredential struct {
+	k8sclient  k8sclient.Interface
+	gsTenantID string
+}
+
+func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string) Provider {
+	return K8SCredential{
+		k8sclient:  k8sclient,
+		gsTenantID: gsTenantID,
+	}
+}
+
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
-func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.Interface, cr providerv1alpha1.AzureConfig, gsTenantID string) (auth.ClientCredentialsConfig, string, string, error) {
-	credential := &v1.Secret{}
-	err := k8sClient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: key.CredentialNamespace(cr), Name: key.CredentialName(cr)}, credential)
+func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, credentialNamespace, credentialName string) (auth.ClientCredentialsConfig, string, string, error) {
+	secret := &v1.Secret{}
+	err := k.k8sclient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: credentialNamespace, Name: credentialName}, secret)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	clientID, err := valueFromSecret(credential, clientIDKey)
+	clientID, err := valueFromSecret(secret, clientIDKey)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	clientSecret, err := valueFromSecret(credential, clientSecretKey)
+	clientSecret, err := valueFromSecret(secret, clientSecretKey)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	tenantID, err := valueFromSecret(credential, tenantIDKey)
+	tenantID, err := valueFromSecret(secret, tenantIDKey)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	subscriptionID, err := valueFromSecret(credential, subscriptionIDKey)
+	subscriptionID, err := valueFromSecret(secret, subscriptionIDKey)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	partnerID, err := valueFromSecret(credential, partnerIDKey)
+	partnerID, err := valueFromSecret(secret, partnerIDKey)
 	if err != nil {
 		// No having Partner ID in the secret means that customer has not
 		// upgraded yet to use the Azure Partner Program. In that case we set a
@@ -62,13 +72,13 @@ func GetOrganizationAzureCredentials(ctx context.Context, k8sClient k8sclient.In
 		partnerID = defaultAzureGUID
 	}
 
-	if _, exists := credential.GetLabels()[label.SingleTenantSP]; exists || tenantID == gsTenantID {
+	if _, exists := secret.GetLabels()[label.SingleTenantSP]; exists || tenantID == k.gsTenantID {
 		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
 	}
 
-	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, gsTenantID)
+	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, k.gsTenantID)
 	credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
 
 	return credentials, subscriptionID, partnerID, nil

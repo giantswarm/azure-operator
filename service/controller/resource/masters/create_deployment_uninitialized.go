@@ -20,16 +20,16 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.getDeploymentsClient(ctx)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	groupsClient, err := r.getGroupsClient(ctx)
+	groupsClient, err := r.ClientFactory.GetGroupsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
 	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
@@ -38,15 +38,15 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 	computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
 	if controllercontext.IsInvalidContext(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", err.Error())
-		r.logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", err.Error())
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if blobclient.IsBlobNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
@@ -61,7 +61,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			return currentState, microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
 
 		deploymentTemplateChk, err := checksum.GetDeploymentTemplateChecksum(computedDeployment)
 		if err != nil {
@@ -69,14 +69,14 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentTemplateChk != "" {
-			err = r.setResourceStatus(cr, DeploymentTemplateChecksum, deploymentTemplateChk)
+			err = r.SetResourceStatus(cr, DeploymentTemplateChecksum, deploymentTemplateChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, deploymentTemplateChk))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, deploymentTemplateChk))
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
 		}
 
 		deploymentParametersChk, err := checksum.GetDeploymentParametersChecksum(computedDeployment)
@@ -85,20 +85,20 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentParametersChk != "" {
-			err = r.setResourceStatus(cr, DeploymentParametersChecksum, deploymentParametersChk)
+			err = r.SetResourceStatus(cr, DeploymentParametersChecksum, deploymentParametersChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, deploymentParametersChk))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, deploymentParametersChk))
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
 		}
 
 		// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
-		r.instanceWatchdog.DeleteFailedVMSS(ctx, key.ResourceGroupName(cr), key.MasterVMSSName(cr))
+		r.InstanceWatchdog.DeleteFailedVMSS(ctx, key.ResourceGroupName(cr), key.MasterVMSSName(cr))
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 
 		return DeploymentInitialized, nil

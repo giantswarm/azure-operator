@@ -50,11 +50,11 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
-	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
+	encrypter, err := r.GetEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return azureresource.Deployment{}, nil
 	} else if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -63,7 +63,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	encryptionKey := encrypter.GetEncryptionKey()
 	initialVector := encrypter.GetInitialVector()
 
-	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
+	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(key.CredentialNamespace(obj), key.CredentialName(obj))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -96,7 +96,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"azureOperatorVersion":  project.Version(),
 		"clusterID":             key.ClusterID(&obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
-		"vmssMSIEnabled":        r.azure.MSI.Enabled,
+		"vmssMSIEnabled":        r.Azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           vmss.GetWorkerNodesConfiguration(obj, distroVersion),
 		"workerSubnetID":        cc.WorkerSubnetID,

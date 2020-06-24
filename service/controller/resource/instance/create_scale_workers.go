@@ -30,15 +30,15 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 
 	desiredWorkerCount := int64(key.WorkerCount(cr) * 2)
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
 
 	currentWorkerCount, err := r.getInstancesCount(ctx, cr, key.WorkerVMSSName)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.logger, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
 		return ScaleUpWorkerVMSS, nil
@@ -58,8 +58,8 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 			return "", microerror.Mask(err)
 		}
 
-		r.instanceWatchdog.GuardVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
+		r.InstanceWatchdog.GuardVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
 
 		// Let's stay in the current state.
 		return ScaleUpWorkerVMSS, nil
@@ -70,7 +70,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 }
 
 func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) (int64, error) {
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}
@@ -83,8 +83,8 @@ func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv
 	return *vmss.Sku.Capacity, nil
 }
 
-func (r *Resource) getScaleSet(ctx context.Context, resourceGroup string, scaleSetName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.getScaleSetsClient(ctx)
+func (r *Resource) getScaleSet(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, scaleSetName string) (*compute.VirtualMachineScaleSet, error) {
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -105,7 +105,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 
 	desiredWorkerCount := int64(key.WorkerCount(cr))
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
 
 	// Scale down to the desired number of nodes in worker VMSS.
 	err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount)
@@ -113,13 +113,13 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 		return "", microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
 
 	return DeploymentCompleted, nil
 }
 
 func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, nodeCount int64) error {
-	c, err := r.getScaleSetsClient(ctx)
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return microerror.Mask(err)
 	}
