@@ -1,4 +1,4 @@
- #!/bin/bash
+#!/bin/bash
 
 if [ "$1" = "" ] || [ "$2" = "" ] || [ "$3" = "" ]; then
     echo "Error: not enough arguments."

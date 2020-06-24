@@ -1,12 +1,8 @@
 package masters
 
 import (
-	"context"
-
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
@@ -40,13 +36,4 @@ func New(config Config) (*Resource, error) {
 
 func (r *Resource) Name() string {
 	return r.Resource.Name()
-}
-
-func (r *Resource) getSecurityRulesClient(ctx context.Context) (*network.SecurityRulesClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.SecurityRulesClient, nil
 }

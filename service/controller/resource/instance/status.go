@@ -15,19 +15,15 @@ const (
 	// States
 	ClusterUpgradeRequirementCheck = "ClusterUpgradeRequirementCheck"
 	CordonOldWorkers               = "CordonOldWorkers"
-	CordonOldVMSS                  = "CordonOldVMSS"
 	DeploymentUninitialized        = ""
 	DeploymentInitialized          = "DeploymentInitialized"
 	DeploymentCompleted            = "DeploymentCompleted"
-	DrainOldVMSS                   = "DrainOldVMSS"
 	DrainOldWorkerNodes            = "DrainOldWorkerNodes"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
 	ScaleUpWorkerVMSS              = "ScaleUpWorkerVMSS"
 	ScaleDownWorkerVMSS            = "ScaleDownWorkerVMSS"
-	TerminateOldVMSS               = "TerminateOldVMSS"
 	TerminateOldWorkerInstances    = "TerminateOldWorkerInstances"
 	WaitForWorkersToBecomeReady    = "WaitForWorkersToBecomeReady"
-	WaitNewVMSSWorkers             = "WaitNewVMSSWorkers"
 )
 
 func computeForDeleteResourceStatus(customObject providerv1alpha1.AzureConfig, n string, t string, s string) providerv1alpha1.AzureConfig {
