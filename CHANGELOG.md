@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use VNet gateway for egress traffic of worker VMSS instances
+
 ### Fixed
 
 - Make the rate limit circuit breaker to only inspect response HTTP status code if there were no errors doing the request.
