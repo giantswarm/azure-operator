@@ -101,11 +101,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 [Unreleased]: https://github.com/giantswarm/aws-operator/compare/v4.0.0...HEAD
 
+[4.0.1]: https://github.com/giantswarm/aws-operator/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/giantswarm/aws-operator/compare/v3.0.7...v4.0.0
-
 [3.0.7]: https://github.com/giantswarm/aws-operator/compare/v3.0.6...v3.0.7
 [3.0.6]: https://github.com/giantswarm/aws-operator/compare/v3.0.5...v3.0.6
 [3.0.5]: https://github.com/giantswarm/aws-operator/compare/v3.0.1...v3.0.5
 [3.0.1]: https://github.com/giantswarm/aws-operator/compare/v1.0.0...v3.0.1
-
 [1.0.0]: https://github.com/giantswarm/aws-operator/releases/tag/v1.0.0
