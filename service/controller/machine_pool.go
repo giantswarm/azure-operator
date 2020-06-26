@@ -3,6 +3,7 @@ package controller
 import (
 	"context"
 	"net"
+	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
@@ -16,14 +17,22 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type MachinePoolConfig struct {
+	Azure                     setting.Azure
+	CredentialProvider        credential.Provider
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	GuestSubnetMaskBits       int
 	InstallationName          string
@@ -31,6 +40,7 @@ type MachinePoolConfig struct {
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
+	VMSSCheckWorkers          int
 	VMSSMSIEnabled            bool
 }
 
@@ -95,15 +105,78 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var err error
 
-	var nodepoolResource resource.Interface
+	var clientFactory *client.Factory
 	{
-		c := nodepool.Config{
-			CtrlClient:                config.K8sClient.CtrlClient(),
-			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-			Logger:                    config.Logger,
+		c := client.FactoryConfig{
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
 		}
 
-		nodepoolResource, err = nodepool.New(c)
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var newDebugger *debugger.Debugger
+	{
+		c := debugger.Config{
+			Logger: config.Logger,
+		}
+
+		newDebugger, err = debugger.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	//var nodepoolResource resource.Interface
+	//{
+	//	c := nodepool.Config{
+	//		CtrlClient:                config.K8sClient.CtrlClient(),
+	//		GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+	//		Logger:                    config.Logger,
+	//	}
+	//
+	//	nodepoolResource, err = nodepool.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
+
+	var iwd vmsscheck.InstanceWatchdog
+	{
+		c := vmsscheck.Config{
+			Logger:     config.Logger,
+			NumWorkers: config.VMSSCheckWorkers,
+		}
+
+		var err error
+		iwd, err = vmsscheck.NewInstanceWatchdog(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	nodesConfig := nodes.Config{
+		Debugger:  newDebugger,
+		G8sClient: config.K8sClient.G8sClient(),
+		K8sClient: config.K8sClient.K8sClient(),
+		Logger:    config.Logger,
+
+		Azure:            config.Azure,
+		ClientFactory:    clientFactory,
+		InstanceWatchdog: iwd,
+	}
+
+	var instanceResource resource.Interface
+	{
+		c := instance.Config{
+			Config: nodesConfig,
+		}
+
+		instanceResource, err = instance.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -138,10 +211,10 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var subnetCollector *ipam.SubnetCollector
 	{
 		c := ipam.SubnetCollectorConfig{
-			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-			K8sClient:                 config.K8sClient,
-			InstallationName:          config.InstallationName,
-			Logger:                    config.Logger,
+			CredentialProvider: config.CredentialProvider,
+			K8sClient:          config.K8sClient,
+			InstallationName:   config.InstallationName,
+			Logger:             config.Logger,
 
 			NetworkRange: config.IPAMNetworkRange,
 		}
@@ -173,7 +246,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	resources := []resource.Interface{
 		ipamResource,
-		nodepoolResource,
+		instanceResource,
 	}
 
 	{

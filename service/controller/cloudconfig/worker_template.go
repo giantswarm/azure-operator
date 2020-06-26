@@ -22,11 +22,18 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		be := baseExtension{
 			azure:                        c.azure,
 			azureClientCredentialsConfig: c.azureClientCredentials,
+			calicoCIDR:                   "",
+			cluster:                      data.CustomObject.Spec.Cluster,
 			clusterCerts:                 data.ClusterCerts,
-			customObject:                 data.CustomObject,
+			primaryScaleSetName:          data.PrimaryScaleSetName,
+			resourceGroup:                data.ResourceGroup,
+			routeTableName:               data.RouteTableName,
+			securityGroupName:            data.SecurityGroupName,
+			subnetName:                   data.SubnetName,
 			encrypter:                    encrypter,
 			subscriptionID:               c.subscriptionID,
-			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
+			vnetCIDR:                     data.VnetCIDR,
+			vnetName:                     data.SubnetName,
 		}
 
 		params = k8scloudconfig.DefaultParams()

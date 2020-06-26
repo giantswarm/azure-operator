@@ -446,7 +446,6 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
-	var clusterChecker *ipam.ClusterChecker
 	var clusterChecker *ipam.AzureConfigChecker
 	{
 		c := ipam.AzureConfigCheckerConfig{

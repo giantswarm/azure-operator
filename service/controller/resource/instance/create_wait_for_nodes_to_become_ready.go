@@ -12,22 +12,22 @@ import (
 )
 
 func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isWorker)
 	if IsClientNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
 	} else if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
 
 	return DrainOldWorkerNodes, nil
 }

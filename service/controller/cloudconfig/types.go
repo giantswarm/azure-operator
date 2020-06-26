@@ -49,8 +49,15 @@ type ingressLBFileParams struct {
 }
 
 type IgnitionTemplateData struct {
-	CustomObject providerv1alpha1.AzureConfig
-	ClusterCerts certs.Cluster
-	ClusterKeys  randomkeys.Cluster
-	Images       k8scloudconfig.Images
+	CustomObject        providerv1alpha1.AzureConfig
+	ClusterCerts        certs.Cluster
+	ClusterKeys         randomkeys.Cluster
+	Images              k8scloudconfig.Images
+	PrimaryScaleSetName string
+	ResourceGroup       string
+	RouteTableName      string
+	SecurityGroupName   string
+	SubnetName          string
+	VnetCIDR            string
+	VnetName            string
 }

@@ -8,17 +8,32 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
+	}
+
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
@@ -27,7 +42,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	{
 		n := metav1.NamespaceAll
 		o := metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("%s=%s", label.Cluster, key.ClusterID(&cr)),
+			LabelSelector: fmt.Sprintf("%s=%s", label.Cluster, key.ClusterID(&azureMachinePool)),
 		}
 
 		list, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
@@ -43,11 +58,9 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs)))
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-	allWorkerInstances, err := r.AllInstances(ctx, cr, key.WorkerVMSSName)
-	if nodes.IsScaleSetNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
-	} else if err != nil {
-		return "", microerror.Mask(err)
+	allWorkerInstances, err := r.AllWorkerInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
@@ -55,7 +68,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 	var nodesPendingDraining int
 	for _, i := range allWorkerInstances {
-		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cr, i)
+		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, key.ClusterID(&azureMachinePool), i)
 		if err != nil {
 			return DeploymentUninitialized, nil
 		}
@@ -65,15 +78,15 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			continue
 		}
 
-		n := key.WorkerInstanceName(cr, *i.InstanceID)
+		n := key.WorkerInstanceName(key.ClusterID(&azureMachinePool), *i.InstanceID)
 
 		dc, drainerConfigExists := drainerConfigs[n]
 		if !drainerConfigExists {
 			nodesPendingDraining++
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.CreateDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, key.ClusterID(&azureMachinePool), cluster.Spec.ControlPlaneEndpoint.String(), key.WorkerInstanceName(key.ClusterID(&azureMachinePool), *i.InstanceID))
 			if err != nil {
-				return "", microerror.Mask(err)
+				return DeploymentUninitialized, microerror.Mask(err)
 			}
 		}
 
@@ -87,13 +100,13 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node")
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist")
 			} else if err != nil {
-				return "", microerror.Mask(err)
+				return DeploymentUninitialized, microerror.Mask(err)
 			}
 
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.CreateDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, key.ClusterID(&azureMachinePool), cluster.Spec.ControlPlaneEndpoint.String(), key.WorkerInstanceName(key.ClusterID(&azureMachinePool), *i.InstanceID))
 			if err != nil {
-				return "", microerror.Mask(err)
+				return DeploymentUninitialized, microerror.Mask(err)
 			}
 		}
 
@@ -117,7 +130,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	for _, dc := range drainerConfigs {
 		err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
 		if err != nil {
-			return "", microerror.Mask(err)
+			return DeploymentUninitialized, microerror.Mask(err)
 		}
 	}
 

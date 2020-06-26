@@ -5,26 +5,39 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.WorkersVmssDeploymentName)
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.WorkersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		// @TODO: Why don't we go back to DeploymentUninitialized?
 		return currentState, nil
 	} else if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)

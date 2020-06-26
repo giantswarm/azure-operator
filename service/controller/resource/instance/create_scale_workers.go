@@ -4,9 +4,8 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
@@ -24,91 +23,102 @@ const (
 // This will be done in subsequent reconciliation loops to avoid hitting the
 // VMSS api too hard.
 func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	desiredWorkerCount := int64(key.WorkerCount(cr) * 2)
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
-
-	currentWorkerCount, err := r.getInstancesCount(ctx, cr, key.WorkerVMSSName)
+	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
 	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
-		return ScaleUpWorkerVMSS, nil
+		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 	// Not all workers are Running in Azure, wait for next reconciliation loop.
 	if !allReady {
-		return ScaleUpWorkerVMSS, nil
+		return currentState, nil
 	}
 
 	// All workers ready, we can scale up if needed.
+	desiredWorkerCount := int64(*machinePool.Spec.Replicas * 2)
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
+
+	currentWorkerCount, err := r.GetInstancesCount(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
+
 	if desiredWorkerCount > currentWorkerCount {
 		// Raise the worker count by one
-		err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, currentWorkerCount+1)
+		err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool), int32(currentWorkerCount)+1)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		r.InstanceWatchdog.GuardVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		r.InstanceWatchdog.GuardVMSS(ctx, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
 
 		// Let's stay in the current state.
-		return ScaleUpWorkerVMSS, nil
+		return currentState, nil
 	}
 
 	// We didn't scale up the VMSS, ready to move to next step.
 	return CordonOldWorkers, nil
 }
 
-func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) (int64, error) {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
-	if err != nil {
-		return -1, microerror.Mask(err)
-	}
-
-	vmss, err := c.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
-	if err != nil {
-		return 0, microerror.Mask(err)
-	}
-
-	return *vmss.Sku.Capacity, nil
-}
-
-func (r *Resource) getScaleSet(ctx context.Context, customObject providerv1alpha1.AzureConfig, resourceGroup string, scaleSetName string) (*compute.VirtualMachineScaleSet, error) {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	vmss, err := c.Get(ctx, resourceGroup, scaleSetName)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return &vmss, nil
-}
-
 func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
-	desiredWorkerCount := int64(key.WorkerCount(cr))
+	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
 	// Scale down to the desired number of nodes in worker VMSS.
-	err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount)
+	desiredWorkerCount := *machinePool.Spec.Replicas
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
+
+	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool), desiredWorkerCount)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -116,29 +126,4 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
 
 	return DeploymentCompleted, nil
-}
-
-func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, nodeCount int64) error {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	vmss, err := c.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	*vmss.Sku.Capacity = nodeCount
-	res, err := c.CreateOrUpdate(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject), vmss)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	_, err = c.CreateOrUpdateResponder(res.Response())
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
 }

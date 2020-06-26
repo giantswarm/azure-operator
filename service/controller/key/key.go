@@ -564,13 +564,13 @@ func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanc
 	return fmt.Sprintf("%s-worker-%06s", ClusterID(&customObject), idB36)
 }
 
-func WorkerInstanceName(azureMachinePool expcapzv1alpha3.AzureMachinePool, instanceID string) string {
+func WorkerInstanceName(clusterID, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(&azureMachinePool), ClusterID(&azureMachinePool), idB36)
+	return fmt.Sprintf("%s-worker-%s-%06s", clusterID, clusterID, idB36)
 }
 
 func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {

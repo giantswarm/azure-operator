@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -18,9 +19,7 @@ import (
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/pkg/annotation"
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
@@ -30,7 +29,7 @@ import (
 	instance "github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/template"
 )
 
-func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.AzureClientSet, release releasev1alpha1.Release, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, azureCluster capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release releasev1alpha1.Release, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, azureCluster capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
 	operatorVersion, exists := azureMachinePool.GetLabels()[label.OperatorVersion]
 	if !exists {
 		return azureresource.Deployment{}, microerror.Mask(missingOperatorVersionLabel)
@@ -43,7 +42,7 @@ func (r Resource) newDeployment(ctx context.Context, azureClientSet *client.Azur
 	}
 
 	storageAccountName := strings.Replace(fmt.Sprintf("%s%s", "gssa", azureCluster.GetName()), "-", "", -1)
-	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, azureClientSet, azureCluster.GetName(), storageAccountName, key.WorkerBlobName(operatorVersion), encrypterObject)
+	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, storageAccountsClient, azureCluster.GetName(), storageAccountName, key.WorkerBlobName(operatorVersion), encrypterObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -128,11 +127,11 @@ func (r *Resource) getFailureDomains(azureCluster capzv1alpha3.AzureCluster, mac
 	return []string{*machinePool.Spec.Template.Spec.FailureDomain}, nil
 }
 
-func (r *Resource) getWorkerCloudConfig(ctx context.Context, azureClientSet *client.AzureClientSet, resourceGroupName, storageAccountName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
+func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
 	encryptionKey := encrypterObject.GetEncryptionKey()
 	initialVector := encrypterObject.GetInitialVector()
 
-	keys, err := azureClientSet.StorageAccountsClient.ListKeys(ctx, resourceGroupName, storageAccountName, "")
+	keys, err := storageAccountsClient.ListKeys(ctx, resourceGroupName, storageAccountName, "")
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -172,10 +171,10 @@ func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (e
 	var enc *encrypter.Encrypter
 	{
 		if _, ok := secret.Data[key.CertificateEncryptionKeyName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption key not found in secret %q", secret.Name)
+			return nil, microerror.Maskf(executionFailedError, "encryption key not found in secret %q", secret.Name)
 		}
 		if _, ok := secret.Data[key.CertificateEncryptionIVName]; !ok {
-			return nil, microerror.Maskf(invalidConfigError, "encryption iv not found in secret %q", secret.Name)
+			return nil, microerror.Maskf(executionFailedError, "encryption iv not found in secret %q", secret.Name)
 		}
 		c := encrypter.Config{
 			Key: secret.Data[key.CertificateEncryptionKeyName],
@@ -250,18 +249,4 @@ func (r *Resource) getReleaseFromMetadata(ctx context.Context, obj metav1.Object
 	r.Logger = r.Logger.With("release", release.Name)
 
 	return release, nil
-}
-
-func (r *Resource) getTenantClusterAzureClientSet(ctx context.Context, cluster *capiv1alpha3.Cluster) (*client.AzureClientSet, error) {
-	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-	if err != nil {
-		return &client.AzureClientSet{}, microerror.Mask(err)
-	}
-
-	organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentialsFromCredentialSecret(ctx, r.CtrlClient, *credentialSecret, r.GSClientCredentialsConfig.TenantID)
-	if err != nil {
-		return &client.AzureClientSet{}, microerror.Mask(err)
-	}
-
-	return client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 }

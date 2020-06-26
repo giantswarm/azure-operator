@@ -33,7 +33,7 @@ func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alph
 	for result.NotDone() {
 		instances = append(instances, result.Values()...)
 
-		err := result.Next()
+		err := result.NextWithContext(ctx)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -44,15 +44,10 @@ func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alph
 	return instances, nil
 }
 
-func (r *Resource) AllWorkerInstances(ctx context.Context, resourceGroupName, deploymentName string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentName))
+func (r *Resource) AllWorkerInstances(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", vmssName))
 
-	client, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(customObject)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	result, err := client.List(ctx, resourceGroupName, deploymentName, "", "", "")
+	result, err := virtualMachineScaleSetVMsClient.List(ctx, resourceGroupName, vmssName, "", "", "")
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -68,7 +63,36 @@ func (r *Resource) AllWorkerInstances(ctx context.Context, resourceGroupName, de
 		}
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentName))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", vmssName))
 
 	return instances, nil
+}
+
+func (r *Resource) GetInstancesCount(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, resourceGroupName, vmssName string) (int64, error) {
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroupName, vmssName)
+	if err != nil {
+		return 0, microerror.Mask(err)
+	}
+
+	return *vmss.Sku.Capacity, nil
+}
+
+func (r *Resource) ScaleVMSS(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, resourceGroup, vmssName string, nodeCount int32) error {
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroup, vmssName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	*vmss.Sku.Capacity = int64(nodeCount)
+	res, err := virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, vmssName, vmss)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, err = virtualMachineScaleSetsClient.CreateOrUpdateResponder(res.Response())
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }

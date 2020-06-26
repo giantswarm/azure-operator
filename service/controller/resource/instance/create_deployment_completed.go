@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
@@ -13,62 +14,80 @@ import (
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-	groupsClient, err := r.ClientFactory.GetGroupsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.WorkersVmssDeploymentName)
-	if IsDeploymentNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
-		return DeploymentUninitialized, nil
-	} else if err != nil {
+	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	s := *d.Properties.ProvisioningState
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
 
-	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
+	azureCluster, err := r.getAzureClusterFromCluster(ctx, cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	release, err := r.getReleaseFromMetadata(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	if key.IsSucceededProvisioningState(s) {
-		computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
+	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	deployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.WorkersVmssDeploymentName)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	provisioningState := *deployment.Properties.ProvisioningState
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", provisioningState))
+
+	if key.IsSucceededProvisioningState(provisioningState) {
+		computedDeployment, err := r.newDeployment(ctx, storageAccountsClient, release, *machinePool, azureMachinePool, azureCluster)
 		if blobclient.IsBlobNotFound(err) {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
 		} else if err != nil {
-			return "", microerror.Mask(err)
+			return DeploymentUninitialized, microerror.Mask(err)
 		} else {
 			desiredDeploymentTemplateChk, err := checksum.GetDeploymentTemplateChecksum(computedDeployment)
 			if err != nil {
-				return "", microerror.Mask(err)
+				return DeploymentUninitialized, microerror.Mask(err)
 			}
 
 			desiredDeploymentParametersChk, err := checksum.GetDeploymentParametersChecksum(computedDeployment)
 			if err != nil {
-				return "", microerror.Mask(err)
+				return DeploymentUninitialized, microerror.Mask(err)
 			}
 
-			currentDeploymentTemplateChk, err := r.GetResourceStatus(cr, DeploymentTemplateChecksum)
+			currentDeploymentTemplateChk, err := r.GetResourceStatus(azureMachinePool, DeploymentTemplateChecksum)
 			if err != nil {
-				return "", microerror.Mask(err)
+				return DeploymentUninitialized, microerror.Mask(err)
 			}
 
-			currentDeploymentParametersChk, err := r.GetResourceStatus(cr, DeploymentParametersChecksum)
+			currentDeploymentParametersChk, err := r.GetResourceStatus(azureMachinePool, DeploymentParametersChecksum)
 			if err != nil {
-				return "", microerror.Mask(err)
+				return DeploymentUninitialized, microerror.Mask(err)
 			}
 
 			if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
@@ -81,7 +100,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 
 			return currentState, nil
 		}
-	} else if key.IsFinalProvisioningState(s) {
+	} else if key.IsFinalProvisioningState(provisioningState) {
 		// Deployment has failed. Restart from beginning.
 		return DeploymentUninitialized, nil
 	}

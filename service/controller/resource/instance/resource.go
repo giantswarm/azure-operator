@@ -5,6 +5,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
@@ -14,12 +15,14 @@ const (
 
 type Config struct {
 	nodes.Config
+	CredentialProvider        credential.Provider
 	CtrlClient                ctrlclient.Client
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 }
 
 type Resource struct {
 	nodes.Resource
+	CredentialProvider        credential.Provider
 	CtrlClient                ctrlclient.Client
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	k8sClient                 kubernetes.Interface
@@ -35,6 +38,7 @@ func New(config Config) (*Resource, error) {
 			ClientFactory:    config.ClientFactory,
 			InstanceWatchdog: config.InstanceWatchdog,
 		},
+		CredentialProvider:        config.CredentialProvider,
 		CtrlClient:                config.CtrlClient,
 		GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 		k8sClient:                 config.K8sClient,

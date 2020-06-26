@@ -7,48 +7,59 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	cr, err := key.ToCustomResource(obj)
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.AllInstances(ctx, cr, key.WorkerVMSSName)
-		if nodes.IsScaleSetNotFound(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(cr)))
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "restarting upgrade process")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-			return DeploymentUninitialized, nil
-		} else if err != nil {
+		allWorkerInstances, err = r.AllWorkerInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
-	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
-
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
 
-	g := key.ResourceGroupName(cr)
-	s := key.WorkerVMSSName(cr)
+	resourceGroupName := key.ClusterID(&azureMachinePool)
+	deploymentName := key.WorkerVMSSName(azureMachinePool)
 	var ids compute.VirtualMachineScaleSetVMInstanceRequiredIDs
 	{
 		var strIds []string
 		for _, i := range allWorkerInstances {
-			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cr, i)
+			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, key.ClusterID(&azureMachinePool), i)
 			if err != nil {
 				return DeploymentUninitialized, nil
 			}
@@ -66,11 +77,11 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtered instance IDs for old instances")
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminating %d old worker instances", len(*ids.InstanceIds)))
 
-	res, err := c.DeleteInstances(ctx, g, s, ids)
+	res, err := virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroupName, deploymentName, ids)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
-	_, err = c.DeleteInstancesResponder(res.Response())
+	_, err = virtualMachineScaleSetsClient.DeleteInstancesResponder(res.Response())
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

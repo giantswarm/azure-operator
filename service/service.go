@@ -295,6 +295,8 @@ func New(config Config) (*Service, error) {
 	var machinePoolController *controller.MachinePool
 	{
 		c := controller.MachinePoolConfig{
+			Azure:                     azure,
+			CredentialProvider:        credentialProvider,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
@@ -302,6 +304,7 @@ func New(config Config) (*Service, error) {
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
+			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		}
 

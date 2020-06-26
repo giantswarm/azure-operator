@@ -11,15 +11,13 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
 
 const (
@@ -31,11 +29,27 @@ const (
 func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
+
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	if cc.Client.TenantCluster.K8s == nil {
@@ -43,35 +57,30 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		return currentState, nil
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
-
-	organizationCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(context.Background(), r.k8sClient, credentialSecret, f.gsTenantID)
-
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		allWorkerInstances, err = r.AllWorkerInstances(ctx, azureMachinePool, key.WorkerVMSSName)
-		if nodes.IsScaleSetNotFound(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.WorkerVMSSName(azureMachinePool)))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-			return currentState, nil
-		} else if err != nil {
-			return "", microerror.Mask(err)
+		allWorkerInstances, err = r.AllWorkerInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+		if err != nil {
+			return DeploymentUninitialized, microerror.Mask(err)
 		}
+
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
 
 	var nodes []corev1.Node
 	{
 		nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
-			return "", microerror.Mask(err)
+			return DeploymentUninitialized, microerror.Mask(err)
 		}
 		nodes = nodeList.Items
 	}
 
-	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, azureMachinePool, key.WorkerInstanceName)
+	oldNodes, newNodes := sortNodesByTenantVMState(nodes, allWorkerInstances, key.ClusterID(&azureMachinePool), key.WorkerInstanceName)
 	if len(newNodes) < len(oldNodes) {
 		// Wait until there's enough new nodes up.
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
@@ -84,7 +93,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	if oldNodesCordoned < len(oldNodes) {
@@ -132,7 +141,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 	return count, nil
 }
 
-func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, azureMachinePool v1alpha3.AzureMachinePool, instanceNameFunc func(azureMachinePool v1alpha3.AzureMachinePool, instanceID string) string) (oldNodes []corev1.Node, newNodes []corev1.Node) {
+func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, clusterID string, instanceNameFunc func(clusterID, instanceID string) string) (oldNodes []corev1.Node, newNodes []corev1.Node) {
 	nodeMap := make(map[string]corev1.Node)
 	for _, n := range nodes {
 		nodeMap[n.GetName()] = n
@@ -141,7 +150,7 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 	myVersion := semver.New(project.Version())
 
 	for _, i := range instances {
-		name := instanceNameFunc(azureMachinePool, *i.InstanceID)
+		name := instanceNameFunc(clusterID, *i.InstanceID)
 
 		n, found := nodeMap[name]
 		if !found {
@@ -170,13 +179,13 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 	return
 }
 
-func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
+func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, clusterID string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	name := key.WorkerInstanceName(azureMachinePool, *instance.InstanceID)
+	name := key.WorkerInstanceName(clusterID, *instance.InstanceID)
 
 	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
@@ -194,11 +203,11 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, azureMachine
 	return nil, nil
 }
 
-func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool, instance compute.VirtualMachineScaleSetVM) (*bool, error) {
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clusterID string, instance compute.VirtualMachineScaleSetVM) (*bool, error) {
 	t := true
 	f := false
 
-	n, err := r.getK8sWorkerNodeForInstance(ctx, azureMachinePool, instance)
+	n, err := r.getK8sWorkerNodeForInstance(ctx, clusterID, instance)
 	if err != nil {
 		return nil, err
 	}
