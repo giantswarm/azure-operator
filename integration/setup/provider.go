@@ -76,12 +76,23 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
 
-		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "AzureConfig"), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("provider.giantswarm.io", "AzureConfig"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachinePool CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("exp.infrastructure.cluster.x-k8s.io", "AzureMachinePool"), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachinePool CRD exists")
 	}
 
 	var operatorVersion string
