@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [4.1.0] - 2020-06-24
+
 ### Changed
 
 - Use VNet gateway for egress traffic of worker VMSS instances
@@ -97,8 +99,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/aws-operator/compare/v4.0.0...HEAD
-
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v4.1.0...HEAD
+[4.1.0]: https://github.com/giantswarm/azure-operator/compare/v4.0.0...v4.1.0
 [4.0.0]: https://github.com/giantswarm/aws-operator/compare/v3.0.7...v4.0.0
 
 [3.0.7]: https://github.com/giantswarm/aws-operator/compare/v3.0.6...v3.0.7
