@@ -11,13 +11,7 @@ gsctl list endpoints > list-of-endpoints.txt
 
 provider=$1
 active_release=$2
-while read installation; do
-  #echo $installation
-  #inallation_data=$(echo $installation | tr -d " ")
-  IFS=' ' read -ra inallation_data <<< "$installation"
-  if [ "${inallation_data[1]}" == "$provider" ]
-  then
-		echo "-----${inallation_data[0]}-----"
+for installation in $(opsctl list installations --provider=$provider --short); do
 		gsctl select endpoint "${inallation_data[0]}"
 		
 		if [ "$active_release" = "" ]
