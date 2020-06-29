@@ -29,7 +29,7 @@ import (
 	instance "github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/template"
 )
 
-func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release releasev1alpha1.Release, machinePool capiexpv1alpha3.MachinePool, azureMachinePool capzexpv1alpha3.AzureMachinePool, azureCluster capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
 	operatorVersion, exists := azureMachinePool.GetLabels()[label.OperatorVersion]
 	if !exists {
 		return azureresource.Deployment{}, microerror.Mask(missingOperatorVersionLabel)
@@ -47,7 +47,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	distroVersion, err := key.OSVersion(release)
+	distroVersion, err := key.OSVersion(*release)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -63,21 +63,23 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 	}
 
 	templateParams := map[string]interface{}{
-		"azureOperatorVersion": project.Version(),
-		"clusterID":            azureCluster.GetName(),
-		"dockerVolumeSizeGB":   "50",
-		"kubeletVolumeSizeGB":  "100",
-		"sshPublicKey":         azureMachinePool.Spec.Template.SSHPublicKey,
-		"osImagePublisher":     "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
-		"osImageOffer":         "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,
-		"osImageSKU":           "stable",                       // azureMachinePool.Spec.Template.Image.Marketplace.SKU,
-		"osImageVersion":       distroVersion,                  // azureMachinePool.Spec.Template.Image.Marketplace.Version,
-		"replicas":             machinePool.Spec.Replicas,
-		"subnetID":             subnetID,
+		"machinePoolVersion":      machinePool.ObjectMeta.ResourceVersion,
+		"azureMachinePoolVersion": azureMachinePool.ObjectMeta.ResourceVersion,
+		"azureOperatorVersion":    project.Version(),
+		"clusterID":               azureCluster.GetName(),
+		"dockerVolumeSizeGB":      "50",
+		"kubeletVolumeSizeGB":     "100",
+		"sshPublicKey":            azureMachinePool.Spec.Template.SSHPublicKey,
+		"osImagePublisher":        "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
+		"osImageOffer":            "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,
+		"osImageSKU":              "stable",                       // azureMachinePool.Spec.Template.Image.Marketplace.SKU,
+		"osImageVersion":          distroVersion,                  // azureMachinePool.Spec.Template.Image.Marketplace.Version,
+		"replicas":                machinePool.Spec.Replicas,
+		"subnetID":                subnetID,
+		"vmSize":                  azureMachinePool.Spec.Template.VMSize,
+		"zones":                   zones,
 		// This should come from the bootstrap operator.
 		"vmCustomData": workerCloudConfig,
-		"vmSize":       azureMachinePool.Spec.Template.VMSize,
-		"zones":        zones,
 	}
 
 	armTemplate, err := instance.GetARMTemplate()
@@ -96,7 +98,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 	return d, nil
 }
 
-func (r Resource) getSubnetID(azureMachinePool capzexpv1alpha3.AzureMachinePool, azureCluster capzv1alpha3.AzureCluster) (string, error) {
+func (r Resource) getSubnetID(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, error) {
 	subnetCIDR, exists := azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet]
 	if !exists {
 		return "", microerror.Mask(missingSubnetLabel)
@@ -111,7 +113,7 @@ func (r Resource) getSubnetID(azureMachinePool capzexpv1alpha3.AzureMachinePool,
 	return "", microerror.Maskf(notFoundError, "subnet with CIDR %#q was not found in virtual network called %#q", subnetCIDR, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
-func (r *Resource) getFailureDomains(azureCluster capzv1alpha3.AzureCluster, machinePool capiexpv1alpha3.MachinePool) ([]string, error) {
+func (r *Resource) getFailureDomains(azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool) ([]string, error) {
 	var validFailureDomain bool
 	allowedFailureDomains := azureCluster.Status.FailureDomains.GetIDs()
 	for _, id := range allowedFailureDomains {
@@ -215,13 +217,13 @@ func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMet
 	return nil, nil
 }
 
-func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (capzv1alpha3.AzureCluster, error) {
-	azureCluster := capzv1alpha3.AzureCluster{}
+func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
+	azureCluster := &capzv1alpha3.AzureCluster{}
 	azureClusterName := ctrlclient.ObjectKey{
 		Namespace: cluster.Spec.InfrastructureRef.Namespace,
 		Name:      cluster.Spec.InfrastructureRef.Name,
 	}
-	err := r.CtrlClient.Get(ctx, azureClusterName, &azureCluster)
+	err := r.CtrlClient.Get(ctx, azureClusterName, azureCluster)
 	if err != nil {
 		return azureCluster, microerror.Mask(err)
 	}
@@ -231,8 +233,8 @@ func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capi
 	return azureCluster, nil
 }
 
-func (r *Resource) getReleaseFromMetadata(ctx context.Context, obj metav1.ObjectMeta) (releasev1alpha1.Release, error) {
-	release := releasev1alpha1.Release{}
+func (r *Resource) getReleaseFromMetadata(ctx context.Context, obj metav1.ObjectMeta) (*releasev1alpha1.Release, error) {
+	release := &releasev1alpha1.Release{}
 	releaseVersion, exists := obj.GetLabels()[label.ReleaseVersion]
 	if !exists {
 		return release, microerror.Mask(missingReleaseVersionLabel)
@@ -241,7 +243,7 @@ func (r *Resource) getReleaseFromMetadata(ctx context.Context, obj metav1.Object
 		releaseVersion = fmt.Sprintf("v%s", releaseVersion)
 	}
 
-	err := r.CtrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: "", Name: releaseVersion}, &release)
+	err := r.CtrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: "", Name: releaseVersion}, release)
 	if err != nil {
 		return release, microerror.Mask(err)
 	}

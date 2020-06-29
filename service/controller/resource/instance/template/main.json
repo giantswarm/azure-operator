@@ -86,7 +86,7 @@
     },
     "upgradePolicy": {
       "type": "string",
-      "defaultValue": "Rolling",
+      "defaultValue": "Manual",
       "metadata": {
         "description": "Determine how VMs are brought up-to-date with the latest scale set model. Valid values are Manual, Automatic, Rolling."
       }
@@ -269,13 +269,7 @@
       "properties": {
         "overprovision": "[parameters('overprovision')]",
         "upgradePolicy": {
-          "mode": "[parameters('upgradePolicy')]",
-          "rollingUpgradePolicy": {
-            "maxBatchInstancePercent": "20",
-            "maxUnhealthyInstancePercent": "100",
-            "maxUnhealthyUpgradedInstancePercent": "20",
-            "pauseTimeBetweenBatches": "PT1M"
-          }
+          "mode": "[parameters('upgradePolicy')]"
         },
         "singlePlacementGroup": "[parameters('vmssSinglePlacementGroup')]",
         "virtualMachineProfile": {

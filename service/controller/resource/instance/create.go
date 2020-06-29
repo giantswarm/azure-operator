@@ -4,10 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
@@ -20,17 +20,13 @@ func (r *Resource) createStateMachine() state.Machine {
 		Logger:       r.Logger,
 		ResourceName: Name,
 		Transitions: state.TransitionMap{
-			DeploymentUninitialized:        r.deploymentUninitializedTransition,
-			DeploymentInitialized:          r.deploymentInitializedTransition,
-			ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
-			ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
-			ScaleUpWorkerVMSS:              r.scaleUpWorkerVMSSTransition,
-			CordonOldWorkers:               r.cordonOldWorkersTransition,
-			WaitForWorkersToBecomeReady:    r.waitForWorkersToBecomeReadyTransition,
-			DrainOldWorkerNodes:            r.drainOldWorkerNodesTransition,
-			TerminateOldWorkerInstances:    r.terminateOldWorkersTransition,
-			ScaleDownWorkerVMSS:            r.scaleDownWorkerVMSSTransition,
-			DeploymentCompleted:            r.deploymentCompletedTransition,
+			DeploymentUninitialized:     r.deploymentUninitializedTransition,
+			ScaleUpWorkerVMSS:           r.scaleUpWorkerVMSSTransition,
+			CordonOldWorkers:            r.cordonOldWorkersTransition,
+			WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
+			DrainOldWorkerNodes:         r.drainOldWorkerNodesTransition,
+			TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
+			ScaleDownWorkerVMSS:         r.scaleDownWorkerVMSSTransition,
 		},
 	}
 
@@ -39,12 +35,12 @@ func (r *Resource) createStateMachine() state.Machine {
 
 // This resource applies the ARM template for the worker instances, monitors the process and handles upgrades.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	cr, err := key.ToCustomResource(obj)
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if isMasterUpgrading(cr) {
+	if isMasterUpgrading(&azureMachinePool) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		return nil
@@ -53,7 +49,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var newState state.State
 	var currentState state.State
 	{
-		s, err := r.GetResourceStatus(cr, Stage)
+		s, err := r.getCurrentState(ctx, azureMachinePool)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -69,7 +65,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if newState != currentState {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
-		err = r.SetResourceStatus(cr, Stage, string(newState))
+		err = r.saveCurrentState(ctx, azureMachinePool, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -83,21 +79,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func isMasterUpgrading(cr providerv1alpha1.AzureConfig) bool {
-	var status string
-	{
-		for _, r := range cr.Status.Cluster.Resources {
-			if r.Name != masters.Name {
-				continue
-			}
-
-			for _, c := range r.Conditions {
-				if c.Type == Stage {
-					status = c.Status
-				}
-			}
-		}
+func isMasterUpgrading(getter key.AnnotationsGetter) bool {
+	masterUpgrading, exists := getter.GetAnnotations()[annotation.IsMasterUpgrading]
+	if !exists {
+		return false
 	}
 
-	return status != DeploymentCompleted
+	return masterUpgrading != masters.DeploymentCompleted
 }

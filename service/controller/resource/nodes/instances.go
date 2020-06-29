@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
@@ -90,6 +91,20 @@ func (r *Resource) ScaleVMSS(ctx context.Context, virtualMachineScaleSetsClient 
 	}
 
 	_, err = virtualMachineScaleSetsClient.CreateOrUpdateResponder(res.Response())
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func (r *Resource) CreateARMDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName string, computedDeployment azureresource.Deployment) error {
+	res, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, key.WorkersVmssDeploymentName, computedDeployment)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, err = deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}

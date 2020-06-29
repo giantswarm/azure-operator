@@ -165,10 +165,6 @@ var missingReleaseVersionLabel = &microerror.Error{
 	Kind: "missingReleaseVersionLabel",
 }
 
-var missingClusterLabel = &microerror.Error{
-	Kind: "missingClusterLabel",
-}
-
 var missingSubnetLabel = &microerror.Error{
 	Kind: "missingSubnetLabel",
 }
