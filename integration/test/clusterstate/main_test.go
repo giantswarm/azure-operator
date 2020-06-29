@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/e2etests/clusterstate"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/setup"
+	"github.com/giantswarm/azure-operator/v4/integration/env"
+	"github.com/giantswarm/azure-operator/v4/integration/setup"
 )
 
 var (
@@ -23,7 +23,7 @@ func init() {
 	{
 		config, err = setup.NewConfig()
 		if err != nil {
-			panic(microerror.Stack(err))
+			panic(microerror.JSON(err))
 		}
 	}
 
@@ -39,7 +39,7 @@ func init() {
 
 		p, err = NewProvider(c)
 		if err != nil {
-			panic(microerror.Stack(err))
+			panic(microerror.JSON(err))
 		}
 	}
 
@@ -52,7 +52,7 @@ func init() {
 
 		clusterStateTest, err = clusterstate.New(c)
 		if err != nil {
-			panic(microerror.Stack(err))
+			panic(microerror.JSON(err))
 		}
 	}
 }

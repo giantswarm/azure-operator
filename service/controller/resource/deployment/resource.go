@@ -3,6 +3,7 @@ package deployment
 import (
 	"context"
 	"fmt"
+	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -12,10 +13,10 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 const (
@@ -30,23 +31,28 @@ const (
 )
 
 type Config struct {
-	Debugger  *debugger.Debugger
-	G8sClient versioned.Interface
-	Logger    micrologger.Logger
+	Debugger         *debugger.Debugger
+	G8sClient        versioned.Interface
+	InstallationName string
+	Logger           micrologger.Logger
 
-	Azure setting.Azure
-	// TemplateVersion is the ARM template version. Currently is the name
-	// of the git branch in which the version is stored.
-	TemplateVersion string
+	Azure                      setting.Azure
+	ControlPlaneSubscriptionID string
 }
 
 type Resource struct {
-	debugger  *debugger.Debugger
-	g8sClient versioned.Interface
-	logger    micrologger.Logger
+	debugger         *debugger.Debugger
+	g8sClient        versioned.Interface
+	installationName string
+	logger           micrologger.Logger
 
-	azure           setting.Azure
-	templateVersion string
+	azure                      setting.Azure
+	controlPlaneSubscriptionID string
+}
+
+type StorageAccountIpRule struct {
+	Value  string `json:"value"`
+	Action string `json:"action"`
 }
 
 func New(config Config) (*Resource, error) {
@@ -56,6 +62,9 @@ func New(config Config) (*Resource, error) {
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -63,17 +72,18 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if config.TemplateVersion == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TemplateVersion must not be empty", config)
+	if config.ControlPlaneSubscriptionID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ControlPlaneSubscriptionID must not be empty", config)
 	}
 
 	r := &Resource{
-		debugger:  config.Debugger,
-		g8sClient: config.G8sClient,
-		logger:    config.Logger,
+		debugger:         config.Debugger,
+		g8sClient:        config.G8sClient,
+		installationName: config.InstallationName,
+		logger:           config.Logger,
 
-		azure:           config.Azure,
-		templateVersion: config.TemplateVersion,
+		azure:                      config.Azure,
+		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
 	}
 
 	return r, nil
@@ -94,7 +104,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var deployment azureresource.Deployment
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), mainDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), mainDeploymentName)
 	if IsNotFound(err) {
 		params := map[string]interface{}{
 			"initialProvisioning": "Yes",
@@ -161,16 +171,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
-	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(cr), mainDeploymentName, deployment)
+	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), mainDeploymentName, deployment)
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.Stack(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deployment), "stack", microerror.JSON(microerror.Mask(err)))
 
 		return microerror.Mask(err)
 	}
 
 	deploymentExtended, err := deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.Stack(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.JSON(microerror.Mask(err)))
 
 		return microerror.Mask(err)
 	}
@@ -283,7 +293,7 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject pr
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(customObject), deploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(&customObject), deploymentName)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -362,8 +372,9 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	resourceStatus := providerv1alpha1.StatusClusterResource{
 		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
 			{
-				Status: s,
-				Type:   t,
+				LastTransitionTime: metav1.Time{Time: time.Now()},
+				Status:             s,
+				Type:               t,
 			},
 		},
 		Name: Name,

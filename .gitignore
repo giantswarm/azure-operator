@@ -1,7 +1,7 @@
 azure-operator
 !helm/azure-operator
 TODO
-!vendor/**
+vendor
 
 .e2e-harness
 
@@ -10,5 +10,9 @@ TODO
 
 integration/test/**/*-e2e
 azure-operator-*.tgz
+integration/test/**/logs/*.txt
 
 scripts/*.tar.gz
+
+telepresence.log
+*.flowchart.generated.html

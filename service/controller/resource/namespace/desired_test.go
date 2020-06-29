@@ -12,7 +12,8 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
@@ -24,7 +25,12 @@ func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
 	}{
 		{
 			Obj: &v1alpha1.AzureConfig{
-				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						label.Cluster:         "al9qy",
+						label.OperatorVersion: "0.1.0",
+					},
+				},
 				Spec: v1alpha1.AzureConfigSpec{
 					Cluster: v1alpha1.Cluster{
 						ID: "al9qy",
@@ -42,7 +48,12 @@ func Test_Resource_Namespace_GetDesiredState(t *testing.T) {
 		},
 		{
 			Obj: &v1alpha1.AzureConfig{
-				ObjectMeta: metav1.ObjectMeta{Labels: map[string]string{key.LabelOperatorVersion: "0.1.0"}},
+				ObjectMeta: metav1.ObjectMeta{
+					Labels: map[string]string{
+						label.Cluster:         "foobar",
+						label.OperatorVersion: "0.1.0",
+					},
+				},
 				Spec: v1alpha1.AzureConfigSpec{
 					Cluster: v1alpha1.Cluster{
 						ID: "foobar",

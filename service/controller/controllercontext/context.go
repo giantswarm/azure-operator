@@ -7,9 +7,8 @@ import (
 	"github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/service/network"
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 )
 
 type contextKey string
@@ -19,7 +18,6 @@ const controllerKey contextKey = "controller"
 type Context struct {
 	APILBBackendPoolID  string
 	AzureClientSet      *client.AzureClientSet
-	AzureNetwork        *network.Subnets
 	Client              ContextClient
 	CloudConfig         cloudconfig.Interface
 	ContainerURL        *azblob.ContainerURL
@@ -30,7 +28,7 @@ type Context struct {
 }
 
 type ContextRelease struct {
-	Components []v1alpha1.ReleaseSpecComponent
+	Release v1alpha1.Release
 }
 
 func (c *Context) Validate() error {

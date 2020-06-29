@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -18,7 +18,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding storage account")
 
 	containerName := key.BlobContainerName()
-	groupName := key.ClusterID(cr)
+	groupName := key.ClusterID(&cr)
 	storageAccountName := key.StorageAccountName(cr)
 
 	storageAccountsClient, err := r.getStorageAccountsClient(ctx)

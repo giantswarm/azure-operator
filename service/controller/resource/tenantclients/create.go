@@ -9,8 +9,8 @@ import (
 	"github.com/giantswarm/tenantcluster"
 	"k8s.io/client-go/rest"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -25,7 +25,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var restConfig *rest.Config
 	{
-		restConfig, err = r.tenant.NewRestConfig(ctx, key.ClusterID(cr), key.ClusterAPIEndpoint(cr))
+		restConfig, err = r.tenant.NewRestConfig(ctx, key.ClusterID(&cr), key.ClusterAPIEndpoint(cr))
 		if tenantcluster.IsTimeout(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")

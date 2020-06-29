@@ -9,8 +9,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/integration/env"
-	"github.com/giantswarm/azure-operator/integration/setup"
+	"github.com/giantswarm/azure-operator/v4/integration/env"
 )
 
 type ProviderConfig struct {
@@ -59,7 +58,7 @@ func (p *Provider) CurrentStatus() (v1alpha1.StatusCluster, error) {
 }
 
 func (p *Provider) CurrentVersion() (string, error) {
-	return setup.GetLatestOperatorRelease(), nil
+	return env.GetLatestOperatorRelease(), nil
 }
 
 // NextVersion returns the version which we are going to upgrade to

@@ -5,13 +5,11 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/to"
 
-	"github.com/giantswarm/azure-operator/service/controller/internal/state"
-
-	"github.com/giantswarm/azure-operator/pkg/checksum"
-	"github.com/giantswarm/azure-operator/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/pkg/checksum"
+	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -19,31 +17,36 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.getDeploymentsClient(ctx)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
+	groupsClient, err := r.ClientFactory.GetGroupsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(cr), key.MastersVmssDeploymentName)
+	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
 		return Empty, nil
 	} else if err != nil {
 		return Empty, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+
+	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
 	if key.IsSucceededProvisioningState(s) {
-		if d.Location == nil {
-			d.Location = to.StringP("<unknown>")
-		}
-
-		computedDeployment, err := r.newDeployment(ctx, cr, nil, *d.Location)
+		computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
 		if blobclient.IsBlobNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
 			return currentState, nil
 		} else if err != nil {
 			return "", microerror.Mask(err)
@@ -58,23 +61,23 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 				return "", microerror.Mask(err)
 			}
 
-			currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
+			currentDeploymentTemplateChk, err := r.GetResourceStatus(cr, DeploymentTemplateChecksum)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
 
-			currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
+			currentDeploymentParametersChk, err := r.GetResourceStatus(cr, DeploymentParametersChecksum)
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
 
 			if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+				r.Logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 				// As current and desired state differs, start process from the beginning.
 				return Empty, nil
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
 
 			return currentState, nil
 		}
@@ -83,7 +86,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 		return Empty, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "warning", "message", "instances reconciliation process reached unexpected state")
+	r.Logger.LogCtx(ctx, "level", "warning", "message", "instances reconciliation process reached unexpected state")
 
 	// Normally the process should never get here. In case this happens, start
 	// from the beginning.

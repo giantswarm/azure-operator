@@ -1,17 +1,16 @@
 package cloudconfig
 
 import (
+	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
-	"github.com/giantswarm/azure-operator/service/network"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 const (
@@ -28,25 +27,24 @@ type Config struct {
 	Logger             micrologger.Logger
 	RandomkeysSearcher randomkeys.Interface
 
-	Azure setting.Azure
-	// TODO(pk) remove as soon as we sort calico in Azure provider.
-	AzureConfig  client.AzureClientSetConfig
-	AzureNetwork network.Subnets
-	Ignition     setting.Ignition
-	OIDC         setting.OIDC
-	SSOPublicKey string
+	Azure                  setting.Azure
+	AzureClientCredentials auth.ClientCredentialsConfig
+	Ignition               setting.Ignition
+	OIDC                   setting.OIDC
+	SSOPublicKey           string
+	SubscriptionID         string
 }
 
 type CloudConfig struct {
 	logger             micrologger.Logger
 	randomkeysSearcher randomkeys.Interface
 
-	azure        setting.Azure
-	azureConfig  client.AzureClientSetConfig
-	azureNetwork network.Subnets
-	ignition     setting.Ignition
-	OIDC         setting.OIDC
-	ssoPublicKey string
+	azure                  setting.Azure
+	azureClientCredentials auth.ClientCredentialsConfig
+	ignition               setting.Ignition
+	OIDC                   setting.OIDC
+	ssoPublicKey           string
+	subscriptionID         string
 }
 
 func New(config Config) (*CloudConfig, error) {
@@ -63,27 +61,32 @@ func New(config Config) (*CloudConfig, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if err := config.AzureConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureConfig.%s", config, err)
+
+	if config.AzureClientCredentials.ClientID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.azureClientCredentials must not be empty", config)
+	}
+
+	if config.SubscriptionID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.SubscriptionID must not be empty", config)
 	}
 
 	c := &CloudConfig{
 		logger:             config.Logger,
 		randomkeysSearcher: config.RandomkeysSearcher,
 
-		azure:        config.Azure,
-		azureConfig:  config.AzureConfig,
-		azureNetwork: config.AzureNetwork,
-		ignition:     config.Ignition,
-		OIDC:         config.OIDC,
-		ssoPublicKey: config.SSOPublicKey,
+		azure:                  config.Azure,
+		azureClientCredentials: config.AzureClientCredentials,
+		ignition:               config.Ignition,
+		OIDC:                   config.OIDC,
+		ssoPublicKey:           config.SSOPublicKey,
+		subscriptionID:         config.SubscriptionID,
 	}
 
 	return c, nil
 }
 
 func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
-	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(customObject))
+	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(&customObject))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

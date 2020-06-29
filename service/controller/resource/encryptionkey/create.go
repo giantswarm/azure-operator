@@ -11,7 +11,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -39,7 +39,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Name:      key.CertificateEncryptionSecretName(cr),
 			Namespace: key.CertificateEncryptionNamespace,
 			Labels: map[string]string{
-				key.LabelCluster:      key.ClusterID(cr),
+				key.LabelCluster:      key.ClusterID(&cr),
 				key.LabelManagedBy:    r.projectName,
 				key.LabelOrganization: key.ClusterCustomer(cr),
 			},

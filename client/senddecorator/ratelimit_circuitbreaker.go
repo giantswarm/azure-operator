@@ -7,8 +7,8 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/pkg/backpressure"
-	"github.com/giantswarm/azure-operator/pkg/httputil"
+	"github.com/giantswarm/azure-operator/v4/pkg/backpressure"
+	"github.com/giantswarm/azure-operator/v4/pkg/httputil"
 )
 
 const (
@@ -38,7 +38,7 @@ func RateLimitCircuitBreaker(g *backpressure.Backpressure) autorest.SendDecorato
 
 			// Check if rate-limiting has kicked in and Backpressure needs to be
 			// updated correspondingly.
-			if resp.StatusCode == http.StatusTooManyRequests {
+			if resp != nil && resp.StatusCode == http.StatusTooManyRequests {
 				retryAfter, err := httputil.ParseRetryAfter(resp)
 				if err != nil {
 					// In case parsing fails, it's ok to fall back on default delay.
@@ -46,7 +46,7 @@ func RateLimitCircuitBreaker(g *backpressure.Backpressure) autorest.SendDecorato
 				}
 
 				g.NotBefore(retryAfter)
-				return nil, microerror.Maskf(tooManyRequestsError, "retry after %q", g.RetryAfter)
+				return nil, microerror.Maskf(tooManyRequestsError, "retry after %q", g.RetryAfter())
 			}
 
 			return resp, err

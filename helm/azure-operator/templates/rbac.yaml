@@ -12,8 +12,22 @@ rules:
     verbs:
       - "*"
   - apiGroups:
+      - cluster.x-k8s.io
+      - infrastructure.cluster.x-k8s.io
+    resources:
+      - clusters
+      - azureclusters
+      - azuremachines
+    verbs:
+      - get
+      - list
+      - patch
+      - update
+      - watch
+  - apiGroups:
       - core.giantswarm.io
     resources:
+      - azureclusterconfigs
       - drainerconfigs
     verbs:
       - "*"
@@ -22,6 +36,8 @@ rules:
     resources:
       - azureconfigs
     verbs:
+      - create
+      - delete
       - get
       - list
       - patch
@@ -41,6 +57,9 @@ rules:
       - releases
     verbs:
       - get
+  # The operator uses a distributed locking mechanism called kubelock https://github.com/giantswarm/kubelock.
+  # It operates based on namespaces in order to achieve a distributed locking mechanism.
+  # The locking is used for IPAM subnet allocation.
   - apiGroups:
       - ""
     resources:
@@ -49,6 +68,16 @@ rules:
       - get
       - create
       - delete
+      - update
+  # The operator needs read and write access to all provider specific
+  # infrastructure CRs we manage for Tenant Clusters.
+  - apiGroups:
+      - exp.infrastructure.cluster.x-k8s.io
+    resources:
+      - azuremachinepools
+      - azuremachinepools/status
+    verbs:
+      - "*"
   - apiGroups:
       - ""
     resources:

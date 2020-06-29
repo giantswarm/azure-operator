@@ -5,17 +5,17 @@ import (
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-storage-blob-go/azblob"
-	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
-	"github.com/giantswarm/azure-operator/pkg/helpers/vmss"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters/template"
 )
 
 func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureConfig, overwrites map[string]interface{}, location string) (azureresource.Deployment, error) {
@@ -35,14 +35,9 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		masterBlobName,
 	}
 
-	var distroVersion string
-	{
-		for _, component := range cc.Release.Components {
-			if component.Name == key.ContainerLinuxComponentName {
-				distroVersion = component.Version
-				break
-			}
-		}
+	distroVersion, err := key.OSVersion(cc.Release.Release)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	for _, k := range cloudConfigURLs {
@@ -55,11 +50,11 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
-	encrypter, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
+	encrypter, err := r.GetEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return azureresource.Deployment{}, nil
 	} else if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -68,7 +63,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	encryptionKey := encrypter.GetEncryptionKey()
 	initialVector := encrypter.GetInitialVector()
 
-	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
+	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(key.CredentialNamespace(obj), key.CredentialName(obj))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -99,23 +94,25 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	defaultParams := map[string]interface{}{
 		"apiLBBackendPoolID":    cc.APILBBackendPoolID,
 		"azureOperatorVersion":  project.Version(),
-		"clusterID":             key.ClusterID(obj),
+		"clusterID":             key.ClusterID(&obj),
 		"etcdLBBackendPoolID":   cc.EtcdLBBackendPoolID,
 		"masterCloudConfigData": masterCloudConfig,
 		"masterNodes":           vmss.GetMasterNodesConfiguration(obj, distroVersion),
 		"masterSubnetID":        cc.MasterSubnetID,
-		"vmssMSIEnabled":        r.azure.MSI.Enabled,
+		"vmssMSIEnabled":        r.Azure.MSI.Enabled,
 		"zones":                 key.AvailabilityZones(obj, location),
+	}
+
+	armTemplate, err := template.GetARMTemplate()
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	d := azureresource.Deployment{
 		Properties: &azureresource.DeploymentProperties{
 			Mode:       azureresource.Incremental,
 			Parameters: key.ToParameters(defaultParams, overwrites),
-			TemplateLink: &azureresource.TemplateLink{
-				URI:            to.StringPtr(key.ARMTemplateURI(r.templateVersion, "masters", "main.json")),
-				ContentVersion: to.StringPtr(key.TemplateContentVersion),
-			},
+			Template:   armTemplate,
 		},
 	}
 

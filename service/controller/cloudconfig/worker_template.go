@@ -5,11 +5,11 @@ import (
 	"encoding/base64"
 
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v_6_0_0"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
 )
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a
@@ -17,36 +17,28 @@ import (
 func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
 	var err error
 
-	// NOTE in Azure we disable Calico right now. This is due to a transitioning
-	// phase. The k8scloudconfig templates require certain calico valus to be set
-	// nonetheless. So we set them here. Later when the Calico setup is
-	// straightened out we can improve the handling here.
-	data.CustomObject.Spec.Cluster.Calico.Subnet = c.azureNetwork.Calico.IP.String()
-	data.CustomObject.Spec.Cluster.Calico.CIDR, _ = c.azureNetwork.Calico.Mask.Size()
-
 	var params k8scloudconfig.Params
 	{
 		be := baseExtension{
-			azure:        c.azure,
-			azureConfig:  c.azureConfig,
-			clusterCerts: data.ClusterCerts,
-			customObject: data.CustomObject,
-			encrypter:    encrypter,
-			vnetCIDR:     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
+			azure:                        c.azure,
+			azureClientCredentialsConfig: c.azureClientCredentials,
+			clusterCerts:                 data.ClusterCerts,
+			customObject:                 data.CustomObject,
+			encrypter:                    encrypter,
+			subscriptionID:               c.subscriptionID,
+			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
 		params = k8scloudconfig.DefaultParams()
 
 		params.Cluster = data.CustomObject.Spec.Cluster
-		params.Hyperkube = k8scloudconfig.Hyperkube{
-			Kubelet: k8scloudconfig.HyperkubeKubelet{
-				Docker: k8scloudconfig.HyperkubeDocker{
-					RunExtraArgs: []string{
-						"-v /var/lib/waagent:/var/lib/waagent:ro",
-					},
-					CommandExtraArgs: []string{
-						"--cloud-config=/etc/kubernetes/config/azure.yaml",
-					},
+		params.Kubernetes = k8scloudconfig.Kubernetes{
+			Kubelet: k8scloudconfig.KubernetesDockerOptions{
+				RunExtraArgs: []string{
+					"-v /var/lib/waagent:/var/lib/waagent:ro",
+				},
+				CommandExtraArgs: []string{
+					"--cloud-config=/etc/kubernetes/config/azure.yaml",
 				},
 			},
 		}

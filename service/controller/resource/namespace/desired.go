@@ -7,7 +7,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
@@ -25,9 +25,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			Name: key.ClusterNamespace(cr),
 			Labels: map[string]string{
 				key.LabelApp:           "master",
-				key.LegacyLabelCluster: key.ClusterID(cr),
+				key.LegacyLabelCluster: key.ClusterID(&cr),
 				key.LabelCustomer:      key.ClusterCustomer(cr),
-				key.LabelCluster:       key.ClusterID(cr),
+				key.LabelCluster:       key.ClusterID(&cr),
 				key.LabelOrganization:  key.ClusterCustomer(cr),
 			},
 		},

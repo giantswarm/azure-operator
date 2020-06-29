@@ -7,8 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 )
 
 const (
@@ -17,27 +16,24 @@ const (
 )
 
 type Config struct {
-	HostAzureClientSetConfig client.AzureClientSetConfig
-	Logger                   micrologger.Logger
+	CPRecordSetsClient dns.RecordSetsClient
+	Logger             micrologger.Logger
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	hostAzureClientSetConfig client.AzureClientSetConfig
-	logger                   micrologger.Logger
+	cpRecordSetsClient dns.RecordSetsClient
+	logger             micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
-	if err := config.HostAzureClientSetConfig.Validate(); err != nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.HostAzureClientSetConfig.%s", err)
-	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 
 	r := &Resource{
-		hostAzureClientSetConfig: config.HostAzureClientSetConfig,
-		logger:                   config.Logger,
+		cpRecordSetsClient: config.CPRecordSetsClient,
+		logger:             config.Logger,
 	}
 
 	return r, nil
@@ -46,15 +42,6 @@ func New(config Config) (*Resource, error) {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-func (r *Resource) getDNSRecordSetsHostClient() (*dns.RecordSetsClient, error) {
-	azureClients, err := client.NewAzureClientSet(r.hostAzureClientSetConfig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return azureClients.DNSRecordSetsClient, nil
 }
 
 func (r *Resource) getDNSRecordSetsGuestClient(ctx context.Context) (*dns.RecordSetsClient, error) {

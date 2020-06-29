@@ -3,11 +3,15 @@ package service
 import (
 	"context"
 	"fmt"
+	"net"
 	"sync"
 
-	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/k8sclient"
-	"github.com/giantswarm/k8sclient/k8srestconfig"
+	"github.com/Azure/go-autorest/autorest/azure/auth"
+	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v3/pkg/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -15,12 +19,18 @@ import (
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/client"
-	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v4/pkg/locker"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 // Config represents the configuration used to create a new service.
@@ -40,8 +50,10 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
+	azureClusterController  *controller.AzureCluster
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
+	machinePoolController   *controller.MachinePool
 	statusResourceCollector *statusresource.CollectorSet
 }
 
@@ -50,7 +62,6 @@ func New(config Config) (*Service, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
 	if config.Flag == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Flag must not be empty", config)
 	}
@@ -101,14 +112,6 @@ func New(config Config) (*Service, error) {
 		Location: config.Viper.GetString(config.Flag.Service.Azure.Location),
 	}
 
-	azureConfig := client.AzureClientSetConfig{
-		ClientID:        config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		ClientSecret:    config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		EnvironmentName: config.Viper.GetString(config.Flag.Service.Azure.EnvironmentName),
-		SubscriptionID:  config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID),
-		TenantID:        config.Viper.GetString(config.Flag.Service.Azure.TenantID),
-	}
-
 	Ignition := setting.Ignition{
 		Path:       config.Viper.GetString(config.Flag.Service.Tenant.Ignition.Path),
 		Debug:      config.Viper.GetBool(config.Flag.Service.Tenant.Ignition.Debug.Enabled),
@@ -121,6 +124,27 @@ func New(config Config) (*Service, error) {
 		IssuerURL:     config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL),
 		UsernameClaim: config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.UsernameClaim),
 		GroupsClaim:   config.Viper.GetString(config.Flag.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim),
+	}
+
+	var restConfig *rest.Config
+	{
+		c := k8srestconfig.Config{
+			Logger: config.Logger,
+
+			Address:    config.Viper.GetString(config.Flag.Service.Kubernetes.Address),
+			InCluster:  config.Viper.GetBool(config.Flag.Service.Kubernetes.InCluster),
+			KubeConfig: config.Viper.GetString(config.Flag.Service.Kubernetes.KubeConfig),
+			TLS: k8srestconfig.ConfigTLS{
+				CAFile:  config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CAFile),
+				CrtFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.CrtFile),
+				KeyFile: config.Viper.GetString(config.Flag.Service.Kubernetes.TLS.KeyFile),
+			},
+		}
+
+		restConfig, err = k8srestconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	var k8sClient *k8sclient.Clients
@@ -158,7 +182,13 @@ func New(config Config) (*Service, error) {
 		c := k8sclient.ClientsConfig{
 			Logger: config.Logger,
 			SchemeBuilder: k8sclient.SchemeBuilder{
-				v1alpha1.AddToScheme,
+				corev1alpha1.AddToScheme,
+				providerv1alpha1.AddToScheme,
+				releasev1alpha1.AddToScheme,
+				capiv1alpha3.AddToScheme,
+				capzv1alpha3.AddToScheme,
+				expcapiv1alpha3.AddToScheme,
+				expcapzv1alpha3.AddToScheme,
 			},
 
 			KubeConfigPath: kubeConfigPath,
@@ -171,25 +201,110 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var clusterController *controller.Cluster
+	var azureClusterController *controller.AzureCluster
 	{
-		c := controller.ClusterConfig{
+		c := controller.AzureClusterConfig{
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
 			Azure:            azure,
-			AzureConfig:      azureConfig,
 			Ignition:         Ignition,
 			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,
 			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
 			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			TemplateVersion:  config.Viper.GetString(config.Flag.Service.Azure.Template.URI.Version),
 			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
+		azureClusterController, err = controller.NewAzureCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var kubeLockLocker locker.Interface
+	{
+		c := locker.KubeLockLockerConfig{
+			Logger:     config.Logger,
+			RestConfig: restConfig,
+		}
+
+		kubeLockLocker, err = locker.NewKubeLockLocker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamNetworkRange net.IPNet
+	{
+		_, ipnet, err := net.ParseCIDR(config.Viper.GetString(config.Flag.Service.Installation.Guest.IPAM.Network.CIDR))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		ipamNetworkRange = *ipnet
+	}
+
+	// These credentials will be used when creating AzureClients for Control Plane clusters.
+	gsClientCredentialsConfig, err := credential.NewAzureCredentials(
+		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+	)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
+
+	var clusterController *controller.Cluster
+	{
+		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		c := controller.ClusterConfig{
+			Azure:                     azure,
+			CredentialProvider:        credentialProvider,
+			CPAzureClientSet:          cpAzureClientSet,
+			GSClientCredentialsConfig: gsClientCredentialsConfig,
+			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			Ignition:                  Ignition,
+			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			IPAMNetworkRange:          ipamNetworkRange,
+			K8sClient:                 k8sClient,
+			Locker:                    kubeLockLocker,
+			Logger:                    config.Logger,
+			OIDC:                      OIDC,
+			ProjectName:               config.ProjectName,
+			RegistryDomain:            config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+		}
+
 		clusterController, err = controller.NewCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var machinePoolController *controller.MachinePool
+	{
+		c := controller.MachinePoolConfig{
+			GSClientCredentialsConfig: gsClientCredentialsConfig,
+			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
+			IPAMNetworkRange:          ipamNetworkRange,
+			K8sClient:                 k8sClient,
+			Locker:                    kubeLockLocker,
+			Logger:                    config.Logger,
+		}
+
+		machinePoolController, err = controller.NewMachinePool(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -228,8 +343,10 @@ func New(config Config) (*Service, error) {
 	s := &Service{
 		Version: versionService,
 
+		azureClusterController:  azureClusterController,
 		bootOnce:                sync.Once{},
 		clusterController:       clusterController,
+		machinePoolController:   machinePoolController,
 		statusResourceCollector: statusResourceCollector,
 	}
 
@@ -240,7 +357,9 @@ func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
+		go s.azureClusterController.Boot(ctx)
 		go s.clusterController.Boot(ctx)
+		go s.machinePoolController.Boot(ctx)
 	})
 }
 
@@ -264,4 +383,26 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 	}
 
 	return restConfig, nil
+}
+
+// NewCPAzureClientSet return an Azure client set configured for the Control Plane cluster.
+func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig) (*client.AzureClientSet, error) {
+	cpTenantID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.TenantID)
+	if cpTenantID != "" {
+		// We want the code to work both when using Single Tenant Service Principal and Multi Tenant Service Principal.
+		// We only add the CP Tenant ID as auxiliary id if an explicit CP Tenant ID has been passed.
+		gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, cpTenantID)
+	}
+
+	cpSubscriptionID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.SubscriptionID)
+	if cpSubscriptionID == "" {
+		cpSubscriptionID = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
+	}
+
+	cpPartnerID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.PartnerID)
+	if cpPartnerID == "" {
+		cpPartnerID = config.Viper.GetString(config.Flag.Service.Azure.PartnerID)
+	}
+
+	return client.NewAzureClientSet(gsClientCredentialsConfig, cpSubscriptionID, cpPartnerID)
 }

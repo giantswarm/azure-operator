@@ -11,7 +11,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
@@ -54,7 +54,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, nil
 	}
 
-	if namespace == nil && key.IsDeleted(cr) {
+	if namespace == nil && key.IsDeleted(&cr) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "resource deletion completed")
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")

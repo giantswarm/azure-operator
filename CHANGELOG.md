@@ -7,8 +7,19 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
 
+- Mapping from Cluster API & CAPZ CRs to AzureConfig. This change provides migration path towards Azure Cluster API implementation.
 
+## Fixed
+
+- Make the rate limit circuit breaker to only inspect response HTTP status code if there were no errors doing the request.
+
+## [4.0.1] 2020-05-20
+
+## Fixed
+
+- Avoid blocking all egress traffic from workers during flatcar migration.
 
 ## [4.0.0] 2020-05-05
 
@@ -20,6 +31,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Replace CoreOS VM image to Flatcar with manual migration.
 - Move containerPort values from deployment to `values.yaml`.
+
+
+
+### Changed
+
+- Migrated to go modules.
+- Use ARM nested templates instead of relying on Github when using linked templates.
 
 
 
@@ -38,6 +56,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Reduce number of Azure API calls when creating, updating and scaling clusters which lowers the risk of exceeding Azure API rate limits and hitting error 429.
 - Collectors that expose Azure metrics have been migrated to its own repository.
+
 
 
 ## [3.0.6] 2020-04-09
@@ -80,13 +99,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/aws-operator/compare/v4.0.0...HEAD
-
-[4.0.0]: https://github.com/giantswarm/aws-operator/compare/v3.0.7...v4.0.0
-
-[3.0.7]: https://github.com/giantswarm/aws-operator/compare/v3.0.6...v3.0.7
-[3.0.6]: https://github.com/giantswarm/aws-operator/compare/v3.0.5...v3.0.6
-[3.0.5]: https://github.com/giantswarm/aws-operator/compare/v3.0.1...v3.0.5
-[3.0.1]: https://github.com/giantswarm/aws-operator/compare/v1.0.0...v3.0.1
-
-[1.0.0]: https://github.com/giantswarm/aws-operator/releases/tag/v1.0.0
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v4.0.1...HEAD
+[4.0.1]: https://github.com/giantswarm/azure-operator/compare/v4.0.0...v4.0.1
+[4.0.0]: https://github.com/giantswarm/azure-operator/compare/v3.0.7...v4.0.0
+[3.0.7]: https://github.com/giantswarm/azure-operator/compare/v3.0.6...v3.0.7
+[3.0.6]: https://github.com/giantswarm/azure-operator/compare/v3.0.5...v3.0.6
+[3.0.5]: https://github.com/giantswarm/azure-operator/compare/v3.0.1...v3.0.5
+[3.0.1]: https://github.com/giantswarm/azure-operator/compare/v1.0.0...v3.0.1
+[1.0.0]: https://github.com/giantswarm/azure-operator/releases/tag/v1.0.0

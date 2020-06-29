@@ -9,7 +9,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	apismetav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
@@ -23,7 +23,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	}
 
 	// Deleting the K8s namespace will take care of cleaning the endpoints.
-	if key.IsDeleted(cr) {
+	if key.IsDeleted(&cr) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting deletion to namespace termination")
 		resourcecanceledcontext.SetCanceled(ctx)
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -43,7 +43,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			return nil, microerror.Mask(err)
 		}
 
-		g := key.ClusterID(cr)
+		g := key.ClusterID(&cr)
 		s := key.MasterVMSSName(cr)
 		_, err = interfacesClient.ListVirtualMachineScaleSetNetworkInterfaces(ctx, g, s)
 		if IsNetworkInterfacesNotFound(err) {

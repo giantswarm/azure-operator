@@ -6,12 +6,12 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/giantswarm/azure-operator/integration/network"
+	"github.com/giantswarm/azure-operator/v4/integration/network"
 )
 
 const (
 	DefaultAzureLocation             = "westeurope"
-	DefaultCommonDomainResourceGroup = "root_dns_zone_rg"
+	DefaultCommonDomainResourceGroup = "godsmack"
 
 	EnvVarAzureAZs  = "AZURE_AZS"
 	EnvVarAzureCIDR = "AZURE_CIDR"
@@ -26,6 +26,8 @@ const (
 	EnvVarBastionPublicSSHKey       = "BASTION_PUBLIC_SSH_KEY"
 
 	EnvVarCircleBuildNumber = "CIRCLE_BUILD_NUM"
+
+	EnvVarLatestOperatorRelease = "LATEST_OPERATOR_RELEASE"
 )
 
 var (
@@ -42,6 +44,8 @@ var (
 
 	commonDomainResourceGroup string
 	sshPublicKey              string
+
+	latestOperatorRelease string
 )
 
 func init() {
@@ -80,7 +84,8 @@ func init() {
 	var ok bool
 	sshPublicKey, ok = os.LookupEnv(EnvVarBastionPublicSSHKey)
 	if !ok {
-		fmt.Printf("No value found in '%s': no keys will be placed on the bastion server\n", EnvVarBastionPublicSSHKey)
+		fmt.Printf("No value found in '%s': default public key will be placed on the bastion server\n", EnvVarBastionPublicSSHKey)
+		sshPublicKey = "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDBSSJCLkZWhOvs6blotU+fWbrTmC7fOwOm0+w01Ww/YN3j3j1vCrvji1A4Yonr89ePQEQKfZsYcYFodQI/D3Uzu9rOFy0dCMQfvL/J6N8LkNtmooh3J2p061829MurAdD+TVsNGrD2FZGm5Ab4NiyDXIGAYCaHL6BHP16ipBglYjLQt6jVyzdTbYspkRi1QrsNFN3gIv9V47qQSvoNEsC97gvumKzCSQ/EwJzFoIlqVkZZHZTXvGwnZrAVXB69t9Y8OJ5zA6cYFAKR0O7lEiMpebdLNGkZgMA6t2PADxfT78PHkYXLR/4tchVuOSopssJqgSs7JgIktEE14xKyNyoLKIyBBo3xwywnDySsL8R2zG4Ytw1luo79pnSpIzTvfwrNhd7Cg//OYzyDCty+XUEUQx2JfOBx5Qb1OFw71WA+zYqjbworOsy2ZZ9UAy8ryjiaeT8L2ZRGuhdicD6kkL3Lxg5UeNIxS2FLNwgepZ4D8Vo6Yxe+VOZl524ffoOJSHQ0Gz8uE76hXMNEcn4t8HVkbR4sCMgLn2YbwJ2dJcROj4w80O4qgtN1vsL16r4gt9o6euml8LbmnJz6MtGdMczSO7kHRxirtEHMTtYbT1wNgUAzimbScRggBpUz5gbz+NRE1Xgnf4A5yNMRy+JOWtLVUozJlcGSiQkVcexzdb27yQ=="
 	}
 
 	// azureCDIR must be provided along with other CIDRs,
@@ -105,6 +110,12 @@ func init() {
 		azureCalicoSubnetCIDR = subnets.Calico.String()
 		azureMasterSubnetCIDR = subnets.Master.String()
 		azureWorkerSubnetCIDR = subnets.Worker.String()
+	}
+
+	var exists bool
+	latestOperatorRelease, exists = os.LookupEnv(EnvVarLatestOperatorRelease)
+	if !exists {
+		panic(fmt.Sprintf("env var %#q must not be empty\n", EnvVarLatestOperatorRelease))
 	}
 }
 
@@ -172,6 +183,10 @@ func AzureWorkerSubnetCIDR() string {
 
 func CommonDomainResourceGroup() string {
 	return commonDomainResourceGroup
+}
+
+func GetLatestOperatorRelease() string {
+	return latestOperatorRelease
 }
 
 func SSHPublicKey() string {

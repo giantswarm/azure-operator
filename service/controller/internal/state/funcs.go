@@ -7,7 +7,7 @@ import (
 )
 
 func (m Machine) Execute(ctx context.Context, obj interface{}, currentState State) (State, error) {
-	transitionFunc, exists := m[currentState]
+	transitionFunc, exists := m.Transitions[currentState]
 	if !exists {
 		return "", microerror.Maskf(executionFailedError, "State: %q is not configured in this state machine", currentState)
 	}
@@ -17,10 +17,11 @@ func (m Machine) Execute(ctx context.Context, obj interface{}, currentState Stat
 		return newState, microerror.Mask(err)
 	}
 
-	_, exists = m[newState]
+	_, exists = m.Transitions[newState]
 	if !exists {
 		return newState, microerror.Maskf(executionFailedError, "State transition returned new unknown state: %q. Input state: %q", newState, currentState)
 	}
 
+	m.Logger.LogCtx(ctx, "resource", m.ResourceName, "message", "state changed", "oldState", currentState, "newState", newState)
 	return newState, nil
 }

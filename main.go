@@ -13,18 +13,14 @@ import (
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 
-	"github.com/giantswarm/azure-operator/flag"
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/server"
-	"github.com/giantswarm/azure-operator/service"
-)
-
-const (
-	notAvailable = "n/a"
+	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/server"
+	"github.com/giantswarm/azure-operator/v4/service"
 )
 
 var (
-	f *flag.Flag = flag.New()
+	f = flag.New()
 )
 
 func init() {
@@ -114,28 +110,55 @@ func mainError() error {
 		}
 	}
 
-	var defaultTemplateVersion string
-	{
-		if project.GitSHA() != notAvailable {
-			defaultTemplateVersion = project.GitSHA()
-		}
-	}
-
 	daemonCommand := newCommand.DaemonCommand().CobraCommand()
 
 	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientID, "", "ID of the Active Directory Service Principal.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientSecret, "", "Secret of the Active Directory Service Principal.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.EnvironmentName, "AZUREPUBLICCLOUD", "Azure Cloud Environment identifier.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.Location, "westeurope", "Location of the host and guset clusters.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.PartnerID, "", "Partner id used in Azure for the attribution partner program.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.SubscriptionID, "", "ID of the Azure Subscription.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.TenantID, "", "ID of the Active Directory Tenant.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Azure.MSI.Enabled, true, "Whether to enabled Managed Service Identity (MSI).")
-	daemonCommand.PersistentFlags().String(f.Service.Azure.Template.URI.Version, defaultTemplateVersion, "URI version for ARM template links.")
 	daemonCommand.PersistentFlags().Int(f.Service.Azure.VMSSCheckWorkers, 5, "Number of workers in VMSS check worker pool.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.CIDR, "10.0.0.0/16", "CIDR of the host cluster virtual network used to create a peering.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.ResourceGroup, "", "Host cluster resource group name.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.TenantID, "", "Tenant ID used for the Control Plane cluster.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.SubscriptionID, "", "Subscription ID used for the Control Plane cluster.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.PartnerID, "", "Partner ID used for the Control Plane cluster.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetwork, "", "Host cluster virtual network name.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetworkGateway, "", "Host cluster virtual network gateway name.")
+
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.BaseDomain, "ghost.westeurope.azure.gigantic.io", "Cluster base domain without k8s/g8s prefixes.")
+
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.CIDR, 0, "Calico cidr of guest clusters.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.MTU, 0, "Calico MTU of guest clusters.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Calico.Subnet, "", "Calico subnet of guest clusters.")
+
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Docker.Daemon.CIDR, "", "CIDR of the Docker daemon bridge configured in guest clusters.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Docker.Daemon.ExtraArgs, "", "Extra args of the Docker daemon configured in guest clusters.")
+
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Etcd.AltNames, "", "Alternative names for guest cluster Calico certificates.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Etcd.Port, 0, "Port of guest cluster etcd.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Etcd.Prefix, "", "Prefix of guest cluster etcd.")
+
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.API.AltNames, "", "Alternative names for guest cluster API certificates.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.API.ClusterIPRange, "", "Service IP range within guest clusters.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.API.SecurePort, 0, "Secure port of guest cluster API.")
+
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Domain, "", "Base domain for guest clusters.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.IngressController.BaseDomain, "", "Base domain for guest cluster Ingress Controller.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.IngressController.Docker.Image, "", "Full docker image of Ingress Controller.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.IngressController.InsecurePort, 0, "Insecure port of guest cluster Ingress Controller.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.IngressController.SecurePort, 0, "Secure port of guest cluster Ingress Controller.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubectl.Docker.Image, "", "Full docker image of kubectl.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubelet.AltNames, "", "Alternative names for guest cluster kubelet certificates.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubelet.Labels, "", "Labels for guest cluster kubelets.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.Kubelet.Port, 0, "Port to bind guest cluster kubelets on.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.NetworkSetup.Docker.Image, "", "Full docker image of networksetup.")
+	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.SSH.UserList, "", "Comma separated list of ssh users and their public key in format `username:publickey`, being installed in the guest cluster nodes.")
+	daemonCommand.PersistentFlags().String(f.Service.Installation.Guest.IPAM.Network.CIDR, "10.1.0.0/8", "Guest cluster network segment from which IPAM allocates subnets.")
+	daemonCommand.PersistentFlags().Int(f.Service.Installation.Guest.IPAM.Network.SubnetMaskBits, 16, "Number of bits in guest cluster subnet network mask.")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Name, "", "Installation name for tagging Azure resources.")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.ClientID, "", "OIDC authorization provider ClientID.")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Tenant.Kubernetes.API.Auth.Provider.OIDC.IssuerURL, "", "OIDC authorization provider IssuerURL.")

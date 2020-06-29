@@ -7,28 +7,27 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-
-	"github.com/giantswarm/azure-operator/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 )
 
 func (r *Resource) waitForMastersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isMaster)
 	if IsClientNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready")
 		return currentState, nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
 
 	return DeploymentCompleted, nil
 }

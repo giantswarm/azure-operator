@@ -10,10 +10,10 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
-	"github.com/giantswarm/azure-operator/pkg/project"
-	"github.com/giantswarm/azure-operator/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/service/controller/key"
-	"github.com/giantswarm/azure-operator/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 const (
@@ -73,7 +73,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created")
 
 	resourceGroup := azureresource.Group{
-		Name:      to.StringPtr(key.ClusterID(cr)),
+		Name:      to.StringPtr(key.ClusterID(&cr)),
 		Location:  to.StringPtr(r.azure.Location),
 		ManagedBy: to.StringPtr(project.Name()),
 		Tags:      key.ClusterTags(cr, r.installationName),
@@ -102,13 +102,13 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group deletion")
 
-	_, err = groupsClient.Get(ctx, key.ClusterID(cr))
+	_, err = groupsClient.Get(ctx, key.ClusterID(&cr))
 	if IsNotFound(err) {
 		// fall through
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		res, err := groupsClient.Delete(ctx, key.ClusterID(cr))
+		res, err := groupsClient.Delete(ctx, key.ClusterID(&cr))
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
