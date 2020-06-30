@@ -18,6 +18,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ## Changed
 
 - Migrate the `vmsscheck` guards to use the Azure client factory.
+- Use `0.1.0` tag for `k8s-api-heahtz` image.
+- Use `0.1.0` tag for `k8s-setup-network-env` image.
 
 ## [4.0.1] 2020-05-20
 
