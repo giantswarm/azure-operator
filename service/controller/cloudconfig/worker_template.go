@@ -32,6 +32,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		params = k8scloudconfig.DefaultParams()
 
 		params.Cluster = data.CustomObject.Spec.Cluster
+		params.CalicoPolicyOnly = true
 		params.Kubernetes = k8scloudconfig.Kubernetes{
 			Kubelet: k8scloudconfig.KubernetesDockerOptions{
 				RunExtraArgs: []string{
