@@ -41,7 +41,7 @@ func (r *Resource) saveCurrentState(ctx context.Context, customObject v1alpha3.A
 		annotations = map[string]string{}
 	}
 
-	annotations[annotation.IsMasterUpgrading] = state
+	annotations[annotation.StateMachineCurrentState] = state
 
 	err = r.CtrlClient.Update(ctx, azureMachinePool)
 	if err != nil {
@@ -58,7 +58,12 @@ func (r *Resource) getCurrentState(ctx context.Context, customObject v1alpha3.Az
 		return "", microerror.Mask(err)
 	}
 
-	status, exists := azureMachinePool.GetAnnotations()[annotation.IsMasterUpgrading]
+	annotations := azureMachinePool.GetAnnotations()
+	if annotations == nil {
+		annotations = map[string]string{}
+	}
+
+	status, exists := annotations[annotation.StateMachineCurrentState]
 	if !exists {
 		return "", nil
 	}

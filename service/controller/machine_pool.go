@@ -131,20 +131,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	//var nodepoolResource resource.Interface
-	//{
-	//	c := nodepool.Config{
-	//		CtrlClient:                config.K8sClient.CtrlClient(),
-	//		GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-	//		Logger:                    config.Logger,
-	//	}
-	//
-	//	nodepoolResource, err = nodepool.New(c)
-	//	if err != nil {
-	//		return nil, microerror.Mask(err)
-	//	}
-	//}
-
 	var iwd vmsscheck.InstanceWatchdog
 	{
 		c := vmsscheck.Config{
@@ -173,7 +159,10 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var instanceResource resource.Interface
 	{
 		c := instance.Config{
-			Config: nodesConfig,
+			Config:                    nodesConfig,
+			CredentialProvider:        config.CredentialProvider,
+			CtrlClient:                config.K8sClient.CtrlClient(),
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 		}
 
 		instanceResource, err = instance.New(c)
