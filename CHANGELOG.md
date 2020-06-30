@@ -20,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the flatcar migration state machine transitions.
 - Calculate CIDR for a new Tenant Cluster using a local resource rather than getting it from `kubernetesd`.
 - Migrate the `vmsscheck` guards to use the Azure client factory.
+- Use `0.1.0` tag for `k8s-api-heahtz` image.
+- Use `0.1.0` tag for `k8s-setup-network-env` image.
 
 ### Removed
 
@@ -38,6 +40,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
+- Migrate the `vmsscheck` guards to use the Azure client factory.
 - Move NGINX IC LoadBalancer Service management from azure-operator to nginx-ingress-controller app.
 
 ## [4.0.1] 2020-05-20
