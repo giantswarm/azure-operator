@@ -34,10 +34,6 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
 
 	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
 	if err != nil {
@@ -60,6 +56,11 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
