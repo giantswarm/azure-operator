@@ -98,8 +98,8 @@ func (r *Resource) ScaleVMSS(ctx context.Context, virtualMachineScaleSetsClient 
 	return nil
 }
 
-func (r *Resource) CreateARMDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName string, computedDeployment azureresource.Deployment) error {
-	res, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, key.WorkersVmssDeploymentName, computedDeployment)
+func (r *Resource) CreateARMDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, computedDeployment azureresource.Deployment, resourceGroupName, deploymentName string) error {
+	res, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroupName, deploymentName, computedDeployment)
 	if err != nil {
 		return microerror.Mask(err)
 	}

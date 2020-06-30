@@ -4,10 +4,9 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 )
 
-func (r *Resource) GetResourceStatus(azureMachinePool capzexpv1alpha3.AzureMachinePool, t string) (string, error) {
+func (r *Resource) GetResourceStatus(customObject providerv1alpha1.AzureConfig, t string) (string, error) {
 	{
 		c, err := r.G8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
 		if err != nil {
@@ -32,7 +31,7 @@ func (r *Resource) GetResourceStatus(azureMachinePool capzexpv1alpha3.AzureMachi
 	return "", nil
 }
 
-func (r *Resource) SetResourceStatus(azureMachinePool capzexpv1alpha3.AzureMachinePool, t string, s string) error {
+func (r *Resource) SetResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
 	// Get the newest CR version. Otherwise status update may fail because of:
 	//
 	//	 the object has been modified; please apply your changes to the

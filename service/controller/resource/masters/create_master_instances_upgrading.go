@@ -67,7 +67,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 				return "", microerror.Mask(err)
 			}
 			if ws.InstanceToDrain() != nil {
-				err = r.CreateDrainerConfig(ctx, cr, key.MasterInstanceName(cr, *ws.InstanceToDrain().InstanceID))
+				err = r.CreateDrainerConfig(ctx, key.ClusterID(&cr), key.ClusterAPIEndpoint(cr), key.MasterInstanceName(cr, *ws.InstanceToDrain().InstanceID))
 				if err != nil {
 					return "", microerror.Mask(err)
 				}

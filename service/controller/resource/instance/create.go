@@ -62,14 +62,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	err = r.CtrlClient.Status().Update(ctx, &azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	if newState != currentState {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to %#q", newState))
 		err = r.saveCurrentState(ctx, azureMachinePool, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to %#q", newState))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 	} else {

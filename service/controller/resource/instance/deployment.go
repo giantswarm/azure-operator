@@ -63,12 +63,13 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 	}
 
 	templateParams := map[string]interface{}{
-		"machinePoolVersion":      machinePool.ObjectMeta.ResourceVersion,
-		"azureMachinePoolVersion": azureMachinePool.ObjectMeta.ResourceVersion,
+		"machinePoolVersion":      machinePool.ObjectMeta.Generation,
+		"azureMachinePoolVersion": azureMachinePool.ObjectMeta.Generation,
 		"azureOperatorVersion":    project.Version(),
 		"clusterID":               azureCluster.GetName(),
 		"dockerVolumeSizeGB":      "50",
 		"kubeletVolumeSizeGB":     "100",
+		"nodepoolName":            azureMachinePool.Name,
 		"sshPublicKey":            azureMachinePool.Spec.Template.SSHPublicKey,
 		"osImagePublisher":        "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
 		"osImageOffer":            "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,
