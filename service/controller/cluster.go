@@ -43,6 +43,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/service"
@@ -53,10 +54,11 @@ import (
 )
 
 type ClusterConfig struct {
-	InstallationName string
-	K8sClient        k8sclient.Interface
-	Locker           locker.Interface
-	Logger           micrologger.Logger
+	CredentialProvider credential.Provider
+	InstallationName   string
+	K8sClient          k8sclient.Interface
+	Locker             locker.Interface
+	Logger             micrologger.Logger
 
 	Azure setting.Azure
 	// Azure client set used when managing control plane resources
@@ -128,7 +130,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 					return nil, microerror.Mask(err)
 				}
 
-				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := credential.GetOrganizationAzureCredentials(ctx, config.K8sClient, cr, config.GSClientCredentialsConfig.TenantID)
+				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cr), key.CredentialName(cr))
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}
@@ -192,6 +194,20 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
+
+	var clientFactory *client.Factory
+	{
+		c := client.FactoryConfig{
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
+		}
+
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var newDebugger *debugger.Debugger
 	{
@@ -408,16 +424,21 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
+	nodesConfig := nodes.Config{
+		Debugger:  newDebugger,
+		G8sClient: config.K8sClient.G8sClient(),
+		K8sClient: config.K8sClient.K8sClient(),
+		Logger:    config.Logger,
+
+		Azure:            config.Azure,
+		ClientFactory:    clientFactory,
+		InstanceWatchdog: iwd,
+	}
+
 	var mastersResource resource.Interface
 	{
 		c := masters.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			InstanceWatchdog: iwd,
+			Config: nodesConfig,
 		}
 
 		mastersResource, err = masters.New(c)
@@ -429,13 +450,7 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var instanceResource resource.Interface
 	{
 		c := instance.Config{
-			Debugger:  newDebugger,
-			G8sClient: config.K8sClient.G8sClient(),
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			Azure:            config.Azure,
-			InstanceWatchdog: iwd,
+			Config: nodesConfig,
 		}
 
 		instanceResource, err = instance.New(c)
@@ -473,10 +488,10 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 	var subnetCollector *ipam.SubnetCollector
 	{
 		c := ipam.SubnetCollectorConfig{
-			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-			K8sClient:                 config.K8sClient,
-			InstallationName:          config.InstallationName,
-			Logger:                    config.Logger,
+			CredentialProvider: config.CredentialProvider,
+			K8sClient:          config.K8sClient,
+			InstallationName:   config.InstallationName,
+			Logger:             config.Logger,
 
 			NetworkRange: config.IPAMNetworkRange,
 		}

@@ -15,26 +15,26 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.getDeploymentsClient(ctx)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if err != nil {
 		return Empty, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
 	if !key.IsSucceededProvisioningState(s) {
-		r.debugger.LogFailedDeployment(ctx, d, err)
+		r.Debugger.LogFailedDeployment(ctx, d, err)
 
 		if key.IsFinalProvisioningState(s) {
 			// Deployment is not running and not succeeded (Failed?)

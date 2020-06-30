@@ -260,6 +260,20 @@ func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureC
 	return customObject.Spec.Azure.DNSZones
 }
 
+// IsClusterCreating check if the cluster is being created.
+func IsClusterCreating(cr providerv1alpha1.AzureConfig) bool {
+	// When cluster creation is in the beginning, it doesn't necessarily have
+	// any status conditions yet.
+	if len(cr.Status.Cluster.Conditions) == 0 {
+		return true
+	}
+	if cr.Status.Cluster.HasCreatingCondition() {
+		return true
+	}
+
+	return false
+}
+
 func IsFinalProvisioningState(s string) bool {
 	return IsFailedProvisioningState(s) || IsSucceededProvisioningState(s)
 }
@@ -324,10 +338,6 @@ func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 // MasterNICName returns name of the master NIC.
 func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(&customObject))
-}
-
-func LegacyMasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-master", ClusterID(&customObject))
 }
 
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
@@ -537,15 +547,6 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), vpnGatewaySuffix)
 }
 
-func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	idB36, err := vmssInstanceIDBase36(instanceID)
-	if err != nil {
-		panic(err)
-	}
-
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(&customObject), idB36)
-}
-
 func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
@@ -553,10 +554,6 @@ func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 	}
 
 	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(&customObject), ClusterID(&customObject), idB36)
-}
-
-func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker", ClusterID(&customObject))
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {

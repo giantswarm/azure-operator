@@ -26,7 +26,7 @@ require (
 	github.com/giantswarm/k8sclient v0.2.0
 	github.com/giantswarm/k8sclient/v2 v2.0.0
 	github.com/giantswarm/k8sclient/v3 v3.1.0
-	github.com/giantswarm/k8scloudconfig/v6 v6.2.7-0.20200622092048-0768db4b078c
+	github.com/giantswarm/k8scloudconfig/v6 v6.2.5
 	github.com/giantswarm/kubelock v0.2.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.0
@@ -39,6 +39,7 @@ require (
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/google/go-cmp v0.4.0
 	github.com/markbates/pkger v0.17.0
+	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
