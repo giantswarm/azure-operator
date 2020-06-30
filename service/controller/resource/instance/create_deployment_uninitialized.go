@@ -78,7 +78,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	deploymentIsOutOfDate, nodesNeedToBeRolled, err := r.deploymentIsOutOfDate(currentDeployment, desiredDeployment)
+	deploymentIsOutOfDate, nodesNeedToBeRolled, err := r.deploymentIsOutOfDate(ctx, currentDeployment, desiredDeployment)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -134,7 +134,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 // There are two cases where we want to update the cluster:
 // - customer has decided to update to a newer GiantSwarm release
 // - customer has changed some configuration and we need to apply it
-func (r *Resource) deploymentIsOutOfDate(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) (bool, bool, error) {
+func (r *Resource) deploymentIsOutOfDate(ctx context.Context, currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) (bool, bool, error) {
 	if currentDeployment.IsHTTPStatus(404) {
 		return true, false, nil
 	}
@@ -152,6 +152,7 @@ func (r *Resource) deploymentIsOutOfDate(currentDeployment azureresource.Deploym
 	customerHasChangedConfiguration := currentDeploymentParameters["AzureMachinePoolVersion"] != desiredDeploymentParameters["AzureMachinePoolVersion"]
 	customerHasScaledTheCluster := currentDeploymentParameters["MachinePoolVersion"] != desiredDeploymentParameters["MachinePoolVersion"]
 	customerIsUpgradingTheCluster := currentDeploymentParameters["azureOperatorVersion"] != desiredDeploymentParameters["azureOperatorVersion"]
+	r.Logger.LogCtx(ctx, "message", "Checking if deployment is out of date", "currentAzureMachinePoolVersion", currentDeploymentParameters["AzureMachinePoolVersion"], "desiredAzureMachinePoolVersion", desiredDeploymentParameters["AzureMachinePoolVersion"], "currentMachinePoolVersion", currentDeploymentParameters["MachinePoolVersion"], "desiredMachinePoolVersion", desiredDeploymentParameters["MachinePoolVersion"])
 
 	return customerHasChangedConfiguration || customerIsUpgradingTheCluster || customerHasScaledTheCluster, customerIsUpgradingTheCluster || customerHasChangedConfiguration, nil
 }
