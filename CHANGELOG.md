@@ -15,6 +15,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Make the rate limit circuit breaker to only inspect response HTTP status code if there were no errors doing the request.
 
+## Changed
+
+- Migrate the `vmsscheck` guards to use the Azure client factory.
+
 ## [4.0.1] 2020-05-20
 
 ## Fixed
