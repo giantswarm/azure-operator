@@ -61,7 +61,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
 		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
-		params.DisableCalico = true
+		params.CalicoPolicyOnly = true
 		params.DisableIngressControllerService = true
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Kubernetes = k8scloudconfig.Kubernetes{
@@ -107,9 +107,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.Extension = &masterExtension{
 			baseExtension: be,
 		}
-		params.ExtraManifests = []string{
-			"calico-azure.yaml",
-		}
+		params.ExtraManifests = []string{}
 		params.Debug = k8scloudconfig.Debug{
 			Enabled:    c.ignition.Debug,
 			LogsPrefix: c.ignition.LogsPrefix,
@@ -134,19 +132,6 @@ type masterExtension struct {
 // Files allows files to be injected into the master cloudconfig.
 func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	filesMeta := []k8scloudconfig.FileMetadata{
-		{
-			AssetContent: ignition.CalicoAzureResources,
-			Path:         "/srv/calico-azure.yaml",
-			Owner: k8scloudconfig.Owner{
-				Group: k8scloudconfig.Group{
-					Name: FileOwnerGroupName,
-				},
-				User: k8scloudconfig.User{
-					Name: FileOwnerUserName,
-				},
-			},
-			Permissions: FilePermission,
-		},
 		{
 			AssetContent: ignition.CloudProviderConf,
 			Path:         "/etc/kubernetes/config/azure.yaml",
