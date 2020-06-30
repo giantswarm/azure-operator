@@ -43,7 +43,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, microerror.Mask(err)
 	}
 
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
 		return currentState, nil
@@ -71,7 +71,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		r.InstanceWatchdog.GuardVMSS(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
 
 		// Let's stay in the current state.

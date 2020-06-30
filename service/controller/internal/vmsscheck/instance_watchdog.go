@@ -5,6 +5,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -37,15 +38,16 @@ func NewInstanceWatchdog(config Config) (InstanceWatchdog, error) {
 	return wd, nil
 }
 
-func (wd *concurrentInstanceWatchdog) GuardVMSS(ctx context.Context, resourceGroupName, vmssName string) {
+func (wd *concurrentInstanceWatchdog) GuardVMSS(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName string) {
 	jobID := vmssGuardName(resourceGroupName, vmssName, "reimage")
 	job := &guardJob{
-		id:                jobID,
-		resourceGroup:     resourceGroupName,
-		vmss:              vmssName,
-		nextExecutionTime: time.Now().Add(60 * time.Second),
-		context:           ctx,
-		logger:            wd.logger,
+		id:                              jobID,
+		resourceGroup:                   resourceGroupName,
+		vmss:                            vmssName,
+		nextExecutionTime:               time.Now().Add(60 * time.Second),
+		context:                         ctx,
+		logger:                          wd.logger,
+		virtualMachineScaleSetVMsClient: virtualMachineScaleSetVMsClient,
 
 		onFinished: func() { wd.vmssGuards.Delete(jobID) },
 	}
@@ -58,15 +60,16 @@ func (wd *concurrentInstanceWatchdog) GuardVMSS(ctx context.Context, resourceGro
 	wd.pool.EnqueueJob(job)
 }
 
-func (wd *concurrentInstanceWatchdog) DeleteFailedVMSS(ctx context.Context, resourceGroupName, vmssName string) {
+func (wd *concurrentInstanceWatchdog) DeleteFailedVMSS(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName string) {
 	jobID := vmssGuardName(resourceGroupName, vmssName, "delete")
 	job := &deleterJob{
-		id:                jobID,
-		resourceGroup:     resourceGroupName,
-		vmss:              vmssName,
-		nextExecutionTime: time.Now().Add(60 * time.Second),
-		context:           ctx,
-		logger:            wd.logger,
+		id:                              jobID,
+		resourceGroup:                   resourceGroupName,
+		vmss:                            vmssName,
+		nextExecutionTime:               time.Now().Add(60 * time.Second),
+		context:                         ctx,
+		logger:                          wd.logger,
+		virtualMachineScaleSetVMsClient: virtualMachineScaleSetVMsClient,
 
 		onFinished: func() { wd.vmssGuards.Delete(jobID) },
 	}

@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
@@ -15,8 +16,9 @@ const (
 )
 
 type guardJob struct {
-	context context.Context
-	logger  micrologger.Logger
+	context                         context.Context
+	logger                          micrologger.Logger
+	virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient
 
 	id                    string
 	resourceGroup         string
@@ -60,13 +62,8 @@ func (gj *guardJob) Finished() bool {
 // If any of the instances is not Succeeded, returns false.
 // It reimages instances that are in "Failed" state.
 func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssName string) (bool, error) {
-	c, err := getVMsClient(ctx)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
 	// Get a list of instances in the VMSS.
-	iterator, err := c.ListComplete(ctx, rg, vmssName, "", "", "")
+	iterator, err := gj.virtualMachineScaleSetVMsClient.ListComplete(ctx, rg, vmssName, "", "", "")
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -85,7 +82,7 @@ func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssN
 
 			retries := 3
 			for retries > 0 {
-				_, err := c.Reimage(ctx, rg, vmssName, *instance.InstanceID, nil)
+				_, err := gj.virtualMachineScaleSetVMsClient.Reimage(ctx, rg, vmssName, *instance.InstanceID, nil)
 				if err != nil {
 					gj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error reimaging instance %s: %s", *instance.Name, err.Error()))
 					if retries == 0 {
@@ -109,7 +106,7 @@ func (gj *guardJob) reimageFailedInstances(ctx context.Context, rg string, vmssN
 			allSucceeded = false
 		}
 
-		if err := iterator.Next(); err != nil {
+		if err := iterator.NextWithContext(ctx); err != nil {
 			return false, microerror.Mask(err)
 		}
 	}

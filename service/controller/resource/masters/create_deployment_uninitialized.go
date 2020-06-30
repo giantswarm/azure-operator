@@ -28,6 +28,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
@@ -96,7 +100,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
-		r.InstanceWatchdog.DeleteFailedVMSS(ctx, key.ResourceGroupName(cr), key.MasterVMSSName(cr))
+		r.InstanceWatchdog.DeleteFailedVMSS(ctx, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.MasterVMSSName(cr))
 
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)

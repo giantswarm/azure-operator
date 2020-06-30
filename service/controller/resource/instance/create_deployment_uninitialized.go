@@ -34,6 +34,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
 
 	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
 	if err != nil {
@@ -95,7 +99,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
-	r.InstanceWatchdog.DeleteFailedVMSS(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	r.InstanceWatchdog.DeleteFailedVMSS(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 
 	// Potential states are: Succeeded, Failed, Canceled. All other values indicate the operation is still running.
 	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations#provisioningstate-values
