@@ -30,6 +30,8 @@ type MachinePoolConfig struct {
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
+
+	SentryDSN string
 }
 
 type MachinePool struct {
@@ -73,6 +75,7 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 			Selector: labels.SelectorFromSet(map[string]string{
 				label.OperatorVersion: project.Version(),
 			}),
+			SentryDSN: config.SentryDSN,
 		}
 
 		operatorkitController, err = controller.New(c)
