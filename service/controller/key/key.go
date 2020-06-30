@@ -21,7 +21,6 @@ const (
 	installationTagName       = "GiantSwarmInstallation"
 	organizationTagName       = "GiantSwarmOrganization"
 	MastersVmssDeploymentName = "masters-vmss-template"
-	WorkersVmssDeploymentName = "workers-vmss-template"
 
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
@@ -53,10 +52,6 @@ const (
 	CertificateEncryptionNamespace = "default"
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
-
-	ContainerLinuxComponentName = "containerlinux"
-
-	OrganizationSecretsLabelSelector = "app=credentiald" // nolint:gosec
 )
 
 // Container image versions for k8scloudconfig.
@@ -297,10 +292,6 @@ func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
 }
 
-func MachinePoolOperatorVersion(cr expcapzv1alpha3.AzureMachinePool) string {
-	return cr.GetLabels()[LabelOperatorVersion]
-}
-
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), masterSecurityGroupSuffix)
@@ -318,11 +309,6 @@ func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 
 func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
-}
-
-// WorkerCount returns the desired number of workers.
-func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
-	return len(customObject.Spec.Azure.Workers)
 }
 
 // WorkerSubnetName returns name of the worker subnet.
@@ -514,24 +500,6 @@ func ToString(v interface{}) (string, error) {
 	return s, nil
 }
 
-func ToStringMap(v interface{}) (map[string]string, error) {
-	m, err := ToMap(v)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	stringMap := map[string]string{}
-	for k, v := range m {
-		s, err := ToString(v)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		stringMap[k] = s
-	}
-
-	return stringMap, nil
-}
-
 // VnetName returns name of the virtual network.
 func VnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), virtualNetworkSuffix)
@@ -560,8 +528,12 @@ func WorkerInstanceName(clusterID, instanceID string) string {
 	return fmt.Sprintf("%s-worker-%s-%06s", clusterID, clusterID, idB36)
 }
 
-func WorkerVMSSName(azureMachinePool expcapzv1alpha3.AzureMachinePool) string {
-	return fmt.Sprintf("%s-worker-%s", ClusterID(&azureMachinePool), ClusterID(&azureMachinePool))
+func NodePoolDeploymentName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+	return NodePoolVMSSName(azureMachinePool)
+}
+
+func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+	return fmt.Sprintf("%s-%s", "nodepool", azureMachinePool.Name)
 }
 
 func WorkersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {

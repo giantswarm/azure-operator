@@ -69,7 +69,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		"clusterID":               azureCluster.GetName(),
 		"dockerVolumeSizeGB":      "50",
 		"kubeletVolumeSizeGB":     "100",
-		"nodepoolName":            azureMachinePool.Name,
+		"nodepoolName":            key.NodePoolVMSSName(azureMachinePool),
 		"sshPublicKey":            azureMachinePool.Spec.Template.SSHPublicKey,
 		"osImagePublisher":        "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
 		"osImageOffer":            "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,

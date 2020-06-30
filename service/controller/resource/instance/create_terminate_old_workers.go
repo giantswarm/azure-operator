@@ -43,7 +43,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	{
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-		allWorkerInstances, err = r.AllWorkerInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+		allWorkerInstances, err = r.AllWorkerInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
@@ -54,7 +54,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
 
 	resourceGroupName := key.ClusterID(&azureMachinePool)
-	deploymentName := key.WorkerVMSSName(azureMachinePool)
+	nodePoolVMSSName := key.NodePoolVMSSName(&azureMachinePool)
 	var ids compute.VirtualMachineScaleSetVMInstanceRequiredIDs
 	{
 		var strIds []string
@@ -77,7 +77,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtered instance IDs for old instances")
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminating %d old worker instances", len(*ids.InstanceIds)))
 
-	res, err := virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroupName, deploymentName, ids)
+	res, err := virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroupName, nodePoolVMSSName, ids)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

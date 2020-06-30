@@ -43,7 +43,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, microerror.Mask(err)
 	}
 
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
 		return currentState, nil
@@ -59,19 +59,19 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	desiredWorkerCount := int64(*machinePool.Spec.Replicas * 2)
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
 
-	currentWorkerCount, err := r.GetInstancesCount(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+	currentWorkerCount, err := r.GetInstancesCount(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
 	if desiredWorkerCount > currentWorkerCount {
-		err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool), int32(desiredWorkerCount))
+		err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), int32(desiredWorkerCount))
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		r.InstanceWatchdog.GuardVMSS(ctx, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool))
+		r.InstanceWatchdog.GuardVMSS(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
 
 		// Let's stay in the current state.
@@ -112,7 +112,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 	desiredWorkerCount := *machinePool.Spec.Replicas
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
 
-	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.WorkerVMSSName(azureMachinePool), desiredWorkerCount)
+	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), desiredWorkerCount)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
