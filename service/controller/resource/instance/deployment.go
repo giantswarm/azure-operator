@@ -57,7 +57,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	subnetID, err := r.getSubnetID(azureMachinePool, azureCluster)
+	vnetID, subnetID, err := r.getSubnetID(azureMachinePool, azureCluster)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -77,6 +77,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		"osImageVersion":          distroVersion,                  // azureMachinePool.Spec.Template.Image.Marketplace.Version,
 		"replicas":                machinePool.Spec.Replicas,
 		"subnetID":                subnetID,
+		"vnetID":                  vnetID,
 		"vmSize":                  azureMachinePool.Spec.Template.VMSize,
 		"zones":                   zones,
 		// This should come from the bootstrap operator.
@@ -99,19 +100,19 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 	return d, nil
 }
 
-func (r Resource) getSubnetID(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, error) {
+func (r Resource) getSubnetID(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, string, error) {
 	subnetCIDR, exists := azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet]
 	if !exists {
-		return "", microerror.Mask(missingSubnetLabel)
+		return "", "", microerror.Mask(missingSubnetLabel)
 	}
 
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		if subnetCIDR == subnet.CidrBlock {
-			return subnet.ID, nil
+			return azureCluster.Spec.NetworkSpec.Vnet.ID, subnet.ID, nil
 		}
 	}
 
-	return "", microerror.Maskf(notFoundError, "subnet with CIDR %#q was not found in virtual network called %#q", subnetCIDR, azureCluster.Spec.NetworkSpec.Vnet.ID)
+	return "", "", microerror.Maskf(notFoundError, "subnet with CIDR %#q was not found in virtual network called %#q", subnetCIDR, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
 func (r *Resource) getFailureDomains(azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool) ([]string, error) {
