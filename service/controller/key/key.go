@@ -344,10 +344,6 @@ func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(&customObject))
 }
 
-func LegacyMasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-master", ClusterID(&customObject))
-}
-
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master-%s", ClusterID(&customObject), ClusterID(&customObject))
 }
@@ -555,15 +551,6 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), vpnGatewaySuffix)
 }
 
-func LegacyWorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
-	idB36, err := vmssInstanceIDBase36(instanceID)
-	if err != nil {
-		panic(err)
-	}
-
-	return fmt.Sprintf("%s-worker-%06s", ClusterID(&customObject), idB36)
-}
-
 func WorkerInstanceName(clusterID, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
@@ -571,10 +558,6 @@ func WorkerInstanceName(clusterID, instanceID string) string {
 	}
 
 	return fmt.Sprintf("%s-worker-%s-%06s", clusterID, clusterID, idB36)
-}
-
-func LegacyWorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-worker", ClusterID(&customObject))
 }
 
 func WorkerVMSSName(azureMachinePool expcapzv1alpha3.AzureMachinePool) string {
