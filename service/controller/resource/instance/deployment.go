@@ -19,7 +19,6 @@ import (
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
@@ -57,7 +56,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	vnetID, subnetID, err := r.getSubnetID(azureMachinePool, azureCluster)
+	vnetName, subnetName, err := r.getSubnetName(azureMachinePool, azureCluster)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -76,8 +75,8 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		"osImageSKU":              "stable",                       // azureMachinePool.Spec.Template.Image.Marketplace.SKU,
 		"osImageVersion":          distroVersion,                  // azureMachinePool.Spec.Template.Image.Marketplace.Version,
 		"replicas":                machinePool.Spec.Replicas,
-		"subnetID":                subnetID,
-		"vnetID":                  vnetID,
+		"vnetName":                vnetName,
+		"subnetName":              subnetName,
 		"vmSize":                  azureMachinePool.Spec.Template.VMSize,
 		"zones":                   zones,
 		// This should come from the bootstrap operator.
@@ -100,19 +99,14 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 	return d, nil
 }
 
-func (r Resource) getSubnetID(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, string, error) {
-	subnetCIDR, exists := azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet]
-	if !exists {
-		return "", "", microerror.Mask(missingSubnetLabel)
-	}
-
+func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, string, error) {
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
-		if subnetCIDR == subnet.CidrBlock {
-			return azureCluster.Spec.NetworkSpec.Vnet.ID, subnet.ID, nil
+		if azureMachinePool.Name == subnet.Name {
+			return azureCluster.Spec.NetworkSpec.Vnet.Name, subnet.Name, nil
 		}
 	}
 
-	return "", "", microerror.Maskf(notFoundError, "subnet with CIDR %#q was not found in virtual network called %#q", subnetCIDR, azureCluster.Spec.NetworkSpec.Vnet.ID)
+	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
 func (r *Resource) getFailureDomains(azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool) ([]string, error) {

@@ -12,7 +12,6 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
@@ -49,26 +48,6 @@ func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet,
 	}
 
 	err = p.addSubnetToAzureCluster(ctx, vnet, azureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = p.addSubnetToAzureMachinePool(ctx, vnet, azureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func (p *AzureMachinePoolPersister) addSubnetToAzureMachinePool(ctx context.Context, vnet net.IPNet, azureMachinePool v1alpha3.AzureMachinePool) error {
-	if azureMachinePool.GetAnnotations() == nil {
-		azureMachinePool.Annotations = map[string]string{}
-	}
-
-	azureMachinePool.GetAnnotations()[annotation.AzureMachinePoolSubnet] = vnet.String()
-
-	err := p.ctrlClient.Update(ctx, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
