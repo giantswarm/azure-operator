@@ -123,7 +123,7 @@ func (r *Resource) getFailureDomains(azureCluster *capzv1alpha3.AzureCluster, ma
 		}
 	}
 
-	if !validFailureDomain {
+	if !validFailureDomain && len(allowedFailureDomains) > 0 {
 		return []string{}, microerror.Maskf(notAvailableFailureDomain, "nodepool availability zone %#q is not available in the region", *machinePool.Spec.Template.Spec.FailureDomain)
 	}
 
