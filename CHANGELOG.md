@@ -11,6 +11,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Mapping from Cluster API & CAPZ CRs to AzureConfig. This change provides migration path towards Azure Cluster API implementation.
 - State machine flowchart generation.
+- Support to forward errors to Sentry.
 
 ### Changed
 
@@ -18,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Restricted storage account access to the local VNET only.
 - Removed the flatcar migration state machine transitions.
 - Calculate CIDR for a new Tenant Cluster using a local resource rather than getting it from `kubernetesd`.
+- Migrate the `vmsscheck` guards to use the Azure client factory.
 
 ### Removed
 

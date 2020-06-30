@@ -76,6 +76,8 @@ type ClusterConfig struct {
 	SSOPublicKey     string
 	TemplateVersion  string
 	VMSSCheckWorkers int
+
+	SentryDSN string
 }
 
 type Cluster struct {
@@ -179,6 +181,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			Selector: labels.SelectorFromSet(map[string]string{
 				label.OperatorVersion: project.Version(),
 			}),
+			SentryDSN: config.SentryDSN,
 		}
 
 		operatorkitController, err = controller.New(c)
