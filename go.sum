@@ -312,12 +312,8 @@ github.com/giantswarm/micrologger v0.3.1/go.mod h1:PjAgtcJ922ZMX/Aa05IPi0bdYvOj2
 github.com/giantswarm/microstorage v0.2.0 h1:0m2W2wbWU0x4TRuqlC1U3Ibqt783E6/q8ZpLvELDkHc=
 github.com/giantswarm/microstorage v0.2.0/go.mod h1:Ylcw9vGyG5N7R6nhKvwZ5nt6I3B9IhREUWFIxsR/Lfw=
 github.com/giantswarm/operatorkit v0.2.0/go.mod h1:i/yHa01y+d67ZzZBOck56CcZLkbRIx89ZqAoK46+Bjs=
-github.com/giantswarm/operatorkit v1.0.3-0.20200619132610-e1def20925ad h1:HK6Vivbi2PzuGZjRIta6Q89dVhoRNalfrZpq561orDo=
-github.com/giantswarm/operatorkit v1.0.3-0.20200619132610-e1def20925ad/go.mod h1:5F6ai1OJBUsGLC6+sOgstHSPwN51TtfRfkI77FaT6kM=
-github.com/giantswarm/operatorkit v1.0.3-0.20200619133404-6f5585b15304 h1:B6ntOIRaSV2RzvqAidWaZoDj96JWHI23Smnd0fCeLrQ=
-github.com/giantswarm/operatorkit v1.0.3-0.20200619133404-6f5585b15304/go.mod h1:5F6ai1OJBUsGLC6+sOgstHSPwN51TtfRfkI77FaT6kM=
-github.com/giantswarm/operatorkit v1.0.3-0.20200619135620-3f4d97bb5c81 h1:vO3hT1XmrykVuDcXgXWCNBAcj698b+LOV2bYTgFU6WU=
-github.com/giantswarm/operatorkit v1.0.3-0.20200619135620-3f4d97bb5c81/go.mod h1:5F6ai1OJBUsGLC6+sOgstHSPwN51TtfRfkI77FaT6kM=
+github.com/giantswarm/operatorkit v1.2.0 h1:QHUVsaTLB88auQlbADerryMti+svVwsapOw+rYEp2jI=
+github.com/giantswarm/operatorkit v1.2.0/go.mod h1:5F6ai1OJBUsGLC6+sOgstHSPwN51TtfRfkI77FaT6kM=
 github.com/giantswarm/randomkeys v0.2.0 h1:e03tqr+OemoyF42BrlQpdeHZ/xvqJd4ALW5IM2X26Ek=
 github.com/giantswarm/randomkeys v0.2.0/go.mod h1:24kbDDO8XgP+nx7SKaX/z5I/qhj4X4n+hiSynpD/9Kk=
 github.com/giantswarm/statusresource v0.4.0 h1:E4lph6MoTApWwkaObbkuGTO9rzVUvxnPfVvQ1zD70Vw=
