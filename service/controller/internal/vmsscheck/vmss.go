@@ -10,8 +10,6 @@ import (
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 )
 
 const (
@@ -41,14 +39,9 @@ const (
 
 // Find out provisioning state of all VMSS instances and return true if all are
 // Succeeded.
-func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, rg string, vmssName string) (bool, error) {
-	c, err := getVMsClient(ctx)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
+func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroup string, vmssName string) (bool, error) {
 	// Get a list of instances in the VMSS.
-	iterator, err := c.ListComplete(ctx, rg, vmssName, "", "", "")
+	iterator, err := virtualMachineScaleSetVMsClient.ListComplete(ctx, resourceGroup, vmssName, "", "", "")
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -69,7 +62,7 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, rg stri
 			allSucceeded = false
 		}
 
-		if err := iterator.Next(); err != nil {
+		if err := iterator.NextWithContext(ctx); err != nil {
 			return false, microerror.Mask(err)
 		}
 	}
@@ -85,15 +78,6 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, rg stri
 	}
 
 	return allSucceeded, nil
-}
-
-func getVMsClient(ctx context.Context) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.VirtualMachineScaleSetVMsClient, nil
 }
 
 func rateLimitThresholdsFromResponse(response autorest.Response) (int64, int64) {
