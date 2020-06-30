@@ -73,13 +73,12 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	clusterNeedsToBeUpgraded, nodesNeedToBeRolled, err := r.clusterNeedsToBeUpgraded(currentDeployment, desiredDeployment)
+	deploymentIsOutOfDate, nodesNeedToBeRolled, err := r.deploymentIsOutOfDate(currentDeployment, desiredDeployment)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	// We ensure the ARM deployment template because either it doesn't exist yet or it's out of date.
-	if currentDeployment.IsHTTPStatus(404) || clusterNeedsToBeUpgraded {
+	if deploymentIsOutOfDate {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
 		_, err = r.ensureDeployment(ctx, deploymentsClient, desiredDeployment, &azureMachinePool)
@@ -126,11 +125,15 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 }
 
-// clusterNeedsToBeUpgraded decides whether or not we need to re-apply the ARM deployment template.
+// deploymentIsOutOfDate decides whether or not we need to re-apply the ARM deployment template.
 // There are two cases where we want to update the cluster:
 // - customer has decided to update to a newer GiantSwarm release
 // - customer has changed some configuration and we need to apply it
-func (r *Resource) clusterNeedsToBeUpgraded(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) (bool, bool, error) {
+func (r *Resource) deploymentIsOutOfDate(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) (bool, bool, error) {
+	if currentDeployment.IsHTTPStatus(404) {
+		return true, false, nil
+	}
+
 	currentDeploymentParameters, ok := currentDeployment.Properties.Parameters.(map[string]interface{})
 	if !ok {
 		return false, false, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, currentDeployment.Properties.Parameters)
