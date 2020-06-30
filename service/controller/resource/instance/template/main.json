@@ -150,7 +150,7 @@
     "roleAssignmentName": "[guid(concat(variables('vmssName'), '-', 'roleassignment'))]",
     "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('vmSize')), 'Standard_LRS', 'Premium_LRS')]",
     "subnetResourceId": "[resourceId('Microsoft.Network/virtualNetworks/subnets', parameters('vnetName'), parameters('subnetName'))]",
-    "vmssName": "[concat(parameters('clusterID'), '-nodepool-', parameters('nodepoolName'))]",
+    "vmssName": "[parameters('nodepoolName')]",
     "vmssExtensions": [
       {
         "name": "MSILinuxExtension",
