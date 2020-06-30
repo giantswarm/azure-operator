@@ -5,13 +5,15 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 )
 
 type deleterJob struct {
-	context context.Context
-	logger  micrologger.Logger
+	context                         context.Context
+	logger                          micrologger.Logger
+	virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient
 
 	id                    string
 	resourceGroup         string
@@ -54,14 +56,9 @@ func (dj *deleterJob) Finished() bool {
 
 // If any of the instances is not Succeeded, returns false.
 // It deletes instances that are in "Failed" state.
-func (dj *deleterJob) deleteFailedInstances(ctx context.Context, rg string, vmssName string) (bool, error) {
-	c, err := getVMsClient(ctx)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
+func (dj *deleterJob) deleteFailedInstances(ctx context.Context, resourceGroup string, vmssName string) (bool, error) {
 	// Get a list of instances in the VMSS.
-	iterator, err := c.ListComplete(ctx, rg, vmssName, "", "", "")
+	iterator, err := dj.virtualMachineScaleSetVMsClient.ListComplete(ctx, resourceGroup, vmssName, "", "", "")
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -77,7 +74,7 @@ func (dj *deleterJob) deleteFailedInstances(ctx context.Context, rg string, vmss
 		case provisioningStateFailed:
 			// Reimage the instance.
 			dj.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleting instance %s", *instance.Name))
-			_, err := c.Delete(ctx, rg, vmssName, *instance.InstanceID)
+			_, err := dj.virtualMachineScaleSetVMsClient.Delete(ctx, resourceGroup, vmssName, *instance.InstanceID)
 			if err != nil {
 				dj.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Error deleting instance %s: %s", *instance.Name, err.Error()))
 				return false, microerror.Mask(err)
@@ -92,7 +89,7 @@ func (dj *deleterJob) deleteFailedInstances(ctx context.Context, rg string, vmss
 			allSucceeded = false
 		}
 
-		if err := iterator.Next(); err != nil {
+		if err := iterator.NextWithContext(ctx); err != nil {
 			return false, microerror.Mask(err)
 		}
 	}

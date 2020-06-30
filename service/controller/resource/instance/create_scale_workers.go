@@ -28,6 +28,11 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return "", microerror.Mask(err)
 	}
 
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
 	desiredWorkerCount := int64(key.WorkerCount(cr) * 2)
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
 
@@ -37,7 +42,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
 		return ScaleUpWorkerVMSS, nil
@@ -57,7 +62,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 			return "", microerror.Mask(err)
 		}
 
-		r.InstanceWatchdog.GuardVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
 
 		// Let's stay in the current state.
