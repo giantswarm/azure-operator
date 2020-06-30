@@ -177,6 +177,7 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Debug.LogsToken, "", "Enable services which help debugging ignition.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Path, "/opt/ignition", "Default path for the ignition base directory.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.SSH.SSOPublicKey, "", "Public key for trusted SSO CA.")
+	daemonCommand.PersistentFlags().String(f.Service.Sentry.DSN, "", "DSN of the Sentry instance to forward errors to.")
 
 	return newCommand.CobraCommand().Execute()
 }
