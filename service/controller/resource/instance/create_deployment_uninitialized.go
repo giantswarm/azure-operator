@@ -149,27 +149,39 @@ func (r *Resource) deploymentIsOutOfDate(ctx context.Context, currentDeployment 
 		return false, false, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, currentDeployment.Properties.Parameters)
 	}
 
-	// We save both `AzureMachinePool` and `MachinePool` versions.
-	customerHasChangedConfiguration := cast(currentDeploymentParameters["azureMachinePoolVersion"])["value"] != cast(desiredDeploymentParameters["azureMachinePoolVersion"])["Value"]
-	customerHasScaledTheCluster := cast(currentDeploymentParameters["machinePoolVersion"])["value"] != cast(desiredDeploymentParameters["machinePoolVersion"])["Value"]
-	customerIsUpgradingTheCluster := cast(currentDeploymentParameters["azureOperatorVersion"])["value"] != cast(desiredDeploymentParameters["azureOperatorVersion"])["Value"]
+	currentAzureMachinePoolVersion := castCurrent(currentDeploymentParameters["azureMachinePoolVersion"])
+	desiredAzureMachinePoolVersion := castDesired(desiredDeploymentParameters["azureMachinePoolVersion"])
+	customerHasChangedConfiguration := currentAzureMachinePoolVersion != desiredAzureMachinePoolVersion
+
+	currentMachinePoolVersion := castCurrent(currentDeploymentParameters["machinePoolVersion"])
+	desiredMachinePoolVersion := castDesired(desiredDeploymentParameters["machinePoolVersion"])
+	customerHasScaledTheCluster := currentMachinePoolVersion != desiredMachinePoolVersion
+
+	currentAzureOperatorVersion := castCurrent(currentDeploymentParameters["azureOperatorVersion"])
+	desiredAzureOperatorVersion := castDesired(desiredDeploymentParameters["azureOperatorVersion"])
+	customerIsUpgradingTheCluster := currentAzureOperatorVersion != desiredAzureOperatorVersion
+
 	r.Logger.LogCtx(ctx, "message", "Checking if deployment is out of date",
 		"customerHasChangedConfiguration", customerHasChangedConfiguration,
 		"customerIsUpgradingTheCluster", customerIsUpgradingTheCluster,
 		"customerHasScaledTheCluster", customerHasScaledTheCluster,
 		"nodesWillBeRolledOut", customerIsUpgradingTheCluster || customerHasChangedConfiguration,
-		"currentAzureOperatorVersion", cast(currentDeploymentParameters["azureOperatorVersion"])["value"],
-		"desiredAzureOperatorVersion", cast(desiredDeploymentParameters["azureOperatorVersion"])["Value"],
-		"currentAzureMachinePoolVersion", cast(currentDeploymentParameters["azureMachinePoolVersion"])["value"],
-		"desiredAzureMachinePoolVersion", cast(desiredDeploymentParameters["azureMachinePoolVersion"])["Value"],
-		"currentMachinePoolVersion", cast(currentDeploymentParameters["machinePoolVersion"])["value"],
-		"desiredMachinePoolVersion", cast(desiredDeploymentParameters["machinePoolVersion"])["Value"])
+		"currentAzureOperatorVersion", currentAzureOperatorVersion,
+		"desiredAzureOperatorVersion", desiredAzureOperatorVersion,
+		"currentAzureMachinePoolVersion", currentAzureMachinePoolVersion,
+		"desiredAzureMachinePoolVersion", desiredAzureMachinePoolVersion,
+		"currentMachinePoolVersion", currentMachinePoolVersion,
+		"desiredMachinePoolVersion", desiredMachinePoolVersion)
 
 	return customerHasChangedConfiguration || customerIsUpgradingTheCluster || customerHasScaledTheCluster, customerIsUpgradingTheCluster || customerHasChangedConfiguration, nil
 }
 
-func cast(parameter interface{}) map[string]interface{} {
-	return parameter.(map[string]interface{})
+func castCurrent(param interface{}) string {
+	return param.(map[string]interface{})["value"].(string)
+}
+
+func castDesired(param interface{}) string {
+	return param.(struct{ Value interface{} }).Value.(string)
 }
 
 func (r *Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool) (azureresource.Deployment, error) {

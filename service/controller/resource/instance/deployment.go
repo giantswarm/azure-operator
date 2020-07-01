@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net/url"
+	"strconv"
 	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -62,8 +63,8 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 	}
 
 	templateParams := map[string]interface{}{
-		"machinePoolVersion":      machinePool.ObjectMeta.Generation,
-		"azureMachinePoolVersion": azureMachinePool.ObjectMeta.Generation,
+		"machinePoolVersion":      strconv.FormatInt(machinePool.ObjectMeta.Generation, 10),
+		"azureMachinePoolVersion": strconv.FormatInt(azureMachinePool.ObjectMeta.Generation, 10),
 		"azureOperatorVersion":    project.Version(),
 		"clusterID":               azureCluster.GetName(),
 		"dockerVolumeSizeGB":      "50",

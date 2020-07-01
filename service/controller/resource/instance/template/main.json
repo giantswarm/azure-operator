@@ -9,13 +9,13 @@
       }
     },
     "azureMachinePoolVersion": {
-      "type": "int",
+      "type": "string",
       "metadata": {
         "description": "Generation field for the AzureMachinePool object that triggered this deployment."
       }
     },
     "machinePoolVersion": {
-      "type": "int",
+      "type": "string",
       "metadata": {
         "description": "Generation field for the MachinePool object that triggered this deployment."
       }
