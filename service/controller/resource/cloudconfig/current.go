@@ -1,4 +1,4 @@
-package blobobject
+package cloudconfig
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
-	cr, err := key.ToCustomResource(obj)
+	cr, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
