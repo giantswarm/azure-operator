@@ -63,6 +63,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 			CustomObject: cr,
 			ClusterCerts: clusterCerts,
 			Images:       images,
+			Versions:     versions,
 		}
 	}
 
