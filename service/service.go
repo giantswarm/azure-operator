@@ -40,11 +40,12 @@ type Config struct {
 	Flag  *flag.Flag
 	Viper *viper.Viper
 
-	Description string
-	GitCommit   string
-	ProjectName string
-	Source      string
-	Version     string
+	Description    string
+	GitCommit      string
+	ProjectName    string
+	RegistryDomain string
+	Source         string
+	Version        string
 }
 
 type Service struct {
@@ -307,6 +308,7 @@ func New(config Config) (*Service, error) {
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
+			RegistryDomain:            config.Viper.GetString(config.Flag.Service.RegistryDomain),
 			SentryDSN:                 sentryDSN,
 		}
 
