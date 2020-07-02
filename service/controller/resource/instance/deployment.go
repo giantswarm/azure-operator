@@ -30,7 +30,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 
 	prefixWorker := key.PrefixWorker()
 
-	workerBlobName := key.BlobName(obj, prefixWorker)
+	workerBlobName := key.BlobName(&obj, prefixWorker)
 	cloudConfigURLs := []string{
 		workerBlobName,
 	}
@@ -49,7 +49,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		}
 	}
 
-	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(obj)
+	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(&obj)
 	encrypter, err := r.GetEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
@@ -69,7 +69,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	}
 
 	groupName := key.ResourceGroupName(obj)
-	storageAccountName := key.StorageAccountName(obj)
+	storageAccountName := key.StorageAccountName(&obj)
 	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName, "")
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)

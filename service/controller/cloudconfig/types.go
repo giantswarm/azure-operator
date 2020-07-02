@@ -5,6 +5,10 @@ import (
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/randomkeys"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
 
 type templateData struct {
@@ -49,9 +53,13 @@ type ingressLBFileParams struct {
 }
 
 type IgnitionTemplateData struct {
-	CustomObject providerv1alpha1.AzureConfig
-	ClusterCerts certs.Cluster
-	ClusterKeys  randomkeys.Cluster
-	Images       k8scloudconfig.Images
-	Versions     k8scloudconfig.Versions
+	AzureMachinePool *expcapzv1alpha3.AzureMachinePool
+	AzureCluster     *capzv1alpha3.AzureCluster
+	Cluster          *capiv1alpha3.Cluster
+	ClusterCerts     certs.Cluster
+	ClusterKeys      randomkeys.Cluster
+	CustomObject     providerv1alpha1.AzureConfig
+	Images           k8scloudconfig.Images
+	MachinePool      *expcapiv1alpha3.MachinePool
+	Versions         k8scloudconfig.Versions
 }

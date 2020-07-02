@@ -40,7 +40,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"hostClusterCidr":            r.azure.HostCluster.CIDR,
 		"kubernetesAPISecurePort":    key.APISecurePort(customObject),
 		"masterSubnetCidr":           key.MastersSubnetCIDR(customObject),
-		"storageAccountName":         key.StorageAccountName(customObject),
+		"storageAccountName":         key.StorageAccountName(&customObject),
 		"virtualNetworkCidr":         key.VnetCIDR(customObject),
 		"virtualNetworkName":         key.VnetName(customObject),
 		"vnetGatewaySubnetName":      key.VNetGatewaySubnetName(),

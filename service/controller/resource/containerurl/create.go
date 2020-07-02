@@ -19,7 +19,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	containerName := key.BlobContainerName()
 	groupName := key.ClusterID(&cr)
-	storageAccountName := key.StorageAccountName(cr)
+	storageAccountName := key.StorageAccountName(&cr)
 
 	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
 	if err != nil {
