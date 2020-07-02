@@ -118,16 +118,16 @@ func BlobContainerName() string {
 	return blobContainerName
 }
 
-func BlobName(customObject providerv1alpha1.AzureConfig, role string) string {
-	return fmt.Sprintf("%s-%s-%s", OperatorVersion(&customObject), cloudConfigVersion, role)
+func BlobName(customObject LabelsGetter, role string) string {
+	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
 }
 
 func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR
 }
 
-func CertificateEncryptionSecretName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-certificate-encryption", customObject.Spec.Cluster.ID)
+func CertificateEncryptionSecretName(customObject LabelsGetter) string {
+	return fmt.Sprintf("%s-certificate-encryption", ClusterID(customObject))
 }
 
 func CloudConfigSmallTemplates() []string {
@@ -377,13 +377,13 @@ func AvailabilityZones(customObject providerv1alpha1.AzureConfig, location strin
 	return customObject.Spec.Azure.AvailabilityZones
 }
 
-func StorageAccountName(customObject providerv1alpha1.AzureConfig) string {
+func StorageAccountName(customObject LabelsGetter) string {
 	// In integration tests we use hyphens which are not allowed. We also
 	// need to keep the name globaly unique and within 24 character limit.
 	//
 	//	See https://docs.microsoft.com/en-us/azure/architecture/best-practices/naming-conventions#storage
 	//
-	storageAccountName := fmt.Sprintf("%s%s", storageAccountSuffix, ClusterID(&customObject))
+	storageAccountName := fmt.Sprintf("%s%s", storageAccountSuffix, ClusterID(customObject))
 	return strings.Replace(storageAccountName, "-", "", -1)
 }
 
