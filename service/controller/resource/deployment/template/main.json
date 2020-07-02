@@ -810,56 +810,7 @@
                   "addressPrefixes":[
                     "[parameters('virtualNetworkCidr')]"
                   ]
-                },
-                "subnets":[
-                  {
-                    "name":"[variables('masterSubnetName')]",
-                    "properties":{
-                      "addressPrefix":"[parameters('masterSubnetCidr')]",
-                      "networkSecurityGroup":{
-                        "id":"[parameters('masterSecurityGroupID')]"
-                      },
-                      "routeTable":{
-                        "id":"[parameters('routeTableID')]"
-                      },
-                      "serviceEndpoints": [
-                        { "service": "Microsoft.Storage" }
-                      ]
-                    }
-                  },
-                  {
-                    "name":"[variables('workerSubnetName')]",
-                    "properties":{
-                      "addressPrefix":"[parameters('workerSubnetCidr')]",
-                      "natGateway": {
-                        "id":"[parameters('workersNatGWID')]"
-                      },
-                      "networkSecurityGroup":{
-                        "id":"[parameters('workerSecurityGroupID')]"
-                      },
-                      "routeTable":{
-                        "id":"[parameters('routeTableID')]"
-                      },
-                      "serviceEndpoints": [
-                        { "service": "Microsoft.Storage" },
-                        { "service": "Microsoft.Sql" },
-                        { "service": "Microsoft.AzureCosmosDB" },
-                        { "service": "Microsoft.KeyVault" },
-                        { "service": "Microsoft.ServiceBus" },
-                        { "service": "Microsoft.EventHub" },
-                        { "service": "Microsoft.AzureActiveDirectory" },
-                        { "service": "Microsoft.ContainerRegistry" },
-                        { "service": "Microsoft.Web" }
-                      ]
-                    }
-                  },
-                  {
-                    "name":"[parameters('vnetGatewaySubnetName')]",
-                    "properties":{
-                      "addressPrefix":"[parameters('vpnSubnetCidr')]"
-                    }
-                  }
-                ]
+                }
               }
             }
           ],
@@ -909,6 +860,71 @@
             "value":"[reference('route_table_setup').outputs.id.value]"
           }
         }
+      }
+    },
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name":"[parameters('vnetGatewaySubnetName')]",
+      "dependsOn":[
+        "virtual_network_setup"
+      ],
+      "location":"[resourceGroup().location]",
+      "properties":{
+        "addressPrefix":"[parameters('vpnSubnetCidr')]"
+      }
+    },
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name":"[variables('masterSubnetName')]",
+      "dependsOn":[
+        "virtual_network_setup"
+      ],
+      "location":"[resourceGroup().location]",
+      "properties":{
+        "addressPrefix":"[parameters('masterSubnetCidr')]",
+        "networkSecurityGroup":{
+          "id":"[parameters('masterSecurityGroupID')]"
+        },
+        "routeTable":{
+          "id":"[parameters('routeTableID')]"
+        },
+        "serviceEndpoints": [
+          { "service": "Microsoft.Storage" }
+        ]
+      }
+    },
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name":"[variables('workerSubnetName')]",
+      "dependsOn":[
+        "virtual_network_setup"
+      ],
+      "location":"[resourceGroup().location]",
+      "properties":{
+        "addressPrefix":"[parameters('workerSubnetCidr')]",
+        "natGateway": {
+          "id":"[parameters('workersNatGWID')]"
+        },
+        "networkSecurityGroup":{
+          "id":"[parameters('workerSecurityGroupID')]"
+        },
+        "routeTable":{
+          "id":"[parameters('routeTableID')]"
+        },
+        "serviceEndpoints": [
+          { "service": "Microsoft.Storage" },
+          { "service": "Microsoft.Sql" },
+          { "service": "Microsoft.AzureCosmosDB" },
+          { "service": "Microsoft.KeyVault" },
+          { "service": "Microsoft.ServiceBus" },
+          { "service": "Microsoft.EventHub" },
+          { "service": "Microsoft.AzureActiveDirectory" },
+          { "service": "Microsoft.ContainerRegistry" },
+          { "service": "Microsoft.Web" }
+        ]
       }
     },
     {
