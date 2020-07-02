@@ -1470,9 +1470,10 @@
                 "supportsHttpsTrafficOnly": "[variables('supportsHttpsTrafficOnly')]",
                 "networkAcls":{
                   "virtualNetworkRules": [
-                    {"id":"[parameters('controlPlaneWorkerSubnetID')]"},
-                    {"id":"[parameters('masterSubnetID')]"},
-                    {"id":"[parameters('workerSubnetID')]"}
+                    {"id":"[parameters('controlPlaneWorkerSubnetID')]"}
+                  ],
+                  "ipRules": [
+                    {"value":"[parameters('virtualNetworkCidr')]"}
                   ],
                   "defaultAction":"Deny"
                 }
