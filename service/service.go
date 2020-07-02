@@ -204,11 +204,24 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	// These credentials will be used when creating AzureClients for Control Plane clusters.
+	gsClientCredentialsConfig, err := credential.NewAzureCredentials(
+		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+	)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
+
 	var azureClusterController *controller.AzureCluster
 	{
 		c := controller.AzureClusterConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
+			CredentialProvider: credentialProvider,
+			K8sClient:          k8sClient,
+			Logger:             config.Logger,
 
 			Flag:  config.Flag,
 			Viper: config.Viper,
@@ -252,18 +265,6 @@ func New(config Config) (*Service, error) {
 		}
 		ipamNetworkRange = *ipnet
 	}
-
-	// These credentials will be used when creating AzureClients for Control Plane clusters.
-	gsClientCredentialsConfig, err := credential.NewAzureCredentials(
-		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
-	)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
 
 	var clusterController *controller.Cluster
 	{

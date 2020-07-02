@@ -1,0 +1,68 @@
+{
+  "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion":"1.0.0.0",
+  "parameters":{
+    "clusterID":{
+      "type":"string"
+    },
+    "GiantSwarmTags":{
+      "type":"object",
+      "defaultValue":{
+        "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
+      }
+    },
+    "virtualNetworkName":{
+      "type":"string",
+      "metadata":{
+        "description":"Virtual network's name of the guest cluster"
+      }
+    },
+    "routeTableID":{
+      "type":"string"
+    },
+    "workersNatGWID":{
+      "type":"string"
+    },
+    "workerSubnetCidr":{
+      "type":"string"
+    },
+    "workerSubnetName":{
+      "type":"string"
+    }
+  },
+  "variables":{
+    "workerSecurityGroupName":"[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
+    "workerSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]"
+  },
+  "resources":[
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name":"[parameters('workerSubnetName')]",
+      "location":"[resourceGroup().location]",
+      "properties":{
+        "addressPrefix":"[parameters('workerSubnetCidr')]",
+        "natGateway": {
+          "id":"[parameters('workersNatGWID')]"
+        },
+        "networkSecurityGroup":{
+          "id":"[parameters('workerSecurityGroupID')]"
+        },
+        "routeTable":{
+          "id":"[parameters('routeTableID')]"
+        },
+        "serviceEndpoints": [
+          { "service": "Microsoft.Storage" },
+          { "service": "Microsoft.Sql" },
+          { "service": "Microsoft.AzureCosmosDB" },
+          { "service": "Microsoft.KeyVault" },
+          { "service": "Microsoft.ServiceBus" },
+          { "service": "Microsoft.EventHub" },
+          { "service": "Microsoft.AzureActiveDirectory" },
+          { "service": "Microsoft.ContainerRegistry" },
+          { "service": "Microsoft.Web" }
+        ]
+      }
+    }
+  ]
+}
