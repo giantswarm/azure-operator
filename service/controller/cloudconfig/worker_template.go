@@ -52,6 +52,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 			LogsToken:  c.ignition.LogsToken,
 		}
 		params.Images = data.Images
+		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey
 
 		ignitionPath := k8scloudconfig.GetIgnitionPath(c.ignition.Path)

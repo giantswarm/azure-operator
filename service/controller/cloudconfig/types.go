@@ -61,4 +61,5 @@ type IgnitionTemplateData struct {
 	CustomObject     providerv1alpha1.AzureConfig
 	Images           k8scloudconfig.Images
 	MachinePool      *expcapiv1alpha3.MachinePool
+	Versions         k8scloudconfig.Versions
 }
