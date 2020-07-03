@@ -751,56 +751,19 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
-            "virtualNetworksAPIVersion":{
-              "type":"string",
-              "defaultValue":"2016-12-01",
-              "metadata":{
-                "description":"API version used by the Microsoft.Network/virtualNetworks resource."
-              }
-            },
             "virtualNetworkName":{
               "type":"string"
             },
             "virtualNetworkCidr":{
               "type":"string"
-            },
-            "masterSubnetCidr":{
-              "type":"string"
-            },
-            "workerSubnetCidr":{
-              "type":"string"
-            },
-            "vnetGatewaySubnetName":{
-              "type":"string"
-            },
-            "vpnSubnetCidr":{
-              "type":"string"
-            },
-            "masterSecurityGroupID":{
-              "type":"string"
-            },
-            "workerSecurityGroupID":{
-              "type":"string"
-            },
-            "routeTableID":{
-              "type":"string"
-            },
-            "workersNatGWID":{
-              "type":"string"
             }
           },
-          "variables":{
-            "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-            "masterSubnetName":"[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
-            "masterSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
-            "workerSubnetName":"[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
-            "workerSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
-          },
+          "variables":{},
           "resources":[
             {
               "type":"Microsoft.Network/virtualNetworks",
               "name":"[parameters('virtualNetworkName')]",
-              "apiVersion":"[parameters('virtualNetworksAPIVersion')]",
+              "apiVersion":"2016-12-01",
               "location":"[resourceGroup().location]",
               "tags":{
                 "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
@@ -814,14 +777,14 @@
               }
             }
           ],
-          "outputs":{
-            "masterSubnetID":{
-              "type":"string",
-              "value":"[variables('masterSubnetID')]"
+          "outputs": {
+            "virtualNetworkID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
             },
-            "workerSubnetID":{
-              "type":"string",
-              "value":"[variables('workerSubnetID')]"
+            "virtualNetworkName": {
+              "type": "string",
+              "value": "[parameters('virtualNetworkName')]"
             }
           }
         },
@@ -834,30 +797,6 @@
           },
           "virtualNetworkCidr":{
             "value":"[parameters('virtualNetworkCidr')]"
-          },
-          "masterSubnetCidr":{
-            "value":"[parameters('masterSubnetCidr')]"
-          },
-          "workerSubnetCidr":{
-            "value":"[parameters('workerSubnetCidr')]"
-          },
-          "vnetGatewaySubnetName":{
-            "value":"[parameters('vnetGatewaySubnetName')]"
-          },
-          "vpnSubnetCidr":{
-            "value":"[parameters('vpnSubnetCidr')]"
-          },
-          "masterSecurityGroupID":{
-            "value":"[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"
-          },
-          "workersNatGWID":{
-            "value":"[reference('workers_nat_gw').outputs.workersNatGWID.value]"
-          },
-          "workerSecurityGroupID":{
-            "value":"[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"
-          },
-          "routeTableID":{
-            "value":"[reference('route_table_setup').outputs.id.value]"
           }
         }
       }
@@ -878,11 +817,11 @@
           "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
           "contentVersion":"1.0.0.0",
           "parameters":{
-            "GiantSwarmTags":{
-              "value":"[parameters('GiantSwarmTags')]"
-            },
-            "virtualNetworkName":{
-              "value":"[parameters('virtualNetworkName')]"
+            "GiantSwarmTags": {
+              "defaultValue": {
+                "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+              },
+              "type": "Object"
             },
             "vnetGatewaySubnetName":{
               "value":"[parameters('vnetGatewaySubnetName')]"
@@ -891,26 +830,33 @@
               "value":"[parameters('vpnSubnetCidr')]"
             }
           },
-          "variables":{},
+          "variables": {
+            "vpnSubnetName": "[concat(reference('virtual_network_setup').outputs.virtualNetworkName.value, '/', parameters('vnetGatewaySubnetName'))]"
+          },
           "resources":[
             {
               "apiVersion": "2018-04-01",
               "type": "Microsoft.Network/virtualNetworks/subnets",
-              "name":"[parameters('vnetGatewaySubnetName')]",
+              "name":"[variables('vpnSubnetName')]",
               "location":"[resourceGroup().location]",
+              "tags":{
+                "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+              },
               "properties":{
                 "addressPrefix":"[parameters('vpnSubnetCidr')]"
               }
             }
           ],
-          "outputs":{}
+          "outputs":{
+            "vpnSubnetID":{
+              "type":"string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', reference('virtual_network_setup').outputs.virtualNetworkName.value, variables('vpnSubnetName'))]"
+            }
+          }
         },
         "parameters":{
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "virtualNetworkName":{
-            "value":"[parameters('virtualNetworkName')]"
           },
           "vnetGatewaySubnetName":{
             "value":"[parameters('vnetGatewaySubnetName')]"
@@ -937,11 +883,11 @@
           "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
           "contentVersion":"1.0.0.0",
           "parameters":{
-            "GiantSwarmTags":{
-              "value":"[parameters('GiantSwarmTags')]"
-            },
-            "virtualNetworkName":{
-              "value":"[parameters('virtualNetworkName')]"
+            "GiantSwarmTags": {
+              "defaultValue": {
+                "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+              },
+              "type": "Object"
             },
             "masterSecurityGroupID":{
               "type":"string"
@@ -954,19 +900,17 @@
             }
           },
           "variables":{
-            "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-            "masterSubnetName":"[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
-            "masterSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]"
+            "masterSubnetName":"[concat(reference('virtual_network_setup').outputs.virtualNetworkName.value, '/MasterSubnet')]"
           },
           "resources":[
             {
               "apiVersion": "2018-04-01",
               "type": "Microsoft.Network/virtualNetworks/subnets",
               "name":"[variables('masterSubnetName')]",
-              "dependsOn":[
-                "virtual_network_setup"
-              ],
               "location":"[resourceGroup().location]",
+              "tags":{
+                "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
+              },
               "properties":{
                 "addressPrefix":"[parameters('masterSubnetCidr')]",
                 "networkSecurityGroup":{
@@ -981,14 +925,16 @@
               }
             }
           ],
-          "outputs":{}
+          "outputs":{
+            "masterSubnetID":{
+              "type":"string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', reference('virtual_network_setup').outputs.virtualNetworkName.value, variables('masterSubnetName'))]"
+            }
+          }
         },
         "parameters":{
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "virtualNetworkName":{
-            "value":"[parameters('virtualNetworkName')]"
           },
           "masterSecurityGroupID":{
             "type":"string"
@@ -1018,11 +964,11 @@
           "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
           "contentVersion":"1.0.0.0",
           "parameters":{
-            "GiantSwarmTags":{
-              "value":"[parameters('GiantSwarmTags')]"
-            },
-            "virtualNetworkName":{
-              "value":"[parameters('virtualNetworkName')]"
+            "GiantSwarmTags": {
+              "defaultValue": {
+                "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
+              },
+              "type": "Object"
             },
             "workerSecurityGroupID":{
               "type":"string"
@@ -1038,18 +984,13 @@
             }
           },
           "variables":{
-            "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-            "workerSubnetName":"[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
-            "workerSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
+            "workerSubnetName":"[concat(reference('virtual_network_setup').outputs.virtualNetworkName.value, '/WorkerSubnet')]"
           },
           "resources":[
             {
               "apiVersion": "2018-04-01",
               "type": "Microsoft.Network/virtualNetworks/subnets",
               "name":"[variables('workerSubnetName')]",
-              "dependsOn":[
-                "virtual_network_setup"
-              ],
               "location":"[resourceGroup().location]",
               "properties":{
                 "addressPrefix":"[parameters('workerSubnetCidr')]",
@@ -1076,14 +1017,16 @@
               }
             }
           ],
-          "outputs":{}
+          "outputs":{
+            "workerSubnetID":{
+              "type":"string",
+              "value": "[resourceId('Microsoft.Network/virtualNetworks/subnets', reference('virtual_network_setup').outputs.virtualNetworkName.value, variables('workerSubnetName'))]"
+            }
+          }
         },
         "parameters":{
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "virtualNetworkName":{
-            "value":"[parameters('virtualNetworkName')]"
           },
           "workerSecurityGroupID":{
             "type":"string"
@@ -1308,6 +1251,9 @@
             "clusterID":{
               "type":"string"
             },
+            "masterSubnetID":{
+              "type":"string"
+            },
             "GiantSwarmTags":{
               "type":"object",
               "defaultValue":{
@@ -1319,9 +1265,6 @@
             },
             "ports":{
               "type":"array"
-            },
-            "masterSubnetID":{
-              "type":"string"
             }
           },
           "variables":{
@@ -1333,8 +1276,7 @@
             "loadBalancerFrontendName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PrivateLoadBalancer-Frontend')]",
             "loadBalancerFrontendID":"[concat(variables('loadBalancerID'),'/frontendIPConfigurations/',variables('loadBalancerFrontendName'))]",
             "loadBalancerProbeName":"[concat(parameters('clusterID'), '-', parameters('prefix'), '-', 'PrivateLoadBalancer-Probe')]",
-            "loadBalancerProbeID":"[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]",
-            "loadBalancerSubnetID":"[parameters('masterSubnetID')]"
+            "loadBalancerProbeID":"[concat(variables('loadBalancerID'),'/probes/',variables('loadBalancerProbeName'))]"
           },
           "resources":[
             {
@@ -1355,7 +1297,7 @@
                     "properties":{
                       "privateIPAllocationMethod":"Dynamic",
                       "subnet":{
-                        "id":"[variables('loadBalancerSubnetID')]"
+                        "id":"[parameters('masterSubnetID)]"
                       }
                     }
                   }
@@ -1420,6 +1362,9 @@
           "clusterID":{
             "value":"[parameters('clusterID')]"
           },
+          "masterSubnetID":{
+            "type":"[reference('legacy_masters_subnet').outputs.masterSubnetID.value]"
+          },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
           },
@@ -1433,9 +1378,6 @@
                 "backend":2379
               }
             ]
-          },
-          "masterSubnetID":{
-            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
           }
         }
       }
@@ -1622,6 +1564,12 @@
             "clusterID":{
               "type":"string"
             },
+            "masterSubnetID":{
+              "type":"string"
+            },
+            "workerSubnetID":{
+              "type":"string"
+            },
             "controlPlaneWorkerSubnetID":{
               "type":"string"
             },
@@ -1631,13 +1579,7 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
-            "masterSubnetID": {
-              "type":"string"
-            },
             "storageAccountName":{
-              "type":"string"
-            },
-            "workerSubnetID": {
               "type":"string"
             }
           },
@@ -1700,14 +1642,14 @@
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
           },
-          "masterSubnetID":{
-            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
-          },
-          "workerSubnetID":{
-            "value":"[reference('virtual_network_setup').outputs.workerSubnetID.value]"
-          },
           "storageAccountName":{
             "value":"[parameters('storageAccountName')]"
+          },
+          "masterSubnetID":{
+            "type":"[reference('legacy_masters_subnet').outputs.masterSubnetID.value]"
+          },
+          "workerSubnetID":{
+            "type":"[reference('legacy_workers_subnet').outputs.workerSubnetID.value]"
           }
         }
       }
