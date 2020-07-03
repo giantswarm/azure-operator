@@ -8,7 +8,6 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest"
@@ -95,18 +94,6 @@ func (f *Factory) GetGroupsClient(credentialNamespace, credentialName string) (*
 	}
 
 	return toGroupsClient(client), nil
-}
-
-// GetGroupsClient returns GroupsClient that is used for management of resource groups for the
-// specified cluster. The created client is cached for the time period specified in the factory
-// config.
-func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (*network.SubnetsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "SubnetsClient", newSubnetsClient)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return toSubnetsClient(client), nil
 }
 
 // GetVirtualMachineScaleSetsClient returns VirtualMachineScaleSetsClient that is used for

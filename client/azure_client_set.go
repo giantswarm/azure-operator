@@ -35,14 +35,12 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
-	// PublicIpAddressesClient manages public IP addresses.
+	//PublicIpAddressesClient manages public IP addresses.
 	PublicIpAddressesClient *network.PublicIPAddressesClient
-	// SecurityRulesClient manages networking rules in a security group.
+	//SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
-	// StorageAccountsClient manages blobs in storage containers.
+	//StorageAccountsClient manages blobs in storage containers.
 	StorageAccountsClient *storage.AccountsClient
-	// SubnetsClient manages subnets.
-	SubnetsClient *network.SubnetsClient
 	// UsageClient is used to work with limits and quotas.
 	UsageClient *compute.UsageClient
 	// VirtualNetworkClient manages virtual networks.
@@ -103,10 +101,6 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	subnetsClient, err := newSubnetsClient(authorizer, subscriptionID, partnerID)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
 	usageClient, err := newUsageClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -146,7 +140,6 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
 		SubscriptionID:                         subscriptionID,
-		SubnetsClient:                          toSubnetsClient(subnetsClient),
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   virtualNetworkClient,
 		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
@@ -223,13 +216,6 @@ func newStorageAccountsClient(authorizer autorest.Authorizer, subscriptionID, pa
 	return &client, nil
 }
 
-func newSubnetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
-	client := network.NewSubnetsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
-
-	return &client, nil
-}
-
 func newUsageClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*compute.UsageClient, error) {
 	client := compute.NewUsageClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
@@ -297,8 +283,4 @@ func toVirtualMachineScaleSetVMsClient(client interface{}) *compute.VirtualMachi
 
 func toStorageAccountsClient(client interface{}) *storage.AccountsClient {
 	return client.(*storage.AccountsClient)
-}
-
-func toSubnetsClient(client interface{}) *network.SubnetsClient {
-	return client.(*network.SubnetsClient)
 }
