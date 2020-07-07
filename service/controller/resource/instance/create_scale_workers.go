@@ -55,7 +55,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return ScaleUpWorkerVMSS, nil
 	}
 
-	strategy := scalestrategy.Incremental{}
+	strategy := scalestrategy.Quick{}
 
 	// All workers ready, we can scale up if needed.
 	if desiredWorkerCount > currentWorkerCount {
