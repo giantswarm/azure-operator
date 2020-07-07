@@ -96,7 +96,9 @@ func (r *Resource) initialProvisioning(ctx context.Context, customObject provide
 	}
 
 	result, err := subnetsClient.ListComplete(ctx, key.ClusterID(&customObject), key.VnetName(customObject))
-	if err != nil {
+	if IsNotFound(err) {
+		return IsInitialProvisioning, nil
+	} else if err != nil {
 		return IsInitialProvisioning, microerror.Mask(err)
 	}
 
