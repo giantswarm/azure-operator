@@ -263,7 +263,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "legacy_masters_subnet", "masterSubnetID")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "virtual_network_setup", "masterSubnetID")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
@@ -274,7 +274,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "legacy_workers_subnet", "workerSubnetID")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "virtual_network_setup", "workerSubnetID")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {

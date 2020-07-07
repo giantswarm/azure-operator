@@ -97,7 +97,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		parameters, err := r.getDeploymentParameters(ctx, deploymentsClient, cr, allocatedSubnet)
+		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&cr), cr.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -146,23 +146,12 @@ func isDeploymentOutOfDate(cr capzv1alpha3.AzureCluster, currentDeployment azure
 	return cr.ResourceVersion != currentParams["AzureClusterVersion"].(string)
 }
 
-func (r *Resource) getDeploymentParameters(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, cr capzv1alpha3.AzureCluster, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
-	routeTableID, err := r.getDeploymentOutputValue(ctx, deploymentsClient, cr, "route_table_setup", "id")
-	if err != nil {
-		return map[string]interface{}{}, microerror.Mask(err)
-	}
-
-	workersNatGWID, err := r.getDeploymentOutputValue(ctx, deploymentsClient, cr, "workers_nat_gw", "workersNatGWID")
-	if err != nil {
-		return map[string]interface{}{}, microerror.Mask(err)
-	}
-
+func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, virtualNetworkName string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
 	return map[string]interface{}{
-		"clusterID":        key.ClusterID(&cr),
-		"routeTableID":     routeTableID,
-		"workersNatGWID":   workersNatGWID,
-		"workerSubnetCidr": allocatedSubnet.CidrBlock,
-		"workerSubnetName": allocatedSubnet.Name,
+		"securityGroupName":  fmt.Sprintf("%s-%s", clusterID, "WorkerSecurityGroup"),
+		"subnetCidr":         allocatedSubnet.CidrBlock,
+		"nodepoolName":       allocatedSubnet.Name,
+		"virtualNetworkName": virtualNetworkName,
 	}, nil
 }
 
@@ -197,41 +186,6 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, customObject capzv1alpha3.AzureCluster, deploymentName string, outputName string) (string, error) {
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(&customObject), deploymentName)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	if d.Properties.Outputs == nil {
-		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("cannot get output value '%s' of deployment '%s'", outputName, deploymentName))
-		return "", nil
-	}
-
-	m, err := key.ToMap(d.Properties.Outputs)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	v, ok := m[outputName]
-	if !ok {
-		return "", microerror.Maskf(missingOutputValueError, outputName)
-	}
-	m, err = key.ToMap(v)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	v, err = key.ToKeyValue(m)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	s, err := key.ToString(v)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return s, nil
 }
 
 func (r *Resource) getCredentialSecret(ctx context.Context, cluster key.LabelsGetter) (*v1alpha1.CredentialSecret, error) {

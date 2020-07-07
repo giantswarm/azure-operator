@@ -1,66 +1,78 @@
 {
-  "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
-  "contentVersion":"1.0.0.0",
-  "parameters":{
-    "clusterID":{
-      "type":"string"
-    },
-    "GiantSwarmTags":{
-      "type":"object",
-      "defaultValue":{
-        "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "securityGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the security group for workers"
       }
     },
-    "virtualNetworkName":{
-      "type":"string",
-      "metadata":{
-        "description":"Virtual network's name of the guest cluster"
+    "subnetCidr": {
+      "type": "string"
+    },
+    "nodepoolName": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet's name, which matches the node pool name"
       }
     },
-    "routeTableID":{
-      "type":"string"
-    },
-    "workersNatGWID":{
-      "type":"string"
-    },
-    "workerSubnetCidr":{
-      "type":"string"
-    },
-    "workerSubnetName":{
-      "type":"string"
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network that owns the subnet"
+      }
     }
   },
-  "variables":{
-    "workerSecurityGroupName":"[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
-    "workerSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]"
+  "variables": {
+    "subnetName": "[concat(parameters('virtualNetworkName'), '/', parameters('nodepoolName'))]",
+    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('workerSecurityGroupName'))]"
   },
-  "resources":[
+  "resources": [
     {
       "apiVersion": "2018-04-01",
       "type": "Microsoft.Network/virtualNetworks/subnets",
-      "name":"[parameters('workerSubnetName')]",
-      "location":"[resourceGroup().location]",
-      "properties":{
-        "addressPrefix":"[parameters('workerSubnetCidr')]",
+      "name": "[variables('subnetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressPrefix": "[parameters('subnetCidr')]",
         "natGateway": {
-          "id":"[parameters('workersNatGWID')]"
+          "id": "[reference('workers_nat_gw', '2016-09-01').outputs.workersNatGWID.value]"
         },
-        "networkSecurityGroup":{
-          "id":"[parameters('workerSecurityGroupID')]"
+        "networkSecurityGroup": {
+          "id": "[variables('workerSecurityGroupID')]"
         },
-        "routeTable":{
-          "id":"[parameters('routeTableID')]"
+        "routeTable": {
+          "id": "[reference('route_table_setup', '2016-09-01').outputs.id.value]"
         },
         "serviceEndpoints": [
-          { "service": "Microsoft.Storage" },
-          { "service": "Microsoft.Sql" },
-          { "service": "Microsoft.AzureCosmosDB" },
-          { "service": "Microsoft.KeyVault" },
-          { "service": "Microsoft.ServiceBus" },
-          { "service": "Microsoft.EventHub" },
-          { "service": "Microsoft.AzureActiveDirectory" },
-          { "service": "Microsoft.ContainerRegistry" },
-          { "service": "Microsoft.Web" }
+          {
+            "service": "Microsoft.Storage"
+          },
+          {
+            "service": "Microsoft.Sql"
+          },
+          {
+            "service": "Microsoft.AzureCosmosDB"
+          },
+          {
+            "service": "Microsoft.KeyVault"
+          },
+          {
+            "service": "Microsoft.ServiceBus"
+          },
+          {
+            "service": "Microsoft.EventHub"
+          },
+          {
+            "service": "Microsoft.AzureActiveDirectory"
+          },
+          {
+            "service": "Microsoft.ContainerRegistry"
+          },
+          {
+            "service": "Microsoft.Web"
+          }
         ]
       }
     }
