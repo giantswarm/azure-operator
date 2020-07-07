@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/internal/scalestrategy"
 )
 
 const (
@@ -54,10 +55,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return ScaleUpWorkerVMSS, nil
 	}
 
+	strategy := scalestrategy.Incremental{}
+
 	// All workers ready, we can scale up if needed.
 	if desiredWorkerCount > currentWorkerCount {
 		// Raise the worker count by one
-		err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, currentWorkerCount+1)
+		err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount, strategy)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -97,8 +100,10 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
 
+	strategy := scalestrategy.Quick{}
+
 	// Scale down to the desired number of nodes in worker VMSS.
-	err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount)
+	err = r.scaleVMSS(ctx, cr, key.WorkerVMSSName, desiredWorkerCount, strategy)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -108,7 +113,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 	return DeploymentCompleted, nil
 }
 
-func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, nodeCount int64) error {
+func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
 	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
 	if err != nil {
 		return microerror.Mask(err)
@@ -119,7 +124,7 @@ func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.
 		return microerror.Mask(err)
 	}
 
-	*vmss.Sku.Capacity = nodeCount
+	*vmss.Sku.Capacity = scaleStrategy.GetNodeCount(*vmss.Sku.Capacity, desiredNodeCount)
 	res, err := c.CreateOrUpdate(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject), vmss)
 	if err != nil {
 		return microerror.Mask(err)
