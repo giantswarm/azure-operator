@@ -274,7 +274,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "legacy_masters_subnet", "workerSubnetID")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "legacy_workers_subnet", "workerSubnetID")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {

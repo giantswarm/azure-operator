@@ -732,6 +732,7 @@
     {
       "apiVersion":"2016-09-01",
       "name":"virtual_network_setup",
+      "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
       "type":"Microsoft.Resources/deployments",
       "dependsOn":[
         "route_table_setup"
