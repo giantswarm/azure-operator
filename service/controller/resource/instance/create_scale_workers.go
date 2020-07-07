@@ -66,7 +66,6 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		}
 
 		r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", currentWorkerCount+1))
 
 		// Let's stay in the current state.
 		return ScaleUpWorkerVMSS, nil
@@ -124,7 +123,9 @@ func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.
 		return microerror.Mask(err)
 	}
 
-	*vmss.Sku.Capacity = scaleStrategy.GetNodeCount(*vmss.Sku.Capacity, desiredNodeCount)
+	computedCount := scaleStrategy.GetNodeCount(*vmss.Sku.Capacity, desiredNodeCount)
+
+	*vmss.Sku.Capacity = computedCount
 	res, err := c.CreateOrUpdate(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject), vmss)
 	if err != nil {
 		return microerror.Mask(err)
@@ -134,6 +135,8 @@ func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", computedCount))
 
 	return nil
 }
