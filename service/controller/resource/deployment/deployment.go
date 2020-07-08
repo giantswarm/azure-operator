@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -13,10 +12,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment/template"
 	"github.com/giantswarm/azure-operator/v4/service/network"
-)
-
-const (
-	IsInitialProvisioning = "Yes"
 )
 
 func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
@@ -36,11 +31,6 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		r.installationName,
 	)
 
-	initialProvisioning, err := r.initialProvisioning(ctx, customObject)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	defaultParams := map[string]interface{}{
 		"blobContainerName":          key.BlobContainerName(),
 		"calicoSubnetCidr":           key.CalicoCIDR(customObject),
@@ -48,7 +38,6 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"clusterID":                  key.ClusterID(&customObject),
 		"dnsZones":                   key.DNSZones(customObject),
 		"hostClusterCidr":            r.azure.HostCluster.CIDR,
-		"initialProvisioning":        initialProvisioning,
 		"kubernetesAPISecurePort":    key.APISecurePort(customObject),
 		"masterSubnetCidr":           key.MastersSubnetCIDR(customObject),
 		"storageAccountName":         key.StorageAccountName(&customObject),
@@ -87,42 +76,4 @@ func getVPNSubnet(customObject providerv1alpha1.AzureConfig) (*net.IPNet, error)
 	}
 
 	return &subnets.VPN, nil
-}
-
-func (r *Resource) initialProvisioning(ctx context.Context, customObject providerv1alpha1.AzureConfig) (string, error) {
-	subnetsClient, err := r.clientFactory.GetSubnetsClient(customObject.Spec.Azure.CredentialSecret.Namespace, customObject.Spec.Azure.CredentialSecret.Name)
-	if err != nil {
-		return IsInitialProvisioning, microerror.Mask(err)
-	}
-
-	result, err := subnetsClient.ListComplete(ctx, key.ClusterID(&customObject), key.VnetName(customObject))
-	if IsNotFound(err) {
-		return IsInitialProvisioning, nil
-	} else if err != nil {
-		return IsInitialProvisioning, microerror.Mask(err)
-	}
-
-	expectedSubnets := 0
-	for result.NotDone() {
-		subnet := result.Value()
-		if strings.Contains(*subnet.Name, key.VNetGatewaySubnetName()) {
-			expectedSubnets++
-		} else if strings.Contains(*subnet.Name, "MasterSubnet") {
-			expectedSubnets++
-		} else if strings.Contains(*subnet.Name, "WorkerSubnet") {
-			expectedSubnets++
-		}
-
-		err = result.NextWithContext(ctx)
-		if err != nil {
-			return IsInitialProvisioning, microerror.Mask(err)
-		}
-	}
-
-	initialProvisioning := "No"
-	if expectedSubnets != 3 {
-		initialProvisioning = IsInitialProvisioning
-	}
-
-	return initialProvisioning, nil
 }
