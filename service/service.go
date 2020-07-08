@@ -302,6 +302,7 @@ func New(config Config) (*Service, error) {
 	var machinePoolController *controller.MachinePool
 	{
 		c := controller.MachinePoolConfig{
+			CredentialProvider:        credentialProvider,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),

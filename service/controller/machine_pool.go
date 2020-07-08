@@ -18,14 +18,18 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/echo"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/subnet"
 )
 
 type MachinePoolConfig struct {
+	CredentialProvider        credential.Provider
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	GuestSubnetMaskBits       int
 	InstallationName          string
@@ -100,14 +104,27 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var err error
 
-	var echoResource resource.Interface
+	var clientFactory *client.Factory
 	{
-		c := echo.Config{
-			Logger:    config.Logger,
-			K8sClient: config.K8sClient,
+		c := client.FactoryConfig{
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
 		}
 
-		echoResource, err = echo.New(c)
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var newDebugger *debugger.Debugger
+	{
+		c := debugger.Config{
+			Logger: config.Logger,
+		}
+
+		newDebugger, err = debugger.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -150,9 +167,24 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var subnetResource resource.Interface
+	{
+		c := subnet.Config{
+			AzureClientsFactory: clientFactory,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Debugger:            newDebugger,
+			Logger:              config.Logger,
+		}
+
+		subnetResource, err = subnet.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []resource.Interface{
-		echoResource,
 		cloudConfigResource,
+		subnetResource,
 	}
 
 	{
