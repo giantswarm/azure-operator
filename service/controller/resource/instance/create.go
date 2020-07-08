@@ -44,9 +44,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	if key.WorkerCount(cr) == 0 {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "no built-in workers defined")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil
+	}
+
 	if isMasterUpgrading(cr) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	}
 
