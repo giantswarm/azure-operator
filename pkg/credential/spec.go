@@ -9,3 +9,9 @@ import (
 type Provider interface {
 	GetOrganizationAzureCredentials(ctx context.Context, credentialNamespace, credentialName string) (auth.ClientCredentialsConfig, string, string, error)
 }
+type EmptyProvider struct {
+}
+
+func (p EmptyProvider) GetOrganizationAzureCredentials(ctx context.Context, credentialNamespace, credentialName string) (auth.ClientCredentialsConfig, string, string, error) {
+	return auth.ClientCredentialsConfig{}, "", "", nil
+}

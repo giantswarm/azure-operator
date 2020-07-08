@@ -8,12 +8,31 @@ import (
 	"github.com/giantswarm/operatorkit/resource/crud"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange interface{}) error {
-	cc, err := controllercontext.FromContext(ctx)
+	cr, err := key.ToAzureMachinePool(obj)
 	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	credentialSecret, err := r.getCredentialSecret(ctx, &cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	containerURL, err := r.getContainerURL(ctx, storageAccountsClient, key.ClusterID(&cr), key.BlobContainerName(), key.StorageAccountName(&cr))
+	if IsStorageAccountNotProvisioned(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account is not provisioned")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return microerror.Mask(err)
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
@@ -25,7 +44,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 	for _, containerObject := range containerObjectToUpdate {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating container object %#q", containerObject.Key))
 
-		_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, cc.ContainerURL)
+		_, err := blobclient.PutBlockBlob(ctx, containerObject.Key, containerObject.Body, containerURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
