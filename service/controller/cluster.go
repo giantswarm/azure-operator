@@ -368,6 +368,7 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 			Logger:           config.Logger,
 
 			Azure:                      config.Azure,
+			ClientFactory:              clientFactory,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
 		}
 
