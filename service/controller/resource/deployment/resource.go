@@ -13,6 +13,7 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
+	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -37,6 +38,7 @@ type Config struct {
 	Logger           micrologger.Logger
 
 	Azure                      setting.Azure
+	ClientFactory              *client.Factory
 	ControlPlaneSubscriptionID string
 }
 
@@ -47,6 +49,7 @@ type Resource struct {
 	logger           micrologger.Logger
 
 	azure                      setting.Azure
+	clientFactory              *client.Factory
 	controlPlaneSubscriptionID string
 }
 
@@ -72,6 +75,9 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
+	if config.ClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.ClientFactory must not be empty", config)
+	}
 	if config.ControlPlaneSubscriptionID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ControlPlaneSubscriptionID must not be empty", config)
 	}
@@ -83,6 +89,7 @@ func New(config Config) (*Resource, error) {
 		logger:           config.Logger,
 
 		azure:                      config.Azure,
+		clientFactory:              config.ClientFactory,
 		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
 	}
 
@@ -95,7 +102,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.getDeploymentsClient(ctx)
+	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(cr.Spec.Azure.CredentialSecret.Namespace, cr.Spec.Azure.CredentialSecret.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -137,7 +144,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		err = r.enrichControllerContext(ctx, cr)
+		err = r.enrichControllerContext(ctx, cr, deploymentsClient)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -226,14 +233,15 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) enrichControllerContext(ctx context.Context, customObject providerv1alpha1.AzureConfig) error {
+func (r *Resource) enrichControllerContext(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentsClient *azureresource.DeploymentsClient) error {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
+	resourceGroupName := key.ClusterID(&customObject)
 	{
-		v, err := r.getDeploymentOutputValue(ctx, customObject, "api_load_balancer_setup", "backendPoolId")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "api_load_balancer_setup", "backendPoolId")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
@@ -244,7 +252,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, customObject, "etcd_load_balancer_setup", "backendPoolId")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "etcd_load_balancer_setup", "backendPoolId")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
@@ -255,7 +263,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, customObject, "virtual_network_setup", "masterSubnetID")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "virtual_network_setup", "masterSubnetID")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
@@ -266,7 +274,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, customObject, "virtual_network_setup", "workerSubnetID")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "virtual_network_setup", "workerSubnetID")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
@@ -279,21 +287,8 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	return nil
 }
 
-func (r *Resource) getDeploymentsClient(ctx context.Context) (*azureresource.DeploymentsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.DeploymentsClient, nil
-}
-
-func (r *Resource) getDeploymentOutputValue(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentName string, outputName string) (string, error) {
-	deploymentsClient, err := r.getDeploymentsClient(ctx)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(&customObject), deploymentName)
+func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName, deploymentName, outputName string) (string, error) {
+	d, err := deploymentsClient.Get(ctx, resourceGroupName, deploymentName)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
