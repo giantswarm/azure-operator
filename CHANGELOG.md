@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Allow tenant cluster to be created without built-in workers.
 - Changed how the Azure authentication works when connecting to a different Subscription than the Control Plane's one.
 - Restricted storage account access to the local VNET only.
 - Removed the flatcar migration state machine transitions.
