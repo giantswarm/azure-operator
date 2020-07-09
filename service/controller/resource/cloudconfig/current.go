@@ -7,8 +7,12 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+)
+
+const (
+	credentialDefaultName = "credential-default"
+	credentialNamespace   = "giantswarm"
 )
 
 func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interface{}, error) {
@@ -17,21 +21,24 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	cc, err := controllercontext.FromContext(ctx)
+	credentialSecret, err := r.getCredentialSecret(ctx, &cr)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	if cc.ContainerURL == nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "containerurl resource is not ready")
-		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return nil, nil
+	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	containerURL := cc.ContainerURL
-	containerName := key.BlobContainerName()
-	storageAccountName := key.StorageAccountName(&cr)
+	containerURL, err := r.getContainerURL(ctx, storageAccountsClient, key.ClusterID(&cr), key.BlobContainerName(), key.StorageAccountName(&cr))
+	if IsStorageAccountNotProvisioned(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account is not provisioned")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil, microerror.Mask(err)
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding blob object's container")
 	// if here is no container account - return and wait for deployment to finish container operation.
@@ -44,8 +51,6 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		resourcecanceledcontext.SetCanceled(ctx)
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil, nil
-	} else if err != nil {
-		return nil, microerror.Mask(err)
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found blob object's container")
@@ -57,7 +62,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	output := []ContainerObjectState{}
+	var output []ContainerObjectState
 	for _, object := range listBlobs.Segment.BlobItems {
 		body, err := blobclient.GetBlockBlob(ctx, object.Name, containerURL)
 
@@ -67,9 +72,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 		containerObjectState := ContainerObjectState{
 			Body:               string(body),
-			ContainerName:      containerName,
+			ContainerName:      key.BlobContainerName(),
 			Key:                object.Name,
-			StorageAccountName: storageAccountName,
+			StorageAccountName: key.StorageAccountName(&cr),
 		}
 
 		output = append(output, containerObjectState)
