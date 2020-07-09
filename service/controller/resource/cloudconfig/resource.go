@@ -75,12 +75,13 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		certsSearcher:  config.CertsSearcher,
-		ctrlClient:     config.CtrlClient,
-		g8sClient:      config.G8sClient,
-		k8sClient:      config.K8sClient,
-		logger:         config.Logger,
-		registryDomain: config.RegistryDomain,
+		azureClientsFactory: config.AzureClientsFactory,
+		certsSearcher:       config.CertsSearcher,
+		ctrlClient:          config.CtrlClient,
+		g8sClient:           config.G8sClient,
+		k8sClient:           config.K8sClient,
+		logger:              config.Logger,
+		registryDomain:      config.RegistryDomain,
 	}
 
 	return r, nil
