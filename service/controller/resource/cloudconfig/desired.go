@@ -6,7 +6,6 @@ import (
 	"github.com/giantswarm/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -16,7 +15,6 @@ import (
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
@@ -46,7 +44,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	cc, err := controllercontext.FromContext(ctx)
+	credentialSecret, err := r.getCredentialSecret(ctx, &cr)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -67,7 +65,6 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	if apierrors.IsNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey resource is not ready")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		resourcecanceledcontext.SetCanceled(ctx)
 		return nil, nil
 	} else if err != nil {
 		return nil, microerror.Mask(err)
@@ -95,9 +92,33 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		}
 	}
 
+	organizationAzureClientCredentialsConfig, subscriptionID, _, err := r.credentialProvider.GetOrganizationAzureCredentials(ctx, credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	var cloudConfig *cloudconfig.CloudConfig
+	{
+		c := cloudconfig.Config{
+			Azure:                  r.azure,
+			AzureClientCredentials: organizationAzureClientCredentialsConfig,
+			CertsSearcher:          r.certsSearcher,
+			Logger:                 r.logger,
+			Ignition:               r.ignition,
+			OIDC:                   r.oidc,
+			RandomkeysSearcher:     r.randomKeysSearcher,
+			SSOPublicKey:           r.ssoPublicKey,
+			SubscriptionID:         subscriptionID,
+		}
+
+		cloudConfig, err = cloudconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	output := []ContainerObjectState{}
 	{
-		b, err := cc.CloudConfig.NewMasterTemplate(ctx, ignitionTemplateData, encrypter)
+		b, err := cloudConfig.NewMasterTemplate(ctx, ignitionTemplateData, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -113,7 +134,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	}
 
 	{
-		b, err := cc.CloudConfig.NewWorkerTemplate(ctx, ignitionTemplateData, encrypter)
+		b, err := cloudConfig.NewWorkerTemplate(ctx, ignitionTemplateData, encrypter)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

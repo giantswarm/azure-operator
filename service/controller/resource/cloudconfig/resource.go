@@ -14,15 +14,18 @@ import (
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/randomkeys"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 const (
@@ -31,24 +34,35 @@ const (
 )
 
 type Config struct {
-	AzureClientsFactory   *client.Factory
-	CertsSearcher         certs.Interface
-	CtrlClient            ctrlclient.Client
-	G8sClient             versioned.Interface
-	K8sClient             kubernetes.Interface
-	Logger                micrologger.Logger
-	RegistryDomain        string
-	StorageAccountsClient *storage.AccountsClient
+	Azure               setting.Azure
+	AzureClientsFactory *client.Factory
+	CertsSearcher       certs.Interface
+	CredentialProvider  credential.Provider
+	CtrlClient          ctrlclient.Client
+	G8sClient           versioned.Interface
+	K8sClient           kubernetes.Interface
+	Ignition            setting.Ignition
+	Logger              micrologger.Logger
+	OIDC                setting.OIDC
+	RandomKeysSearcher  *randomkeys.Searcher
+	RegistryDomain      string
+	SSOPublicKey        string
 }
 
 type Resource struct {
+	azure               setting.Azure
 	azureClientsFactory *client.Factory
 	certsSearcher       certs.Interface
+	credentialProvider  credential.Provider
 	ctrlClient          ctrlclient.Client
 	g8sClient           versioned.Interface
 	k8sClient           kubernetes.Interface
+	ignition            setting.Ignition
 	logger              micrologger.Logger
+	oidc                setting.OIDC
+	randomKeysSearcher  *randomkeys.Searcher
 	registryDomain      string
+	ssoPublicKey        string
 }
 
 func New(config Config) (*Resource, error) {
@@ -57,6 +71,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.CertsSearcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
+	}
+	if config.CredentialProvider == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
 	}
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
@@ -70,17 +87,27 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.RandomKeysSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.RandomKeysSearcher must not be empty", config)
+	}
 	if config.RegistryDomain == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RegistryDomain must not be empty", config)
 	}
 
 	r := &Resource{
-		certsSearcher:  config.CertsSearcher,
-		ctrlClient:     config.CtrlClient,
-		g8sClient:      config.G8sClient,
-		k8sClient:      config.K8sClient,
-		logger:         config.Logger,
-		registryDomain: config.RegistryDomain,
+		azure:               config.Azure,
+		azureClientsFactory: config.AzureClientsFactory,
+		certsSearcher:       config.CertsSearcher,
+		credentialProvider:  config.CredentialProvider,
+		ctrlClient:          config.CtrlClient,
+		g8sClient:           config.G8sClient,
+		k8sClient:           config.K8sClient,
+		ignition:            config.Ignition,
+		logger:              config.Logger,
+		oidc:                config.OIDC,
+		randomKeysSearcher:  config.RandomKeysSearcher,
+		registryDomain:      config.RegistryDomain,
+		ssoPublicKey:        config.SSOPublicKey,
 	}
 
 	return r, nil

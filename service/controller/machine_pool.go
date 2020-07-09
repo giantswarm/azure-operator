@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
+	"github.com/giantswarm/randomkeys"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -24,18 +25,23 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type MachinePoolConfig struct {
+	Azure                     setting.Azure
 	CredentialProvider        credential.Provider
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	GuestSubnetMaskBits       int
+	Ignition                  setting.Ignition
 	InstallationName          string
 	IPAMNetworkRange          net.IPNet
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
+	OIDC                      setting.OIDC
 	RegistryDomain            string
+	SSOPublicKey              string
 	SentryDSN                 string
 }
 
@@ -131,16 +137,35 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var randomkeysSearcher *randomkeys.Searcher
+	{
+		c := randomkeys.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+		}
+
+		randomkeysSearcher, err = randomkeys.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var cloudConfigResource resource.Interface
 	{
 		c := cloudconfig.Config{
+			Azure:               config.Azure,
 			AzureClientsFactory: clientFactory,
 			CertsSearcher:       certsSearcher,
+			CredentialProvider:  config.CredentialProvider,
 			CtrlClient:          config.K8sClient.CtrlClient(),
 			G8sClient:           config.K8sClient.G8sClient(),
 			K8sClient:           config.K8sClient.K8sClient(),
+			Ignition:            config.Ignition,
+			OIDC:                config.OIDC,
 			Logger:              config.Logger,
+			RandomKeysSearcher:  randomkeysSearcher,
 			RegistryDomain:      config.RegistryDomain,
+			SSOPublicKey:        config.SSOPublicKey,
 		}
 
 		cloudconfigObject, err := cloudconfig.New(c)

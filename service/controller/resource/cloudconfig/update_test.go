@@ -6,11 +6,11 @@ import (
 	"testing"
 	"time"
 
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	g8sfake "github.com/giantswarm/apiextensions/pkg/clientset/versioned/fake"
 	"github.com/giantswarm/certs/certstest"
 	"github.com/giantswarm/micrologger/microloggertest"
+	"github.com/giantswarm/randomkeys"
 	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/giantswarm/azure-operator/v4/client"
@@ -173,17 +173,25 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			if err != nil {
 				t.Fatal("error creating factory")
 			}
+
+			randomkeysconfig := randomkeys.Config{Logger: logger, K8sClient: fake.NewSimpleClientset()}
+			searcher, err := randomkeys.NewSearcher(randomkeysconfig)
+			if err != nil {
+				t.Fatal("error creating randomkeys searcher")
+			}
+
 			var newResource *Resource
 			{
 				c := Config{
-					AzureClientsFactory:   clientFactory,
-					CertsSearcher:         certstest.NewSearcher(certstest.Config{}),
-					CtrlClient:            unittest.FakeK8sClient().CtrlClient(),
-					G8sClient:             g8sfake.NewSimpleClientset(),
-					K8sClient:             fake.NewSimpleClientset(),
-					Logger:                logger,
-					RegistryDomain:        "quay.io",
-					StorageAccountsClient: &storage.AccountsClient{},
+					AzureClientsFactory: clientFactory,
+					CertsSearcher:       certstest.NewSearcher(certstest.Config{}),
+					CredentialProvider:  credential.EmptyProvider{},
+					CtrlClient:          unittest.FakeK8sClient().CtrlClient(),
+					G8sClient:           g8sfake.NewSimpleClientset(),
+					K8sClient:           fake.NewSimpleClientset(),
+					RandomKeysSearcher:  searcher,
+					Logger:              logger,
+					RegistryDomain:      "quay.io",
 				}
 
 				newResource, err = New(c)
