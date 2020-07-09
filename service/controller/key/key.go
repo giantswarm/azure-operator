@@ -65,7 +65,7 @@ const (
 	kubernetesAPIHealthzVersion = "0.1.0"
 
 	// k8s-setup-network-environment.
-	kubernetesNetworkSetupDocker = "0.1.0"
+	kubernetesNetworkSetupDocker = "0.2.0"
 )
 
 var (
