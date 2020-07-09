@@ -2,16 +2,25 @@ package cloudconfig
 
 import (
 	"context"
+	"fmt"
+	"net/url"
+	"strings"
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
+	"github.com/Azure/azure-storage-blob-go/azblob"
+	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -22,6 +31,7 @@ const (
 )
 
 type Config struct {
+	AzureClientsFactory   *client.Factory
 	CertsSearcher         certs.Interface
 	CtrlClient            ctrlclient.Client
 	G8sClient             versioned.Interface
@@ -32,15 +42,19 @@ type Config struct {
 }
 
 type Resource struct {
-	certsSearcher  certs.Interface
-	ctrlClient     ctrlclient.Client
-	g8sClient      versioned.Interface
-	k8sClient      kubernetes.Interface
-	logger         micrologger.Logger
-	registryDomain string
+	azureClientsFactory *client.Factory
+	certsSearcher       certs.Interface
+	ctrlClient          ctrlclient.Client
+	g8sClient           versioned.Interface
+	k8sClient           kubernetes.Interface
+	logger              micrologger.Logger
+	registryDomain      string
 }
 
 func New(config Config) (*Resource, error) {
+	if config.AzureClientsFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientsFactory must not be empty", config)
+	}
 	if config.CertsSearcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
 	}
@@ -137,4 +151,107 @@ func objectInSliceByKeyAndBody(obj ContainerObjectState, list []ContainerObjectS
 		}
 	}
 	return false
+}
+
+func (r *Resource) getContainerURL(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, containerName, storageAccountName string) (*azblob.ContainerURL, error) {
+	keys, err := storageAccountsClient.ListKeys(ctx, resourceGroupName, storageAccountName, "")
+	if err != nil {
+		return &azblob.ContainerURL{}, microerror.Mask(err)
+	}
+
+	if len(*(keys.Keys)) == 0 {
+		return &azblob.ContainerURL{}, microerror.Maskf(executionFailedError, "storage account key's list is empty")
+	}
+	primaryKey := *(((*keys.Keys)[0]).Value)
+
+	sc, err := azblob.NewSharedKeyCredential(storageAccountName, primaryKey)
+	if err != nil {
+		return &azblob.ContainerURL{}, microerror.Mask(err)
+	}
+
+	p := azblob.NewPipeline(sc, azblob.PipelineOptions{})
+	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", storageAccountName))
+	serviceURL := azblob.NewServiceURL(*u, p)
+	containerURL := serviceURL.NewContainerURL(containerName)
+	_, err = containerURL.GetProperties(ctx, azblob.LeaseAccessConditions{})
+	if err != nil {
+		return &azblob.ContainerURL{}, microerror.Mask(err)
+	}
+
+	return &containerURL, nil
+}
+
+func (r *Resource) getCredentialSecret(ctx context.Context, azureMachinePool key.LabelsGetter) (*v1alpha1.CredentialSecret, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
+
+	organization, exists := azureMachinePool.GetLabels()[label.Organization]
+	if !exists {
+		return nil, microerror.Mask(missingOrganizationLabel)
+	}
+
+	secretList := &corev1.SecretList{}
+	{
+		err := r.ctrlClient.List(
+			ctx,
+			secretList,
+			ctrlclient.InNamespace(credentialNamespace),
+			ctrlclient.MatchingLabels{
+				label.App:          "credentiald",
+				label.Organization: organization,
+			},
+		)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	// We currently only support one credential secret per organization.
+	// If there are more than one, return an error.
+	if len(secretList.Items) > 1 {
+		return nil, microerror.Mask(tooManyCredentialsError)
+	}
+
+	// If one credential secret is found, we use that.
+	if len(secretList.Items) == 1 {
+		secret := secretList.Items[0]
+
+		credentialSecret := &v1alpha1.CredentialSecret{
+			Namespace: secret.Namespace,
+			Name:      secret.Name,
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
+
+		return credentialSecret, nil
+	}
+
+	// If no credential secrets are found, we use the default.
+	credentialSecret := &v1alpha1.CredentialSecret{
+		Namespace: credentialNamespace,
+		Name:      credentialDefaultName,
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
+
+	return credentialSecret, nil
+}
+
+func (r *Resource) getReleaseFromMetadata(ctx context.Context, obj metav1.ObjectMeta) (*releasev1alpha1.Release, error) {
+	release := &releasev1alpha1.Release{}
+	releaseVersion, exists := obj.GetLabels()[label.ReleaseVersion]
+	if !exists {
+		return release, microerror.Mask(missingReleaseVersionLabel)
+	}
+	if !strings.HasPrefix(releaseVersion, "v") {
+		releaseVersion = fmt.Sprintf("v%s", releaseVersion)
+	}
+
+	err := r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: "", Name: releaseVersion}, release)
+	if err != nil {
+		return release, microerror.Mask(err)
+	}
+
+	r.logger = r.logger.With("release", release.Name)
+
+	return release, nil
 }

@@ -732,6 +732,7 @@
     {
       "apiVersion":"2016-09-01",
       "name":"virtual_network_setup",
+      "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
       "type":"Microsoft.Resources/deployments",
       "dependsOn":[
         "route_table_setup"
@@ -1246,7 +1247,7 @@
             ]
           },
           "masterSubnetID":{
-            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
+            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.masterSubnetID.value]"
           }
         }
       }
@@ -1512,10 +1513,10 @@
             "value":"[parameters('GiantSwarmTags')]"
           },
           "masterSubnetID":{
-            "value":"[reference('virtual_network_setup').outputs.masterSubnetID.value]"
+            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.masterSubnetID.value]"
           },
           "workerSubnetID":{
-            "value":"[reference('virtual_network_setup').outputs.workerSubnetID.value]"
+            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.workerSubnetID.value]"
           },
           "storageAccountName":{
             "value":"[parameters('storageAccountName')]"

@@ -4,6 +4,7 @@ import (
 	"context"
 	"reflect"
 	"testing"
+	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -12,7 +13,8 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 	"k8s.io/client-go/kubernetes/fake"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/service/unittest"
 )
 
@@ -159,16 +161,27 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 
 	for _, tc := range testCases {
 		t.Run(tc.description, func(t *testing.T) {
-
 			var err error
+			logger := microloggertest.New()
+			c := client.FactoryConfig{
+				CacheDuration:      30 * time.Minute,
+				CredentialProvider: credential.EmptyProvider{},
+				Logger:             logger,
+			}
+
+			clientFactory, err := client.NewFactory(c)
+			if err != nil {
+				t.Fatal("error creating factory")
+			}
 			var newResource *Resource
 			{
 				c := Config{
+					AzureClientsFactory:   clientFactory,
 					CertsSearcher:         certstest.NewSearcher(certstest.Config{}),
 					CtrlClient:            unittest.FakeK8sClient().CtrlClient(),
 					G8sClient:             g8sfake.NewSimpleClientset(),
 					K8sClient:             fake.NewSimpleClientset(),
-					Logger:                microloggertest.New(),
+					Logger:                logger,
 					RegistryDomain:        "quay.io",
 					StorageAccountsClient: &storage.AccountsClient{},
 				}
@@ -179,13 +192,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 				}
 			}
 
-			cloudconfig := &CloudConfigMock{}
-
 			ctx := context.TODO()
-			c := controllercontext.Context{
-				CloudConfig: cloudconfig,
-			}
-			ctx = controllercontext.NewContext(ctx, c)
 
 			result, err := newResource.newUpdateChange(ctx, tc.currentState, tc.desiredState)
 			if err != nil {
