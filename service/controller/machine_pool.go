@@ -23,9 +23,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/subnet"
 )
 
 type MachinePoolConfig struct {
@@ -118,18 +116,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var newDebugger *debugger.Debugger
-	{
-		c := debugger.Config{
-			Logger: config.Logger,
-		}
-
-		newDebugger, err = debugger.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var certsSearcher *certs.Searcher
 	{
 		c := certs.Config{
@@ -168,24 +154,8 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var subnetResource resource.Interface
-	{
-		c := subnet.Config{
-			AzureClientsFactory: clientFactory,
-			CtrlClient:          config.K8sClient.CtrlClient(),
-			Debugger:            newDebugger,
-			Logger:              config.Logger,
-		}
-
-		subnetResource, err = subnet.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	resources := []resource.Interface{
 		cloudConfigResource,
-		subnetResource,
 	}
 
 	{
