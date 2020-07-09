@@ -41,6 +41,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
+	release, err := r.getReleaseFromMetadata(ctx, azureCluster.ObjectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -70,7 +75,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData
 	{
-		versions, err := k8scloudconfig.ExtractComponentVersions(cc.Release.Release.Spec.Components)
+		versions, err := k8scloudconfig.ExtractComponentVersions(release.Spec.Components)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

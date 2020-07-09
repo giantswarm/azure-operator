@@ -148,12 +148,13 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var cloudConfigResource resource.Interface
 	{
 		c := cloudconfig.Config{
-			CertsSearcher:  certsSearcher,
-			CtrlClient:     config.K8sClient.CtrlClient(),
-			G8sClient:      config.K8sClient.G8sClient(),
-			K8sClient:      config.K8sClient.K8sClient(),
-			Logger:         config.Logger,
-			RegistryDomain: config.RegistryDomain,
+			AzureClientsFactory: clientFactory,
+			CertsSearcher:       certsSearcher,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			G8sClient:           config.K8sClient.G8sClient(),
+			K8sClient:           config.K8sClient.K8sClient(),
+			Logger:              config.Logger,
+			RegistryDomain:      config.RegistryDomain,
 		}
 
 		cloudconfigObject, err := cloudconfig.New(c)
