@@ -78,13 +78,6 @@ rules:
     verbs:
       - get
       - list
-  - apiGroups:
-      - cluster.x-k8s.io
-    resources:
-      - clusters
-    verbs:
-      - get
-      - list
   # The operator needs read and write access to all provider specific
   # infrastructure CRs we manage for Tenant Clusters.
   - apiGroups:

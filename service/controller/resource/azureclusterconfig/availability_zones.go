@@ -12,7 +12,7 @@ func getAvailabilityZones(masters []capzv1alpha3.AzureMachine) ([]int, error) {
 	azs := []int{}
 
 	for _, m := range masters {
-		if m.Spec.FailureDomain == nil {
+		if m.Spec.FailureDomain == nil || *m.Spec.FailureDomain == "" {
 			continue
 		}
 
