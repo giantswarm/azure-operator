@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Mapping from Cluster API & CAPZ CRs to AzureConfig. This change provides migration path towards Azure Cluster API implementation.
 - State machine flowchart generation.
 - Support to forward errors to Sentry.
+- New `cloudconfig` handler for the `AzureCluster` controller that creates the required cloudconfig files in the Storage Account.
 
 ### Changed
 
