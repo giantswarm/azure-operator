@@ -17,6 +17,7 @@ rules:
     resources:
       - clusters
       - azureclusters
+      - azureclusters/status
       - azuremachines
     verbs:
       - get
@@ -69,6 +70,21 @@ rules:
       - create
       - delete
       - update
+  # The operator needs read and write access to the provider agnostic CAPI CRDs.
+  - apiGroups:
+      - exp.cluster.x-k8s.io
+    resources:
+      - machinepools
+    verbs:
+      - get
+      - list
+  - apiGroups:
+      - cluster.x-k8s.io
+    resources:
+      - clusters
+    verbs:
+      - get
+      - list
   # The operator needs read and write access to all provider specific
   # infrastructure CRs we manage for Tenant Clusters.
   - apiGroups:
