@@ -51,6 +51,9 @@ func New(config Config) (*Resource, error) {
 	if config.AzureClientsFactory == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientsFactory must not be empty", config)
 	}
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
+	}
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
 	}
@@ -60,6 +63,7 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		azureClientsFactory: config.AzureClientsFactory,
+		ctrlClient:          config.CtrlClient,
 		debugger:            config.Debugger,
 		logger:              config.Logger,
 	}

@@ -197,6 +197,7 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	{
 		c := subnet.Config{
 			AzureClientsFactory: clientFactory,
+			CtrlClient:          config.K8sClient.CtrlClient(),
 			Debugger:            newDebugger,
 			Logger:              config.Logger,
 		}
