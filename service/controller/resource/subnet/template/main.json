@@ -2,6 +2,18 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
+    "nateGatewayName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the nat gateway for workers"
+      }
+    },
+    "routeTableName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the route table for workers"
+      }
+    },
     "securityGroupName": {
       "type": "string",
       "metadata": {
@@ -25,8 +37,10 @@
     }
   },
   "variables": {
+    "natGatewayID": "[resourceId('Microsoft.Network/natGateways/', parameters('nateGatewayName'))]",
+    "routeTableID": "[resourceId('Microsoft.Network/routeTables/', parameters('routeTableName'))]",
     "subnetName": "[concat(parameters('virtualNetworkName'), '/', parameters('nodepoolName'))]",
-    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('workerSecurityGroupName'))]"
+    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('securityGroupName'))]"
   },
   "resources": [
     {
@@ -37,13 +51,13 @@
       "properties": {
         "addressPrefix": "[parameters('subnetCidr')]",
         "natGateway": {
-          "id": "[reference('workers_nat_gw', '2016-09-01').outputs.workersNatGWID.value]"
+          "id": "[variables('natGatewayID')]"
         },
         "networkSecurityGroup": {
           "id": "[variables('workerSecurityGroupID')]"
         },
         "routeTable": {
-          "id": "[reference('route_table_setup', '2016-09-01').outputs.id.value]"
+          "id": "[variables('routeTableID')]"
         },
         "serviceEndpoints": [
           {

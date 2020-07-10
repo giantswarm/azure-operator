@@ -109,7 +109,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		desiredDeployment := azureresource.Deployment{
 			Properties: &azureresource.DeploymentProperties{
 				Mode:       azureresource.Incremental,
-				Parameters: parameters,
+				Parameters: key.ToParameters(parameters),
 				Template:   armTemplate,
 			},
 		}
@@ -152,9 +152,11 @@ func isDeploymentOutOfDate(cr capzv1alpha3.AzureCluster, currentDeployment azure
 
 func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, virtualNetworkName string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
 	return map[string]interface{}{
+		"nateGatewayName":    "workers-nat-gw",
+		"nodepoolName":       allocatedSubnet.Name,
+		"routeTableName":     fmt.Sprintf("%s-%s", clusterID, "RouteTable"),
 		"securityGroupName":  fmt.Sprintf("%s-%s", clusterID, "WorkerSecurityGroup"),
 		"subnetCidr":         allocatedSubnet.CidrBlock,
-		"nodepoolName":       allocatedSubnet.Name,
 		"virtualNetworkName": virtualNetworkName,
 	}, nil
 }
