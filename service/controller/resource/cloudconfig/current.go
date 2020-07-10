@@ -31,10 +31,10 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	}
 
 	containerURL, err := r.getContainerURL(ctx, storageAccountsClient, key.ClusterID(&cr), key.BlobContainerName(), key.StorageAccountName(&cr))
-	if IsStorageAccountNotProvisioned(err) {
+	if IsNotFound(err) || IsStorageAccountNotProvisioned(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account is not provisioned")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return nil, microerror.Mask(err)
+		return nil, nil
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
