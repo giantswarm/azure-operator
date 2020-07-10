@@ -116,23 +116,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		}
 	}
 
-	output := []ContainerObjectState{}
-	{
-		b, err := cloudConfig.NewMasterTemplate(ctx, ignitionTemplateData, encrypter)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		k := key.BlobName(&cr, prefixMaster)
-		containerObjectState := ContainerObjectState{
-			Body:               b,
-			ContainerName:      containerName,
-			Key:                k,
-			StorageAccountName: storageAccountName,
-		}
-
-		output = append(output, containerObjectState)
-	}
-
+	var output []ContainerObjectState
 	{
 		b, err := cloudConfig.NewWorkerTemplate(ctx, ignitionTemplateData, encrypter)
 		if err != nil {
