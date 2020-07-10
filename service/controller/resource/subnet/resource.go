@@ -101,7 +101,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&cr), cr.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
+		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&cr), cr.ResourceVersion, cr.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -147,17 +147,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 func isDeploymentOutOfDate(cr capzv1alpha3.AzureCluster, currentDeployment azureresource.DeploymentExtended) bool {
 	currentParams := currentDeployment.Properties.Parameters.(map[string]interface{})
-	return cr.ResourceVersion != currentParams["AzureClusterVersion"].(string)
+	return cr.ResourceVersion != currentParams["azureClusterVersion"].(string)
 }
 
-func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, virtualNetworkName string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
+func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, azureClusterVersion, virtualNetworkName string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
 	return map[string]interface{}{
-		"nateGatewayName":    "workers-nat-gw",
-		"nodepoolName":       allocatedSubnet.Name,
-		"routeTableName":     fmt.Sprintf("%s-%s", clusterID, "RouteTable"),
-		"securityGroupName":  fmt.Sprintf("%s-%s", clusterID, "WorkerSecurityGroup"),
-		"subnetCidr":         allocatedSubnet.CidrBlock,
-		"virtualNetworkName": virtualNetworkName,
+		"azureClusterVersion": azureClusterVersion,
+		"nateGatewayName":     "workers-nat-gw",
+		"nodepoolName":        allocatedSubnet.Name,
+		"routeTableName":      fmt.Sprintf("%s-%s", clusterID, "RouteTable"),
+		"securityGroupName":   fmt.Sprintf("%s-%s", clusterID, "WorkerSecurityGroup"),
+		"subnetCidr":          allocatedSubnet.CidrBlock,
+		"virtualNetworkName":  virtualNetworkName,
 	}, nil
 }
 
