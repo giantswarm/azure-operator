@@ -3,9 +3,9 @@ module github.com/giantswarm/azure-operator/v4
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v42.0.0+incompatible
+	github.com/Azure/azure-sdk-for-go v43.2.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
-	github.com/Azure/go-autorest/autorest v0.10.0
+	github.com/Azure/go-autorest/autorest v0.10.2
 	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
 	github.com/Azure/go-autorest/autorest/to v0.3.0
 	github.com/coreos/go-semver v0.3.0
@@ -37,21 +37,22 @@ require (
 	github.com/giantswarm/statusresource v0.4.0
 	github.com/giantswarm/tenantcluster v0.2.0
 	github.com/giantswarm/versionbundle v0.2.0
-	github.com/google/go-cmp v0.4.0
+	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
+	github.com/google/go-cmp v0.4.1
 	github.com/markbates/pkger v0.17.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
+	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/afero v1.2.2
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20200223170610-d5e6a3e2c0ae // indirect
-	k8s.io/api v0.17.2
-	k8s.io/apiextensions-apiserver v0.17.2
-	k8s.io/apimachinery v0.17.2
-	k8s.io/client-go v0.17.2
+	k8s.io/api v0.17.7
+	k8s.io/apiextensions-apiserver v0.17.7
+	k8s.io/apimachinery v0.17.7
+	k8s.io/client-go v0.17.7
 	k8s.io/helm v2.16.4+incompatible
-	sigs.k8s.io/cluster-api v0.3.5
-	sigs.k8s.io/cluster-api-provider-azure v0.4.3
-	sigs.k8s.io/controller-runtime v0.5.2
+	sigs.k8s.io/cluster-api v0.3.7-rc.1
+	sigs.k8s.io/cluster-api-provider-azure v0.4.5
+	sigs.k8s.io/controller-runtime v0.5.7
 )
 
 replace (
