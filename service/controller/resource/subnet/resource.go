@@ -195,14 +195,17 @@ func (r *Resource) createDeployment(ctx context.Context, deploymentsClient *azur
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroup, deploymentName, desiredDeployment)
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", desiredDeployment), "stack", microerror.JSON(microerror.Mask(err)))
-		return microerror.Mask(err)
+		maskedErr := microerror.Mask(err)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", desiredDeployment), "stack", microerror.JSON(maskedErr))
+
+		return maskedErr
 	}
 	deploymentExtended, err := deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.JSON(microerror.Mask(err)))
+		maskedErr := microerror.Mask(err)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.JSON(maskedErr))
 
-		return microerror.Mask(err)
+		return maskedErr
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
