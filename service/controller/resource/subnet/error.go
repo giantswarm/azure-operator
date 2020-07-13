@@ -53,3 +53,7 @@ var tooManyCredentialsError = &microerror.Error{
 var missingOrganizationLabel = &microerror.Error{
 	Kind: "missingOrganizationLabel",
 }
+
+var wrongTypeError = &microerror.Error{
+	Kind: "wrongTypeError",
+}

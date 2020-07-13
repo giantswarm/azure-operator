@@ -3,6 +3,7 @@ package subnet
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -101,7 +102,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&cr), cr.ResourceVersion, cr.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
+		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&cr), strconv.FormatInt(cr.ObjectMeta.Generation, 10), cr.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -114,7 +115,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			},
 		}
 
-		if currentDeployment.IsHTTPStatus(404) || isDeploymentOutOfDate(cr, currentDeployment) {
+		// We only submit the deployment if it doesn't exist or it exists but it's out of date.
+		shouldSubmitDeployment := currentDeployment.IsHTTPStatus(404)
+		if !shouldSubmitDeployment {
+			shouldSubmitDeployment, err = r.isDeploymentOutOfDate(ctx, cr, currentDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		if shouldSubmitDeployment {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 			err = r.createDeployment(ctx, deploymentsClient, key.ClusterID(&cr), deploymentName, desiredDeployment)
 			if err != nil {
@@ -145,9 +155,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func isDeploymentOutOfDate(cr capzv1alpha3.AzureCluster, currentDeployment azureresource.DeploymentExtended) bool {
-	currentParams := currentDeployment.Properties.Parameters.(map[string]interface{})
-	return cr.ResourceVersion != currentParams["azureClusterVersion"].(string)
+func (r *Resource) isDeploymentOutOfDate(ctx context.Context, cr capzv1alpha3.AzureCluster, currentDeployment azureresource.DeploymentExtended) (bool, error) {
+	crVersion := strconv.FormatInt(cr.ObjectMeta.Generation, 10)
+	currentParams, ok := currentDeployment.Properties.Parameters.(map[string]interface{})
+	if !ok {
+		return false, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, currentDeployment.Properties.Parameters)
+	}
+
+	deploymentVersion, ok := currentParams["azureClusterVersion"].(map[string]interface{})["value"].(string)
+	if !ok {
+		return false, microerror.Maskf(wrongTypeError, "expected 'string', got '%T'", currentDeployment.Properties.Parameters)
+	}
+
+	r.logger.LogCtx(ctx, "message", "Checking if deployment is out of date", "azureClusterVersion", crVersion, "deploymentParameter", currentParams["azureClusterVersion"])
+
+	return crVersion != deploymentVersion, nil
 }
 
 func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, azureClusterVersion, virtualNetworkName string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
