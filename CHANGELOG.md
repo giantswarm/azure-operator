@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - State machine flowchart generation.
 - Support to forward errors to Sentry.
 - New `cloudconfig` handler for the `AzureCluster` controller that creates the required cloudconfig files in the Storage Account.
+- Add --service.registry.mirrors flag for setting registry mirror domains.
 
 ### Changed
 
@@ -24,6 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrate the `vmsscheck` guards to use the Azure client factory.
 - Use `0.1.0` tag for `k8s-api-heahtz` image.
 - Use `0.2.0` tag for `k8s-setup-network-env` image.
+- Replace --service.registrydomain with --service.registry.domain.
 
 ### Removed
 
