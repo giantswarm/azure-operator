@@ -218,7 +218,7 @@ func New(config Config) (*Service, error) {
 			OIDC:             OIDC,
 			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
 			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			RegistryDomain:   config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 
@@ -286,7 +286,8 @@ func New(config Config) (*Service, error) {
 			Logger:                    config.Logger,
 			OIDC:                      OIDC,
 			ProjectName:               config.ProjectName,
-			RegistryDomain:            config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
+			RegistryMirrors:           config.Viper.GetStringSlice(config.Flag.Service.Registry.Mirrors),
 			SentryDSN:                 sentryDSN,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
@@ -309,7 +310,7 @@ func New(config Config) (*Service, error) {
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
-			RegistryDomain:            config.Viper.GetString(config.Flag.Service.RegistryDomain),
+			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SentryDSN:                 sentryDSN,
 		}
 

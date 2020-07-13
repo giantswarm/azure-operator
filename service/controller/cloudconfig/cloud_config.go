@@ -4,7 +4,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/randomkeys"
@@ -31,6 +31,7 @@ type Config struct {
 	AzureClientCredentials auth.ClientCredentialsConfig
 	Ignition               setting.Ignition
 	OIDC                   setting.OIDC
+	RegistryMirrors        []string
 	SSOPublicKey           string
 	SubscriptionID         string
 }
@@ -43,6 +44,7 @@ type CloudConfig struct {
 	azureClientCredentials auth.ClientCredentialsConfig
 	ignition               setting.Ignition
 	OIDC                   setting.OIDC
+	registryMirrors        []string
 	ssoPublicKey           string
 	subscriptionID         string
 }
@@ -78,6 +80,7 @@ func New(config Config) (*CloudConfig, error) {
 		azureClientCredentials: config.AzureClientCredentials,
 		ignition:               config.Ignition,
 		OIDC:                   config.OIDC,
+		registryMirrors:        config.RegistryMirrors,
 		ssoPublicKey:           config.SSOPublicKey,
 		subscriptionID:         config.SubscriptionID,
 	}

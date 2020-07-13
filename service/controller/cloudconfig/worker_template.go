@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 
 	"github.com/giantswarm/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v6/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
@@ -52,6 +52,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 			LogsToken:  c.ignition.LogsToken,
 		}
 		params.Images = data.Images
+		params.RegistryMirrors = c.registryMirrors
 		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey
 
