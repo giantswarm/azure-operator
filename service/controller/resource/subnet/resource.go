@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -152,9 +153,51 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			return nil
 		}
+
+		if key.IsSucceededProvisioningState(*currentDeployment.Properties.ProvisioningState) {
+			storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			storageAccount, err := storageAccountsClient.GetProperties(ctx, key.ClusterID(&cr), key.StorageAccountName(&cr), "")
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if !isSubnetAllowedToStorageAccount(ctx, storageAccount, currentDeployment) {
+				*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules = append(*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules, storage.VirtualNetworkRule{VirtualNetworkResourceID: nil})
+				_, err = storageAccountsClient.Update(ctx, key.ClusterID(&cr), key.StorageAccountName(&cr), storage.AccountUpdateParameters{
+					AccountPropertiesUpdateParameters: &storage.AccountPropertiesUpdateParameters{
+						CustomDomain:                          storageAccount.AccountProperties.CustomDomain,
+						Encryption:                            storageAccount.AccountProperties.Encryption,
+						AccessTier:                            storageAccount.AccountProperties.AccessTier,
+						AzureFilesIdentityBasedAuthentication: storageAccount.AccountProperties.AzureFilesIdentityBasedAuthentication,
+						EnableHTTPSTrafficOnly:                storageAccount.AccountProperties.EnableHTTPSTrafficOnly,
+						NetworkRuleSet:                        storageAccount.AccountProperties.NetworkRuleSet,
+						LargeFileSharesState:                  storageAccount.AccountProperties.LargeFileSharesState,
+					},
+				})
+				if err != nil {
+					return microerror.Mask(err)
+				}
+			}
+		}
 	}
 
 	return nil
+}
+
+func isSubnetAllowedToStorageAccount(ctx context.Context, storageAccount storage.Account, currentDeployment azureresource.DeploymentExtended) bool {
+	subnetID := currentDeployment.Properties.Outputs.(map[string]interface{})["subnetID"].(map[string]interface{})["value"].(string)
+
+	for _, networkRule := range *storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules {
+		if *networkRule.VirtualNetworkResourceID == subnetID {
+			return true
+		}
+	}
+
+	return false
 }
 
 // This functions decides whether or not the ARM deployment is out of date.

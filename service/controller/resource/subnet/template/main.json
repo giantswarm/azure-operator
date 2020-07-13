@@ -96,5 +96,11 @@
         ]
       }
     }
-  ]
+  ],
+  "outputs": {
+    "subnetID": {
+      "type": "string",
+      "value": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('subnetName'))]"
+    }
+  }
 }
