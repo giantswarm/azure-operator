@@ -72,6 +72,8 @@ func New(config Config) (*Resource, error) {
 	return r, nil
 }
 
+// For every subnet declared in the `AzureCluster.Spec.NetworkSpec.Subnets` field, we submit a deployment to Azure to create the subnet.
+// The ipam handler is the one updating AzureCluster with the required subnets.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToAzureCluster(obj)
 	if err != nil {
@@ -155,6 +157,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
+// This functions decides whether or not the ARM deployment is out of date.
+// For that, we use the Generation field from the AzureCluster CR. This Generation field should change when there is a change in the CR.
 func (r *Resource) isDeploymentOutOfDate(ctx context.Context, cr capzv1alpha3.AzureCluster, currentDeployment azureresource.DeploymentExtended) (bool, error) {
 	crVersion := strconv.FormatInt(cr.ObjectMeta.Generation, 10)
 	currentParams, ok := currentDeployment.Properties.Parameters.(map[string]interface{})
