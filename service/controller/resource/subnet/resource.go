@@ -7,6 +7,7 @@ import (
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -155,6 +156,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if key.IsSucceededProvisioningState(*currentDeployment.Properties.ProvisioningState) {
+			subnetID := currentDeployment.Properties.Outputs.(map[string]interface{})["subnetID"].(map[string]interface{})["value"].(string)
+
 			storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
 			if err != nil {
 				return microerror.Mask(err)
@@ -165,8 +168,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			if !isSubnetAllowedToStorageAccount(ctx, storageAccount, currentDeployment) {
-				*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules = append(*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules, storage.VirtualNetworkRule{VirtualNetworkResourceID: nil})
+			if !isSubnetAllowedToStorageAccount(ctx, storageAccount, subnetID) {
+				*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules = append(*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules, storage.VirtualNetworkRule{VirtualNetworkResourceID: to.StringPtr(subnetID)})
 				_, err = storageAccountsClient.Update(ctx, key.ClusterID(&cr), key.StorageAccountName(&cr), storage.AccountUpdateParameters{
 					AccountPropertiesUpdateParameters: &storage.AccountPropertiesUpdateParameters{
 						CustomDomain:                          storageAccount.AccountProperties.CustomDomain,
@@ -188,9 +191,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func isSubnetAllowedToStorageAccount(ctx context.Context, storageAccount storage.Account, currentDeployment azureresource.DeploymentExtended) bool {
-	subnetID := currentDeployment.Properties.Outputs.(map[string]interface{})["subnetID"].(map[string]interface{})["value"].(string)
-
+func isSubnetAllowedToStorageAccount(ctx context.Context, storageAccount storage.Account, subnetID string) bool {
 	for _, networkRule := range *storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules {
 		if *networkRule.VirtualNetworkResourceID == subnetID {
 			return true
