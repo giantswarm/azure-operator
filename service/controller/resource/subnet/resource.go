@@ -6,6 +6,8 @@ import (
 	"strconv"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
+	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -152,9 +154,81 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			return nil
 		}
+
+		if key.IsSucceededProvisioningState(*currentDeployment.Properties.ProvisioningState) {
+			subnetID, err := getSubnetIDFromDeploymentOutput(ctx, currentDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			storageAccount, err := storageAccountsClient.GetProperties(ctx, key.ClusterID(&cr), key.StorageAccountName(&cr), "")
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if !isSubnetAllowedToStorageAccount(ctx, storageAccount, subnetID) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "Ensuring subnet is allowed into storage account")
+
+				err = addSubnetToStoreAccountAllowedSubnets(ctx, storageAccountsClient, storageAccount, key.ClusterID(&cr), key.StorageAccountName(&cr), subnetID)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
+				r.logger.LogCtx(ctx, "level", "debug", "message", "Ensured subnet is allowed into storage account")
+			}
+		}
 	}
 
 	return nil
+}
+
+func getSubnetIDFromDeploymentOutput(ctx context.Context, currentDeployment azureresource.DeploymentExtended) (string, error) {
+	outputs, ok := currentDeployment.Properties.Outputs.(map[string]interface{})
+	if !ok {
+		return "", microerror.Maskf(wrongTypeError, "expected 'map[string]interface{}', got '%T'", currentDeployment.Properties.Outputs)
+	}
+
+	subnetID, ok := outputs["subnetID"].(map[string]interface{})
+	if !ok {
+		return "", microerror.Maskf(wrongTypeError, "expected 'map[string]interface{}', got '%T'", outputs["subnetID"])
+	}
+
+	return subnetID["value"].(string), nil
+}
+
+func addSubnetToStoreAccountAllowedSubnets(ctx context.Context, storageAccountsClient *storage.AccountsClient, storageAccount storage.Account, resourceGroupName, StorageAccountName, subnetID string) error {
+	*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules = append(*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules, storage.VirtualNetworkRule{VirtualNetworkResourceID: to.StringPtr(subnetID)})
+	_, err := storageAccountsClient.Update(ctx, resourceGroupName, StorageAccountName, storage.AccountUpdateParameters{
+		AccountPropertiesUpdateParameters: &storage.AccountPropertiesUpdateParameters{
+			CustomDomain:                          storageAccount.AccountProperties.CustomDomain,
+			Encryption:                            storageAccount.AccountProperties.Encryption,
+			AccessTier:                            storageAccount.AccountProperties.AccessTier,
+			AzureFilesIdentityBasedAuthentication: storageAccount.AccountProperties.AzureFilesIdentityBasedAuthentication,
+			EnableHTTPSTrafficOnly:                storageAccount.AccountProperties.EnableHTTPSTrafficOnly,
+			NetworkRuleSet:                        storageAccount.AccountProperties.NetworkRuleSet,
+			LargeFileSharesState:                  storageAccount.AccountProperties.LargeFileSharesState,
+		},
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func isSubnetAllowedToStorageAccount(ctx context.Context, storageAccount storage.Account, subnetID string) bool {
+	for _, networkRule := range *storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules {
+		if *networkRule.VirtualNetworkResourceID == subnetID {
+			return true
+		}
+	}
+
+	return false
 }
 
 // This functions decides whether or not the ARM deployment is out of date.
