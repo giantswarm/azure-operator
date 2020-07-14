@@ -14,6 +14,12 @@
         "description": "Name of the nat gateway for workers"
       }
     },
+    "nodepoolName": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet's name, which matches the node pool name"
+      }
+    },
     "routeTableName": {
       "type": "string",
       "metadata": {
@@ -28,12 +34,6 @@
     },
     "subnetCidr": {
       "type": "string"
-    },
-    "nodepoolName": {
-      "type": "string",
-      "metadata": {
-        "description": "Subnet's name, which matches the node pool name"
-      }
     },
     "virtualNetworkName": {
       "type": "string",
@@ -100,7 +100,7 @@
   "outputs": {
     "subnetID": {
       "type": "string",
-      "value": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', variables('subnetName'))]"
+      "value": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('nodepoolName'))]"
     }
   }
 }

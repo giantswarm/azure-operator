@@ -156,7 +156,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if key.IsSucceededProvisioningState(*currentDeployment.Properties.ProvisioningState) {
-			subnetID := currentDeployment.Properties.Outputs.(map[string]interface{})["subnetID"].(map[string]interface{})["value"].(string)
+			subnetID, err := getSubnetIDFromDeploymentOutput(ctx, currentDeployment)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 
 			storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
 			if err != nil {
@@ -178,6 +181,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	return nil
+}
+
+func getSubnetIDFromDeploymentOutput(ctx context.Context, currentDeployment azureresource.DeploymentExtended) (string, error) {
+	outputs, ok := currentDeployment.Properties.Outputs.(map[string]interface{})
+	if !ok {
+		return "", microerror.Maskf(wrongTypeError, "expected 'map[string]interface{}', got '%T'", currentDeployment.Properties.Outputs)
+	}
+
+	subnetID, ok := outputs["subnetID"].(map[string]interface{})
+	if !ok {
+		return "", microerror.Maskf(wrongTypeError, "expected 'map[string]interface{}', got '%T'", outputs["subnetID"])
+	}
+
+	return subnetID["value"].(string), nil
 }
 
 func addSubnetToStoreAccountAllowedSubnets(ctx context.Context, storageAccountsClient *storage.AccountsClient, storageAccount storage.Account, resourceGroupName, StorageAccountName, subnetID string) error {
