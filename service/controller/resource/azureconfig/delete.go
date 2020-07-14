@@ -7,7 +7,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/finalizerskeptcontext"
 	"k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -25,7 +24,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterID(&azureCluster),
-			Namespace: metav1.NamespaceDefault,
+			Namespace: azureCluster.Namespace,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &azureConfig)
 		if errors.IsNotFound(err) {
