@@ -24,9 +24,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureclusterconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/subnet"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
@@ -119,56 +116,56 @@ func NewAzureCluster(config AzureClusterConfig) (*AzureCluster, error) {
 func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
 
-	var azureClusterConfigResource *azureclusterconfig.Resource
-	{
-		c := azureclusterconfig.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
-		}
+	//var azureClusterConfigResource *azureclusterconfig.Resource
+	//{
+	//	c := azureclusterconfig.Config{
+	//		CtrlClient: config.K8sClient.CtrlClient(),
+	//		Logger:     config.Logger,
+	//	}
+	//
+	//	azureClusterConfigResource, err = azureclusterconfig.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
-		azureClusterConfigResource, err = azureclusterconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var azureConfigResource *azureconfig.Resource
-	{
-		c := azureconfig.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
-
-			APIServerSecurePort: config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
-			Calico: azureconfig.CalicoConfig{
-				CIDRSize: config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
-				MTU:      config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
-				Subnet:   config.Viper.GetString(config.Flag.Service.Cluster.Calico.Subnet),
-			},
-			ClusterIPRange:                 config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
-			EtcdPrefix:                     config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
-			KubeletLabels:                  config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.Kubelet.Labels),
-			ManagementClusterResourceGroup: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
-			SSHUserList:                    config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
-		}
-
-		azureConfigResource, err = azureconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var releaseResource resource.Interface
-	{
-		c := release.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-		}
-
-		releaseResource, err = release.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
+	//var azureConfigResource *azureconfig.Resource
+	//{
+	//	c := azureconfig.Config{
+	//		CtrlClient: config.K8sClient.CtrlClient(),
+	//		Logger:     config.Logger,
+	//
+	//		APIServerSecurePort: config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
+	//		Calico: azureconfig.CalicoConfig{
+	//			CIDRSize: config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
+	//			MTU:      config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
+	//			Subnet:   config.Viper.GetString(config.Flag.Service.Cluster.Calico.Subnet),
+	//		},
+	//		ClusterIPRange:                 config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
+	//		EtcdPrefix:                     config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
+	//		KubeletLabels:                  config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.Kubelet.Labels),
+	//		ManagementClusterResourceGroup: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
+	//		SSHUserList:                    config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
+	//	}
+	//
+	//	azureConfigResource, err = azureconfig.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
+	//
+	//var releaseResource resource.Interface
+	//{
+	//	c := release.Config{
+	//		K8sClient: config.K8sClient,
+	//		Logger:    config.Logger,
+	//	}
+	//
+	//	releaseResource, err = release.New(c)
+	//	if err != nil {
+	//		return nil, microerror.Mask(err)
+	//	}
+	//}
 
 	var clientFactory *client.Factory
 	{
@@ -212,9 +209,9 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	}
 
 	resources := []resource.Interface{
-		releaseResource,
-		azureClusterConfigResource,
-		azureConfigResource,
+		//releaseResource,
+		//azureClusterConfigResource,
+		//azureConfigResource,
 		subnetResource,
 	}
 
