@@ -169,23 +169,32 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			if !isSubnetAllowedToStorageAccount(ctx, storageAccount, subnetID) {
-				*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules = append(*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules, storage.VirtualNetworkRule{VirtualNetworkResourceID: to.StringPtr(subnetID)})
-				_, err = storageAccountsClient.Update(ctx, key.ClusterID(&cr), key.StorageAccountName(&cr), storage.AccountUpdateParameters{
-					AccountPropertiesUpdateParameters: &storage.AccountPropertiesUpdateParameters{
-						CustomDomain:                          storageAccount.AccountProperties.CustomDomain,
-						Encryption:                            storageAccount.AccountProperties.Encryption,
-						AccessTier:                            storageAccount.AccountProperties.AccessTier,
-						AzureFilesIdentityBasedAuthentication: storageAccount.AccountProperties.AzureFilesIdentityBasedAuthentication,
-						EnableHTTPSTrafficOnly:                storageAccount.AccountProperties.EnableHTTPSTrafficOnly,
-						NetworkRuleSet:                        storageAccount.AccountProperties.NetworkRuleSet,
-						LargeFileSharesState:                  storageAccount.AccountProperties.LargeFileSharesState,
-					},
-				})
+				err = addSubnetToStoreAccountAllowedSubnets(ctx, storageAccountsClient, storageAccount, key.ClusterID(&cr), key.StorageAccountName(&cr), subnetID)
 				if err != nil {
 					return microerror.Mask(err)
 				}
 			}
 		}
+	}
+
+	return nil
+}
+
+func addSubnetToStoreAccountAllowedSubnets(ctx context.Context, storageAccountsClient *storage.AccountsClient, storageAccount storage.Account, resourceGroupName, StorageAccountName, subnetID string) error {
+	*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules = append(*storageAccount.AccountProperties.NetworkRuleSet.VirtualNetworkRules, storage.VirtualNetworkRule{VirtualNetworkResourceID: to.StringPtr(subnetID)})
+	_, err := storageAccountsClient.Update(ctx, resourceGroupName, StorageAccountName, storage.AccountUpdateParameters{
+		AccountPropertiesUpdateParameters: &storage.AccountPropertiesUpdateParameters{
+			CustomDomain:                          storageAccount.AccountProperties.CustomDomain,
+			Encryption:                            storageAccount.AccountProperties.Encryption,
+			AccessTier:                            storageAccount.AccountProperties.AccessTier,
+			AzureFilesIdentityBasedAuthentication: storageAccount.AccountProperties.AzureFilesIdentityBasedAuthentication,
+			EnableHTTPSTrafficOnly:                storageAccount.AccountProperties.EnableHTTPSTrafficOnly,
+			NetworkRuleSet:                        storageAccount.AccountProperties.NetworkRuleSet,
+			LargeFileSharesState:                  storageAccount.AccountProperties.LargeFileSharesState,
+		},
+	})
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
