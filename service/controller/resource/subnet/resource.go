@@ -172,10 +172,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 
 			if !isSubnetAllowedToStorageAccount(ctx, storageAccount, subnetID) {
+				r.logger.LogCtx(ctx, "level", "debug", "message", "Ensuring subnet is allowed into storage account")
+
 				err = addSubnetToStoreAccountAllowedSubnets(ctx, storageAccountsClient, storageAccount, key.ClusterID(&cr), key.StorageAccountName(&cr), subnetID)
 				if err != nil {
 					return microerror.Mask(err)
 				}
+
+				r.logger.LogCtx(ctx, "level", "debug", "message", "Ensured subnet is allowed into storage account")
 			}
 		}
 	}
