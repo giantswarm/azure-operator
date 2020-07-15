@@ -105,7 +105,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterID(&cluster),
-			Namespace: metav1.NamespaceDefault,
+			Namespace: azureCluster.Namespace,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if errors.IsNotFound(err) {
