@@ -6,6 +6,7 @@ import (
 	"github.com/giantswarm/certs"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
@@ -13,18 +14,11 @@ type baseExtension struct {
 	azure                        setting.Azure
 	azureClientCredentialsConfig auth.ClientCredentialsConfig
 	calicoCIDR                   string
-	cluster                      providerv1alpha1.Cluster
 	clusterCerts                 certs.Cluster
-	clusterDNSDomain             string
-	primaryScaleSetName          string
-	resourceGroup                string
-	routeTableName               string
-	securityGroupName            string
-	subnetName                   string
+	customObject                 providerv1alpha1.AzureConfig
 	encrypter                    encrypter.Interface
 	subscriptionID               string
 	vnetCIDR                     string
-	vnetName                     string
 }
 
 func (e *baseExtension) templateData(certFiles certs.Files) templateData {
@@ -39,7 +33,7 @@ func (e *baseExtension) templateData(certFiles certs.Files) templateData {
 			VnetCIDR: e.vnetCIDR,
 		},
 		calicoAzureFileParams{
-			Cluster:    e.cluster,
+			Cluster:    e.customObject.Spec.Cluster,
 			CalicoCIDR: e.calicoCIDR,
 		},
 		cloudProviderConfFileParams{
@@ -47,21 +41,21 @@ func (e *baseExtension) templateData(certFiles certs.Files) templateData {
 			AADClientSecret:             e.azureClientCredentialsConfig.ClientSecret,
 			EnvironmentName:             e.azure.EnvironmentName,
 			Location:                    e.azure.Location,
-			PrimaryScaleSetName:         e.primaryScaleSetName,
-			ResourceGroup:               e.resourceGroup,
-			RouteTableName:              e.routeTableName,
-			SecurityGroupName:           e.securityGroupName,
-			SubnetName:                  e.subnetName,
+			PrimaryScaleSetName:         key.WorkerVMSSName(e.customObject),
+			ResourceGroup:               key.ResourceGroupName(e.customObject),
+			RouteTableName:              key.RouteTableName(e.customObject),
+			SecurityGroupName:           key.WorkerSecurityGroupName(e.customObject),
+			SubnetName:                  key.WorkerSubnetName(e.customObject),
 			SubscriptionID:              e.subscriptionID,
 			TenantID:                    e.azureClientCredentialsConfig.TenantID,
-			VnetName:                    e.vnetName,
+			VnetName:                    key.VnetName(e.customObject),
 			UseManagedIdentityExtension: e.azure.MSI.Enabled,
 		},
 		certificateDecrypterUnitParams{
 			CertsPaths: certsPaths,
 		},
 		ingressLBFileParams{
-			ClusterDNSDomain: e.clusterDNSDomain,
+			ClusterDNSDomain: key.ClusterDNSDomain(e.customObject),
 		},
 	}
 }

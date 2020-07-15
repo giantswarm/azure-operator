@@ -85,13 +85,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		}
-
-		if len(workerMachines) < 1 {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no worker AzureMachines found for cluster %q", key.ClusterID(&cluster)))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
-			reconciliationcanceledcontext.SetCanceled(ctx)
-			return nil
-		}
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found required cluster api types")
@@ -112,7 +105,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterID(&cluster),
-			Namespace: metav1.NamespaceDefault,
+			Namespace: azureCluster.Namespace,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if errors.IsNotFound(err) {

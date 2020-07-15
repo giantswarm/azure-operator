@@ -171,13 +171,14 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.CAFile, "", "Certificate authority file path to use to authenticate with Kubernetes.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.CrtFile, "", "Certificate file path to use to authenticate with Kubernetes.")
 	daemonCommand.PersistentFlags().String(f.Service.Kubernetes.TLS.KeyFile, "", "Key file path to use to authenticate with Kubernetes.")
-	daemonCommand.PersistentFlags().String(f.Service.RegistryDomain, "quay.io", "Image registry.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Tenant.Ignition.Debug.Enabled, false, "Enable services which help debugging ignition.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Debug.LogsPrefix, "", "Enable services which help debugging ignition.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Debug.LogsToken, "", "Enable services which help debugging ignition.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.Ignition.Path, "/opt/ignition", "Default path for the ignition base directory.")
 	daemonCommand.PersistentFlags().String(f.Service.Tenant.SSH.SSOPublicKey, "", "Public key for trusted SSO CA.")
 	daemonCommand.PersistentFlags().String(f.Service.Sentry.DSN, "", "DSN of the Sentry instance to forward errors to.")
+	daemonCommand.PersistentFlags().String(f.Service.Registry.Domain, "docker.io", "Image registry domain.")
+	daemonCommand.PersistentFlags().StringSlice(f.Service.Registry.Mirrors, []string{}, `Image registry mirror domains. Can be set only if registry domain is "docker.io".`)
 
 	return newCommand.CobraCommand().Execute()
 }

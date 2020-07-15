@@ -17,6 +17,7 @@ rules:
     resources:
       - clusters
       - azureclusters
+      - azureclusters/status
       - azuremachines
     verbs:
       - get
@@ -69,18 +70,11 @@ rules:
       - create
       - delete
       - update
-  # The operator needs read and write access to the CAPI CRDs.
+  # The operator needs read and write access to the provider agnostic CAPI CRDs.
   - apiGroups:
       - exp.cluster.x-k8s.io
     resources:
       - machinepools
-    verbs:
-      - get
-      - list
-  - apiGroups:
-      - cluster.x-k8s.io
-    resources:
-      - clusters
     verbs:
       - get
       - list
@@ -91,13 +85,6 @@ rules:
     resources:
       - azuremachinepools
       - azuremachinepools/status
-    verbs:
-      - "*"
-  - apiGroups:
-      - infrastructure.cluster.x-k8s.io
-    resources:
-      - azureclusters
-      - azureclusters/status
     verbs:
       - "*"
   - apiGroups:

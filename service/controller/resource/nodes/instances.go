@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/scalestrategy"
 )
 
 func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
@@ -78,13 +79,14 @@ func (r *Resource) GetInstancesCount(ctx context.Context, virtualMachineScaleSet
 	return *vmss.Sku.Capacity, nil
 }
 
-func (r *Resource) ScaleVMSS(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, resourceGroup, vmssName string, nodeCount int32) error {
+func (r *Resource) ScaleVMSS(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, resourceGroup, vmssName string, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
 	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroup, vmssName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	*vmss.Sku.Capacity = int64(nodeCount)
+	computedCount := scaleStrategy.GetNodeCount(*vmss.Sku.Capacity, desiredNodeCount)
+	*vmss.Sku.Capacity = computedCount
 	res, err := virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, vmssName, vmss)
 	if err != nil {
 		return microerror.Mask(err)

@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/scalestrategy"
 )
 
 // The goal of scaleUpWorkerVMSSTransition is to double the desired number
@@ -60,6 +61,8 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
+	strategy := scalestrategy.Quick{}
+
 	// All workers ready, we can scale up if needed.
 	desiredWorkerCount := int64(*machinePool.Spec.Replicas * 2)
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
@@ -71,7 +74,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
 	if desiredWorkerCount > currentWorkerCount {
-		err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), int32(desiredWorkerCount))
+		err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), desiredWorkerCount, strategy)
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
@@ -117,7 +120,8 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 	desiredWorkerCount := *machinePool.Spec.Replicas
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
 
-	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), desiredWorkerCount)
+	strategy := scalestrategy.Quick{}
+	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), int64(desiredWorkerCount), strategy)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

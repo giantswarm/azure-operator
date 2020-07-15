@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -24,6 +25,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
@@ -40,6 +42,7 @@ type MachinePoolConfig struct {
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
+	RegistryDomain            string
 	SentryDSN                 string
 	VMSSCheckWorkers          int
 	VMSSMSIEnabled            bool
@@ -235,7 +238,46 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var cloudConfigResource resource.Interface
+	{
+		c := cloudconfig.Config{
+			AzureClientsFactory: clientFactory,
+			CertsSearcher:       certsSearcher,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			G8sClient:           config.K8sClient.G8sClient(),
+			K8sClient:           config.K8sClient.K8sClient(),
+			Logger:              config.Logger,
+			RegistryDomain:      config.RegistryDomain,
+		}
+
+		cloudconfigObject, err := cloudconfig.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		cloudConfigResource, err = toCRUDResource(config.Logger, cloudconfigObject)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []resource.Interface{
+		cloudConfigResource,
 		ipamResource,
 		instanceResource,
 	}

@@ -66,6 +66,7 @@ type ClusterConfig struct {
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	ProjectName               string
 	RegistryDomain            string
+	RegistryMirrors           []string
 
 	GuestSubnetMaskBits int
 
@@ -152,6 +153,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 						AzureClientCredentials: organizationAzureClientCredentialsConfig,
 						Ignition:               config.Ignition,
 						OIDC:                   config.OIDC,
+						RegistryMirrors:        config.RegistryMirrors,
 						SSOPublicKey:           config.SSOPublicKey,
 						SubscriptionID:         subscriptionID,
 					}
@@ -367,6 +369,7 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 			Logger:           config.Logger,
 
 			Azure:                      config.Azure,
+			ClientFactory:              clientFactory,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
 		}
 

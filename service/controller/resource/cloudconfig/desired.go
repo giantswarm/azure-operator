@@ -1,4 +1,4 @@
-package blobobject
+package cloudconfig
 
 import (
 	"context"
@@ -8,6 +8,12 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
@@ -15,7 +21,27 @@ import (
 )
 
 func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interface{}, error) {
-	cr, err := key.ToCustomResource(obj)
+	cr, err := key.ToAzureMachinePool(obj)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	machinePool, err := r.getOwnerMachinePool(ctx, cr.ObjectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	cluster, err := util.GetClusterFromMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	azureCluster, err := r.getAzureClusterFromCluster(ctx, cluster)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	release, err := r.getReleaseFromMetadata(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -49,7 +75,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData
 	{
-		versions, err := k8scloudconfig.ExtractComponentVersions(cc.Release.Release.Spec.Components)
+		versions, err := k8scloudconfig.ExtractComponentVersions(release.Spec.Components)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -60,10 +86,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		images := k8scloudconfig.BuildImages(r.registryDomain, versions)
 
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
-			CustomObject: cr,
-			ClusterCerts: clusterCerts,
-			Images:       images,
-			Versions:     versions,
+			AzureMachinePool: &cr,
+			MachinePool:      machinePool,
+			Cluster:          cluster,
+			AzureCluster:     azureCluster,
+			ClusterCerts:     clusterCerts,
+			Images:           images,
 		}
 	}
 
@@ -101,4 +129,41 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	}
 
 	return output, nil
+}
+
+// getOwnerMachinePool returns the MachinePool object owning the current resource.
+func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*v1alpha3.MachinePool, error) {
+	for _, ref := range obj.OwnerReferences {
+		if ref.Kind == "MachinePool" && ref.APIVersion == v1alpha3.GroupVersion.String() {
+			return r.getMachinePoolByName(ctx, obj.Namespace, ref.Name)
+		}
+	}
+
+	return nil, nil
+}
+
+// getMachinePoolByName finds and return a MachinePool object using the specified params.
+func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*v1alpha3.MachinePool, error) {
+	machinePool := &v1alpha3.MachinePool{}
+	objectKey := ctrlclient.ObjectKey{Name: name, Namespace: namespace}
+	if err := r.ctrlClient.Get(ctx, objectKey, machinePool); err != nil {
+		return nil, err
+	}
+
+	return machinePool, nil
+}
+
+func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
+	azureCluster := &capzv1alpha3.AzureCluster{}
+	azureClusterName := ctrlclient.ObjectKey{
+		Namespace: cluster.Spec.InfrastructureRef.Namespace,
+		Name:      cluster.Spec.InfrastructureRef.Name,
+	}
+
+	err := r.ctrlClient.Get(ctx, azureClusterName, azureCluster)
+	if err != nil {
+		return azureCluster, microerror.Mask(err)
+	}
+
+	return azureCluster, nil
 }

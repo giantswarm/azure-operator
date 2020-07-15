@@ -42,7 +42,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	if isMasterUpgrading(&azureMachinePool) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	}
 

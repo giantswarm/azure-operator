@@ -36,7 +36,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	secret = &corev1.Secret{
 		Type: corev1.SecretTypeOpaque,
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      key.CertificateEncryptionSecretName(cr),
+			Name:      key.CertificateEncryptionSecretName(&cr),
 			Namespace: key.CertificateEncryptionNamespace,
 			Labels: map[string]string{
 				key.LabelCluster:      key.ClusterID(&cr),
