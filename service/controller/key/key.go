@@ -536,6 +536,10 @@ func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string
 	return fmt.Sprintf("%s-%s", "nodepool", azureMachinePool.Name)
 }
 
+func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-worker-%s", ClusterID(&customObject), ClusterID(&customObject))
+}
+
 func WorkersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
 }

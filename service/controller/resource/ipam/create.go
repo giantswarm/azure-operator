@@ -86,7 +86,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free subnet %#q", freeSubnet))
 
-		err = r.persister.Persist(ctx, freeSubnet, obj)
+		err = r.persister.Persist(ctx, freeSubnet, m.GetNamespace(), m.GetName())
 		if err != nil {
 			return microerror.Mask(err)
 		}
