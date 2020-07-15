@@ -89,6 +89,7 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool capzexpv
 	return nil
 }
 
+// deleteARMDeployment deletes the ARM deployment from Azure.
 func (r *Resource) deleteARMDeployment(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, deploymentName string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool ARM deployment")
 
@@ -110,6 +111,7 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, credentialSecret *v1
 	return nil
 }
 
+// deleteVMSS deletes the VMSS from Azure.
 func (r *Resource) deleteVMSS(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, vmssName string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS")
 
