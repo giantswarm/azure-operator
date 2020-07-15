@@ -21,5 +21,5 @@ type Collector interface {
 // Persister must mutate shared persistent state so that on successful execution
 // persisted networks are visible by Collector implementations.
 type Persister interface {
-	Persist(ctx context.Context, subnet net.IPNet, obj interface{}) error
+	Persist(ctx context.Context, subnet net.IPNet, namespace string, name string) error
 }

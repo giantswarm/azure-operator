@@ -11,8 +11,6 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 type AzureMachinePoolPersisterConfig struct {
@@ -41,8 +39,9 @@ func NewAzureMachinePoolPersister(config AzureMachinePoolPersisterConfig) (*Azur
 	return p, nil
 }
 
-func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet, obj interface{}) error {
-	azureMachinePool, err := key.ToAzureMachinePool(obj)
+func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet, namespace string, name string) error {
+	azureMachinePool := &v1alpha3.AzureMachinePool{}
+	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -55,7 +54,7 @@ func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet,
 	return nil
 }
 
-func (p *AzureMachinePoolPersister) addSubnetToAzureCluster(ctx context.Context, vnet net.IPNet, azureMachinePool v1alpha3.AzureMachinePool) error {
+func (p *AzureMachinePoolPersister) addSubnetToAzureCluster(ctx context.Context, vnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
 	cluster, err := util.GetClusterFromMetadata(ctx, p.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)

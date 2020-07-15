@@ -20,7 +20,7 @@ func NewTestPersister(subnet net.IPNet) *TestPersister {
 	return p
 }
 
-func (p *TestPersister) Persist(ctx context.Context, subnet net.IPNet, obj interface{}) error {
+func (p *TestPersister) Persist(ctx context.Context, subnet net.IPNet, namespace string, name string) error {
 	if !reflect.DeepEqual(subnet, p.subnet) {
 		return microerror.Mask(invalidConfigError)
 	}

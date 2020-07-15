@@ -32,7 +32,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
-type MachinePoolConfig struct {
+type AzureMachinePoolConfig struct {
 	Azure                     setting.Azure
 	CredentialProvider        credential.Provider
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
@@ -48,11 +48,11 @@ type MachinePoolConfig struct {
 	VMSSMSIEnabled            bool
 }
 
-type MachinePool struct {
+type AzureMachinePool struct {
 	*controller.Controller
 }
 
-func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
+func NewAzureMachinePool(config AzureMachinePoolConfig) (*AzureMachinePool, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -64,7 +64,7 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 
 	var resources []resource.Interface
 	{
-		resources, err = NewMachinePoolResourceSet(config)
+		resources, err = NewAzureMachinePoolResourceSet(config)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -97,10 +97,10 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 		}
 	}
 
-	return &MachinePool{Controller: operatorkitController}, nil
+	return &AzureMachinePool{Controller: operatorkitController}, nil
 }
 
-func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
+func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.Interface, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}

@@ -54,7 +54,7 @@ type Service struct {
 	azureClusterController  *controller.AzureCluster
 	bootOnce                sync.Once
 	clusterController       *controller.Cluster
-	machinePoolController   *controller.MachinePool
+	machinePoolController   *controller.AzureMachinePool
 	statusResourceCollector *statusresource.CollectorSet
 }
 
@@ -299,9 +299,9 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var machinePoolController *controller.MachinePool
+	var machinePoolController *controller.AzureMachinePool
 	{
-		c := controller.MachinePoolConfig{
+		c := controller.AzureMachinePoolConfig{
 			Azure:                     azure,
 			CredentialProvider:        credentialProvider,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
@@ -317,7 +317,7 @@ func New(config Config) (*Service, error) {
 			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		}
 
-		machinePoolController, err = controller.NewMachinePool(c)
+		machinePoolController, err = controller.NewAzureMachinePool(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
