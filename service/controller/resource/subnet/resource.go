@@ -224,12 +224,15 @@ func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient 
 		subnetInAzure := subnetsIterator.Value()
 
 		if !isSubnetInAzureClusterSpec(ctx, azureCluster, *subnetInAzure.Name) && !isProtectedSubnet(*subnetInAzure.Name) {
-			err = r.deleteARMDeployment(ctx, deploymentsClient, key.ClusterID(&azureCluster), getSubnetARMDeploymentName(*subnetInAzure.Name))
-			if err != nil {
+			err = r.deleteSubnet(ctx, subnetsClient, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name, *subnetInAzure.Name)
+			if IsSubnetInUse(err) {
+				r.logger.LogCtx(ctx, "message", "Subnet still in use by VMSS, cancelling resource")
+				return nil
+			} else if err != nil {
 				return microerror.Mask(err)
 			}
 
-			err = r.deleteSubnet(ctx, subnetsClient, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name, *subnetInAzure.Name)
+			err = r.deleteARMDeployment(ctx, deploymentsClient, key.ClusterID(&azureCluster), getSubnetARMDeploymentName(*subnetInAzure.Name))
 			if err != nil {
 				return microerror.Mask(err)
 			}
