@@ -4,7 +4,9 @@ import (
 	"context"
 	"fmt"
 	"strconv"
+	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -77,12 +79,12 @@ func New(config Config) (*Resource, error) {
 // For every subnet declared in the `AzureCluster.Spec.NetworkSpec.Subnets` field, we submit a deployment to Azure to create the subnet.
 // The ipam handler is the one updating AzureCluster with the required subnets.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	cr, err := key.ToAzureCluster(obj)
+	azureCluster, err := key.ToAzureCluster(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, &cr)
+	credentialSecret, err := r.getCredentialSecret(ctx, &azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -92,21 +94,49 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.garbageCollectSubnets(ctx, deploymentsClient, subnetsClient, azureCluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.ensureSubnets(ctx, deploymentsClient, storageAccountsClient, azureCluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func getSubnetARMDeploymentName(subnetName string) string {
+	return fmt.Sprintf("%s-%s", mainDeploymentName, subnetName)
+}
+
+func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, azureCluster capzv1alpha3.AzureCluster) error {
 	armTemplate, err := subnet.GetARMTemplate()
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	for _, allocatedSubnet := range cr.Spec.NetworkSpec.Subnets {
-		deploymentName := fmt.Sprintf("%s-%s", mainDeploymentName, allocatedSubnet.Name)
-		currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), deploymentName)
+	for _, allocatedSubnet := range azureCluster.Spec.NetworkSpec.Subnets {
+		deploymentName := getSubnetARMDeploymentName(allocatedSubnet.Name)
+		currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureCluster), deploymentName)
 		if IsNotFound(err) {
 			// fallthrough
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
-		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&cr), strconv.FormatInt(cr.ObjectMeta.Generation, 10), cr.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
+		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&azureCluster), strconv.FormatInt(azureCluster.ObjectMeta.Generation, 10), azureCluster.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -122,7 +152,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		// We only submit the deployment if it doesn't exist or it exists but it's out of date.
 		shouldSubmitDeployment := currentDeployment.IsHTTPStatus(404)
 		if !shouldSubmitDeployment {
-			shouldSubmitDeployment, err = r.isDeploymentOutOfDate(ctx, cr, currentDeployment)
+			shouldSubmitDeployment, err = r.isDeploymentOutOfDate(ctx, azureCluster, currentDeployment)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -130,7 +160,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if shouldSubmitDeployment {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
-			err = r.createDeployment(ctx, deploymentsClient, key.ClusterID(&cr), deploymentName, desiredDeployment)
+			err = r.createDeployment(ctx, deploymentsClient, key.ClusterID(&azureCluster), deploymentName, desiredDeployment)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -147,7 +177,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if key.IsFailedProvisioningState(*currentDeployment.Properties.ProvisioningState) {
 			r.debugger.LogFailedDeployment(ctx, currentDeployment, err)
 			r.logger.LogCtx(ctx, "level", "debug", "message", "removing failed deployment")
-			_, err = deploymentsClient.Delete(ctx, key.ClusterID(&cr), deploymentName)
+			_, err = deploymentsClient.Delete(ctx, key.ClusterID(&azureCluster), deploymentName)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -161,12 +191,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				return microerror.Mask(err)
 			}
 
-			storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			storageAccount, err := storageAccountsClient.GetProperties(ctx, key.ClusterID(&cr), key.StorageAccountName(&cr), "")
+			storageAccount, err := storageAccountsClient.GetProperties(ctx, key.ClusterID(&azureCluster), key.StorageAccountName(&azureCluster), "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -174,7 +199,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if !isSubnetAllowedToStorageAccount(ctx, storageAccount, subnetID) {
 				r.logger.LogCtx(ctx, "level", "debug", "message", "Ensuring subnet is allowed into storage account")
 
-				err = addSubnetToStoreAccountAllowedSubnets(ctx, storageAccountsClient, storageAccount, key.ClusterID(&cr), key.StorageAccountName(&cr), subnetID)
+				err = addSubnetToStoreAccountAllowedSubnets(ctx, storageAccountsClient, storageAccount, key.ClusterID(&azureCluster), key.StorageAccountName(&azureCluster), subnetID)
 				if err != nil {
 					return microerror.Mask(err)
 				}
@@ -185,6 +210,87 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	return nil
+}
+
+// garbageCollectSubnets removes subnets that have an ARM deployment in Azure but are not defined in `AzureCluster`.
+// This is required because when removing a node pool, we remove the subnet from `AzureCluster`, so we can remove it here from Azure.
+func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, subnetsClient *network.SubnetsClient, azureCluster capzv1alpha3.AzureCluster) error {
+	subnetsIterator, err := subnetsClient.ListComplete(ctx, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for subnetsIterator.NotDone() {
+		subnetInAzure := subnetsIterator.Value()
+
+		if !isSubnetInAzureClusterSpec(ctx, azureCluster, *subnetInAzure.Name) && !isProtectedSubnet(*subnetInAzure.Name) {
+			err = r.deleteSubnet(ctx, subnetsClient, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name, *subnetInAzure.Name)
+			if IsSubnetInUse(err) {
+				r.logger.LogCtx(ctx, "message", "Subnet still in use by VMSS, cancelling resource")
+				return nil
+			} else if err != nil {
+				return microerror.Mask(err)
+			}
+
+			err = r.deleteARMDeployment(ctx, deploymentsClient, key.ClusterID(&azureCluster), getSubnetARMDeploymentName(*subnetInAzure.Name))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
+		err = subnetsIterator.NextWithContext(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func (r *Resource) deleteARMDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName, deploymentName string) error {
+	r.logger.LogCtx(ctx, "message", "Deleting subnet ARM deployment")
+
+	_, err := deploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
+	if IsNotFound(err) {
+		r.logger.LogCtx(ctx, "message", "Subnet ARM deployment was already deleted")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "message", "Deleted subnet ARM deployment")
+
+	return nil
+}
+
+func (r *Resource) deleteSubnet(ctx context.Context, subnetsClient *network.SubnetsClient, resourceGroupName, virtualNetworkName, subnetName string) error {
+	r.logger.LogCtx(ctx, "message", "Deleting Subnet")
+
+	_, err := subnetsClient.Delete(ctx, resourceGroupName, virtualNetworkName, subnetName)
+	if IsNotFound(err) {
+		r.logger.LogCtx(ctx, "message", "Subnet was already deleted")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "message", "Deleted Subnet")
+
+	return nil
+}
+
+func isProtectedSubnet(subnetName string) bool {
+	return strings.HasSuffix(subnetName, "-MasterSubnet") || strings.HasSuffix(subnetName, "-WorkerSubnet") || strings.HasSuffix(subnetName, key.VNetGatewaySubnetName())
+}
+
+func isSubnetInAzureClusterSpec(ctx context.Context, azureCluster capzv1alpha3.AzureCluster, subnetName string) bool {
+	for _, subnetInSpec := range azureCluster.Spec.NetworkSpec.Subnets {
+		if subnetInSpec.Name == subnetName {
+			return true
+		}
+	}
+
+	return false
 }
 
 func getSubnetIDFromDeploymentOutput(ctx context.Context, currentDeployment azureresource.DeploymentExtended) (string, error) {

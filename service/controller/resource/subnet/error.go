@@ -1,6 +1,8 @@
 package subnet
 
 import (
+	"strings"
+
 	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
 )
@@ -76,4 +78,13 @@ var wrongTypeError = &microerror.Error{
 // IsWrongTypeError asserts wrongTypeError.
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
+}
+
+// IsSubnetInUse asserts subnet in use error from Azure API message.
+func IsSubnetInUse(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	return strings.Contains(microerror.Cause(err).Error(), "is in use by")
 }
