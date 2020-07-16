@@ -54,6 +54,30 @@ func IsDeploymentNotFound(err error) bool {
 	return false
 }
 
+// IsNotFound asserts notFoundError or 404 response.
+func IsNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	c := microerror.Cause(err)
+
+	if c == notFoundError {
+		return true
+	}
+
+	{
+		dErr, ok := c.(autorest.DetailedError)
+		if ok {
+			if dErr.StatusCode == 404 {
+				return true
+			}
+		}
+	}
+
+	return false
+}
+
 var notFoundError = &microerror.Error{
 	Kind: "notFoundError",
 }
