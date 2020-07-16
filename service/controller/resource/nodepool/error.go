@@ -1,4 +1,4 @@
-package instance
+package nodepool
 
 import (
 	"github.com/Azure/go-autorest/autorest"

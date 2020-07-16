@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/scalestrategy"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes/scalestrategy"
 )
 
 func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {

@@ -1,4 +1,4 @@
-package instance
+package nodepool
 
 import (
 	"context"
@@ -26,7 +26,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	instance "github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/template"
+	instance "github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
 
 func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {

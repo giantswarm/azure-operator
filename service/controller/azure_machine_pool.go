@@ -26,7 +26,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
@@ -163,14 +163,14 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 
 	var instanceResource resource.Interface
 	{
-		c := instance.Config{
+		c := nodepool.Config{
 			Config:                    nodesConfig,
 			CredentialProvider:        config.CredentialProvider,
 			CtrlClient:                config.K8sClient.CtrlClient(),
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 		}
 
-		instanceResource, err = instance.New(c)
+		instanceResource, err = nodepool.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
