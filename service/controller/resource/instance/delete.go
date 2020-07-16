@@ -35,12 +35,12 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.removeSubnetFromAzureCluster(ctx, azureCluster, azureMachinePool.Name)
+	err = r.removeNodePool(ctx, azureMachinePool, credentialSecret)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = r.removeNodePool(ctx, azureMachinePool, credentialSecret)
+	err = r.removeSubnetFromAzureCluster(ctx, azureCluster, azureMachinePool.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
