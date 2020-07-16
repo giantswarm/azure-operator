@@ -94,15 +94,15 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, credentialSecret *v1
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool ARM deployment")
 
 	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(credentialSecret.Namespace, credentialSecret.Name)
-	if IsDeploymentNotFound(err) {
-		r.Logger.LogCtx(ctx, "message", "Machine pool ARM deployment was already deleted")
-		return nil
-	} else if err != nil {
+	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	_, err = deploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
-	if err != nil {
+	if IsDeploymentNotFound(err) {
+		r.Logger.LogCtx(ctx, "message", "Machine pool ARM deployment was already deleted")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
