@@ -76,7 +76,7 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	if config.Calico.Subnet == "" {
+	if config.Calico.MTU == 0 {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Calico must not be empty", config)
 	}
 

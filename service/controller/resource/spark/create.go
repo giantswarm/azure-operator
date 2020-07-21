@@ -140,7 +140,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		if bytes.Compare(ignitionBlob, dataSecret.Data[ignitionBlobKey]) != 0 {
+		if !bytes.Equal(ignitionBlob, dataSecret.Data[ignitionBlobKey]) {
 			dataSecret.Data[ignitionBlobKey] = ignitionBlob
 
 			err = r.ctrlClient.Update(ctx, dataSecret)

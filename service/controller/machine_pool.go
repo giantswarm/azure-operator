@@ -56,14 +56,6 @@ type MachinePool struct {
 }
 
 func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
-	}
-
-	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
-	}
-
 	var err error
 
 	var resources []resource.Interface
