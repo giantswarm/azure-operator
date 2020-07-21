@@ -25,3 +25,21 @@ var requirementsNotMetError = &microerror.Error{
 func IsRequirementsNotMet(err error) bool {
 	return microerror.Cause(err) == requirementsNotMetError
 }
+
+var tooManyCredentialsError = &microerror.Error{
+	Kind: "tooManyCredentialsError",
+}
+
+// IsTooManyCredentialsError asserts tooManyCredentialsError.
+func IsTooManyCredentialsError(err error) bool {
+	return microerror.Cause(err) == tooManyCredentialsError
+}
+
+var missingOrganizationLabel = &microerror.Error{
+	Kind: "missingOrganizationLabel",
+}
+
+// IsMissingOrganizationLabel asserts missingOrganizationLabel.
+func IsMissingOrganizationLabel(err error) bool {
+	return microerror.Cause(err) == missingOrganizationLabel
+}

@@ -30,6 +30,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
@@ -302,16 +303,29 @@ func New(config Config) (*Service, error) {
 	var machinePoolController *controller.MachinePool
 	{
 		c := controller.MachinePoolConfig{
+			APIServerSecurePort: config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
+			Azure:               azure,
+			Calico: azureconfig.CalicoConfig{
+				CIDRSize: config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
+				MTU:      config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
+				Subnet:   config.Viper.GetString(config.Flag.Service.Cluster.Calico.Subnet),
+			},
+			ClusterIPRange:            config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
 			CredentialProvider:        credentialProvider,
+			EtcdPrefix:                config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			Ignition:                  Ignition,
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:          ipamNetworkRange,
+			KubeletLabels:             config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.Kubelet.Labels),
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
+			OIDC:                      OIDC,
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SentryDSN:                 sentryDSN,
+			SSHUserList:               config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
 		}
 
 		machinePoolController, err = controller.NewMachinePool(c)
