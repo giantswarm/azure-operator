@@ -318,7 +318,6 @@ func New(config Config) (*Service, error) {
 			Ignition:                  Ignition,
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:          ipamNetworkRange,
-			KubeletLabels:             config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.Kubelet.Labels),
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,

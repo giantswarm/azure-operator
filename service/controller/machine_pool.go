@@ -40,7 +40,6 @@ type MachinePoolConfig struct {
 	Ignition                  setting.Ignition
 	InstallationName          string
 	IPAMNetworkRange          net.IPNet
-	KubeletLabels             string
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
@@ -146,7 +145,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 			CredentialProvider:  config.CredentialProvider,
 			CtrlClient:          config.K8sClient.CtrlClient(),
 			Ignition:            config.Ignition,
-			KubeletLabels:       config.KubeletLabels,
 			Logger:              config.Logger,
 			OIDC:                config.OIDC,
 			RandomKeysSearcher:  randomkeysSearcher,

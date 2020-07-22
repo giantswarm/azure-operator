@@ -38,7 +38,6 @@ type Config struct {
 	CtrlClient          client.Client
 	EtcdPrefix          string
 	Ignition            setting.Ignition
-	KubeletLabels       string
 	Logger              micrologger.Logger
 	OIDC                setting.OIDC
 	RandomKeysSearcher  *randomkeys.Searcher
@@ -57,7 +56,6 @@ type Resource struct {
 	ctrlClient          client.Client
 	etcdPrefix          string
 	ignition            setting.Ignition
-	kubeletLabels       string
 	logger              micrologger.Logger
 	oidc                setting.OIDC
 	randomKeysSearcher  *randomkeys.Searcher
@@ -104,10 +102,6 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Ignition must not be empty", config)
 	}
 
-	if config.KubeletLabels == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.KubeletLabels must not be empty", config)
-	}
-
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -142,7 +136,6 @@ func New(config Config) (*Resource, error) {
 		ctrlClient:          config.CtrlClient,
 		etcdPrefix:          config.EtcdPrefix,
 		ignition:            config.Ignition,
-		kubeletLabels:       config.KubeletLabels,
 		logger:              config.Logger,
 		oidc:                config.OIDC,
 		randomKeysSearcher:  config.RandomKeysSearcher,
