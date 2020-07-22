@@ -114,10 +114,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), mainDeploymentName)
 	if IsNotFound(err) {
-		params := map[string]interface{}{
-			"initialProvisioning": "Yes",
-		}
-		deployment, err = r.newDeployment(ctx, cr, params)
+		deployment, err = r.newDeployment(ctx, cr, map[string]interface{}{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -130,12 +127,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if !key.IsSucceededProvisioningState(s) {
 			r.debugger.LogFailedDeployment(ctx, d, err)
-		}
-		params := map[string]interface{}{
-			"initialProvisioning": "No",
-		}
-		if key.IsFailedProvisioningState(s) {
-			params["initialProvisioning"] = "Yes"
+			failed = true
 		}
 		if !key.IsFinalProvisioningState(s) {
 			reconciliationcanceledcontext.SetCanceled(ctx)
@@ -143,7 +135,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return nil
 		}
 
-		deployment, err = r.newDeployment(ctx, cr, params)
+		deployment, err = r.newDeployment(ctx, cr, map[string]interface{}{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -271,7 +263,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "virtual_network_setup", "masterSubnetID")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "legacy_masters_subnet", "masterSubnetID")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
@@ -282,7 +274,7 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 	}
 
 	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "virtual_network_setup", "workerSubnetID")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "legacy_workers_subnet", "workerSubnetID")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {

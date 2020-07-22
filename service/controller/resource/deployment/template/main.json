@@ -26,13 +26,6 @@
         "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
-    "initialProvisioning":{
-      "type":"string",
-      "defaultValue":"Yes",
-      "metadata":{
-        "description":"Whether the deployment is provisioned the very first time."
-      }
-    },
     "storageAccountName":{
       "type":"string",
       "metadata":{
@@ -111,13 +104,6 @@
               "type":"object",
               "defaultValue":{
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
-              }
-            },
-            "initialProvisioning":{
-              "type":"string",
-              "defaultValue":"Yes",
-              "metadata":{
-                "description":"Whether the deployment is provisioned the very first time."
               }
             },
             "virtualNetworkCidr":{
@@ -349,7 +335,6 @@
             {
               "type":"Microsoft.Network/networkSecurityGroups",
               "name":"[variables('workerSecurityGroupName')]",
-              "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
               "apiVersion":"[parameters('networkSecurityGroupsAPIVersion')]",
               "location":"[resourceGroup().location]",
               "tags":{
@@ -550,9 +535,6 @@
           },
           "kubernetesAPISecurePort":{
             "value":"[parameters('kubernetesAPISecurePort')]"
-          },
-          "initialProvisioning":{
-            "value":"[parameters('initialProvisioning')]"
           }
         }
       }
@@ -579,13 +561,6 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
-            "initialProvisioning":{
-              "type":"string",
-              "defaultValue":"Yes",
-              "metadata":{
-                "description":"Whether the deployment is provisioned the very first time."
-              }
-            },
             "routeTablesAPIVersion":{
               "type":"string",
               "defaultValue":"2016-09-01",
@@ -602,7 +577,6 @@
             {
               "type":"Microsoft.Network/routeTables",
               "name":"[variables('name')]",
-              "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
               "apiVersion":"[parameters('routeTablesAPIVersion')]",
               "location":"[resourceGroup().location]",
               "tags":{
@@ -627,9 +601,6 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "initialProvisioning":{
-            "value":"[parameters('initialProvisioning')]"
           }
         }
       }
@@ -732,7 +703,6 @@
     {
       "apiVersion":"2016-09-01",
       "name":"virtual_network_setup",
-      "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
       "type":"Microsoft.Resources/deployments",
       "dependsOn":[
         "route_table_setup"
@@ -764,38 +734,10 @@
             },
             "virtualNetworkCidr":{
               "type":"string"
-            },
-            "masterSubnetCidr":{
-              "type":"string"
-            },
-            "workerSubnetCidr":{
-              "type":"string"
-            },
-            "vnetGatewaySubnetName":{
-              "type":"string"
-            },
-            "vpnSubnetCidr":{
-              "type":"string"
-            },
-            "masterSecurityGroupID":{
-              "type":"string"
-            },
-            "workerSecurityGroupID":{
-              "type":"string"
-            },
-            "routeTableID":{
-              "type":"string"
-            },
-            "workersNatGWID":{
-              "type":"string"
             }
           },
           "variables":{
-            "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]",
-            "masterSubnetName":"[concat(parameters('virtualNetworkName'), '-MasterSubnet')]",
-            "masterSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('masterSubnetName'))]",
-            "workerSubnetName":"[concat(parameters('virtualNetworkName'), '-WorkerSubnet')]",
-            "workerSubnetID":"[concat(variables('virtualNetworkID'), '/subnets/', variables('workerSubnetName'))]"
+            "virtualNetworkID":"[resourceId('Microsoft.Network/virtualNetworks', parameters('virtualNetworkName'))]"
           },
           "resources":[
             {
@@ -811,68 +753,11 @@
                   "addressPrefixes":[
                     "[parameters('virtualNetworkCidr')]"
                   ]
-                },
-                "subnets":[
-                  {
-                    "name":"[variables('masterSubnetName')]",
-                    "properties":{
-                      "addressPrefix":"[parameters('masterSubnetCidr')]",
-                      "networkSecurityGroup":{
-                        "id":"[parameters('masterSecurityGroupID')]"
-                      },
-                      "routeTable":{
-                        "id":"[parameters('routeTableID')]"
-                      },
-                      "serviceEndpoints": [
-                        { "service": "Microsoft.Storage" }
-                      ]
-                    }
-                  },
-                  {
-                    "name":"[variables('workerSubnetName')]",
-                    "properties":{
-                      "addressPrefix":"[parameters('workerSubnetCidr')]",
-                      "natGateway": {
-                        "id":"[parameters('workersNatGWID')]"
-                      },
-                      "networkSecurityGroup":{
-                        "id":"[parameters('workerSecurityGroupID')]"
-                      },
-                      "routeTable":{
-                        "id":"[parameters('routeTableID')]"
-                      },
-                      "serviceEndpoints": [
-                        { "service": "Microsoft.Storage" },
-                        { "service": "Microsoft.Sql" },
-                        { "service": "Microsoft.AzureCosmosDB" },
-                        { "service": "Microsoft.KeyVault" },
-                        { "service": "Microsoft.ServiceBus" },
-                        { "service": "Microsoft.EventHub" },
-                        { "service": "Microsoft.AzureActiveDirectory" },
-                        { "service": "Microsoft.ContainerRegistry" },
-                        { "service": "Microsoft.Web" }
-                      ]
-                    }
-                  },
-                  {
-                    "name":"[parameters('vnetGatewaySubnetName')]",
-                    "properties":{
-                      "addressPrefix":"[parameters('vpnSubnetCidr')]"
-                    }
-                  }
-                ]
+                }
               }
             }
           ],
           "outputs":{
-            "masterSubnetID":{
-              "type":"string",
-              "value":"[variables('masterSubnetID')]"
-            },
-            "workerSubnetID":{
-              "type":"string",
-              "value":"[variables('workerSubnetID')]"
-            }
           }
         },
         "parameters":{
@@ -884,30 +769,232 @@
           },
           "virtualNetworkCidr":{
             "value":"[parameters('virtualNetworkCidr')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
+      "name":"legacy_vpn_subnet",
+      "type":"Microsoft.Resources/deployments",
+      "dependsOn":[
+        "virtual_network_setup"
+      ],
+      "properties":{
+        "expressionEvaluationOptions":{
+          "scope": "inner"
+        },
+        "mode":"incremental",
+        "template":{
+          "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion":"1.0.0.0",
+          "parameters":{
+            "virtualNetworkName":{
+              "type":"string"
+            },
+            "vnetGatewaySubnetName":{
+              "type":"string"
+            },
+            "vpnSubnetCidr":{
+              "type":"string"
+            }
           },
-          "masterSubnetCidr":{
-            "value":"[parameters('masterSubnetCidr')]"
+          "variables": {
+            "vpnSubnetName": "[concat(parameters('virtualNetworkName'), '/', parameters('vnetGatewaySubnetName'))]"
           },
-          "workerSubnetCidr":{
-            "value":"[parameters('workerSubnetCidr')]"
-          },
+          "resources":[
+            {
+              "apiVersion": "2018-04-01",
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "name":"[variables('vpnSubnetName')]",
+              "location":"[resourceGroup().location]",
+              "properties":{
+                "addressPrefix":"[parameters('vpnSubnetCidr')]"
+              }
+            }
+          ],
+          "outputs":{}
+        },
+        "parameters":{
           "vnetGatewaySubnetName":{
             "value":"[parameters('vnetGatewaySubnetName')]"
           },
           "vpnSubnetCidr":{
             "value":"[parameters('vpnSubnetCidr')]"
           },
+          "virtualNetworkName":{
+            "value":"[parameters('virtualNetworkName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
+      "name":"legacy_masters_subnet",
+      "type":"Microsoft.Resources/deployments",
+      "dependsOn":[
+        "virtual_network_setup",
+        "legacy_vpn_subnet"
+      ],
+      "properties":{
+        "expressionEvaluationOptions":{
+          "scope": "inner"
+        },
+        "mode":"incremental",
+        "template":{
+          "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion":"1.0.0.0",
+          "parameters":{
+            "masterSecurityGroupID":{
+              "type":"string"
+            },
+            "masterSubnetCidr":{
+              "type":"string"
+            },
+            "routeTableID":{
+              "type":"string"
+            },
+            "virtualNetworkName":{
+              "type":"string"
+            }
+          },
+          "variables":{
+            "masterSubnetName":"[concat(parameters('virtualNetworkName'), '/MasterSubnet')]",
+            "masterSubnetID":"[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'MasterSubnet')]"
+          },
+          "resources":[
+            {
+              "apiVersion": "2018-04-01",
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "name":"[variables('masterSubnetName')]",
+              "location":"[resourceGroup().location]",
+              "properties":{
+                "addressPrefix":"[parameters('masterSubnetCidr')]",
+                "networkSecurityGroup":{
+                  "id":"[parameters('masterSecurityGroupID')]"
+                },
+                "routeTable":{
+                  "id":"[parameters('routeTableID')]"
+                },
+                "serviceEndpoints": [
+                  { "service": "Microsoft.Storage" }
+                ]
+              }
+            }
+          ],
+          "outputs":{
+            "masterSubnetID":{
+              "type":"string",
+              "value": "[variables('masterSubnetID')]"
+            }
+          }
+        },
+        "parameters":{
           "masterSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"
           },
-          "workersNatGWID":{
-            "value":"[reference('workers_nat_gw').outputs.workersNatGWID.value]"
+          "masterSubnetCidr":{
+            "value":"[parameters('masterSubnetCidr')]"
           },
+          "routeTableID":{
+            "value":"[reference('route_table_setup').outputs.id.value]"
+          },
+          "virtualNetworkName":{
+            "value":"[parameters('virtualNetworkName')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
+      "name":"legacy_workers_subnet",
+      "type":"Microsoft.Resources/deployments",
+      "dependsOn":[
+        "virtual_network_setup",
+        "legacy_masters_subnet"
+      ],
+      "properties":{
+        "expressionEvaluationOptions":{
+          "scope": "inner"
+        },
+        "mode":"incremental",
+        "template":{
+          "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion":"1.0.0.0",
+          "parameters":{
+            "workerSecurityGroupID":{
+              "type":"string"
+            },
+            "routeTableID":{
+              "type":"string"
+            },
+            "workersNatGWID":{
+              "type":"string"
+            },
+            "workerSubnetCidr":{
+              "type":"string"
+            },
+            "virtualNetworkName":{
+              "type":"string"
+            }
+          },
+          "variables":{
+            "workerSubnetName":"[concat(parameters('virtualNetworkName'), '/WorkerSubnet')]",
+            "workerSubnetID":"[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), 'WorkerSubnet')]"
+          },
+          "resources":[
+            {
+              "apiVersion": "2018-04-01",
+              "type": "Microsoft.Network/virtualNetworks/subnets",
+              "name":"[variables('workerSubnetName')]",
+              "location":"[resourceGroup().location]",
+              "properties":{
+                "addressPrefix":"[parameters('workerSubnetCidr')]",
+                "natGateway": {
+                  "id":"[parameters('workersNatGWID')]"
+                },
+                "networkSecurityGroup":{
+                  "id":"[parameters('workerSecurityGroupID')]"
+                },
+                "routeTable":{
+                  "id":"[parameters('routeTableID')]"
+                },
+                "serviceEndpoints": [
+                  { "service": "Microsoft.Storage" },
+                  { "service": "Microsoft.Sql" },
+                  { "service": "Microsoft.AzureCosmosDB" },
+                  { "service": "Microsoft.KeyVault" },
+                  { "service": "Microsoft.ServiceBus" },
+                  { "service": "Microsoft.EventHub" },
+                  { "service": "Microsoft.AzureActiveDirectory" },
+                  { "service": "Microsoft.ContainerRegistry" },
+                  { "service": "Microsoft.Web" }
+                ]
+              }
+            }
+          ],
+          "outputs":{
+            "workerSubnetID":{
+              "type":"string",
+              "value": "[variables('workerSubnetID')]"
+            }
+          }
+        },
+        "parameters":{
           "workerSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"
           },
           "routeTableID":{
             "value":"[reference('route_table_setup').outputs.id.value]"
+          },
+          "workersNatGWID":{
+            "value":"[reference('workers_nat_gw').outputs.workersNatGWID.value]"
+          },
+          "workerSubnetCidr":{
+            "value":"[parameters('workerSubnetCidr')]"
+          },
+          "virtualNetworkName":{
+            "value":"[parameters('virtualNetworkName')]"
           }
         }
       }
@@ -1247,7 +1334,7 @@
             ]
           },
           "masterSubnetID":{
-            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.masterSubnetID.value]"
+            "value":"[reference('legacy_masters_subnet', '2016-09-01').outputs.masterSubnetID.value]"
           }
         }
       }
@@ -1513,10 +1600,10 @@
             "value":"[parameters('GiantSwarmTags')]"
           },
           "masterSubnetID":{
-            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.masterSubnetID.value]"
+            "value":"[reference('legacy_masters_subnet', '2016-09-01').outputs.masterSubnetID.value]"
           },
           "workerSubnetID":{
-            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.workerSubnetID.value]"
+            "value":"[reference('legacy_workers_subnet', '2016-09-01').outputs.workerSubnetID.value]"
           },
           "storageAccountName":{
             "value":"[parameters('storageAccountName')]"
