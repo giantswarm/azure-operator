@@ -131,8 +131,8 @@ func mainError() error {
 
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.BaseDomain, "ghost.westeurope.azure.gigantic.io", "Cluster base domain without k8s/g8s prefixes.")
 
-	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.CIDR, 0, "Calico cidr of guest clusters.")
-	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.MTU, 0, "Calico MTU of guest clusters.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.CIDR, 16, "Calico cidr of guest clusters.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.MTU, 1500, "Calico MTU of guest clusters.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Calico.Subnet, "", "Calico subnet of guest clusters.")
 
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Docker.Daemon.CIDR, "", "CIDR of the Docker daemon bridge configured in guest clusters.")
