@@ -76,8 +76,11 @@ data:
       kubernetes:
         incluster: true
       registry:
-        domain: '{{ .Values.Installation.V1.Registry.Domain }}'
-        mirrors: '{{ range $i, $e := .Values.Installation.V1.Registry.Mirrors }}{{ if $i }},{{end}}{{ $e }}{{end}}'
+      registry:
+        #domain: '{{ .Values.Installation.V1.Registry.Domain }}'
+        #mirrors: '{{ range $i, $e := .Values.Installation.V1.Registry.Mirrors }}{{ if $i }},{{end}}{{ $e }}{{end}}'
+        domain: 'docker.io'
+        mirrors: 'giantswarm.azurecr.io'
       tenant:
         ssh:
           ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
