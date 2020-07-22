@@ -687,10 +687,6 @@
             }
           ],
           "outputs": {
-            "workersNatGWID": {
-              "type": "string",
-              "value": "[resourceId('Microsoft.Network/natGateways', variables('natGWName'))]"
-            }
           }
         },
         "parameters":{
@@ -872,7 +868,7 @@
             "value":"[reference('security_groups_setup').outputs.masterSecurityGroupID.value]"
           },
           "workersNatGWID":{
-            "value":"[reference('workers_nat_gw').outputs.workersNatGWID.value]"
+            "value":"[resourceId('Microsoft.Network/natGateways', 'workers-nat-gw')]"
           },
           "workerSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"
