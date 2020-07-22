@@ -483,8 +483,7 @@ func ToOperatorVersion(v interface{}) (string, error) {
 // ToParameters merges the input maps and converts the result into the
 // structure used by the Azure API. Note that the order of inputs is relevant.
 // Default parameters should be given first. Data of the following maps will
-// overwrite eventual data of preceeding maps. This mechanism is used for e.g.
-// setting the initialProvisioning parameter accordingly to the cluster's state.
+// overwrite eventual data of preceeding maps.
 func ToParameters(list ...map[string]interface{}) map[string]interface{} {
 	allParams := map[string]interface{}{}
 
