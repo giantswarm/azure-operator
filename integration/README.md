@@ -13,9 +13,6 @@ export COMMON_DOMAIN_RESOURCE_GROUP="godsmack"
 export COMMON_DOMAIN_GUEST_NO_K8S="${COMMON_DOMAIN_RESOURCE_GROUP}.${AZURE_LOCATION}.azure.gigantic.io"
 export COMMON_DOMAIN_GUEST="k8s.${COMMON_DOMAIN_GUEST_NO_K8S}"
 
-// base64 encoded auth key to pull docker image from quay.io
-export REGISTRY_PULL_SECRET="xxxxxx"
-
 // ssh key to grant access to guest cluster nodes, ssh user is: test-user
 export IDRSA_PUB=$(cat ~/.ssh/id_rsa.pub)
 
