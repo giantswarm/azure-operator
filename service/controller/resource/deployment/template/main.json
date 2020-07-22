@@ -705,7 +705,8 @@
       "name":"virtual_network_setup",
       "type":"Microsoft.Resources/deployments",
       "dependsOn":[
-        "route_table_setup"
+        "route_table_setup",
+        "workers_nat_gw"
       ],
       "properties":{
         "expressionEvaluationOptions":{
