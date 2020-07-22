@@ -25,7 +25,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrate the `vmsscheck` guards to use the Azure client factory.
 - Use `0.1.0` tag for `k8s-api-heahtz` image.
 - Use `0.2.0` tag for `k8s-setup-network-env` image.
-- Use fixed value for registry domain (docherhub.io) and mirrors (giantswarm.azurecr.io).
+- Use fixed value for registry domain (docker.io) and mirrors (giantswarm.azurecr.io).
 - Replace --service.registrydomain with --service.registry.domain.
 
 ### Removed
