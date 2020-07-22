@@ -754,7 +754,7 @@
             },
             "virtualNetworksAPIVersion":{
               "type":"string",
-              "defaultValue":"2016-12-01",
+              "defaultValue":"2020-05-01",
               "metadata":{
                 "description":"API version used by the Microsoft.Network/virtualNetworks resource."
               }
