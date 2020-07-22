@@ -80,7 +80,6 @@ data:
         {{- end }}
       kubernetes:
         incluster: true
-      registryDomain: '{{ .Values.Installation.V1.Registry.Domain }}'
       registry:
         domain: '{{ .Values.Installation.V1.Registry.Domain }}'
         mirrors: '{{ range $i, $e := .Values.Installation.V1.Registry.Mirrors }}{{ if $i }},{{end}}{{ $e }}{{end}}'
