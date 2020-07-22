@@ -131,8 +131,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if !key.IsSucceededProvisioningState(s) {
 			r.debugger.LogFailedDeployment(ctx, d, err)
 		}
+		params := map[string]interface{}{
+			"initialProvisioning": "No",
+		}
 		if key.IsFailedProvisioningState(s) {
-			failed = true
+			params["initialProvisioning"] = "Yes"
 		}
 		if !key.IsFinalProvisioningState(s) {
 			reconciliationcanceledcontext.SetCanceled(ctx)
@@ -140,9 +143,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return nil
 		}
 
-		params := map[string]interface{}{
-			"initialProvisioning": "No",
-		}
 		deployment, err = r.newDeployment(ctx, cr, params)
 		if err != nil {
 			return microerror.Mask(err)
