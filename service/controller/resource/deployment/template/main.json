@@ -26,13 +26,6 @@
         "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
-    "initialProvisioning":{
-      "type":"string",
-      "defaultValue":"Yes",
-      "metadata":{
-        "description":"Whether the deployment is provisioned the very first time."
-      }
-    },
     "storageAccountName":{
       "type":"string",
       "metadata":{
@@ -111,13 +104,6 @@
               "type":"object",
               "defaultValue":{
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
-              }
-            },
-            "initialProvisioning":{
-              "type":"string",
-              "defaultValue":"Yes",
-              "metadata":{
-                "description":"Whether the deployment is provisioned the very first time."
               }
             },
             "virtualNetworkCidr":{
@@ -349,7 +335,6 @@
             {
               "type":"Microsoft.Network/networkSecurityGroups",
               "name":"[variables('workerSecurityGroupName')]",
-              "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
               "apiVersion":"[parameters('networkSecurityGroupsAPIVersion')]",
               "location":"[resourceGroup().location]",
               "tags":{
@@ -550,9 +535,6 @@
           },
           "kubernetesAPISecurePort":{
             "value":"[parameters('kubernetesAPISecurePort')]"
-          },
-          "initialProvisioning":{
-            "value":"[parameters('initialProvisioning')]"
           }
         }
       }
@@ -579,13 +561,6 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
-            "initialProvisioning":{
-              "type":"string",
-              "defaultValue":"Yes",
-              "metadata":{
-                "description":"Whether the deployment is provisioned the very first time."
-              }
-            },
             "routeTablesAPIVersion":{
               "type":"string",
               "defaultValue":"2016-09-01",
@@ -602,7 +577,6 @@
             {
               "type":"Microsoft.Network/routeTables",
               "name":"[variables('name')]",
-              "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
               "apiVersion":"[parameters('routeTablesAPIVersion')]",
               "location":"[resourceGroup().location]",
               "tags":{
@@ -627,9 +601,6 @@
           },
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
-          },
-          "initialProvisioning":{
-            "value":"[parameters('initialProvisioning')]"
           }
         }
       }
@@ -732,7 +703,6 @@
     {
       "apiVersion":"2016-09-01",
       "name":"virtual_network_setup",
-      "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
       "type":"Microsoft.Resources/deployments",
       "dependsOn":[
         "route_table_setup"
