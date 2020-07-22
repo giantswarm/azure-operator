@@ -30,6 +30,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/network"
 )
 
 const (
@@ -464,9 +465,19 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 	commonCluster := providerv1alpha1.Cluster{}
 
 	{
+		_, networkCIDR, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)
+		if err != nil {
+			return providerv1alpha1.Cluster{}, microerror.Mask(err)
+		}
+
+		azureNetwork, err := network.Compute(*networkCIDR)
+		if err != nil {
+			return providerv1alpha1.Cluster{}, microerror.Mask(err)
+		}
+
 		commonCluster.Calico.CIDR = r.calico.CIDRSize
 		commonCluster.Calico.MTU = r.calico.MTU
-		commonCluster.Calico.Subnet = r.calico.Subnet
+		commonCluster.Calico.Subnet = azureNetwork.Calico.String()
 	}
 
 	{
