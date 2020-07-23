@@ -244,7 +244,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		versions.KubernetesNetworkSetupDocker = defaultVersions.KubernetesNetworkSetupDocker
 		images := k8scloudconfig.BuildImages(r.registryDomain, versions)
 
-		mappedAzureConfig, err := r.buildAzureConfig(ctx, cluster, azureCluster, machinePool, azureMachinePool)
+		mappedAzureConfig, err := r.buildAzureConfig(cluster, azureCluster, machinePool, azureMachinePool, credentialSecret)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -356,7 +356,7 @@ func getAvailabilityZones(machinePool expcapiv1alpha3.MachinePool) ([]int, error
 	return availabilityZones, nil
 }
 
-func (r *Resource) buildAzureConfig(ctx context.Context, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *expcapiv1alpha3.MachinePool, azureMachinePool *expcapzv1alpha3.AzureMachinePool) (providerv1alpha1.AzureConfig, error) {
+func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *expcapiv1alpha3.MachinePool, azureMachinePool *expcapzv1alpha3.AzureMachinePool, credentialSecret *providerv1alpha1.CredentialSecret) (providerv1alpha1.AzureConfig, error) {
 	var err error
 
 	azureConfig := providerv1alpha1.AzureConfig{}
@@ -446,11 +446,6 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster *capiv1alpha3.C
 	}
 
 	{
-		credentialSecret, err := r.getCredentialSecret(ctx, cluster)
-		if err != nil {
-			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
-		}
-
 		azureConfig.Spec.Azure.CredentialSecret = *credentialSecret
 	}
 
@@ -507,10 +502,10 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 
 	{
 		_, ipNet, err := net.ParseCIDR(commonCluster.Kubernetes.API.ClusterIPRange)
-		ip := ipNet.IP
 		if err != nil {
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}
+		ip := ipNet.IP
 		ip[3] = kubeDNSIPLastOctet
 
 		commonCluster.Kubernetes.DNS.IP = ip.String()
