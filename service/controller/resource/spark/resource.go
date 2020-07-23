@@ -106,10 +106,6 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	if config.OIDC.ClientID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.OIDC must not be empty", config)
-	}
-
 	if config.RandomKeysSearcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RandomKeysSearcher must not be empty", config)
 	}
