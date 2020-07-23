@@ -30,6 +30,7 @@ rules:
     resources:
       - azureclusterconfigs
       - drainerconfigs
+      - sparks
     verbs:
       - "*"
   - apiGroups:
