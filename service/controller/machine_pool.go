@@ -47,7 +47,7 @@ type MachinePoolConfig struct {
 	RegistryDomain            string
 	SentryDSN                 string
 	SSHUserList               string
-	ssoPublicKey              string
+	SSOPublicKey              string
 }
 
 type MachinePool struct {
@@ -150,7 +150,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 			RandomKeysSearcher:  randomkeysSearcher,
 			RegistryDomain:      config.RegistryDomain,
 			SSHUserList:         config.SSHUserList,
-			SSOPublicKey:        config.ssoPublicKey,
+			SSOPublicKey:        config.SSOPublicKey,
 		}
 
 		sparkResource, err = spark.New(c)
