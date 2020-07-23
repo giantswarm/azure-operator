@@ -153,7 +153,6 @@ func mainError() error {
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.IngressController.SecurePort, 0, "Secure port of guest cluster Ingress Controller.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubectl.Docker.Image, "", "Full docker image of kubectl.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubelet.AltNames, "", "Alternative names for guest cluster kubelet certificates.")
-	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubelet.Labels, "", "Labels for guest cluster kubelets.")
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.Kubelet.Port, 0, "Port to bind guest cluster kubelets on.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.NetworkSetup.Docker.Image, "", "Full docker image of networksetup.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.SSH.UserList, "", "Comma separated list of ssh users and their public key in format `username:publickey`, being installed in the guest cluster nodes.")

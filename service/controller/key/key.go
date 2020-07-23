@@ -41,11 +41,12 @@ const (
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
 
-	LabelApp          = "app"
-	LabelCluster      = "giantswarm.io/cluster"
-	LabelCustomer     = "customer"
-	LabelManagedBy    = "giantswarm.io/managed-by"
-	LabelOrganization = "giantswarm.io/organization"
+	LabelApp             = "app"
+	LabelCluster         = "giantswarm.io/cluster"
+	LabelCustomer        = "customer"
+	LabelManagedBy       = "giantswarm.io/managed-by"
+	LabelOperatorVersion = "azure-operator.giantswarm.io/version"
+	LabelOrganization    = "giantswarm.io/organization"
 
 	LegacyLabelCluster = "cluster"
 
