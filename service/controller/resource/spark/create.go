@@ -432,7 +432,7 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 		}
 
 		var workerNodes []providerv1alpha1.AzureConfigSpecAzureNode
-		for range newSpecClusterWorkerNodes(int(*machinePool.Spec.Replicas)) {
+		for i := int32(0); i < *machinePool.Spec.Replicas; i++ {
 			n := providerv1alpha1.AzureConfigSpecAzureNode{
 				VMSize:              azureMachinePool.Spec.Template.VMSize,
 				DockerVolumeSizeGB:  dockerVolumeSizeGB,
