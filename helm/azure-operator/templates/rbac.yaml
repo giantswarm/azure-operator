@@ -31,6 +31,7 @@ rules:
       - azureclusterconfigs
       - drainerconfigs
       - sparks
+      - sparks/status
     verbs:
       - "*"
   - apiGroups:
