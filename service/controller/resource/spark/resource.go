@@ -75,7 +75,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	if config.Calico.MTU == 0 {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Calico must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.Calico.MTU must not be empty", config)
 	}
 
 	if config.CertsSearcher == nil {
@@ -83,7 +83,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	if config.ClusterIPRange == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.clusterIPRange must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterIPRange must not be empty", config)
 	}
 
 	if config.CredentialProvider == nil {
@@ -95,11 +95,11 @@ func New(config Config) (*Resource, error) {
 	}
 
 	if config.EtcdPrefix == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.etcdPrefix must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.EtcdPrefix must not be empty", config)
 	}
 
 	if config.Ignition.Path == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Ignition must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.Ignition.Path must not be empty", config)
 	}
 
 	if config.Logger == nil {
