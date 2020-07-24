@@ -27,7 +27,10 @@ func (r Resource) getCustomSecurityRules(ctx context.Context, customObject provi
 	}
 
 	iterator, err := securityRulesClient.ListComplete(ctx, customObject.Name, sgName)
-	if err != nil {
+	if IsNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "warning", "message", "SecurityGroup %s not found: unable to check for existing security rules.", sgName)
+		return defaultRules, nil
+	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
