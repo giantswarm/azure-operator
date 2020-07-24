@@ -145,6 +145,15 @@ func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (
 	return toSubnetsClient(client), nil
 }
 
+func (f *Factory) GetSecurityRulesClient(credentialNamespace, credentialName string) (*network.SecurityRulesClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "SecurityRulesClient", newSecurityRulesClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toSecurityRulesClient(client), nil
+}
+
 func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {
 	l := f.logger.With(
 		logLevelLogKey, logLevelDebug,
