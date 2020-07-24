@@ -233,14 +233,10 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 		azureConfig.Labels[label.XCluster] = key.ClusterID(&cluster)
 		azureConfig.Labels[label.Organization] = key.OrganizationID(&cluster)
 		azureConfig.Labels[label.ReleaseVersion] = key.ReleaseVersion(&cluster)
+		azureConfig.Labels[label.OperatorVersion] = key.OperatorVersion(&azureCluster)
 	}
 
 	{
-		azureConfig.Labels[label.OperatorVersion] = key.OperatorVersion(&azureCluster)
-
-		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, label.OperatorVersion, key.OperatorVersion(&azureCluster))
-		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, "giantswarm.io/provider", ProviderAzure)
-
 		azureConfig.Spec.Azure.AvailabilityZones, err = getAvailabilityZones(masters, workers)
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
@@ -373,7 +369,7 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 		}
 
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
-		commonCluster.Kubernetes.Kubelet.Labels = r.kubeletLabels
+		commonCluster.Kubernetes.Kubelet.Labels = key.KubeletLabelsNodePool(&azureCluster)
 	}
 
 	{
@@ -397,38 +393,6 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 
 	return commonCluster, nil
 
-}
-
-func ensureLabel(labels string, key string, value string) string {
-	if key == "" {
-		return labels
-	}
-	if value == "" {
-		return labels
-	}
-
-	var split []string
-	if labels != "" {
-		split = strings.Split(labels, ",")
-	}
-
-	var found bool
-	for i, l := range split {
-		if !strings.HasPrefix(l, key+"=") {
-			continue
-		}
-
-		found = true
-		split[i] = key + "=" + value
-	}
-
-	if !found {
-		split = append(split, key+"="+value)
-	}
-
-	joined := strings.Join(split, ",")
-
-	return joined
 }
 
 func newSpecClusterMasterNodes() []providerv1alpha1.ClusterNode {
