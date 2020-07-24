@@ -2,6 +2,7 @@ package deployment
 
 import (
 	"context"
+	"fmt"
 	"strconv"
 
 	azurenetwork "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
@@ -28,7 +29,7 @@ func (r Resource) getCustomSecurityRules(ctx context.Context, customObject provi
 
 	iterator, err := securityRulesClient.ListComplete(ctx, customObject.Name, sgName)
 	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "warning", "message", "SecurityGroup %s not found: unable to check for existing security rules.", sgName)
+		r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("SecurityGroup %s not found: unable to check for existing security rules.", sgName))
 		return defaultRules, nil
 	} else if err != nil {
 		return nil, microerror.Mask(err)
