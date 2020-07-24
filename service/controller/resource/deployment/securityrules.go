@@ -13,7 +13,7 @@ import (
 )
 
 func (r Resource) getMasterSecurityRules(ctx context.Context, customObject providerv1alpha1.AzureConfig) ([]azurenetwork.SecurityRule, error) {
-	return r.getCustomSecurityRules(ctx, customObject, r.getDefaultWorkersSecurityRules(customObject), key.WorkerSecurityGroupName(customObject))
+	return r.getCustomSecurityRules(ctx, customObject, r.getDefaultMasterSecurityRules(customObject), key.MasterSecurityGroupName(customObject))
 }
 
 func (r Resource) getWorkersSecurityRules(ctx context.Context, customObject providerv1alpha1.AzureConfig) ([]azurenetwork.SecurityRule, error) {
