@@ -244,6 +244,9 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		versions.KubernetesNetworkSetupDocker = defaultVersions.KubernetesNetworkSetupDocker
 		images := k8scloudconfig.BuildImages(r.registryDomain, versions)
 
+		// We already have AzureConfig and AzureClusterConfig saved in the API, since we create those whenever we create Cluster and AzureCluster.
+		// But we need to create an AzureConfig on the fly here because different node pools will use different cloudconfigs,
+		// and the existing AzureConfig wouldn't contain the right values (vmsize, # of replicas, etc) for this specific node pool that we are creating.
 		mappedAzureConfig, err := r.buildAzureConfig(cluster, azureCluster, machinePool, azureMachinePool, credentialSecret)
 		if err != nil {
 			return nil, microerror.Mask(err)
