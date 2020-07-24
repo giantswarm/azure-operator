@@ -293,8 +293,14 @@ func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
 }
 
-func MachinePoolOperatorVersion(cr expcapzv1alpha3.AzureMachinePool) string {
-	return cr.GetLabels()[LabelOperatorVersion]
+// These are the same labels that kubernetesd adds when creating/updating an AzureConfig.
+func KubeletLabelsNodePool(getter LabelsGetter) string {
+	var labels string
+
+	labels = ensureLabel(labels, label.Provider, "azure")
+	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
+
+	return labels
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
@@ -584,4 +590,36 @@ func vmssInstanceIDBase36(instanceID string) (string, error) {
 	}
 
 	return strconv.FormatUint(i, 36), nil
+}
+
+func ensureLabel(labels string, key string, value string) string {
+	if key == "" {
+		return labels
+	}
+	if value == "" {
+		return labels
+	}
+
+	var split []string
+	if labels != "" {
+		split = strings.Split(labels, ",")
+	}
+
+	var found bool
+	for i, l := range split {
+		if !strings.HasPrefix(l, key+"=") {
+			continue
+		}
+
+		found = true
+		split[i] = key + "=" + value
+	}
+
+	if !found {
+		split = append(split, key+"="+value)
+	}
+
+	joined := strings.Join(split, ",")
+
+	return joined
 }

@@ -14,29 +14,40 @@ import (
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
+	"github.com/giantswarm/randomkeys"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/spark"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type MachinePoolConfig struct {
+	APIServerSecurePort       int
+	Azure                     setting.Azure
+	Calico                    azureconfig.CalicoConfig
+	ClusterIPRange            string
 	CredentialProvider        credential.Provider
+	EtcdPrefix                string
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	GuestSubnetMaskBits       int
+	Ignition                  setting.Ignition
 	InstallationName          string
 	IPAMNetworkRange          net.IPNet
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
+	OIDC                      setting.OIDC
 	RegistryDomain            string
 	SentryDSN                 string
+	SSHUserList               string
+	SSOPublicKey              string
 }
 
 type MachinePool struct {
@@ -44,14 +55,6 @@ type MachinePool struct {
 }
 
 func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
-	}
-
-	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
-	}
-
 	var err error
 
 	var resources []resource.Interface
@@ -102,15 +105,14 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var err error
 
-	var clientFactory *client.Factory
+	var randomkeysSearcher *randomkeys.Searcher
 	{
-		c := client.FactoryConfig{
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
+		c := randomkeys.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
 		}
 
-		clientFactory, err = client.NewFactory(c)
+		randomkeysSearcher, err = randomkeys.NewSearcher(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -131,31 +133,34 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var cloudConfigResource resource.Interface
+	var sparkResource resource.Interface
 	{
-		c := cloudconfig.Config{
-			AzureClientsFactory: clientFactory,
+		c := spark.Config{
+			APIServerSecurePort: config.APIServerSecurePort,
+			Azure:               config.Azure,
+			Calico:              config.Calico,
 			CertsSearcher:       certsSearcher,
+			ClusterIPRange:      config.ClusterIPRange,
+			EtcdPrefix:          config.EtcdPrefix,
+			CredentialProvider:  config.CredentialProvider,
 			CtrlClient:          config.K8sClient.CtrlClient(),
-			G8sClient:           config.K8sClient.G8sClient(),
-			K8sClient:           config.K8sClient.K8sClient(),
+			Ignition:            config.Ignition,
 			Logger:              config.Logger,
+			OIDC:                config.OIDC,
+			RandomKeysSearcher:  randomkeysSearcher,
 			RegistryDomain:      config.RegistryDomain,
+			SSHUserList:         config.SSHUserList,
+			SSOPublicKey:        config.SSOPublicKey,
 		}
 
-		cloudconfigObject, err := cloudconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		cloudConfigResource, err = toCRUDResource(config.Logger, cloudconfigObject)
+		sparkResource, err = spark.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	resources := []resource.Interface{
-		cloudConfigResource,
+		sparkResource,
 	}
 
 	{
