@@ -8,6 +8,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -50,5 +51,7 @@ func (r *Resource) ensureServiceEndpoints(ctx context.Context, cr providerv1alph
 
 	r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("service '%s' was added to subnet %s", storageServiceEndpoint, *subnet.Name))
 
+	reconciliationcanceledcontext.SetCanceled(ctx)
+	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 	return nil
 }
