@@ -100,6 +100,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				ObjectMeta: metav1.ObjectMeta{
 					Name:      secretName(sparkCR.Name),
 					Namespace: azureMachinePool.Namespace,
+					OwnerReferences: []metav1.OwnerReference{
+						{
+							APIVersion: sparkCR.APIVersion,
+							Kind:       sparkCR.Kind,
+							Name:       sparkCR.Name,
+							UID:        sparkCR.UID,
+						},
+					},
 				},
 				Data: map[string][]byte{
 					ignitionBlobKey: ignitionBlob,
