@@ -35,7 +35,6 @@ import (
 
 const (
 	dockerVolumeSizeGB  = 50
-	ignitionBlobKey     = "ignitionBlob"
 	kubeletVolumeSizeGB = 100
 	kubeDNSIPLastOctet  = 10
 	ProviderAzure       = "azure"
@@ -102,7 +101,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 					Namespace: azureMachinePool.Namespace,
 				},
 				Data: map[string][]byte{
-					ignitionBlobKey: ignitionBlob,
+					key.CloudConfigSecretKey: ignitionBlob,
 				},
 			}
 
@@ -141,8 +140,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		if !bytes.Equal(ignitionBlob, dataSecret.Data[ignitionBlobKey]) {
-			dataSecret.Data[ignitionBlobKey] = ignitionBlob
+		if !bytes.Equal(ignitionBlob, dataSecret.Data[key.CloudConfigSecretKey]) {
+			dataSecret.Data[key.CloudConfigSecretKey] = ignitionBlob
 
 			err = r.ctrlClient.Update(ctx, dataSecret)
 			if err != nil {

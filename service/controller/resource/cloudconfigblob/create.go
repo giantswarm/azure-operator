@@ -91,7 +91,7 @@ func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, azureM
 		}
 	}
 
-	return cloudconfigSecret.String(), nil
+	return string(cloudconfigSecret.Data[key.CloudConfigSecretKey]), nil
 }
 
 func (r *Resource) getContainerURL(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
