@@ -33,6 +33,8 @@ func (r *Resource) ensureServiceEndpoints(ctx context.Context, cr providerv1alph
 				return nil
 			}
 		}
+	} else {
+		subnet.ServiceEndpoints = &[]network.ServiceEndpointPropertiesFormat{}
 	}
 
 	r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("service '%s' for subnet %s was not enabled. Adding it.", storageServiceEndpoint, *subnet.Name))
