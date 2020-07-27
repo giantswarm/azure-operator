@@ -102,12 +102,12 @@ func AzureConfigNetworkCIDR(customObject providerv1alpha1.AzureConfig) string {
 
 func ToAzureMachinePool(v interface{}) (expcapzv1alpha3.AzureMachinePool, error) {
 	if v == nil {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
 	}
 
 	customObjectPointer, ok := v.(*expcapzv1alpha3.AzureMachinePool)
 	if !ok {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
 	}
 	customObject := *customObjectPointer
 
