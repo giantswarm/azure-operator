@@ -32,7 +32,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment"
@@ -340,27 +339,6 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		}
 	}
 
-	var blobObjectResource resource.Interface
-	{
-		c := blobobject.Config{
-			CertsSearcher:  certsSearcher,
-			G8sClient:      config.K8sClient.G8sClient(),
-			K8sClient:      config.K8sClient.K8sClient(),
-			Logger:         config.Logger,
-			RegistryDomain: config.RegistryDomain,
-		}
-
-		blobObject, err := blobobject.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		blobObjectResource, err = toCRUDResource(config.Logger, blobObject)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var deploymentResource resource.Interface
 	{
 		c := deployment.Config{
@@ -610,7 +588,6 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 		encryptionkeyResource,
 		deploymentResource,
 		containerURLResource,
-		blobObjectResource,
 		dnsrecordResource,
 		mastersResource,
 		instanceResource,
