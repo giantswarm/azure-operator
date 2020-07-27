@@ -19,11 +19,13 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfigblob"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/spark"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
@@ -105,6 +107,20 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var err error
 
+	var clientFactory *client.Factory
+	{
+		c := client.FactoryConfig{
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
+		}
+
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var randomkeysSearcher *randomkeys.Searcher
 	{
 		c := randomkeys.Config{
@@ -159,8 +175,23 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var cloudconfigblobResource resource.Interface
+	{
+		c := cloudconfigblob.Config{
+			ClientFactory: clientFactory,
+			CtrlClient:    config.K8sClient.CtrlClient(),
+			Logger:        config.Logger,
+		}
+
+		cloudconfigblobResource, err = cloudconfigblob.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []resource.Interface{
 		sparkResource,
+		cloudconfigblobResource,
 	}
 
 	{
