@@ -95,7 +95,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	securityRulesClient, err := newSecurityRulesClient(authorizer, subscriptionID, partnerID)
+	securityGroupsClient, err := newSecurityGroupsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -143,7 +143,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		GroupsClient:                           toGroupsClient(groupsClient),
 		InterfacesClient:                       interfacesClient,
 		PublicIpAddressesClient:                publicIpAddressesClient,
-		SecurityRulesClient:                    toSecurityRulesClient(securityRulesClient),
+		SecurityRulesClient:                    securityGroupsClient,
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
 		SubnetsClient:                          toSubnetsClient(subnetsClient),
 		SubscriptionID:                         subscriptionID,
@@ -209,7 +209,7 @@ func newPublicIPAddressesClient(authorizer autorest.Authorizer, subscriptionID, 
 	return &client, nil
 }
 
-func newSecurityRulesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newSecurityGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.SecurityRulesClient, error) {
 	client := network.NewSecurityRulesClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
@@ -293,10 +293,6 @@ func toVirtualMachineScaleSetsClient(client interface{}) *compute.VirtualMachine
 
 func toVirtualMachineScaleSetVMsClient(client interface{}) *compute.VirtualMachineScaleSetVMsClient {
 	return client.(*compute.VirtualMachineScaleSetVMsClient)
-}
-
-func toSecurityRulesClient(client interface{}) *network.SecurityRulesClient {
-	return client.(*network.SecurityRulesClient)
 }
 
 func toStorageAccountsClient(client interface{}) *storage.AccountsClient {

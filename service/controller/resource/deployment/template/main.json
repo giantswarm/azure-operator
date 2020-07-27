@@ -59,19 +59,17 @@
     "vpnSubnetCidr":{
       "type":"string"
     },
+    "hostClusterCidr":{
+      "type":"string"
+    },
+    "kubernetesAPISecurePort":{
+      "type":"int"
+    },
     "dnsZones":{
       "type":"object",
       "metadata":{
         "description":"The DNS zones for kubernetes api and ingress."
       }
-    },
-    "masterSecurityRules": {
-      "type":"array",
-      "defaultValue": []
-    },
-    "workersSecurityRules": {
-      "type":"array",
-      "defaultValue": []
     }
   },
   "variables":{
@@ -108,18 +106,35 @@
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
             },
-            "masterSecurityRules": {
-              "type":"array"
+            "virtualNetworkCidr":{
+              "type":"string"
             },
-            "workersSecurityRules": {
-              "type":"array"
+            "calicoSubnetCidr":{
+              "type":"string"
+            },
+            "masterSubnetCidr":{
+              "type":"string"
+            },
+            "workerSubnetCidr":{
+              "type":"string"
+            },
+            "hostClusterCidr":{
+              "type":"string"
+            },
+            "kubernetesAPISecurePort":{
+              "type":"int"
             }
           },
           "variables":{
             "masterSecurityGroupName":"[concat(parameters('clusterID'), '-MasterSecurityGroup')]",
             "masterSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('masterSecurityGroupName'))]",
             "workerSecurityGroupName":"[concat(parameters('clusterID'), '-WorkerSecurityGroup')]",
-            "workerSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]"
+            "workerSecurityGroupID":"[resourceId('Microsoft.Network/networkSecurityGroups', variables('workerSecurityGroupName'))]",
+            "cadvisorPort":"4194",
+            "etcdPort":"2379",
+            "kubeletPort":"10250",
+            "nodeExporterPort":"10300",
+            "kubeStateMetricsPort":"10301"
           },
           "resources":[
             {
@@ -131,7 +146,190 @@
                 "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
               },
               "properties":{
-                "securityRules":"[parameters('masterSecurityRules')]"
+                "securityRules":[
+                  {
+                    "name":"defaultInboundRule",
+                    "properties":{
+                      "description":"Default rule that denies any inbound traffic.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"*",
+                      "destinationAddressPrefix":"*",
+                      "access":"Deny",
+                      "direction":"Inbound",
+                      "priority":"4096"
+                    }
+                  },
+                  {
+                    "name":"defaultOutboundRule",
+                    "properties":{
+                      "description":"Default rule that allows any outbound traffic.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"*",
+                      "destinationAddressPrefix":"*",
+                      "access":"Allow",
+                      "direction":"Outbound",
+                      "priority":"4095"
+                    }
+                  },
+                  {
+                    "name":"defaultInClusterRule",
+                    "properties":{
+                      "description":"Default rule that allows any traffic within the master subnet.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"4094"
+                    }
+                  },
+                  {
+                    "name":"sshHostClusterToMasterSubnetRule",
+                    "properties":{
+                      "description":"Allow the host cluster machines to reach this guest cluster master subnet.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"22",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"4093"
+                    }
+                  },
+                  {
+                    "name":"apiLoadBalancerRule",
+                    "properties":{
+                      "description":"Allow anyone to reach the kubernetes API.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[string(parameters('kubernetesAPISecurePort'))]",
+                      "sourceAddressPrefix":"*",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3903"
+                    }
+                  },
+                  {
+                    "name":"allowEtcdLoadBalancer",
+                    "properties":{
+                      "description":"Allow traffic from LB to master instance.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('etcdPort')]",
+                      "sourceAddressPrefix":"AzureLoadBalancer",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3902"
+                    }
+                  },
+                  {
+                    "name":"etcdLoadBalancerRuleHost",
+                    "properties":{
+                      "description":"Allow host cluster to reach the etcd loadbalancer.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('etcdPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3901"
+                    }
+                  },
+                  {
+                    "name":"etcdLoadBalancerRuleCluster",
+                    "properties":{
+                      "description":"Allow cluster subnet to reach the etcd loadbalancer.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('etcdPort')]",
+                      "sourceAddressPrefix":"[parameters('virtualNetworkCidr')]",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3900"
+                    }
+                  },
+                  {
+                    "name":"allowWorkerSubnet",
+                    "properties":{
+                      "description":"Allow the worker machines to reach the master machines on any ports.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3800"
+                    }
+                  },
+                  {
+                    "name":"allowCalicoSubnet",
+                    "properties":{
+                      "description":"Allow pods to reach the master machines on any ports.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"[parameters('calicoSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3700"
+                    }
+                  },
+                  {
+                    "name":"allowCadvisor",
+                    "properties":{
+                      "description":"Allow host cluster Prometheus to reach Cadvisors.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('cadvisorPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3500"
+                    }
+                  },
+                  {
+                    "name":"allowKubelet",
+                    "properties":{
+                      "description":"Allow host cluster Prometheus to reach Kubelets.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('kubeletPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3501"
+                    }
+                  },
+                  {
+                    "name":"allowNodeExporter",
+                    "properties":{
+                      "description":"Allow host cluster Prometheus to reach node-exporters.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('nodeExporterPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3502"
+                    }
+                  }
+                ]
               }
             },
             {
@@ -143,7 +341,162 @@
                 "provider":"[toUpper(parameters('GiantSwarmTags').provider)]"
               },
               "properties":{
-                "securityRules":"[parameters('workersSecurityRules')]"
+                "securityRules":[
+                  {
+                    "name":"defaultInboundRule",
+                    "properties":{
+                      "description":"Default rule that denies any inbound traffic.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"*",
+                      "destinationAddressPrefix":"*",
+                      "access":"Deny",
+                      "direction":"Inbound",
+                      "priority":"4096"
+                    }
+                  },
+                  {
+                    "name":"defaultOutboundRule",
+                    "properties":{
+                      "description":"Default rule that allows any outbound traffic.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"*",
+                      "destinationAddressPrefix":"*",
+                      "access":"Allow",
+                      "direction":"Outbound",
+                      "priority":"4095"
+                    }
+                  },
+                  {
+                    "name":"defaultInClusterRule",
+                    "properties":{
+                      "description":"Default rule that allows any traffic within the worker subnet.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"4094"
+                    }
+                  },
+                  {
+                    "name":"sshHostClusterToWorkerSubnetRule",
+                    "properties":{
+                      "description":"Allow the host cluster machines to reach this guest cluster worker subnet.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"22",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"4093"
+                    }
+                  },
+                  {
+                    "name":"azureLoadBalancerHealthChecks",
+                    "properties":{
+                      "description":"Allow Azure Load Balancer health checks.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"AzureLoadBalancer",
+                      "destinationAddressPrefix":"*",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"4000"
+                    }
+                  },
+                  {
+                    "name":"allowMasterSubnet",
+                    "properties":{
+                      "description":"Allow the master machines to reach the worker machines on any ports.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3700"
+                    }
+                  },
+                  {
+                    "name":"allowCalicoSubnet",
+                    "properties":{
+                      "description":"Allow pods to reach the worker machines on any ports.",
+                      "protocol":"*",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"*",
+                      "sourceAddressPrefix":"[parameters('calicoSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3600"
+                    }
+                  },
+                  {
+                    "name":"allowCadvisor",
+                    "properties":{
+                      "description":"Allow host cluster Prometheus to reach Cadvisors.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('cadvisorPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3500"
+                    }
+                  },
+                  {
+                    "name":"allowKubelet",
+                    "properties":{
+                      "description":"Allow host cluster Prometheus to reach Kubelets.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('kubeletPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3501"
+                    }
+                  },
+                  {
+                    "name":"allowNodeExporter",
+                    "properties":{
+                      "description":"Allow host cluster Prometheus to reach node-exporters.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('nodeExporterPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3502"
+                    }
+                  },
+                  {
+                    "name":"allowKubeStateMetrics",
+                    "properties":{
+                      "description":"Allow host cluster Prometheus to reach kube-state-metrics.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('kubeStateMetricsPort')]",
+                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3503"
+                    }
+                  }
+                ]
               }
             }
           ],
@@ -165,11 +518,23 @@
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
           },
-          "masterSecurityRules":{
-            "value":"[parameters('masterSecurityRules')]"
+          "virtualNetworkCidr":{
+            "value":"[parameters('virtualNetworkCidr')]"
           },
-          "workersSecurityRules":{
-            "value":"[parameters('workersSecurityRules')]"
+          "calicoSubnetCidr":{
+            "value":"[parameters('calicoSubnetCidr')]"
+          },
+          "masterSubnetCidr":{
+            "value":"[parameters('masterSubnetCidr')]"
+          },
+          "workerSubnetCidr":{
+            "value":"[parameters('workerSubnetCidr')]"
+          },
+          "hostClusterCidr":{
+            "value":"[parameters('hostClusterCidr')]"
+          },
+          "kubernetesAPISecurePort":{
+            "value":"[parameters('kubernetesAPISecurePort')]"
           }
         }
       }
