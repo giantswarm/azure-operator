@@ -10,6 +10,7 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -37,11 +38,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		payload, err = r.getCloudConfigFromBootstrapSecret(ctx, azureMachinePool)
 		if errors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR or cloudconfig secret were not found")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if IsBootstrapCRNotReady(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR is not ready")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
