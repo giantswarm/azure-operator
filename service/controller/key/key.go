@@ -23,7 +23,8 @@ const (
 	MastersVmssDeploymentName = "masters-vmss-template"
 	WorkersVmssDeploymentName = "workers-vmss-template"
 
-	blobContainerName = "ignition"
+	CloudConfigSecretKey = "ignitionBlob"
+	blobContainerName    = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
 	cloudConfigVersion        = "v7.0.1"
 	storageAccountSuffix      = "gssa"
