@@ -10,6 +10,7 @@ import (
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
@@ -102,10 +103,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 					Namespace: azureMachinePool.Namespace,
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion: sparkCR.APIVersion,
-							Kind:       sparkCR.Kind,
-							Name:       sparkCR.Name,
-							UID:        sparkCR.UID,
+							APIVersion:         sparkCR.APIVersion,
+							BlockOwnerDeletion: to.BoolPtr(true),
+							Kind:               sparkCR.Kind,
+							Name:               sparkCR.Name,
+							UID:                sparkCR.UID,
 						},
 					},
 				},
