@@ -113,7 +113,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), mainDeploymentName)
 	if IsNotFound(err) {
-		deployment, err = r.newDeployment(ctx, cr, map[string]interface{}{})
+		params := map[string]interface{}{
+			"initialProvisioning": "Yes",
+		}
+		deployment, err = r.newDeployment(ctx, cr, params)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -133,9 +136,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return nil
 		}
 
-		deployment, err = r.newDeployment(ctx, cr, map[string]interface{}{})
+		params := map[string]interface{}{
+			"initialProvisioning": "No",
+		}
+		deployment, err = r.newDeployment(ctx, cr, params)
 		if err != nil {
 			return microerror.Mask(err)
+		}
+
+		err = r.ensureServiceEndpoints(ctx, cr)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if reconciliationcanceledcontext.IsCanceled(ctx) {
+			return nil
 		}
 
 		err = r.enrichControllerContext(ctx, cr, deploymentsClient)

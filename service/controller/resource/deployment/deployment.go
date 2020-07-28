@@ -31,22 +31,14 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		r.installationName,
 	)
 
-	masterSecurityRules, err := r.getMasterSecurityRules(ctx, customObject)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
-	workersSecurityRules, err := r.getWorkersSecurityRules(ctx, customObject)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	defaultParams := map[string]interface{}{
 		"blobContainerName":          key.BlobContainerName(),
 		"calicoSubnetCidr":           key.CalicoCIDR(customObject),
 		"controlPlaneWorkerSubnetID": controlPlaneWorkerSubnetID,
 		"clusterID":                  key.ClusterID(&customObject),
 		"dnsZones":                   key.DNSZones(customObject),
+		"hostClusterCidr":            r.azure.HostCluster.CIDR,
+		"kubernetesAPISecurePort":    key.APISecurePort(customObject),
 		"masterSubnetCidr":           key.MastersSubnetCIDR(customObject),
 		"storageAccountName":         key.StorageAccountName(&customObject),
 		"virtualNetworkCidr":         key.VnetCIDR(customObject),
@@ -54,8 +46,6 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"vnetGatewaySubnetName":      key.VNetGatewaySubnetName(),
 		"vpnSubnetCidr":              vpnSubnet.String(),
 		"workerSubnetCidr":           key.WorkersSubnetCIDR(customObject),
-		"masterSecurityRules":        masterSecurityRules,
-		"workersSecurityRules":       workersSecurityRules,
 	}
 
 	armTemplate, err := template.GetARMTemplate()
