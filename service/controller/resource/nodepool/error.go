@@ -105,3 +105,12 @@ var missingReleaseVersionLabel = &microerror.Error{
 var notAvailableFailureDomain = &microerror.Error{
 	Kind: "notAvailableFailureDomain",
 }
+
+var ownerReferenceNotSet = &microerror.Error{
+	Kind: "ownerReferenceNotSet",
+}
+
+// IsOwnerReferenceNotSet asserts ownerReferenceNotSet.
+func IsOwnerReferenceNotSet(err error) bool {
+	return microerror.Cause(err) == ownerReferenceNotSet
+}

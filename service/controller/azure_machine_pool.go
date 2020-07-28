@@ -26,8 +26,8 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )

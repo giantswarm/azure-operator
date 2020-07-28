@@ -51,11 +51,13 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	azureClusterController  *controller.AzureCluster
-	bootOnce                sync.Once
-	clusterController       *controller.Cluster
-	machinePoolController   *controller.AzureMachinePool
-	statusResourceCollector *statusresource.CollectorSet
+	azureClusterController     *controller.AzureCluster
+	azureConfigController      *controller.AzureConfig
+	azureMachinePoolController *controller.AzureMachinePool
+	bootOnce                   sync.Once
+	clusterController          *controller.Cluster
+	machinePoolController      *controller.MachinePool
+	statusResourceCollector    *statusresource.CollectorSet
 }
 
 // New creates a new configured service object.
@@ -265,14 +267,14 @@ func New(config Config) (*Service, error) {
 
 	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
 
-	var clusterController *controller.Cluster
+	var azureConfigController *controller.AzureConfig
 	{
 		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		c := controller.ClusterConfig{
+		c := controller.AzureConfigConfig{
 			Azure:                     azure,
 			CredentialProvider:        credentialProvider,
 			CPAzureClientSet:          cpAzureClientSet,
@@ -293,13 +295,41 @@ func New(config Config) (*Service, error) {
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
+		azureConfigController, err = controller.NewAzureConfig(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var clusterController *controller.Cluster
+	{
+		c := controller.ClusterConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			SentryDSN: sentryDSN,
+		}
+
 		clusterController, err = controller.NewCluster(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	var machinePoolController *controller.AzureMachinePool
+	var machinePoolController *controller.MachinePool
+	{
+		c := controller.MachinePoolConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			SentryDSN: sentryDSN,
+		}
+
+		machinePoolController, err = controller.NewMachinePool(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureMachinePoolController *controller.AzureMachinePool
 	{
 		c := controller.AzureMachinePoolConfig{
 			Azure:                     azure,
@@ -317,7 +347,7 @@ func New(config Config) (*Service, error) {
 			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		}
 
-		machinePoolController, err = controller.NewAzureMachinePool(c)
+		azureMachinePoolController, err = controller.NewAzureMachinePool(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -356,11 +386,13 @@ func New(config Config) (*Service, error) {
 	s := &Service{
 		Version: versionService,
 
-		azureClusterController:  azureClusterController,
-		bootOnce:                sync.Once{},
-		clusterController:       clusterController,
-		machinePoolController:   machinePoolController,
-		statusResourceCollector: statusResourceCollector,
+		azureClusterController:     azureClusterController,
+		azureConfigController:      azureConfigController,
+		azureMachinePoolController: azureMachinePoolController,
+		bootOnce:                   sync.Once{},
+		clusterController:          clusterController,
+		machinePoolController:      machinePoolController,
+		statusResourceCollector:    statusResourceCollector,
 	}
 
 	return s, nil

@@ -30,6 +30,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
+	if machinePool == nil {
+		return currentState, microerror.Mask(ownerReferenceNotSet)
+	}
+
 	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)

@@ -10,10 +10,13 @@ import (
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	v1alpha33 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	v1alpha32 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -22,17 +25,17 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
-type ClusterConfig struct {
+type MachinePoolConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 	SentryDSN string
 }
 
-type Cluster struct {
+type MachinePool struct {
 	*controller.Controller
 }
 
-func NewCluster(config ClusterConfig) (*Cluster, error) {
+func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -44,7 +47,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 	var resources []resource.Interface
 	{
-		resources, err = NewClusterResourceSet(config)
+		resources, err = NewMachinePoolResourceSet(config)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -58,9 +61,11 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 			},
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			Name:      project.Name() + "-cluster-controller",
+			// Name is used to compute finalizer names. This results in something
+			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
+			Name: project.Name() + "-machine-pool-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(capiv1alpha3.Cluster)
+				return new(v1alpha32.MachinePool)
 			},
 			Resources: resources,
 			Selector: labels.SelectorFromSet(map[string]string{
@@ -75,10 +80,10 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	return &Cluster{Controller: operatorkitController}, nil
+	return &MachinePool{Controller: operatorkitController}, nil
 }
 
-func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
+func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -90,13 +95,13 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 
 	var ownerReferencesResource resource.Interface
 	{
-		c := ClusterOwnerReferencesConfig{
+		c := MachinePoolOwnerReferencesConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 			Scheme:     config.K8sClient.Scheme(),
 		}
 
-		ownerReferencesResource, err = NewClusterOwnerReferences(c)
+		ownerReferencesResource, err = NewMachinePoolOwnerReferences(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -128,19 +133,19 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 	return resources, nil
 }
 
-type ClusterOwnerReferencesConfig struct {
+type MachinePoolOwnerReferencesConfig struct {
 	CtrlClient client.Client
 	Logger     micrologger.Logger
 	Scheme     *runtime.Scheme
 }
 
-type ClusterOwnerReferencesResource struct {
+type MachinePoolOwnerReferencesResource struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
 	scheme     *runtime.Scheme
 }
 
-func NewClusterOwnerReferences(config ClusterOwnerReferencesConfig) (*ClusterOwnerReferencesResource, error) {
+func NewMachinePoolOwnerReferences(config MachinePoolOwnerReferencesConfig) (*MachinePoolOwnerReferencesResource, error) {
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
@@ -151,7 +156,7 @@ func NewClusterOwnerReferences(config ClusterOwnerReferencesConfig) (*ClusterOwn
 		return nil, microerror.Maskf(invalidConfigError, "%T.Scheme must not be empty", config)
 	}
 
-	r := &ClusterOwnerReferencesResource{
+	r := &MachinePoolOwnerReferencesResource{
 		ctrlClient: config.CtrlClient,
 		logger:     config.Logger,
 		scheme:     config.Scheme,
@@ -160,31 +165,49 @@ func NewClusterOwnerReferences(config ClusterOwnerReferencesConfig) (*ClusterOwn
 	return r, nil
 }
 
-// EnsureCreated ensures the AzureCluster is owned by the Cluster it belongs to.
-func (r *ClusterOwnerReferencesResource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	cluster, err := key.ToCluster(obj)
+// EnsureCreated ensures the MachinePool is owned by the Cluster it belongs to, and the AzureMachinePool is owned by the MachinePool.
+func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, obj interface{}) error {
+	machinePool, err := key.ToMachinePool(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	azureCluster := v1alpha3.AzureCluster{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Spec.InfrastructureRef.Namespace, Name: cluster.Spec.InfrastructureRef.Name}, &azureCluster)
+	if machinePool.Labels == nil {
+		machinePool.Labels = make(map[string]string)
+	}
+	machinePool.Labels[capiv1alpha3.ClusterLabelName] = machinePool.Spec.ClusterName
+
+	cluster, err := util.GetClusterByName(ctx, r.ctrlClient, machinePool.ObjectMeta.Namespace, machinePool.Spec.ClusterName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if azureCluster.Labels == nil {
-		azureCluster.Labels = make(map[string]string)
-	}
-	azureCluster.Labels[capiv1alpha3.ClusterLabelName] = cluster.Name
+	// Set Cluster as owner of MachinePool
+	machinePool.OwnerReferences = util.EnsureOwnerRef(machinePool.OwnerReferences, metav1.OwnerReference{
+		APIVersion: cluster.APIVersion,
+		Kind:       cluster.Kind,
+		Name:       cluster.Name,
+		UID:        cluster.UID,
+	})
 
-	// Set Cluster as owner of AzureCluster
-	err = controllerutil.SetControllerReference(&cluster, &azureCluster, r.scheme)
+	err = r.ctrlClient.Update(ctx, &machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = r.ctrlClient.Update(ctx, &azureCluster)
+	// Set MachinePool as owner of AzureMachinePool
+	azureMachinePool := v1alpha33.AzureMachinePool{}
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Spec.Template.Spec.InfrastructureRef.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = controllerutil.SetControllerReference(&machinePool, &azureMachinePool, r.scheme)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.ctrlClient.Update(ctx, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -193,11 +216,11 @@ func (r *ClusterOwnerReferencesResource) EnsureCreated(ctx context.Context, obj 
 }
 
 // EnsureDeleted is a noop.
-func (r *ClusterOwnerReferencesResource) EnsureDeleted(ctx context.Context, obj interface{}) error {
+func (r *MachinePoolOwnerReferencesResource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
 // Name returns the resource name.
-func (r *ClusterOwnerReferencesResource) Name() string {
-	return "ClusterOwnerReferences"
+func (r *MachinePoolOwnerReferencesResource) Name() string {
+	return "MachinePoolOwnerReferences"
 }
