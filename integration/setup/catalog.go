@@ -111,8 +111,9 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 	}
 
 	installOptions := helmclient.InstallOptions{
-		Namespace: key.Namespace(),
-		Wait:      true,
+		Namespace:   key.Namespace(),
+		ReleaseName: releaseName,
+		Wait:        true,
 	}
 
 	err = config.HelmClient.InstallReleaseFromTarball(ctx,
