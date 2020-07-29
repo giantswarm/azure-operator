@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
-	"gopkg.in/yaml.v2"
 
 	"github.com/giantswarm/azure-operator/v4/integration/env"
 	"github.com/giantswarm/azure-operator/v4/integration/key"
@@ -130,9 +129,14 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 }
 
 func valuesStrToMap(values string) (map[string]interface{}, error) {
-	var rawValues map[string]interface{}
+	//var rawValues map[string]interface{}
+	//
+	//err := yaml.Unmarshal([]byte(values), &rawValues)
+	//if err != nil {
+	//	return nil, microerror.Mask(err)
+	//}
 
-	err := yaml.Unmarshal([]byte(values), &rawValues)
+	rawValues, err := helmclient.MergeValues(map[string][]byte{"dest": []byte(values)}, map[string][]byte{"src": []byte{}})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
