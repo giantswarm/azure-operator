@@ -108,9 +108,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 					Namespace: azureMachinePool.Namespace,
 					OwnerReferences: []metav1.OwnerReference{
 						{
-							APIVersion:         sparkCR.APIVersion,
+							APIVersion:         corev1alpha1.SchemeGroupVersion.String(),
 							BlockOwnerDeletion: to.BoolPtr(true),
-							Kind:               sparkCR.Kind,
+							Kind:               "Spark",
 							Name:               sparkCR.Name,
 							UID:                sparkCR.UID,
 						},
