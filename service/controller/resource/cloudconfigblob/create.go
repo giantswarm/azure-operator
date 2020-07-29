@@ -60,14 +60,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring container object %#q", blobName))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring container object %#q contains bootstrap config", blobName))
 
 		_, err = blobclient.PutBlockBlob(ctx, blobName, payload, &containerURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured container object %#q", blobName))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured container object %#q contains bootstrap config", blobName))
 	}
 
 	return nil
@@ -76,6 +76,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool) (string, error) {
 	var sparkCR corev1alpha1.Spark
 	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Bootstrap CR %#q", azureMachinePool.Name))
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: azureMachinePool.Name}, &sparkCR)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -88,6 +89,7 @@ func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, azureM
 
 	var cloudconfigSecret corev1.Secret
 	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Secret containing bootstrap config %#q", sparkCR.Status.DataSecretName))
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: sparkCR.Status.DataSecretName}, &cloudconfigSecret)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -98,6 +100,8 @@ func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, azureM
 }
 
 func (r *Resource) getContainerURL(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "Finding ContainerURL to upload bootstrap config")
+
 	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
 		return azblob.ContainerURL{}, microerror.Mask(err)
@@ -120,6 +124,8 @@ func (r *Resource) getContainerURL(ctx context.Context, credentialSecret *v1alph
 }
 
 func (r *Resource) getPrimaryKey(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName string) (string, error) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "Finding PrimaryKey for encryption in Storage Account")
+
 	_, err := storageAccountsClient.GetProperties(ctx, resourceGroupName, storageAccountName, storage.AccountExpandGeoReplicationStats)
 	if IsStorageAccountNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")

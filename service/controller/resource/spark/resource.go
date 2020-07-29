@@ -176,6 +176,8 @@ func (r *Resource) toEncrypterObject(ctx context.Context, secretName string) (en
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey found")
+
 	return enc, nil
 }
 
