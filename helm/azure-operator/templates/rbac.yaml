@@ -103,6 +103,7 @@ rules:
     verbs:
       - create
       - delete
+      - update
       - get
       - list
       - watch
