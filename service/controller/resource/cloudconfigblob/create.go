@@ -13,17 +13,27 @@ import (
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
+// EnsureCreated will make sure that a blob is saved in the Storage Account containing the cloud config for the node pool.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if machinePool == nil {
+		return microerror.Mask(ownerReferenceNotSet)
 	}
 
 	credentialSecret, err := r.getCredentialSecret(ctx, &azureMachinePool)
@@ -35,7 +45,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var payload string
 	{
-		payload, err = r.getCloudConfigFromBootstrapSecret(ctx, azureMachinePool)
+		payload, err = r.getCloudConfigFromBootstrapSecret(ctx, machinePool)
 		if errors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR or cloudconfig secret were not found")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
@@ -73,11 +83,36 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool) (string, error) {
+// getCloudConfigFromBootstrapSecret returns the Bootstrap cloud config from the Bootstrap secret.
+func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, machinePool *expcapiv1alpha3.MachinePool) (string, error) {
+	var err error
+	var bootstrapSecretName string
+	{
+		bootstrapSecretName, err = r.getBootstrapSecretName(ctx, machinePool)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+	}
+
+	var cloudconfigSecret corev1.Secret
+	{
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Secret containing bootstrap config %#q", bootstrapSecretName))
+		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: bootstrapSecretName}, &cloudconfigSecret)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+	}
+
+	return string(cloudconfigSecret.Data[key.CloudConfigSecretKey]), nil
+}
+
+// getBootstrapSecretName will try to find Ignition CRs instead of Spark CRs when Ignition Operator is deployed.
+// It tries to find a Bootstrap CR which is named after the MachinePool. We may want to change it so we use `MachinePool.Spec.Template.Spec.Bootstrap`.
+func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expcapiv1alpha3.MachinePool) (string, error) {
 	var sparkCR corev1alpha1.Spark
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Bootstrap CR %#q", azureMachinePool.Name))
-		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: azureMachinePool.Name}, &sparkCR)
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Bootstrap CR %#q", machinePool.Name))
+		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Name}, &sparkCR)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -87,16 +122,7 @@ func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, azureM
 		}
 	}
 
-	var cloudconfigSecret corev1.Secret
-	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Secret containing bootstrap config %#q", sparkCR.Status.DataSecretName))
-		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: sparkCR.Status.DataSecretName}, &cloudconfigSecret)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-	}
-
-	return string(cloudconfigSecret.Data[key.CloudConfigSecretKey]), nil
+	return sparkCR.Status.DataSecretName, nil
 }
 
 func (r *Resource) getContainerURL(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {

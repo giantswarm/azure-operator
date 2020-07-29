@@ -8,6 +8,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/client"
@@ -113,4 +115,28 @@ func (r *Resource) getCredentialSecret(ctx context.Context, azureMachinePool key
 	r.logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
 
 	return credentialSecret, nil
+}
+
+// getMachinePoolByName finds and return a MachinePool object using the specified params.
+func (r *Resource) getMachinePoolByName(ctx context.Context, namespace, name string) (*expcapiv1alpha3.MachinePool, error) {
+	machinePool := &expcapiv1alpha3.MachinePool{}
+	objectKey := ctrlclient.ObjectKey{Name: name, Namespace: namespace}
+	if err := r.ctrlClient.Get(ctx, objectKey, machinePool); err != nil {
+		return nil, err
+	}
+
+	r.logger = r.logger.With("machinePool", machinePool.Name)
+
+	return machinePool, nil
+}
+
+// getOwnerMachinePool returns the MachinePool object owning the current resource.
+func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMeta) (*expcapiv1alpha3.MachinePool, error) {
+	for _, ref := range obj.OwnerReferences {
+		if ref.Kind == "MachinePool" && ref.APIVersion == expcapiv1alpha3.GroupVersion.String() {
+			return r.getMachinePoolByName(ctx, obj.Namespace, ref.Name)
+		}
+	}
+
+	return nil, nil
 }

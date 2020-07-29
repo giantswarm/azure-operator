@@ -70,3 +70,12 @@ var bootstrapCRNotReady = &microerror.Error{
 func IsBootstrapCRNotReady(err error) bool {
 	return microerror.Cause(err) == bootstrapCRNotReady
 }
+
+var ownerReferenceNotSet = &microerror.Error{
+	Kind: "ownerReferenceNotSet",
+}
+
+// IsOwnerReferenceNotSet asserts ownerReferenceNotSet.
+func IsOwnerReferenceNotSet(err error) bool {
+	return microerror.Cause(err) == ownerReferenceNotSet
+}
