@@ -41,21 +41,6 @@ workflows:
             tags:
               only: /^v.*/
 
-      # deploy to installations.
-      - architect/push-to-app-collection:
-          name: push-azure-operator-to-azure-app-collection
-          app_name: "azure-operator"
-          app_collection_repo: "azure-app-collection"
-          requires:
-            - push-azure-operator-to-control-plane-app-catalog
-          filters:
-            # Do not trigger the job on commit.
-            branches:
-              ignore: /.*/
-            # Trigger the job also on git tag.
-            tags:
-              only: /^v.*/
-
       # manual approval to run e2e tests.
       - hold:
           type: approval
