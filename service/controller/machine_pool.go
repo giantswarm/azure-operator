@@ -13,10 +13,10 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	v1alpha33 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	v1alpha32 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/util"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capiutil "sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -65,7 +65,7 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
 			Name: project.Name() + "-machine-pool-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(v1alpha32.MachinePool)
+				return new(expcapiv1alpha3.MachinePool)
 			},
 			Resources: resources,
 			Selector: labels.SelectorFromSet(map[string]string{
@@ -172,18 +172,29 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 		return microerror.Mask(err)
 	}
 
+	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Spec.Template.Spec.InfrastructureRef.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	if machinePool.Labels == nil {
 		machinePool.Labels = make(map[string]string)
 	}
 	machinePool.Labels[capiv1alpha3.ClusterLabelName] = machinePool.Spec.ClusterName
 
-	cluster, err := util.GetClusterByName(ctx, r.ctrlClient, machinePool.ObjectMeta.Namespace, machinePool.Spec.ClusterName)
+	if azureMachinePool.Labels == nil {
+		azureMachinePool.Labels = make(map[string]string)
+	}
+	azureMachinePool.Labels[capiv1alpha3.ClusterLabelName] = machinePool.Spec.ClusterName
+
+	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.ObjectMeta.Namespace, machinePool.Spec.ClusterName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	// Set Cluster as owner of MachinePool
-	machinePool.OwnerReferences = util.EnsureOwnerRef(machinePool.OwnerReferences, metav1.OwnerReference{
+	machinePool.OwnerReferences = capiutil.EnsureOwnerRef(machinePool.OwnerReferences, metav1.OwnerReference{
 		APIVersion: cluster.APIVersion,
 		Kind:       cluster.Kind,
 		Name:       cluster.Name,
@@ -196,12 +207,6 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 	}
 
 	// Set MachinePool as owner of AzureMachinePool
-	azureMachinePool := v1alpha33.AzureMachinePool{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Spec.Template.Spec.InfrastructureRef.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	err = controllerutil.SetControllerReference(&machinePool, &azureMachinePool, r.scheme)
 	if err != nil {
 		return microerror.Mask(err)
