@@ -82,6 +82,8 @@ Installation:
               template:
                 uri:
                   version: %s
+            debug:
+              insecurestorageaccount: true
 `
 )
 

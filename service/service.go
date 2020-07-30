@@ -204,6 +204,13 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var debugSettings setting.Debug
+	{
+		debugSettings = setting.Debug{
+			InsecureStorageAccount: config.Viper.GetBool(config.Flag.Service.Debug.InsecureStorageAccount),
+		}
+	}
+
 	var azureClusterController *controller.AzureCluster
 	{
 		c := controller.AzureClusterConfig{
@@ -291,6 +298,7 @@ func New(config Config) (*Service, error) {
 			SentryDSN:                 sentryDSN,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Debug:                     debugSettings,
 		}
 
 		clusterController, err = controller.NewCluster(c)

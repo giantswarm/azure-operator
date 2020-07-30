@@ -79,6 +79,8 @@ type ClusterConfig struct {
 	VMSSCheckWorkers int
 
 	SentryDSN string
+
+	Debug setting.Debug
 }
 
 type Cluster struct {
@@ -372,6 +374,7 @@ func newClusterResources(config ClusterConfig, certsSearcher certs.Interface) ([
 			Azure:                      config.Azure,
 			ClientFactory:              clientFactory,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
+			Debug:                      config.Debug,
 		}
 
 		deploymentResource, err = deployment.New(c)
