@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/appcatalog"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
@@ -25,7 +26,15 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 	var latestRelease string
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %#q release version", chartName))
-		latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
+
+		o := func() error {
+			latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
+
+			return nil
+		}
+		n := backoff.NewNotifier(config.Logger, ctx)
+		b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
+		err := backoff.RetryNotify(o, b, n)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
