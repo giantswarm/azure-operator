@@ -195,8 +195,8 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 
 	// Set Cluster as owner of MachinePool
 	machinePool.OwnerReferences = capiutil.EnsureOwnerRef(machinePool.OwnerReferences, metav1.OwnerReference{
-		APIVersion: cluster.APIVersion,
-		Kind:       cluster.Kind,
+		APIVersion: capiv1alpha3.GroupVersion.String(),
+		Kind:       "Cluster",
 		Name:       cluster.Name,
 		UID:        cluster.UID,
 	})
