@@ -168,7 +168,7 @@ func (r *ClusterOwnerReferencesResource) EnsureCreated(ctx context.Context, obj 
 	}
 
 	azureCluster := v1alpha3.AzureCluster{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Spec.InfrastructureRef.Namespace, Name: cluster.Spec.InfrastructureRef.Name}, &azureCluster)
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: cluster.Spec.InfrastructureRef.Name}, &azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

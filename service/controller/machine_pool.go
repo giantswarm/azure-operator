@@ -173,7 +173,7 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 	}
 
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
-	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Spec.Template.Spec.InfrastructureRef.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
