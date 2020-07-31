@@ -51,11 +51,13 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	azureClusterController  *controller.AzureCluster
-	bootOnce                sync.Once
-	clusterController       *controller.Cluster
-	machinePoolController   *controller.MachinePool
-	statusResourceCollector *statusresource.CollectorSet
+	azureClusterController     *controller.AzureCluster
+	azureConfigController      *controller.AzureConfig
+	azureMachinePoolController *controller.AzureMachinePool
+	bootOnce                   sync.Once
+	clusterController          *controller.Cluster
+	machinePoolController      *controller.MachinePool
+	statusResourceCollector    *statusresource.CollectorSet
 }
 
 // New creates a new configured service object.
@@ -204,33 +206,6 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var azureClusterController *controller.AzureCluster
-	{
-		c := controller.AzureClusterConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
-
-			Flag:  config.Flag,
-			Viper: config.Viper,
-
-			Azure:            azure,
-			Ignition:         Ignition,
-			OIDC:             OIDC,
-			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.Viper.GetString(config.Flag.Service.Registry.Domain),
-			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
-
-			SentryDSN: sentryDSN,
-		}
-
-		azureClusterController, err = controller.NewAzureCluster(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var kubeLockLocker locker.Interface
 	{
 		c := locker.KubeLockLockerConfig{
@@ -265,14 +240,41 @@ func New(config Config) (*Service, error) {
 
 	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
 
-	var clusterController *controller.Cluster
+	var azureClusterController *controller.AzureCluster
+	{
+		c := controller.AzureClusterConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
+			Azure:            azure,
+			Ignition:         Ignition,
+			OIDC:             OIDC,
+			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:      config.ProjectName,
+			RegistryDomain:   config.Viper.GetString(config.Flag.Service.Registry.Domain),
+			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+
+			SentryDSN: sentryDSN,
+		}
+
+		azureClusterController, err = controller.NewAzureCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureConfigController *controller.AzureConfig
 	{
 		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		c := controller.ClusterConfig{
+		c := controller.AzureConfigConfig{
 			Azure:                     azure,
 			CredentialProvider:        credentialProvider,
 			CPAzureClientSet:          cpAzureClientSet,
@@ -293,15 +295,15 @@ func New(config Config) (*Service, error) {
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 		}
 
-		clusterController, err = controller.NewCluster(c)
+		azureConfigController, err = controller.NewAzureConfig(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	var machinePoolController *controller.MachinePool
+	var azureMachinePoolController *controller.AzureMachinePool
 	{
-		c := controller.MachinePoolConfig{
+		c := controller.AzureMachinePoolConfig{
 			CredentialProvider:        credentialProvider,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
@@ -312,6 +314,34 @@ func New(config Config) (*Service, error) {
 			Logger:                    config.Logger,
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SentryDSN:                 sentryDSN,
+		}
+
+		azureMachinePoolController, err = controller.NewAzureMachinePool(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var clusterController *controller.Cluster
+	{
+		c := controller.ClusterConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			SentryDSN: sentryDSN,
+		}
+
+		clusterController, err = controller.NewCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var machinePoolController *controller.MachinePool
+	{
+		c := controller.MachinePoolConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			SentryDSN: sentryDSN,
 		}
 
 		machinePoolController, err = controller.NewMachinePool(c)
@@ -353,11 +383,13 @@ func New(config Config) (*Service, error) {
 	s := &Service{
 		Version: versionService,
 
-		azureClusterController:  azureClusterController,
-		bootOnce:                sync.Once{},
-		clusterController:       clusterController,
-		machinePoolController:   machinePoolController,
-		statusResourceCollector: statusResourceCollector,
+		azureClusterController:     azureClusterController,
+		azureConfigController:      azureConfigController,
+		azureMachinePoolController: azureMachinePoolController,
+		bootOnce:                   sync.Once{},
+		clusterController:          clusterController,
+		machinePoolController:      machinePoolController,
+		statusResourceCollector:    statusResourceCollector,
 	}
 
 	return s, nil
