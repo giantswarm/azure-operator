@@ -11,6 +11,8 @@ import (
 	"github.com/giantswarm/microerror"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
@@ -101,6 +103,20 @@ func AzureConfigNetworkCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CIDR
 }
 
+func ToCluster(v interface{}) (capiv1alpha3.Cluster, error) {
+	if v == nil {
+		return capiv1alpha3.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiv1alpha3.Cluster{}, v)
+	}
+
+	customObjectPointer, ok := v.(*capiv1alpha3.Cluster)
+	if !ok {
+		return capiv1alpha3.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiv1alpha3.Cluster{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
+}
+
 func ToAzureMachinePool(v interface{}) (expcapzv1alpha3.AzureMachinePool, error) {
 	if v == nil {
 		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
@@ -109,6 +125,20 @@ func ToAzureMachinePool(v interface{}) (expcapzv1alpha3.AzureMachinePool, error)
 	customObjectPointer, ok := v.(*expcapzv1alpha3.AzureMachinePool)
 	if !ok {
 		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
+}
+
+func ToMachinePool(v interface{}) (expcapiv1alpha3.MachinePool, error) {
+	if v == nil {
+		return expcapiv1alpha3.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapiv1alpha3.MachinePool{}, v)
+	}
+
+	customObjectPointer, ok := v.(*expcapiv1alpha3.MachinePool)
+	if !ok {
+		return expcapiv1alpha3.MachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapiv1alpha3.MachinePool{}, v)
 	}
 	customObject := *customObjectPointer
 
