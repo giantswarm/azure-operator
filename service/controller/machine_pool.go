@@ -2,6 +2,7 @@ package controller
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -172,6 +173,9 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name))
+
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if err != nil {
@@ -188,7 +192,7 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 	}
 	azureMachinePool.Labels[capiv1alpha3.ClusterLabelName] = machinePool.Spec.ClusterName
 
-	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.ObjectMeta.Namespace, machinePool.Spec.ClusterName)
+	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.Namespace, machinePool.Spec.ClusterName)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -206,6 +210,8 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
+
 	// Set MachinePool as owner of AzureMachinePool
 	err = controllerutil.SetControllerReference(&machinePool, &azureMachinePool, r.scheme)
 	if err != nil {
@@ -216,6 +222,8 @@ func (r *MachinePoolOwnerReferencesResource) EnsureCreated(ctx context.Context, 
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name))
 
 	return nil
 }
