@@ -103,15 +103,16 @@ workflows:
           requires:
           - hold
 
-      - architect/integration-test:
-          name: update-test
-          resource_class: large
-          setup-script: "integration/config/setup.sh"
-          env-file: "integration/test/update/.env"
-          test-dir: "integration/test/update"
-          test-timeout: "180m"
-          requires:
-          - hold
+       # this test is known to be broken for releases < 4.2.1
+#      - architect/integration-test:
+#          name: update-test
+#          resource_class: large
+#          setup-script: "integration/config/setup.sh"
+#          env-file: "integration/test/update/.env"
+#          test-dir: "integration/test/update"
+#          test-timeout: "180m"
+#          requires:
+#          - hold
 
       - architect/integration-test:
           name: cp-tc-connectivity-test
