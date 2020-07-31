@@ -52,11 +52,7 @@ type AzureMachinePoolConfig struct {
 	SSOPublicKey              string
 }
 
-type AzureMachinePool struct {
-	*controller.Controller
-}
-
-func NewAzureMachinePool(config AzureMachinePoolConfig) (*AzureMachinePool, error) {
+func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -100,7 +96,7 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*AzureMachinePool, erro
 		}
 	}
 
-	return &AzureMachinePool{Controller: operatorkitController}, nil
+	return operatorkitController, nil
 }
 
 func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.Interface, error) {

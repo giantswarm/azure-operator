@@ -32,11 +32,7 @@ type MachinePoolConfig struct {
 	SentryDSN string
 }
 
-type MachinePool struct {
-	*controller.Controller
-}
-
-func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
+func NewMachinePool(config MachinePoolConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -81,7 +77,7 @@ func NewMachinePool(config MachinePoolConfig) (*MachinePool, error) {
 		}
 	}
 
-	return &MachinePool{Controller: operatorkitController}, nil
+	return operatorkitController, nil
 }
 
 func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
