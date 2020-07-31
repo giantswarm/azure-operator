@@ -81,11 +81,7 @@ type AzureConfigConfig struct {
 	SentryDSN string
 }
 
-type AzureConfig struct {
-	*controller.Controller
-}
-
-func NewAzureConfig(config AzureConfigConfig) (*AzureConfig, error) {
+func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 	var err error
 
 	var certsSearcher *certs.Searcher
@@ -192,9 +188,7 @@ func NewAzureConfig(config AzureConfigConfig) (*AzureConfig, error) {
 		}
 	}
 
-	return &AzureConfig{
-		Controller: operatorkitController,
-	}, nil
+	return operatorkitController, nil
 }
 
 func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {

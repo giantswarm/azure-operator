@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	operatorkitcontroller "github.com/giantswarm/operatorkit/controller"
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
@@ -51,13 +52,9 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	azureClusterController     *controller.AzureCluster
-	azureConfigController      *controller.AzureConfig
-	azureMachinePoolController *controller.AzureMachinePool
-	bootOnce                   sync.Once
-	clusterController          *controller.Cluster
-	machinePoolController      *controller.MachinePool
-	statusResourceCollector    *statusresource.CollectorSet
+	bootOnce                sync.Once
+	controllers             []*operatorkitcontroller.Controller
+	statusResourceCollector *statusresource.CollectorSet
 }
 
 // New creates a new configured service object.
@@ -240,7 +237,9 @@ func New(config Config) (*Service, error) {
 
 	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
 
-	var azureClusterController *controller.AzureCluster
+	var controllers []*operatorkitcontroller.Controller
+
+	var azureClusterController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureClusterConfig{
 			K8sClient: k8sClient,
@@ -265,9 +264,11 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, azureClusterController)
 	}
 
-	var azureConfigController *controller.AzureConfig
+	var azureConfigController *operatorkitcontroller.Controller
 	{
 		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 		if err != nil {
@@ -299,9 +300,11 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, azureConfigController)
 	}
 
-	var azureMachinePoolController *controller.AzureMachinePool
+	var azureMachinePoolController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureMachinePoolConfig{
 			CredentialProvider:        credentialProvider,
@@ -320,9 +323,11 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, azureMachinePoolController)
 	}
 
-	var clusterController *controller.Cluster
+	var clusterController *operatorkitcontroller.Controller
 	{
 		c := controller.ClusterConfig{
 			K8sClient: k8sClient,
@@ -334,9 +339,11 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, clusterController)
 	}
 
-	var machinePoolController *controller.MachinePool
+	var machinePoolController *operatorkitcontroller.Controller
 	{
 		c := controller.MachinePoolConfig{
 			K8sClient: k8sClient,
@@ -348,6 +355,8 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, machinePoolController)
 	}
 
 	var statusResourceCollector *statusresource.CollectorSet
@@ -381,15 +390,10 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
-		Version: versionService,
-
-		azureClusterController:     azureClusterController,
-		azureConfigController:      azureConfigController,
-		azureMachinePoolController: azureMachinePoolController,
-		bootOnce:                   sync.Once{},
-		clusterController:          clusterController,
-		machinePoolController:      machinePoolController,
-		statusResourceCollector:    statusResourceCollector,
+		bootOnce:                sync.Once{},
+		controllers:             controllers,
+		statusResourceCollector: statusResourceCollector,
+		Version:                 versionService,
 	}
 
 	return s, nil
@@ -399,9 +403,9 @@ func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
-		go s.azureClusterController.Boot(ctx)
-		go s.clusterController.Boot(ctx)
-		go s.machinePoolController.Boot(ctx)
+		for _, ctrl := range s.controllers {
+			go ctrl.Boot(ctx)
+		}
 	})
 }
 
