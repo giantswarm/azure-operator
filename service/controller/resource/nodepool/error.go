@@ -86,22 +86,61 @@ var wrongTypeError = &microerror.Error{
 	Kind: "wrongTypeError",
 }
 
+// IsWrongTypeError asserts wrongTypeError.
+func IsWrongTypeError(err error) bool {
+	return microerror.Cause(err) == wrongTypeError
+}
+
 var tooManyCredentialsError = &microerror.Error{
 	Kind: "tooManyCredentialsError",
+}
+
+// IsTooManyCredentialsError asserts tooManyCredentialsError.
+func IsTooManyCredentialsError(err error) bool {
+	return microerror.Cause(err) == tooManyCredentialsError
 }
 
 var missingOrganizationLabel = &microerror.Error{
 	Kind: "missingOrganizationLabel",
 }
 
+// IsMissingOrganizationLabel asserts missingOrganizationLabel.
+func IsMissingOrganizationLabel(err error) bool {
+	return microerror.Cause(err) == missingOrganizationLabel
+}
+
 var missingOperatorVersionLabel = &microerror.Error{
 	Kind: "missingOperatorVersionLabel",
+}
+
+// IsMissingOperatorVersionLabel asserts missingOperatorVersionLabel.
+func IsMissingOperatorVersionLabel(err error) bool {
+	return microerror.Cause(err) == missingOperatorVersionLabel
 }
 
 var missingReleaseVersionLabel = &microerror.Error{
 	Kind: "missingReleaseVersionLabel",
 }
 
+// IsMissingReleaseVersionLabel asserts missingReleaseVersionLabel.
+func IsMissingReleaseVersionLabel(err error) bool {
+	return microerror.Cause(err) == missingReleaseVersionLabel
+}
+
 var notAvailableFailureDomain = &microerror.Error{
 	Kind: "notAvailableFailureDomain",
+}
+
+// IsNotAvailableFailureDomain asserts notAvailableFailureDomain.
+func IsNotAvailableFailureDomain(err error) bool {
+	return microerror.Cause(err) == notAvailableFailureDomain
+}
+
+var ownerReferenceNotSet = &microerror.Error{
+	Kind: "ownerReferenceNotSet",
+}
+
+// IsOwnerReferenceNotSet asserts ownerReferenceNotSet.
+func IsOwnerReferenceNotSet(err error) bool {
+	return microerror.Cause(err) == ownerReferenceNotSet
 }
