@@ -30,10 +30,14 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 		o := func() error {
 			latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
 
+			if latestRelease == "" {
+				return invalidAppVersionError
+			}
+
 			return nil
 		}
 		n := backoff.NewNotifier(config.Logger, ctx)
-		b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
+		b := backoff.NewConstant(backoff.ShortMaxWait, backoff.ShortMaxInterval)
 		err := backoff.RetryNotify(o, b, n)
 		if err != nil {
 			return "", microerror.Mask(err)
