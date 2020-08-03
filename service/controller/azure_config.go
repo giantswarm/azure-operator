@@ -78,6 +78,7 @@ type AzureConfigConfig struct {
 	TemplateVersion  string
 	VMSSCheckWorkers int
 
+	Debug     setting.Debug
 	SentryDSN string
 }
 
