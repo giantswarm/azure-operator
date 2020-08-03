@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	operatorkitcontroller "github.com/giantswarm/operatorkit/controller"
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
@@ -51,10 +52,8 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	azureClusterController  *controller.AzureCluster
 	bootOnce                sync.Once
-	clusterController       *controller.Cluster
-	machinePoolController   *controller.MachinePool
+	controllers             []*operatorkitcontroller.Controller
 	statusResourceCollector *statusresource.CollectorSet
 }
 
@@ -272,14 +271,45 @@ func New(config Config) (*Service, error) {
 
 	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
 
-	var clusterController *controller.Cluster
+	var controllers []*operatorkitcontroller.Controller
+
+	var azureClusterController *operatorkitcontroller.Controller
+	{
+		c := controller.AzureClusterConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
+			Azure:            azure,
+			Ignition:         Ignition,
+			OIDC:             OIDC,
+			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:      config.ProjectName,
+			RegistryDomain:   config.Viper.GetString(config.Flag.Service.Registry.Domain),
+			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+
+			SentryDSN: sentryDSN,
+		}
+
+		azureClusterController, err = controller.NewAzureCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		controllers = append(controllers, azureClusterController)
+	}
+
+	var azureConfigController *operatorkitcontroller.Controller
 	{
 		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		c := controller.ClusterConfig{
+		c := controller.AzureConfigConfig{
 			Azure:                     azure,
 			CredentialProvider:        credentialProvider,
 			CPAzureClientSet:          cpAzureClientSet,
@@ -301,15 +331,17 @@ func New(config Config) (*Service, error) {
 			Debug:                     debugSettings,
 		}
 
-		clusterController, err = controller.NewCluster(c)
+		azureConfigController, err = controller.NewAzureConfig(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, azureConfigController)
 	}
 
-	var machinePoolController *controller.MachinePool
+	var azureMachinePoolController *operatorkitcontroller.Controller
 	{
-		c := controller.MachinePoolConfig{
+		c := controller.AzureMachinePoolConfig{
 			CredentialProvider:        credentialProvider,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
@@ -322,10 +354,44 @@ func New(config Config) (*Service, error) {
 			SentryDSN:                 sentryDSN,
 		}
 
+		azureMachinePoolController, err = controller.NewAzureMachinePool(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		controllers = append(controllers, azureMachinePoolController)
+	}
+
+	var clusterController *operatorkitcontroller.Controller
+	{
+		c := controller.ClusterConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			SentryDSN: sentryDSN,
+		}
+
+		clusterController, err = controller.NewCluster(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		controllers = append(controllers, clusterController)
+	}
+
+	var machinePoolController *operatorkitcontroller.Controller
+	{
+		c := controller.MachinePoolConfig{
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
+			SentryDSN: sentryDSN,
+		}
+
 		machinePoolController, err = controller.NewMachinePool(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		controllers = append(controllers, machinePoolController)
 	}
 
 	var statusResourceCollector *statusresource.CollectorSet
@@ -359,13 +425,10 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
-		Version: versionService,
-
-		azureClusterController:  azureClusterController,
 		bootOnce:                sync.Once{},
-		clusterController:       clusterController,
-		machinePoolController:   machinePoolController,
+		controllers:             controllers,
 		statusResourceCollector: statusResourceCollector,
+		Version:                 versionService,
 	}
 
 	return s, nil
@@ -375,9 +438,9 @@ func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
-		go s.azureClusterController.Boot(ctx)
-		go s.clusterController.Boot(ctx)
-		go s.machinePoolController.Boot(ctx)
+		for _, ctrl := range s.controllers {
+			go ctrl.Boot(ctx)
+		}
 	})
 }
 
