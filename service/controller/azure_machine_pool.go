@@ -6,7 +6,6 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/giantswarm/certs"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -25,9 +24,8 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
@@ -48,14 +46,11 @@ type AzureMachinePoolConfig struct {
 	VMSSMSIEnabled            bool
 }
 
-type AzureMachinePool struct {
-	*controller.Controller
-}
-
-func NewAzureMachinePool(config AzureMachinePoolConfig) (*AzureMachinePool, error) {
+func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
@@ -78,9 +73,7 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*AzureMachinePool, erro
 			},
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			// Name is used to compute finalizer names. This results in something
-			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
-			Name: project.Name() + "-machine-pool-controller",
+			Name:      project.Name() + "-azure-machine-pool-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
 				return new(v1alpha3.AzureMachinePool)
 			},
@@ -95,19 +88,12 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*AzureMachinePool, erro
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-	}
 
-	return &AzureMachinePool{Controller: operatorkitController}, nil
+		return operatorkitController, nil
+	}
 }
 
 func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.Interface, error) {
-	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
-	}
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
-	}
-
 	var err error
 
 	var clientFactory *client.Factory
@@ -238,46 +224,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	var certsSearcher *certs.Searcher
-	{
-		c := certs.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			WatchTimeout: 5 * time.Second,
-		}
-
-		certsSearcher, err = certs.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var cloudConfigResource resource.Interface
-	{
-		c := cloudconfig.Config{
-			AzureClientsFactory: clientFactory,
-			CertsSearcher:       certsSearcher,
-			CtrlClient:          config.K8sClient.CtrlClient(),
-			G8sClient:           config.K8sClient.G8sClient(),
-			K8sClient:           config.K8sClient.K8sClient(),
-			Logger:              config.Logger,
-			RegistryDomain:      config.RegistryDomain,
-		}
-
-		cloudconfigObject, err := cloudconfig.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		cloudConfigResource, err = toCRUDResource(config.Logger, cloudconfigObject)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	resources := []resource.Interface{
-		cloudConfigResource,
 		ipamResource,
 		instanceResource,
 	}

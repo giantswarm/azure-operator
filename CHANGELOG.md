@@ -9,6 +9,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
+- Add provider independent controllers to manage labeling and setting owner references in other provider dependent objects.
+
+### Changed
+
+- Decouple `Service` from controllers using an slice of controllers.
+
+## [4.2.0] - 2020-07-28
+
+### Added
+
 - Mapping from Cluster API & CAPZ CRs to AzureConfig. This change provides migration path towards Azure Cluster API implementation.
 - State machine flowchart generation.
 - Support to forward errors to Sentry.
@@ -25,12 +35,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Migrate the `vmsscheck` guards to use the Azure client factory.
 - Use `0.1.0` tag for `k8s-api-heahtz` image.
 - Use `0.2.0` tag for `k8s-setup-network-env` image.
+- Use fixed value for registry domain (docker.io) and mirrors (giantswarm.azurecr.io).
 - Replace --service.registrydomain with --service.registry.domain.
 
 ### Removed
 
 - The Azure MSI extension for linux is not deployed anymore.
-- The local calico kubernetes manifests are removed. We use the `k8scloudconfig` ones now. 
+- The local calico kubernetes manifests are removed. We use the `k8scloudconfig` ones now.
 
 ## [4.1.0] - 2020-06-24
 
@@ -131,7 +142,9 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v4.0.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v4.2.0...HEAD
+[4.2.0]: https://github.com/giantswarm/azure-operator/compare/v4.1.0...v4.2.0
+[4.1.0]: https://github.com/giantswarm/azure-operator/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/giantswarm/azure-operator/compare/v4.0.0...v4.0.1
 [4.0.0]: https://github.com/giantswarm/azure-operator/compare/v3.0.7...v4.0.0
 [3.0.7]: https://github.com/giantswarm/azure-operator/compare/v3.0.6...v3.0.7

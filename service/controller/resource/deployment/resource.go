@@ -144,6 +144,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
+		err = r.ensureServiceEndpoints(ctx, cr)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if reconciliationcanceledcontext.IsCanceled(ctx) {
+			return nil
+		}
+
 		err = r.enrichControllerContext(ctx, cr, deploymentsClient)
 		if err != nil {
 			return microerror.Mask(err)

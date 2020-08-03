@@ -5,9 +5,10 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/appcatalog"
+	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
-	"k8s.io/helm/pkg/helm"
+	"gopkg.in/yaml.v2"
 
 	"github.com/giantswarm/azure-operator/v4/integration/env"
 	"github.com/giantswarm/azure-operator/v4/integration/key"
@@ -103,16 +104,37 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 	}()
 
 	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q", releaseName))
-	err := config.HelmClient.InstallReleaseFromTarball(ctx,
+
+	rawValues, err := valuesStrToMap(values)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	installOptions := helmclient.InstallOptions{
+		Namespace: key.Namespace(),
+		Wait:      true,
+	}
+
+	err = config.HelmClient.InstallReleaseFromTarball(ctx,
 		chartPackagePath,
 		key.Namespace(),
-		helm.ReleaseName(releaseName),
-		helm.ValueOverrides([]byte(values)),
-		helm.InstallWait(true))
+		rawValues,
+		installOptions)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q", releaseName))
 
 	return err
+}
+
+func valuesStrToMap(values string) (map[string]interface{}, error) {
+	var rawValues map[string]interface{}
+
+	err := yaml.Unmarshal([]byte(values), &rawValues)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return rawValues, nil
 }

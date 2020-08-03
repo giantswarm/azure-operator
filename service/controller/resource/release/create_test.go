@@ -95,8 +95,7 @@ func Test_Resource_Puts_Release_In_Context_When_Release_Has_Not_Leading_V(t *tes
 func givenReleaseWithName(releaseName string) *releasev1alpha1.Release {
 	return &releasev1alpha1.Release{
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      releaseName,
-			Namespace: "default",
+			Name: releaseName,
 			Labels: map[string]string{
 				"giantswarm.io/managed-by": "release-operator",
 				"giantswarm.io/provider":   "azure",
