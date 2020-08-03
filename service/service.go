@@ -203,6 +203,13 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var debugSettings setting.Debug
+	{
+		debugSettings = setting.Debug{
+			InsecureStorageAccount: config.Viper.GetBool(config.Flag.Service.Debug.InsecureStorageAccount),
+		}
+	}
+
 	var kubeLockLocker locker.Interface
 	{
 		c := locker.KubeLockLockerConfig{
@@ -294,6 +301,7 @@ func New(config Config) (*Service, error) {
 			SentryDSN:                 sentryDSN,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Debug:                     debugSettings,
 		}
 
 		azureConfigController, err = controller.NewAzureConfig(c)

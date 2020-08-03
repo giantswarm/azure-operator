@@ -50,7 +50,7 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 					},
 					{
 						Name:    "cluster-operator",
-						Version: "0.23.8",
+						Version: "0.23.12",
 					},
 					{
 						Name:    "cert-operator",
@@ -62,11 +62,11 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 					},
 					{
 						Name:    "calico",
-						Version: "3.10.1",
+						Version: "3.15.1",
 					},
 					{
 						Name:    "containerlinux",
-						Version: "2345.3.1",
+						Version: "2512.2.1",
 					},
 					{
 						Name:    "coredns",
@@ -74,11 +74,11 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 					},
 					{
 						Name:    "etcd",
-						Version: "3.3.17",
+						Version: "3.4.9",
 					},
 					{
 						Name:    "kubernetes",
-						Version: "1.16.8",
+						Version: "1.17.9",
 					},
 				},
 				Date:  &metav1.Time{Time: time.Unix(10, 0)},

@@ -40,6 +40,7 @@ type Config struct {
 	Azure                      setting.Azure
 	ClientFactory              *client.Factory
 	ControlPlaneSubscriptionID string
+	Debug                      setting.Debug
 }
 
 type Resource struct {
@@ -51,6 +52,7 @@ type Resource struct {
 	azure                      setting.Azure
 	clientFactory              *client.Factory
 	controlPlaneSubscriptionID string
+	debug                      setting.Debug
 }
 
 type StorageAccountIpRule struct {
@@ -91,6 +93,7 @@ func New(config Config) (*Resource, error) {
 		azure:                      config.Azure,
 		clientFactory:              config.ClientFactory,
 		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
+		debug:                      config.Debug,
 	}
 
 	return r, nil

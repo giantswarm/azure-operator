@@ -5,10 +5,10 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/appcatalog"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
-	"gopkg.in/yaml.v2"
 
 	"github.com/giantswarm/azure-operator/v4/integration/env"
 	"github.com/giantswarm/azure-operator/v4/integration/key"
@@ -26,7 +26,19 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 	var latestRelease string
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %#q release version", chartName))
-		latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
+
+		o := func() error {
+			latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
+
+			if latestRelease == "" {
+				return invalidAppVersionError
+			}
+
+			return nil
+		}
+		n := backoff.NewNotifier(config.Logger, ctx)
+		b := backoff.NewConstant(backoff.ShortMaxWait, backoff.ShortMaxInterval)
+		err := backoff.RetryNotify(o, b, n)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -111,8 +123,9 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 	}
 
 	installOptions := helmclient.InstallOptions{
-		Namespace: key.Namespace(),
-		Wait:      true,
+		Namespace:   key.Namespace(),
+		ReleaseName: releaseName,
+		Wait:        true,
 	}
 
 	err = config.HelmClient.InstallReleaseFromTarball(ctx,
@@ -129,9 +142,7 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 }
 
 func valuesStrToMap(values string) (map[string]interface{}, error) {
-	var rawValues map[string]interface{}
-
-	err := yaml.Unmarshal([]byte(values), &rawValues)
+	rawValues, err := helmclient.MergeValues(map[string][]byte{"dest": []byte(values)}, map[string][]byte{"src": []byte{}})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

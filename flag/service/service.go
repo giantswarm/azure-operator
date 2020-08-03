@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/flag/service/azure"
 	"github.com/giantswarm/azure-operator/v4/flag/service/cluster"
+	"github.com/giantswarm/azure-operator/v4/flag/service/debug"
 	"github.com/giantswarm/azure-operator/v4/flag/service/installation"
 	"github.com/giantswarm/azure-operator/v4/flag/service/registry"
 	"github.com/giantswarm/azure-operator/v4/flag/service/sentry"
@@ -19,4 +20,5 @@ type Service struct {
 	Registry     registry.Registry
 	Tenant       tenant.Tenant
 	Sentry       sentry.Sentry
+	Debug        debug.Debug
 }
