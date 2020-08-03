@@ -142,13 +142,6 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 }
 
 func valuesStrToMap(values string) (map[string]interface{}, error) {
-	//var rawValues map[string]interface{}
-	//
-	//err := yaml.Unmarshal([]byte(values), &rawValues)
-	//if err != nil {
-	//	return nil, microerror.Mask(err)
-	//}
-
 	rawValues, err := helmclient.MergeValues(map[string][]byte{"dest": []byte(values)}, map[string][]byte{"src": []byte{}})
 	if err != nil {
 		return nil, microerror.Mask(err)

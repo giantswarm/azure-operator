@@ -7,6 +7,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add provider independent controllers to manage labeling and setting owner references in other provider dependent objects.
+
+### Changed
+
+- Decouple `Service` from controllers using an slice of controllers.
+
 ## [4.2.0] - 2020-07-28
 
 ### Added
