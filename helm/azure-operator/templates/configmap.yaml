@@ -54,9 +54,11 @@ data:
             port: 10250
           ssh:
             userList: '{{ .Values.Installation.V1.Guest.SSH.UserList }}'
+      {{- if .Values.Installation.V1.Debug }}
       {{- if .Values.Installation.V1.Debug.InsecureStorageAccount }}
       debug:
         insecureStorageAccount: true
+      {{- end }}
       {{- end }}
       installation:
         name: '{{ .Values.Installation.V1.Name }}'
