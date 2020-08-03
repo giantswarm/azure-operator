@@ -149,7 +149,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		InstanceWatchdog: iwd,
 	}
 
-	var instanceResource resource.Interface
+	var nodepoolResource resource.Interface
 	{
 		c := nodepool.Config{
 			Config:                    nodesConfig,
@@ -158,7 +158,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 		}
 
-		instanceResource, err = nodepool.New(c)
+		nodepoolResource, err = nodepool.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -228,7 +228,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 
 	resources := []resource.Interface{
 		ipamResource,
-		instanceResource,
+		nodepoolResource,
 	}
 
 	{
