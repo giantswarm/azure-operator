@@ -1506,30 +1506,30 @@
           ],
           "outputs": {}
         },
-        "parameters": {
-          "blobContainerName": {
-            "value": "[parameters('blobContainerName')]"
+        "parameters":{
+          "blobContainerName":{
+            "value":"[parameters('blobContainerName')]"
           },
-          "clusterID": {
-            "value": "[parameters('clusterID')]"
+          "clusterID":{
+            "value":"[parameters('clusterID')]"
           },
-          "controlPlaneWorkerSubnetID": {
-            "value": "[parameters('controlPlaneWorkerSubnetID')]"
+          "controlPlaneWorkerSubnetID":{
+            "value":"[parameters('controlPlaneWorkerSubnetID')]"
           },
-          "GiantSwarmTags": {
-            "value": "[parameters('GiantSwarmTags')]"
+          "GiantSwarmTags":{
+            "value":"[parameters('GiantSwarmTags')]"
           },
-          "masterSubnetID": {
-            "value": "[reference('virtual_network_setup', '2016-09-01').outputs.masterSubnetID.value]"
+          "masterSubnetID":{
+            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.masterSubnetID.value]"
           },
-          "workerSubnetID": {
-            "value": "[reference('virtual_network_setup', '2016-09-01').outputs.workerSubnetID.value]"
+          "workerSubnetID":{
+            "value":"[reference('virtual_network_setup', '2016-09-01').outputs.workerSubnetID.value]"
           },
-          "storageAccountName": {
-            "value": "[parameters('storageAccountName')]"
+          "storageAccountName":{
+            "value":"[parameters('storageAccountName')]"
           },
-          "insecureStorageAccount": {
-            "value": "[parameters('insecureStorageAccount')]"
+          "insecureStorageAccount":{
+            "value":"[parameters('insecureStorageAccount')]"
           }
         }
       }
