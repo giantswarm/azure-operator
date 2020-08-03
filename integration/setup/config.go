@@ -16,10 +16,9 @@ import (
 )
 
 const (
-	namespace       = "giantswarm"
-	organization    = "giantswarm"
-	quayAddress     = "https://quay.io"
-	tillerNamespace = "kube-system"
+	namespace    = "giantswarm"
+	organization = "giantswarm"
+	quayAddress  = "https://quay.io"
 )
 
 type Config struct {
@@ -144,10 +143,8 @@ func NewConfig() (Config, error) {
 	var helmClient *helmclient.Client
 	{
 		c := helmclient.Config{
-			Logger:          logger,
-			K8sClient:       cpK8sClients.K8sClient(),
-			RestConfig:      host.RestConfig(),
-			TillerNamespace: tillerNamespace,
+			Logger:    logger,
+			K8sClient: cpK8sClients,
 		}
 
 		helmClient, err = helmclient.New(c)

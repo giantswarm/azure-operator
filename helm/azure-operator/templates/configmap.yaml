@@ -46,20 +46,12 @@ data:
           domain: '{{ .Values.Installation.V1.Guest.Kubernetes.ClusterDomain }}'
           ingressController:
             baseDomain:  '{{ .Values.Installation.V1.Guest.Kubernetes.IngressController.BaseDomain }}'
-            docker:
-              image: 'quay.io/giantswarm/nginx-ingress-controller:{{ .Values.Installation.V1.Guest.Ingress.Version }}'
             insecurePort: 30010
             securePort: 30011
-          kubectl:
-            docker:
-              image: 'quay.io/giantswarm/docker-kubectl:{{ .Values.Installation.V1.Guest.Kubectl.Version }}'
           kubelet:
             altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.{{ .Values.Installation.V1.Guest.Kubernetes.ClusterDomain }}'
             labels: ''
             port: 10250
-          networkSetup:
-            docker:
-              image: '{{ .Values.Installation.V1.Registry.Domain }}/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9'
           ssh:
             userList: '{{ .Values.Installation.V1.Guest.SSH.UserList }}'
       installation:
@@ -83,10 +75,12 @@ data:
         {{- end }}
       kubernetes:
         incluster: true
-      registryDomain: '{{ .Values.Installation.V1.Registry.Domain }}'
       registry:
-        domain: '{{ .Values.Installation.V1.Registry.Domain }}'
-        mirrors: '{{ range $i, $e := .Values.Installation.V1.Registry.Mirrors }}{{ if $i }},{{end}}{{ $e }}{{end}}'
+      registry:
+        #domain: '{{ .Values.Installation.V1.Registry.Domain }}'
+        #mirrors: '{{ range $i, $e := .Values.Installation.V1.Registry.Mirrors }}{{ if $i }},{{end}}{{ $e }}{{end}}'
+        domain: 'docker.io'
+        mirrors: 'giantswarm.azurecr.io'
       tenant:
         ssh:
           ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
