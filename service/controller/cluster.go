@@ -29,11 +29,7 @@ type ClusterConfig struct {
 	SentryDSN string
 }
 
-type Cluster struct {
-	*controller.Controller
-}
-
-func NewCluster(config ClusterConfig) (*Cluster, error) {
+func NewCluster(config ClusterConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -76,7 +72,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 		}
 	}
 
-	return &Cluster{Controller: operatorkitController}, nil
+	return operatorkitController, nil
 }
 
 func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
