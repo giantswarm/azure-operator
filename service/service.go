@@ -210,33 +210,6 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
-	var azureClusterController *controller.AzureCluster
-	{
-		c := controller.AzureClusterConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
-
-			Flag:  config.Flag,
-			Viper: config.Viper,
-
-			Azure:            azure,
-			Ignition:         Ignition,
-			OIDC:             OIDC,
-			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.Viper.GetString(config.Flag.Service.Registry.Domain),
-			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
-
-			SentryDSN: sentryDSN,
-		}
-
-		azureClusterController, err = controller.NewAzureCluster(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var kubeLockLocker locker.Interface
 	{
 		c := locker.KubeLockLockerConfig{
