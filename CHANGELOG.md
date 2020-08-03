@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add provider independent controllers to manage labeling and setting owner references in other provider dependent objects.
+- Export container logs for e2e tests to azure analytics.
 
 ### Changed
 
