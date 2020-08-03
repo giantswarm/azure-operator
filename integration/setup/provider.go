@@ -26,6 +26,8 @@ const (
 ---
 Installation:
   V1:
+    Debug:
+      InsecureStorageAccount: "true"
     Guest:
       Calico:
         CIDR: ""
@@ -82,8 +84,6 @@ Installation:
               template:
                 uri:
                   version: %s
-            debug:
-              insecurestorageaccount: true
 `
 )
 
@@ -121,6 +121,28 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachinePool CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring MachinePool CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("exp.cluster.x-k8s.io", "MachinePool"), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured MachinePool CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Cluster CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("cluster.x-k8s.io", "Cluster"), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Cluster CRD exists")
 	}
 
 	var operatorVersion string

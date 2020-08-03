@@ -14,8 +14,7 @@ Prepare the environment using kind
 
 ```bash
 (kind delete cluster || true) && kind create cluster && kind load docker-image quay.io/giantswarm/azure-operator:`architect project version` \
-  && kind get kubeconfig > kubeconfig.yaml && sudo ln -fs "${PWD}/kubeconfig.yaml" /workdir/.shipyard/config \
-  && helm init --wait && k create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
+  && kind get kubeconfig > kubeconfig.yaml && sudo ln -fs "${PWD}/kubeconfig.yaml" /workdir/.shipyard/config
 ```
 
 

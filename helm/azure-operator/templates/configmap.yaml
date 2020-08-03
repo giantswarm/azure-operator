@@ -54,6 +54,10 @@ data:
             port: 10250
           ssh:
             userList: '{{ .Values.Installation.V1.Guest.SSH.UserList }}'
+      {{- if .Values.Installation.V1.Debug.InsecureStorageAccount }}
+      debug:
+        insecureStorageAccount: true
+      {{- end }}
       installation:
         name: '{{ .Values.Installation.V1.Name }}'
       {{- if .Values.Installation.V1.Guest }}
@@ -75,7 +79,6 @@ data:
         {{- end }}
       kubernetes:
         incluster: true
-      registry:
       registry:
         #domain: '{{ .Values.Installation.V1.Registry.Domain }}'
         #mirrors: '{{ range $i, $e := .Values.Installation.V1.Registry.Mirrors }}{{ if $i }},{{end}}{{ $e }}{{end}}'
