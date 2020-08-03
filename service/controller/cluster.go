@@ -11,7 +11,6 @@ import (
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
-	"github.com/giantswarm/statusresource"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -21,20 +20,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/dnsrecord"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/encryptionkey"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/endpoints"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/resourcegroup"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tenantclients"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
