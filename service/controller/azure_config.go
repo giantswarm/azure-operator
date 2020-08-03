@@ -461,14 +461,14 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
-	var clusterChecker *ipam.ClusterChecker
+	var azureConfigChecker *ipam.AzureConfigChecker
 	{
-		c := ipam.ClusterCheckerConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
+		c := ipam.AzureConfigCheckerConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
-		clusterChecker, err = ipam.NewClusterChecker(c)
+		azureConfigChecker, err = ipam.NewAzureConfigChecker(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -477,8 +477,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var azureConfigPersister *ipam.AzureConfigPersister
 	{
 		c := ipam.AzureConfigPersisterConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
@@ -507,7 +507,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var ipamResource resource.Interface
 	{
 		c := ipam.Config{
-			Checker:   clusterChecker,
+			Checker:   azureConfigChecker,
 			Collector: subnetCollector,
 			Locker:    config.Locker,
 			Logger:    config.Logger,
