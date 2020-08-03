@@ -109,6 +109,11 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 			Logger:     config.Logger,
 			Scheme:     config.K8sClient.Scheme(),
 		}
+
+		ownerReferencesResource, err = NewClusterOwnerReferences(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	resources := []resource.Interface{
