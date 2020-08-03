@@ -130,6 +130,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
+		if !bytes.Equal(ignitionBlob, dataSecret.Data[key.CloudConfigSecretKey]) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ignition cloud config in Secret %#q is out of date, updating it", dataSecret.Name))
+
+			dataSecret.Data[key.CloudConfigSecretKey] = ignitionBlob
+
+			err = r.ctrlClient.Update(ctx, dataSecret)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+	}
+
+	{
 		var sparkStatusUpdateNeeded bool
 
 		if !sparkCR.Status.Ready {
@@ -142,8 +155,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			sparkStatusUpdateNeeded = true
 		}
 
-		// TODO: Why is the hash needed? If cloud config changed the secret needs to be updated, not necessarily the Spark CR.
-		// Should we use it to decide whether or not to update the `Secret` later?
 		if sparkCR.Status.Verification.Hash != dataHash {
 			sparkCR.Status.Verification.Hash = dataHash
 			sparkCR.Status.Verification.Algorithm = "sha512"
@@ -153,19 +164,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if sparkStatusUpdateNeeded {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Updating Spark CR %#q", sparkCR.Name))
 			err = r.ctrlClient.Status().Update(ctx, &sparkCR)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-	}
-
-	{
-		if !bytes.Equal(ignitionBlob, dataSecret.Data[key.CloudConfigSecretKey]) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ignition cloud config in Secret %#q is out of date, updating it", dataSecret.Name))
-
-			dataSecret.Data[key.CloudConfigSecretKey] = ignitionBlob
-
-			err = r.ctrlClient.Update(ctx, dataSecret)
 			if err != nil {
 				return microerror.Mask(err)
 			}
