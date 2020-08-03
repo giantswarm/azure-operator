@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
+	"github.com/giantswarm/statusresource"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -20,7 +21,21 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/dnsrecord"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/encryptionkey"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/endpoints"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/masters"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/namespace"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/resourcegroup"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/tenantclients"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type ClusterConfig struct {
@@ -93,316 +108,6 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 			Scheme:     config.K8sClient.Scheme(),
-		}
-
-		clusteridResource, err = clusterid.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var statusResource resource.Interface
-	{
-		c := statusresource.ResourceConfig{
-			ClusterEndpointFunc:      key.ToClusterEndpoint,
-			ClusterIDFunc:            key.ToClusterID,
-			ClusterStatusFunc:        key.ToClusterStatus,
-			NodeCountFunc:            key.ToNodeCount,
-			Logger:                   config.Logger,
-			RESTClient:               config.K8sClient.G8sClient().ProviderV1alpha1().RESTClient(),
-			TenantCluster:            tenantCluster,
-			VersionBundleVersionFunc: key.ToOperatorVersion,
-		}
-
-		statusResource, err = statusresource.NewResource(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var tenantClientsResource resource.Interface
-	{
-		c := tenantclients.Config{
-			Logger: config.Logger,
-			Tenant: tenantCluster,
-		}
-
-		tenantClientsResource, err = tenantclients.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var releaseResource resource.Interface
-	{
-		c := release.Config{
-			K8sClient: config.K8sClient,
-			Logger:    config.Logger,
-		}
-
-		releaseResource, err = release.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var resourceGroupResource resource.Interface
-	{
-		c := resourcegroup.Config{
-			Logger: config.Logger,
-
-			Azure:            config.Azure,
-			InstallationName: config.InstallationName,
-		}
-
-		resourceGroupResource, err = resourcegroup.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var containerURLResource resource.Interface
-	{
-		c := containerurl.Config{
-			Logger: config.Logger,
-		}
-
-		containerURLResource, err = containerurl.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var encryptionkeyResource resource.Interface
-	{
-		c := encryptionkey.Config{
-			K8sClient:   config.K8sClient.K8sClient(),
-			Logger:      config.Logger,
-			ProjectName: config.ProjectName,
-		}
-
-		encryptionkeyResource, err = encryptionkey.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var blobObjectResource resource.Interface
-	{
-		c := blobobject.Config{
-			CertsSearcher:  certsSearcher,
-			G8sClient:      config.K8sClient.G8sClient(),
-			K8sClient:      config.K8sClient.K8sClient(),
-			Logger:         config.Logger,
-			RegistryDomain: config.RegistryDomain,
-		}
-
-		blobObject, err := blobobject.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		blobObjectResource, err = toCRUDResource(config.Logger, blobObject)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var deploymentResource resource.Interface
-	{
-		c := deployment.Config{
-			Debugger:         newDebugger,
-			G8sClient:        config.K8sClient.G8sClient(),
-			InstallationName: config.InstallationName,
-			Logger:           config.Logger,
-
-			Azure:                      config.Azure,
-			ClientFactory:              clientFactory,
-			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
-			Debug:                      config.Debug,
-		}
-
-		deploymentResource, err = deployment.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var dnsrecordResource resource.Interface
-	{
-		c := dnsrecord.Config{
-			CPRecordSetsClient: *config.CPAzureClientSet.DNSRecordSetsClient,
-			Logger:             config.Logger,
-		}
-
-		ops, err := dnsrecord.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		dnsrecordResource, err = toCRUDResource(config.Logger, ops)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var endpointsResource resource.Interface
-	{
-		c := endpoints.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-		}
-
-		ops, err := endpoints.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		endpointsResource, err = toCRUDResource(config.Logger, ops)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var iwd vmsscheck.InstanceWatchdog
-	{
-		c := vmsscheck.Config{
-			Logger:     config.Logger,
-			NumWorkers: config.VMSSCheckWorkers,
-		}
-
-		var err error
-		iwd, err = vmsscheck.NewInstanceWatchdog(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	nodesConfig := nodes.Config{
-		Debugger:  newDebugger,
-		G8sClient: config.K8sClient.G8sClient(),
-		K8sClient: config.K8sClient.K8sClient(),
-		Logger:    config.Logger,
-
-		Azure:            config.Azure,
-		ClientFactory:    clientFactory,
-		InstanceWatchdog: iwd,
-	}
-
-	var mastersResource resource.Interface
-	{
-		c := masters.Config{
-			Config: nodesConfig,
-		}
-
-		mastersResource, err = masters.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var instanceResource resource.Interface
-	{
-		c := instance.Config{
-			Config: nodesConfig,
-		}
-
-		instanceResource, err = instance.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var clusterChecker *ipam.ClusterChecker
-	{
-		c := ipam.ClusterCheckerConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
-		}
-
-		clusterChecker, err = ipam.NewClusterChecker(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var azureConfigPersister *ipam.AzureConfigPersister
-	{
-		c := ipam.AzureConfigPersisterConfig{
-			G8sClient: config.K8sClient.G8sClient(),
-			Logger:    config.Logger,
-		}
-
-		azureConfigPersister, err = ipam.NewAzureConfigPersister(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var subnetCollector *ipam.SubnetCollector
-	{
-		c := ipam.SubnetCollectorConfig{
-			CredentialProvider: config.CredentialProvider,
-			K8sClient:          config.K8sClient,
-			InstallationName:   config.InstallationName,
-			Logger:             config.Logger,
-
-			NetworkRange: config.IPAMNetworkRange,
-		}
-
-		subnetCollector, err = ipam.NewSubnetCollector(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var ipamResource resource.Interface
-	{
-		c := ipam.Config{
-			Checker:   clusterChecker,
-			Collector: subnetCollector,
-			Locker:    config.Locker,
-			Logger:    config.Logger,
-			Persister: azureConfigPersister,
-
-			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
-			NetworkRange:            config.IPAMNetworkRange,
-		}
-
-		ipamResource, err = ipam.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var namespaceResource resource.Interface
-	{
-		c := namespace.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-		}
-
-		ops, err := namespace.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		namespaceResource, err = toCRUDResource(config.Logger, ops)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var serviceResource resource.Interface
-	{
-		c := service.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-		}
-
-		ownerReferencesResource, err = NewClusterOwnerReferences(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
 		}
 	}
 
