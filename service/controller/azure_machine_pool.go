@@ -73,7 +73,9 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller,
 			},
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			Name:      project.Name() + "-azure-machine-pool-controller",
+			// Name is used to compute finalizer names. This results in something
+			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
+			Name: project.Name() + "-azure-machine-pool-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
 				return new(v1alpha3.AzureMachinePool)
 			},
@@ -88,9 +90,9 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller,
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-
-		return operatorkitController, nil
 	}
+
+	return operatorkitController, nil
 }
 
 func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.Interface, error) {
