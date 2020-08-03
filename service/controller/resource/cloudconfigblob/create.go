@@ -41,7 +41,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	blobName := key.BlobName(&azureMachinePool, key.PrefixWorker())
+	blobName := key.BootstrapBlobName(azureMachinePool)
 
 	var payload string
 	{

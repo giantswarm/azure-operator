@@ -153,6 +153,10 @@ func BlobName(customObject LabelsGetter, role string) string {
 	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
 }
 
+func BootstrapBlobName(customObject expcapzv1alpha3.AzureMachinePool) string {
+	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), customObject.Name, OperatorVersion(&customObject))
+}
+
 func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR
 }
