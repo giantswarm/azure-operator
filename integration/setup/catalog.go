@@ -5,9 +5,10 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/appcatalog"
+	"github.com/giantswarm/backoff"
+	"github.com/giantswarm/helmclient"
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
-	"k8s.io/helm/pkg/helm"
 
 	"github.com/giantswarm/azure-operator/v4/integration/env"
 	"github.com/giantswarm/azure-operator/v4/integration/key"
@@ -19,13 +20,25 @@ const (
 	TestCatalogStorageURL = "https://giantswarm.github.io/control-plane-test-catalog"
 )
 
-func pullLatestChart(ctx context.Context, config Config, chartName string) (string, error) {
+func pullLatestChart(ctx context.Context, config Config, chartName string, catalogURL string) (string, error) {
 	var err error
 
 	var latestRelease string
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %#q release version", chartName))
-		latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
+
+		o := func() error {
+			latestRelease, err = appcatalog.GetLatestVersion(ctx, catalogURL, chartName)
+
+			if latestRelease == "" {
+				return invalidAppVersionError
+			}
+
+			return nil
+		}
+		n := backoff.NewNotifier(config.Logger, ctx)
+		b := backoff.NewConstant(backoff.ShortMaxWait, backoff.ShortMaxInterval)
+		err := backoff.RetryNotify(o, b, n)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -35,7 +48,7 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 	var latestReleaseChartPackagePath string
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("getting tarball URL for latest %#q release", chartName))
-		latestReleaseTarballURL, err := appcatalog.NewTarballURL(CatalogStorageURL, chartName, latestRelease)
+		latestReleaseTarballURL, err := appcatalog.NewTarballURL(catalogURL, chartName, latestRelease)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -71,8 +84,8 @@ func pullChartPackageUnderTest(ctx context.Context, config Config) (string, erro
 	return operatorTarballPath, err
 }
 
-func installLatestReleaseChartPackage(ctx context.Context, config Config, chartName, values string) error {
-	chartPackagePath, err := pullLatestChart(ctx, config, chartName)
+func installLatestReleaseChartPackage(ctx context.Context, config Config, chartName, values string, catalogURL string) error {
+	chartPackagePath, err := pullLatestChart(ctx, config, chartName, catalogURL)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -103,16 +116,36 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 	}()
 
 	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q", releaseName))
-	err := config.HelmClient.InstallReleaseFromTarball(ctx,
+
+	rawValues, err := valuesStrToMap(values)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	installOptions := helmclient.InstallOptions{
+		Namespace:   key.Namespace(),
+		ReleaseName: releaseName,
+		Wait:        true,
+	}
+
+	err = config.HelmClient.InstallReleaseFromTarball(ctx,
 		chartPackagePath,
 		key.Namespace(),
-		helm.ReleaseName(releaseName),
-		helm.ValueOverrides([]byte(values)),
-		helm.InstallWait(true))
+		rawValues,
+		installOptions)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q", releaseName))
 
 	return err
+}
+
+func valuesStrToMap(values string) (map[string]interface{}, error) {
+	rawValues, err := helmclient.MergeValues(map[string][]byte{"dest": []byte(values)}, map[string][]byte{"src": []byte{}})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return rawValues, nil
 }

@@ -14,12 +14,11 @@ Prepare the environment using kind
 
 ```bash
 (kind delete cluster || true) && kind create cluster && kind load docker-image quay.io/giantswarm/azure-operator:`architect project version` \
-  && kind get kubeconfig > kubeconfig.yaml && sudo ln -fs "${PWD}/kubeconfig.yaml" /workdir/.shipyard/config \
-  && helm init --wait && k create clusterrolebinding add-on-cluster-admin --clusterrole=cluster-admin --serviceaccount=kube-system:default
+  && kind get kubeconfig > kubeconfig.yaml && sudo ln -fs "${PWD}/kubeconfig.yaml" /workdir/.shipyard/config
 ```
 
 
 You can then run the tests passing the helm chart package that we just generated
 ```bash
-LATEST_OPERATOR_RELEASE="$(architect project version)" OPERATOR_HELM_TARBALL_PATH="${PWD}/azure-operator-`architect project version`.tgz" AZURE_SUBSCRIPTIONID="${AZURE_SUBSCRIPTIONID}" AZURE_TENANTID="${AZURE_TENANTID}" AZURE_CLIENTID="${AZURE_CLIENTID}" AZURE_CLIENTSECRET="${AZURE_CLIENTSECRET}" CIRCLE_SHA1="`git rev-parse HEAD`" REGISTRY_PULL_SECRET="${REGISTRY_PULL_SECRET}" TEST_DIR="integration/test/multiaz" AZURE_AZS=1 go test -v -tags=k8srequired ./integration/test/multiaz
+LATEST_OPERATOR_RELEASE="$(architect project version)" OPERATOR_HELM_TARBALL_PATH="${PWD}/azure-operator-`architect project version`.tgz" AZURE_SUBSCRIPTIONID="${AZURE_SUBSCRIPTIONID}" AZURE_TENANTID="${AZURE_TENANTID}" AZURE_CLIENTID="${AZURE_CLIENTID}" AZURE_CLIENTSECRET="${AZURE_CLIENTSECRET}" CIRCLE_SHA1="`git rev-parse HEAD`" TEST_DIR="integration/test/multiaz" AZURE_AZS=1 go test -timeout 240m -v -tags=k8srequired ./integration/test/multiaz
 ```

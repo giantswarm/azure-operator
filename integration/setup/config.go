@@ -16,22 +16,27 @@ import (
 )
 
 const (
-	namespace       = "giantswarm"
-	organization    = "giantswarm"
-	quayAddress     = "https://quay.io"
-	tillerNamespace = "kube-system"
+	namespace    = "giantswarm"
+	organization = "giantswarm"
+	quayAddress  = "https://quay.io"
 )
 
+type LogAnalyticsConfig struct {
+	WorkspaceID string
+	SharedKey   string
+}
+
 type Config struct {
-	AzureClient      *e2eclientsazure.Client
-	Guest            *framework.Guest
-	HelmClient       helmclient.Interface
-	Host             *framework.Host
-	K8s              *k8sclient.Setup
-	LegacyK8sClients k8sclientlegacy.Interface
-	K8sClients       k8sclient.Interface
-	Logger           micrologger.Logger
-	Release          *release.Release
+	AzureClient        *e2eclientsazure.Client
+	Guest              *framework.Guest
+	HelmClient         helmclient.Interface
+	Host               *framework.Host
+	K8s                *k8sclient.Setup
+	LegacyK8sClients   k8sclientlegacy.Interface
+	K8sClients         k8sclient.Interface
+	Logger             micrologger.Logger
+	Release            *release.Release
+	LogAnalyticsConfig LogAnalyticsConfig
 }
 
 func NewConfig() (Config, error) {
@@ -144,10 +149,8 @@ func NewConfig() (Config, error) {
 	var helmClient *helmclient.Client
 	{
 		c := helmclient.Config{
-			Logger:          logger,
-			K8sClient:       cpK8sClients.K8sClient(),
-			RestConfig:      host.RestConfig(),
-			TillerNamespace: tillerNamespace,
+			Logger:    logger,
+			K8sClient: cpK8sClients,
 		}
 
 		helmClient, err = helmclient.New(c)
@@ -175,16 +178,25 @@ func NewConfig() (Config, error) {
 		}
 	}
 
+	var logAnalyticsConfig LogAnalyticsConfig
+	{
+		logAnalyticsConfig = LogAnalyticsConfig{
+			WorkspaceID: env.LogAnalyticsWorkspaceID(),
+			SharedKey:   env.LogAnalyticsSharedKey(),
+		}
+	}
+
 	c := Config{
-		AzureClient:      azureClient,
-		Guest:            guest,
-		HelmClient:       helmClient,
-		Host:             host,
-		K8s:              k8sSetup,
-		K8sClients:       cpK8sClients,
-		LegacyK8sClients: legacyCPK8sClients,
-		Logger:           logger,
-		Release:          newRelease,
+		AzureClient:        azureClient,
+		Guest:              guest,
+		HelmClient:         helmClient,
+		Host:               host,
+		K8s:                k8sSetup,
+		K8sClients:         cpK8sClients,
+		LegacyK8sClients:   legacyCPK8sClients,
+		Logger:             logger,
+		Release:            newRelease,
+		LogAnalyticsConfig: logAnalyticsConfig,
 	}
 
 	return c, nil
