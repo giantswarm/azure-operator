@@ -166,7 +166,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 
 	{
 		if env.TestDir() == "integration/test/update" {
-			err := installLatestReleaseChartPackage(ctx, config, project.Name(), renderedAzureOperatorChartValues)
+			err := installLatestReleaseChartPackage(ctx, config, project.Name(), renderedAzureOperatorChartValues, CatalogStorageURL)
 			if err != nil {
 				return microerror.Mask(err)
 			}

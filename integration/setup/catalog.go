@@ -20,7 +20,7 @@ const (
 	TestCatalogStorageURL = "https://giantswarm.github.io/control-plane-test-catalog"
 )
 
-func pullLatestChart(ctx context.Context, config Config, chartName string) (string, error) {
+func pullLatestChart(ctx context.Context, config Config, chartName string, catalogURL string) (string, error) {
 	var err error
 
 	var latestRelease string
@@ -28,7 +28,7 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %#q release version", chartName))
 
 		o := func() error {
-			latestRelease, err = appcatalog.GetLatestVersion(ctx, CatalogStorageURL, chartName)
+			latestRelease, err = appcatalog.GetLatestVersion(ctx, catalogURL, chartName)
 
 			if latestRelease == "" {
 				return invalidAppVersionError
@@ -48,7 +48,7 @@ func pullLatestChart(ctx context.Context, config Config, chartName string) (stri
 	var latestReleaseChartPackagePath string
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("getting tarball URL for latest %#q release", chartName))
-		latestReleaseTarballURL, err := appcatalog.NewTarballURL(CatalogStorageURL, chartName, latestRelease)
+		latestReleaseTarballURL, err := appcatalog.NewTarballURL(catalogURL, chartName, latestRelease)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -84,8 +84,8 @@ func pullChartPackageUnderTest(ctx context.Context, config Config) (string, erro
 	return operatorTarballPath, err
 }
 
-func installLatestReleaseChartPackage(ctx context.Context, config Config, chartName, values string) error {
-	chartPackagePath, err := pullLatestChart(ctx, config, chartName)
+func installLatestReleaseChartPackage(ctx context.Context, config Config, chartName, values string, catalogURL string) error {
+	chartPackagePath, err := pullLatestChart(ctx, config, chartName, catalogURL)
 	if err != nil {
 		return microerror.Mask(err)
 	}
