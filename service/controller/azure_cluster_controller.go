@@ -54,11 +54,7 @@ type AzureClusterConfig struct {
 	SentryDSN string
 }
 
-type AzureCluster struct {
-	*controller.Controller
-}
-
-func NewAzureCluster(config AzureClusterConfig) (*AzureCluster, error) {
+func NewAzureCluster(config AzureClusterConfig) (*controller.Controller, error) {
 	var err error
 
 	var certsSearcher *certs.Searcher
@@ -109,11 +105,7 @@ func NewAzureCluster(config AzureClusterConfig) (*AzureCluster, error) {
 		}
 	}
 
-	c := &AzureCluster{
-		Controller: operatorkitController,
-	}
-
-	return c, nil
+	return operatorkitController, nil
 }
 
 func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {

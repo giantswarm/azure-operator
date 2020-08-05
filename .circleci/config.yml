@@ -41,28 +41,11 @@ workflows:
             tags:
               only: /^v.*/
 
-      # deploy to installations.
-      - architect/push-to-app-collection:
-          name: push-azure-operator-to-azure-app-collection
-          app_name: "azure-operator"
-          app_collection_repo: "azure-app-collection"
-          requires:
-            - push-azure-operator-to-control-plane-app-catalog
-          filters:
-            # Do not trigger the job on commit.
-            branches:
-              ignore: /.*/
-            # Trigger the job also on git tag.
-            tags:
-              only: /^v.*/
-
       # manual approval to run e2e tests.
       - hold:
           type: approval
-          filters:
-            # Do not trigger the job when merging to master.
-            branches:
-              ignore: master
+          requires:
+            - push-azure-operator-to-control-plane-app-catalog
 
 #      - architect/integration-test:
 #          name: cluster-state-test
@@ -84,7 +67,6 @@ workflows:
           test-timeout: "90m"
           requires:
           - hold
-          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: multiaz-test
@@ -95,7 +77,6 @@ workflows:
           test-timeout: "70m"
           requires:
           - hold
-          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: cluster-deletion-test
@@ -106,7 +87,6 @@ workflows:
           test-timeout: "70m"
           requires:
           - hold
-          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: update-test
@@ -117,7 +97,6 @@ workflows:
           test-timeout: "180m"
           requires:
           - hold
-          - push-azure-operator-to-control-plane-app-catalog
 
       - architect/integration-test:
           name: cp-tc-connectivity-test
@@ -128,4 +107,3 @@ workflows:
           test-timeout: "70m"
           requires:
           - hold
-          - push-azure-operator-to-control-plane-app-catalog

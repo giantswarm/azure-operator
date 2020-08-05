@@ -95,7 +95,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	securityGroupsClient, err := newSecurityGroupsClient(authorizer, subscriptionID, partnerID)
+	securityRulesClient, err := newSecurityRulesClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -143,7 +143,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		GroupsClient:                           toGroupsClient(groupsClient),
 		InterfacesClient:                       interfacesClient,
 		PublicIpAddressesClient:                publicIpAddressesClient,
-		SecurityRulesClient:                    securityGroupsClient,
+		SecurityRulesClient:                    securityRulesClient,
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
 		SubnetsClient:                          toSubnetsClient(subnetsClient),
 		SubscriptionID:                         subscriptionID,
@@ -209,7 +209,7 @@ func newPublicIPAddressesClient(authorizer autorest.Authorizer, subscriptionID, 
 	return &client, nil
 }
 
-func newSecurityGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.SecurityRulesClient, error) {
+func newSecurityRulesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.SecurityRulesClient, error) {
 	client := network.NewSecurityRulesClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
