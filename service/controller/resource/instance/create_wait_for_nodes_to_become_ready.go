@@ -42,7 +42,7 @@ func countReadyNodes(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bo
 		return 0, clientNotFoundError
 	}
 
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}

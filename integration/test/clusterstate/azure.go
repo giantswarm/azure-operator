@@ -65,7 +65,7 @@ func (p *Provider) RebootMaster() error {
 	resourceGroupName := p.clusterID
 	scaleSetName := fmt.Sprintf("%s-master", p.clusterID)
 
-	scaleSetVMs, err := p.azureClient.VirtualMachineScaleSetVMsClient.List(context.TODO(), resourceGroupName, scaleSetName, "", "", "")
+	scaleSetVMs, err := p.azureClient.VirtualMachineScaleSetVMsClient.List(ctx, resourceGroupName, scaleSetName, "", "", "")
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -83,7 +83,7 @@ func (p *Provider) RebootMaster() error {
 			*instanceID,
 		}),
 	}
-	_, err = p.azureClient.VirtualMachineScaleSetsClient.Restart(context.TODO(), resourceGroupName, scaleSetName, instanceIDs)
+	_, err = p.azureClient.VirtualMachineScaleSetsClient.Restart(ctx, resourceGroupName, scaleSetName, instanceIDs)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -92,7 +92,7 @@ func (p *Provider) RebootMaster() error {
 }
 
 func (p *Provider) ReplaceMaster() error {
-	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -101,7 +101,7 @@ func (p *Provider) ReplaceMaster() error {
 	// Change virtual machine size to trigger replacement of existing master node.
 	customObject.Spec.Azure.Masters[0].VMSize = VirtualMachineSize
 
-	_, err = p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Update(customObject)
+	_, err = p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Update(ctx, customObject, metav1.UpdateOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}

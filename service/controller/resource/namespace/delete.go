@@ -20,7 +20,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange inte
 	if namespaceToDelete != nil {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes namespace")
 
-		err = r.k8sClient.CoreV1().Namespaces().Delete(namespaceToDelete.Name, &apismetav1.DeleteOptions{})
+		err = r.k8sClient.CoreV1().Namespaces().Delete(ctx, namespaceToDelete.Name, apismetav1.DeleteOptions{})
 		if apierrors.IsNotFound(err) {
 			// fall through
 		} else if err != nil {

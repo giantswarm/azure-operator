@@ -8,6 +8,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange interface{}) error {
@@ -24,7 +25,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes endpoints")
 
 		namespace := key.ClusterNamespace(cr)
-		_, err = r.k8sClient.CoreV1().Endpoints(namespace).Create(endpointsToCreate)
+		_, err = r.k8sClient.CoreV1().Endpoints(namespace).Create(ctx, endpointsToCreate, metav1.CreateOptions{})
 		if apierrors.IsAlreadyExists(err) {
 			// fall through
 		} else if err != nil {

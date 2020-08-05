@@ -56,7 +56,7 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 }
 
 func (p *Provider) AddWorker() error {
-	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -74,7 +74,7 @@ func (p *Provider) AddWorker() error {
 		return microerror.Mask(err)
 	}
 
-	_, err = p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(p.clusterID, types.JSONPatchType, b)
+	_, err = p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(ctx, p.clusterID, types.JSONPatchType, b, metav1.PatchOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -83,7 +83,7 @@ func (p *Provider) AddWorker() error {
 }
 
 func (p *Provider) NumMasters() (int, error) {
-	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
@@ -94,7 +94,7 @@ func (p *Provider) NumMasters() (int, error) {
 }
 
 func (p *Provider) NumWorkers() (int, error) {
-	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
@@ -117,7 +117,7 @@ func (p *Provider) RemoveWorker() error {
 		return microerror.Mask(err)
 	}
 
-	_, err = p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(p.clusterID, types.JSONPatchType, b)
+	_, err = p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(ctx, p.clusterID, types.JSONPatchType, b, metav1.PatchOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}

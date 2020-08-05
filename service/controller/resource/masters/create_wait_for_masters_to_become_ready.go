@@ -42,7 +42,7 @@ func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(c
 		return false, clientNotFoundError
 	}
 
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return false, microerror.Mask(err)
 	}

@@ -3,59 +3,59 @@ module github.com/giantswarm/azure-operator/v4
 go 1.14
 
 require (
-	github.com/Azure/azure-sdk-for-go v43.2.0+incompatible
+	github.com/Azure/azure-sdk-for-go v45.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.8.0
-	github.com/Azure/go-autorest/autorest v0.10.2
-	github.com/Azure/go-autorest/autorest/azure/auth v0.4.2
-	github.com/Azure/go-autorest/autorest/to v0.3.0
+	github.com/Azure/go-autorest/autorest v0.11.2
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
+	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/giantswarm/apiextensions v0.4.10
+	github.com/giantswarm/apiextensions v0.4.17-0.20200723160042-89aed92d1080
 	github.com/giantswarm/appcatalog v0.1.11
-	github.com/giantswarm/apprclient v0.2.0
+	github.com/giantswarm/apprclient v0.2.1-0.20200724085653-63c7eb430dcf
 	github.com/giantswarm/backoff v0.2.0
-	github.com/giantswarm/certs v0.2.0
-	github.com/giantswarm/e2e-harness v0.3.0
+	github.com/giantswarm/certs v0.2.1-0.20200805143002-4a70288f05cc
+	github.com/giantswarm/e2e-harness v0.3.1-0.20200724132005-68ffa0a59366
 	github.com/giantswarm/e2eclients v0.2.0
-	github.com/giantswarm/e2esetup v0.1.0
+	github.com/giantswarm/e2esetup v0.3.1-0.20200724090407-2c5747194227
 	github.com/giantswarm/e2etemplates v0.2.0
-	github.com/giantswarm/e2etests v0.1.0
+	github.com/giantswarm/e2etests v0.3.2-0.20200724134726-3e71ad6b65b2
 	github.com/giantswarm/errors v0.2.3
-	github.com/giantswarm/helmclient v1.0.4
+	github.com/giantswarm/helmclient v1.0.6-0.20200731120218-28346696f150
 	github.com/giantswarm/ipam v0.2.0
-	github.com/giantswarm/k8sclient v0.2.0
-	github.com/giantswarm/k8sclient/v2 v2.0.0
-	github.com/giantswarm/k8sclient/v3 v3.1.1
-	github.com/giantswarm/k8scloudconfig/v7 v7.0.1
-	github.com/giantswarm/kubelock v0.2.0
+	github.com/giantswarm/k8sclient/v2 v2.0.1-0.20200803135311-f993c059637f
+	github.com/giantswarm/k8sclient/v3 v3.1.3-0.20200724085258-345602646ea8
+	github.com/giantswarm/k8scloudconfig/v7 v7.0.4-0.20200724135614-bc074c29c030
+	github.com/giantswarm/kubelock v0.2.1-0.20200724140513-fb6ee5589717
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.0
 	github.com/giantswarm/microkit v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
-	github.com/giantswarm/operatorkit v1.2.0
-	github.com/giantswarm/randomkeys v0.2.0
-	github.com/giantswarm/statusresource v0.4.0
-	github.com/giantswarm/tenantcluster v0.2.0
+	github.com/giantswarm/operatorkit v1.2.1-0.20200724133006-e6de285a86c0
+	github.com/giantswarm/randomkeys v0.2.1-0.20200805144430-21af938db8b3
+	github.com/giantswarm/statusresource v0.4.1-0.20200724134551-4b43b92862bd
+	github.com/giantswarm/tenantcluster v0.2.1-0.20200805151546-b4db9e2db45e
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
-	github.com/google/go-cmp v0.5.0
+	github.com/google/go-cmp v0.5.1
 	github.com/markbates/pkger v0.17.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
-	github.com/spf13/afero v1.3.1
+	github.com/spf13/afero v1.3.2
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	k8s.io/api v0.17.7
-	k8s.io/apiextensions-apiserver v0.17.7
-	k8s.io/apimachinery v0.17.7
-	k8s.io/client-go v0.17.7
-	sigs.k8s.io/cluster-api v0.3.7-rc.1
+	k8s.io/api v0.18.5
+	k8s.io/apiextensions-apiserver v0.18.5
+	k8s.io/apimachinery v0.18.5
+	k8s.io/client-go v0.18.5
+	sigs.k8s.io/cluster-api v0.3.8
 	sigs.k8s.io/cluster-api-provider-azure v0.4.5
-	sigs.k8s.io/controller-runtime v0.5.7
+	sigs.k8s.io/controller-runtime v0.6.1
 )
 
 replace (
-	github.com/Azure/go-autorest => github.com/Azure/go-autorest v13.4.0+incompatible
+	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.8
-	k8s.io/kubernetes => k8s.io/kubernetes v1.17.7
+	k8s.io/kubernetes => k8s.io/kubernetes v1.18.5
+	sigs.k8s.io/cluster-api v0.3.7 => github.com/giantswarm/cluster-api v0.3.8-0.20200723145930-f76c9cd8e8d1
+	sigs.k8s.io/cluster-api-provider-azure v0.4.5 => github.com/giantswarm/cluster-api-provider-azure v0.4.8-0.20200805121651-4e5843ff7643
 )

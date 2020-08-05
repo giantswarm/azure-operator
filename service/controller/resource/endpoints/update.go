@@ -2,6 +2,7 @@ package endpoints
 
 import (
 	"context"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"reflect"
 
 	"github.com/giantswarm/microerror"
@@ -25,7 +26,7 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, updateChange inte
 		r.logger.LogCtx(ctx, "level", "debug", "message", "updating Kubernetes endpoints")
 
 		namespace := key.ClusterNamespace(cr)
-		_, err := r.k8sClient.CoreV1().Endpoints(namespace).Update(endpointsToUpdate)
+		_, err := r.k8sClient.CoreV1().Endpoints(namespace).Update(ctx, endpointsToUpdate, metav1.UpdateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}

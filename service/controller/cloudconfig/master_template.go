@@ -21,7 +21,7 @@ const (
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
-	apiserverEncryptionKey, err := c.getEncryptionkey(data.CustomObject)
+	apiserverEncryptionKey, err := c.getEncryptionkey(ctx, data.CustomObject)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

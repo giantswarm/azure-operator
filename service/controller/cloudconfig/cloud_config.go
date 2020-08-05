@@ -1,6 +1,8 @@
 package cloudconfig
 
 import (
+	"context"
+
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs"
@@ -88,8 +90,8 @@ func New(config Config) (*CloudConfig, error) {
 	return c, nil
 }
 
-func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
-	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(&customObject))
+func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject providerv1alpha1.AzureConfig) (string, error) {
+	cluster, err := c.randomkeysSearcher.SearchCluster(ctx, key.ClusterID(&customObject))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}

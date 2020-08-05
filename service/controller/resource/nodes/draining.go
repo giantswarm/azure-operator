@@ -42,7 +42,7 @@ func (r *Resource) CreateDrainerConfig(ctx context.Context, customObject provide
 		},
 	}
 
-	_, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).Create(c)
+	_, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).Create(ctx, c, metav1.CreateOptions{})
 	if errors.IsAlreadyExists(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")

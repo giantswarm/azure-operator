@@ -85,7 +85,7 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 				State: "active",
 			},
 		}
-		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(release)
+		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(ctx, release, metav1.CreateOptions{})
 		if err != nil {
 			return &releasev1alpha1.Release{}, microerror.Mask(err)
 		}

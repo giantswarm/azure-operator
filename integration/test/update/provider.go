@@ -49,7 +49,7 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 }
 
 func (p *Provider) CurrentStatus() (v1alpha1.StatusCluster, error) {
-	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return v1alpha1.StatusCluster{}, microerror.Mask(err)
 	}
@@ -67,7 +67,7 @@ func (p *Provider) NextVersion() (string, error) {
 }
 
 func (p *Provider) UpdateVersion(nextVersion string) error {
-	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -79,7 +79,7 @@ func (p *Provider) UpdateVersion(nextVersion string) error {
 	labels["azure-operator.giantswarm.io/version"] = nextVersion
 	customObject.SetLabels(labels)
 
-	_, err = p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Update(customObject)
+	_, err = p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Update(ctx, customObject, metav1.UpdateOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}

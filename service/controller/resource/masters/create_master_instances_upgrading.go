@@ -39,7 +39,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 			LabelSelector: fmt.Sprintf("%s=%s", label.Cluster, key.ClusterID(&cr)),
 		}
 
-		list, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
+		list, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).List(ctx, o)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -118,7 +118,7 @@ func (r *Resource) deleteDrainerConfig(ctx context.Context, customObject provide
 		i := drainerConfigToRemove.GetName()
 		o := &metav1.DeleteOptions{}
 
-		err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).Delete(i, o)
+		err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).Delete(ctx, i, *o)
 		if errors.IsNotFound(err) {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node")
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist")
