@@ -2,12 +2,12 @@ package endpoints
 
 import (
 	"context"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"reflect"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/resource/crud"
 	corev1 "k8s.io/api/core/v1"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
