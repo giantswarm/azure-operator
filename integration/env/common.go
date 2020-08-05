@@ -20,15 +20,19 @@ const (
 	EnvVarTestedVersion           = "TESTED_VERSION"
 	EnvVarTestDir                 = "TEST_DIR"
 	EnvVarVersionBundleVersion    = "VERSION_BUNDLE_VERSION"
+	EnvVarLogAnalyticsWorkspaceID = "LOG_ANALYTICS_WORKSPACE_ID"
+	EnvVarLogAnalyticsSharedKey   = "LOG_ANALYTICS_SHARED_KEY"
 )
 
 var (
-	circleSHA            string
-	operatorTarballPath  string
-	testDir              string
-	testedVersion        string
-	keepResources        string
-	versionBundleVersion string
+	circleSHA               string
+	logAnalyticsWorkspaceID string
+	logAnalyticsSharedKey   string
+	operatorTarballPath     string
+	testDir                 string
+	testedVersion           string
+	keepResources           string
+	versionBundleVersion    string
 )
 
 func init() {
@@ -39,6 +43,9 @@ func init() {
 	if circleSHA == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCircleSHA))
 	}
+
+	logAnalyticsWorkspaceID = os.Getenv(EnvVarLogAnalyticsWorkspaceID)
+	logAnalyticsSharedKey = os.Getenv(EnvVarLogAnalyticsSharedKey)
 
 	testedVersion = os.Getenv(EnvVarTestedVersion)
 	if testedVersion == "" {
@@ -99,6 +106,14 @@ func ClusterID() string {
 
 func KeepResources() string {
 	return keepResources
+}
+
+func LogAnalyticsWorkspaceID() string {
+	return logAnalyticsWorkspaceID
+}
+
+func LogAnalyticsSharedKey() string {
+	return logAnalyticsSharedKey
 }
 
 func TestedVersion() string {

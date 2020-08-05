@@ -78,6 +78,7 @@ type AzureConfigConfig struct {
 	TemplateVersion  string
 	VMSSCheckWorkers int
 
+	Debug     setting.Debug
 	SentryDSN string
 }
 
@@ -366,6 +367,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			Azure:                      config.Azure,
 			ClientFactory:              clientFactory,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
+			Debug:                      config.Debug,
 		}
 
 		deploymentResource, err = deployment.New(c)
