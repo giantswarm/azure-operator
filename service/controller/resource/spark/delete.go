@@ -19,6 +19,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	// With use of OwnerReference this deletion will also cascade to data secret object.
 	err = r.ctrlClient.Delete(ctx, &corev1alpha1.Spark{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: azureMachinePool.Namespace,
