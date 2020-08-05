@@ -16,7 +16,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	operatorkitcontroller "github.com/giantswarm/operatorkit/controller"
-	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
@@ -52,9 +51,10 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	bootOnce                sync.Once
-	controllers             []*operatorkitcontroller.Controller
-	statusResourceCollector *statusresource.CollectorSet
+	bootOnce    sync.Once
+	controllers []*operatorkitcontroller.Controller
+	// TODO: Renable the collector.
+	// statusResourceCollector *statusresource.CollectorSet
 }
 
 // New creates a new configured service object.
