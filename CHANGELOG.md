@@ -26,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support to forward errors to Sentry.
 - New `cloudconfig` handler for the `AzureCluster` controller that creates the required cloudconfig files in the Storage Account.
 - Add --service.registry.mirrors flag for setting registry mirror domains.
+- New `subnet` handler for the `AzureCluster` controller that creates the node pool subnet.
 
 ### Changed
 
