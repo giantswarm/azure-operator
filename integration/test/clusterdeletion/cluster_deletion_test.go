@@ -63,7 +63,7 @@ func New(config Config) (*ClusterDeletion, error) {
 
 func (s *ClusterDeletion) Test(ctx context.Context) error {
 	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting AzureConfig Custom Resource %#q", s.provider.clusterID))
-	err := s.provider.g8sClient.ProviderV1alpha1().AzureConfigs(s.targetNamespace).Delete(context.TODO(), s.clusterID, metav1.DeleteOptions{})
+	err := s.provider.g8sClient.ProviderV1alpha1().AzureConfigs(s.targetNamespace).Delete(ctx, s.clusterID, metav1.DeleteOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}

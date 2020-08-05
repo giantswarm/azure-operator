@@ -55,7 +55,7 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 	return p, nil
 }
 
-func (p *Provider) AddWorker() error {
+func (p *Provider) AddWorker(ctx context.Context) error {
 	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
@@ -82,7 +82,7 @@ func (p *Provider) AddWorker() error {
 	return nil
 }
 
-func (p *Provider) NumMasters() (int, error) {
+func (p *Provider) NumMasters(ctx context.Context) (int, error) {
 	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
@@ -93,7 +93,7 @@ func (p *Provider) NumMasters() (int, error) {
 	return num, nil
 }
 
-func (p *Provider) NumWorkers() (int, error) {
+func (p *Provider) NumWorkers(ctx context.Context) (int, error) {
 	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
@@ -104,7 +104,7 @@ func (p *Provider) NumWorkers() (int, error) {
 	return num, nil
 }
 
-func (p *Provider) RemoveWorker() error {
+func (p *Provider) RemoveWorker(ctx context.Context) error {
 	patches := []Patch{
 		{
 			Op:   "remove",

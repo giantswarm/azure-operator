@@ -3,6 +3,8 @@
 package update
 
 import (
+	"context"
+
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
@@ -49,6 +51,8 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 }
 
 func (p *Provider) CurrentStatus() (v1alpha1.StatusCluster, error) {
+	ctx := context.Background()
+
 	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return v1alpha1.StatusCluster{}, microerror.Mask(err)
@@ -67,6 +71,8 @@ func (p *Provider) NextVersion() (string, error) {
 }
 
 func (p *Provider) UpdateVersion(nextVersion string) error {
+	ctx := context.Background()
+
 	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)

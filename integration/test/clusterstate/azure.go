@@ -62,6 +62,8 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 }
 
 func (p *Provider) RebootMaster() error {
+	ctx := context.Background()
+
 	resourceGroupName := p.clusterID
 	scaleSetName := fmt.Sprintf("%s-master", p.clusterID)
 
@@ -92,6 +94,8 @@ func (p *Provider) RebootMaster() error {
 }
 
 func (p *Provider) ReplaceMaster() error {
+	ctx := context.Background()
+
 	customObject, err := p.g8sClient.ProviderV1alpha1().AzureConfigs("default").Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return microerror.Mask(err)
