@@ -35,7 +35,7 @@ require (
 	github.com/giantswarm/operatorkit v1.2.0
 	github.com/giantswarm/randomkeys v0.2.0
 	github.com/giantswarm/statusresource v0.4.0
-	github.com/giantswarm/tenantcluster v0.2.0
+	github.com/giantswarm/tenantcluster/v2 v2.0.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.0

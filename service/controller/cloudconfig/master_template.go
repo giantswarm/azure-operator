@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/giantswarm/certs/v2/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 
@@ -50,7 +49,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			azure:                        c.azure,
 			azureClientCredentialsConfig: c.azureClientCredentials,
 			calicoCIDR:                   data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
-			clusterCerts:                 data.ClusterCerts,
+			certFiles:                    data.MasterCertFiles,
 			customObject:                 data.CustomObject,
 			encrypter:                    encrypter,
 			subscriptionID:               c.subscriptionID,
@@ -162,8 +161,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		},
 	}
 
-	certFiles := certs.NewFilesClusterMaster(me.clusterCerts)
-	data := me.templateData(certFiles)
+	data := me.templateData(me.certFiles)
 
 	var fileAssets []k8scloudconfig.FileAsset
 
@@ -182,7 +180,7 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	}
 
 	var certsMeta []k8scloudconfig.FileMetadata
-	for _, f := range certFiles {
+	for _, f := range me.certFiles {
 		encryptedData, err := me.encrypter.Encrypt(f.Data)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -256,8 +254,7 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		},
 	}
 
-	certFiles := certs.NewFilesClusterMaster(me.clusterCerts)
-	data := me.templateData(certFiles)
+	data := me.templateData(me.certFiles)
 
 	var newUnits []k8scloudconfig.UnitAsset
 

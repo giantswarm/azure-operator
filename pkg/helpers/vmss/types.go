@@ -58,7 +58,7 @@ func newNodeOSImageCoreOS(distroVersion string) NodeOSImage {
 // the small cloudconfig template.
 type SmallCloudconfigConfig struct {
 	BlobURL       string
-	CertsFiles    certs.Files
+	CertsFiles    []certs.File
 	EncryptionKey string
 	InitialVector string
 	InstanceRole  string

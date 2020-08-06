@@ -14,14 +14,14 @@ type baseExtension struct {
 	azure                        setting.Azure
 	azureClientCredentialsConfig auth.ClientCredentialsConfig
 	calicoCIDR                   string
-	clusterCerts                 certs.Cluster
+	certFiles                    []certs.File
 	customObject                 providerv1alpha1.AzureConfig
 	encrypter                    encrypter.Interface
 	subscriptionID               string
 	vnetCIDR                     string
 }
 
-func (e *baseExtension) templateData(certFiles certs.Files) templateData {
+func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 	var certsPaths []string
 
 	for _, file := range certFiles {

@@ -4,7 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 
-	"github.com/giantswarm/certs/v2/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 
@@ -22,7 +21,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		be := baseExtension{
 			azure:                        c.azure,
 			azureClientCredentialsConfig: c.azureClientCredentials,
-			clusterCerts:                 data.ClusterCerts,
+			certFiles:                    data.WorkerCertFiles,
 			customObject:                 data.CustomObject,
 			encrypter:                    encrypter,
 			subscriptionID:               c.subscriptionID,
@@ -88,8 +87,7 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 		},
 	}
 
-	certFiles := certs.NewFilesClusterWorker(we.clusterCerts)
-	data := we.templateData(certFiles)
+	data := we.templateData(we.certFiles)
 
 	var fileAssets []k8scloudconfig.FileAsset
 
@@ -108,7 +106,7 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	}
 
 	var certsMeta []k8scloudconfig.FileMetadata
-	for _, f := range certFiles {
+	for _, f := range we.certFiles {
 		encryptedData, err := we.encrypter.Encrypt(f.Data)
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -172,8 +170,7 @@ func (we *workerExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 		},
 	}
 
-	certFiles := certs.NewFilesClusterWorker(we.clusterCerts)
-	data := we.templateData(certFiles)
+	data := we.templateData(we.certFiles)
 
 	var newUnits []k8scloudconfig.UnitAsset
 
