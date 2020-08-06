@@ -59,7 +59,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var newState state.State
 	var currentState state.State
 	{
-		s, err := r.GetResourceStatus(cr, Stage)
+		s, err := r.GetResourceStatus(ctx, cr, Stage)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -75,7 +75,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if newState != currentState {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
-		err = r.SetResourceStatus(cr, Stage, string(newState))
+		err = r.SetResourceStatus(ctx, cr, Stage, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}
