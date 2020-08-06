@@ -47,8 +47,8 @@ require (
 	k8s.io/apiextensions-apiserver v0.18.5
 	k8s.io/apimachinery v0.18.5
 	k8s.io/client-go v0.18.5
-	sigs.k8s.io/cluster-api v0.3.8
-	sigs.k8s.io/cluster-api-provider-azure v0.4.5
+	sigs.k8s.io/cluster-api v0.3.7
+	sigs.k8s.io/cluster-api-provider-azure v0.4.6
 	sigs.k8s.io/controller-runtime v0.6.1
 )
 
@@ -56,6 +56,6 @@ replace (
 	github.com/Azure/go-autorest => github.com/Azure/go-autorest v14.2.0+incompatible
 	github.com/Microsoft/hcsshim => github.com/Microsoft/hcsshim v0.8.8
 	k8s.io/kubernetes => k8s.io/kubernetes v1.18.5
-	sigs.k8s.io/cluster-api v0.3.7 => github.com/giantswarm/cluster-api v0.3.8-0.20200723145930-f76c9cd8e8d1
-	sigs.k8s.io/cluster-api-provider-azure v0.4.5 => github.com/giantswarm/cluster-api-provider-azure v0.4.8-0.20200805121651-4e5843ff7643
+	sigs.k8s.io/cluster-api v0.3.7 => github.com/giantswarm/cluster-api v0.3.7
+	sigs.k8s.io/cluster-api-provider-azure v0.4.6 => github.com/giantswarm/cluster-api-provider-azure v0.4.6
 )
