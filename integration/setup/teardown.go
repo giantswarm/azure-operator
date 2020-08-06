@@ -27,10 +27,9 @@ func Teardown(c Config) error {
 	}
 
 	// Delete resources on Azure.
-	_, err = c.AzureClient.ResourceGroupsClient.Delete(ctx, clusterID)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	// We ignore the possible error because some of the tests delete the clusters they create.
+	// In case this operation fails, we have a CI cleaner component that takes care.
+	_, _ = c.AzureClient.ResourceGroupsClient.Delete(ctx, clusterID)
 
 	return nil
 }

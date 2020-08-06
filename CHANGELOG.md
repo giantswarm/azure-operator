@@ -7,6 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add provider independent controllers to manage labeling and setting owner references in other provider dependent objects.
+- Export container logs for e2e tests to azure analytics.
+
+### Changed
+
+- Decouple `Service` from controllers using an slice of controllers.
+- Retry failed ARM deployments regardless of the checksum check.
+
 ## [4.2.0] - 2020-07-28
 
 ### Added
@@ -16,6 +26,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Support to forward errors to Sentry.
 - New `cloudconfig` handler for the `AzureCluster` controller that creates the required cloudconfig files in the Storage Account.
 - Add --service.registry.mirrors flag for setting registry mirror domains.
+- New `subnet` handler for the `AzureCluster` controller that creates the node pool subnet.
 
 ### Changed
 

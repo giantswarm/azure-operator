@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"fmt"
 	"log"
 	"os"
 	"testing"
@@ -48,6 +49,11 @@ func Setup(ctx context.Context, c Config) error {
 	err = common(ctx, c, *release)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	err = logs(ctx, c)
+	if err != nil {
+		c.Logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Unable to deploy the log forwarder app. Will continue anyway: %s", err))
 	}
 
 	err = provider(ctx, c, *release)

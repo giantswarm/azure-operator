@@ -77,6 +77,10 @@
       "metadata":{
         "description":"The DNS zones for kubernetes api and ingress."
       }
+    },
+    "insecureStorageAccount":{
+      "type":"bool",
+      "defaultValue": false
     }
   },
   "variables":{
@@ -1451,6 +1455,9 @@
             },
             "workerSubnetID": {
               "type":"string"
+            },
+            "insecureStorageAccount": {
+              "type": "bool"
             }
           },
           "variables": {
@@ -1475,7 +1482,7 @@
                     {"id":"[parameters('masterSubnetID')]"},
                     {"id":"[parameters('workerSubnetID')]"}
                   ],
-                  "defaultAction":"Deny"
+                  "defaultAction":"[if(parameters('insecureStorageAccount'), 'Allow', 'Deny')]"
                 }
               },
               "sku": {
@@ -1520,6 +1527,9 @@
           },
           "storageAccountName":{
             "value":"[parameters('storageAccountName')]"
+          },
+          "insecureStorageAccount":{
+            "value":"[parameters('insecureStorageAccount')]"
           }
         }
       }

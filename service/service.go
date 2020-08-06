@@ -204,6 +204,13 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var debugSettings setting.Debug
+	{
+		debugSettings = setting.Debug{
+			InsecureStorageAccount: config.Viper.GetBool(config.Flag.Service.Debug.InsecureStorageAccount),
+		}
+	}
+
 	var kubeLockLocker locker.Interface
 	{
 		c := locker.KubeLockLockerConfig{
@@ -243,8 +250,9 @@ func New(config Config) (*Service, error) {
 	var azureClusterController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureClusterConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
+			CredentialProvider: credentialProvider,
+			K8sClient:          k8sClient,
+			Logger:             config.Logger,
 
 			Flag:  config.Flag,
 			Viper: config.Viper,
@@ -295,6 +303,7 @@ func New(config Config) (*Service, error) {
 			SentryDSN:                 sentryDSN,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Debug:                     debugSettings,
 		}
 
 		azureConfigController, err = controller.NewAzureConfig(c)

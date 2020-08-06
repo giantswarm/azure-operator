@@ -21,12 +21,15 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type ClusterConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 	SentryDSN string
+
+	Debug setting.Debug
 }
 
 func NewCluster(config ClusterConfig) (*controller.Controller, error) {

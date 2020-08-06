@@ -176,5 +176,7 @@ func mainError() error {
 	daemonCommand.PersistentFlags().String(f.Service.Registry.Domain, "docker.io", "Image registry domain.")
 	daemonCommand.PersistentFlags().StringSlice(f.Service.Registry.Mirrors, []string{}, `Image registry mirror domains. Can be set only if registry domain is "docker.io".`)
 
+	daemonCommand.PersistentFlags().Bool(f.Service.Debug.InsecureStorageAccount, false, "Whether to disable the storage account firewall for tenant clusters.")
+
 	return newCommand.CobraCommand().Execute()
 }

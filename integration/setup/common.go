@@ -203,7 +203,7 @@ func installNodeOperator(ctx context.Context, config Config) error {
     Registry:
       Domain: quay.io
 `
-		err := installLatestReleaseChartPackage(ctx, config, "node-operator", nodeOperatorValues)
+		err := installLatestReleaseChartPackage(ctx, config, "node-operator", nodeOperatorValues, CatalogStorageURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}

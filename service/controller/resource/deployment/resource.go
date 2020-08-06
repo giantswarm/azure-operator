@@ -40,6 +40,7 @@ type Config struct {
 	Azure                      setting.Azure
 	ClientFactory              *client.Factory
 	ControlPlaneSubscriptionID string
+	Debug                      setting.Debug
 }
 
 type Resource struct {
@@ -51,6 +52,7 @@ type Resource struct {
 	azure                      setting.Azure
 	clientFactory              *client.Factory
 	controlPlaneSubscriptionID string
+	debug                      setting.Debug
 }
 
 type StorageAccountIpRule struct {
@@ -91,6 +93,7 @@ func New(config Config) (*Resource, error) {
 		azure:                      config.Azure,
 		clientFactory:              config.ClientFactory,
 		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
+		debug:                      config.Debug,
 	}
 
 	return r, nil
@@ -111,6 +114,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var deployment azureresource.Deployment
 
+	failed := false
+
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), mainDeploymentName)
 	if IsNotFound(err) {
 		params := map[string]interface{}{
@@ -129,6 +134,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if !key.IsSucceededProvisioningState(s) {
 			r.debugger.LogFailedDeployment(ctx, d, err)
+			failed = true
 		}
 		if !key.IsFinalProvisioningState(s) {
 			reconciliationcanceledcontext.SetCanceled(ctx)
@@ -169,23 +175,27 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	if failed {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "the main deployment is failed")
+	} else {
+		currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+		currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 
-	if currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
-		// As current and desired state differs, start process from the beginning.
-		return nil
-	}
+		if currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+			// As current and desired state differs, start process from the beginning.
+			return nil
+		}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+	}
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), mainDeploymentName, deployment)
 	if err != nil {
