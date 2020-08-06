@@ -6,4 +6,4 @@
 
 Following diagram describes the upgrade process in high level.
 
-![nodepools upgrade state diagram](cluster-upgrade-to-nodepools.svg)
+![Node Pools Upgrade State Diagram](cluster-upgrade-to-nodepools.svg)
