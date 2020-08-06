@@ -53,8 +53,6 @@ type Service struct {
 
 	bootOnce    sync.Once
 	controllers []*operatorkitcontroller.Controller
-	// TODO: Renable the collector.
-	// statusResourceCollector *statusresource.CollectorSet
 }
 
 // New creates a new configured service object.
@@ -367,23 +365,6 @@ func New(config Config) (*Service, error) {
 		controllers = append(controllers, machinePoolController)
 	}
 
-	/*
-		TODO: Fix compile error with collector.
-
-		var statusResourceCollector *statusresource.CollectorSet
-		{
-			c := statusresource.CollectorSetConfig{
-				Logger:  config.Logger,
-				Watcher: k8sClient.G8sClient().ProviderV1alpha1().AzureConfigs("").Watch,
-			}
-
-			statusResourceCollector, err = statusresource.NewCollectorSet(c)
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-		}
-	*/
-
 	var versionService *version.Service
 	{
 		c := version.Config{
@@ -404,8 +385,7 @@ func New(config Config) (*Service, error) {
 	s := &Service{
 		bootOnce:    sync.Once{},
 		controllers: controllers,
-		// statusResourceCollector: statusResourceCollector,
-		Version: versionService,
+		Version:     versionService,
 	}
 
 	return s, nil
@@ -413,9 +393,6 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		// TODO: Fix compile error with collector.
-		// go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
-
 		for _, ctrl := range s.controllers {
 			go ctrl.Boot(ctx)
 		}
