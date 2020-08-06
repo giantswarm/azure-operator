@@ -1,0 +1,106 @@
+{
+  "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+  "contentVersion": "1.0.0.0",
+  "parameters": {
+    "azureClusterVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "CR revision field used for this deployment"
+      }
+    },
+    "nateGatewayName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the nat gateway for workers"
+      }
+    },
+    "nodepoolName": {
+      "type": "string",
+      "metadata": {
+        "description": "Subnet's name, which matches the node pool name"
+      }
+    },
+    "routeTableName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the route table for workers"
+      }
+    },
+    "securityGroupName": {
+      "type": "string",
+      "metadata": {
+        "description": "Name of the security group for workers"
+      }
+    },
+    "subnetCidr": {
+      "type": "string"
+    },
+    "virtualNetworkName": {
+      "type": "string",
+      "metadata": {
+        "description": "Virtual network that owns the subnet"
+      }
+    }
+  },
+  "variables": {
+    "natGatewayID": "[resourceId('Microsoft.Network/natGateways/', parameters('nateGatewayName'))]",
+    "routeTableID": "[resourceId('Microsoft.Network/routeTables/', parameters('routeTableName'))]",
+    "subnetName": "[concat(parameters('virtualNetworkName'), '/', parameters('nodepoolName'))]",
+    "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('securityGroupName'))]"
+  },
+  "resources": [
+    {
+      "apiVersion": "2018-04-01",
+      "type": "Microsoft.Network/virtualNetworks/subnets",
+      "name": "[variables('subnetName')]",
+      "location": "[resourceGroup().location]",
+      "properties": {
+        "addressPrefix": "[parameters('subnetCidr')]",
+        "natGateway": {
+          "id": "[variables('natGatewayID')]"
+        },
+        "networkSecurityGroup": {
+          "id": "[variables('workerSecurityGroupID')]"
+        },
+        "routeTable": {
+          "id": "[variables('routeTableID')]"
+        },
+        "serviceEndpoints": [
+          {
+            "service": "Microsoft.Storage"
+          },
+          {
+            "service": "Microsoft.Sql"
+          },
+          {
+            "service": "Microsoft.AzureCosmosDB"
+          },
+          {
+            "service": "Microsoft.KeyVault"
+          },
+          {
+            "service": "Microsoft.ServiceBus"
+          },
+          {
+            "service": "Microsoft.EventHub"
+          },
+          {
+            "service": "Microsoft.AzureActiveDirectory"
+          },
+          {
+            "service": "Microsoft.ContainerRegistry"
+          },
+          {
+            "service": "Microsoft.Web"
+          }
+        ]
+      }
+    }
+  ],
+  "outputs": {
+    "subnetID": {
+      "type": "string",
+      "value": "[resourceId(resourceGroup().name, 'Microsoft.Network/virtualNetworks/subnets', parameters('virtualNetworkName'), parameters('nodepoolName'))]"
+    }
+  }
+}

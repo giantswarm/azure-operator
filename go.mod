@@ -13,7 +13,7 @@ require (
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient v0.2.1-0.20200724085653-63c7eb430dcf
 	github.com/giantswarm/backoff v0.2.0
-	github.com/giantswarm/certs v0.2.1-0.20200805143002-4a70288f05cc
+	github.com/giantswarm/certs/v2 v2.0.1-0.20200714195905-72e095f60587
 	github.com/giantswarm/e2e-harness v0.3.1-0.20200724132005-68ffa0a59366
 	github.com/giantswarm/e2eclients v0.2.0
 	github.com/giantswarm/e2esetup v0.3.1-0.20200724090407-2c5747194227
@@ -32,8 +32,8 @@ require (
 	github.com/giantswarm/micrologger v0.3.1
 	github.com/giantswarm/operatorkit v1.2.1-0.20200724133006-e6de285a86c0
 	github.com/giantswarm/randomkeys v0.2.1-0.20200805144430-21af938db8b3
-	github.com/giantswarm/statusresource v0.4.1-0.20200724134551-4b43b92862bd
-	github.com/giantswarm/tenantcluster v0.2.1-0.20200805151546-b4db9e2db45e
+	github.com/giantswarm/statusresource v0.4.1-0.20200805152819-b31c63b71bab
+	github.com/giantswarm/tenantcluster/v2 v2.0.1-0.20200724133643-1c49720f2600
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.1

@@ -1,7 +1,7 @@
 package vmss
 
 import (
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 )
 
 type Node struct {
@@ -58,7 +58,7 @@ func newNodeOSImageCoreOS(distroVersion string) NodeOSImage {
 // the small cloudconfig template.
 type SmallCloudconfigConfig struct {
 	BlobURL       string
-	CertsFiles    certs.Files
+	CertsFiles    []certs.File
 	EncryptionKey string
 	InitialVector string
 	InstanceRole  string

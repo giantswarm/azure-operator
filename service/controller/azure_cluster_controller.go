@@ -2,8 +2,9 @@ package controller
 
 import (
 	"context"
+	"time"
 
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -18,19 +19,23 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/flag"
+	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/release"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/subnet"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type AzureClusterConfig struct {
-	InstallationName string
-	K8sClient        k8sclient.Interface
-	Logger           micrologger.Logger
+	CredentialProvider credential.Provider
+	InstallationName   string
+	K8sClient          k8sclient.Interface
+	Logger             micrologger.Logger
 
 	Flag  *flag.Flag
 	Viper *viper.Viper
@@ -157,10 +162,52 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 		}
 	}
 
+	var clientFactory *client.Factory
+	{
+		c := client.FactoryConfig{
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
+		}
+
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var newDebugger *debugger.Debugger
+	{
+		c := debugger.Config{
+			Logger: config.Logger,
+		}
+
+		newDebugger, err = debugger.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetResource resource.Interface
+	{
+		c := subnet.Config{
+			AzureClientsFactory: clientFactory,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Debugger:            newDebugger,
+			Logger:              config.Logger,
+		}
+
+		subnetResource, err = subnet.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []resource.Interface{
 		releaseResource,
 		azureClusterConfigResource,
 		azureConfigResource,
+		subnetResource,
 	}
 
 	{

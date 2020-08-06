@@ -2,11 +2,13 @@ package blobobject
 
 import (
 	"context"
+	"sync"
 
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
@@ -25,11 +27,78 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	var clusterCerts certs.Cluster
+	var masterCertFiles []certs.File
+	var workerCertFiles []certs.File
 	{
-		clusterCerts, err = r.certsSearcher.SearchCluster(key.ClusterID(&cr))
-		if err != nil {
-			return nil, microerror.Mask(err)
+		g := &errgroup.Group{}
+		m := sync.Mutex{}
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.APICert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesAPI(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.CalicoEtcdClientCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesCalicoEtcdClient(tls)...)
+			workerCertFiles = append(workerCertFiles, certs.NewFilesCalicoEtcdClient(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.EtcdCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesEtcd(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.ServiceAccountCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesServiceAccount(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.WorkerCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			workerCertFiles = append(workerCertFiles, certs.NewFilesWorker(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		err := g.Wait()
+		if certs.IsTimeout(err) {
+			return "", microerror.Maskf(timeoutError, "waited too long for certificates")
+		} else if err != nil {
+			return "", microerror.Mask(err)
 		}
 	}
 
@@ -60,10 +129,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		images := k8scloudconfig.BuildImages(r.registryDomain, versions)
 
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
-			CustomObject: cr,
-			ClusterCerts: clusterCerts,
-			Images:       images,
-			Versions:     versions,
+			CustomObject:    cr,
+			Images:          images,
+			MasterCertFiles: masterCertFiles,
+			Versions:        versions,
+			WorkerCertFiles: workerCertFiles,
 		}
 	}
 

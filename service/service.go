@@ -247,8 +247,9 @@ func New(config Config) (*Service, error) {
 	var azureClusterController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureClusterConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
+			CredentialProvider: credentialProvider,
+			K8sClient:          k8sClient,
+			Logger:             config.Logger,
 
 			Flag:  config.Flag,
 			Viper: config.Viper,

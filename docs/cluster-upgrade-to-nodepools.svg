@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8" standalone="no"?>
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" contentScriptType="application/ecmascript" contentStyleType="text/css" height="880px" preserveAspectRatio="none" style="width:933px;height:880px;" version="1.1" viewBox="0 0 933 880" width="933px" zoomAndPan="magnify"><defs><filter height="300%" id="f1skvuqc9nq5ff" width="300%" x="-1" y="-1"><feGaussianBlur result="blurOut" stdDeviation="2.0"/><feColorMatrix in="blurOut" result="blurOut2" type="matrix" values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 .4 0"/><feOffset dx="4.0" dy="4.0" in="blurOut2" result="blurOut3"/><feBlend in="SourceGraphic" in2="blurOut3" mode="normal"/></filter></defs><g><!--MD5=[93e3cde70b2fe1268abef5aa25dacc6f]
+cluster clusterUpgrade--><rect fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" height="557" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="512" x="195" y="112"/><rect fill="#FFFFFF" height="524.7031" rx="12.5" ry="12.5" style="stroke: #FFFFFF; stroke-width: 1.0;" width="506" x="198" y="141.2969"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="195" x2="707" y1="138.2969" y2="138.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="115" x="393.5" y="128.9951">Cluster Upgrade</text><!--MD5=[cfa7c098fcbab20a4a75e699c2681e85]
+cluster cleanup--><rect fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" height="145" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="476" x="396" y="718"/><rect fill="#FFFFFF" height="112.7031" rx="12.5" ry="12.5" style="stroke: #FFFFFF; stroke-width: 1.0;" width="470" x="399" y="747.2969"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="396" x2="872" y1="744.2969" y2="744.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="111" x="578.5" y="734.9951">Cluster cleanup</text><g id="clusterUpgrade.ensureCRs"><rect fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" height="92.1719" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="390" x="293" y="155"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="293" x2="683" y1="181.2969" y2="181.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="370" x="303" y="172.9951">Ensure CAPI &amp; CAPZ CRs exist &amp; match AzureConfig</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="106" x="298" y="197.4355">Ensure Cluster CR</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="141" x="298" y="211.4043">Ensure AzureCluster CR</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="269" x="298" y="225.373">Ensure AzureMachine CR for TC master node</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="229" x="298" y="239.3418">Ensure cluster-user-values ConfigMap</text></g><ellipse cx="248" cy="201" fill="#000000" filter="url(#f1skvuqc9nq5ff)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><g id="clusterUpgrade.ensureNP"><rect fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" height="50.2656" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="364" x="255" y="308"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="255" x2="619" y1="334.2969" y2="334.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="158" x="358" y="325.9951">Ensure first node pool</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="344" x="260" y="350.4355">Ensure there is a node pool to match 1:1 built-in workers</text></g><polygon fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" points="371,420.5,383,432.5,371,444.5,359,432.5,371,420.5" style="stroke: #A80036; stroke-width: 1.5;"/><g id="clusterUpgrade.drainOldWorkers"><rect fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" height="50.2656" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="332" x="238" y="507"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="238" x2="570" y1="533.2969" y2="533.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="181" x="313.5" y="524.9951">Drain old built-in workers</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="312" x="243" y="549.4355">Move current workload gracefully to first node pool</text></g><polygon fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" points="404,619.5,416,631.5,404,643.5,392,631.5,404,619.5" style="stroke: #A80036; stroke-width: 1.5;"/><g id="cleanup.deleteOldWorkers"><rect fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" height="78.2031" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="353" x="494.5" y="761"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="494.5" x2="847.5" y1="787.2969" y2="787.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="136" x="603" y="778.9951">Delete old workers</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="240" x="499.5" y="803.4355">Delete old built-in workers' deployment</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="333" x="499.5" y="817.4043">Ensure old built-in workers' VMSS is deleteOldWorkers</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="221" x="499.5" y="831.373">Set AzureConfig workers field to null</text></g><ellipse cx="449" cy="800" fill="#000000" filter="url(#f1skvuqc9nq5ff)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><g id="beginUpgrade"><rect fill="#FEFECE" filter="url(#f1skvuqc9nq5ff)" height="50.2656" rx="12.5" ry="12.5" style="stroke: #A80036; stroke-width: 1.5;" width="283" x="61.5" y="7"/><line style="stroke: #A80036; stroke-width: 1.5;" x1="61.5" x2="344.5" y1="33.2969" y2="33.2969"/><text fill="#000000" font-family="sans-serif" font-size="14" lengthAdjust="spacingAndGlyphs" textLength="160" x="123" y="24.9951">Begin Cluster Upgrade</text><text fill="#000000" font-family="sans-serif" font-size="12" lengthAdjust="spacingAndGlyphs" textLength="263" x="66.5" y="49.4355">Update AzureConfig release label to 12.1.0.</text></g><ellipse cx="16" cy="32" fill="#000000" filter="url(#f1skvuqc9nq5ff)" rx="10" ry="10" style="stroke: none; stroke-width: 1.0;"/><ellipse cx="906" cy="800" fill="none" filter="url(#f1skvuqc9nq5ff)" rx="10" ry="10" style="stroke: #000000; stroke-width: 1.0;"/><ellipse cx="906.5" cy="800.5" fill="#000000" rx="6" ry="6" style="stroke: none; stroke-width: 1.0;"/><!--MD5=[2834a537855ce52c8594a22a1d567eb5]
+link *start to beginUpgrade--><path d="M26.2266,32 C36.2229,32 46.2193,32 56.2157,32 " fill="none" id="*start-&gt;beginUpgrade" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="61.4431,32,52.4431,28,56.4431,32,52.4431,36,61.4431,32" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[d18ce391d7a10dc75c0cbbd5b5b0ba62]
+link beginUpgrade to clusterUpgrade--><path d="M203,57.283 C203,68.6815 203,83.1131 203,98.3945 C203,102.2149 203,106.0884 203,109.9809 C203,110.4674 203,110.9543 203,111.4414 " fill="none" id="beginUpgrade-&gt;clusterUpgrade" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="203,111.4414,207,102.4414,203,106.4414,199,102.4414,203,111.4414" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[dcdd2bea64a22e97738fb05ec82d7880]
+link *start*clusterUpgrade to ensureCRs--><path d="M258.312,201 C268.118,201 277.923,201 287.728,201 " fill="none" id="*start*clusterUpgrade-&gt;ensureCRs" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="292.855,201,283.855,197,287.855,201,283.855,205,292.855,201" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[767770aa737529ed3bb82f52e68dea05]
+link ensureCRs to ensureNP--><path d="M470.306,247.103 C463.058,265.578 454.878,286.428 448.439,302.841 " fill="none" id="ensureCRs-&gt;ensureNP" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="446.5,307.785,453.5103,300.8672,448.3259,303.1303,446.0628,297.9459,446.5,307.785" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[24461669b58c23468fe94501e68f623a]
+link ensureNP to NPExists--><path d="M420.685,358.101 C407.124,378.134 388.462,405.704 378.306,420.707 " fill="none" id="ensureNP-&gt;NPExists" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="375.443,424.937,383.8,419.7255,378.2454,420.7962,377.1747,415.2416,375.443,424.937" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[025ef69d91ac279b756fbe74d1ade365]
+link NPExists to NPExists--><path d="M378.858,428.329 C395.278,421.742 418,423.133 418,432.5 C418,440.989 399.339,442.927 383.619,438.313 " fill="none" id="NPExists-&gt;NPExists" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="378.858,436.671,386.06,443.389,383.5843,438.3026,388.6706,435.8269,378.858,436.671" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="270" x="424" y="437.0669">Wait until all node pool workers are Ready</text><!--MD5=[f6722445320c183042b89ca3d4b87618]
+link NPExists to drainOldWorkers--><path d="M373.814,441.813 C378.287,455.029 387.23,481.451 394.226,502.122 " fill="none" id="NPExists-&gt;drainOldWorkers" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="395.868,506.973,396.7715,497.1657,394.265,502.2369,389.1938,499.7304,395.868,506.973" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[d908fd52817aaf75b95b318995a5bb04]
+link drainOldWorkers to oldWorkersDrained--><path d="M404,557.101 C404,574.78 404,598.328 404,613.929 " fill="none" id="drainOldWorkers-&gt;oldWorkersDrained" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="404,619.292,408,610.292,404,614.292,400,610.292,404,619.292" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[4ce67ea01dd1ae53bbab1e62f87af83a]
+link oldWorkersDrained to oldWorkersDrained--><path d="M411.858,627.329 C428.278,620.742 451,622.133 451,631.5 C451,639.989 432.339,641.927 416.619,637.313 " fill="none" id="oldWorkersDrained-&gt;oldWorkersDrained" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="411.858,635.671,419.06,642.389,416.5843,637.3026,421.6706,634.8269,411.858,635.671" style="stroke: #A80036; stroke-width: 1.0;"/><text fill="#000000" font-family="sans-serif" font-size="13" lengthAdjust="spacingAndGlyphs" textLength="203" x="457" y="636.0669">Wait until all workload is moved</text><!--MD5=[9c83b99d00a5ccfdc599ce96d31e1c20]
+link oldWorkersDrained to cleanup--><path d="M404,643.683 C404,652.87 404,666.9416 404,682.9373 C404,690.9351 404,699.414 404,708.0038 C404,710.1512 404,712.3056 404,714.4612 C404,715.5389 404,716.617 404,717.6946 " fill="none" id="oldWorkersDrained-&gt;cleanup" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="404,717.6946,408,708.6946,404,712.6946,400,708.6946,404,717.6946" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[2c02fc7528ecb6570cbbbe533888a055]
+link *start*cleanup to deleteOldWorkers--><path d="M459.406,800 C469.26,800 479.114,800 488.968,800 " fill="none" id="*start*cleanup-&gt;deleteOldWorkers" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="494.121,800,485.121,796,489.121,800,485.121,804,494.121,800" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[bbc45ae8e076fd76bf43462b7d8fac36]
+link deleteOldWorkers to *end--><path d="M847.709,800 C862.04,800 876.371,800 890.701,800 " fill="none" id="deleteOldWorkers-&gt;*end" style="stroke: #A80036; stroke-width: 1.0;"/><polygon fill="#A80036" points="895.981,800,886.981,796,890.981,800,886.981,804,895.981,800" style="stroke: #A80036; stroke-width: 1.0;"/><!--MD5=[0ad84047c16d58f1d6fff1d6845f9b2f]
+@startuml
+state "Begin Cluster Upgrade" as beginUpgrade
+
+[*] -> beginUpgrade
+
+beginUpgrade : Update AzureConfig release label to 12.1.0.
+beginUpgrade - -> clusterUpgrade
+
+state "Cluster Upgrade" as clusterUpgrade {
+    state "Ensure CAPI & CAPZ CRs exist & match AzureConfig" as ensureCRs 
+
+    [*] -> ensureCRs
+    ensureCRs : Ensure Cluster CR
+    ensureCRs : Ensure AzureCluster CR
+    ensureCRs : Ensure AzureMachine CR for TC master node
+    ensureCRs : Ensure cluster-user-values ConfigMap
+
+    state "Ensure first node pool" as ensureNP
+
+    ensureCRs - -> ensureNP
+    ensureNP : Ensure there is a node pool to match 1:1 built-in workers
+
+    state NPExists <<choice>>
+    ensureNP - -> NPExists
+    NPExists - -> NPExists : Wait until all node pool workers are Ready
+
+    state "Drain old built-in workers" as drainOldWorkers
+    drainOldWorkers : Move current workload gracefully to first node pool
+    NPExists - -> drainOldWorkers
+
+    state oldWorkersDrained <<choice>>
+    drainOldWorkers - -> oldWorkersDrained
+    oldWorkersDrained - -> oldWorkersDrained : Wait until all workload is moved
+}
+
+state "Cluster cleanup" as cleanup {
+    oldWorkersDrained - -> cleanup
+
+    state "Delete old workers" as deleteOldWorkers
+    [*] -> deleteOldWorkers
+    deleteOldWorkers : Delete old built-in workers' deployment
+    deleteOldWorkers : Ensure old built-in workers' VMSS is deleteOldWorkers
+    deleteOldWorkers : Set AzureConfig workers field to null
+
+}
+    
+ deleteOldWorkers -> [*]
+@enduml
+
+PlantUML version 1.2020.16beta7(Unknown compile time)
+(GPL source distribution)
+Java Runtime: Java(TM) SE Runtime Environment
+JVM: Java HotSpot(TM) 64-Bit Server VM
+Default Encoding: UTF-8
+Language: en
+Country: US
+--></g></svg>

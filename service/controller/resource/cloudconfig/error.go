@@ -73,6 +73,15 @@ func IsStorageAccountNotProvisioned(err error) bool {
 	return strings.Contains(microerror.Cause(err).Error(), "StorageAccountIsNotProvisioned")
 }
 
+var timeoutError = &microerror.Error{
+	Kind: "timeoutError",
+}
+
+// IsTimeout asserts timeoutError.
+func IsTimeout(err error) bool {
+	return microerror.Cause(err) == timeoutError
+}
+
 var tooManyCredentialsError = &microerror.Error{
 	Kind: "tooManyCredentialsError",
 }
