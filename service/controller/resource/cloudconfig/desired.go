@@ -53,12 +53,6 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	// TODO
-	//
-	//     * no dependabot
-	//     * ambiguous deps
-	//     *
-	//
 	var masterCertFiles []certs.File
 	var workerCertFiles []certs.File
 	{
