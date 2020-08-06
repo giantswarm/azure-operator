@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"

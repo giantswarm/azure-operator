@@ -2,7 +2,7 @@ package cloudconfig
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/randomkeys"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"

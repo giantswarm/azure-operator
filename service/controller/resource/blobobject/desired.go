@@ -3,7 +3,7 @@ package blobobject
 import (
 	"context"
 
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
