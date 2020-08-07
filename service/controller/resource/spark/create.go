@@ -422,8 +422,13 @@ func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMet
 }
 
 func (r *Resource) getRelease(ctx context.Context, obj metav1.ObjectMeta) (*releasev1alpha1.Release, error) {
+	rName := key.ReleaseVersion(&obj)
+	if !strings.HasPrefix(rName, "v") {
+		rName = "v" + rName
+	}
+
 	release := &releasev1alpha1.Release{}
-	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: corev1.NamespaceAll, Name: key.ReleaseVersion(&obj)}, release)
+	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: corev1.NamespaceAll, Name: rName}, release)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
