@@ -46,6 +46,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}()
 	}
 
+	// 1/4 Check if a subnet is already allocated.
 	{
 		proceed, err := r.checker.Check(ctx, m.GetNamespace(), m.GetName())
 		if err != nil {
@@ -59,6 +60,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	// 2/4 Since we need to allocate a new subnet, first let's get all already allocated subnets.
 	var allocatedSubnets []net.IPNet
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets")
@@ -71,6 +73,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated subnets %#q", allocatedSubnets))
 	}
 
+	// 3/4 Now let when we know what subnets are allocated, let's get one that's available.
 	var freeSubnet net.IPNet
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding free subnet")
@@ -83,6 +86,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free subnet %#q", freeSubnet))
 	}
 
+	// 4/4 And finally, let's save newly allocated subnet.
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free subnet %#q", freeSubnet))
 

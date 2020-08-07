@@ -18,6 +18,8 @@ type AzureMachinePoolPersisterConfig struct {
 	Logger     micrologger.Logger
 }
 
+// AzureMachinePoolPersister is a Persister implementation that saves a subnet allocated for a node
+// pool by adding it to Cluster CR.
 type AzureMachinePoolPersister struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
@@ -39,6 +41,9 @@ func NewAzureMachinePoolPersister(config AzureMachinePoolPersisterConfig) (*Azur
 	return p, nil
 }
 
+// Persist functions takes a subnet CIDR allocated for the specified AzureMachinePool (namespace/
+// name) and adds it to Subnets array in the corresponding Cluster CR that owns the specified
+// AzureMachinePool.
 func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet, namespace string, name string) error {
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
 	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)

@@ -17,6 +17,8 @@ type AzureMachinePoolCheckerConfig struct {
 	Logger     micrologger.Logger
 }
 
+// AzureMachinePoolChecker is a Checker implementation that checks if a subnet is allocated for the
+// node pool specified in Check function.
 type AzureMachinePoolChecker struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
@@ -38,6 +40,9 @@ func NewAzureMachinePoolChecker(config AzureMachinePoolCheckerConfig) (*AzureMac
 	return a, nil
 }
 
+// Check function checks if a subnet is allocated for the specified AzureMachinePool. It is
+// checking if the allocated subnet is set in the corresponding Cluster CR that owns specified
+// AzureMachinePool.
 func (c *AzureMachinePoolChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
 	err := c.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
