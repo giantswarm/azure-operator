@@ -164,27 +164,27 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	var clusterChecker *ipam.AzureMachinePoolChecker
+	var subnetChecker *ipam.AzureMachinePoolSubnetChecker
 	{
-		c := ipam.AzureMachinePoolCheckerConfig{
+		c := ipam.AzureMachinePoolSubnetCheckerConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 		}
 
-		clusterChecker, err = ipam.NewAzureMachinePoolChecker(c)
+		subnetChecker, err = ipam.NewAzureMachinePoolSubnetChecker(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	var azureMachinePoolPersister *ipam.AzureMachinePoolPersister
+	var subnetPersister *ipam.AzureMachinePoolSubnetPersister
 	{
-		c := ipam.AzureMachinePoolPersisterConfig{
+		c := ipam.AzureMachinePoolSubnetPersisterConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 		}
 
-		azureMachinePoolPersister, err = ipam.NewAzureMachinePoolPersister(c)
+		subnetPersister, err = ipam.NewAzureMachinePoolSubnetPersister(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -210,11 +210,11 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var ipamResource resource.Interface
 	{
 		c := ipam.Config{
-			Checker:   clusterChecker,
+			Checker:   subnetChecker,
 			Collector: subnetCollector,
 			Locker:    config.Locker,
 			Logger:    config.Logger,
-			Persister: azureMachinePoolPersister,
+			Persister: subnetPersister,
 
 			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
 			NetworkRange:            config.IPAMNetworkRange,

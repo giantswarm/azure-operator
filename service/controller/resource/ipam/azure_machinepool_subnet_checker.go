@@ -12,19 +12,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type AzureMachinePoolCheckerConfig struct {
+type AzureMachinePoolSubnetCheckerConfig struct {
 	CtrlClient client.Client
 	Logger     micrologger.Logger
 }
 
-// AzureMachinePoolChecker is a Checker implementation that checks if a subnet is allocated for the
+// AzureMachinePoolSubnetChecker is a Checker implementation that checks if a subnet is allocated for the
 // node pool specified in Check function.
-type AzureMachinePoolChecker struct {
+type AzureMachinePoolSubnetChecker struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
 }
 
-func NewAzureMachinePoolChecker(config AzureMachinePoolCheckerConfig) (*AzureMachinePoolChecker, error) {
+func NewAzureMachinePoolSubnetChecker(config AzureMachinePoolSubnetCheckerConfig) (*AzureMachinePoolSubnetChecker, error) {
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
@@ -32,18 +32,18 @@ func NewAzureMachinePoolChecker(config AzureMachinePoolCheckerConfig) (*AzureMac
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	a := &AzureMachinePoolChecker{
+	c := &AzureMachinePoolSubnetChecker{
 		ctrlClient: config.CtrlClient,
 		logger:     config.Logger,
 	}
 
-	return a, nil
+	return c, nil
 }
 
 // Check function checks if a subnet is allocated for the specified AzureMachinePool. It is
 // checking if the allocated subnet is set in the corresponding Cluster CR that owns specified
 // AzureMachinePool.
-func (c *AzureMachinePoolChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
+func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
 	err := c.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
 	if err != nil {
@@ -70,7 +70,7 @@ func (c *AzureMachinePoolChecker) Check(ctx context.Context, namespace string, n
 	return true, nil
 }
 
-func (c *AzureMachinePoolChecker) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
+func (c *AzureMachinePoolSubnetChecker) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
 	azureCluster := &capzv1alpha3.AzureCluster{}
 	azureClusterName := client.ObjectKey{
 		Namespace: cluster.Spec.InfrastructureRef.Namespace,

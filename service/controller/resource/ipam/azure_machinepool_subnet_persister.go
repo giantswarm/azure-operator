@@ -13,19 +13,19 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type AzureMachinePoolPersisterConfig struct {
+type AzureMachinePoolSubnetPersisterConfig struct {
 	CtrlClient client.Client
 	Logger     micrologger.Logger
 }
 
-// AzureMachinePoolPersister is a Persister implementation that saves a subnet allocated for a node
+// AzureMachinePoolSubnetPersister is a Persister implementation that saves a subnet allocated for a node
 // pool by adding it to Cluster CR.
-type AzureMachinePoolPersister struct {
+type AzureMachinePoolSubnetPersister struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
 }
 
-func NewAzureMachinePoolPersister(config AzureMachinePoolPersisterConfig) (*AzureMachinePoolPersister, error) {
+func NewAzureMachinePoolSubnetPersister(config AzureMachinePoolSubnetPersisterConfig) (*AzureMachinePoolSubnetPersister, error) {
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
 	}
@@ -33,7 +33,7 @@ func NewAzureMachinePoolPersister(config AzureMachinePoolPersisterConfig) (*Azur
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	p := &AzureMachinePoolPersister{
+	p := &AzureMachinePoolSubnetPersister{
 		ctrlClient: config.CtrlClient,
 		logger:     config.Logger,
 	}
@@ -44,7 +44,7 @@ func NewAzureMachinePoolPersister(config AzureMachinePoolPersisterConfig) (*Azur
 // Persist functions takes a subnet CIDR allocated for the specified AzureMachinePool (namespace/
 // name) and adds it to Subnets array in the corresponding Cluster CR that owns the specified
 // AzureMachinePool.
-func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet, namespace string, name string) error {
+func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, vnet net.IPNet, namespace string, name string) error {
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
 	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
 	if err != nil {
@@ -59,7 +59,7 @@ func (p *AzureMachinePoolPersister) Persist(ctx context.Context, vnet net.IPNet,
 	return nil
 }
 
-func (p *AzureMachinePoolPersister) addSubnetToAzureCluster(ctx context.Context, vnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
+func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Context, vnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
 	cluster, err := util.GetClusterFromMetadata(ctx, p.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
@@ -85,7 +85,7 @@ func (p *AzureMachinePoolPersister) addSubnetToAzureCluster(ctx context.Context,
 	return nil
 }
 
-func (p *AzureMachinePoolPersister) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
+func (p *AzureMachinePoolSubnetPersister) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
 	azureCluster := &capzv1alpha3.AzureCluster{}
 	azureClusterName := client.ObjectKey{
 		Namespace: cluster.Spec.InfrastructureRef.Namespace,
