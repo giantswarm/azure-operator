@@ -14,7 +14,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"

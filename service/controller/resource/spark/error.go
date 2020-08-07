@@ -26,6 +26,15 @@ func IsRequirementsNotMet(err error) bool {
 	return microerror.Cause(err) == requirementsNotMetError
 }
 
+var timeoutError = &microerror.Error{
+	Kind: "timeoutError",
+}
+
+// IsTimeout asserts timeoutError.
+func IsTimeout(err error) bool {
+	return microerror.Cause(err) == timeoutError
+}
+
 var tooManyCredentialsError = &microerror.Error{
 	Kind: "tooManyCredentialsError",
 }

@@ -8,16 +8,18 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -199,10 +201,77 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		return nil, microerror.Mask(err)
 	}
 
-	var clusterCerts certs.Cluster
+	var masterCertFiles []certs.File
+	var workerCertFiles []certs.File
 	{
-		clusterCerts, err = r.certsSearcher.SearchCluster(key.ClusterID(cluster))
-		if err != nil {
+		g := &errgroup.Group{}
+		m := sync.Mutex{}
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.APICert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesAPI(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.CalicoEtcdClientCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesCalicoEtcdClient(tls)...)
+			workerCertFiles = append(workerCertFiles, certs.NewFilesCalicoEtcdClient(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.EtcdCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesEtcd(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.ServiceAccountCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			masterCertFiles = append(masterCertFiles, certs.NewFilesServiceAccount(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		g.Go(func() error {
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.WorkerCert)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			m.Lock()
+			workerCertFiles = append(workerCertFiles, certs.NewFilesWorker(tls)...)
+			m.Unlock()
+
+			return nil
+		})
+
+		err := g.Wait()
+		if certs.IsTimeout(err) {
+			return nil, microerror.Maskf(timeoutError, "waited too long for certificates")
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
@@ -271,10 +340,11 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 			return nil, microerror.Mask(err)
 		}
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
-			CustomObject: mappedAzureConfig,
-			ClusterCerts: clusterCerts,
-			Images:       images,
-			Versions:     versions,
+			CustomObject:    mappedAzureConfig,
+			Images:          images,
+			MasterCertFiles: masterCertFiles,
+			Versions:        versions,
+			WorkerCertFiles: workerCertFiles,
 		}
 	}
 
