@@ -181,6 +181,10 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		return nil, microerror.Mask(err)
 	}
 
+	if cluster == nil {
+		return nil, return microerror.Mask(ownerReferenceNotSet)
+	}
+
 	azureCluster, err := r.getAzureCluster(ctx, cluster)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -189,6 +193,10 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
+	}
+
+	if machinePool == nil {
+		return nil, return microerror.Mask(ownerReferenceNotSet)
 	}
 
 	release, err := r.getRelease(ctx, machinePool.ObjectMeta)
