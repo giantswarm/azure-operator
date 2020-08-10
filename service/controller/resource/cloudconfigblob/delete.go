@@ -23,7 +23,10 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 
 	if machinePool == nil {
-		return microerror.Mask(ownerReferenceNotSet)
+		// If MachinePool doesn't exist anymore, there's nothing we can do
+		// about it. Returning an error here would just keep finalizer and
+		// prevent CR from deletion forever.
+		return nil
 	}
 
 	credentialSecret, err := r.getCredentialSecret(ctx, &azureMachinePool)
