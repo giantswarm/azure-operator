@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/e2etests/scaling"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/integration/env"
-	"github.com/giantswarm/azure-operator/v4/integration/setup"
+	"github.com/giantswarm/azure-operator/v4/e2e/env"
+	"github.com/giantswarm/azure-operator/v4/e2e/setup"
 )
 
 var (

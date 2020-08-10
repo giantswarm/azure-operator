@@ -14,7 +14,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/v4/integration/env"
+	"github.com/giantswarm/azure-operator/v4/e2e/env"
 )
 
 func Test_Connectivity(t *testing.T) {

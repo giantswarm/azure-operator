@@ -9,7 +9,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/integration/env"
+	"github.com/giantswarm/azure-operator/v4/e2e/env"
 )
 
 // WrapTestMain setup and teardown e2e testing environment.

@@ -10,8 +10,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/spf13/afero"
 
-	"github.com/giantswarm/azure-operator/v4/integration/env"
-	"github.com/giantswarm/azure-operator/v4/integration/key"
+	"github.com/giantswarm/azure-operator/v4/e2e/env"
+	"github.com/giantswarm/azure-operator/v4/e2e/key"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 )
 

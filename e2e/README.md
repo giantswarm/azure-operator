@@ -34,12 +34,12 @@ OR
 
 ```
 
-## How to run integration test
+## How to run e2e test
 
 ```
 $ minikube start --extra-config=apiserver.Authorization.Mode=RBAC
 $ e2e-harness setup --remote=false
-$ e2e-harness test --test-dir=integration/test/mytest
+$ e2e-harness test --test-dir=e2e/test/mytest
 ```
 
 ## Export node journal logs into Rapid7/Logentries

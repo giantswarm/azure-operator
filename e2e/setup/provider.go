@@ -15,8 +15,8 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v4/integration/env"
-	"github.com/giantswarm/azure-operator/v4/integration/key"
+	"github.com/giantswarm/azure-operator/v4/e2e/env"
+	"github.com/giantswarm/azure-operator/v4/e2e/key"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	key2 "github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -150,7 +150,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		// `operatorVersion` is the link between an operator and a `CustomResource`.
 		// azure-operator with version `operatorVersion` will only reconcile `AzureConfig` labeled with `operatorVersion`.
 		operatorVersion = project.Version()
-		if env.TestDir() == "integration/test/update" {
+		if env.TestDir() == "e2e/test/update" {
 			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
 			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
 			operatorVersion = env.GetLatestOperatorRelease()
@@ -165,7 +165,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	}
 
 	{
-		if env.TestDir() == "integration/test/update" {
+		if env.TestDir() == "e2e/test/update" {
 			err := installLatestReleaseChartPackage(ctx, config, project.Name(), renderedAzureOperatorChartValues, CatalogStorageURL)
 			if err != nil {
 				return microerror.Mask(err)
