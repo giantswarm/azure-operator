@@ -126,7 +126,10 @@ func loadCR(fName string) (runtime.Object, error) {
 
 func newFakeClient() client.Client {
 	scheme := runtime.NewScheme()
-	providerv1alpha1.AddToScheme(scheme)
+	err := providerv1alpha1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
 
 	return fake.NewFakeClientWithScheme(scheme)
 }
