@@ -50,9 +50,9 @@ workflows:
 #      - architect/integration-test:
 #          name: cluster-state-test
 #          resource_class: large
-#          setup-script: "integration/config/setup.sh"
-#          env-file: "integration/test/clusterstate/.env"
-#          test-dir: "integration/test/clusterstate"
+#          setup-script: "e2e/config/setup.sh"
+#          env-file: "e2e/test/clusterstate/.env"
+#          test-dir: "e2e/test/clusterstate"
 #          test-timeout: "90m"
 #          requires:
 #          - hold
@@ -61,9 +61,9 @@ workflows:
       - architect/integration-test:
           name: scaling-test
           resource_class: large
-          setup-script: "integration/config/setup.sh"
-          env-file: "integration/test/scaling/.env"
-          test-dir: "integration/test/scaling"
+          setup-script: "e2e/config/setup.sh"
+          env-file: "e2e/test/scaling/.env"
+          test-dir: "e2e/test/scaling"
           test-timeout: "90m"
           requires:
           - hold
@@ -71,9 +71,9 @@ workflows:
       - architect/integration-test:
           name: multiaz-test
           resource_class: large
-          setup-script: "integration/config/setup.sh"
-          env-file: "integration/test/multiaz/.env"
-          test-dir: "integration/test/multiaz"
+          setup-script: "e2e/config/setup.sh"
+          env-file: "e2e/test/multiaz/.env"
+          test-dir: "e2e/test/multiaz"
           test-timeout: "70m"
           requires:
           - hold
@@ -81,9 +81,9 @@ workflows:
       - architect/integration-test:
           name: cluster-deletion-test
           resource_class: large
-          setup-script: "integration/config/setup.sh"
-          env-file: "integration/test/clusterdeletion/.env"
-          test-dir: "integration/test/clusterdeletion"
+          setup-script: "e2e/config/setup.sh"
+          env-file: "e2e/test/clusterdeletion/.env"
+          test-dir: "e2e/test/clusterdeletion"
           test-timeout: "240m"
           requires:
           - hold
@@ -92,9 +92,9 @@ workflows:
 #      - architect/integration-test:
 #          name: update-test
 #          resource_class: large
-#          setup-script: "integration/config/setup.sh"
-#          env-file: "integration/test/update/.env"
-#          test-dir: "integration/test/update"
+#          setup-script: "e2e/config/setup.sh"
+#          env-file: "e2e/test/update/.env"
+#          test-dir: "e2e/test/update"
 #          test-timeout: "180m"
 #          requires:
 #          - hold
@@ -102,9 +102,9 @@ workflows:
       - architect/integration-test:
           name: cp-tc-connectivity-test
           resource_class: large
-          setup-script: "integration/config/setup.sh"
-          env-file: "integration/test/cptcconnectivity/.env"
-          test-dir: "integration/test/cptcconnectivity"
+          setup-script: "e2e/config/setup.sh"
+          env-file: "e2e/test/cptcconnectivity/.env"
+          test-dir: "e2e/test/cptcconnectivity"
           test-timeout: "70m"
           requires:
           - hold
