@@ -3,7 +3,7 @@ package key
 import (
 	"fmt"
 
-	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 

@@ -4,10 +4,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/giantswarm/certs/v2/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
+	"github.com/giantswarm/certs/v3/pkg/certs"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/resourcecanceledcontext"
 	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

@@ -3,7 +3,7 @@ package cloudconfig
 import (
 	"context"
 
-	"github.com/giantswarm/operatorkit/resource/crud"
+	"github.com/giantswarm/operatorkit/v2/pkg/resource/crud"
 )
 
 // ApplyDeleteChange not in use as blobobject deleted

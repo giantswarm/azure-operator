@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/giantswarm/errors/tenant"
-	"github.com/giantswarm/k8sclient/v2/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
+	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/client-go/rest"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"

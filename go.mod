@@ -9,38 +9,38 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions v0.4.17-0.20200723160042-89aed92d1080
+	github.com/giantswarm/apiextensions/v2 v2.0.0
 	github.com/giantswarm/appcatalog v0.1.11
-	github.com/giantswarm/apprclient v0.2.1-0.20200724085653-63c7eb430dcf
+	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
-	github.com/giantswarm/certs/v2 v2.0.1-0.20200714195905-72e095f60587
-	github.com/giantswarm/e2e-harness v0.3.1-0.20200724132005-68ffa0a59366
+	github.com/giantswarm/certs/v3 v3.0.0
+	github.com/giantswarm/e2e-harness/v2 v2.0.0
 	github.com/giantswarm/e2eclients v0.2.0
-	github.com/giantswarm/e2esetup v0.3.1-0.20200724090407-2c5747194227
+	github.com/giantswarm/e2esetup/v2 v2.0.0
 	github.com/giantswarm/e2etemplates v0.2.0
-	github.com/giantswarm/e2etests v0.3.2-0.20200724134726-3e71ad6b65b2
+	github.com/giantswarm/e2etests/v2 v2.0.0
 	github.com/giantswarm/errors v0.2.3
-	github.com/giantswarm/helmclient v1.0.6-0.20200731120218-28346696f150
+	github.com/giantswarm/helmclient/v2 v2.0.0
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient/v2 v2.0.1-0.20200803135311-f993c059637f
-	github.com/giantswarm/k8sclient/v3 v3.1.3-0.20200724085258-345602646ea8
-	github.com/giantswarm/k8scloudconfig/v7 v7.0.4-0.20200724135614-bc074c29c030
-	github.com/giantswarm/kubelock v0.2.1-0.20200724140513-fb6ee5589717
+	github.com/giantswarm/k8sclient/v4 v4.0.0
+	github.com/giantswarm/k8scloudconfig/v8 v8.0.0
+	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v0.2.0
-	github.com/giantswarm/microerror v0.2.0
+	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/microkit v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
-	github.com/giantswarm/operatorkit v1.2.1-0.20200724133006-e6de285a86c0
-	github.com/giantswarm/randomkeys v0.2.1-0.20200805144430-21af938db8b3
-	github.com/giantswarm/statusresource v0.4.1-0.20200805152819-b31c63b71bab
-	github.com/giantswarm/tenantcluster/v2 v2.0.1-0.20200724133643-1c49720f2600
+	github.com/giantswarm/operatorkit/v2 v2.0.0
+	github.com/giantswarm/randomkeys/v2 v2.0.0
+	github.com/giantswarm/statusresource/v2 v2.0.0
+	github.com/giantswarm/tenantcluster/v3 v3.0.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.1
 	github.com/markbates/pkger v0.17.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
-	github.com/spf13/afero v1.3.2
+	github.com/spf13/afero v1.3.4
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.18.5

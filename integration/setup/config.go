@@ -1,14 +1,14 @@
 package setup
 
 import (
-	"github.com/giantswarm/apprclient"
-	"github.com/giantswarm/e2e-harness/pkg/framework"
-	"github.com/giantswarm/e2e-harness/pkg/release"
+	"github.com/giantswarm/apprclient/v2"
+	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
+	"github.com/giantswarm/e2e-harness/v2/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
-	e2esetupenv "github.com/giantswarm/e2esetup/chart/env"
-	"github.com/giantswarm/helmclient"
+	e2esetupenv "github.com/giantswarm/e2esetup/v2/chart/env"
+	"github.com/giantswarm/helmclient/v2/pkg/helmclient"
 	k8sclientlegacy "github.com/giantswarm/k8sclient/v2/pkg/k8sclient"
-	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 

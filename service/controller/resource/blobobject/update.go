@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/resource/crud"
+	"github.com/giantswarm/operatorkit/v2/pkg/resource/crud"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"

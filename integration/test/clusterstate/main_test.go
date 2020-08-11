@@ -5,7 +5,7 @@ package clusterstate
 import (
 	"testing"
 
-	"github.com/giantswarm/e2etests/clusterstate"
+	"github.com/giantswarm/e2etests/v2/clusterstate"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/integration/env"

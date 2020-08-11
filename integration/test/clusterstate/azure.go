@@ -8,7 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/v2/pkg/clientset/versioned"
 	azureclient "github.com/giantswarm/e2eclients/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"

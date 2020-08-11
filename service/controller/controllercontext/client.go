@@ -1,7 +1,7 @@
 package controllercontext
 
 import (
-	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/v2/pkg/clientset/versioned"
 	"k8s.io/client-go/kubernetes"
 )
 

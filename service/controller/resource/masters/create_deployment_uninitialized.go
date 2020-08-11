@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"

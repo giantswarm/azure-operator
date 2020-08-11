@@ -4,7 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
