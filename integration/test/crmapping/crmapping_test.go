@@ -11,26 +11,29 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/giantswarm/operatorkit/resource"
-	"gopkg.in/yaml.v2"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 )
 
 func TestAzureConfigCRMapping(t *testing.T) {
 	testCases := []struct {
-		name         string
-		inputFiles   []string
-		errorMatcher func(error) bool
+		name            string
+		azureConfigFile string
+		preTestFiles    []string
+		errorMatcher    func(error) bool
 	}{
 		{
-			name: "case 0: Simple AzureConfig",
-			inputFiles: []string{
-				"simple_azureconfig.yaml",
-			},
-			errorMatcher: nil,
+			name:            "case 0: Simple AzureConfig",
+			azureConfigFile: "simple_azureconfig.yaml",
+			preTestFiles:    []string{},
+			errorMatcher:    nil,
 		},
 	}
 
@@ -39,11 +42,21 @@ func TestAzureConfigCRMapping(t *testing.T) {
 			t.Log(tc.name)
 
 			client := newFakeClient()
-			ensureCRsExist(t, client, tc.inputFiles)
+			ensureCRsExist(t, client, tc.preTestFiles)
+
+			o, err := loadCR(tc.azureConfigFile)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			azureConfig, ok := o.(*providerv1alpha1.AzureConfig)
+			if !ok {
+				t.Fatalf("couldn't cast object %T to %T", o, azureConfig)
+			}
 
 			r := constructResource(t, client)
 
-			err := r.EnsureCreated(context.Background(), nil)
+			err = r.EnsureCreated(context.Background(), azureConfig)
 
 			// TODO: Read expected CRs w/ client and compare to "golden" versions.
 
@@ -103,19 +116,22 @@ func loadCR(fName string) (runtime.Object, error) {
 		}
 	}
 
-	m := make(map[string]interface{})
-	err = yaml.Unmarshal(bs, m)
+	// First parse kind.
+	t := &metav1.TypeMeta{}
+	err = yaml.Unmarshal(bs, t)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	switch m["kind"] {
+	// Then construct correct CR object.
+	switch t.Kind {
 	case "AzureConfig":
-		obj = &providerv1alpha1.AzureConfig{}
+		obj = new(providerv1alpha1.AzureConfig)
 	default:
-		return nil, microerror.Maskf(unknownKindError, "kind: %s", m["kind"])
+		return nil, microerror.Maskf(unknownKindError, "kind: %s", t.Kind)
 	}
 
+	// ...and unmarshal the whole object.
 	err = yaml.Unmarshal(bs, obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -127,6 +143,16 @@ func loadCR(fName string) (runtime.Object, error) {
 func newFakeClient() client.Client {
 	scheme := runtime.NewScheme()
 	err := providerv1alpha1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
+	err = capiv1alpha3.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
+	err = capzv1alpha3.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
