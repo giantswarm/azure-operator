@@ -10,7 +10,7 @@ require (
 	github.com/Azure/go-autorest/autorest/to v0.3.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32 // indirect
-	github.com/giantswarm/apiextensions v0.4.10
+	github.com/giantswarm/apiextensions v0.4.20
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient v0.2.0
 	github.com/giantswarm/backoff v0.2.0
@@ -36,6 +36,7 @@ require (
 	github.com/giantswarm/randomkeys v0.2.0
 	github.com/giantswarm/statusresource v0.4.0
 	github.com/giantswarm/tenantcluster/v2 v2.0.0
+	github.com/giantswarm/to v0.2.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/groupcache v0.0.0-20200121045136-8c9f03a8e57e // indirect
 	github.com/google/go-cmp v0.5.0

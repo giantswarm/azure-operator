@@ -1,18 +1,25 @@
 package crmapping
 
 import (
+	"bytes"
 	"context"
+	"flag"
+	"fmt"
 	"io/ioutil"
-	"path"
+	"path/filepath"
 	"strconv"
 	"testing"
+	"unicode"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/giantswarm/operatorkit/resource"
+	"github.com/google/go-cmp/cmp"
+	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/apimachinery/pkg/types"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -22,15 +29,23 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 )
 
-func TestAzureConfigCRMapping(t *testing.T) {
+var update = flag.Bool("update", false, "update .golden reference files")
+
+// Test_AzureConfigCRMapping uses golden files.
+//
+//  go test ./integration/test/crmapping -run Test_AzureConfigCRMapping -update
+//
+func Test_AzureConfigCRMapping(t *testing.T) {
 	testCases := []struct {
 		name            string
+		location        string
 		azureConfigFile string
 		preTestFiles    []string
 		errorMatcher    func(error) bool
 	}{
 		{
 			name:            "case 0: Simple AzureConfig",
+			location:        "westeurope",
 			azureConfigFile: "simple_azureconfig.yaml",
 			preTestFiles:    []string{},
 			errorMatcher:    nil,
@@ -54,11 +69,13 @@ func TestAzureConfigCRMapping(t *testing.T) {
 				t.Fatalf("couldn't cast object %T to %T", o, azureConfig)
 			}
 
-			r := constructResource(t, client)
+			r := constructResource(t, client, tc.location)
 
 			err = r.EnsureCreated(context.Background(), azureConfig)
 
-			// TODO: Read expected CRs w/ client and compare to "golden" versions.
+			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", azureConfig.Name), Namespace: azureConfig.Namespace})
 
 			switch {
 			case err == nil && tc.errorMatcher == nil:
@@ -74,12 +91,14 @@ func TestAzureConfigCRMapping(t *testing.T) {
 	}
 }
 
-func constructResource(t *testing.T, client client.Client) resource.Interface {
+func constructResource(t *testing.T, client client.Client, location string) resource.Interface {
 	t.Helper()
 
 	c := capzcrs.Config{
 		CtrlClient: client,
 		Logger:     microloggertest.New(),
+
+		Location: location,
 	}
 
 	r, err := capzcrs.New(c)
@@ -110,7 +129,7 @@ func loadCR(fName string) (runtime.Object, error) {
 
 	var bs []byte
 	{
-		bs, err = ioutil.ReadFile(path.Join("testdata", fName))
+		bs, err = ioutil.ReadFile(filepath.Join("testdata", fName))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -158,4 +177,56 @@ func newFakeClient() client.Client {
 	}
 
 	return fake.NewFakeClientWithScheme(scheme)
+}
+
+// normalizeFileName converts all non-digit, non-letter runes in input string to
+// dash ('-'). Coalesces multiple dashes into one.
+func normalizeFileName(s string) string {
+	var result []rune
+	for _, r := range s {
+		if unicode.IsDigit(r) || unicode.IsLetter(r) {
+			result = append(result, r)
+		} else {
+			l := len(result)
+			if l > 0 && result[l-1] != '-' {
+				result = append(result, rune('-'))
+			}
+		}
+	}
+	return string(result)
+}
+
+func verifyCR(t *testing.T, client client.Client, testName string, obj runtime.Object, nsName types.NamespacedName) {
+	err := client.Get(context.Background(), nsName, obj)
+	if err != nil {
+		t.Fatalf("err = %#q, want %#v", microerror.JSON(err), nil)
+	}
+
+	ta, err := meta.TypeAccessor(obj)
+	if err != nil {
+		t.Fatalf("err = %#q, want %#v", microerror.JSON(err), nil)
+	}
+
+	out, err := yaml.Marshal(obj)
+	if err != nil {
+		t.Fatalf("err = %#q, want %#v", microerror.JSON(err), nil)
+	}
+
+	p := filepath.Join("testdata", fmt.Sprintf("%s_%s.golden", normalizeFileName(testName), ta.GetKind()))
+
+	if *update {
+		err = ioutil.WriteFile(p, out, 0644) // nolint:gosec
+		if err != nil {
+			t.Fatalf("err = %#q, want %#v", microerror.JSON(err), nil)
+		}
+	}
+
+	goldenFile, err := ioutil.ReadFile(p)
+	if err != nil {
+		t.Fatalf("err = %#q, want %#v", microerror.JSON(err), nil)
+	}
+
+	if !bytes.Equal(out, goldenFile) {
+		t.Fatalf("\n\n%s\n", cmp.Diff(string(goldenFile), string(out)))
+	}
 }

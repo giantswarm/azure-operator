@@ -255,6 +255,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		c := capzcrs.Config{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
+
+			Location: config.Azure.Location,
 		}
 
 		capzcrsResource, err = capzcrs.New(c)
