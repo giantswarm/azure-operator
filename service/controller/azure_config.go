@@ -33,6 +33,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment"
@@ -255,6 +256,19 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 
 		clusteridResource, err = clusterid.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var capzcrsResource resource.Interface
+	{
+		c := capzcrs.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		capzcrsResource, err = capzcrs.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -607,6 +621,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 
 	resources := []resource.Interface{
 		clusteridResource,
+		capzcrsResource,
 		namespaceResource,
 		ipamResource,
 		statusResource,
