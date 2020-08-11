@@ -28,8 +28,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
-		params = k8scloudconfig.DefaultParams()
-
+		params = k8scloudconfig.Params{}
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
 		params.Kubernetes = k8scloudconfig.Kubernetes{

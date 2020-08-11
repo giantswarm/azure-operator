@@ -56,7 +56,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
-		params = k8scloudconfig.DefaultParams()
+		params = k8scloudconfig.Params{}
 		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
 		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster

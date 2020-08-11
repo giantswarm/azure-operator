@@ -99,10 +99,10 @@ func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject provider
 }
 
 func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
-	c := k8scloudconfig.DefaultCloudConfigConfig()
-	c.Params = params
-	c.Template = template
-
+	c := k8scloudconfig.CloudConfigConfig{
+		Params:   params,
+		Template: template,
+	}
 	cloudConfig, err := k8scloudconfig.NewCloudConfig(c)
 	if err != nil {
 		return "", microerror.Mask(err)
