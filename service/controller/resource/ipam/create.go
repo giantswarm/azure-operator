@@ -65,7 +65,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets")
 
-		allocatedSubnets, err = r.collector.Collect(ctx)
+		allocatedSubnets, err = r.collector.Collect(ctx, obj)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -78,7 +78,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding free subnet")
 
-		freeSubnet, err = ipam.Free(r.networkRange, r.allocatedSubnetMask, allocatedSubnets)
+		networkRange, err := r.networkRangeGetter.GetNetworkRange(ctx, obj)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		requiredIPMask := r.networkRangeGetter.GetRequiredIPMask()
+
+		freeSubnet, err = ipam.Free(networkRange, requiredIPMask, allocatedSubnets)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -86,7 +92,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free subnet %#q", freeSubnet))
 	}
 
-	// 4/4 And finally, let's save newly allocated subnet.
+	// 4/4 And finally, let's save newly allocated network range (vnet range for cluster or subnet range node pool).
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free subnet %#q", freeSubnet))
 

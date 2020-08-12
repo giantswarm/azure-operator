@@ -111,7 +111,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualNetworkClient, err := newVirtualNetworkClient(authorizer, subscriptionID, partnerID)
+	virtualNetworkClient, err := newVirtualNetworksClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -148,7 +148,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		SubnetsClient:                          toSubnetsClient(subnetsClient),
 		SubscriptionID:                         subscriptionID,
 		UsageClient:                            usageClient,
-		VirtualNetworkClient:                   virtualNetworkClient,
+		VirtualNetworkClient:                   toVirtualNetworksClient(virtualNetworkClient),
 		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
 		VirtualNetworkGatewaysClient:           virtualNetworkGatewaysClient,
 		VirtualMachineScaleSetVMsClient:        toVirtualMachineScaleSetVMsClient(virtualMachineScaleSetVMsClient),
@@ -237,7 +237,7 @@ func newUsageClient(authorizer autorest.Authorizer, subscriptionID, partnerID st
 	return &client, nil
 }
 
-func newVirtualNetworkClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworksClient, error) {
+func newVirtualNetworksClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewVirtualNetworksClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
@@ -293,6 +293,10 @@ func toVirtualMachineScaleSetsClient(client interface{}) *compute.VirtualMachine
 
 func toVirtualMachineScaleSetVMsClient(client interface{}) *compute.VirtualMachineScaleSetVMsClient {
 	return client.(*compute.VirtualMachineScaleSetVMsClient)
+}
+
+func toVirtualNetworksClient(client interface{}) *network.VirtualNetworksClient {
+	return client.(*network.VirtualNetworksClient)
 }
 
 func toStorageAccountsClient(client interface{}) *storage.AccountsClient {

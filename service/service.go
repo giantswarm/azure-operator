@@ -277,10 +277,10 @@ func New(config Config) (*Service, error) {
 
 		c := controller.AzureConfigConfig{
 			Azure:                     azure,
+			ClusterVNetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			CredentialProvider:        credentialProvider,
 			CPAzureClientSet:          cpAzureClientSet,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
-			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			Ignition:                  Ignition,
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:          ipamNetworkRange,

@@ -69,7 +69,7 @@ type AzureConfigConfig struct {
 	RegistryDomain            string
 	RegistryMirrors           []string
 
-	GuestSubnetMaskBits int
+	ClusterVNetMaskBits int
 
 	Ignition         setting.Ignition
 	IPAMNetworkRange net.IPNet
@@ -502,17 +502,28 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
+	var networkRangeGetter *ipam.AzureConfigNetworkRangeGetter
+	{
+		c := ipam.AzureConfigNetworkRangeGetterConfig{
+			NetworkRange:            config.IPAMNetworkRange,
+			RequiredNetworkMaskBits: config.ClusterVNetMaskBits,
+		}
+
+		networkRangeGetter, err = ipam.NewAzureConfigNetworkRangeGetter(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var ipamResource resource.Interface
 	{
 		c := ipam.Config{
-			Checker:   azureConfigChecker,
-			Collector: subnetCollector,
-			Locker:    config.Locker,
-			Logger:    config.Logger,
-			Persister: azureConfigPersister,
-
-			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
-			NetworkRange:            config.IPAMNetworkRange,
+			Checker:            azureConfigChecker,
+			Collector:          subnetCollector,
+			Locker:             config.Locker,
+			Logger:             config.Logger,
+			NetworkRangeGetter: networkRangeGetter,
+			Persister:          azureConfigPersister,
 		}
 
 		ipamResource, err = ipam.New(c)

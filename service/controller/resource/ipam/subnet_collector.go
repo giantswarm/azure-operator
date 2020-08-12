@@ -69,7 +69,7 @@ func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) 
 	return c, nil
 }
 
-func (c *SubnetCollector) Collect(ctx context.Context) ([]net.IPNet, error) {
+func (c *SubnetCollector) Collect(ctx context.Context, _ interface{}) ([]net.IPNet, error) {
 	var err error
 	var mutex sync.Mutex
 	var reservedSubnets []net.IPNet

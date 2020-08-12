@@ -121,6 +121,17 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(credentialNamespace, creden
 	return toVirtualMachineScaleSetVMsClient(client), nil
 }
 
+// GetVirtualNetworksClient returns *network.VirtualNetworksClient that is used for management of Azure
+// virtual networks. The created client is cached for the time period specified in the factory config.
+func (f *Factory) GetVirtualNetworksClient(credentialNamespace, credentialName string) (*network.VirtualNetworksClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworksClient", newVirtualNetworksClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toVirtualNetworksClient(client), nil
+}
+
 // GetStorageAccountsClient returns *storage.AccountsClient that is used for management of Azure
 // storage accounts for the specified cluster. The created client is cached for the time period
 // specified in the factory config.
@@ -133,9 +144,8 @@ func (f *Factory) GetStorageAccountsClient(credentialNamespace, credentialName s
 	return toStorageAccountsClient(client), nil
 }
 
-// GetStorageAccountsClient returns *network.SubnetsClient that is used for management of Azure
-// subnets. The created client is cached for the time period
-// specified in the factory config.
+// GetSubnetsClient returns *network.SubnetsClient that is used for management of Azure subnets.
+// The created client is cached for the time period specified in the factory config.
 func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (*network.SubnetsClient, error) {
 	client, err := f.getClient(credentialNamespace, credentialName, "SubnetsClient", newSubnetsClient)
 	if err != nil {

@@ -14,6 +14,15 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
+var invalidObjectError = &microerror.Error{
+	Kind: "invalid object",
+}
+
+// IsInvalidObject asserts invalidObjectError.
+func IsInvalidObject(err error) bool {
+	return microerror.Cause(err) == invalidObjectError
+}
+
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false

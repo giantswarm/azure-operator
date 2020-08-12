@@ -34,9 +34,9 @@ type AzureMachinePoolConfig struct {
 	Azure                     setting.Azure
 	CredentialProvider        credential.Provider
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	GuestSubnetMaskBits       int
+	GuestSubnetMaskBits       int // TODO: remove
 	InstallationName          string
-	IPAMNetworkRange          net.IPNet
+	IPAMNetworkRange          net.IPNet // TODO: check if it can be removed
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
@@ -190,18 +190,42 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	var subnetCollector *ipam.SubnetCollector
+	// var subnetCollector *ipam.SubnetCollector
+	// {
+	// 	c := ipam.SubnetCollectorConfig{
+	// 		CredentialProvider: config.CredentialProvider,
+	// 		K8sClient:          config.K8sClient,
+	// 		InstallationName:   config.InstallationName,
+	// 		Logger:             config.Logger,
+	//
+	// 		NetworkRange: config.IPAMNetworkRange,
+	// 	}
+	//
+	// 	subnetCollector, err = ipam.NewSubnetCollector(c)
+	// 	if err != nil {
+	// 		return nil, microerror.Mask(err)
+	// 	}
+	// }
+	var subnetCollector *ipam.AzureClusterSubnetCollector
 	{
-		c := ipam.SubnetCollectorConfig{
-			CredentialProvider: config.CredentialProvider,
-			K8sClient:          config.K8sClient,
-			InstallationName:   config.InstallationName,
-			Logger:             config.Logger,
-
-			NetworkRange: config.IPAMNetworkRange,
+		c := ipam.AzureClusterSubnetCollectorConfig{
+			AzureClientFactory: clientFactory,
+			Client:             config.K8sClient.CtrlClient(),
 		}
 
-		subnetCollector, err = ipam.NewSubnetCollector(c)
+		subnetCollector, err = ipam.NewAzureClusterSubnetCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var networkRangeGetter *ipam.AzureMachinePoolNetworkRangeGetter
+	{
+		c := ipam.AzureMachinePoolNetworkRangeGetterConfig{
+			Client: config.K8sClient.CtrlClient(),
+		}
+
+		networkRangeGetter, err = ipam.NewAzureMachinePoolNetworkRangeGetter(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -210,14 +234,12 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var ipamResource resource.Interface
 	{
 		c := ipam.Config{
-			Checker:   subnetChecker,
-			Collector: subnetCollector,
-			Locker:    config.Locker,
-			Logger:    config.Logger,
-			Persister: subnetPersister,
-
-			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
-			NetworkRange:            config.IPAMNetworkRange,
+			Checker:            subnetChecker,
+			Collector:          subnetCollector,
+			Locker:             config.Locker,
+			Logger:             config.Logger,
+			NetworkRangeGetter: networkRangeGetter,
+			Persister:          subnetPersister,
 		}
 
 		ipamResource, err = ipam.New(c)
