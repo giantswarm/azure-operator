@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Decouple `Service` from controllers using an slice of controllers.
 - Retry failed ARM deployments regardless of the checksum check.
+- Updated backward incompatible Kubernetes dependencies to v1.18.5.
 
 ## [4.2.0] - 2020-07-28
 
