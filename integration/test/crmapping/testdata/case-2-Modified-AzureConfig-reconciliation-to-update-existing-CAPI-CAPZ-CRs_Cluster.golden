@@ -1,0 +1,31 @@
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  creationTimestamp: null
+  labels:
+    azure-operator.giantswarm.io/version: 4.3.0
+    cluster-operator.giantswarm.io/version: ""
+    cluster.x-k8s.io/cluster-name: c6fme
+    giantswarm.io/cluster: c6fme
+    giantswarm.io/organization: ""
+    release.giantswarm.io/version: 12.1.0
+  name: c6fme
+  namespace: default
+  resourceVersion: "1"
+spec:
+  clusterNetwork:
+    apiServerPort: 443
+    serviceDomain: c6fme.k8s.ghost.westeurope.azure.gigantic.io
+    services:
+      cidrBlocks:
+      - 172.31.0.0/16
+  controlPlaneEndpoint:
+    host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+    port: 443
+  infrastructureRef:
+    kind: AzureCluster
+    name: c6fme
+    namespace: default
+status:
+  controlPlaneInitialized: false
+  infrastructureReady: false

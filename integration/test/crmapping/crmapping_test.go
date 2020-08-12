@@ -44,11 +44,33 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 		errorMatcher    func(error) bool
 	}{
 		{
-			name:            "case 0: Simple AzureConfig",
+			name:            "case 0: Simple AzureConfig migration to create CAPI & CAPZ CRs",
 			location:        "westeurope",
 			azureConfigFile: "simple_azureconfig.yaml",
 			preTestFiles:    []string{},
 			errorMatcher:    nil,
+		},
+		{
+			name:            "case 1: Simple AzureConfig reconciliation to verify existing CAPI & CAPZ CRs",
+			location:        "westeurope",
+			azureConfigFile: "simple_azureconfig.yaml",
+			preTestFiles: []string{
+				"simple_azurecluster.yaml",
+				"simple_azuremachine.yaml",
+				"simple_cluster.yaml",
+			},
+			errorMatcher: nil,
+		},
+		{
+			name:            "case 2: Modified AzureConfig reconciliation to update existing CAPI & CAPZ CRs",
+			location:        "westeurope",
+			azureConfigFile: "modified_azureconfig.yaml",
+			preTestFiles: []string{
+				"simple_azurecluster.yaml",
+				"simple_azuremachine.yaml",
+				"simple_cluster.yaml",
+			},
+			errorMatcher: nil,
 		},
 	}
 
@@ -144,8 +166,14 @@ func loadCR(fName string) (runtime.Object, error) {
 
 	// Then construct correct CR object.
 	switch t.Kind {
+	case "Cluster":
+		obj = new(capiv1alpha3.Cluster)
 	case "AzureConfig":
 		obj = new(providerv1alpha1.AzureConfig)
+	case "AzureCluster":
+		obj = new(capzv1alpha3.AzureCluster)
+	case "AzureMachine":
+		obj = new(capzv1alpha3.AzureMachine)
 	default:
 		return nil, microerror.Maskf(unknownKindError, "kind: %s", t.Kind)
 	}
