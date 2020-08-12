@@ -14,7 +14,7 @@ metadata:
   resourceVersion: "1"
 spec:
   availabilityZone: {}
-  failureDomain: "\x01"
+  failureDomain: "1"
   image:
     marketplace:
       offer: flatcar-container-linux-free

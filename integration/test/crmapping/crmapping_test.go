@@ -16,6 +16,7 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/google/go-cmp/cmp"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -26,6 +27,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 )
 
@@ -91,7 +93,7 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 				t.Fatalf("couldn't cast object %T to %T", o, azureConfig)
 			}
 
-			r := constructResource(t, client, tc.location)
+			r := constructCapzcrsHandler(t, client, tc.location)
 
 			err = r.EnsureCreated(context.Background(), azureConfig)
 
@@ -113,7 +115,77 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 	}
 }
 
-func constructResource(t *testing.T, client client.Client, location string) resource.Interface {
+// Test_BidirectionalAzureConfigCRMapping uses golden files.
+//
+//  go test ./integration/test/crmapping -run Test_BidirectionalAzureConfigCRMapping -update
+//
+func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
+	testCases := []struct {
+		name              string
+		location          string
+		clusterID         string
+		namespace         string
+		preConditionFiles []string
+	}{
+		{
+			name:      "case 0: migrate AzureConfig",
+			location:  "westeurope",
+			clusterID: "c6fme",
+			namespace: "default",
+			preConditionFiles: []string{
+				"simple_azureconfig.yaml",
+			},
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Log(tc.name)
+
+			client := newFakeClient()
+			ensureCRsExist(t, client, tc.preConditionFiles)
+
+			// Reconcile AzureConfig.
+			{
+				obj := &providerv1alpha1.AzureConfig{}
+				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
+				if err != nil {
+					t.Fatal(microerror.JSON(err))
+				}
+
+				r := constructCapzcrsHandler(t, client, tc.location)
+
+				err = r.EnsureCreated(context.Background(), obj)
+				if err != nil {
+					t.Fatal(microerror.JSON(err))
+				}
+			}
+
+			// Reconcile AzureCluster.
+			{
+				obj := &capzv1alpha3.AzureCluster{}
+				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
+				if err != nil {
+					t.Fatal(microerror.JSON(err))
+				}
+
+				r := constructAzureConfigHandler(t, client)
+
+				err = r.EnsureCreated(context.Background(), obj)
+				if err != nil {
+					t.Fatal(microerror.JSON(err))
+				}
+			}
+
+			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
+		})
+	}
+}
+
+func constructCapzcrsHandler(t *testing.T, client client.Client, location string) resource.Interface {
 	t.Helper()
 
 	c := capzcrs.Config{
@@ -124,6 +196,34 @@ func constructResource(t *testing.T, client client.Client, location string) reso
 	}
 
 	r, err := capzcrs.New(c)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	return r
+}
+
+func constructAzureConfigHandler(t *testing.T, client client.Client) resource.Interface {
+	t.Helper()
+
+	c := azureconfig.Config{
+		CtrlClient: client,
+		Logger:     microloggertest.New(),
+
+		APIServerSecurePort: 443,
+		Calico: azureconfig.CalicoConfig{
+			CIDRSize: 16,
+			MTU:      1430,
+			Subnet:   "10.1.0.0/16",
+		},
+		ClusterIPRange:                 "172.31.0.0/16",
+		EtcdPrefix:                     "giantswarm.io",
+		KubeletLabels:                  "",
+		ManagementClusterResourceGroup: "ghost",
+		SSHUserList:                    "john:ssh-rsa ASDFASADFASDFSDAFSADFSDF== john, doe:ssh-rsa FOOBARBAZFOOFOO== doe",
+	}
+
+	r, err := azureconfig.New(c)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -189,17 +289,23 @@ func loadCR(fName string) (runtime.Object, error) {
 
 func newFakeClient() client.Client {
 	scheme := runtime.NewScheme()
-	err := providerv1alpha1.AddToScheme(scheme)
-	if err != nil {
-		panic(err)
-	}
 
-	err = capiv1alpha3.AddToScheme(scheme)
+	err := capiv1alpha3.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
 
 	err = capzv1alpha3.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
+	err = corev1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
+	err = providerv1alpha1.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}

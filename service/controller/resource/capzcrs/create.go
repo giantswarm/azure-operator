@@ -3,6 +3,7 @@ package capzcrs
 import (
 	"context"
 	"fmt"
+	"strconv"
 
 	"github.com/giantswarm/apiextensions/pkg/annotation"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
@@ -190,7 +191,7 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 	}
 
 	if len(key.AvailabilityZones(cr, r.location)) > 0 {
-		azureMachine.Spec.FailureDomain = to.StringP(string(key.AvailabilityZones(cr, r.location)[0]))
+		azureMachine.Spec.FailureDomain = to.StringP(strconv.Itoa(key.AvailabilityZones(cr, r.location)[0]))
 	}
 
 	return azureMachine, nil
