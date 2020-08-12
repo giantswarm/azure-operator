@@ -43,6 +43,7 @@ require (
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+<<<<<<< HEAD
 	k8s.io/api v0.18.5
 	k8s.io/apiextensions-apiserver v0.18.5
 	k8s.io/apimachinery v0.18.5
@@ -50,6 +51,16 @@ require (
 	sigs.k8s.io/cluster-api v0.3.7
 	sigs.k8s.io/cluster-api-provider-azure v0.4.6
 	sigs.k8s.io/controller-runtime v0.6.1
+=======
+	k8s.io/api v0.17.7
+	k8s.io/apiextensions-apiserver v0.17.7
+	k8s.io/apimachinery v0.17.7
+	k8s.io/client-go v0.17.7
+	sigs.k8s.io/cluster-api v0.3.7-rc.1
+	sigs.k8s.io/cluster-api-provider-azure v0.4.5
+	sigs.k8s.io/controller-runtime v0.5.7
+	sigs.k8s.io/yaml v1.2.0
+>>>>>>> master
 )
 
 replace (
