@@ -5,7 +5,7 @@ import (
 	"net"
 
 	"github.com/giantswarm/microerror"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/client"
@@ -18,6 +18,9 @@ type AzureClusterSubnetCollectorConfig struct {
 	Client             ctrl.Client
 }
 
+// AzureClusterSubnetCollector is a Collector implementation that collects all subnets that are
+// already allocated in tenant cluster virtual network. See Collect function implementation and
+// docs for more details.
 type AzureClusterSubnetCollector struct {
 	azureClientFactory *client.Factory
 	client             ctrl.Client
@@ -39,6 +42,16 @@ func NewAzureClusterSubnetCollector(config AzureClusterSubnetCollectorConfig) (*
 	return c, nil
 }
 
+// Collect function returns all subnets that are already allocated in tenant cluster virtual
+// network. These include subnets set in AzureCluster CR and all subnets that are created in tenant
+// cluster's Azure virtual network.
+//
+// Why getting both of these?
+//   - Subnets from AzureCluster CR: these are desired subnets for the tenant cluster, they might
+//     be already deployed in Azure or not.
+//   - Subnets in Azure virtual network: In addition to subnets from AzureCluster CR that should be
+//     eventually deployed here, there might be some other subnets that are created outside of
+//     tenant cluster.
 func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface{}) ([]net.IPNet, error) {
 	var err error
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
@@ -46,7 +59,7 @@ func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface
 		return nil, microerror.Mask(err)
 	}
 
-	// Get AzueCluster CR where the subnets are stored.
+	// Get AzureCluster CR where the subnets are stored.
 	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.client, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -74,7 +87,8 @@ func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface
 	return allocatedSubnets, nil
 }
 
-func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureClusterCR(ctx context.Context, azureCluster *capzv1alpha3.AzureCluster) ([]net.IPNet, error) {
+// collectSubnetsFromAzureClusterCR returns all subnets specified in AzureCluster CR.
+func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureClusterCR(_ context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
 	azureClusterCRSubnets := make([]net.IPNet, len(azureCluster.Spec.NetworkSpec.Subnets))
 
 	// TODO: add check for .Spec.NetworkSpec.Subnets field
@@ -89,7 +103,8 @@ func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureClusterCR(ctx conte
 	return azureClusterCRSubnets, nil
 }
 
-func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzv1alpha3.AzureCluster) ([]net.IPNet, error) {
+// collectSubnetsFromAzureVNet returns all subnets that are deployed in Azure virtual network.
+func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
 	// TODO: add to docs that "giantswarm.io/organization" must be set on AzureCluster
 	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.client, azureCluster.ObjectMeta)
 	if err != nil {
@@ -101,7 +116,8 @@ func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Co
 		return nil, microerror.Mask(err)
 	}
 
-	resourceGroupName := azureCluster.Name // cluster ID is tenant cluster resource group name
+	// cluster ID is tenant cluster resource group name
+	resourceGroupName := azureCluster.Name
 	vnetName := azureCluster.Spec.NetworkSpec.Vnet.Name // TODO: check if .Spec.NetworkSpec.Vnet.Name is set
 	resultPage, err := subnetsClient.List(ctx, resourceGroupName, vnetName)
 	if err != nil {

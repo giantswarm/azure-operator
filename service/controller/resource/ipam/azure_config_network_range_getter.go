@@ -36,7 +36,7 @@ func NewAzureConfigNetworkRangeGetter(config AzureConfigNetworkRangeGetterConfig
 	}
 
 	g := AzureConfigNetworkRangeGetter{
-		networkRange: config.NetworkRange,
+		networkRange:        config.NetworkRange,
 		requiredNetworkMask: net.CIDRMask(config.RequiredNetworkMaskBits, 32),
 	}
 
