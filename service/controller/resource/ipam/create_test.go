@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"testing"
 
-	infrastructurev1alpha2 "github.com/giantswarm/apiextensions/pkg/apis/infrastructure/v1alpha2"
 	"github.com/giantswarm/micrologger/microloggertest"
+	capzExpV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 )
@@ -18,20 +18,16 @@ func Test_SubnetAllocator(t *testing.T) {
 
 		checker   Checker
 		collector Collector
+		networkRangeGetter NetworkRangeGetter
 		persister Persister
-
-		allocatedSubnetMaskBits int
-		networkRange            net.IPNet
 	}{
 		{
 			name: "case 0 allocate first subnet",
 
 			checker:   NewTestChecker(true),
 			collector: NewTestCollector([]net.IPNet{}),
+			networkRangeGetter: NewTestNetworkRangeGetter(mustParseCIDR("10.100.0.0/16"), 24),
 			persister: NewTestPersister(mustParseCIDR("10.100.0.0/24")),
-
-			allocatedSubnetMaskBits: 24,
-			networkRange:            mustParseCIDR("10.100.0.0/16"),
 		},
 		{
 			name: "case 1 allocate fourth subnet",
@@ -42,10 +38,8 @@ func Test_SubnetAllocator(t *testing.T) {
 				mustParseCIDR("10.100.1.0/24"),
 				mustParseCIDR("10.100.3.0/24"),
 			}),
+			networkRangeGetter: NewTestNetworkRangeGetter(mustParseCIDR("10.100.0.0/16"), 24),
 			persister: NewTestPersister(mustParseCIDR("10.100.2.0/24")),
-
-			allocatedSubnetMaskBits: 24,
-			networkRange:            mustParseCIDR("10.100.0.0/16"),
 		},
 	}
 
@@ -72,6 +66,7 @@ func Test_SubnetAllocator(t *testing.T) {
 					Collector: tc.collector,
 					Locker:    mutexLocker,
 					Logger:    microloggertest.New(),
+					NetworkRangeGetter: tc.networkRangeGetter,
 					Persister: tc.persister,
 				}
 
@@ -81,7 +76,7 @@ func Test_SubnetAllocator(t *testing.T) {
 				}
 			}
 
-			err = newResource.EnsureCreated(context.Background(), &infrastructurev1alpha2.AWSCluster{})
+			err = newResource.EnsureCreated(context.Background(), &capzExpV1alpha3.AzureMachinePool{})
 			if err != nil {
 				t.Fatal(err)
 			}
