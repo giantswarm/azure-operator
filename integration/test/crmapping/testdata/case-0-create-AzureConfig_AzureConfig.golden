@@ -106,7 +106,7 @@ status:
       desiredCapacity: 0
     versions:
     - date: null
-      lastTransitionTime: "2020-08-12T12:01:40Z"
+      lastTransitionTime: "2020-08-13T04:41:17Z"
       semver: 4.2.0
   provider:
     ingress:

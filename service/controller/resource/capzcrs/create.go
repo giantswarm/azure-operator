@@ -272,6 +272,10 @@ func (r *Resource) updateCRs(ctx context.Context, desiredCRs []runtime.Object) e
 		if updateNeeded {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found that %s %s needs updating", desiredType.GetKind(), nsName.String()))
 
+			// Copy read CR's resource version to update object for optimistic
+			// locking.
+			desiredMeta.SetResourceVersion(readMeta.GetResourceVersion())
+
 			err = r.ctrlClient.Update(ctx, desired)
 			if err != nil {
 				return microerror.Mask(err)
