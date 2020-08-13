@@ -24,6 +24,10 @@ const (
 	organizationTagName       = "GiantSwarmOrganization"
 	MastersVmssDeploymentName = "masters-vmss-template"
 
+	// Kept for the sake of compiling old instance resource. It should be removed as soon as
+	// instance resource is removed.
+	WorkersVmssDeploymentName = "workers-vmss-template"
+
 	blobContainerName = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
 	cloudConfigVersion        = "v7.0.1"
@@ -325,6 +329,12 @@ func IsSucceededProvisioningState(s string) bool {
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), masterSecurityGroupSuffix)
+}
+
+// WorkerCount returns the desired number of workers. Kept for the sake of compiling old instance
+// resource. It should be removed as soon as instance resource is removed.
+func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
+	return len(customObject.Spec.Azure.Workers)
 }
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.
