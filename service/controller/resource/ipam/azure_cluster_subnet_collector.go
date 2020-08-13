@@ -83,6 +83,7 @@ func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface
 		}
 	}
 
+	// TODO: filter out the duplicates.
 	allocatedSubnets := append(azureClusterCRSubnets, actualAzureVNetSubnets...)
 	return allocatedSubnets, nil
 }
@@ -143,5 +144,5 @@ func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Co
 		}
 	}
 
-	return nil, nil
+	return subnets, nil
 }
