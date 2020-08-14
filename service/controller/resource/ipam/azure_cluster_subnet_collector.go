@@ -3,8 +3,11 @@ package ipam
 import (
 	"context"
 	"net"
+	"sync"
 
+	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
+	"golang.org/x/sync/errgroup"
 	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -54,6 +57,9 @@ func NewAzureClusterSubnetCollector(config AzureClusterSubnetCollectorConfig) (*
 //     tenant cluster.
 func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface{}) ([]net.IPNet, error) {
 	var err error
+	var mutex sync.Mutex
+	var reservedSubnets []net.IPNet
+
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -65,27 +71,52 @@ func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface
 		return nil, microerror.Mask(err)
 	}
 
-	var azureClusterCRSubnets []net.IPNet
-	{
+	// Get TC's VNet CIDR. We need it to check to collected subnets later, but we fetch it now, in
+	// order to fail fast in case of an error.
+	_, tenantClusterVNetNetworkRange, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	g := &errgroup.Group{}
+
+	g.Go(func() error {
 		// Collect subnets from AzureCluster CR.
-		azureClusterCRSubnets, err = c.collectSubnetsFromAzureClusterCR(ctx, azureCluster)
+		azureClusterCRSubnets, err := c.collectSubnetsFromAzureClusterCR(ctx, azureCluster)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
-	}
 
-	var actualAzureVNetSubnets []net.IPNet
-	{
+		mutex.Lock()
+		reservedSubnets = append(reservedSubnets, azureClusterCRSubnets...)
+		mutex.Unlock()
+
+		return nil
+	})
+
+	g.Go(func() error {
 		// Collect subnets from the actual Azure VNet via Azure API.
-		actualAzureVNetSubnets, err = c.collectSubnetsFromAzureVNet(ctx, azureCluster)
+		actualAzureVNetSubnets, err := c.collectSubnetsFromAzureVNet(ctx, azureCluster)
 		if err != nil {
-			return nil, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
+
+		mutex.Lock()
+		reservedSubnets = append(reservedSubnets, actualAzureVNetSubnets...)
+		mutex.Unlock()
+
+		return nil
+	})
+
+	err = g.Wait()
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
-	// TODO: filter out the duplicates.
-	allocatedSubnets := append(azureClusterCRSubnets, actualAzureVNetSubnets...)
-	return allocatedSubnets, nil
+	// Check if subnets actually belong to the tenant cluster VNet and filter out the duplicates.
+	reservedSubnets = ipam.CanonicalizeSubnets(*tenantClusterVNetNetworkRange, reservedSubnets)
+
+	return reservedSubnets, nil
 }
 
 // collectSubnetsFromAzureClusterCR returns all subnets specified in AzureCluster CR.
