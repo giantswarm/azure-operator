@@ -78,8 +78,12 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) infrastructureCRExists(ctx context.Context, cr expcapiv1alpha3.MachinePool) (bool, error) {
+	objKey := client.ObjectKey{
+		Namespace: cr.Namespace,
+		Name:      cr.Spec.Template.Spec.InfrastructureRef.Name,
+	}
 	azureMachinePool := new(expcapzv1alpha3.AzureMachinePool)
-	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Spec.Template.Spec.InfrastructureRef.Name}, azureMachinePool)
+	err := r.ctrlClient.Get(ctx, objKey, azureMachinePool)
 	if errors.IsNotFound(err) {
 		return false, nil
 	} else if err != nil {

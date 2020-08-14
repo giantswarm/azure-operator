@@ -92,7 +92,7 @@ func (r *Resource) Name() string {
 func (r *Resource) infrastructureCRExists(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
 	objKey := client.ObjectKey{
 		Namespace: cr.Namespace,
-		Name: cr.Spec.InfrastructureRef.Name,
+		Name:      cr.Spec.InfrastructureRef.Name,
 	}
 	azureCluster := new(v1alpha3.AzureCluster)
 	err := r.ctrlClient.Get(ctx, objKey, azureCluster)
