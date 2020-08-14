@@ -45,3 +45,12 @@ var tooManyCredentialsError = &microerror.Error{
 func IsTooManyCredentials(err error) bool {
 	return microerror.Cause(err) == tooManyCredentialsError
 }
+
+var unknownKindError = &microerror.Error{
+	Kind: "unknownKindError",
+}
+
+// IsUnknownKindError asserts unknownKindError.
+func IsUnknownKindError(err error) bool {
+	return microerror.Cause(err) == unknownKindError
+}
