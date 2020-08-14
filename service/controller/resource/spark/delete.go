@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -19,6 +20,12 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	var deletePropagationForeground = &client.DeleteAllOfOptions{
+		DeleteOptions: client.DeleteOptions{
+			PropagationPolicy: toDeletePropagationP(metav1.DeletePropagationForeground),
+		},
+	}
+
 	// With use of OwnerReference this deletion will also cascade to data secret object.
 	err = r.ctrlClient.Delete(ctx, &corev1alpha1.Spark{
 		ObjectMeta: metav1.ObjectMeta{
@@ -26,7 +33,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			Name:      azureMachinePool.Name,
 		},
 		Spec: corev1alpha1.SparkSpec{},
-	})
+	}, deletePropagationForeground)
 	if errors.IsNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR not found when trying to delete it")
 		return nil
@@ -37,4 +44,8 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("bootstrap CR %#q deleted", azureMachinePool.Name))
 
 	return nil
+}
+
+func toDeletePropagationP(v metav1.DeletionPropagation) *metav1.DeletionPropagation {
+	return &v
 }
