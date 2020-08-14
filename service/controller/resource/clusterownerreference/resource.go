@@ -53,7 +53,8 @@ func New(config Config) (*Resource, error) {
 	return r, nil
 }
 
-// EnsureCreated ensures that reconciled AzureConfig CR has cluster ID label.
+// EnsureCreated ensures that OwnerReference is correctly set for
+// infrastructure CR.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cluster, err := key.ToCluster(obj)
 	if err != nil {
