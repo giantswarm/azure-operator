@@ -1,4 +1,4 @@
-package controller
+package clusterownerreference
 
 import (
 	"context"
@@ -19,7 +19,7 @@ func TestThatAzureClusterIsLabeledWithClusterId(t *testing.T) {
 	ctx := context.Background()
 	fakeK8sClient := unittest.FakeK8sClient()
 	ctrlClient := fakeK8sClient.CtrlClient()
-	controller, err := NewClusterOwnerReferences(ClusterOwnerReferencesConfig{
+	controller, err := New(Config{
 		CtrlClient: ctrlClient,
 		Logger:     microloggertest.New(),
 		Scheme:     fakeK8sClient.Scheme(),
@@ -130,7 +130,7 @@ func givenAzureCluster(ctx context.Context, ctrlClient client.Client, clusterNam
 }
 
 func whenReconcilingCluster(ctx context.Context, ctrlClient client.Client, scheme *runtime.Scheme, cluster *capiv1alpha3.Cluster) error {
-	controller, err := NewClusterOwnerReferences(ClusterOwnerReferencesConfig{
+	controller, err := New(Config{
 		CtrlClient: ctrlClient,
 		Logger:     microloggertest.New(),
 		Scheme:     scheme,
