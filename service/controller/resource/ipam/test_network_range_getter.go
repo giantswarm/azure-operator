@@ -12,7 +12,7 @@ type TestNetworkRangeGetter struct {
 
 func NewTestNetworkRangeGetter(networkRange net.IPNet, requiredNetworkMaskBits int) *TestNetworkRangeGetter {
 	g := &TestNetworkRangeGetter{
-		networkRange: networkRange,
+		networkRange:        networkRange,
 		requiredNetworkMask: net.CIDRMask(requiredNetworkMaskBits, 32),
 	}
 
