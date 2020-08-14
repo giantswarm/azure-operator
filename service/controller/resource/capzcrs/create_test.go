@@ -1,4 +1,4 @@
-package crmapping
+package capzcrs
 
 import (
 	"bytes"
@@ -18,6 +18,7 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/google/go-cmp/cmp"
+	"gopkg.in/yaml.v2"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/meta"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -27,106 +28,50 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
-	"sigs.k8s.io/yaml"
-
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 )
 
 var update = flag.Bool("update", false, "update .golden reference files")
 
-// Test_BidirectionalAzureConfigCRMapping uses golden files.
+// Test_AzureConfigCRMapping uses golden files.
 //
-//  go test ./integration/test/crmapping -run Test_BidirectionalAzureConfigCRMapping -update
+//  go test ./service/controller/resource/capzcrs -run Test_AzureConfigCRMapping -update
 //
-func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
+func Test_AzureConfigCRMapping(t *testing.T) {
 	testCases := []struct {
-		name              string
-		location          string
-		clusterID         string
-		namespace         string
-		preConditionFiles []string
+		name            string
+		location        string
+		azureConfigFile string
+		preTestFiles    []string
+		errorMatcher    func(error) bool
 	}{
 		{
-			name:      "case 0: migrate AzureConfig",
-			location:  "westeurope",
-			clusterID: "c6fme",
-			namespace: "default",
-			preConditionFiles: []string{
-				"simple_azureconfig.yaml",
-			},
+			name:            "case 0: Simple AzureConfig migration to create CAPI & CAPZ CRs",
+			location:        "westeurope",
+			azureConfigFile: "simple_azureconfig.yaml",
+			preTestFiles:    []string{},
+			errorMatcher:    nil,
 		},
-	}
-
-	for i, tc := range testCases {
-		t.Run(strconv.Itoa(i), func(t *testing.T) {
-			t.Log(tc.name)
-
-			client := newFakeClient()
-			ensureCRsExist(t, client, tc.preConditionFiles)
-
-			// Reconcile AzureConfig.
-			{
-				obj := &providerv1alpha1.AzureConfig{}
-				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
-
-				r := constructCapzcrsHandler(t, client, tc.location)
-
-				err = r.EnsureCreated(context.Background(), obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
-			}
-
-			// Reconcile AzureCluster.
-			{
-				obj := &capzv1alpha3.AzureCluster{}
-				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
-
-				r := constructAzureConfigHandler(t, client)
-
-				err = r.EnsureCreated(context.Background(), obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
-			}
-
-			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
-		})
-	}
-}
-
-// Test_BidirectionalAzureClusterCRMapping uses golden files.
-//
-//  go test ./integration/test/crmapping -run Test_BidirectionalAzureClusterCRMapping -update
-//
-func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
-	testCases := []struct {
-		name              string
-		location          string
-		clusterID         string
-		namespace         string
-		preConditionFiles []string
-	}{
 		{
-			name:      "case 0: create AzureConfig",
-			location:  "westeurope",
-			clusterID: "c6fme",
-			namespace: "default",
-			preConditionFiles: []string{
+			name:            "case 1: Simple AzureConfig reconciliation to verify existing CAPI & CAPZ CRs",
+			location:        "westeurope",
+			azureConfigFile: "simple_azureconfig.yaml",
+			preTestFiles: []string{
 				"simple_azurecluster.yaml",
 				"simple_azuremachine.yaml",
 				"simple_cluster.yaml",
 			},
+			errorMatcher: nil,
+		},
+		{
+			name:            "case 2: Modified AzureConfig reconciliation to update existing CAPI & CAPZ CRs",
+			location:        "westeurope",
+			azureConfigFile: "modified_azureconfig.yaml",
+			preTestFiles: []string{
+				"simple_azurecluster.yaml",
+				"simple_azuremachine.yaml",
+				"simple_cluster.yaml",
+			},
+			errorMatcher: nil,
 		},
 	}
 
@@ -135,44 +80,36 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 			t.Log(tc.name)
 
 			client := newFakeClient()
-			ensureCRsExist(t, client, tc.preConditionFiles)
+			ensureCRsExist(t, client, tc.preTestFiles)
 
-			// Reconcile AzureCluster.
-			{
-				obj := &capzv1alpha3.AzureCluster{}
-				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
-
-				r := constructAzureConfigHandler(t, client)
-
-				err = r.EnsureCreated(context.Background(), obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
+			o, err := loadCR(tc.azureConfigFile)
+			if err != nil {
+				t.Fatal(err)
 			}
 
-			// Reconcile AzureConfig.
-			{
-				obj := &providerv1alpha1.AzureConfig{}
-				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
-
-				r := constructCapzcrsHandler(t, client, tc.location)
-
-				err = r.EnsureCreated(context.Background(), obj)
-				if err != nil {
-					t.Fatal(microerror.JSON(err))
-				}
+			azureConfig, ok := o.(*providerv1alpha1.AzureConfig)
+			if !ok {
+				t.Fatalf("couldn't cast object %T to %T", o, azureConfig)
 			}
 
-			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
+			r := constructCapzcrsHandler(t, client, tc.location)
+
+			err = r.EnsureCreated(context.Background(), azureConfig)
+
+			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", azureConfig.Name), Namespace: azureConfig.Namespace})
+
+			switch {
+			case err == nil && tc.errorMatcher == nil:
+				// correct; carry on
+			case err != nil && tc.errorMatcher == nil:
+				t.Fatalf("error == %#v, want nil", err)
+			case err == nil && tc.errorMatcher != nil:
+				t.Fatalf("error == nil, want non-nil")
+			case !tc.errorMatcher(err):
+				t.Fatalf("error == %#v, want matching", err)
+			}
 		})
 	}
 }
@@ -180,42 +117,14 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 func constructCapzcrsHandler(t *testing.T, client client.Client, location string) resource.Interface {
 	t.Helper()
 
-	c := capzcrs.Config{
+	c := Config{
 		CtrlClient: client,
 		Logger:     microloggertest.New(),
 
 		Location: location,
 	}
 
-	r, err := capzcrs.New(c)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	return r
-}
-
-func constructAzureConfigHandler(t *testing.T, client client.Client) resource.Interface {
-	t.Helper()
-
-	c := azureconfig.Config{
-		CtrlClient: client,
-		Logger:     microloggertest.New(),
-
-		APIServerSecurePort: 443,
-		Calico: azureconfig.CalicoConfig{
-			CIDRSize: 16,
-			MTU:      1430,
-			Subnet:   "10.1.0.0/16",
-		},
-		ClusterIPRange:                 "172.31.0.0/16",
-		EtcdPrefix:                     "giantswarm.io",
-		KubeletLabels:                  "",
-		ManagementClusterResourceGroup: "ghost",
-		SSHUserList:                    "john:ssh-rsa ASDFASADFASDFSDAFSADFSDF== john, doe:ssh-rsa FOOBARBAZFOOFOO== doe",
-	}
-
-	r, err := azureconfig.New(c)
+	r, err := New(c)
 	if err != nil {
 		t.Fatal(err)
 	}
