@@ -12,7 +12,6 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
@@ -107,7 +106,7 @@ func (r *Resource) infrastructureCRExists(ctx context.Context, cr capiv1alpha3.C
 
 func (r *Resource) machinePoolCRsExist(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
 	o := client.MatchingLabels{
-		label.Cluster: key.ClusterID(&cr),
+		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 	}
 	mpList := new(expcapiv1alpha3.MachinePoolList)
 	err := r.ctrlClient.List(ctx, mpList, o)
