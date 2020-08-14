@@ -20,11 +20,7 @@ rules:
       - azureclusters/status
       - azuremachines
     verbs:
-      - get
-      - list
-      - patch
-      - update
-      - watch
+      - "*"
   - apiGroups:
       - core.giantswarm.io
     resources:

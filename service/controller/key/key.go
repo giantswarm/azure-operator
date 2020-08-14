@@ -199,6 +199,10 @@ func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, customObject.Spec.Cluster.Etcd.Port)
 }
 
+func ClusterIPRange(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.Kubernetes.API.ClusterIPRange
+}
+
 func ClusterName(getter LabelsGetter) string {
 	return getter.GetLabels()[label.XCluster]
 }
