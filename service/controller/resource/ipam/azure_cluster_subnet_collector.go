@@ -54,7 +54,8 @@ func NewAzureClusterSubnetCollector(config AzureClusterSubnetCollectorConfig) (*
 //     be already deployed in Azure or not.
 //   - Subnets in Azure virtual network: In addition to subnets from AzureCluster CR that should be
 //     eventually deployed here, there might be some other subnets that are created outside of
-//     tenant cluster.
+//     tenant cluster. For existing pre-node-pool clusters, legacy subnets, if they still exist,
+//     will be collected here.
 func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface{}) ([]net.IPNet, error) {
 	var err error
 	var mutex sync.Mutex
@@ -71,7 +72,7 @@ func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface
 		return nil, microerror.Mask(err)
 	}
 
-	// Get TC's VNet CIDR. We need it to check to collected subnets later, but we fetch it now, in
+	// Get TC's VNet CIDR. We need it to check the collected subnets later, but we fetch it now, in
 	// order to fail fast in case of an error.
 	_, tenantClusterVNetNetworkRange, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)
 	if err != nil {
@@ -123,7 +124,8 @@ func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface
 func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureClusterCR(_ context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
 	azureClusterCRSubnets := make([]net.IPNet, len(azureCluster.Spec.NetworkSpec.Subnets))
 
-	// TODO: add check for .Spec.NetworkSpec.Subnets field
+	// Collect all the subnets from AzureCluster.Spec.NetworkSpec.Subnets field. If the Subnets
+	// field is not set, this function will simply return nil.
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		_, subnetIPNet, err := net.ParseCIDR(subnet.CidrBlock)
 		if err != nil {
