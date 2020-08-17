@@ -16,20 +16,20 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
-type AzureClusterSubnetCollectorConfig struct {
+type AzureMachinePoolSubnetCollectorConfig struct {
 	AzureClientFactory *client.Factory
 	Client             ctrl.Client
 }
 
-// AzureClusterSubnetCollector is a Collector implementation that collects all subnets that are
+// AzureMachinePoolSubnetCollector is a Collector implementation that collects all subnets that are
 // already allocated in tenant cluster virtual network. See Collect function implementation and
 // docs for more details.
-type AzureClusterSubnetCollector struct {
+type AzureMachinePoolSubnetCollector struct {
 	azureClientFactory *client.Factory
 	client             ctrl.Client
 }
 
-func NewAzureClusterSubnetCollector(config AzureClusterSubnetCollectorConfig) (*AzureClusterSubnetCollector, error) {
+func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig) (*AzureMachinePoolSubnetCollector, error) {
 	if config.AzureClientFactory == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientFactory must not be empty", config)
 	}
@@ -37,7 +37,7 @@ func NewAzureClusterSubnetCollector(config AzureClusterSubnetCollectorConfig) (*
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
 	}
 
-	c := &AzureClusterSubnetCollector{
+	c := &AzureMachinePoolSubnetCollector{
 		azureClientFactory: config.AzureClientFactory,
 		client:             config.Client,
 	}
@@ -56,7 +56,7 @@ func NewAzureClusterSubnetCollector(config AzureClusterSubnetCollectorConfig) (*
 //     eventually deployed here, there might be some other subnets that are created outside of
 //     tenant cluster. For existing pre-node-pool clusters, legacy subnets, if they still exist,
 //     will be collected here.
-func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface{}) ([]net.IPNet, error) {
+func (c *AzureMachinePoolSubnetCollector) Collect(ctx context.Context, obj interface{}) ([]net.IPNet, error) {
 	var err error
 	var mutex sync.Mutex
 	var reservedSubnets []net.IPNet
@@ -121,7 +121,7 @@ func (c *AzureClusterSubnetCollector) Collect(ctx context.Context, obj interface
 }
 
 // collectSubnetsFromAzureClusterCR returns all subnets specified in AzureCluster CR.
-func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureClusterCR(_ context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
+func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(_ context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
 	azureClusterCRSubnets := make([]net.IPNet, len(azureCluster.Spec.NetworkSpec.Subnets))
 
 	// Collect all the subnets from AzureCluster.Spec.NetworkSpec.Subnets field. If the Subnets
@@ -138,7 +138,7 @@ func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureClusterCR(_ context
 }
 
 // collectSubnetsFromAzureVNet returns all subnets that are deployed in Azure virtual network.
-func (c *AzureClusterSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
+func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
 	// TODO: add to docs that "giantswarm.io/organization" must be set on AzureCluster
 	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.client, azureCluster.ObjectMeta)
 	if err != nil {

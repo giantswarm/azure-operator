@@ -206,14 +206,14 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	// 		return nil, microerror.Mask(err)
 	// 	}
 	// }
-	var subnetCollector *ipam.AzureClusterSubnetCollector
+	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
 	{
-		c := ipam.AzureClusterSubnetCollectorConfig{
+		c := ipam.AzureMachinePoolSubnetCollectorConfig{
 			AzureClientFactory: clientFactory,
 			Client:             config.K8sClient.CtrlClient(),
 		}
 
-		subnetCollector, err = ipam.NewAzureClusterSubnetCollector(c)
+		subnetCollector, err = ipam.NewAzureMachineSubnetCollector(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
