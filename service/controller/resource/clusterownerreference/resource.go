@@ -8,7 +8,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
@@ -61,6 +63,36 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	err = r.ensureAzureCluster(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.ensureMachinePools(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.ensureAzureMachinePools(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+// EnsureDeleted is no-op.
+func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
+	return nil
+}
+
+// Name returns the resource name.
+func (r *Resource) Name() string {
+	return Name
+}
+
+func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.Cluster) error {
+	var err error
 	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name))
 
 	azureCluster := v1alpha3.AzureCluster{}
@@ -86,16 +118,79 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name))
+	return nil
+}
+
+func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.Cluster) error {
+	var err error
+
+	o := client.MatchingLabels{
+		capiv1alpha3.ClusterLabelName: key.ClusterID(&cluster),
+	}
+	mpList := new(expcapiv1alpha3.MachinePoolList)
+	err = r.ctrlClient.List(ctx, mpList, o)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, machinePool := range mpList.Items {
+		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
+
+		if machinePool.Labels == nil {
+			machinePool.Labels = make(map[string]string)
+		}
+		machinePool.Labels[capiv1alpha3.ClusterLabelName] = cluster.Name
+
+		// Set Cluster as owner of MachinePool
+		err = controllerutil.SetControllerReference(&cluster, &machinePool, r.scheme)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = r.ctrlClient.Update(ctx, &machinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
+	}
 
 	return nil
 }
 
-// EnsureDeleted is no-op.
-func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
-	return nil
-}
+func (r *Resource) ensureAzureMachinePools(ctx context.Context, cluster capiv1alpha3.Cluster) error {
+	var err error
 
-// Name returns the resource name.
-func (r *Resource) Name() string {
-	return Name
+	o := client.MatchingLabels{
+		capiv1alpha3.ClusterLabelName: key.ClusterID(&cluster),
+	}
+	mpList := new(expcapzv1alpha3.AzureMachinePoolList)
+	err = r.ctrlClient.List(ctx, mpList, o)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, azureMachinePool := range mpList.Items {
+		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, azureMachinePool.Namespace, azureMachinePool.Name))
+
+		if azureMachinePool.Labels == nil {
+			azureMachinePool.Labels = make(map[string]string)
+		}
+		azureMachinePool.Labels[capiv1alpha3.ClusterLabelName] = cluster.Name
+
+		// Set Cluster as owner of AzureMachinePool
+		err = controllerutil.SetControllerReference(&cluster, &azureMachinePool, r.scheme)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = r.ctrlClient.Update(ctx, &azureMachinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, azureMachinePool.Namespace, azureMachinePool.Name))
+	}
+
+	return nil
 }
