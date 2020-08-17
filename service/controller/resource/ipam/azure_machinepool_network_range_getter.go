@@ -17,8 +17,7 @@ type AzureMachinePoolNetworkRangeGetterConfig struct {
 	Client client.Client
 }
 
-// AzureMachinePoolNetworkRangeGetter is a NetworkRangeGetter and a
-// NetworkRangeScopeGetter implementation for node pools.
+// AzureMachinePoolNetworkRangeGetter is a NetworkRangeGetter implementation for node pools.
 type AzureMachinePoolNetworkRangeGetter struct {
 	client client.Client
 }
