@@ -153,7 +153,15 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 
 	// cluster ID is tenant cluster resource group name
 	resourceGroupName := azureCluster.Name
-	vnetName := azureCluster.Spec.NetworkSpec.Vnet.Name // TODO: check if .Spec.NetworkSpec.Vnet.Name is set
+
+	// Not assuming VNet name here, keeping it flexible. In order to keep it correct and stable, we
+	// should have a webhook for enforcing a VNet name convention. This check can be removed once
+	// we have implement a webhook.
+	if azureCluster.Spec.NetworkSpec.Vnet.Name == "" {
+		return nil, microerror.Maskf(invalidObjectError, "AzureCluster.Spec.NetworkSpec.Vnet.Name must be set")
+	}
+
+	vnetName := azureCluster.Spec.NetworkSpec.Vnet.Name
 	resultPage, err := subnetsClient.List(ctx, resourceGroupName, vnetName)
 	if err != nil {
 		return nil, microerror.Mask(err)
