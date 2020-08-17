@@ -139,7 +139,8 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(_ con
 
 // collectSubnetsFromAzureVNet returns all subnets that are deployed in Azure virtual network.
 func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
-	// TODO: add to docs that "giantswarm.io/organization" must be set on AzureCluster
+	// Reads "giantswarm.io/organization" label from AzureCluster CR, and then uses organization
+	// name to get Azure credentials.
 	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.client, azureCluster.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)

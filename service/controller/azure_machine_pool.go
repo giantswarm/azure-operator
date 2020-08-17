@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"net"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -34,9 +33,7 @@ type AzureMachinePoolConfig struct {
 	Azure                     setting.Azure
 	CredentialProvider        credential.Provider
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	GuestSubnetMaskBits       int // TODO: remove
 	InstallationName          string
-	IPAMNetworkRange          net.IPNet // TODO: check if it can be removed
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
@@ -190,22 +187,6 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	// var subnetCollector *ipam.SubnetCollector
-	// {
-	// 	c := ipam.SubnetCollectorConfig{
-	// 		CredentialProvider: config.CredentialProvider,
-	// 		K8sClient:          config.K8sClient,
-	// 		InstallationName:   config.InstallationName,
-	// 		Logger:             config.Logger,
-	//
-	// 		NetworkRange: config.IPAMNetworkRange,
-	// 	}
-	//
-	// 	subnetCollector, err = ipam.NewSubnetCollector(c)
-	// 	if err != nil {
-	// 		return nil, microerror.Mask(err)
-	// 	}
-	// }
 	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
 	{
 		c := ipam.AzureMachinePoolSubnetCollectorConfig{

@@ -44,10 +44,8 @@ func (g *AzureMachinePoolNetworkRangeGetter) GetNetworkRange(ctx context.Context
 		return net.IPNet{}, microerror.Mask(err)
 	}
 
-	// TODO 1: For this to work, we need cluster.x-k8s.io/cluster-name label on
-	//  AzureMachinePool CR. Check if that's the case.
-	// TODO 2: This is getting Cluster CR by name. Check if we want this (since we use label to
-	//  connect Cluster/AzureCluster/MachinePool/AzureMachinePool).
+	// Reads cluster.x-k8s.io/cluster-name label from AzureMachinePool CR and then gets Cluster CR
+	// by that name.
 	cluster, err := util.GetClusterFromMetadata(ctx, g.client, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return net.IPNet{}, microerror.Mask(err)
@@ -68,7 +66,7 @@ func (g *AzureMachinePoolNetworkRangeGetter) GetNetworkRange(ctx context.Context
 		return net.IPNet{}, err
 	}
 
-	cidrBlock := cluster.Spec.ClusterNetwork.Services.CIDRBlocks[0]
+	cidrBlock := cluster.Spec.ClusterNetwork.Services.CIDRBlocks[0] // or should we use AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock here?
 	_, ipNet, err := net.ParseCIDR(cidrBlock)
 	if err != nil {
 		return net.IPNet{}, err
