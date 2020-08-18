@@ -19,7 +19,7 @@ const (
 	credentialNamespace   = "giantswarm"
 )
 
-// GetClusterFromMetadata returns the Cluster object (if present) using the object metadata.
+// GetAzureClusterFromMetadata returns the AzureCluster object (if present) using the object metadata.
 func GetAzureClusterFromMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*capzV1alpha3.AzureCluster, error) {
 	// Check if "cluster.x-k8s.io/cluster-name" label is set.
 	if obj.Labels[capiV1alpha3.ClusterLabelName] == "" {
