@@ -79,7 +79,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding free subnet")
 
 		networkRange, err := r.networkRangeGetter.GetNetworkRange(ctx, obj)
-		if err != nil {
+		if IsNetworkRangeStillNotKnown(err) {
+			// This can happen when AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set,
+			// because VNet for the tenant cluster is still not allocated (e.g. when cluster is
+			// still being created).
+			warningMessage := "network range from which the vnet/subnet should be allocated is " +
+				"still not known, look for previous warnings for more details"
+			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 		requiredIPMask := r.networkRangeGetter.GetRequiredIPMask()

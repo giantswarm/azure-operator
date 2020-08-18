@@ -205,6 +205,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	{
 		c := ipam.AzureMachinePoolNetworkRangeGetterConfig{
 			Client: config.K8sClient.CtrlClient(),
+			Logger: config.Logger,
 		}
 
 		networkRangeGetter, err = ipam.NewAzureMachinePoolNetworkRangeGetter(c)

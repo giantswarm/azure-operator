@@ -5,6 +5,14 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
+var networkRangeStillNotKnown = &microerror.Error{
+	Kind: "networkRangeStillNotKnown",
+}
+
+func IsNetworkRangeStillNotKnown(err error) bool {
+	return microerror.Cause(err) == networkRangeStillNotKnown
+}
+
 var invalidConfigError = &microerror.Error{
 	Kind: "invalid config",
 }

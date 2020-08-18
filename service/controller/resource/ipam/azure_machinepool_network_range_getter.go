@@ -5,6 +5,7 @@ import (
 	"net"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
@@ -15,20 +16,26 @@ var nodePoolIPMask = net.CIDRMask(24, 32)
 
 type AzureMachinePoolNetworkRangeGetterConfig struct {
 	Client client.Client
+	Logger micrologger.Logger
 }
 
 // AzureMachinePoolNetworkRangeGetter is a NetworkRangeGetter implementation for node pools.
 type AzureMachinePoolNetworkRangeGetter struct {
 	client client.Client
+	logger micrologger.Logger
 }
 
 func NewAzureMachinePoolNetworkRangeGetter(config AzureMachinePoolNetworkRangeGetterConfig) (*AzureMachinePoolNetworkRangeGetter, error) {
 	if config.Client == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
 	}
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
 
 	g := &AzureMachinePoolNetworkRangeGetter{
 		client: config.Client,
+		logger: config.Logger,
 	}
 
 	return g, nil
@@ -49,9 +56,18 @@ func (g *AzureMachinePoolNetworkRangeGetter) GetNetworkRange(ctx context.Context
 		return net.IPNet{}, microerror.Mask(err)
 	}
 
+	if azureCluster.Spec.NetworkSpec.Vnet.CidrBlock == "" {
+		// This can happen when AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set,
+		// because VNet for the tenant cluster is still not allocated (e.g. when cluster is still
+		// being created).
+		errorMessage := "AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is not set yet"
+		g.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
+		return net.IPNet{}, microerror.Maskf(networkRangeStillNotKnown, errorMessage)
+	}
+
 	_, ipNet, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)
 	if err != nil {
-		return net.IPNet{}, err
+		return net.IPNet{}, microerror.Mask(err)
 	}
 
 	return *ipNet, nil
