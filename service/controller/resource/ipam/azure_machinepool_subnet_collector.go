@@ -148,7 +148,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(_ con
 func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
 	// Reads "giantswarm.io/organization" label from AzureCluster CR, and then uses organization
 	// name to get Azure credentials.
-	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.client, azureCluster.ObjectMeta)
+	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.logger, c.client, azureCluster.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

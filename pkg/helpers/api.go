@@ -2,9 +2,11 @@ package helpers
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -45,8 +47,8 @@ func GetAzureClusterByName(ctx context.Context, c client.Client, namespace, name
 	return azureCluster, nil
 }
 
-func GetCredentialSecretFromMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	// r.Logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
+func GetCredentialSecretFromMetadata(ctx context.Context, logger micrologger.Logger, c client.Client, obj metav1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
+	logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
 
 	organization, exists := obj.GetLabels()[label.Organization]
 	if !exists {
@@ -84,7 +86,7 @@ func GetCredentialSecretFromMetadata(ctx context.Context, c client.Client, obj m
 			Name:      secret.Name,
 		}
 
-		// r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
+		logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
 
 		return credentialSecret, nil
 	}
@@ -95,7 +97,7 @@ func GetCredentialSecretFromMetadata(ctx context.Context, c client.Client, obj m
 		Name:      credentialDefaultName,
 	}
 
-	// r.Logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
+	logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
 
 	return credentialSecret, nil
 }
