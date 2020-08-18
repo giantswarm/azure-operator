@@ -60,22 +60,22 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	exists, err := r.infrastructureCRExists(ctx, cr)
+	deleted, err := r.ensureInfrastructureCRDeleted(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if exists {
+	if !deleted {
 		finalizerskeptcontext.SetKept(ctx)
 		return nil
 	}
 
-	exists, err = r.machinePoolCRsExist(ctx, cr)
+	deleted, err = r.ensureMachinePoolCRsDeleted(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if exists {
+	if !deleted {
 		finalizerskeptcontext.SetKept(ctx)
 		return nil
 	}
@@ -88,7 +88,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) infrastructureCRExists(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
+func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
 	objKey := client.ObjectKey{
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.InfrastructureRef.Name,
@@ -96,15 +96,22 @@ func (r *Resource) infrastructureCRExists(ctx context.Context, cr capiv1alpha3.C
 	azureCluster := new(v1alpha3.AzureCluster)
 	err := r.ctrlClient.Get(ctx, objKey, azureCluster)
 	if errors.IsNotFound(err) {
-		return false, nil
+		return true, nil
 	} else if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	return true, nil
+	err = r.ctrlClient.Delete(ctx, azureCluster)
+	if errors.IsNotFound(err) {
+		return true, nil
+	} else if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	return false, nil
 }
 
-func (r *Resource) machinePoolCRsExist(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
+func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
 	o := client.MatchingLabels{
 		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 	}
@@ -114,5 +121,14 @@ func (r *Resource) machinePoolCRsExist(ctx context.Context, cr capiv1alpha3.Clus
 		return false, microerror.Mask(err)
 	}
 
-	return (len(mpList.Items) > 0), nil
+	for _, mp := range mpList.Items {
+		err = r.ctrlClient.Delete(ctx, &mp)
+		if errors.IsNotFound(err) {
+			continue
+		} else if err != nil {
+			return false, microerror.Mask(err)
+		}
+	}
+
+	return (len(mpList.Items) == 0), nil
 }
