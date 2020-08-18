@@ -79,6 +79,14 @@ func (c *AzureMachinePoolSubnetCollector) Collect(ctx context.Context, obj inter
 		return nil, microerror.Mask(err)
 	}
 
+	if azureCluster.Spec.NetworkSpec.Vnet.CidrBlock == "" {
+		// This can happen when the VNet for the tenant cluster is still not allocated (e.g. when
+		// the cluster is still being created).
+		errorMessage := "AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is not set yet"
+		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
+		return nil, microerror.Maskf(networkRangeStillNotKnown, errorMessage)
+	}
+
 	// Get TC's VNet CIDR. We need it to check the collected subnets later, but we fetch it now, in
 	// order to fail fast in case of an error.
 	_, tenantClusterVNetNetworkRange, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)

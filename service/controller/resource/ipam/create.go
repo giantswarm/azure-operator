@@ -66,7 +66,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets")
 
 		allocatedSubnets, err = r.collector.Collect(ctx, obj)
-		if err != nil {
+		if IsNetworkRangeStillNotKnown(err) {
+			// This can happen in node pools IPAM reconciliation, during subnet allocation, when
+			// AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set, because VNet for the
+			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
+			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
+			// allocated and set in the AzureCluster CR.
+			warningMessage := "network range from which the vnet/subnet should be allocated is " +
+				"still not known, look for previous warnings for more details"
+			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
@@ -80,9 +90,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		networkRange, err := r.networkRangeGetter.GetNetworkRange(ctx, obj)
 		if IsNetworkRangeStillNotKnown(err) {
-			// This can happen when AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set,
-			// because VNet for the tenant cluster is still not allocated (e.g. when cluster is
-			// still being created).
+			// This can happen in node pools IPAM reconciliation, during subnet allocation, when
+			// AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set, because VNet for the
+			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
+			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
+			// allocated and set in the AzureCluster CR.
 			warningMessage := "network range from which the vnet/subnet should be allocated is " +
 				"still not known, look for previous warnings for more details"
 			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
