@@ -27,6 +27,7 @@ import (
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	capiutil "sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
@@ -176,20 +177,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *expcapzv1alpha3.AzureMachinePool) ([]byte, error) {
-	cluster, err := r.getOwnerCluster(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	if cluster == nil {
-		return nil, microerror.Mask(ownerReferenceNotSet)
-	}
-
-	azureCluster, err := r.getAzureCluster(ctx, cluster)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
 	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -197,6 +184,16 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 
 	if machinePool == nil {
 		return nil, microerror.Mask(ownerReferenceNotSet)
+	}
+
+	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.Namespace, machinePool.Spec.ClusterName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	azureCluster, err := r.getAzureCluster(ctx, cluster)
+	if err != nil {
+		return nil, microerror.Mask(err)
 	}
 
 	release, err := r.getRelease(ctx, machinePool.ObjectMeta)
@@ -379,30 +376,6 @@ func (r *Resource) getAzureCluster(ctx context.Context, cluster *capiv1alpha3.Cl
 	r.logger = r.logger.With("azureCluster", azureCluster.Name)
 
 	return azureCluster, nil
-}
-
-// getClusterByName finds and return a Cluster object using the specified params.
-func (r *Resource) getClusterByName(ctx context.Context, namespace, name string) (*capiv1alpha3.Cluster, error) {
-	cluster := &capiv1alpha3.Cluster{}
-	objectKey := client.ObjectKey{Name: name, Namespace: namespace}
-	if err := r.ctrlClient.Get(ctx, objectKey, cluster); err != nil {
-		return nil, err
-	}
-
-	r.logger = r.logger.With("cluster", cluster.Name)
-
-	return cluster, nil
-}
-
-// getOwnerCluster returns the Cluster object owning the current resource.
-func (r *Resource) getOwnerCluster(ctx context.Context, obj metav1.ObjectMeta) (*capiv1alpha3.Cluster, error) {
-	for _, ref := range obj.OwnerReferences {
-		if ref.Kind == "Cluster" && ref.APIVersion == capiv1alpha3.GroupVersion.String() {
-			return r.getClusterByName(ctx, obj.Namespace, ref.Name)
-		}
-	}
-
-	return nil, nil
 }
 
 // getMachinePoolByName finds and return a MachinePool object using the specified params.
