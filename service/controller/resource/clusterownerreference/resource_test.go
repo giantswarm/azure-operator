@@ -17,6 +17,11 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/unittest"
 )
 
+const (
+	clusterNamespace = "default"
+	clusterName      = "my-cluster"
+)
+
 func TestThatAzureClusterIsLabeledWithClusterId(t *testing.T) {
 	ctx := context.Background()
 	fakeK8sClient := unittest.FakeK8sClient()
@@ -30,8 +35,6 @@ func TestThatAzureClusterIsLabeledWithClusterId(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	clusterNamespace := "default"
-	clusterName := "my-cluster"
 	cluster := &capiv1alpha3.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
@@ -96,8 +99,6 @@ func TestThatAzureClusterIsOwnedByCluster(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	clusterNamespace := "default"
-	clusterName := "my-cluster"
 	cluster := &capiv1alpha3.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: clusterNamespace,
@@ -133,8 +134,6 @@ func TestThatMachinePoolIsOwnedByCluster(t *testing.T) {
 	ctrlClient := fakeK8sClient.CtrlClient()
 	scheme := fakeK8sClient.Scheme()
 
-	clusterName := "my-cluster"
-	clusterNamespace := "default"
 	machinePoolName := "my-machinepool"
 	cluster := &capiv1alpha3.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
