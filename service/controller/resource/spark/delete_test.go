@@ -6,6 +6,7 @@ import (
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -30,7 +31,8 @@ func TestSparkCRIsDeletedWhenDeletingNodePool(t *testing.T) {
 
 	whenNodePoolIsDeleted(ctx, t, handler, azureMachinePoolNamespace, azureMachinePoolName)
 
-	sparkCRShouldNotExistAnymore(ctx, t, ctrlClient)
+	sparkCRShouldNotExistAnymore(ctx, t, ctrlClient, azureMachinePoolNamespace, azureMachinePoolName)
+	secretShouldNotExistAnymore(ctx, t, ctrlClient, azureMachinePoolNamespace, secretName(azureMachinePoolName))
 }
 
 func TestNoErrorsIfSparkCRDidntExistAlready(t *testing.T) {
@@ -60,6 +62,19 @@ func givenSparkCRInK8sAPI(ctx context.Context, t *testing.T, ctrlClient client.C
 	if err != nil {
 		t.Fatal(err)
 	}
+
+	bootstrapSecret := corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      secretName(sparkCR.Name),
+			Namespace: azureMachinePoolNamespace,
+		},
+		Data: nil,
+		Type: "opaque",
+	}
+	err = ctrlClient.Create(ctx, &bootstrapSecret)
+	if err != nil {
+		t.Fatal(err)
+	}
 }
 
 func whenNodePoolIsDeleted(ctx context.Context, t *testing.T, handler Resource, azureMachinePoolNamespace, azureMachinePoolName string) {
@@ -77,11 +92,20 @@ func whenNodePoolIsDeleted(ctx context.Context, t *testing.T, handler Resource, 
 	}
 }
 
-func sparkCRShouldNotExistAnymore(ctx context.Context, t *testing.T, ctrlClient client.Client) {
+func sparkCRShouldNotExistAnymore(ctx context.Context, t *testing.T, ctrlClient client.Client, namespace, name string) {
 	var sparkCR corev1alpha1.Spark
 
-	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: sparkCR.Namespace, Name: sparkCR.Name}, &sparkCR)
+	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, &sparkCR)
 	if !errors.IsNotFound(err) {
 		t.Fatal("the Spark CR should have been deleted but it's still there")
+	}
+}
+
+func secretShouldNotExistAnymore(ctx context.Context, t *testing.T, ctrlClient client.Client, namespace, name string) {
+	var secret corev1.Secret
+
+	err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, &secret)
+	if !errors.IsNotFound(err) {
+		t.Fatal("the Bootstrap Secret should have been deleted but it's still there")
 	}
 }

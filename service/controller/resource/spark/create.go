@@ -417,10 +417,6 @@ func (r *Resource) getRelease(ctx context.Context, obj metav1.ObjectMeta) (*rele
 	return release, nil
 }
 
-func secretName(base string) string {
-	return base + "-machine-pool-ignition"
-}
-
 func getAvailabilityZones(machinePool expcapiv1alpha3.MachinePool) ([]int, error) {
 	var availabilityZones []int
 	for _, fd := range machinePool.Spec.FailureDomains {

@@ -235,3 +235,7 @@ func (r *Resource) getCredentialSecret(ctx context.Context, azureMachinePool key
 
 	return credentialSecret, nil
 }
+
+func secretName(base string) string {
+	return base + "-machine-pool-ignition"
+}
