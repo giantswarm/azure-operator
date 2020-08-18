@@ -192,6 +192,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		c := ipam.AzureMachinePoolSubnetCollectorConfig{
 			AzureClientFactory: clientFactory,
 			Client:             config.K8sClient.CtrlClient(),
+			Logger:             config.Logger,
 		}
 
 		subnetCollector, err = ipam.NewAzureMachineSubnetCollector(c)

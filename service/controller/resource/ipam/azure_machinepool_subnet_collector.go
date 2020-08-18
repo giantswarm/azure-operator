@@ -7,6 +7,7 @@ import (
 
 	"github.com/giantswarm/ipam"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	"golang.org/x/sync/errgroup"
 	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
@@ -19,6 +20,7 @@ import (
 type AzureMachinePoolSubnetCollectorConfig struct {
 	AzureClientFactory *client.Factory
 	Client             ctrl.Client
+	Logger             micrologger.Logger
 }
 
 // AzureMachinePoolSubnetCollector is a Collector implementation that collects all subnets that are
@@ -27,6 +29,7 @@ type AzureMachinePoolSubnetCollectorConfig struct {
 type AzureMachinePoolSubnetCollector struct {
 	azureClientFactory *client.Factory
 	client             ctrl.Client
+	logger             micrologger.Logger
 }
 
 func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig) (*AzureMachinePoolSubnetCollector, error) {
@@ -36,10 +39,14 @@ func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig
 	if config.Client == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
 	}
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
 
 	c := &AzureMachinePoolSubnetCollector{
 		azureClientFactory: config.AzureClientFactory,
 		client:             config.Client,
+		logger:             config.Logger,
 	}
 
 	return c, nil
