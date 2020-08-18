@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -69,11 +68,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.ensureMachinePools(ctx, cluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.ensureAzureMachinePools(ctx, cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -153,43 +147,6 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 		}
 
 		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
-	}
-
-	return nil
-}
-
-func (r *Resource) ensureAzureMachinePools(ctx context.Context, cluster capiv1alpha3.Cluster) error {
-	var err error
-
-	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterID(&cluster),
-	}
-	mpList := new(expcapzv1alpha3.AzureMachinePoolList)
-	err = r.ctrlClient.List(ctx, mpList, o)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	for _, azureMachinePool := range mpList.Items {
-		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, azureMachinePool.Namespace, azureMachinePool.Name))
-
-		if azureMachinePool.Labels == nil {
-			azureMachinePool.Labels = make(map[string]string)
-		}
-		azureMachinePool.Labels[capiv1alpha3.ClusterLabelName] = cluster.Name
-
-		// Set Cluster as owner of AzureMachinePool
-		err = controllerutil.SetControllerReference(&cluster, &azureMachinePool, r.scheme)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		err = r.ctrlClient.Update(ctx, &azureMachinePool)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, azureMachinePool.Namespace, azureMachinePool.Name))
 	}
 
 	return nil
