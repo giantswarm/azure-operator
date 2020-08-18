@@ -9,10 +9,10 @@ import (
 )
 
 const (
-	// minAllocatedSubnetMaskBits is the maximum size of guest subnet i.e.
+	// minAllocatedVNetMaskBits is the maximum size of guest subnet i.e.
 	// smaller number here -> larger subnet per guest cluster. For now anything
 	// under 16 doesn't make sense in here.
-	minAllocatedSubnetMaskBits = 16
+	minAllocatedVNetMaskBits = 16
 )
 
 type AzureConfigNetworkRangeGetterConfig struct {
@@ -31,8 +31,8 @@ func NewAzureConfigNetworkRangeGetter(config AzureConfigNetworkRangeGetterConfig
 	if reflect.DeepEqual(config.NetworkRange, net.IPNet{}) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRange must not be empty", config)
 	}
-	if config.RequiredNetworkMaskBits < minAllocatedSubnetMaskBits {
-		return nil, microerror.Maskf(invalidConfigError, "%T.RequiredNetworkMaskBits (%d) must not be smaller than %d", config, config.RequiredNetworkMaskBits, minAllocatedSubnetMaskBits)
+	if config.RequiredNetworkMaskBits < minAllocatedVNetMaskBits {
+		return nil, microerror.Maskf(invalidConfigError, "%T.RequiredNetworkMaskBits (%d) must not be smaller than %d", config, config.RequiredNetworkMaskBits, minAllocatedVNetMaskBits)
 	}
 
 	g := AzureConfigNetworkRangeGetter{

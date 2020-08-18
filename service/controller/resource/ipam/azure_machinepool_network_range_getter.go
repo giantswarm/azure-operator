@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/giantswarm/microerror"
@@ -45,6 +46,11 @@ func NewAzureMachinePoolNetworkRangeGetter(config AzureMachinePoolNetworkRangeGe
 // node pool subnet is getting its IP address range from all available address
 // ranges in the tenant cluster virtual network.
 func (g *AzureMachinePoolNetworkRangeGetter) GetNetworkRange(ctx context.Context, obj interface{}) (net.IPNet, error) {
+	g.logger.LogCtx(
+		ctx,
+		"level", "debug",
+		"message", "getting tenant cluster's VNet range from which the node pool subnet will be allocated")
+
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
 		return net.IPNet{}, microerror.Mask(err)
@@ -70,10 +76,15 @@ func (g *AzureMachinePoolNetworkRangeGetter) GetNetworkRange(ctx context.Context
 		return net.IPNet{}, microerror.Mask(err)
 	}
 
+	g.logger.LogCtx(
+		ctx,
+		"level", "debug",
+		"message", fmt.Sprintf("got tenant cluster's VNet range %s from which the node pool subnet will be allocated", ipNet.String()))
+
 	return *ipNet, nil
 }
 
-// GetRequiredMask returns an /24 IP mask that is required for the node pools
+// GetRequiredMask returns a /24 IP mask that is required for the node pools
 // subnet.
 func (g *AzureMachinePoolNetworkRangeGetter) GetRequiredIPMask() net.IPMask {
 	return nodePoolIPMask
