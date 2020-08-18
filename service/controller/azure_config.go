@@ -485,9 +485,9 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
-	var subnetCollector *ipam.SubnetCollector
+	var virtualNetworkCollector *ipam.VirtualNetworkCollector
 	{
-		c := ipam.SubnetCollectorConfig{
+		c := ipam.VirtualNetworkCollectorConfig{
 			CredentialProvider: config.CredentialProvider,
 			K8sClient:          config.K8sClient,
 			InstallationName:   config.InstallationName,
@@ -496,7 +496,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			NetworkRange: config.IPAMNetworkRange,
 		}
 
-		subnetCollector, err = ipam.NewSubnetCollector(c)
+		virtualNetworkCollector, err = ipam.NewVirtualNetworkCollector(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -519,7 +519,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	{
 		c := ipam.Config{
 			Checker:            azureConfigChecker,
-			Collector:          subnetCollector,
+			Collector:          virtualNetworkCollector,
 			Locker:             config.Locker,
 			Logger:             config.Logger,
 			NetworkRangeGetter: networkRangeGetter,
