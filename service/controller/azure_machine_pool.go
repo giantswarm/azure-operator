@@ -164,8 +164,8 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var subnetChecker *ipam.AzureMachinePoolSubnetChecker
 	{
 		c := ipam.AzureMachinePoolSubnetCheckerConfig{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			Client: config.K8sClient.CtrlClient(),
+			Logger: config.Logger,
 		}
 
 		subnetChecker, err = ipam.NewAzureMachinePoolSubnetChecker(c)
