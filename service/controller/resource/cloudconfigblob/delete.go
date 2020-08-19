@@ -41,7 +41,10 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	var containerURL azblob.ContainerURL
 	{
 		containerURL, err = r.getContainerURL(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
-		if err != nil {
+		if IsStorageAccountNotFound(err) {
+			// Most probably resource group is already deleted. All good for cloudconfig.
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
