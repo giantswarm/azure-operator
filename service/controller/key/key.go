@@ -25,7 +25,8 @@ const (
 	MastersVmssDeploymentName = "masters-vmss-template"
 	WorkersVmssDeploymentName = "workers-vmss-template"
 
-	blobContainerName = "ignition"
+	CloudConfigSecretKey = "ignitionBlob"
+	blobContainerName    = "ignition"
 	// cloudConfigVersion is used in blob object ignition name
 	cloudConfigVersion        = "v7.0.1"
 	storageAccountSuffix      = "gssa"
@@ -118,12 +119,12 @@ func ToCluster(v interface{}) (capiv1alpha3.Cluster, error) {
 
 func ToAzureMachinePool(v interface{}) (expcapzv1alpha3.AzureMachinePool, error) {
 	if v == nil {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
 	}
 
 	customObjectPointer, ok := v.(*expcapzv1alpha3.AzureMachinePool)
 	if !ok {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
 	}
 	customObject := *customObjectPointer
 
@@ -150,6 +151,10 @@ func BlobContainerName() string {
 
 func BlobName(customObject LabelsGetter, role string) string {
 	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
+}
+
+func BootstrapBlobName(customObject expcapzv1alpha3.AzureMachinePool) string {
+	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), customObject.Name, OperatorVersion(&customObject))
 }
 
 func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
@@ -327,8 +332,14 @@ func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
 }
 
-func MachinePoolOperatorVersion(cr expcapzv1alpha3.AzureMachinePool) string {
-	return cr.GetLabels()[LabelOperatorVersion]
+// These are the same labels that kubernetesd adds when creating/updating an AzureConfig.
+func KubeletLabelsNodePool(getter LabelsGetter) string {
+	var labels string
+
+	labels = ensureLabel(labels, label.Provider, "azure")
+	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
+
+	return labels
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
@@ -618,4 +629,36 @@ func vmssInstanceIDBase36(instanceID string) (string, error) {
 	}
 
 	return strconv.FormatUint(i, 36), nil
+}
+
+func ensureLabel(labels string, key string, value string) string {
+	if key == "" {
+		return labels
+	}
+	if value == "" {
+		return labels
+	}
+
+	var split []string
+	if labels != "" {
+		split = strings.Split(labels, ",")
+	}
+
+	var found bool
+	for i, l := range split {
+		if !strings.HasPrefix(l, key+"=") {
+			continue
+		}
+
+		found = true
+		split[i] = key + "=" + value
+	}
+
+	if !found {
+		split = append(split, key+"="+value)
+	}
+
+	joined := strings.Join(split, ",")
+
+	return joined
 }

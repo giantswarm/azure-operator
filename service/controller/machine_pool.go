@@ -75,13 +75,6 @@ func NewMachinePool(config MachinePoolConfig) (*controller.Controller, error) {
 }
 
 func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
-	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
-	}
-	if config.Logger == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
-	}
-
 	var err error
 
 	var machinepoolDependentsResource resource.Interface

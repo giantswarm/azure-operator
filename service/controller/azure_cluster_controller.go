@@ -138,7 +138,6 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 			},
 			ClusterIPRange:                 config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
 			EtcdPrefix:                     config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
-			KubeletLabels:                  config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.Kubelet.Labels),
 			ManagementClusterResourceGroup: config.Viper.GetString(config.Flag.Service.Azure.HostCluster.ResourceGroup),
 			SSHUserList:                    config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
 		}

@@ -131,8 +131,8 @@ func mainError() error {
 
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.BaseDomain, "ghost.westeurope.azure.gigantic.io", "Cluster base domain without k8s/g8s prefixes.")
 
-	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.CIDR, 0, "Calico cidr of guest clusters.")
-	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.MTU, 0, "Calico MTU of guest clusters.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.CIDR, 16, "Calico cidr of guest clusters.")
+	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Calico.MTU, 1500, "Calico MTU of guest clusters.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Calico.Subnet, "", "Calico subnet of guest clusters.")
 
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Docker.Daemon.CIDR, "", "CIDR of the Docker daemon bridge configured in guest clusters.")
@@ -151,7 +151,6 @@ func mainError() error {
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.IngressController.InsecurePort, 0, "Insecure port of guest cluster Ingress Controller.")
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.IngressController.SecurePort, 0, "Secure port of guest cluster Ingress Controller.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubelet.AltNames, "", "Alternative names for guest cluster kubelet certificates.")
-	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.Kubelet.Labels, "", "Labels for guest cluster kubelets.")
 	daemonCommand.PersistentFlags().Int(f.Service.Cluster.Kubernetes.Kubelet.Port, 0, "Port to bind guest cluster kubelets on.")
 	daemonCommand.PersistentFlags().String(f.Service.Cluster.Kubernetes.SSH.UserList, "", "Comma separated list of ssh users and their public key in format `username:publickey`, being installed in the guest cluster nodes.")
 	daemonCommand.PersistentFlags().String(f.Service.Installation.Guest.IPAM.Network.CIDR, "10.1.0.0/8", "Guest cluster network segment from which IPAM allocates subnets.")
