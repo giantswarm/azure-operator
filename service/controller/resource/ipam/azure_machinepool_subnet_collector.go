@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	"fmt"
 	"net"
 	"sync"
 
@@ -136,7 +137,8 @@ func (c *AzureMachinePoolSubnetCollector) Collect(ctx context.Context, obj inter
 }
 
 // collectSubnetsFromAzureClusterCR returns all subnets specified in AzureCluster CR.
-func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(_ context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
+func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
+	c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets in AzureCluster CR")
 	azureClusterCRSubnets := make([]net.IPNet, len(azureCluster.Spec.NetworkSpec.Subnets))
 
 	// Collect all the subnets from AzureCluster.Spec.NetworkSpec.Subnets field. If the Subnets
@@ -149,35 +151,48 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(_ con
 		azureClusterCRSubnets = append(azureClusterCRSubnets, *subnetIPNet)
 	}
 
+	c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnets in AzureCluster CR")
 	return azureClusterCRSubnets, nil
 }
 
 // collectSubnetsFromAzureVNet returns all subnets that are deployed in Azure virtual network.
 func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
+	// Not assuming VNet name here, keeping it flexible. In order to keep it correct and stable, we
+	// should have a webhook for enforcing a VNet name convention.
+	if azureCluster.Spec.NetworkSpec.Vnet.Name == "" {
+		errorMessage := "AzureCluster.Spec.NetworkSpec.Vnet.Name is not set"
+		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
+		return nil, microerror.Maskf(invalidObjectError, errorMessage)
+	}
+
+	c.logger.LogCtx(
+		ctx,
+		"level", "debug",
+		"message", fmt.Sprintf("finding subnets created in Azure VNet %q", azureCluster.Spec.NetworkSpec.Vnet.Name))
+
 	// Reads "giantswarm.io/organization" label from AzureCluster CR, and then uses organization
 	// name to get Azure credentials.
 	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.logger, c.client, azureCluster.ObjectMeta)
 	if err != nil {
+		errorMessage := fmt.Sprintf("error while getting organization credentials for cluster %q", azureCluster.Name)
+		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return nil, microerror.Mask(err)
 	}
 
 	subnetsClient, err := c.azureClientFactory.GetSubnetsClient(credentials.Namespace, credentials.Name)
 	if err != nil {
+		errorMessage := fmt.Sprintf("error while creating/getting Azure subnets client for cluster %q", azureCluster.Name)
+		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return nil, microerror.Mask(err)
 	}
 
 	// cluster ID is tenant cluster resource group name
 	resourceGroupName := azureCluster.Name
-
-	// Not assuming VNet name here, keeping it flexible. In order to keep it correct and stable, we
-	// should have a webhook for enforcing a VNet name convention.
-	if azureCluster.Spec.NetworkSpec.Vnet.Name == "" {
-		return nil, microerror.Maskf(invalidObjectError, "AzureCluster.Spec.NetworkSpec.Vnet.Name must be set")
-	}
-
 	vnetName := azureCluster.Spec.NetworkSpec.Vnet.Name
 	resultPage, err := subnetsClient.List(ctx, resourceGroupName, vnetName)
 	if err != nil {
+		errorMessage := fmt.Sprintf("error while getting Azure subnets from VNet %q", vnetName)
+		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return nil, microerror.Mask(err)
 	}
 
@@ -189,6 +204,8 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 		for _, azureSubnet := range azureSubnets {
 			_, subnetIPNet, err := net.ParseCIDR(*azureSubnet.AddressPrefix)
 			if err != nil {
+				errorMessage := fmt.Sprintf("error while parsing Azure subnet range %q", *azureSubnet.AddressPrefix)
+				c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 				return nil, microerror.Mask(err)
 			}
 			subnets = append(subnets, *subnetIPNet)
@@ -199,6 +216,11 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 			return nil, microerror.Mask(err)
 		}
 	}
+
+	c.logger.LogCtx(
+		ctx,
+		"level", "debug",
+		"message", fmt.Sprintf("found subnets created in Azure VNet %q", azureCluster.Spec.NetworkSpec.Vnet.Name))
 
 	return subnets, nil
 }
