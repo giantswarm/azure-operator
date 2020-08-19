@@ -51,7 +51,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	blob := containerURL.NewBlockBlobURL(blobName)
 	_, err = blob.Delete(ctx, azblob.DeleteSnapshotsOptionInclude, azblob.BlobAccessConditions{})
-	if blobclient.IsNotFound(err) {
+	if blobclient.IsNotFound(err) || blobclient.IsBlobNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Bootstrap blob not found when trying to delete it")
 		return nil
 	} else if err != nil {
