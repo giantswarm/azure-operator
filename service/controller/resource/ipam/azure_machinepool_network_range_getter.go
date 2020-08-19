@@ -42,10 +42,10 @@ func NewAzureMachinePoolNetworkRangeGetter(config AzureMachinePoolNetworkRangeGe
 	return g, nil
 }
 
-// GetNetworkRange return the tenant cluster virtual network range, because the
-// node pool subnet is getting its IP address range from all available address
-// ranges in the tenant cluster virtual network.
-func (g *AzureMachinePoolNetworkRangeGetter) GetNetworkRange(ctx context.Context, obj interface{}) (net.IPNet, error) {
+// GetParentNetworkRange returns the tenant cluster virtual network range, because the node pool
+// subnet is getting its IP address range from all available address ranges in the tenant cluster
+// virtual network.
+func (g *AzureMachinePoolNetworkRangeGetter) GetParentNetworkRange(ctx context.Context, obj interface{}) (net.IPNet, error) {
 	g.logger.LogCtx(
 		ctx,
 		"level", "debug",
@@ -68,7 +68,7 @@ func (g *AzureMachinePoolNetworkRangeGetter) GetNetworkRange(ctx context.Context
 		// being created).
 		errorMessage := "AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is not set yet"
 		g.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
-		return net.IPNet{}, microerror.Maskf(networkRangeStillNotKnown, errorMessage)
+		return net.IPNet{}, microerror.Maskf(parentNetworkRangeStillNotKnown, errorMessage)
 	}
 
 	_, ipNet, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)

@@ -43,10 +43,9 @@ func NewAzureConfigNetworkRangeGetter(config AzureConfigNetworkRangeGetterConfig
 	return &g, nil
 }
 
-// GetNetworkRange gets the predefined installation network range, since the
-// tenant cluster virtual network is getting its IP range from all available
-// address ranges in the installation.
-func (g *AzureConfigNetworkRangeGetter) GetNetworkRange(_ context.Context, _ interface{}) (net.IPNet, error) {
+// GetParentNetworkRange gets the predefined installation network range, since the tenant cluster
+// virtual network is getting its IP range from all available address ranges in the installation.
+func (g *AzureConfigNetworkRangeGetter) GetParentNetworkRange(_ context.Context, _ interface{}) (net.IPNet, error) {
 	return g.networkRange, nil
 }
 

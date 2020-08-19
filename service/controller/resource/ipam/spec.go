@@ -21,9 +21,9 @@ type Collector interface {
 // NetworkRangeGetter implementation returns a network range from which a free
 // IP range can be allocated.
 type NetworkRangeGetter interface {
-	// GetNetworkRange gets the network range from which the VNet/subnet range
+	// GetParentNetworkRange return the network range from which the VNet/subnet range
 	// will be allocated. It receives the CR that is being reconciled.
-	GetNetworkRange(ctx context.Context, obj interface{}) (net.IPNet, error)
+	GetParentNetworkRange(ctx context.Context, obj interface{}) (net.IPNet, error)
 
 	// GetRequiredIPMask returns an IP mask that is required by the network range
 	// that will be allocated.

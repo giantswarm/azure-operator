@@ -46,7 +46,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}()
 	}
 
-	// 1/4 Check if a subnet is already allocated.
+	// 1/4 Check if a vnet/subnet is already allocated.
 	{
 		proceed, err := r.checker.Check(ctx, m.GetNamespace(), m.GetName())
 		if err != nil {
@@ -60,20 +60,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	// 2/4 Since we need to allocate a new vnet/subnet, first let's get all already allocated subnets.
-	var allocatedSubnets []net.IPNet
+	// 2/4 Since we need to allocate a new vnet/subnet, first let's get all already allocated vnets/subnets.
+	var allocatedNetworkRanges []net.IPNet
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding allocated %ss", r.networkRangeType))
 
-		allocatedSubnets, err = r.collector.Collect(ctx, obj)
-		if IsNetworkRangeStillNotKnown(err) {
+		allocatedNetworkRanges, err = r.collector.Collect(ctx, obj)
+		if IsParentNetworkRangeStillNotKnown(err) {
 			// This can happen in node pools IPAM reconciliation, during subnet allocation, when
 			// AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set, because VNet for the
 			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
 			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
 			// allocated and set in the AzureCluster CR.
 			warningMessage := fmt.Sprintf(
-				"network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
 				r.networkRangeType)
 			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
 			return nil
@@ -81,23 +81,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated %ss %#q", r.networkRangeType, allocatedSubnets))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated %ss %#q", r.networkRangeType, allocatedNetworkRanges))
 	}
 
 	// 3/4 Now let when we know what vnets/subnets are allocated, let's get one that's available.
-	var freeSubnet net.IPNet
+	var freeNetworkRange net.IPNet
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding free %s", r.networkRangeType))
 
-		networkRange, err := r.networkRangeGetter.GetNetworkRange(ctx, obj)
-		if IsNetworkRangeStillNotKnown(err) {
+		parentNetworkRange, err := r.networkRangeGetter.GetParentNetworkRange(ctx, obj)
+		if IsParentNetworkRangeStillNotKnown(err) {
 			// This can happen in node pools IPAM reconciliation, during subnet allocation, when
 			// AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set, because VNet for the
 			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
 			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
 			// allocated and set in the AzureCluster CR.
 			warningMessage := fmt.Sprintf(
-				"network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
 				r.networkRangeType)
 			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
 			return nil
@@ -106,24 +106,24 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		requiredIPMask := r.networkRangeGetter.GetRequiredIPMask()
 
-		freeSubnet, err = ipam.Free(networkRange, requiredIPMask, allocatedSubnets)
+		freeNetworkRange, err = ipam.Free(parentNetworkRange, requiredIPMask, allocatedNetworkRanges)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free %s %#q", r.networkRangeType, freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free %s %#q", r.networkRangeType, freeNetworkRange))
 	}
 
 	// 4/4 And finally, let's save newly allocated network range (vnet range for cluster or subnet range node pool).
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free %s %#q", r.networkRangeType, freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free %s %#q", r.networkRangeType, freeNetworkRange))
 
-		err = r.persister.Persist(ctx, freeSubnet, m.GetNamespace(), m.GetName())
+		err = r.persister.Persist(ctx, freeNetworkRange, m.GetNamespace(), m.GetName())
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocated free %s %#q", r.networkRangeType, freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocated free %s %#q", r.networkRangeType, freeNetworkRange))
 	}
 
 	return nil

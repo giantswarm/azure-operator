@@ -85,7 +85,7 @@ func (c *AzureMachinePoolSubnetCollector) Collect(ctx context.Context, obj inter
 		// the cluster is still being created).
 		errorMessage := "AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is not set yet"
 		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
-		return nil, microerror.Maskf(networkRangeStillNotKnown, errorMessage)
+		return nil, microerror.Maskf(parentNetworkRangeStillNotKnown, errorMessage)
 	}
 
 	// Get TC's VNet CIDR. We need it to check the collected subnets later, but we fetch it now, in

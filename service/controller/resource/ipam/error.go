@@ -5,12 +5,14 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var networkRangeStillNotKnown = &microerror.Error{
-	Kind: "networkRangeStillNotKnown",
+var parentNetworkRangeStillNotKnown = &microerror.Error{
+	Kind: "parentNetworkRangeStillNotKnown",
 }
 
-func IsNetworkRangeStillNotKnown(err error) bool {
-	return microerror.Cause(err) == networkRangeStillNotKnown
+// IsParentNetworkRangeStillNotKnown asserts parentNetworkRangeStillNotKnown. This error is
+// returned when allocating node pool subnet, but tenant cluster VNet range is still not known.
+func IsParentNetworkRangeStillNotKnown(err error) bool {
+	return microerror.Cause(err) == parentNetworkRangeStillNotKnown
 }
 
 var invalidConfigError = &microerror.Error{

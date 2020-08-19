@@ -6,21 +6,21 @@ import (
 )
 
 type TestNetworkRangeGetter struct {
-	networkRange        net.IPNet
+	parentNetworkRange  net.IPNet
 	requiredNetworkMask net.IPMask
 }
 
-func NewTestNetworkRangeGetter(networkRange net.IPNet, requiredNetworkMaskBits int) *TestNetworkRangeGetter {
+func NewTestNetworkRangeGetter(parentNetworkRange net.IPNet, requiredNetworkMaskBits int) *TestNetworkRangeGetter {
 	g := &TestNetworkRangeGetter{
-		networkRange:        networkRange,
+		parentNetworkRange:  parentNetworkRange,
 		requiredNetworkMask: net.CIDRMask(requiredNetworkMaskBits, 32),
 	}
 
 	return g
 }
 
-func (g *TestNetworkRangeGetter) GetNetworkRange(_ context.Context, _ interface{}) (net.IPNet, error) {
-	return g.networkRange, nil
+func (g *TestNetworkRangeGetter) GetParentNetworkRange(_ context.Context, _ interface{}) (net.IPNet, error) {
+	return g.parentNetworkRange, nil
 }
 
 func (g *TestNetworkRangeGetter) GetRequiredIPMask() net.IPMask {
