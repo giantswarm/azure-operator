@@ -59,12 +59,12 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	exists, err := r.infrastructureCRExists(ctx, cr)
+	deleted, err := r.ensureInfrastructureCRDeleted(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if exists {
+	if !deleted {
 		finalizerskeptcontext.SetKept(ctx)
 		return nil
 	}
@@ -77,7 +77,7 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) infrastructureCRExists(ctx context.Context, cr expcapiv1alpha3.MachinePool) (bool, error) {
+func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr expcapiv1alpha3.MachinePool) (bool, error) {
 	objKey := client.ObjectKey{
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.Template.Spec.InfrastructureRef.Name,
@@ -85,10 +85,17 @@ func (r *Resource) infrastructureCRExists(ctx context.Context, cr expcapiv1alpha
 	azureMachinePool := new(expcapzv1alpha3.AzureMachinePool)
 	err := r.ctrlClient.Get(ctx, objKey, azureMachinePool)
 	if errors.IsNotFound(err) {
-		return false, nil
+		return true, nil
 	} else if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	return true, nil
+	err = r.ctrlClient.Delete(ctx, azureMachinePool)
+	if errors.IsNotFound(err) {
+		return true, nil
+	} else if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	return false, nil
 }
