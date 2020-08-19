@@ -41,14 +41,17 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	var containerURL azblob.ContainerURL
 	{
 		containerURL, err = r.getContainerURL(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
-		if err != nil {
+		if IsStorageAccountNotFound(err) {
+			// Most probably resource group is already deleted. All good for cloudconfig.
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	blob := containerURL.NewBlockBlobURL(blobName)
 	_, err = blob.Delete(ctx, azblob.DeleteSnapshotsOptionInclude, azblob.BlobAccessConditions{})
-	if blobclient.IsNotFound(err) {
+	if blobclient.IsNotFound(err) || blobclient.IsBlobNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Bootstrap blob not found when trying to delete it")
 		return nil
 	} else if err != nil {
