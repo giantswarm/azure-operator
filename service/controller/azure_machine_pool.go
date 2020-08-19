@@ -164,8 +164,8 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var subnetChecker *ipam.AzureMachinePoolSubnetChecker
 	{
 		c := ipam.AzureMachinePoolSubnetCheckerConfig{
-			Client: config.K8sClient.CtrlClient(),
-			Logger: config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		subnetChecker, err = ipam.NewAzureMachinePoolSubnetChecker(c)
@@ -191,7 +191,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	{
 		c := ipam.AzureMachinePoolSubnetCollectorConfig{
 			AzureClientFactory: clientFactory,
-			Client:             config.K8sClient.CtrlClient(),
+			CtrlClient:         config.K8sClient.CtrlClient(),
 			Logger:             config.Logger,
 		}
 
@@ -204,8 +204,8 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var networkRangeGetter *ipam.AzureMachinePoolNetworkRangeGetter
 	{
 		c := ipam.AzureMachinePoolNetworkRangeGetterConfig{
-			Client: config.K8sClient.CtrlClient(),
-			Logger: config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		networkRangeGetter, err = ipam.NewAzureMachinePoolNetworkRangeGetter(c)

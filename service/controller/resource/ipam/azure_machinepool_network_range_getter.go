@@ -16,8 +16,8 @@ import (
 var nodePoolIPMask = net.CIDRMask(24, 32)
 
 type AzureMachinePoolNetworkRangeGetterConfig struct {
-	Client client.Client
-	Logger micrologger.Logger
+	CtrlClient client.Client
+	Logger     micrologger.Logger
 }
 
 // AzureMachinePoolNetworkRangeGetter is a NetworkRangeGetter implementation for node pools.
@@ -27,15 +27,15 @@ type AzureMachinePoolNetworkRangeGetter struct {
 }
 
 func NewAzureMachinePoolNetworkRangeGetter(config AzureMachinePoolNetworkRangeGetterConfig) (*AzureMachinePoolNetworkRangeGetter, error) {
-	if config.Client == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
 	g := &AzureMachinePoolNetworkRangeGetter{
-		client: config.Client,
+		client: config.CtrlClient,
 		logger: config.Logger,
 	}
 

@@ -2,6 +2,7 @@ package ipam
 
 import (
 	"context"
+	"fmt"
 	"net"
 
 	"github.com/giantswarm/microerror"
@@ -9,8 +10,9 @@ import (
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
 )
 
 type AzureMachinePoolSubnetPersisterConfig struct {
@@ -27,7 +29,7 @@ type AzureMachinePoolSubnetPersister struct {
 
 func NewAzureMachinePoolSubnetPersister(config AzureMachinePoolSubnetPersisterConfig) (*AzureMachinePoolSubnetPersister, error) {
 	if config.CtrlClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -44,36 +46,36 @@ func NewAzureMachinePoolSubnetPersister(config AzureMachinePoolSubnetPersisterCo
 // Persist functions takes a subnet CIDR allocated for the specified AzureMachinePool (namespace/
 // name) and adds it to Subnets array in the corresponding Cluster CR that owns the specified
 // AzureMachinePool.
-func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, vnet net.IPNet, namespace string, name string) error {
+func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, subnet net.IPNet, namespace string, name string) error {
+	p.logger.LogCtx(ctx, "level", "debug", "message", "persisting allocated subnet in AzureCluster CR")
+
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
 	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = p.addSubnetToAzureCluster(ctx, vnet, azureMachinePool)
+	err = p.addSubnetToAzureCluster(ctx, subnet, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
+	p.logger.LogCtx(ctx, "level", "debug", "message", "persisted allocated subnet in AzureCluster CR")
 	return nil
 }
 
-func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Context, vnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
-	cluster, err := util.GetClusterFromMetadata(ctx, p.ctrlClient, azureMachinePool.ObjectMeta)
+func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Context, subnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, p.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	azureCluster, err := p.getAzureClusterFromCluster(ctx, cluster)
-	if err != nil {
+		errorMessage := fmt.Sprintf("error while getting AzureCluster CR from AzureMachinePool CR metadata")
+		p.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return microerror.Mask(err)
 	}
 
 	azureMachinePoolSubnet := &capzv1alpha3.SubnetSpec{
 		Role:      capzv1alpha3.SubnetNode,
 		Name:      azureMachinePool.Name,
-		CidrBlock: vnet.String(),
+		CidrBlock: subnet.String(),
 	}
 	azureCluster.Spec.NetworkSpec.Subnets = append(azureCluster.Spec.NetworkSpec.Subnets, azureMachinePoolSubnet)
 

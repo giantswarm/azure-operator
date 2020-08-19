@@ -12,28 +12,28 @@ import (
 )
 
 type AzureMachinePoolSubnetCheckerConfig struct {
-	Client client.Client
-	Logger micrologger.Logger
+	CtrlClient client.Client
+	Logger     micrologger.Logger
 }
 
 // AzureMachinePoolSubnetChecker is a Checker implementation that checks if a subnet is allocated for the
 // node pool specified in Check function.
 type AzureMachinePoolSubnetChecker struct {
-	client client.Client
-	logger micrologger.Logger
+	ctrlClient client.Client
+	logger     micrologger.Logger
 }
 
 func NewAzureMachinePoolSubnetChecker(config AzureMachinePoolSubnetCheckerConfig) (*AzureMachinePoolSubnetChecker, error) {
-	if config.Client == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
 	c := &AzureMachinePoolSubnetChecker{
-		client: config.Client,
-		logger: config.Logger,
+		ctrlClient: config.CtrlClient,
+		logger:     config.Logger,
 	}
 
 	return c, nil
@@ -50,12 +50,12 @@ func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace str
 		Name:      name,
 	}
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
-	err := c.client.Get(ctx, objectKey, azureMachinePool)
+	err := c.ctrlClient.Get(ctx, objectKey, azureMachinePool)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.client, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}

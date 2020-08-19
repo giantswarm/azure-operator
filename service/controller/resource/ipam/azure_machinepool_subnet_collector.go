@@ -20,7 +20,7 @@ import (
 
 type AzureMachinePoolSubnetCollectorConfig struct {
 	AzureClientFactory *client.Factory
-	Client             ctrl.Client
+	CtrlClient         ctrl.Client
 	Logger             micrologger.Logger
 }
 
@@ -29,7 +29,7 @@ type AzureMachinePoolSubnetCollectorConfig struct {
 // docs for more details.
 type AzureMachinePoolSubnetCollector struct {
 	azureClientFactory *client.Factory
-	client             ctrl.Client
+	ctrlClient         ctrl.Client
 	logger             micrologger.Logger
 }
 
@@ -37,8 +37,8 @@ func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig
 	if config.AzureClientFactory == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientFactory must not be empty", config)
 	}
-	if config.Client == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Client must not be empty", config)
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -46,7 +46,7 @@ func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig
 
 	c := &AzureMachinePoolSubnetCollector{
 		azureClientFactory: config.AzureClientFactory,
-		client:             config.Client,
+		ctrlClient:         config.CtrlClient,
 		logger:             config.Logger,
 	}
 
@@ -75,7 +75,7 @@ func (c *AzureMachinePoolSubnetCollector) Collect(ctx context.Context, obj inter
 	}
 
 	// Get AzureCluster CR where the subnets are stored.
-	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.client, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -172,7 +172,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 
 	// Reads "giantswarm.io/organization" label from AzureCluster CR, and then uses organization
 	// name to get Azure credentials.
-	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.logger, c.client, azureCluster.ObjectMeta)
+	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.logger, c.ctrlClient, azureCluster.ObjectMeta)
 	if err != nil {
 		errorMessage := fmt.Sprintf("error while getting organization credentials for cluster %q", azureCluster.Name)
 		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)

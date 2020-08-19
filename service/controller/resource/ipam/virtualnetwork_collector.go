@@ -23,8 +23,8 @@ import (
 
 type VirtualNetworkCollectorConfig struct {
 	CredentialProvider credential.Provider
-	K8sClient          k8sclient.Interface
 	InstallationName   string
+	K8sClient          k8sclient.Interface
 	Logger             micrologger.Logger
 
 	NetworkRange net.IPNet
@@ -32,8 +32,8 @@ type VirtualNetworkCollectorConfig struct {
 
 type VirtualNetworkCollector struct {
 	credentialProvider credential.Provider
-	k8sclient          k8sclient.Interface
 	installationName   string
+	k8sclient          k8sclient.Interface
 	logger             micrologger.Logger
 
 	networkRange net.IPNet
