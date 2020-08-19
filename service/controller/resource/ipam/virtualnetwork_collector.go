@@ -197,8 +197,11 @@ func (c *VirtualNetworkCollector) getVirtualNetworksFromSubscription(ctx context
 		group := iterator.Value()
 
 		// Search a VNET with any of the expected names.
+		// Note: One we move to fully utilize CAPI/CAPZ types only (without AzureConfig), we should
+		// not expect that tenant cluster virtual networks follow any specific naming convention.
+		// We could list VNets by tags (we currently don't set tags to VNets).
 		vnetCandidates := []string{
-			fmt.Sprintf("%s-VirtualNetwork", *group.Name), // TODO: get VNet name from AzureCluster CR
+			fmt.Sprintf("%s-VirtualNetwork", *group.Name),
 			c.installationName,
 		}
 
