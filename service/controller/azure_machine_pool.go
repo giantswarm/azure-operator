@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"net"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -43,10 +42,8 @@ type AzureMachinePoolConfig struct {
 	CredentialProvider        credential.Provider
 	EtcdPrefix                string
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	GuestSubnetMaskBits       int
 	Ignition                  setting.Ignition
 	InstallationName          string
-	IPAMNetworkRange          net.IPNet
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
@@ -214,18 +211,28 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	var subnetCollector *ipam.SubnetCollector
+	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
 	{
-		c := ipam.SubnetCollectorConfig{
-			CredentialProvider: config.CredentialProvider,
-			K8sClient:          config.K8sClient,
-			InstallationName:   config.InstallationName,
+		c := ipam.AzureMachinePoolSubnetCollectorConfig{
+			AzureClientFactory: clientFactory,
+			CtrlClient:         config.K8sClient.CtrlClient(),
 			Logger:             config.Logger,
-
-			NetworkRange: config.IPAMNetworkRange,
 		}
 
-		subnetCollector, err = ipam.NewSubnetCollector(c)
+		subnetCollector, err = ipam.NewAzureMachineSubnetCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var networkRangeGetter *ipam.AzureMachinePoolNetworkRangeGetter
+	{
+		c := ipam.AzureMachinePoolNetworkRangeGetterConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		networkRangeGetter, err = ipam.NewAzureMachinePoolNetworkRangeGetter(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -234,14 +241,13 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var ipamResource resource.Interface
 	{
 		c := ipam.Config{
-			Checker:   subnetChecker,
-			Collector: subnetCollector,
-			Locker:    config.Locker,
-			Logger:    config.Logger,
-			Persister: subnetPersister,
-
-			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
-			NetworkRange:            config.IPAMNetworkRange,
+			Checker:            subnetChecker,
+			Collector:          subnetCollector,
+			Locker:             config.Locker,
+			Logger:             config.Logger,
+			NetworkRangeGetter: networkRangeGetter,
+			NetworkRangeType:   ipam.SubnetRange,
+			Persister:          subnetPersister,
 		}
 
 		ipamResource, err = ipam.New(c)

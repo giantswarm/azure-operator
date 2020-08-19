@@ -70,7 +70,7 @@ type AzureConfigConfig struct {
 	RegistryDomain            string
 	RegistryMirrors           []string
 
-	GuestSubnetMaskBits int
+	ClusterVNetMaskBits int
 
 	Ignition         setting.Ignition
 	IPAMNetworkRange net.IPNet
@@ -514,9 +514,9 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
-	var subnetCollector *ipam.SubnetCollector
+	var virtualNetworkCollector *ipam.VirtualNetworkCollector
 	{
-		c := ipam.SubnetCollectorConfig{
+		c := ipam.VirtualNetworkCollectorConfig{
 			CredentialProvider: config.CredentialProvider,
 			K8sClient:          config.K8sClient,
 			InstallationName:   config.InstallationName,
@@ -525,7 +525,20 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			NetworkRange: config.IPAMNetworkRange,
 		}
 
-		subnetCollector, err = ipam.NewSubnetCollector(c)
+		virtualNetworkCollector, err = ipam.NewVirtualNetworkCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var networkRangeGetter *ipam.AzureConfigNetworkRangeGetter
+	{
+		c := ipam.AzureConfigNetworkRangeGetterConfig{
+			InstallationNetworkRange:            config.IPAMNetworkRange,
+			TenantClusterVirtualNetworkMaskBits: config.ClusterVNetMaskBits,
+		}
+
+		networkRangeGetter, err = ipam.NewAzureConfigNetworkRangeGetter(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -534,14 +547,13 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var ipamResource resource.Interface
 	{
 		c := ipam.Config{
-			Checker:   azureConfigChecker,
-			Collector: subnetCollector,
-			Locker:    config.Locker,
-			Logger:    config.Logger,
-			Persister: azureConfigPersister,
-
-			AllocatedSubnetMaskBits: config.GuestSubnetMaskBits,
-			NetworkRange:            config.IPAMNetworkRange,
+			Checker:            azureConfigChecker,
+			Collector:          virtualNetworkCollector,
+			Locker:             config.Locker,
+			Logger:             config.Logger,
+			NetworkRangeGetter: networkRangeGetter,
+			NetworkRangeType:   ipam.VirtualNetworkRange,
+			Persister:          azureConfigPersister,
 		}
 
 		ipamResource, err = ipam.New(c)

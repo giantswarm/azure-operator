@@ -46,7 +46,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}()
 	}
 
-	// 1/4 Check if a subnet is already allocated.
+	// 1/4 Check if a vnet/subnet is already allocated.
 	{
 		proceed, err := r.checker.Check(ctx, m.GetNamespace(), m.GetName())
 		if err != nil {
@@ -54,48 +54,72 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if !proceed {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "subnet already allocated")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%s already allocated", r.networkRangeType))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 	}
 
-	// 2/4 Since we need to allocate a new subnet, first let's get all already allocated subnets.
-	var allocatedSubnets []net.IPNet
+	// 2/4 Since we need to allocate a new vnet/subnet, first let's get all already allocated vnets/subnets.
+	var allocatedNetworkRanges []net.IPNet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding allocated %ss", r.networkRangeType))
 
-		allocatedSubnets, err = r.collector.Collect(ctx)
-		if err != nil {
+		allocatedNetworkRanges, err = r.collector.Collect(ctx, obj)
+		if IsParentNetworkRangeStillNotKnown(err) {
+			// We cancel IPAM reconciliation, which should be done in one of the next
+			// reconciliation loops, as soon as the parent network range is allocated. See
+			// IsParentNetworkRangeStillNotKnown function for more details.
+			warningMessage := fmt.Sprintf(
+				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				r.networkRangeType)
+			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated subnets %#q", allocatedSubnets))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated %ss %#q", r.networkRangeType, allocatedNetworkRanges))
 	}
 
-	// 3/4 Now let when we know what subnets are allocated, let's get one that's available.
-	var freeSubnet net.IPNet
+	// 3/4 Now let when we know what vnets/subnets are allocated, let's get one that's available.
+	var freeNetworkRange net.IPNet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "finding free subnet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding free %s", r.networkRangeType))
 
-		freeSubnet, err = ipam.Free(r.networkRange, r.allocatedSubnetMask, allocatedSubnets)
+		parentNetworkRange, err := r.networkRangeGetter.GetParentNetworkRange(ctx, obj)
+		if IsParentNetworkRangeStillNotKnown(err) {
+			// We cancel IPAM reconciliation, which should be done in one of the next
+			// reconciliation loops, as soon as the parent network range is allocated. See
+			// IsParentNetworkRangeStillNotKnown function for more details.
+			warningMessage := fmt.Sprintf(
+				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				r.networkRangeType)
+			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+		requiredIPMask := r.networkRangeGetter.GetRequiredIPMask()
+
+		freeNetworkRange, err = ipam.Free(parentNetworkRange, requiredIPMask, allocatedNetworkRanges)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free subnet %#q", freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free %s %#q", r.networkRangeType, freeNetworkRange))
 	}
 
-	// 4/4 And finally, let's save newly allocated subnet.
+	// 4/4 And finally, let's save newly allocated network range (vnet range for cluster or subnet range node pool).
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free subnet %#q", freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free %s %#q", r.networkRangeType, freeNetworkRange))
 
-		err = r.persister.Persist(ctx, freeSubnet, m.GetNamespace(), m.GetName())
+		err = r.persister.Persist(ctx, freeNetworkRange, m.GetNamespace(), m.GetName())
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocated free subnet %#q", freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocated free %s %#q", r.networkRangeType, freeNetworkRange))
 	}
 
 	return nil

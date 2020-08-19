@@ -5,11 +5,10 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
 )
 
 type AzureMachinePoolSubnetCheckerConfig struct {
@@ -44,18 +43,19 @@ func NewAzureMachinePoolSubnetChecker(config AzureMachinePoolSubnetCheckerConfig
 // checking if the allocated subnet is set in the corresponding Cluster CR that owns specified
 // AzureMachinePool.
 func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
+	c.logger.LogCtx(ctx, "level", "debug", "message", "checking if node pool subnet has to be allocated")
+
+	objectKey := client.ObjectKey{
+		Namespace: namespace,
+		Name:      name,
+	}
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
-	err := c.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
+	err := c.ctrlClient.Get(ctx, objectKey, azureMachinePool)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
-	cluster, err := util.GetClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	azureCluster, err := c.getAzureClusterFromCluster(ctx, cluster)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -63,23 +63,11 @@ func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace str
 	// In case there is no subnet tracked so far, we want to proceed with the allocation process.
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		if subnet.Name == azureMachinePool.Name {
+			c.logger.LogCtx(ctx, "level", "debug", "message", "found existing node pool subnet")
 			return false, nil
 		}
 	}
 
+	c.logger.LogCtx(ctx, "level", "debug", "message", "node pool subnet not found, new subnet has to be allocated")
 	return true, nil
-}
-
-func (c *AzureMachinePoolSubnetChecker) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
-	azureCluster := &capzv1alpha3.AzureCluster{}
-	azureClusterName := client.ObjectKey{
-		Namespace: cluster.Spec.InfrastructureRef.Namespace,
-		Name:      cluster.Spec.InfrastructureRef.Name,
-	}
-	err := c.ctrlClient.Get(ctx, azureClusterName, azureCluster)
-	if err != nil {
-		return azureCluster, microerror.Mask(err)
-	}
-
-	return azureCluster, nil
 }

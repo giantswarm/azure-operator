@@ -286,10 +286,10 @@ func New(config Config) (*Service, error) {
 
 		c := controller.AzureConfigConfig{
 			Azure:                     azure,
+			ClusterVNetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			CredentialProvider:        credentialProvider,
 			CPAzureClientSet:          cpAzureClientSet,
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
-			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			Ignition:                  Ignition,
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:          ipamNetworkRange,
@@ -328,10 +328,8 @@ func New(config Config) (*Service, error) {
 			CredentialProvider:        credentialProvider,
 			EtcdPrefix:                config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
-			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			Ignition:                  Ignition,
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
-			IPAMNetworkRange:          ipamNetworkRange,
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
