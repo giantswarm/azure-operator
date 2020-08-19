@@ -16,28 +16,28 @@ const (
 )
 
 type AzureConfigNetworkRangeGetterConfig struct {
-	NetworkRange            net.IPNet
-	RequiredNetworkMaskBits int
+	InstallationNetworkRange            net.IPNet
+	TenantClusterVirtualNetworkMaskBits int
 }
 
 // AzureConfigNetworkRangeGetter is NetworkRangeGetter implementation for
 // AzureConfig.
 type AzureConfigNetworkRangeGetter struct {
-	networkRange        net.IPNet
-	requiredNetworkMask net.IPMask
+	installationNetworkRange        net.IPNet
+	tenantClusterVirtualNetworkMask net.IPMask
 }
 
 func NewAzureConfigNetworkRangeGetter(config AzureConfigNetworkRangeGetterConfig) (*AzureConfigNetworkRangeGetter, error) {
-	if reflect.DeepEqual(config.NetworkRange, net.IPNet{}) {
-		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRange must not be empty", config)
+	if reflect.DeepEqual(config.InstallationNetworkRange, net.IPNet{}) {
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationNetworkRange must not be empty", config)
 	}
-	if config.RequiredNetworkMaskBits < minAllocatedVNetMaskBits {
-		return nil, microerror.Maskf(invalidConfigError, "%T.RequiredNetworkMaskBits (%d) must not be smaller than %d", config, config.RequiredNetworkMaskBits, minAllocatedVNetMaskBits)
+	if config.TenantClusterVirtualNetworkMaskBits < minAllocatedVNetMaskBits {
+		return nil, microerror.Maskf(invalidConfigError, "%T.TenantClusterVirtualNetworkMaskBits (%d) must not be smaller than %d", config, config.TenantClusterVirtualNetworkMaskBits, minAllocatedVNetMaskBits)
 	}
 
 	g := AzureConfigNetworkRangeGetter{
-		networkRange:        config.NetworkRange,
-		requiredNetworkMask: net.CIDRMask(config.RequiredNetworkMaskBits, 32),
+		installationNetworkRange:        config.InstallationNetworkRange,
+		tenantClusterVirtualNetworkMask: net.CIDRMask(config.TenantClusterVirtualNetworkMaskBits, 32),
 	}
 
 	return &g, nil
@@ -46,10 +46,10 @@ func NewAzureConfigNetworkRangeGetter(config AzureConfigNetworkRangeGetterConfig
 // GetParentNetworkRange gets the predefined installation network range, since the tenant cluster
 // virtual network is getting its IP range from all available address ranges in the installation.
 func (g *AzureConfigNetworkRangeGetter) GetParentNetworkRange(_ context.Context, _ interface{}) (net.IPNet, error) {
-	return g.networkRange, nil
+	return g.installationNetworkRange, nil
 }
 
 // GetRequiredIPMask returns an IP mask for tenant cluster virtual network.
 func (g *AzureConfigNetworkRangeGetter) GetRequiredIPMask() net.IPMask {
-	return g.requiredNetworkMask
+	return g.tenantClusterVirtualNetworkMask
 }

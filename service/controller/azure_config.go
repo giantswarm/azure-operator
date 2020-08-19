@@ -505,8 +505,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var networkRangeGetter *ipam.AzureConfigNetworkRangeGetter
 	{
 		c := ipam.AzureConfigNetworkRangeGetterConfig{
-			NetworkRange:            config.IPAMNetworkRange,
-			RequiredNetworkMaskBits: config.ClusterVNetMaskBits,
+			InstallationNetworkRange:            config.IPAMNetworkRange,
+			TenantClusterVirtualNetworkMaskBits: config.ClusterVNetMaskBits,
 		}
 
 		networkRangeGetter, err = ipam.NewAzureConfigNetworkRangeGetter(c)
