@@ -50,7 +50,7 @@ Installation:
                 IssuerURL: "https://login.microsoftonline.com/%s/v2.0"
                 UsernameClaim: "email"
                 GroupsClaim: "groups"
-          ClusterIPRange: ""
+          ClusterIPRange: "172.31.0.0/16"
           Domain: ""
         ClusterDomain: ""
         IngressController:
