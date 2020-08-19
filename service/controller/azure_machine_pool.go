@@ -5,6 +5,7 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -12,6 +13,7 @@ import (
 	"github.com/giantswarm/operatorkit/resource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
+	"github.com/giantswarm/randomkeys"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -23,22 +25,33 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfigblob"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/spark"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
 type AzureMachinePoolConfig struct {
+	APIServerSecurePort       int
 	Azure                     setting.Azure
+	Calico                    azureconfig.CalicoConfig
+	ClusterIPRange            string
 	CredentialProvider        credential.Provider
+	EtcdPrefix                string
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
+	Ignition                  setting.Ignition
 	InstallationName          string
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
+	OIDC                      setting.OIDC
 	RegistryDomain            string
 	SentryDSN                 string
+	SSHUserList               string
+	SSOPublicKey              string
 	VMSSCheckWorkers          int
 	VMSSMSIEnabled            bool
 }
@@ -70,9 +83,7 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller,
 			},
 			K8sClient: config.K8sClient,
 			Logger:    config.Logger,
-			// Name is used to compute finalizer names. This results in something
-			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
-			Name: project.Name() + "-azure-machine-pool-controller",
+			Name:      project.Name() + "-azure-machine-pool-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
 				return new(v1alpha3.AzureMachinePool)
 			},
@@ -104,6 +115,19 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 
 		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var randomkeysSearcher *randomkeys.Searcher
+	{
+		c := randomkeys.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+		}
+
+		randomkeysSearcher, err = randomkeys.NewSearcher(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -232,7 +256,64 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var sparkResource resource.Interface
+	{
+		c := spark.Config{
+			APIServerSecurePort: config.APIServerSecurePort,
+			Azure:               config.Azure,
+			Calico:              config.Calico,
+			CertsSearcher:       certsSearcher,
+			ClusterIPRange:      config.ClusterIPRange,
+			EtcdPrefix:          config.EtcdPrefix,
+			CredentialProvider:  config.CredentialProvider,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Ignition:            config.Ignition,
+			Logger:              config.Logger,
+			OIDC:                config.OIDC,
+			RandomKeysSearcher:  randomkeysSearcher,
+			RegistryDomain:      config.RegistryDomain,
+			SSHUserList:         config.SSHUserList,
+			SSOPublicKey:        config.SSOPublicKey,
+		}
+
+		sparkResource, err = spark.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var cloudconfigblobResource resource.Interface
+	{
+		c := cloudconfigblob.Config{
+			ClientFactory: clientFactory,
+			CtrlClient:    config.K8sClient.CtrlClient(),
+			Logger:        config.Logger,
+		}
+
+		cloudconfigblobResource, err = cloudconfigblob.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []resource.Interface{
+		sparkResource,
+		cloudconfigblobResource,
 		ipamResource,
 		nodepoolResource,
 	}

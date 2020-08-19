@@ -28,7 +28,9 @@ const (
 	// instance resource is removed.
 	WorkersVmssDeploymentName = "workers-vmss-template"
 
-	blobContainerName = "ignition"
+	CloudConfigSecretKey = "ignitionBlob"
+	blobContainerName    = "ignition"
+
 	// cloudConfigVersion is used in blob object ignition name
 	cloudConfigVersion        = "v7.0.1"
 	storageAccountSuffix      = "gssa"
@@ -58,6 +60,10 @@ const (
 	CertificateEncryptionNamespace = "default"
 	CertificateEncryptionKeyName   = "encryptionkey"
 	CertificateEncryptionIVName    = "encryptioniv"
+
+	ContainerLinuxComponentName = "containerlinux"
+
+	OrganizationSecretsLabelSelector = "app=credentiald" // nolint:gosec
 )
 
 // Container image versions for k8scloudconfig.
@@ -117,12 +123,12 @@ func ToCluster(v interface{}) (capiv1alpha3.Cluster, error) {
 
 func ToAzureMachinePool(v interface{}) (expcapzv1alpha3.AzureMachinePool, error) {
 	if v == nil {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
 	}
 
 	customObjectPointer, ok := v.(*expcapzv1alpha3.AzureMachinePool)
 	if !ok {
-		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &providerv1alpha1.AzureConfig{}, v)
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &expcapzv1alpha3.AzureMachinePool{}, v)
 	}
 	customObject := *customObjectPointer
 
@@ -153,6 +159,10 @@ func BlobName(customObject LabelsGetter, role string) string {
 
 func WorkerBlobName(operatorVersion string) string {
 	return fmt.Sprintf("%s-%s-%s", operatorVersion, cloudConfigVersion, prefixWorker)
+}
+
+func BootstrapBlobName(customObject expcapzv1alpha3.AzureMachinePool) string {
+	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), customObject.Name, OperatorVersion(&customObject))
 }
 
 func CalicoCIDR(customObject providerv1alpha1.AzureConfig) string {
@@ -195,6 +205,10 @@ func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
 
 func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, customObject.Spec.Cluster.Etcd.Port)
+}
+
+func ClusterIPRange(customObject providerv1alpha1.AzureConfig) string {
+	return customObject.Spec.Cluster.Kubernetes.API.ClusterIPRange
 }
 
 func ClusterName(getter LabelsGetter) string {
@@ -326,6 +340,16 @@ func IsSucceededProvisioningState(s string) bool {
 	return s == "Succeeded"
 }
 
+// These are the same labels that kubernetesd adds when creating/updating an AzureConfig.
+func KubeletLabelsNodePool(getter LabelsGetter) string {
+	var labels string
+
+	labels = ensureLabel(labels, label.Provider, "azure")
+	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
+
+	return labels
+}
+
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), masterSecurityGroupSuffix)
@@ -349,6 +373,11 @@ func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 
 func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
+}
+
+// WorkerCount returns the desired number of workers.
+func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
+	return len(customObject.Spec.Azure.Workers)
 }
 
 // WorkerSubnetName returns name of the worker subnet.
@@ -604,4 +633,36 @@ func vmssInstanceIDBase36(instanceID string) (string, error) {
 	}
 
 	return strconv.FormatUint(i, 36), nil
+}
+
+func ensureLabel(labels string, key string, value string) string {
+	if key == "" {
+		return labels
+	}
+	if value == "" {
+		return labels
+	}
+
+	var split []string
+	if labels != "" {
+		split = strings.Split(labels, ",")
+	}
+
+	var found bool
+	for i, l := range split {
+		if !strings.HasPrefix(l, key+"=") {
+			continue
+		}
+
+		found = true
+		split[i] = key + "=" + value
+	}
+
+	if !found {
+		split = append(split, key+"="+value)
+	}
+
+	joined := strings.Join(split, ",")
+
+	return joined
 }

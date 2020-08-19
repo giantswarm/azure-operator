@@ -7,7 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs"
+	"github.com/giantswarm/certs/v2/pkg/certs"
 	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
 	"github.com/giantswarm/randomkeys"
 	"github.com/giantswarm/statusresource"
-	"github.com/giantswarm/tenantcluster"
+	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -33,6 +33,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/containerurl"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment"
@@ -78,10 +79,22 @@ type AzureConfigConfig struct {
 	TemplateVersion  string
 	VMSSCheckWorkers int
 
+	Debug     setting.Debug
 	SentryDSN string
 }
 
+type AzureConfig struct {
+	*controller.Controller
+}
+
 func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
 	var err error
 
 	var certsSearcher *certs.Searcher
@@ -248,6 +261,21 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
+	var capzcrsResource resource.Interface
+	{
+		c := capzcrs.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+
+			Location: config.Azure.Location,
+		}
+
+		capzcrsResource, err = capzcrs.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var statusResource resource.Interface
 	{
 		c := statusresource.ResourceConfig{
@@ -366,6 +394,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			Azure:                      config.Azure,
 			ClientFactory:              clientFactory,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
+			Debug:                      config.Debug,
 		}
 
 		deploymentResource, err = deployment.New(c)
@@ -606,6 +635,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 
 	resources := []resource.Interface{
 		clusteridResource,
+		capzcrsResource,
 		namespaceResource,
 		ipamResource,
 		statusResource,

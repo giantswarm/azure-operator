@@ -20,16 +20,14 @@ rules:
       - azureclusters/status
       - azuremachines
     verbs:
-      - get
-      - list
-      - patch
-      - update
-      - watch
+      - "*"
   - apiGroups:
       - core.giantswarm.io
     resources:
       - azureclusterconfigs
       - drainerconfigs
+      - sparks
+      - sparks/status
     verbs:
       - "*"
   - apiGroups:
@@ -100,6 +98,7 @@ rules:
     verbs:
       - create
       - delete
+      - update
       - get
       - list
       - watch
