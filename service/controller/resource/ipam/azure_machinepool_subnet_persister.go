@@ -9,7 +9,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
@@ -85,18 +84,4 @@ func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Co
 	}
 
 	return nil
-}
-
-func (p *AzureMachinePoolSubnetPersister) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
-	azureCluster := &capzv1alpha3.AzureCluster{}
-	azureClusterName := client.ObjectKey{
-		Namespace: cluster.Spec.InfrastructureRef.Namespace,
-		Name:      cluster.Spec.InfrastructureRef.Name,
-	}
-	err := p.ctrlClient.Get(ctx, azureClusterName, azureCluster)
-	if err != nil {
-		return azureCluster, microerror.Mask(err)
-	}
-
-	return azureCluster, nil
 }
