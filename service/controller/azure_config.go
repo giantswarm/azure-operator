@@ -454,10 +454,11 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	}
 
 	nodesConfig := nodes.Config{
-		Debugger:  newDebugger,
-		G8sClient: config.K8sClient.G8sClient(),
-		K8sClient: config.K8sClient.K8sClient(),
-		Logger:    config.Logger,
+		CtrlClient: config.K8sClient.CtrlClient(),
+		Debugger:   newDebugger,
+		G8sClient:  config.K8sClient.G8sClient(),
+		K8sClient:  config.K8sClient.K8sClient(),
+		Logger:     config.Logger,
 
 		Azure:            config.Azure,
 		ClientFactory:    clientFactory,
