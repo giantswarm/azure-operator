@@ -8,8 +8,12 @@ import (
 )
 
 const (
-	Name = "ipam"
+	Name                                 = "ipam"
+	SubnetRange         NetworkRangeType = "subnet"
+	VirtualNetworkRange NetworkRangeType = "virtual network"
 )
+
+type NetworkRangeType string
 
 type Config struct {
 	Checker            Checker
@@ -17,6 +21,7 @@ type Config struct {
 	Locker             locker.Interface
 	Logger             micrologger.Logger
 	NetworkRangeGetter NetworkRangeGetter
+	NetworkRangeType   NetworkRangeType
 	Persister          Persister
 }
 
@@ -26,6 +31,7 @@ type Resource struct {
 	locker             locker.Interface
 	logger             micrologger.Logger
 	networkRangeGetter NetworkRangeGetter
+	networkRangeType   NetworkRangeType
 	persister          Persister
 }
 
@@ -44,6 +50,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.NetworkRangeGetter == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRangeGetter must not be empty", config)
+	}
+	if config.NetworkRangeType == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRangeType must not be empty", config)
 	}
 	if config.Persister == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Persister must not be empty", config)

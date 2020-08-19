@@ -67,6 +67,7 @@ func Test_SubnetAllocator(t *testing.T) {
 					Locker:             mutexLocker,
 					Logger:             microloggertest.New(),
 					NetworkRangeGetter: tc.networkRangeGetter,
+					NetworkRangeType:   "unit-test-network-range",
 					Persister:          tc.persister,
 				}
 

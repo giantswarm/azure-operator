@@ -54,16 +54,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if !proceed {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "subnet already allocated")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%s already allocated", r.networkRangeType))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 	}
 
-	// 2/4 Since we need to allocate a new subnet, first let's get all already allocated subnets.
+	// 2/4 Since we need to allocate a new vnet/subnet, first let's get all already allocated subnets.
 	var allocatedSubnets []net.IPNet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding allocated %ss", r.networkRangeType))
 
 		allocatedSubnets, err = r.collector.Collect(ctx, obj)
 		if IsNetworkRangeStillNotKnown(err) {
@@ -72,21 +72,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
 			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
 			// allocated and set in the AzureCluster CR.
-			warningMessage := "network range from which the vnet/subnet should be allocated is " +
-				"still not known, look for previous warnings for more details"
+			warningMessage := fmt.Sprintf(
+				"network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				r.networkRangeType)
 			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated subnets %#q", allocatedSubnets))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated %ss %#q", r.networkRangeType, allocatedSubnets))
 	}
 
-	// 3/4 Now let when we know what subnets are allocated, let's get one that's available.
+	// 3/4 Now let when we know what vnets/subnets are allocated, let's get one that's available.
 	var freeSubnet net.IPNet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "finding free subnet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding free %s", r.networkRangeType))
 
 		networkRange, err := r.networkRangeGetter.GetNetworkRange(ctx, obj)
 		if IsNetworkRangeStillNotKnown(err) {
@@ -95,8 +96,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
 			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
 			// allocated and set in the AzureCluster CR.
-			warningMessage := "network range from which the vnet/subnet should be allocated is " +
-				"still not known, look for previous warnings for more details"
+			warningMessage := fmt.Sprintf(
+				"network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				r.networkRangeType)
 			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
 			return nil
 		} else if err != nil {
@@ -109,19 +111,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free subnet %#q", freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free %s %#q", r.networkRangeType, freeSubnet))
 	}
 
 	// 4/4 And finally, let's save newly allocated network range (vnet range for cluster or subnet range node pool).
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free subnet %#q", freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free %s %#q", r.networkRangeType, freeSubnet))
 
 		err = r.persister.Persist(ctx, freeSubnet, m.GetNamespace(), m.GetName())
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocated free subnet %#q", freeSubnet))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocated free %s %#q", r.networkRangeType, freeSubnet))
 	}
 
 	return nil

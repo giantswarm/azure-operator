@@ -222,6 +222,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			Locker:             config.Locker,
 			Logger:             config.Logger,
 			NetworkRangeGetter: networkRangeGetter,
+			NetworkRangeType:   ipam.SubnetRange,
 			Persister:          subnetPersister,
 		}
 

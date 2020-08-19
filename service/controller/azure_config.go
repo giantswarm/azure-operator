@@ -523,6 +523,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			Locker:             config.Locker,
 			Logger:             config.Logger,
 			NetworkRangeGetter: networkRangeGetter,
+			NetworkRangeType:   ipam.VirtualNetworkRange,
 			Persister:          azureConfigPersister,
 		}
 
