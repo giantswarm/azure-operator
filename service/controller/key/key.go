@@ -375,11 +375,6 @@ func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
 }
 
-// WorkerCount returns the desired number of workers.
-func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
-	return len(customObject.Spec.Azure.Workers)
-}
-
 // WorkerSubnetName returns name of the worker subnet.
 func WorkerSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), virtualNetworkSuffix, workerSubnetSuffix)
