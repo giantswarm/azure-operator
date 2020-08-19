@@ -31,6 +31,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
 
@@ -203,6 +204,13 @@ func New(config Config) (*Service, error) {
 		}
 	}
 
+	var debugSettings setting.Debug
+	{
+		debugSettings = setting.Debug{
+			InsecureStorageAccount: config.Viper.GetBool(config.Flag.Service.Debug.InsecureStorageAccount),
+		}
+	}
+
 	var kubeLockLocker locker.Interface
 	{
 		c := locker.KubeLockLockerConfig{
@@ -242,8 +250,9 @@ func New(config Config) (*Service, error) {
 	var azureClusterController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureClusterConfig{
-			K8sClient: k8sClient,
-			Logger:    config.Logger,
+			CredentialProvider: credentialProvider,
+			K8sClient:          k8sClient,
+			Logger:             config.Logger,
 
 			Flag:  config.Flag,
 			Viper: config.Viper,
@@ -294,6 +303,7 @@ func New(config Config) (*Service, error) {
 			SentryDSN:                 sentryDSN,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Debug:                     debugSettings,
 		}
 
 		azureConfigController, err = controller.NewAzureConfig(c)
@@ -307,17 +317,29 @@ func New(config Config) (*Service, error) {
 	var azureMachinePoolController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureMachinePoolConfig{
-			Azure:                     azure,
+			APIServerSecurePort: config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
+			Azure:               azure,
+			Calico: azureconfig.CalicoConfig{
+				CIDRSize: config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
+				MTU:      config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
+				Subnet:   config.Viper.GetString(config.Flag.Service.Cluster.Calico.Subnet),
+			},
+			ClusterIPRange:            config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
 			CredentialProvider:        credentialProvider,
+			EtcdPrefix:                config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
+			Ignition:                  Ignition,
 			InstallationName:          config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:          ipamNetworkRange,
 			K8sClient:                 k8sClient,
 			Locker:                    kubeLockLocker,
 			Logger:                    config.Logger,
+			OIDC:                      OIDC,
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SentryDSN:                 sentryDSN,
+			SSHUserList:               config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
+			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		}

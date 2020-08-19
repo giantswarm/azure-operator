@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/instance/internal/scalestrategy"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes/scalestrategy"
 )
 
 const (

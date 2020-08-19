@@ -9,6 +9,10 @@ type Azure struct {
 	Location        string
 }
 
+type Debug struct {
+	InsecureStorageAccount bool
+}
+
 func (a Azure) Validate() error {
 	if a.EnvironmentName == "" {
 		return fmt.Errorf("EnvironmentName must not be empty")
