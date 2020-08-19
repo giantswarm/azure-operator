@@ -67,11 +67,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		allocatedNetworkRanges, err = r.collector.Collect(ctx, obj)
 		if IsParentNetworkRangeStillNotKnown(err) {
-			// This can happen in node pools IPAM reconciliation, during subnet allocation, when
-			// AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set, because VNet for the
-			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
-			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
-			// allocated and set in the AzureCluster CR.
+			// We cancel IPAM reconciliation, which should be done in one of the next
+			// reconciliation loops, as soon as the parent network range is allocated. See
+			// IsParentNetworkRangeStillNotKnown function for more details.
 			warningMessage := fmt.Sprintf(
 				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
 				r.networkRangeType)
@@ -91,11 +89,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		parentNetworkRange, err := r.networkRangeGetter.GetParentNetworkRange(ctx, obj)
 		if IsParentNetworkRangeStillNotKnown(err) {
-			// This can happen in node pools IPAM reconciliation, during subnet allocation, when
-			// AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set, because VNet for the
-			// tenant cluster is still not allocated (e.g. when cluster is still being created). In
-			// this case we cancel IPAM reconciliation, which will be done as soon as the VNet is
-			// allocated and set in the AzureCluster CR.
+			// We cancel IPAM reconciliation, which should be done in one of the next
+			// reconciliation loops, as soon as the parent network range is allocated. See
+			// IsParentNetworkRangeStillNotKnown function for more details.
 			warningMessage := fmt.Sprintf(
 				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
 				r.networkRangeType)

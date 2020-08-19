@@ -9,8 +9,10 @@ var parentNetworkRangeStillNotKnown = &microerror.Error{
 	Kind: "parentNetworkRangeStillNotKnown",
 }
 
-// IsParentNetworkRangeStillNotKnown asserts parentNetworkRangeStillNotKnown. This error is
-// returned when allocating node pool subnet, but tenant cluster VNet range is still not known.
+// IsParentNetworkRangeStillNotKnown asserts parentNetworkRangeStillNotKnown. This can happen in
+// node pools IPAM reconciliation, during subnet allocation, when
+// AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set, because VNet for the tenant
+// cluster is still not allocated (e.g. when cluster is still being created).
 func IsParentNetworkRangeStillNotKnown(err error) bool {
 	return microerror.Cause(err) == parentNetworkRangeStillNotKnown
 }
