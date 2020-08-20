@@ -18,8 +18,11 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
+	"k8s.io/client-go/tools/reference"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -39,6 +42,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 		mappedCRs = append(mappedCRs, o)
+		azureCluster := o.(*capzv1alpha3.AzureCluster)
 
 		infraRef := &corev1.ObjectReference{
 			Kind:      "AzureCluster",
@@ -56,6 +60,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 		mappedCRs = append(mappedCRs, o)
+
+		if len(cr.Spec.Azure.Workers) > 0 {
+			machinePoolName := "Legacy workers"
+			o, err = r.mapAzureConfigToAzureMachinePool(ctx, cr, *azureCluster, machinePoolName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			mappedCRs = append(mappedCRs, o)
+			azureMachinePool := o.(*expcapzv1alpha3.AzureMachinePool)
+
+			o, err = r.mapAzureConfigToMachinePool(ctx, cr, azureMachinePool, machinePoolName)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			mappedCRs = append(mappedCRs, o)
+		}
 	}
 
 	err = r.updateCRs(ctx, mappedCRs)
@@ -195,6 +215,103 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 	}
 
 	return azureMachine, nil
+}
+
+func (r *Resource) mapAzureConfigToMachinePool(_ context.Context, azureConfig providerv1alpha1.AzureConfig, azureMachinePool *expcapzv1alpha3.AzureMachinePool, machinePoolName string) (runtime.Object, error) {
+	nodeCount := int32(len(azureConfig.Spec.Azure.Workers))
+
+	var infrastructureCRRef *corev1.ObjectReference
+	{
+		s := runtime.NewScheme()
+		err := expcapzv1alpha3.AddToScheme(s)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		infrastructureCRRef, err = reference.GetReference(s, azureMachinePool)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	machinePool := &expcapiv1alpha3.MachinePool{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: expcapiv1alpha3.GroupVersion.String(),
+			Kind:       "MachinePool",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      azureMachinePool.Name,
+			Namespace: azureMachinePool.GetNamespace(),
+			Labels: map[string]string{
+				label.AzureOperatorVersion: key.OperatorVersion(&azureConfig),
+				label.Cluster:              key.ClusterID(&azureConfig),
+				// label.ClusterOperatorVersion: // TODO: do we need this?
+				label.MachinePool:    azureMachinePool.Name,
+				label.Organization:   key.OrganizationID(&azureConfig),
+				label.ReleaseVersion: key.ReleaseVersion(&azureConfig),
+			},
+			Annotations: map[string]string{
+				annotation.MachinePoolName: machinePoolName, // TODO: do we annotate both MachinePool and AzureMachinePool?
+			},
+		},
+		Spec: expcapiv1alpha3.MachinePoolSpec{
+			ClusterName: key.ClusterID(&azureConfig),
+			Replicas:    &nodeCount,
+			Template: capiv1alpha3.MachineTemplateSpec{
+				Spec: capiv1alpha3.MachineSpec{
+					ClusterName:       key.ClusterID(&azureConfig),
+					InfrastructureRef: *infrastructureCRRef,
+				},
+			},
+		},
+	}
+
+	availabilityZones := key.AvailabilityZones(azureConfig, r.location)
+	if len(availabilityZones) > 0 {
+		var azStrings []string
+		for _, az := range availabilityZones {
+			azStrings = append(azStrings, strconv.Itoa(az))
+		}
+		machinePool.Spec.FailureDomains = azStrings
+	}
+
+	return machinePool, nil
+}
+
+func (r *Resource) mapAzureConfigToAzureMachinePool(_ context.Context, azureConfig providerv1alpha1.AzureConfig, azureCluster capzv1alpha3.AzureCluster, machinePoolName string) (runtime.Object, error) {
+	vmSize := azureConfig.Spec.Azure.Workers[0].VMSize
+
+	// The first node pool (migrated legacy workers) get the same ID as the cluster
+	machinePoolID := azureCluster.Name
+
+	azureMachinePool := &expcapzv1alpha3.AzureMachinePool{
+		TypeMeta: metav1.TypeMeta{
+			APIVersion: expcapzv1alpha3.GroupVersion.String(),
+			Kind:       "AzureMachinePool",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      machinePoolID,
+			Namespace: azureCluster.GetNamespace(),
+			Labels: map[string]string{
+				label.AzureOperatorVersion: key.OperatorVersion(&azureConfig),
+				label.Cluster:              key.ClusterID(&azureConfig),
+				label.MachinePool:          machinePoolID,
+				label.Organization:         key.OrganizationID(&azureConfig),
+				label.ReleaseVersion:       key.ReleaseVersion(&azureConfig),
+			},
+			Annotations: map[string]string{
+				annotation.MachinePoolName: machinePoolName,
+			},
+		},
+		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
+			Location: azureCluster.Spec.Location,
+			Template: expcapzv1alpha3.AzureMachineTemplate{
+				VMSize: vmSize,
+			},
+		},
+	}
+
+	return azureMachinePool, nil
 }
 
 func (r *Resource) updateCRs(ctx context.Context, desiredCRs []runtime.Object) error {
