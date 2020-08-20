@@ -185,6 +185,7 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 				}
 				fmt.Printf("=====> Constructing controllercontext\n")
 				ctx = controllercontext.NewContext(ctx, c)
+				fmt.Printf("=====> Constructed controllercontext\n")
 
 				return ctx, nil
 			},
