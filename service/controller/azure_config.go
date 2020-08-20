@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/randomkeys"
 	"github.com/giantswarm/statusresource"
 	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
+	"k8s.io/apimachinery/pkg/api/meta"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
@@ -139,6 +140,18 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 		c := controller.Config{
 			InitCtx: func(ctx context.Context, obj interface{}) (context.Context, error) {
 				fmt.Printf("=====> Initializing context for AzureConfig reconciliation\n")
+				{
+					m, err := meta.Accessor(obj)
+					if err != nil {
+						panic(err)
+					}
+					t, err := meta.TypeAccessor(obj)
+					if err != nil {
+						panic(err)
+					}
+					fmt.Printf("####### Reconciled CR: %q / %q\n", t.GetKind(), m.GetName())
+				}
+
 				cr, err := key.ToCustomResource(obj)
 				if err != nil {
 					return nil, microerror.Mask(err)
