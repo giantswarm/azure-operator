@@ -172,7 +172,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", *currentDeployment.Properties.ProvisioningState))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state %#q", *currentDeployment.Properties.ProvisioningState))
 
 		if key.IsFailedProvisioningState(*currentDeployment.Properties.ProvisioningState) {
 			r.debugger.LogFailedDeployment(ctx, currentDeployment, err)
@@ -216,7 +216,10 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 // This is required because when removing a node pool, we remove the subnet from `AzureCluster`, so we can remove it here from Azure.
 func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, subnetsClient *network.SubnetsClient, azureCluster capzv1alpha3.AzureCluster) error {
 	subnetsIterator, err := subnetsClient.ListComplete(ctx, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name)
-	if err != nil {
+	if IsNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Vnet not %#q found, cancelling resource", azureCluster.Spec.NetworkSpec.Vnet.Name))
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
