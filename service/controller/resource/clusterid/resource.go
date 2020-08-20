@@ -90,6 +90,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 // EnsureDeleted is no-op.
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "delete event on clusterid handler")
 	return nil
 }
 
