@@ -27,12 +27,13 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-// IsStorageAccountNotFound asserts storage account not found error from upstream's API message.
-func IsStorageAccountNotFound(err error) bool {
+// IsNotFound asserts storage account not found error from upstream's API message.
+func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
 	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound") ||
+		strings.Contains(microerror.Cause(err).Error(), "ResourceGroupNotFound") ||
 		strings.Contains(microerror.Cause(err).Error(), "StorageAccountNotFound")
 }
 
