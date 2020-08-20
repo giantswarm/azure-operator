@@ -64,7 +64,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var containerURL azblob.ContainerURL
 	{
 		containerURL, err = r.getContainerURL(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
-		if err != nil {
+		if IsStorageAccountNotFound(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
@@ -153,11 +157,7 @@ func (r *Resource) getPrimaryKey(ctx context.Context, storageAccountsClient *sto
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Finding PrimaryKey for encryption in Storage Account")
 
 	_, err := storageAccountsClient.GetProperties(ctx, resourceGroupName, storageAccountName, storage.AccountExpandGeoReplicationStats)
-	if IsStorageAccountNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return "", nil
-	} else if err != nil {
+	if err != nil {
 		return "", microerror.Mask(err)
 	}
 
