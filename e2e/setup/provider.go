@@ -440,11 +440,12 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					Name:      machinePoolID,
 					Namespace: metav1.NamespaceDefault,
 					Labels: map[string]string{
-						label.AzureOperatorVersion: operatorVersion,
-						label.Cluster:              env.ClusterID(),
-						label.MachinePool:          machinePoolID,
-						label.Organization:         organization,
-						label.ReleaseVersion:       strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+						capiv1alpha3.ClusterLabelName: env.ClusterID(),
+						label.AzureOperatorVersion:    operatorVersion,
+						label.Cluster:                 env.ClusterID(),
+						label.MachinePool:             machinePoolID,
+						label.Organization:            organization,
+						label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 					},
 					Annotations: map[string]string{
 						annotation.MachinePoolName: machinePoolName,
@@ -498,12 +499,13 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Name:      machinePoolID,
 				Namespace: azureMachinePool.Namespace,
 				Labels: map[string]string{
-					label.AzureOperatorVersion:   operatorVersion,
-					label.Cluster:                env.ClusterID(),
-					label.ClusterOperatorVersion: clusterOperatorVersion,
-					label.MachinePool:            machinePoolID,
-					label.Organization:           organization,
-					label.ReleaseVersion:         strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+					capiv1alpha3.ClusterLabelName: env.ClusterID(),
+					label.AzureOperatorVersion:    operatorVersion,
+					label.Cluster:                 env.ClusterID(),
+					label.ClusterOperatorVersion:  clusterOperatorVersion,
+					label.MachinePool:             machinePoolID,
+					label.Organization:            organization,
+					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 				Annotations: map[string]string{
 					annotation.MachinePoolName: machinePoolName,
@@ -523,6 +525,29 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 
 		err := config.K8sClients.CtrlClient().Create(ctx, machinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		spark := &v1alpha1.Spark{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "core.giantswarm.io/v1alpha1",
+				Kind:       "Spark",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      machinePoolID,
+				Namespace: azureMachinePool.Namespace,
+				Labels: map[string]string{
+					capiv1alpha3.ClusterLabelName: env.ClusterID(),
+					label.Cluster:                 env.ClusterID(),
+					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+				},
+			},
+		}
+
+		err := config.K8sClients.CtrlClient().Create(ctx, spark)
 		if err != nil {
 			return microerror.Mask(err)
 		}
