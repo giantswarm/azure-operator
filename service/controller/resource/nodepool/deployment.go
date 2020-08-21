@@ -2,6 +2,7 @@ package nodepool
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"net/url"
 	"strconv"
@@ -57,6 +58,11 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	sshPublicKey, err := base64.StdEncoding.DecodeString(azureMachinePool.Spec.Template.SSHPublicKey)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
 	templateParams := map[string]interface{}{
 		"machinePoolVersion":      strconv.FormatInt(machinePool.ObjectMeta.Generation, 10),
 		"azureMachinePoolVersion": strconv.FormatInt(azureMachinePool.ObjectMeta.Generation, 10),
@@ -65,7 +71,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		"dockerVolumeSizeGB":      "50",
 		"kubeletVolumeSizeGB":     "100",
 		"nodepoolName":            key.NodePoolVMSSName(azureMachinePool),
-		"sshPublicKey":            azureMachinePool.Spec.Template.SSHPublicKey,
+		"sshPublicKey":            string(sshPublicKey),
 		"osImagePublisher":        "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
 		"osImageOffer":            "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,
 		"osImageSKU":              "stable",                       // azureMachinePool.Spec.Template.Image.Marketplace.SKU,

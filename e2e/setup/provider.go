@@ -454,7 +454,8 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Spec: expcapzv1alpha3.AzureMachinePoolSpec{
 					Location: env.AzureLocation(),
 					Template: expcapzv1alpha3.AzureMachineTemplate{
-						VMSize: env.AzureVMSize(),
+						VMSize:       env.AzureVMSize(),
+						SSHPublicKey: env.SSHPublicKey(),
 					},
 				},
 			}
