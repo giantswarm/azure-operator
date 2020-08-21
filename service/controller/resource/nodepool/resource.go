@@ -10,7 +10,7 @@ import (
 )
 
 const (
-	Name = "instance"
+	Name = "nodepool"
 )
 
 type Config struct {
