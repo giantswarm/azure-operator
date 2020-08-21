@@ -191,7 +191,12 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 	vnetName := azureCluster.Spec.NetworkSpec.Vnet.Name
 	resultPage, err := subnetsClient.List(ctx, resourceGroupName, vnetName)
 	if err != nil {
-		errorMessage := fmt.Sprintf("error while getting Azure subnets from VNet %q", vnetName)
+		var errorMessage string
+		if IsNotFound(err) {
+			errorMessage = fmt.Sprintf("Azure VNet %q is not found", vnetName)
+		} else {
+			errorMessage = fmt.Sprintf("error while getting Azure subnets from VNet %q", vnetName)
+		}
 		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return nil, microerror.Mask(err)
 	}

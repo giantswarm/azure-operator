@@ -71,8 +71,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// reconciliation loops, as soon as the parent network range is allocated. See
 			// IsParentNetworkRangeStillNotKnown function for more details.
 			warningMessage := fmt.Sprintf(
-				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details, skipping IPAM reconciliation",
 				r.networkRangeType)
+			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
+			return nil
+		} else if IsNotFound(err) {
+			warningMessage := "resource not found, look for previous warnings for more details, skipping IPAM reconciliation"
 			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
 			return nil
 		} else if err != nil {
@@ -93,7 +97,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// reconciliation loops, as soon as the parent network range is allocated. See
 			// IsParentNetworkRangeStillNotKnown function for more details.
 			warningMessage := fmt.Sprintf(
-				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details",
+				"parent network range from which the %s should be allocated is still not known, look for previous warnings for more details, skipping IPAM reconciliation",
 				r.networkRangeType)
 			r.logger.LogCtx(ctx, "level", "warning", "message", warningMessage)
 			return nil
