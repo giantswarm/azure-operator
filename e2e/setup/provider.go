@@ -3,17 +3,29 @@ package setup
 import (
 	"context"
 	"fmt"
+	"math/rand"
+	"regexp"
+	"strconv"
 	"strings"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/giantswarm/apiextensions/pkg/annotation"
 	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/crd"
+	"github.com/giantswarm/apiextensions/pkg/label"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
-	v1 "k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/reference"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
 	"github.com/giantswarm/azure-operator/v4/e2e/key"
@@ -85,6 +97,19 @@ Installation:
                 uri:
                   version: %s
 `
+
+	// idChars represents the character set used to generate cluster IDs.
+	// (does not contain 1 and l, to avoid confusion)
+	idChars = "023456789abcdefghijkmnopqrstuvwxyz"
+
+	// idLength represents the number of characters used to create a cluster ID.
+	idLength = 5
+)
+
+var (
+	// Use local instance of RNG. Can be overwritten with fixed seed in tests
+	// if needed.
+	localRng = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 // provider installs the operator and tenant cluster CR.
@@ -185,7 +210,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	}
 
 	{
-		encryptionSecret := &v1.Secret{
+		encryptionSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", key.TestAppReleaseName(), "encryption"),
 				Namespace: "default",
@@ -326,7 +351,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					},
 					Masters: []providerv1alpha1.AzureConfigSpecAzureNode{
 						{
-							VMSize: "Standard_D4_v2",
+							VMSize: env.AzureVMSize(),
 						},
 					},
 					VirtualNetwork: providerv1alpha1.AzureConfigSpecAzureVirtualNetwork{
@@ -337,10 +362,10 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					},
 					Workers: []providerv1alpha1.AzureConfigSpecAzureNode{
 						{
-							VMSize: "Standard_D4_v2",
+							VMSize: env.AzureVMSize(),
 						},
 						{
-							VMSize: "Standard_D4_v2",
+							VMSize: env.AzureVMSize(),
 						},
 					},
 				},
@@ -394,5 +419,139 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 	}
 
+	var machinePoolID string
+	machinePoolName := "e2e test node pool"
+	var azureMachinePool *expcapzv1alpha3.AzureMachinePool
+
+	{
+		const maxIDGenRetries = 5
+		var retries int
+
+		for ; retries < maxIDGenRetries; retries++ {
+			// Generate internal MachinePool ID.
+			machinePoolID = NewRandomEntityID()
+
+			azureMachinePool = &expcapzv1alpha3.AzureMachinePool{
+				TypeMeta: metav1.TypeMeta{
+					APIVersion: expcapzv1alpha3.GroupVersion.String(),
+					Kind:       "AzureMachinePool",
+				},
+				ObjectMeta: metav1.ObjectMeta{
+					Name:      machinePoolID,
+					Namespace: metav1.NamespaceDefault,
+					Labels: map[string]string{
+						label.AzureOperatorVersion: operatorVersion,
+						label.Cluster:              env.ClusterID(),
+						label.MachinePool:          machinePoolID,
+						label.Organization:         organization,
+						label.ReleaseVersion:       strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+					},
+					Annotations: map[string]string{
+						annotation.MachinePoolName: machinePoolName,
+					},
+				},
+				Spec: expcapzv1alpha3.AzureMachinePoolSpec{
+					Location: env.AzureLocation(),
+					Template: expcapzv1alpha3.AzureMachineTemplate{
+						VMSize: env.AzureVMSize(),
+					},
+				},
+			}
+
+			err := config.K8sClients.CtrlClient().Create(ctx, azureMachinePool)
+			if apierrors.IsAlreadyExists(err) {
+				continue
+			} else if err != nil {
+				return microerror.Mask(err)
+			}
+
+			break
+		}
+
+		if retries == maxIDGenRetries {
+			return microerror.Mask(idSpaceExhaustedError)
+		}
+	}
+
+	{
+		var infrastructureCRRef *corev1.ObjectReference
+		{
+			s := runtime.NewScheme()
+			err := expcapzv1alpha3.AddToScheme(s)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			infrastructureCRRef, err = reference.GetReference(s, azureMachinePool)
+			if err != nil {
+				config.Logger.LogCtx(ctx, "level", "warning", fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
+				return microerror.Mask(err)
+			}
+		}
+
+		machinePool := &expcapiv1alpha3.MachinePool{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: expcapiv1alpha3.GroupVersion.String(),
+				Kind:       "MachinePool",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      machinePoolID,
+				Namespace: azureMachinePool.Namespace,
+				Labels: map[string]string{
+					label.AzureOperatorVersion:   operatorVersion,
+					label.Cluster:                env.ClusterID(),
+					label.ClusterOperatorVersion: clusterOperatorVersion,
+					label.MachinePool:            machinePoolID,
+					label.Organization:           organization,
+					label.ReleaseVersion:         strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+				},
+				Annotations: map[string]string{
+					annotation.MachinePoolName: machinePoolName,
+				},
+			},
+			Spec: expcapiv1alpha3.MachinePoolSpec{
+				ClusterName:    env.ClusterID(),
+				Replicas:       to.Int32Ptr(2),
+				FailureDomains: env.AzureAvailabilityZonesAsStrings(),
+				Template: capiv1alpha3.MachineTemplateSpec{
+					Spec: capiv1alpha3.MachineSpec{
+						ClusterName:       env.ClusterID(),
+						InfrastructureRef: *infrastructureCRRef,
+					},
+				},
+			},
+		}
+
+		err := config.K8sClients.CtrlClient().Create(ctx, machinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	return nil
+}
+
+func NewRandomEntityID() string {
+	pattern := regexp.MustCompile("^[a-z]+$")
+	for {
+		letterRunes := []rune(idChars)
+		b := make([]rune, idLength)
+		for i := range b {
+			b[i] = letterRunes[localRng.Intn(len(letterRunes))]
+		}
+
+		id := string(b)
+
+		if _, err := strconv.Atoi(id); err == nil {
+			// string is numbers only, which we want to avoid
+			continue
+		}
+
+		if pattern.MatchString(id) {
+			// strings is letters only, which we also avoid
+			continue
+		}
+
+		return id
+	}
 }

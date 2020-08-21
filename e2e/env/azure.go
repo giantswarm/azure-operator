@@ -11,6 +11,7 @@ import (
 
 const (
 	DefaultAzureLocation             = "westeurope"
+	DefaultAzureVMSize               = "Standard_D4_v2"
 	DefaultCommonDomainResourceGroup = "godsmack"
 
 	EnvVarAzureAZs  = "AZURE_AZS"
@@ -21,6 +22,7 @@ const (
 	EnvVarAzureLocation       = "AZURE_LOCATION"
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
+	EnvVarAzureVMSize         = "AZURE_VMSIZE"
 
 	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
 	EnvVarBastionPublicSSHKey       = "BASTION_PUBLIC_SSH_KEY"
@@ -36,6 +38,7 @@ var (
 	azureLocation       string
 	azureSubscriptionID string
 	azureTenantID       string
+	azureVMSize         string
 
 	azureCIDR             string
 	azureCalicoSubnetCIDR string
@@ -73,6 +76,12 @@ func init() {
 	azureTenantID = os.Getenv(EnvVarAzureTenantID)
 	if azureTenantID == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureTenantID))
+	}
+
+	azureVMSize = os.Getenv(EnvVarAzureVMSize)
+	if azureVMSize == "" {
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarAzureVMSize, DefaultAzureVMSize)
+		azureVMSize = DefaultAzureVMSize
 	}
 
 	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
@@ -145,6 +154,18 @@ func AzureAvailabilityZones() []int {
 	return zones
 }
 
+func AzureAvailabilityZonesAsStrings() []string {
+	azInts := AzureAvailabilityZones()
+	azs := make([]string, len(azInts))
+
+	for _, azInt := range azInts {
+		az := strconv.Itoa(azInt)
+		azs = append(azs, az)
+	}
+
+	return azs
+}
+
 func AzureCalicoSubnetCIDR() string {
 	return azureCalicoSubnetCIDR
 }
@@ -175,6 +196,10 @@ func AzureSubscriptionID() string {
 
 func AzureTenantID() string {
 	return azureTenantID
+}
+
+func AzureVMSize() string {
+	return azureVMSize
 }
 
 func AzureWorkerSubnetCIDR() string {
