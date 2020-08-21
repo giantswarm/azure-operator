@@ -155,10 +155,9 @@ func AzureAvailabilityZones() []int {
 }
 
 func AzureAvailabilityZonesAsStrings() []string {
-	azInts := AzureAvailabilityZones()
-	azs := make([]string, len(azInts))
+	var azs []string
 
-	for _, azInt := range azInts {
+	for _, azInt := range AzureAvailabilityZones() {
 		az := strconv.Itoa(azInt)
 		azs = append(azs, az)
 	}
