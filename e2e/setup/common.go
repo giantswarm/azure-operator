@@ -254,17 +254,6 @@ Installation:
           DockerConfigJSON: '{ "auths": { "quay.io": { "auth": "Z2lhbnRzd2FybStnb2RzbWFjazo0MzQ3RTJRSVZaN1Y4TzNUOFk4UlhKNFZGTDU2WjUzQ0FaMEMyVjE1TldJQkNNRkxOUjZCUzRCM1FDMzNWUTk2", "email": "" }}}'
 `
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AWSClusterConfig CRD exists")
-
-		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewAWSClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AWSClusterConfig CRD exists")
-	}
-
-	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "AzureClusterConfig"), backoff.NewMaxRetries(7, 1*time.Second))
@@ -273,17 +262,6 @@ Installation:
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureClusterConfig CRD exists")
-	}
-
-	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring KVMClusterConfig CRD exists")
-
-		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewKVMClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured KVMClusterConfig CRD exists")
 	}
 
 	{
