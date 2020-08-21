@@ -52,11 +52,6 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	zones, err := r.getFailureDomains(azureCluster, machinePool)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	vnetName, subnetName, err := r.getSubnetName(azureMachinePool, azureCluster)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -79,7 +74,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		"vnetName":                vnetName,
 		"subnetName":              subnetName,
 		"vmSize":                  azureMachinePool.Spec.Template.VMSize,
-		"zones":                   zones,
+		"zones":                   machinePool.Spec.FailureDomains,
 		// This should come from the bootstrap operator.
 		"vmCustomData": workerCloudConfig,
 	}
@@ -108,22 +103,6 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	}
 
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
-}
-
-func (r *Resource) getFailureDomains(azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool) ([]string, error) {
-	var validFailureDomain bool
-	allowedFailureDomains := azureCluster.Status.FailureDomains.GetIDs()
-	for _, id := range allowedFailureDomains {
-		if id == machinePool.Spec.Template.Spec.FailureDomain {
-			validFailureDomain = true
-		}
-	}
-
-	if !validFailureDomain && len(allowedFailureDomains) > 0 {
-		return []string{}, microerror.Maskf(notAvailableFailureDomain, "nodepool availability zone %#q is not available in the region", *machinePool.Spec.Template.Spec.FailureDomain)
-	}
-
-	return []string{*machinePool.Spec.Template.Spec.FailureDomain}, nil
 }
 
 func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
