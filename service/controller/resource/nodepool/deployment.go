@@ -111,6 +111,14 @@ func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClie
 
 	keys, err := storageAccountsClient.ListKeys(ctx, resourceGroupName, storageAccountName, "")
 	if err != nil {
+		var errorMessage string
+		if IsNotFound(err) {
+			errorMessage = fmt.Sprintf("storage account %q not found", storageAccountName)
+		} else {
+			errorMessage = fmt.Sprintf("error while getting storage account %q", storageAccountName)
+		}
+
+		r.Logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return "", microerror.Mask(err)
 	}
 

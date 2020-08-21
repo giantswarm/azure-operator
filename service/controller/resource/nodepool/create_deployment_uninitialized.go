@@ -70,7 +70,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, azureCluster, machinePool, &azureMachinePool)
-	if err != nil {
+	if IsNotFound(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Azure resource not found, canceling resource")
+		return currentState, nil
+	} else if err != nil {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, microerror.Mask(err)
 	}
