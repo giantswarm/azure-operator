@@ -23,14 +23,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		t, err := meta.TypeAccessor(obj)
-		if err != nil {
-			panic(err)
-		}
-		fmt.Printf("####### Entering IPAM handler from %q / %q\n", t.GetKind(), m.GetName())
-	}
-
-	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "acquiring lock for IPAM")
 		err := r.locker.Lock(ctx)
 		if locker.IsAlreadyExists(err) {
