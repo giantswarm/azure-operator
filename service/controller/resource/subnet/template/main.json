@@ -8,10 +8,10 @@
         "description": "CR revision field used for this deployment"
       }
     },
-    "nateGatewayName": {
+    "natGatewayId": {
       "type": "string",
       "metadata": {
-        "description": "Name of the nat gateway for workers"
+        "description": "ID of the nat gateway for workers"
       }
     },
     "nodepoolName": {
@@ -43,7 +43,6 @@
     }
   },
   "variables": {
-    "natGatewayID": "[resourceId('Microsoft.Network/natGateways/', parameters('nateGatewayName'))]",
     "routeTableID": "[resourceId('Microsoft.Network/routeTables/', parameters('routeTableName'))]",
     "subnetName": "[concat(parameters('virtualNetworkName'), '/', parameters('nodepoolName'))]",
     "workerSecurityGroupID": "[resourceId('Microsoft.Network/networkSecurityGroups', parameters('securityGroupName'))]"
@@ -57,7 +56,7 @@
       "properties": {
         "addressPrefix": "[parameters('subnetCidr')]",
         "natGateway": {
-          "id": "[variables('natGatewayID')]"
+          "id": "[parameters('natGatewayId')]"
         },
         "networkSecurityGroup": {
           "id": "[variables('workerSecurityGroupID')]"

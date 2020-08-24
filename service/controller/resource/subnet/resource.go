@@ -94,6 +94,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	natGatewaysClient, err := r.azureClientsFactory.GetNatGatewaysClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
 		return microerror.Mask(err)
@@ -109,8 +114,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.ensureSubnets(ctx, deploymentsClient, storageAccountsClient, azureCluster)
-	if err != nil {
+	err = r.ensureSubnets(ctx, deploymentsClient, storageAccountsClient, natGatewaysClient, azureCluster)
+	if IsNatGatewayNotReadyError(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Nat Gateway needs to be in state 'Succeeded' before subnets can be created")
+		r.logger.LogCtx(ctx, "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
@@ -121,10 +130,19 @@ func getSubnetARMDeploymentName(subnetName string) string {
 	return fmt.Sprintf("%s-%s", mainDeploymentName, subnetName)
 }
 
-func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, azureCluster capzv1alpha3.AzureCluster) error {
+func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, natGatewaysClient *network.NatGatewaysClient, azureCluster capzv1alpha3.AzureCluster) error {
 	armTemplate, err := subnet.GetARMTemplate()
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	natGw, err := natGatewaysClient.Get(ctx, key.ClusterID(&azureCluster), "workers-nat-gw", "")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if natGw.ProvisioningState != network.Succeeded {
+		return microerror.Mask(natGatewayNotReadyError)
 	}
 
 	for _, allocatedSubnet := range azureCluster.Spec.NetworkSpec.Subnets {
@@ -136,7 +154,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 			return microerror.Mask(err)
 		}
 
-		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&azureCluster), strconv.FormatInt(azureCluster.ObjectMeta.Generation, 10), azureCluster.Spec.NetworkSpec.Vnet.Name, allocatedSubnet)
+		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&azureCluster), strconv.FormatInt(azureCluster.ObjectMeta.Generation, 10), azureCluster.Spec.NetworkSpec.Vnet.Name, *natGw.ID, allocatedSubnet)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -359,10 +377,11 @@ func (r *Resource) isDeploymentOutOfDate(ctx context.Context, cr capzv1alpha3.Az
 	return crVersion != deploymentVersion, nil
 }
 
-func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, azureClusterVersion, virtualNetworkName string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
+func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, azureClusterVersion, virtualNetworkName, natGatewayId string, allocatedSubnet *capzv1alpha3.SubnetSpec) (map[string]interface{}, error) {
+	// @TODO: nat gateway, route table and security group names should come from CR state instead of convention.
 	return map[string]interface{}{
 		"azureClusterVersion": azureClusterVersion,
-		"nateGatewayName":     "workers-nat-gw",
+		"natGatewayId":        natGatewayId,
 		"nodepoolName":        allocatedSubnet.Name,
 		"routeTableName":      fmt.Sprintf("%s-%s", clusterID, "RouteTable"),
 		"securityGroupName":   fmt.Sprintf("%s-%s", clusterID, "WorkerSecurityGroup"),
