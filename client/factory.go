@@ -155,6 +155,17 @@ func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (
 	return toSubnetsClient(client), nil
 }
 
+// GetNatGatewaysClient returns *network.NatGatewaysClient that is used for management of Nat Gateways.
+// The created client is cached for the time period specified in the factory config.
+func (f *Factory) GetNatGatewaysClient(credentialNamespace, credentialName string) (*network.NatGatewaysClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "NatGatewaysClient", newNatGatewaysClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toNatGatewaysClient(client), nil
+}
+
 func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {
 	l := f.logger.With(
 		logLevelLogKey, logLevelDebug,

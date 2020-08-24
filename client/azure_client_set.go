@@ -35,6 +35,8 @@ type AzureClientSet struct {
 	DNSZonesClient *dns.ZonesClient
 	// InterfacesClient manages virtual network interfaces.
 	InterfacesClient *network.InterfacesClient
+	// NatGatewaysClient manages Nat Gateways.
+	NatGatewaysClient *network.NatGatewaysClient
 	// PublicIpAddressesClient manages public IP addresses.
 	PublicIpAddressesClient *network.PublicIPAddressesClient
 	// SecurityRulesClient manages networking rules in a security group.
@@ -91,6 +93,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	natGatewaysClient, err := newNatGatewaysClient(authorizer, subscriptionID, partnerID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	publicIpAddressesClient, err := newPublicIPAddressesClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -142,6 +148,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           toGroupsClient(groupsClient),
 		InterfacesClient:                       interfacesClient,
+		NatGatewaysClient:                      toNatGatewaysClient(natGatewaysClient),
 		PublicIpAddressesClient:                publicIpAddressesClient,
 		SecurityRulesClient:                    securityRulesClient,
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
@@ -197,6 +204,13 @@ func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID s
 
 func newInterfacesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.InterfacesClient, error) {
 	client := network.NewInterfacesClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
+
+	return &client, nil
+}
+
+func newNatGatewaysClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+	client := network.NewNatGatewaysClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
 	return &client, nil
@@ -305,4 +319,8 @@ func toStorageAccountsClient(client interface{}) *storage.AccountsClient {
 
 func toSubnetsClient(client interface{}) *network.SubnetsClient {
 	return client.(*network.SubnetsClient)
+}
+
+func toNatGatewaysClient(client interface{}) *network.NatGatewaysClient {
+	return client.(*network.NatGatewaysClient)
 }
