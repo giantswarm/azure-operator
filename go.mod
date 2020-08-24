@@ -20,6 +20,7 @@ require (
 	github.com/giantswarm/e2esetup v0.1.0
 	github.com/giantswarm/e2etemplates v0.2.0
 	github.com/giantswarm/e2etests v0.1.0
+	github.com/giantswarm/employees v0.0.0-20200824092013-3689f672d235 // indirect
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/helmclient v1.0.4
 	github.com/giantswarm/ipam v0.2.0
