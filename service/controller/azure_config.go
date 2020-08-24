@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"fmt"
 	"net"
 	"time"
 
@@ -138,19 +137,16 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 	{
 		c := controller.Config{
 			InitCtx: func(ctx context.Context, obj interface{}) (context.Context, error) {
-				fmt.Printf("=====> Initializing context for AzureConfig reconciliation\n")
 				cr, err := key.ToCustomResource(obj)
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}
 
-				fmt.Printf("=====> Getting credentials for azure\n")
 				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cr), key.CredentialName(cr))
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}
 
-				fmt.Printf("=====> Constructing AzureClient\n")
 				tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
 				if err != nil {
 					return nil, microerror.Mask(err)
@@ -172,7 +168,6 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 						SubscriptionID:         subscriptionID,
 					}
 
-					fmt.Printf("=====> Constructing cloudconfig\n")
 					cloudConfig, err = cloudconfig.New(c)
 					if err != nil {
 						return nil, microerror.Mask(err)
@@ -183,7 +178,6 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 					AzureClientSet: tenantClusterAzureClientSet,
 					CloudConfig:    cloudConfig,
 				}
-				fmt.Printf("=====> Constructing controllercontext\n")
 				ctx = controllercontext.NewContext(ctx, c)
 
 				return ctx, nil
