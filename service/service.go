@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"reflect"
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -428,8 +427,6 @@ func (s *Service) Boot(ctx context.Context) {
 		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
 
 		for _, ctrl := range s.controllers {
-			fv := reflect.ValueOf(ctrl).Elem().FieldByName("name")
-			fmt.Printf("--------> Booting controller %q\n", fv.String())
 			go ctrl.Boot(ctx)
 		}
 	})
