@@ -2,6 +2,7 @@ package capzcrs
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"strconv"
 
@@ -186,7 +187,7 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 				},
 			},
 			Location:     r.location,
-			SSHPublicKey: key.AdminSSHKeyData(cr),
+			SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(key.AdminSSHKeyData(cr))),
 		},
 	}
 
