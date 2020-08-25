@@ -105,7 +105,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.garbageCollectSubnets(ctx, deploymentsClient, subnetsClient, azureCluster)
-	if err != nil {
+	if IsNotFound(err) {
+		r.logger.LogCtx(ctx, "message", "resources not ready")
+		r.logger.LogCtx(ctx, "message", "canceling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 

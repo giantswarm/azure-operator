@@ -64,7 +64,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var containerURL azblob.ContainerURL
 	{
 		containerURL, err = r.getContainerURL(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
-		if IsStorageAccountNotFound(err) {
+		if IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
