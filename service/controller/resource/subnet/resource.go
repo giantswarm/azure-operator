@@ -251,8 +251,8 @@ func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient 
 		if !isSubnetInAzureClusterSpec(ctx, azureCluster, *subnetInAzure.Name) && !isProtectedSubnet(*subnetInAzure.Name) {
 			err = r.deleteSubnet(ctx, subnetsClient, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name, *subnetInAzure.Name)
 			if IsSubnetInUse(err) {
-				r.logger.LogCtx(ctx, "message", "Subnet still in use by VMSS, cancelling resource")
-				return nil
+				r.logger.LogCtx(ctx, "message", fmt.Sprintf("subnet %q in Azure still in use by VMSS", *subnetInAzure.Name))
+				continue
 			} else if err != nil {
 				return microerror.Mask(err)
 			}
@@ -289,7 +289,7 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, deploymentsClient *a
 }
 
 func (r *Resource) deleteSubnet(ctx context.Context, subnetsClient *network.SubnetsClient, resourceGroupName, virtualNetworkName, subnetName string) error {
-	r.logger.LogCtx(ctx, "message", "Deleting Subnet")
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("deleting subnet %q", subnetName))
 
 	_, err := subnetsClient.Delete(ctx, resourceGroupName, virtualNetworkName, subnetName)
 	if IsNotFound(err) {
@@ -299,7 +299,7 @@ func (r *Resource) deleteSubnet(ctx context.Context, subnetsClient *network.Subn
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "message", "Deleted Subnet")
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("deleted subnet %q", subnetName))
 
 	return nil
 }
