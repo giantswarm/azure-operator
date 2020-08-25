@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -107,7 +108,11 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 	}
 
 	err = r.ctrlClient.Update(ctx, &azureCluster)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
@@ -142,7 +147,11 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 		}
 
 		err = r.ctrlClient.Update(ctx, &machinePool)
-		if err != nil {
+		if apierrors.IsConflict(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 

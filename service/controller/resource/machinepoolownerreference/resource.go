@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -109,7 +110,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.ctrlClient.Update(ctx, &azureMachinePool)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
