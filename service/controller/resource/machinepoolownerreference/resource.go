@@ -97,7 +97,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	})
 
 	err = r.ctrlClient.Update(ctx, &machinePool)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
