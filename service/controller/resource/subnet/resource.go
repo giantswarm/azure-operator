@@ -141,7 +141,9 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 	}
 
 	natGw, err := natGatewaysClient.Get(ctx, key.ClusterID(&azureCluster), "workers-nat-gw", "")
-	if err != nil {
+	if IsNotFound(err) {
+		return microerror.Mask(natGatewayNotReadyError)
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
