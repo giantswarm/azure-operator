@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
@@ -62,16 +63,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	err = r.CtrlClient.Status().Update(ctx, &azureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	if newState != currentState {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to %#q", newState))
 		err = r.saveCurrentState(ctx, azureMachinePool, string(newState))
-		if err != nil {
+		if apierrors.IsConflict(err) {
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "no state change")
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to %#q", newState))
