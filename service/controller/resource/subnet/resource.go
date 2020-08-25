@@ -252,6 +252,12 @@ func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient 
 			err = r.deleteSubnet(ctx, subnetsClient, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name, *subnetInAzure.Name)
 			if IsSubnetInUse(err) {
 				r.logger.LogCtx(ctx, "message", fmt.Sprintf("subnet %q in Azure still in use by VMSS", *subnetInAzure.Name))
+
+				err = subnetsIterator.NextWithContext(ctx)
+				if err != nil {
+					return microerror.Mask(err)
+				}
+
 				continue
 			} else if err != nil {
 				return microerror.Mask(err)
