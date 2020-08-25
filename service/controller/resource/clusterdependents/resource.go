@@ -60,7 +60,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	deleted, err := r.ensureInfrastructureCRDeleted(ctx, cr)
+	deleted, err := r.ensureMachinePoolCRsDeleted(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -70,7 +70,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	deleted, err = r.ensureMachinePoolCRsDeleted(ctx, cr)
+	deleted, err = r.ensureInfrastructureCRDeleted(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}

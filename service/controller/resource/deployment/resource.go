@@ -105,6 +105,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	// Pre-condition check: VNet CIDR must be set.
+	if cr.Spec.Azure.VirtualNetwork.CIDR == "" {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "vnet cidr not set")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil
+	}
+
 	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(cr.Spec.Azure.CredentialSecret.Namespace, cr.Spec.Azure.CredentialSecret.Name)
 	if err != nil {
 		return microerror.Mask(err)
