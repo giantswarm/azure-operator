@@ -2,6 +2,7 @@ package setup
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"math/rand"
 	"regexp"
@@ -455,7 +456,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					Location: env.AzureLocation(),
 					Template: expcapzv1alpha3.AzureMachineTemplate{
 						VMSize:       env.AzureVMSize(),
-						SSHPublicKey: env.SSHPublicKey(),
+						SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(env.SSHPublicKey())),
 					},
 				},
 			}
