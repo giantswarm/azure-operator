@@ -144,3 +144,12 @@ var ownerReferenceNotSet = &microerror.Error{
 func IsOwnerReferenceNotSet(err error) bool {
 	return microerror.Cause(err) == ownerReferenceNotSet
 }
+
+var subnetNotReadyError = &microerror.Error{
+	Kind: "subnetNotReadyError",
+}
+
+// IsSubnetNotReadyError asserts subnetNotReadyError.
+func IsSubnetNotReadyError(err error) bool {
+	return microerror.Cause(err) == subnetNotReadyError
+}
