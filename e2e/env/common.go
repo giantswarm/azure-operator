@@ -64,11 +64,6 @@ func init() {
 		randomizeClusterID = randomizeClusterIDEnvVar
 	}
 
-	if randomizeClusterID {
-		randomPrefixPart := entityid.Generate()
-		clusterIDPrefix = fmt.Sprintf("%s-%s", clusterIDPrefix, randomPrefixPart)
-	}
-
 	circleSHA = os.Getenv(EnvVarCircleSHA)
 	if circleSHA == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarCircleSHA))
@@ -88,6 +83,11 @@ func init() {
 		// Default cluster ID prefix is always the same for CI
 		clusterIDPrefix = DefaultClusterIDPrefix
 		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarClusterIDPrefix, DefaultClusterIDPrefix)
+	}
+
+	if randomizeClusterID {
+		randomPrefixPart := entityid.New()
+		clusterIDPrefix = fmt.Sprintf("%s-%s", clusterIDPrefix, randomPrefixPart)
 	}
 
 	if randomizeClusterID && (len(clusterIDPrefix)+len(testedVersion) > MaxClusterIDPrefixAndTestedVersionLength) {
