@@ -79,7 +79,7 @@ spec:
       kubelet:
         altNames: ""
         domain: worker.c6fme.k8s.ghost.westeurope.azure.gigantic.io
-        labels: azure-operator.giantswarm.io/version=4.2.0,giantswarm.io/provider=azure
+        labels: giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=4.2.0
         port: 0
       networkSetup:
         docker:

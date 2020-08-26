@@ -73,6 +73,17 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 			},
 			errorMatcher: nil,
 		},
+		{
+			name:            "case 3: Ensure that AzureCluster Subnets are not wiped",
+			location:        "westeurope",
+			azureConfigFile: "simple_azureconfig.yaml",
+			preTestFiles: []string{
+				"azurecluster_with_subnets.yaml",
+				"simple_azuremachine.yaml",
+				"simple_cluster.yaml",
+			},
+			errorMatcher: nil,
+		},
 	}
 
 	for i, tc := range testCases {
@@ -109,6 +120,76 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 				t.Fatalf("error == nil, want non-nil")
 			case !tc.errorMatcher(err):
 				t.Fatalf("error == %#v, want matching", err)
+			}
+		})
+	}
+}
+
+func Test_mergeAzureCluster(t *testing.T) {
+	testCases := []struct {
+		name         string
+		original     *capzv1alpha3.AzureCluster
+		desired      *capzv1alpha3.AzureCluster
+		expected     *capzv1alpha3.AzureCluster
+		errorMatcher func(error) bool
+	}{
+		{
+			name:         "case 0: empty values",
+			original:     &capzv1alpha3.AzureCluster{},
+			desired:      &capzv1alpha3.AzureCluster{},
+			expected:     &capzv1alpha3.AzureCluster{},
+			errorMatcher: nil,
+		},
+		{
+			name: "case 1: preserve subnets",
+			original: &capzv1alpha3.AzureCluster{
+				Spec: capzv1alpha3.AzureClusterSpec{
+					NetworkSpec: capzv1alpha3.NetworkSpec{
+						Subnets: []*capzv1alpha3.SubnetSpec{
+							&capzv1alpha3.SubnetSpec{
+								ID:   "nodepool-np201",
+								Role: capzv1alpha3.SubnetNode,
+							},
+						},
+					},
+				},
+			},
+			desired: &capzv1alpha3.AzureCluster{},
+			expected: &capzv1alpha3.AzureCluster{
+				Spec: capzv1alpha3.AzureClusterSpec{
+					NetworkSpec: capzv1alpha3.NetworkSpec{
+						Subnets: []*capzv1alpha3.SubnetSpec{
+							&capzv1alpha3.SubnetSpec{
+								ID:   "nodepool-np201",
+								Role: capzv1alpha3.SubnetNode,
+							},
+						},
+					},
+				},
+			},
+			errorMatcher: nil,
+		},
+	}
+
+	for i, tc := range testCases {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			t.Log(tc.name)
+
+			o, err := mergeAzureCluster(tc.original, tc.desired)
+
+			switch {
+			case err == nil && tc.errorMatcher == nil:
+				// correct; carry on
+			case err != nil && tc.errorMatcher == nil:
+				t.Fatalf("error == %#v, want nil", err)
+			case err == nil && tc.errorMatcher != nil:
+				t.Fatalf("error == nil, want non-nil")
+			case !tc.errorMatcher(err):
+				t.Fatalf("error == %#v, want matching", err)
+			}
+
+			if !cmp.Equal(o, tc.expected) {
+				t.Fatalf("\n\n%s\n", cmp.Diff(tc.expected, o))
 			}
 		})
 	}
