@@ -236,12 +236,12 @@
                     }
                   },
                   {
-                    "name":"allowEtcdLoadBalancer",
+                    "name":"allowLoadBalancer",
                     "properties":{
-                      "description":"Allow traffic from LB to master instance.",
+                      "description":"Allow all TCP traffic from LB to master instance.",
                       "protocol":"tcp",
                       "sourcePortRange":"*",
-                      "destinationPortRange":"[variables('etcdPort')]",
+                      "destinationPortRange":"*",
                       "sourceAddressPrefix":"AzureLoadBalancer",
                       "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
                       "access":"Allow",
@@ -1051,7 +1051,8 @@
                         "protocol": "[parameters('ports')[copyIndex('probes')].probeProtocol]",
                         "port": "[parameters('ports')[copyIndex('probes')].probePort]",
                         "intervalInSeconds": 5,
-                        "numberOfProbes": 2
+                        "numberOfProbes": 2,
+                        "requestPath": "/healtz"
                       }
                     }
                   }
@@ -1086,15 +1087,15 @@
                 "protocol":"Tcp",
                 "frontend":443,
                 "backend":443,
-                "probeProtocol": "Tcp",
-                "probePort": 443
+                "probeProtocol": "Http",
+                "probePort": 8089
               },
               {
                 "protocol":"Udp",
                 "frontend":60001,
                 "backend":60001,
-                "probeProtocol": "Tcp",
-                "probePort": 443
+                "probeProtocol": "Http",
+                "probePort": 8089
               }
             ]
           }
