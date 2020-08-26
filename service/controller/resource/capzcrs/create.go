@@ -25,6 +25,13 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
+type crmapping struct {
+	obj runtime.Object
+
+	needUpdateFunc func(orig, desired runtime.Object) (bool, error)
+	mergeFunc      func(orig, desired runtime.Object) (runtime.Object, error)
+}
+
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
@@ -33,13 +40,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "mapping AzureConfig CR to CAPI & CAPZ CRs")
 
-	var mappedCRs []runtime.Object
+	var mappedCRs []crmapping
 	{
 		o, err := r.mapAzureConfigToAzureCluster(ctx, cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		mappedCRs = append(mappedCRs, o)
+		mappedCRs = append(mappedCRs, crmapping{
+			obj:            o,
+			needUpdateFunc: detectAzureClusterUpdate,
+			mergeFunc:      mergeAzureCluster,
+		})
 
 		infraRef := &corev1.ObjectReference{
 			Kind:      "AzureCluster",
@@ -50,13 +61,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		mappedCRs = append(mappedCRs, o)
+		mappedCRs = append(mappedCRs, crmapping{
+			obj:            o,
+			needUpdateFunc: genericUpdateDetection,
+			mergeFunc:      genericObjectMerge,
+		})
 
 		o, err = r.mapAzureConfigToAzureMachine(ctx, cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		mappedCRs = append(mappedCRs, o)
+		mappedCRs = append(mappedCRs, crmapping{
+			obj:            o,
+			needUpdateFunc: genericUpdateDetection,
+			mergeFunc:      genericObjectMerge,
+		})
 	}
 
 	err = r.updateCRs(ctx, mappedCRs)
@@ -198,17 +217,17 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 	return azureMachine, nil
 }
 
-func (r *Resource) updateCRs(ctx context.Context, desiredCRs []runtime.Object) error {
-	for _, desired := range desiredCRs {
+func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error {
+	for _, m := range crmappings {
 		// Construct new instance by creating deep copy of desired object.
-		readCR := desired.DeepCopyObject()
+		readCR := m.obj.DeepCopyObject()
 
 		// Acquire accessors for ObjectMeta and TypeMeta fields of CR.
-		desiredMeta, err := meta.Accessor(desired)
+		desiredMeta, err := meta.Accessor(m.obj)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		desiredType, err := meta.TypeAccessor(desired)
+		desiredType, err := meta.TypeAccessor(m.obj)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -225,7 +244,7 @@ func (r *Resource) updateCRs(ctx context.Context, desiredCRs []runtime.Object) e
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%s %s did not exist. creating", desiredType.GetKind(), nsName.String()))
 
 			// It's ok. Let's create it.
-			err = r.ctrlClient.Create(ctx, desired)
+			err = r.ctrlClient.Create(ctx, m.obj)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -236,48 +255,33 @@ func (r *Resource) updateCRs(ctx context.Context, desiredCRs []runtime.Object) e
 			return microerror.Mask(err)
 		}
 
-		readMeta, err := meta.Accessor(readCR)
+		updateNeeded, err := m.needUpdateFunc(readCR, m.obj)
 		if err != nil {
 			return microerror.Mask(err)
-		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding if %s %s needs updating", desiredType.GetKind(), nsName.String()))
-
-		var updateNeeded bool
-		if !cmp.Equal(desiredMeta.GetLabels(), readMeta.GetLabels()) {
-			labels := readMeta.GetLabels()
-			for k, v := range desiredMeta.GetLabels() {
-				labels[k] = v
-			}
-			// Set merged labels on desired object as that's the one we write
-			// in update.
-			desiredMeta.SetLabels(labels)
-			updateNeeded = true
-		}
-
-		if !cmp.Equal(desiredMeta.GetAnnotations(), readMeta.GetAnnotations()) {
-			annotations := readMeta.GetAnnotations()
-			for k, v := range desiredMeta.GetAnnotations() {
-				annotations[k] = v
-			}
-			// Set merged labels on desired object as that's the one we write
-			// in update.
-			desiredMeta.SetAnnotations(annotations)
-			updateNeeded = true
-		}
-
-		if !cmp.Equal(desired, readCR, cmpopts.IgnoreTypes(&metav1.ObjectMeta{}), cmpopts.IgnoreTypes(&metav1.TypeMeta{})) {
-			updateNeeded = true
 		}
 
 		if updateNeeded {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found that %s %s needs updating", desiredType.GetKind(), nsName.String()))
 
+			merged, err := m.mergeFunc(readCR, m.obj)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			readMeta, err := meta.Accessor(readCR)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			mergedMeta, err := meta.Accessor(merged)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
 			// Copy read CR's resource version to update object for optimistic
 			// locking.
-			desiredMeta.SetResourceVersion(readMeta.GetResourceVersion())
+			mergedMeta.SetResourceVersion(readMeta.GetResourceVersion())
 
-			err = r.ctrlClient.Update(ctx, desired)
+			err = r.ctrlClient.Update(ctx, merged)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -289,6 +293,109 @@ func (r *Resource) updateCRs(ctx context.Context, desiredCRs []runtime.Object) e
 	}
 
 	return nil
+}
+
+func detectAzureClusterUpdate(orig, desired runtime.Object) (bool, error) {
+	o := orig.(*capzv1alpha3.AzureCluster)
+	d := desired.(*capzv1alpha3.AzureCluster)
+
+	if !cmp.Equal(d.GetLabels(), o.GetLabels()) {
+		return true, nil
+	}
+
+	if !cmp.Equal(d.GetAnnotations(), o.GetAnnotations()) {
+		return true, nil
+	}
+
+	if !cmp.Equal(d, o, cmpopts.IgnoreTypes(&metav1.ObjectMeta{}), cmpopts.IgnoreTypes(&metav1.TypeMeta{}, cmpopts.IgnoreTypes(&capzv1alpha3.Subnets{}))) {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func mergeAzureCluster(orig, desired runtime.Object) (runtime.Object, error) {
+	o := orig.(*capzv1alpha3.AzureCluster)
+	d := desired.(*capzv1alpha3.AzureCluster)
+
+	labels := o.GetLabels()
+	for k, v := range d.GetLabels() {
+		labels[k] = v
+	}
+	// Set merged labels on desired object as that's the one we write
+	// in update.
+	d.SetLabels(labels)
+
+	annotations := o.GetAnnotations()
+	for k, v := range d.GetAnnotations() {
+		annotations[k] = v
+	}
+	// Set merged labels on desired object as that's the one we write
+	// in update.
+	d.SetAnnotations(annotations)
+
+	// Maintain existing subnets.
+	d.Spec.NetworkSpec.Subnets = o.Spec.NetworkSpec.Subnets
+
+	return d, nil
+}
+
+func genericUpdateDetection(orig, desired runtime.Object) (bool, error) {
+	// Acquire accessors for ObjectMeta fields of CR.
+	desiredMeta, err := meta.Accessor(desired)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	readMeta, err := meta.Accessor(orig)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	if !cmp.Equal(desiredMeta.GetLabels(), readMeta.GetLabels()) {
+		return true, nil
+	}
+
+	if !cmp.Equal(desiredMeta.GetAnnotations(), readMeta.GetAnnotations()) {
+		return true, nil
+	}
+
+	if !cmp.Equal(desired, orig, cmpopts.IgnoreTypes(&metav1.ObjectMeta{}), cmpopts.IgnoreTypes(&metav1.TypeMeta{})) {
+		return true, nil
+	}
+
+	return false, nil
+}
+
+func genericObjectMerge(orig, desired runtime.Object) (runtime.Object, error) {
+	// Acquire accessors for ObjectMeta fields of CR.
+	desiredMeta, err := meta.Accessor(desired)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	readMeta, err := meta.Accessor(orig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	labels := readMeta.GetLabels()
+	for k, v := range desiredMeta.GetLabels() {
+		labels[k] = v
+	}
+	// Set merged labels on desired object as that's the one we write
+	// in update.
+	desiredMeta.SetLabels(labels)
+
+	annotations := readMeta.GetAnnotations()
+	for k, v := range desiredMeta.GetAnnotations() {
+		annotations[k] = v
+	}
+	// Set merged labels on desired object as that's the one we write
+	// in update.
+	desiredMeta.SetAnnotations(annotations)
+
+	return desired, nil
 }
 
 func toInt32P(v int32) *int32 {
