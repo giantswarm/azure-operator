@@ -55,7 +55,7 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 }
 
 func (p *Provider) GetClusterAZs(ctx context.Context) ([]string, error) {
-	vmss, err := p.azureClient.VirtualMachineScaleSetsClient.Get(ctx, p.clusterID, fmt.Sprintf("%s-worker-%s", p.clusterID, p.clusterID))
+	vmss, err := p.azureClient.VirtualMachineScaleSetsClient.Get(ctx, p.clusterID, fmt.Sprintf("nodepool-%s", p.clusterID))
 	if err != nil {
 		return []string{}, microerror.Mask(err)
 	}
