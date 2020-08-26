@@ -18,6 +18,9 @@ const (
 	DefaultRandomizeClusterID = false
 	DefaultTestedVersion      = "wip"
 
+	// MaxClusterIDPrefixLength is set to 15 due to limitations for some Azure resource names (like storage account)
+	MaxClusterIDPrefixAndTestedVersionLength = 15
+
 	EnvVarCircleSHA               = "CIRCLE_SHA1" // #nosec
 	EnvVarClusterIDPrefix         = "CLUSTER_ID_PREFIX"
 	EnvVarKeepResources           = "KEEP_RESOURCES"
@@ -61,13 +64,6 @@ func init() {
 		randomizeClusterID = randomizeClusterIDEnvVar
 	}
 
-	clusterIDPrefix = os.Getenv(EnvVarClusterIDPrefix)
-	if clusterIDPrefix == "" {
-		// Default cluster ID prefix is always the same for CI
-		clusterIDPrefix = DefaultClusterIDPrefix
-		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarClusterIDPrefix, DefaultClusterIDPrefix)
-	}
-
 	if randomizeClusterID {
 		randomPrefixPart := entityid.Generate()
 		clusterIDPrefix = fmt.Sprintf("%s-%s", clusterIDPrefix, randomPrefixPart)
@@ -85,6 +81,17 @@ func init() {
 	if testedVersion == "" {
 		testedVersion = DefaultTestedVersion
 		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarTestedVersion, DefaultTestedVersion)
+	}
+
+	clusterIDPrefix = os.Getenv(EnvVarClusterIDPrefix)
+	if clusterIDPrefix == "" {
+		// Default cluster ID prefix is always the same for CI
+		clusterIDPrefix = DefaultClusterIDPrefix
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarClusterIDPrefix, DefaultClusterIDPrefix)
+	}
+
+	if randomizeClusterID && (len(clusterIDPrefix)+len(testedVersion) > MaxClusterIDPrefixAndTestedVersionLength) {
+		panic(fmt.Sprintf("Max length for cluster ID prefix (%s) + tested version (%s) version, when combined, is %d due to Azure resource name limitations (e.g. storage account name)", clusterIDPrefix, testedVersion, MaxClusterIDPrefixAndTestedVersionLength))
 	}
 
 	testDir = os.Getenv(EnvVarTestDir)
@@ -134,9 +141,12 @@ func ClusterID() string {
 
 	parts = append(parts, clusterIDPrefix)
 	parts = append(parts, TestedVersion()[0:3])
-	parts = append(parts, CircleSHA()[0:5])
-	if TestHash() != "" {
-		parts = append(parts, TestHash())
+
+	if !RandomizeClusterID() {
+		parts = append(parts, CircleSHA()[0:5])
+		if TestHash() != "" {
+			parts = append(parts, TestHash())
+		}
 	}
 
 	return strings.Join(parts, "-")
@@ -160,6 +170,10 @@ func NodePoolID() string {
 	}
 
 	return nodepoolID
+}
+
+func RandomizeClusterID() bool {
+	return randomizeClusterID
 }
 
 func TestedVersion() string {
