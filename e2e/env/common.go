@@ -3,59 +3,75 @@ package env
 import (
 	"crypto/sha256"
 	"fmt"
-	"math/rand"
 	"os"
-	"regexp"
 	"strconv"
 	"strings"
-	"time"
 
 	"github.com/giantswarm/versionbundle"
 
+	"github.com/giantswarm/azure-operator/v4/e2e/entityid"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 )
 
 const (
-	DefaultTestedVersion = "wip"
+	DefaultClusterIDPrefix    = "ci"
+	DefaultRandomizeClusterID = false
+	DefaultTestedVersion      = "wip"
 
 	EnvVarCircleSHA               = "CIRCLE_SHA1" // #nosec
+	EnvVarClusterIDPrefix         = "CLUSTER_ID_PREFIX"
 	EnvVarKeepResources           = "KEEP_RESOURCES"
 	EnvVarOperatorHelmTarballPath = "OPERATOR_HELM_TARBALL_PATH"
+	EnvVarRandomizeClusterID      = "RANDOMIZE_CLUSTER_ID"
 	EnvVarTestedVersion           = "TESTED_VERSION"
 	EnvVarTestDir                 = "TEST_DIR"
 	EnvVarVersionBundleVersion    = "VERSION_BUNDLE_VERSION"
 	EnvVarLogAnalyticsWorkspaceID = "LOG_ANALYTICS_WORKSPACE_ID"
 	EnvVarLogAnalyticsSharedKey   = "LOG_ANALYTICS_SHARED_KEY"
-
-	// idChars represents the character set used to generate node pool IDs.
-	// (does not contain 1 and l, to avoid confusion)
-	idChars = "023456789abcdefghijkmnopqrstuvwxyz"
-
-	// idLength represents the number of characters used to create a node pool ID.
-	idLength = 5
 )
 
 var (
 	circleSHA               string
+	clusterIDPrefix         string
 	logAnalyticsWorkspaceID string
 	logAnalyticsSharedKey   string
 	nodepoolID              string
 	operatorTarballPath     string
+	randomizeClusterID      bool
 	testDir                 string
 	testedVersion           string
 	keepResources           string
 	versionBundleVersion    string
 )
 
-var (
-	// Use local instance of RNG. Can be overwritten with fixed seed in tests
-	// if needed.
-	localRng = rand.New(rand.NewSource(time.Now().UnixNano()))
-)
-
 func init() {
 	keepResources = os.Getenv(EnvVarKeepResources)
 	operatorTarballPath = os.Getenv(EnvVarOperatorHelmTarballPath)
+
+	randomizeClusterIDString := os.Getenv(EnvVarRandomizeClusterID)
+	if randomizeClusterIDString == "" {
+		randomizeClusterID = DefaultRandomizeClusterID
+		fmt.Printf("No value found in '%s': using default value %t\n", EnvVarRandomizeClusterID, DefaultRandomizeClusterID)
+	} else {
+		randomizeClusterIDEnvVar, err := strconv.ParseBool(randomizeClusterIDString)
+		if err != nil {
+			panic(fmt.Sprintf("Error while converting provided env var %s value %q to boolean\n", EnvVarRandomizeClusterID, randomizeClusterIDString))
+		}
+
+		randomizeClusterID = randomizeClusterIDEnvVar
+	}
+
+	clusterIDPrefix = os.Getenv(EnvVarClusterIDPrefix)
+	if clusterIDPrefix == "" {
+		// Default cluster ID prefix is always the same for CI
+		clusterIDPrefix = DefaultClusterIDPrefix
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarClusterIDPrefix, DefaultClusterIDPrefix)
+	}
+
+	if randomizeClusterID {
+		randomPrefixPart := entityid.Generate()
+		clusterIDPrefix = fmt.Sprintf("%s-%s", clusterIDPrefix, randomPrefixPart)
+	}
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)
 	if circleSHA == "" {
@@ -116,7 +132,7 @@ func OperatorHelmTarballPath() string {
 func ClusterID() string {
 	var parts []string
 
-	parts = append(parts, "ci")
+	parts = append(parts, clusterIDPrefix)
 	parts = append(parts, TestedVersion()[0:3])
 	parts = append(parts, CircleSHA()[0:5])
 	if TestHash() != "" {
@@ -138,34 +154,9 @@ func LogAnalyticsSharedKey() string {
 	return logAnalyticsSharedKey
 }
 
-func NewRandomEntityID() string {
-	pattern := regexp.MustCompile("^[a-z]+$")
-	for {
-		letterRunes := []rune(idChars)
-		b := make([]rune, idLength)
-		for i := range b {
-			b[i] = letterRunes[localRng.Intn(len(letterRunes))]
-		}
-
-		id := string(b)
-
-		if _, err := strconv.Atoi(id); err == nil {
-			// string is numbers only, which we want to avoid
-			continue
-		}
-
-		if pattern.MatchString(id) {
-			// strings is letters only, which we also avoid
-			continue
-		}
-
-		return id
-	}
-}
-
 func NodePoolID() string {
 	if nodepoolID == "" {
-		nodepoolID = NewRandomEntityID()
+		nodepoolID = entityid.Generate()
 	}
 
 	return nodepoolID
