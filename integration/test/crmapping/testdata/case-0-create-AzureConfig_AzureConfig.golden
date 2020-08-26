@@ -73,7 +73,7 @@ spec:
       kubelet:
         altNames: ""
         domain: worker.c6fme.k8s.ghost.westeurope.azure.gigantic.io
-        labels: azure-operator.giantswarm.io/version=4.2.0,giantswarm.io/provider=azure
+        labels: giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=4.2.0
         port: 0
       networkSetup:
         docker:
@@ -106,7 +106,7 @@ status:
       desiredCapacity: 0
     versions:
     - date: null
-      lastTransitionTime: "2020-08-13T04:41:17Z"
+      lastTransitionTime: "2020-08-25T12:25:51Z"
       semver: 4.2.0
   provider:
     ingress:
