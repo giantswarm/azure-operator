@@ -4,19 +4,25 @@ import (
 	"crypto/sha256"
 	"fmt"
 	"os"
+	"strconv"
 	"strings"
 
 	"github.com/giantswarm/versionbundle"
 
+	"github.com/giantswarm/azure-operator/v4/e2e/entityid"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 )
 
 const (
-	DefaultTestedVersion = "wip"
+	DefaultClusterIDPrefix    = "ci"
+	DefaultRandomizeClusterID = false
+	DefaultTestedVersion      = "wip"
 
 	EnvVarCircleSHA               = "CIRCLE_SHA1" // #nosec
+	EnvVarClusterIDPrefix         = "CLUSTER_ID_PREFIX"
 	EnvVarKeepResources           = "KEEP_RESOURCES"
 	EnvVarOperatorHelmTarballPath = "OPERATOR_HELM_TARBALL_PATH"
+	EnvVarRandomizeClusterID      = "RANDOMIZE_CLUSTER_ID"
 	EnvVarTestedVersion           = "TESTED_VERSION"
 	EnvVarTestDir                 = "TEST_DIR"
 	EnvVarVersionBundleVersion    = "VERSION_BUNDLE_VERSION"
@@ -26,9 +32,11 @@ const (
 
 var (
 	circleSHA               string
+	clusterIDPrefix         string
 	logAnalyticsWorkspaceID string
 	logAnalyticsSharedKey   string
 	operatorTarballPath     string
+	randomizeClusterID      bool
 	testDir                 string
 	testedVersion           string
 	keepResources           string
@@ -38,6 +46,31 @@ var (
 func init() {
 	keepResources = os.Getenv(EnvVarKeepResources)
 	operatorTarballPath = os.Getenv(EnvVarOperatorHelmTarballPath)
+
+	randomizeClusterIDString := os.Getenv(EnvVarRandomizeClusterID)
+	if randomizeClusterIDString == "" {
+		randomizeClusterID = DefaultRandomizeClusterID
+		fmt.Printf("No value found in '%s': using default value %t\n", EnvVarRandomizeClusterID, DefaultRandomizeClusterID)
+	} else {
+		randomizeClusterIDEnvVar, err := strconv.ParseBool(randomizeClusterIDString)
+		if err != nil {
+			panic(fmt.Sprintf("Error while converting provided env var %s value %q to boolean\n", EnvVarRandomizeClusterID, randomizeClusterIDString))
+		}
+
+		randomizeClusterID = randomizeClusterIDEnvVar
+	}
+
+	clusterIDPrefix = os.Getenv(EnvVarClusterIDPrefix)
+	if clusterIDPrefix == "" {
+		// Default cluster ID prefix is always the same for CI
+		clusterIDPrefix = DefaultClusterIDPrefix
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarClusterIDPrefix, DefaultClusterIDPrefix)
+	}
+
+	if randomizeClusterID {
+		randomPrefixPart := entityid.New()
+		clusterIDPrefix = fmt.Sprintf("%s-%s", clusterIDPrefix, randomPrefixPart)
+	}
 
 	circleSHA = os.Getenv(EnvVarCircleSHA)
 	if circleSHA == "" {
@@ -94,7 +127,7 @@ func OperatorHelmTarballPath() string {
 func ClusterID() string {
 	var parts []string
 
-	parts = append(parts, "ci")
+	parts = append(parts, clusterIDPrefix)
 	parts = append(parts, TestedVersion()[0:3])
 	parts = append(parts, CircleSHA()[0:5])
 	if TestHash() != "" {

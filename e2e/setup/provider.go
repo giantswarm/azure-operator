@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"math/rand"
-	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -28,6 +25,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v4/e2e/entityid"
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
 	"github.com/giantswarm/azure-operator/v4/e2e/key"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
@@ -98,19 +96,6 @@ Installation:
                 uri:
                   version: %s
 `
-
-	// idChars represents the character set used to generate cluster IDs.
-	// (does not contain 1 and l, to avoid confusion)
-	idChars = "023456789abcdefghijkmnopqrstuvwxyz"
-
-	// idLength represents the number of characters used to create a cluster ID.
-	idLength = 5
-)
-
-var (
-	// Use local instance of RNG. Can be overwritten with fixed seed in tests
-	// if needed.
-	localRng = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 // provider installs the operator and tenant cluster CR.
@@ -430,7 +415,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 
 		for ; retries < maxIDGenRetries; retries++ {
 			// Generate internal MachinePool ID.
-			machinePoolID = NewRandomEntityID()
+			machinePoolID = entityid.New()
 
 			azureMachinePool = &expcapzv1alpha3.AzureMachinePool{
 				TypeMeta: metav1.TypeMeta{
@@ -556,29 +541,4 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	}
 
 	return nil
-}
-
-func NewRandomEntityID() string {
-	pattern := regexp.MustCompile("^[a-z]+$")
-	for {
-		letterRunes := []rune(idChars)
-		b := make([]rune, idLength)
-		for i := range b {
-			b[i] = letterRunes[localRng.Intn(len(letterRunes))]
-		}
-
-		id := string(b)
-
-		if _, err := strconv.Atoi(id); err == nil {
-			// string is numbers only, which we want to avoid
-			continue
-		}
-
-		if pattern.MatchString(id) {
-			// strings is letters only, which we also avoid
-			continue
-		}
-
-		return id
-	}
 }
