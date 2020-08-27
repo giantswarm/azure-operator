@@ -3,8 +3,12 @@ package env
 import (
 	"crypto/sha256"
 	"fmt"
+	"math/rand"
 	"os"
+	"regexp"
+	"strconv"
 	"strings"
+	"time"
 
 	"github.com/giantswarm/versionbundle"
 
@@ -22,17 +26,31 @@ const (
 	EnvVarVersionBundleVersion    = "VERSION_BUNDLE_VERSION"
 	EnvVarLogAnalyticsWorkspaceID = "LOG_ANALYTICS_WORKSPACE_ID"
 	EnvVarLogAnalyticsSharedKey   = "LOG_ANALYTICS_SHARED_KEY"
+
+	// idChars represents the character set used to generate node pool IDs.
+	// (does not contain 1 and l, to avoid confusion)
+	idChars = "023456789abcdefghijkmnopqrstuvwxyz"
+
+	// idLength represents the number of characters used to create a node pool ID.
+	idLength = 5
 )
 
 var (
 	circleSHA               string
 	logAnalyticsWorkspaceID string
 	logAnalyticsSharedKey   string
+	nodepoolID              string
 	operatorTarballPath     string
 	testDir                 string
 	testedVersion           string
 	keepResources           string
 	versionBundleVersion    string
+)
+
+var (
+	// Use local instance of RNG. Can be overwritten with fixed seed in tests
+	// if needed.
+	localRng = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 func init() {
@@ -55,11 +73,12 @@ func init() {
 
 	testDir = os.Getenv(EnvVarTestDir)
 
-	// TODO(xh3b4sd) this can be changed after the revamp of the e2e templates. I
-	// have this on my list.
 	clusterID := os.Getenv("CLUSTER_NAME")
 	if clusterID == "" {
-		os.Setenv("CLUSTER_NAME", ClusterID())
+		err := os.Setenv("CLUSTER_NAME", ClusterID())
+		if err != nil {
+			panic(err)
+		}
 	}
 
 	{
@@ -72,7 +91,10 @@ func init() {
 			versionBundleVersion = vbs[len(vbs)-2].Version
 		}
 	}
-	os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
+	err := os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
+	if err != nil {
+		panic(err)
+	}
 }
 
 func CircleSHA() string {
@@ -114,6 +136,39 @@ func LogAnalyticsWorkspaceID() string {
 
 func LogAnalyticsSharedKey() string {
 	return logAnalyticsSharedKey
+}
+
+func NewRandomEntityID() string {
+	pattern := regexp.MustCompile("^[a-z]+$")
+	for {
+		letterRunes := []rune(idChars)
+		b := make([]rune, idLength)
+		for i := range b {
+			b[i] = letterRunes[localRng.Intn(len(letterRunes))]
+		}
+
+		id := string(b)
+
+		if _, err := strconv.Atoi(id); err == nil {
+			// string is numbers only, which we want to avoid
+			continue
+		}
+
+		if pattern.MatchString(id) {
+			// strings is letters only, which we also avoid
+			continue
+		}
+
+		return id
+	}
+}
+
+func NodePoolID() string {
+	if nodepoolID == "" {
+		nodepoolID = NewRandomEntityID()
+	}
+
+	return nodepoolID
 }
 
 func TestedVersion() string {

@@ -4,9 +4,6 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
-	"math/rand"
-	"regexp"
-	"strconv"
 	"strings"
 	"time"
 
@@ -98,19 +95,6 @@ Installation:
                 uri:
                   version: %s
 `
-
-	// idChars represents the character set used to generate cluster IDs.
-	// (does not contain 1 and l, to avoid confusion)
-	idChars = "023456789abcdefghijkmnopqrstuvwxyz"
-
-	// idLength represents the number of characters used to create a cluster ID.
-	idLength = 5
-)
-
-var (
-	// Use local instance of RNG. Can be overwritten with fixed seed in tests
-	// if needed.
-	localRng = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
 // provider installs the operator and tenant cluster CR.
@@ -420,31 +404,26 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 	}
 
-	var machinePoolID string
 	machinePoolName := "e2e test node pool"
 	var azureMachinePool *expcapzv1alpha3.AzureMachinePool
-
 	{
 		const maxIDGenRetries = 5
 		var retries int
 
 		for ; retries < maxIDGenRetries; retries++ {
-			// Generate internal MachinePool ID.
-			machinePoolID = NewRandomEntityID()
-
 			azureMachinePool = &expcapzv1alpha3.AzureMachinePool{
 				TypeMeta: metav1.TypeMeta{
 					APIVersion: expcapzv1alpha3.GroupVersion.String(),
 					Kind:       "AzureMachinePool",
 				},
 				ObjectMeta: metav1.ObjectMeta{
-					Name:      machinePoolID,
+					Name:      env.NodePoolID(),
 					Namespace: metav1.NamespaceDefault,
 					Labels: map[string]string{
 						capiv1alpha3.ClusterLabelName: env.ClusterID(),
 						label.AzureOperatorVersion:    operatorVersion,
 						label.Cluster:                 env.ClusterID(),
-						label.MachinePool:             machinePoolID,
+						label.MachinePool:             env.NodePoolID(),
 						label.Organization:            organization,
 						label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 					},
@@ -498,14 +477,14 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Kind:       "MachinePool",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      machinePoolID,
+				Name:      env.NodePoolID(),
 				Namespace: azureMachinePool.Namespace,
 				Labels: map[string]string{
 					capiv1alpha3.ClusterLabelName: env.ClusterID(),
 					label.AzureOperatorVersion:    operatorVersion,
 					label.Cluster:                 env.ClusterID(),
 					label.ClusterOperatorVersion:  clusterOperatorVersion,
-					label.MachinePool:             machinePoolID,
+					label.MachinePool:             env.NodePoolID(),
 					label.Organization:            organization,
 					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
@@ -539,7 +518,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Kind:       "Spark",
 			},
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      machinePoolID,
+				Name:      env.NodePoolID(),
 				Namespace: azureMachinePool.Namespace,
 				Labels: map[string]string{
 					capiv1alpha3.ClusterLabelName: env.ClusterID(),
@@ -556,29 +535,4 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	}
 
 	return nil
-}
-
-func NewRandomEntityID() string {
-	pattern := regexp.MustCompile("^[a-z]+$")
-	for {
-		letterRunes := []rune(idChars)
-		b := make([]rune, idLength)
-		for i := range b {
-			b[i] = letterRunes[localRng.Intn(len(letterRunes))]
-		}
-
-		id := string(b)
-
-		if _, err := strconv.Atoi(id); err == nil {
-			// string is numbers only, which we want to avoid
-			continue
-		}
-
-		if pattern.MatchString(id) {
-			// strings is letters only, which we also avoid
-			continue
-		}
-
-		return id
-	}
 }
