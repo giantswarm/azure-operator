@@ -467,7 +467,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var mastersResource resource.Interface
 	{
 		c := masters.Config{
-			Config: nodesConfig,
+			Config:     nodesConfig,
+			CtrlClient: config.K8sClient.CtrlClient(),
 		}
 
 		mastersResource, err = masters.New(c)
