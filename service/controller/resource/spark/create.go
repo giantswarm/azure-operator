@@ -218,7 +218,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		m := sync.Mutex{}
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.APICert)
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.APICert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -230,7 +230,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.CalicoEtcdClientCert)
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.CalicoEtcdClientCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -243,7 +243,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.EtcdCert)
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.EtcdCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -255,7 +255,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.ServiceAccountCert)
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.ServiceAccountCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -267,7 +267,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(cluster), certs.WorkerCert)
+			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.WorkerCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -442,7 +442,7 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 	azureConfig.Labels = make(map[string]string)
 
 	{
-		azureConfig.ObjectMeta.Name = key.ClusterID(cluster)
+		azureConfig.ObjectMeta.Name = key.ClusterName(cluster)
 		azureConfig.ObjectMeta.Namespace = cluster.Namespace
 	}
 
@@ -458,8 +458,8 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 	}
 
 	{
-		azureConfig.Labels[label.Cluster] = key.ClusterID(cluster)
-		azureConfig.Labels[label.XCluster] = key.ClusterID(cluster)
+		azureConfig.Labels[label.Cluster] = key.ClusterName(cluster)
+		azureConfig.Labels[capiv1alpha3.ClusterLabelName] = key.ClusterName(cluster)
 		azureConfig.Labels[label.Organization] = key.OrganizationID(cluster)
 		azureConfig.Labels[label.ReleaseVersion] = key.ReleaseVersion(cluster)
 		azureConfig.Labels[label.OperatorVersion] = key.OperatorVersion(azureCluster)
@@ -539,7 +539,7 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 	}
 
 	{
-		commonCluster.ID = key.ClusterID(cluster)
+		commonCluster.ID = key.ClusterName(cluster)
 	}
 
 	{
