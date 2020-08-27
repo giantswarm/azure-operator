@@ -152,8 +152,8 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 		return microerror.Mask(natGatewayNotReadyError)
 	}
 
-	for _, allocatedSubnet := range azureCluster.Spec.NetworkSpec.Subnets {
-		deploymentName := getSubnetARMDeploymentName(allocatedSubnet.Name)
+	for i := 0; i < len(azureCluster.Spec.NetworkSpec.Subnets); i++ {
+		deploymentName := getSubnetARMDeploymentName(azureCluster.Spec.NetworkSpec.Subnets[i].Name)
 		currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureCluster), deploymentName)
 		if IsNotFound(err) {
 			// fallthrough
@@ -161,7 +161,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 			return microerror.Mask(err)
 		}
 
-		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&azureCluster), strconv.FormatInt(azureCluster.ObjectMeta.Generation, 10), azureCluster.Spec.NetworkSpec.Vnet.Name, *natGw.ID, allocatedSubnet)
+		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&azureCluster), strconv.FormatInt(azureCluster.ObjectMeta.Generation, 10), azureCluster.Spec.NetworkSpec.Vnet.Name, *natGw.ID, azureCluster.Spec.NetworkSpec.Subnets[i])
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -216,7 +216,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 				return microerror.Mask(err)
 			}
 
-			allocatedSubnet.ID = subnetID
+			azureCluster.Spec.NetworkSpec.Subnets[i].ID = subnetID
 
 			storageAccount, err := storageAccountsClient.GetProperties(ctx, key.ClusterID(&azureCluster), key.StorageAccountName(&azureCluster), "")
 			if err != nil {
