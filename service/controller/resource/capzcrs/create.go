@@ -101,7 +101,7 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.ClusterOperatorVersion:  cr.Labels[label.ClusterOperatorVersion],
 				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
 				label.Organization:            key.OrganizationID(&cr),
 				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
@@ -138,7 +138,7 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 			Labels: map[string]string{
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
 				label.Organization:            key.OrganizationID(&cr),
 				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
@@ -181,7 +181,7 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 			Labels: map[string]string{
 				label.AzureOperatorVersion:                key.OperatorVersion(&cr),
 				label.Cluster:                             key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName:             key.ClusterID(&cr),
+				capiv1alpha3.ClusterLabelName:             key.ClusterName(&cr),
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
 				label.Organization:                        key.OrganizationID(&cr),
 				label.ReleaseVersion:                      key.ReleaseVersion(&cr),
