@@ -35,6 +35,7 @@ const (
 
 var (
 	circleSHA               string
+	clusterID               string
 	clusterIDPrefix         string
 	logAnalyticsWorkspaceID string
 	logAnalyticsSharedKey   string
@@ -85,27 +86,7 @@ func init() {
 		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarClusterIDPrefix, DefaultClusterIDPrefix)
 	}
 
-	if randomizeClusterID {
-		randomPrefixPart := entityid.New()
-		clusterIDPrefix = fmt.Sprintf("%s-%s", clusterIDPrefix, randomPrefixPart)
-	}
-
-	if randomizeClusterID && (len(clusterIDPrefix)+len(testedVersion) > MaxClusterIDPrefixAndTestedVersionLength) {
-		panic(fmt.Sprintf(
-			"Max length for cluster ID prefix (%s) + tested version (%s) version, when combined, "+
-				"is %d due to Azure resource name limitations (e.g. storage account name). Try passing a shorter prefix in '%s'.",
-			clusterIDPrefix, testedVersion, MaxClusterIDPrefixAndTestedVersionLength, EnvVarClusterIDPrefix))
-	}
-
 	testDir = os.Getenv(EnvVarTestDir)
-
-	clusterID := os.Getenv("CLUSTER_NAME")
-	if clusterID == "" {
-		err := os.Setenv("CLUSTER_NAME", ClusterID())
-		if err != nil {
-			panic(err)
-		}
-	}
 
 	{
 		switch testedVersion {
@@ -117,9 +98,48 @@ func init() {
 			versionBundleVersion = vbs[len(vbs)-2].Version
 		}
 	}
+
 	err := os.Setenv(EnvVarVersionBundleVersion, VersionBundleVersion())
 	if err != nil {
 		panic(err)
+	}
+
+	clusterID := os.Getenv("CLUSTER_NAME")
+	if clusterID == "" {
+		var parts []string
+
+		// default "ci", can override with CLUSTER_ID_PREFIX env var
+		parts = append(parts, clusterIDPrefix)
+
+		// default "false", enable randomization by setting RANDOMIZE_CLUSTER_ID env var to true
+		if randomizeClusterID {
+			parts = append(parts, entityid.Generate())
+		}
+
+		// verify max length of the cluster ID
+		if randomizeClusterID && (len(clusterIDPrefix)+len(testedVersion) > MaxClusterIDPrefixAndTestedVersionLength) {
+			panic(fmt.Sprintf(
+				"Max length for cluster ID prefix (%s) + tested version (%s) version, when combined, "+
+					"is %d due to Azure resource name limitations (e.g. storage account name). Try passing a shorter prefix in '%s'.",
+				clusterIDPrefix, testedVersion, MaxClusterIDPrefixAndTestedVersionLength, EnvVarClusterIDPrefix))
+		}
+
+		// default "wip", can override with TESTED_VERSION env var
+		parts = append(parts, testedVersion[0:3])
+
+		// for deterministic cluster ID, append commit hash and test name hash
+		if !randomizeClusterID {
+			parts = append(parts, circleSHA[0:5])
+			if TestHash() != "" {
+				parts = append(parts, TestHash())
+			}
+		}
+
+		clusterID = strings.Join(parts, "-")
+		os.Setenv("CLUSTER_NAME", clusterID)
+		if err != nil {
+			panic(err)
+		}
 	}
 }
 
@@ -139,20 +159,18 @@ func OperatorHelmTarballPath() string {
 //     3cc75 is the Git SHA.
 //     5e958 is a hash of the e2e test dir, if any.
 //
+// You can set CLUSTER_ID_PREFIX environment variable to replace "ci" prefix
+// with a custom value, for example jane-wip-3cc75-5e958.
+//
+// You can also set RANDOMIZE_CLUSTER_ID environment variable to true, and you
+// will get a random cluster ID every time, for example jane-d12q5-wip, where
+// d12q5 are randomly generated 5 characters.
+//
+// You can set CLUSTER_NAME environment variable if you want a fully custom
+// cluster ID.
+//
 func ClusterID() string {
-	var parts []string
-
-	parts = append(parts, clusterIDPrefix)
-	parts = append(parts, TestedVersion()[0:3])
-
-	if !RandomizeClusterID() {
-		parts = append(parts, CircleSHA()[0:5])
-		if TestHash() != "" {
-			parts = append(parts, TestHash())
-		}
-	}
-
-	return strings.Join(parts, "-")
+	return clusterID
 }
 
 func KeepResources() string {

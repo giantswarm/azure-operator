@@ -22,7 +22,7 @@ var (
 	localRng = rand.New(rand.NewSource(time.Now().UnixNano()))
 )
 
-func New() string {
+func Generate() string {
 	pattern := regexp.MustCompile("^[a-z]+$")
 	for {
 		letterRunes := []rune(idChars)
