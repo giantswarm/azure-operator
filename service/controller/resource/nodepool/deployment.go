@@ -104,6 +104,10 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, string, error) {
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		if azureMachinePool.Name == subnet.Name {
+			if subnet.ID == "" {
+				return "", "", microerror.Maskf(subnetNotReadyError, fmt.Sprintf("Subnet %#q ID field is empty, which means the Subnet is not Ready", subnet.Name))
+			}
+
 			return azureCluster.Spec.NetworkSpec.Vnet.Name, subnet.Name, nil
 		}
 	}

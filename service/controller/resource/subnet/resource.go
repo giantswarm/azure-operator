@@ -15,6 +15,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -151,8 +152,8 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 		return microerror.Mask(natGatewayNotReadyError)
 	}
 
-	for _, allocatedSubnet := range azureCluster.Spec.NetworkSpec.Subnets {
-		deploymentName := getSubnetARMDeploymentName(allocatedSubnet.Name)
+	for i := 0; i < len(azureCluster.Spec.NetworkSpec.Subnets); i++ {
+		deploymentName := getSubnetARMDeploymentName(azureCluster.Spec.NetworkSpec.Subnets[i].Name)
 		currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureCluster), deploymentName)
 		if IsNotFound(err) {
 			// fallthrough
@@ -160,7 +161,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 			return microerror.Mask(err)
 		}
 
-		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&azureCluster), strconv.FormatInt(azureCluster.ObjectMeta.Generation, 10), azureCluster.Spec.NetworkSpec.Vnet.Name, *natGw.ID, allocatedSubnet)
+		parameters, err := r.getDeploymentParameters(ctx, key.ClusterID(&azureCluster), strconv.FormatInt(azureCluster.ObjectMeta.Generation, 10), azureCluster.Spec.NetworkSpec.Vnet.Name, *natGw.ID, azureCluster.Spec.NetworkSpec.Subnets[i])
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -215,6 +216,8 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 				return microerror.Mask(err)
 			}
 
+			azureCluster.Spec.NetworkSpec.Subnets[i].ID = subnetID
+
 			storageAccount, err := storageAccountsClient.GetProperties(ctx, key.ClusterID(&azureCluster), key.StorageAccountName(&azureCluster), "")
 			if err != nil {
 				return microerror.Mask(err)
@@ -231,6 +234,16 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 				r.logger.LogCtx(ctx, "level", "debug", "message", "Ensured subnet is allowed into storage account")
 			}
 		}
+	}
+
+	// Update AzureCluster so that subnet.ID is saved.
+	err = r.ctrlClient.Update(ctx, &azureCluster)
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
 	}
 
 	return nil
