@@ -40,7 +40,8 @@ func TestThatAzureClusterIsLabeledWithClusterId(t *testing.T) {
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 			Labels: map[string]string{
-				label.Cluster: clusterName,
+				label.Cluster:                 clusterName,
+				capiv1alpha3.ClusterLabelName: clusterName,
 			},
 		},
 		Spec: capiv1alpha3.ClusterSpec{
@@ -104,7 +105,8 @@ func TestThatAzureClusterIsOwnedByCluster(t *testing.T) {
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 			Labels: map[string]string{
-				label.Cluster: clusterName,
+				label.Cluster:                 clusterName,
+				capiv1alpha3.ClusterLabelName: clusterName,
 			},
 		},
 		Spec: capiv1alpha3.ClusterSpec{
@@ -140,7 +142,8 @@ func TestThatMachinePoolIsOwnedByCluster(t *testing.T) {
 			Namespace: clusterNamespace,
 			Name:      clusterName,
 			Labels: map[string]string{
-				label.Cluster: clusterName,
+				label.Cluster:                 clusterName,
+				capiv1alpha3.ClusterLabelName: clusterName,
 			},
 		},
 		Spec: capiv1alpha3.ClusterSpec{

@@ -113,7 +113,7 @@ func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiv1a
 
 func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
 	}
 	mpList := new(expcapiv1alpha3.MachinePoolList)
 	err := r.ctrlClient.List(ctx, mpList, o)
