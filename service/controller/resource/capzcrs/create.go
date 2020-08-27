@@ -101,7 +101,7 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.ClusterOperatorVersion:  cr.Labels[label.ClusterOperatorVersion],
 				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+				capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 				label.Organization:            key.OrganizationID(&cr),
 				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
