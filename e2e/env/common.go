@@ -91,7 +91,10 @@ func init() {
 	}
 
 	if randomizeClusterID && (len(clusterIDPrefix)+len(testedVersion) > MaxClusterIDPrefixAndTestedVersionLength) {
-		panic(fmt.Sprintf("Max length for cluster ID prefix (%s) + tested version (%s) version, when combined, is %d due to Azure resource name limitations (e.g. storage account name)", clusterIDPrefix, testedVersion, MaxClusterIDPrefixAndTestedVersionLength))
+		panic(fmt.Sprintf(
+			"Max length for cluster ID prefix (%s) + tested version (%s) version, when combined, "+
+				"is %d due to Azure resource name limitations (e.g. storage account name). Try passing a shorter prefix in '%s'.",
+			clusterIDPrefix, testedVersion, MaxClusterIDPrefixAndTestedVersionLength, EnvVarClusterIDPrefix))
 	}
 
 	testDir = os.Getenv(EnvVarTestDir)
