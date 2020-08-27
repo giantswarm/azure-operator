@@ -104,7 +104,7 @@ func init() {
 		panic(err)
 	}
 
-	clusterID := os.Getenv("CLUSTER_NAME")
+	clusterID = os.Getenv("CLUSTER_NAME")
 	if clusterID == "" {
 		var parts []string
 
@@ -136,7 +136,7 @@ func init() {
 		}
 
 		clusterID = strings.Join(parts, "-")
-		os.Setenv("CLUSTER_NAME", clusterID)
+		err = os.Setenv("CLUSTER_NAME", clusterID)
 		if err != nil {
 			panic(err)
 		}
