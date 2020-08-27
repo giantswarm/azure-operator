@@ -1052,7 +1052,7 @@
                         "port": "[parameters('ports')[copyIndex('probes')].probePort]",
                         "intervalInSeconds": 5,
                         "numberOfProbes": 2,
-                        "requestPath": "/healtz"
+                        "requestPath": "/healthz"
                       }
                     }
                   }
