@@ -52,8 +52,8 @@ func (s *MultiAZ) Test(ctx context.Context) error {
 	}
 	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", zones)
 
-	if len(zones) != 1 {
-		return microerror.Maskf(executionFailedError, "The amount of AZ's used is not correct. Expected %d zones, got %d zones", 1, len(zones))
+	if len(zones) != 2 {
+		return microerror.Maskf(executionFailedError, "The amount of AZ's used is not correct. Expected %d zones, got %d zones", 2, len(zones))
 	}
 	if zones[0] != "1" {
 		return microerror.Maskf(executionFailedError, "The AZ used is not correct. Expected %s, got %s", "1", zones[0])
