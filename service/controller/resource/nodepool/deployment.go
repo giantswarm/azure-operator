@@ -105,7 +105,7 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		if azureMachinePool.Name == subnet.Name {
 			if subnet.ID == "" {
-				return azureCluster.Spec.NetworkSpec.Vnet.Name, subnet.Name, microerror.Maskf(subnetNotReadyError, fmt.Sprintf("Subnet %#q ID field is empty, which means the Subnet is not Ready", subnet.Name))
+				return "", "", microerror.Maskf(subnetNotReadyError, fmt.Sprintf("Subnet %#q ID field is empty, which means the Subnet is not Ready", subnet.Name))
 			}
 
 			return azureCluster.Spec.NetworkSpec.Vnet.Name, subnet.Name, nil
