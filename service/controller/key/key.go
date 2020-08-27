@@ -212,7 +212,7 @@ func ClusterIPRange(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ClusterName(getter LabelsGetter) string {
-	return getter.GetLabels()[label.XCluster]
+	return getter.GetLabels()[capiv1alpha3.ClusterLabelName]
 }
 
 // ClusterNamespace returns the cluster Namespace for this cluster.

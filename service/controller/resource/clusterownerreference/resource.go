@@ -124,7 +124,7 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 	var err error
 
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterID(&cluster),
+		capiv1alpha3.ClusterLabelName: key.ClusterName(&cluster),
 	}
 	mpList := new(expcapiv1alpha3.MachinePoolList)
 	err = r.ctrlClient.List(ctx, mpList, o)

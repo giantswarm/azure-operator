@@ -55,7 +55,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				ctx,
 				azureMachineList,
 				client.InNamespace(cluster.Namespace),
-				client.MatchingLabels{label.Cluster: key.ClusterID(&cluster)},
+				client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterName(&cluster)},
 			)
 			if err != nil {
 				return microerror.Mask(err)
@@ -71,7 +71,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if len(masterMachines) < 1 {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no control plane AzureMachines found for cluster %q", key.ClusterID(&cluster)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no control plane AzureMachines found for cluster %q", key.ClusterName(&cluster)))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
@@ -95,7 +95,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var presentAzureClusterConfig corev1alpha1.AzureClusterConfig
 	{
 		nsName := types.NamespacedName{
-			Name:      clusterConfigName(key.ClusterID(&cluster)),
+			Name:      clusterConfigName(key.ClusterName(&cluster)),
 			Namespace: azureCluster.Namespace,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureClusterConfig)
@@ -183,7 +183,7 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 			APIVersion: "core.giantswarm.io/v1alpha1",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      clusterConfigName(key.ClusterID(&cluster)),
+			Name:      clusterConfigName(key.ClusterName(&cluster)),
 			Namespace: azureCluster.Namespace,
 			Labels: map[string]string{
 				label.ClusterOperatorVersion: clusterOperatorVersion,
@@ -194,8 +194,8 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 				ClusterGuestConfig: corev1alpha1.ClusterGuestConfig{
 					AvailabilityZones: len(failureDomains),
 					DNSZone:           dnsZoneFromAPIEndpoint(azureCluster.Spec.ControlPlaneEndpoint.Host),
-					ID:                key.ClusterID(&cluster),
-					Name:              key.ClusterID(&cluster),
+					ID:                key.ClusterName(&cluster),
+					Name:              key.ClusterName(&cluster),
 					Owner:             key.OrganizationID(&cluster),
 					ReleaseVersion:    key.ReleaseVersion(&cluster),
 					VersionBundles:    componentsToClusterGuestConfigVersionBundles(cc.Release.Release.Spec.Components),
