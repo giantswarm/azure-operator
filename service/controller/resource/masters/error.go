@@ -54,6 +54,15 @@ func IsDeploymentNotFound(err error) bool {
 	return false
 }
 
+var invalidConfigError = &microerror.Error{
+	Kind: "invalidConfigError",
+}
+
+// IsInvalidConfig asserts invalidConfigError.
+func IsInvalidConfig(err error) bool {
+	return microerror.Cause(err) == invalidConfigError
+}
+
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
