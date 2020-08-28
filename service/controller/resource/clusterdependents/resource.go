@@ -122,6 +122,11 @@ func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alp
 	}
 
 	for _, mp := range mpList.Items {
+		if !mp.GetDeletionTimestamp().IsZero() {
+			// Don't handle deleted child
+			continue
+		}
+
 		err = r.ctrlClient.Delete(ctx, &mp)
 		if errors.IsNotFound(err) {
 			continue
@@ -130,5 +135,5 @@ func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alp
 		}
 	}
 
-	return (len(mpList.Items) == 0), nil
+	return len(mpList.Items) == 0, nil
 }
