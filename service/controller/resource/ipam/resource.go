@@ -25,6 +25,7 @@ type Config struct {
 	Persister          Persister
 }
 
+// Resource finds free IP ranges within a virtual network to create new subnets.
 type Resource struct {
 	checker            Checker
 	collector          Collector

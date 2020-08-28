@@ -41,6 +41,7 @@ type Config struct {
 	Logger              micrologger.Logger
 }
 
+// Resource creates a different subnet for every node pool using ARM deployments.
 type Resource struct {
 	azureClientsFactory *client.Factory
 	ctrlClient          ctrlclient.Client

@@ -29,7 +29,7 @@ type Config struct {
 	Scheme     *runtime.Scheme
 }
 
-// Resource manages Azure resource groups.
+// Resource ensures MachinePool owning AzureMachinePool CRs.
 type Resource struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
