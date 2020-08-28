@@ -7,6 +7,7 @@ import (
 	azureclient "github.com/giantswarm/e2eclients/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ProviderConfig struct {
@@ -14,7 +15,8 @@ type ProviderConfig struct {
 	G8sClient   versioned.Interface
 	Logger      micrologger.Logger
 
-	ClusterID string
+	ClusterID  string
+	CtrlClient client.Client
 }
 
 type Provider struct {
@@ -22,7 +24,8 @@ type Provider struct {
 	g8sClient   versioned.Interface
 	logger      micrologger.Logger
 
-	clusterID string
+	clusterID  string
+	ctrlClient client.Client
 }
 
 func NewProvider(config ProviderConfig) (*Provider, error) {
@@ -35,9 +38,11 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
 	if config.ClusterID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", config)
+	}
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 
 	p := &Provider{
@@ -45,7 +50,8 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 		g8sClient:   config.G8sClient,
 		logger:      config.Logger,
 
-		clusterID: config.ClusterID,
+		clusterID:  config.ClusterID,
+		ctrlClient: config.CtrlClient,
 	}
 
 	return p, nil
