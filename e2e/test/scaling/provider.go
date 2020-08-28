@@ -85,7 +85,7 @@ func (p *Provider) findMachinePool(ctx context.Context) (*v1alpha3.MachinePool, 
 }
 
 func (p *Provider) AddWorker() error {
-	ctx := context.TODO()
+	ctx := context.Background()
 	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return microerror.Mask(err)
@@ -113,7 +113,7 @@ func (p *Provider) NumMasters() (int, error) {
 }
 
 func (p *Provider) NumWorkers() (int, error) {
-	ctx := context.TODO()
+	ctx := context.Background()
 	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return 0, microerror.Mask(err)
@@ -123,7 +123,7 @@ func (p *Provider) NumWorkers() (int, error) {
 }
 
 func (p *Provider) RemoveWorker() error {
-	ctx := context.TODO()
+	ctx := context.Background()
 	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return microerror.Mask(err)
