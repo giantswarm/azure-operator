@@ -35,6 +35,7 @@ const (
 	workerSecurityGroupSuffix = "WorkerSecurityGroup"
 	masterSubnetSuffix        = "MasterSubnet"
 	workerSubnetSuffix        = "WorkerSubnet"
+	masterNatGatewayName      = "masters-nat-gw"
 	prefixMaster              = "master"
 	prefixWorker              = "worker"
 	virtualNetworkSuffix      = "VirtualNetwork"
@@ -378,6 +379,10 @@ func MasterInstanceName(customObject providerv1alpha1.AzureConfig, instanceID st
 	}
 
 	return fmt.Sprintf("%s-master-%s-%06s", ClusterID(&customObject), ClusterID(&customObject), idB36)
+}
+
+func MasterNatGatewayID(cr providerv1alpha1.AzureConfig, subscriptionID string) string {
+	return fmt.Sprintf("/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/natGateways/%s", subscriptionID, ResourceGroupName(cr), masterNatGatewayName)
 }
 
 // MasterNICName returns name of the master NIC.
