@@ -201,7 +201,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// Deployment is now stable, ensure the NAT gateway is enabled for the master subnet.
 			err := r.ensureNatGatewayForMasterSubnet(ctx, cr)
 			if err != nil {
-				microerror.Mask(err)
+				return microerror.Mask(err)
 			}
 
 			return nil
