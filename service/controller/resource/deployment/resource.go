@@ -197,10 +197,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
-			// As current and desired state differs, start process from the beginning.
+
+			// Deployment is now stable, ensure the NAT gateway is enabled for the master subnet.
+			err := r.ensureNatGatewayForMasterSubnet(ctx, cr)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
 			return nil
 		}
 
+		// As current and desired state differs, start process from the beginning.
 		r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 	}
 

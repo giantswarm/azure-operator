@@ -141,6 +141,9 @@
             },
             "kubernetesAPISecurePort":{
               "type":"int"
+            },
+            "mastersNatGWPublicIP":{
+              "type":"string"
             }
           },
           "variables":{
@@ -275,6 +278,20 @@
                       "access":"Allow",
                       "direction":"Inbound",
                       "priority":"3900"
+                    }
+                  },
+                  {
+                    "name":"etcdLoadBalancerRuleMasters",
+                    "properties":{
+                      "description":"Allow master nodes the etcd loadbalancer via the public IP.",
+                      "protocol":"tcp",
+                      "sourcePortRange":"*",
+                      "destinationPortRange":"[variables('etcdPort')]",
+                      "sourceAddressPrefix":"[parameters('mastersNatGWPublicIP')]",
+                      "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
+                      "access":"Allow",
+                      "direction":"Inbound",
+                      "priority":"3899"
                     }
                   },
                   {
@@ -557,6 +574,9 @@
           },
           "initialProvisioning":{
             "value":"[parameters('initialProvisioning')]"
+          },
+          "mastersNatGWPublicIP":{
+            "value":"[reference('masters_nat_gw').outputs.mastersNatGWPublicIP.value]"
           }
         }
       }
@@ -735,6 +755,105 @@
     },
     {
       "apiVersion":"2016-09-01",
+      "name":"masters_nat_gw",
+      "type":"Microsoft.Resources/deployments",
+      "dependsOn":[],
+      "properties":{
+        "expressionEvaluationOptions":{
+          "scope": "inner"
+        },
+        "mode":"incremental",
+        "template":{
+          "$schema": "http://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
+          "contentVersion": "1.0.0.0",
+          "parameters": {
+            "publicIPAddressesAPIVersion": {
+              "defaultValue": "2018-12-01",
+              "type": "String",
+              "metadata": {
+                "description": "API version used by the Microsoft.Network/publicIPAddresses resource."
+              }
+            },
+            "natGWApiVersion": {
+              "type": "string",
+              "defaultValue":"2019-09-01",
+              "metadata":{
+                "description":"API version used by the Microsoft.Network/natGateways resource."
+              }
+            },
+            "GiantSwarmTags":{
+              "type":"object",
+              "defaultValue":{
+                "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
+              }
+            }
+          },
+          "variables":{
+            "natGWName": "masters-nat-gw",
+            "publicIpName": "masters-nat-gw-ip"
+          },
+          "resources": [
+            {
+              "type": "Microsoft.Network/publicIPAddresses",
+              "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
+              "name": "[variables('publicIpName')]",
+              "location": "[resourceGroup().location]",
+              "tags": {
+                "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+              },
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAllocationMethod": "Static",
+                "publicIPAddressVersion": "IPv4"
+              }
+            },
+            {
+              "apiVersion": "[parameters('natGWApiVersion')]",
+              "type": "Microsoft.Network/natGateways",
+              "name": "[variables('natGWName')]",
+              "location": "[resourceGroup().location]",
+              "tags": {
+                "provider": "[toUpper(parameters('GiantSwarmTags').provider)]"
+              },
+              "sku": {
+                "name": "Standard"
+              },
+              "properties": {
+                "publicIPAddresses": [
+                  {
+                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+                  }
+                ],
+                "publicIPPrefixes": [],
+                "idleTimeoutInMinutes": 4
+              },
+              "dependsOn": [
+                "[concat('Microsoft.Network/publicIPAddresses/', variables('publicIpName'))]"
+              ]
+            }
+          ],
+          "outputs": {
+            "mastersNatGWPublicIP": {
+              "type": "string",
+              "value": "[reference(variables('publicIpName'), parameters('publicIPAddressesAPIVersion')).ipAddress]"
+            },
+            "mastersNatGWID": {
+              "type": "string",
+              "value": "[resourceId('Microsoft.Network/natGateways', variables('natGWName'))]"
+            }
+          }
+        },
+        "parameters":{
+          "GiantSwarmTags":{
+            "value":"[parameters('GiantSwarmTags')]"
+          }
+        }
+      }
+    },
+    {
+      "apiVersion":"2016-09-01",
       "name":"virtual_network_setup",
       "condition":"[equals(parameters('initialProvisioning'), 'Yes')]",
       "type":"Microsoft.Resources/deployments",
@@ -792,6 +911,9 @@
             },
             "workersNatGWID":{
               "type":"string"
+            },
+            "mastersNatGWID":{
+              "type":"string"
             }
           },
           "variables":{
@@ -821,6 +943,9 @@
                     "name":"[variables('masterSubnetName')]",
                     "properties":{
                       "addressPrefix":"[parameters('masterSubnetCidr')]",
+                      "natGateway": {
+                        "id":"[parameters('mastersNatGWID')]"
+                      },
                       "networkSecurityGroup":{
                         "id":"[parameters('masterSecurityGroupID')]"
                       },
@@ -906,6 +1031,9 @@
           },
           "workersNatGWID":{
             "value":"[reference('workers_nat_gw').outputs.workersNatGWID.value]"
+          },
+          "mastersNatGWID":{
+            "value":"[reference('masters_nat_gw').outputs.mastersNatGWID.value]"
           },
           "workerSecurityGroupID":{
             "value":"[reference('security_groups_setup').outputs.workerSecurityGroupID.value]"
