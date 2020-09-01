@@ -100,8 +100,8 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.ClusterOperatorVersion:  cr.Labels[label.ClusterOperatorVersion],
-				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+				label.Cluster:                 cr.Name,
+				capiv1alpha3.ClusterLabelName: cr.Name,
 				label.Organization:            key.OrganizationID(&cr),
 				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
@@ -137,8 +137,8 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
-				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+				label.Cluster:                 cr.Name,
+				capiv1alpha3.ClusterLabelName: cr.Name,
 				label.Organization:            key.OrganizationID(&cr),
 				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
