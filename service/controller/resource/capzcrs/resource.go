@@ -13,11 +13,15 @@ const (
 type Config struct {
 	CtrlClient client.Client
 	Logger     micrologger.Logger
+
+	Location string
 }
 
 type Resource struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
+
+	location string
 }
 
 func New(config Config) (*Resource, error) {
@@ -27,10 +31,15 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.Location == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
+	}
 
 	newResource := &Resource{
 		ctrlClient: config.CtrlClient,
 		logger:     config.Logger,
+
+		location: config.Location,
 	}
 
 	return newResource, nil

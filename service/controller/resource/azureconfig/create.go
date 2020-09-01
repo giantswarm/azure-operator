@@ -64,7 +64,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				ctx,
 				azureMachineList,
 				client.InNamespace(cluster.Namespace),
-				client.MatchingLabels{label.Cluster: key.ClusterID(&cluster)},
+				client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterName(&cluster)},
 			)
 			if err != nil {
 				return microerror.Mask(err)
@@ -80,7 +80,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if len(masterMachines) < 1 {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no control plane AzureMachines found for cluster %q", key.ClusterID(&cluster)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no control plane AzureMachines found for cluster %q", key.ClusterName(&cluster)))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
@@ -104,7 +104,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var presentAzureConfig providerv1alpha1.AzureConfig
 	{
 		nsName := types.NamespacedName{
-			Name:      key.ClusterID(&cluster),
+			Name:      key.ClusterName(&cluster),
 			Namespace: azureCluster.Namespace,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
@@ -213,7 +213,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	azureConfig.Labels = make(map[string]string)
 
 	{
-		azureConfig.ObjectMeta.Name = key.ClusterID(&cluster)
+		azureConfig.ObjectMeta.Name = key.ClusterName(&cluster)
 		azureConfig.ObjectMeta.Namespace = cluster.Namespace
 	}
 
@@ -229,18 +229,14 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 	}
 
 	{
-		azureConfig.Labels[label.Cluster] = key.ClusterID(&cluster)
-		azureConfig.Labels[label.XCluster] = key.ClusterID(&cluster)
+		azureConfig.Labels[label.Cluster] = key.ClusterName(&cluster)
+		azureConfig.Labels[capiv1alpha3.ClusterLabelName] = key.ClusterName(&cluster)
 		azureConfig.Labels[label.Organization] = key.OrganizationID(&cluster)
 		azureConfig.Labels[label.ReleaseVersion] = key.ReleaseVersion(&cluster)
+		azureConfig.Labels[label.OperatorVersion] = key.OperatorVersion(&azureCluster)
 	}
 
 	{
-		azureConfig.Labels[label.OperatorVersion] = key.OperatorVersion(&azureCluster)
-
-		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, label.OperatorVersion, key.OperatorVersion(&azureCluster))
-		azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels = ensureLabel(azureConfig.Spec.Cluster.Kubernetes.Kubelet.Labels, "giantswarm.io/provider", ProviderAzure)
-
 		azureConfig.Spec.Azure.AvailabilityZones, err = getAvailabilityZones(masters, workers)
 		if err != nil {
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
@@ -323,7 +319,7 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
-		commonCluster.ID = key.ClusterID(&cluster)
+		commonCluster.ID = key.ClusterName(&cluster)
 	}
 
 	{
@@ -373,7 +369,7 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 		}
 
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
-		commonCluster.Kubernetes.Kubelet.Labels = r.kubeletLabels
+		commonCluster.Kubernetes.Kubelet.Labels = key.KubeletLabelsNodePool(&azureCluster)
 	}
 
 	{
@@ -397,38 +393,6 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 
 	return commonCluster, nil
 
-}
-
-func ensureLabel(labels string, key string, value string) string {
-	if key == "" {
-		return labels
-	}
-	if value == "" {
-		return labels
-	}
-
-	var split []string
-	if labels != "" {
-		split = strings.Split(labels, ",")
-	}
-
-	var found bool
-	for i, l := range split {
-		if !strings.HasPrefix(l, key+"=") {
-			continue
-		}
-
-		found = true
-		split[i] = key + "=" + value
-	}
-
-	if !found {
-		split = append(split, key+"="+value)
-	}
-
-	joined := strings.Join(split, ",")
-
-	return joined
 }
 
 func newSpecClusterMasterNodes() []providerv1alpha1.ClusterNode {

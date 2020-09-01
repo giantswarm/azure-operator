@@ -1,9 +1,8 @@
-package cloudconfig
+package cloudconfigblob
 
 import (
 	"strings"
 
-	"github.com/Azure/go-autorest/autorest"
 	"github.com/giantswarm/microerror"
 )
 
@@ -28,41 +27,14 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-var notFoundError = &microerror.Error{
-	Kind: "notFoundError",
-}
-
-// IsNotFound asserts notFoundError.
+// IsNotFound asserts storage account not found error from upstream's API message.
 func IsNotFound(err error) bool {
 	if err == nil {
 		return false
 	}
-
-	c := microerror.Cause(err)
-
-	if c == notFoundError {
-		return true
-	}
-
-	{
-		dErr, ok := c.(autorest.DetailedError)
-		if ok {
-			if dErr.StatusCode == 404 {
-				return true
-			}
-		}
-	}
-
-	return false
-}
-
-var wrongTypeError = &microerror.Error{
-	Kind: "wrongTypeError",
-}
-
-// IsWrongTypeError asserts wrongTypeError.
-func IsWrongTypeError(err error) bool {
-	return microerror.Cause(err) == wrongTypeError
+	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound") ||
+		strings.Contains(microerror.Cause(err).Error(), "ResourceGroupNotFound") ||
+		strings.Contains(microerror.Cause(err).Error(), "StorageAccountNotFound")
 }
 
 // IsStorageAccountNotProvisioned asserts storage account not provisioned error from upstream's API message.
@@ -86,10 +58,34 @@ var tooManyCredentialsError = &microerror.Error{
 	Kind: "tooManyCredentialsError",
 }
 
+// IsTooManyCredentialsError asserts tooManyCredentialsError.
+func IsTooManyCredentialsError(err error) bool {
+	return microerror.Cause(err) == tooManyCredentialsError
+}
+
 var missingOrganizationLabel = &microerror.Error{
 	Kind: "missingOrganizationLabel",
 }
 
-var missingReleaseVersionLabel = &microerror.Error{
-	Kind: "missingReleaseVersionLabel",
+// IsMissingOrganizationLabel asserts missingOrganizationLabel.
+func IsMissingOrganizationLabel(err error) bool {
+	return microerror.Cause(err) == missingOrganizationLabel
+}
+
+var bootstrapCRNotReady = &microerror.Error{
+	Kind: "bootstrapCRNotReady",
+}
+
+// IsMissingCloudConfigSecret asserts bootstrapCRNotReady.
+func IsBootstrapCRNotReady(err error) bool {
+	return microerror.Cause(err) == bootstrapCRNotReady
+}
+
+var ownerReferenceNotSet = &microerror.Error{
+	Kind: "ownerReferenceNotSet",
+}
+
+// IsOwnerReferenceNotSet asserts ownerReferenceNotSet.
+func IsOwnerReferenceNotSet(err error) bool {
+	return microerror.Cause(err) == ownerReferenceNotSet
 }

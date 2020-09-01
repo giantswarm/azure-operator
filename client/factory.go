@@ -8,6 +8,7 @@ import (
 	"time"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
@@ -85,6 +86,18 @@ func (f *Factory) GetDeploymentsClient(credentialNamespace, credentialName strin
 	return toDeploymentsClient(client), nil
 }
 
+// GetDisksClient returns DisksClient that is used for management of virtual disks.
+// The client (for specified cluster) is cached after creation, so the same client
+// is returned every time.
+func (f *Factory) GetDisksClient(credentialNamespace, credentialName string) (*compute.DisksClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "DisksClient", newDisksClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toDisksClient(client), nil
+}
+
 // GetGroupsClient returns GroupsClient that is used for management of resource groups for the
 // specified cluster. The created client is cached for the time period specified in the factory
 // config.
@@ -95,6 +108,30 @@ func (f *Factory) GetGroupsClient(credentialNamespace, credentialName string) (*
 	}
 
 	return toGroupsClient(client), nil
+}
+
+// GetInterfacesClient returns InterfacesClient that is used for management of network interfaces for the
+// specified cluster. The created client is cached for the time period specified in the factory
+// config.
+func (f *Factory) GetInterfacesClient(credentialNamespace, credentialName string) (*network.InterfacesClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "InterfacesClient", newInterfacesClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toInterfacesClient(client), nil
+}
+
+// GetDNSRecordSetsClient returns RecordSetsClient that is used for management of DNS records.
+// The client (for specified cluster) is cached after creation, so the same client
+// is returned every time.
+func (f *Factory) GetDNSRecordSetsClient(credentialNamespace, credentialName string) (*dns.RecordSetsClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "RecordSetsClient", newDNSRecordSetsClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toDNSRecordSetsClient(client), nil
 }
 
 // GetVirtualMachineScaleSetsClient returns VirtualMachineScaleSetsClient that is used for

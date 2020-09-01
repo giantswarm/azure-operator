@@ -41,7 +41,8 @@ func IsNotFound(err error) bool {
 		}
 	}
 
-	return false
+	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound") ||
+		strings.Contains(microerror.Cause(err).Error(), "ResourceGroupNotFound")
 }
 
 var missingOutputValueError = &microerror.Error{

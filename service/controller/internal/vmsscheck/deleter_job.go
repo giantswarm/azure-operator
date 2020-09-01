@@ -36,7 +36,12 @@ func (dj *deleterJob) Run() error {
 
 	var err error
 	dj.allInstancesSucceeded, err = dj.deleteFailedInstances(dj.context, dj.resourceGroup, dj.vmss)
-	if err != nil {
+	if IsNotFound(err) {
+		// When resources are not found anymore, job can be considered to be completed.
+		// This can happen when cluster is deleted in the middle of changes.
+		dj.allInstancesSucceeded = true
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 

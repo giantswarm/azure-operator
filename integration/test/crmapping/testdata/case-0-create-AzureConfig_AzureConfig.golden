@@ -1,0 +1,114 @@
+apiVersion: provider.giantswarm.io/v1alpha1
+kind: AzureConfig
+metadata:
+  creationTimestamp: null
+  labels:
+    azure-operator.giantswarm.io/version: 4.2.0
+    cluster.x-k8s.io/cluster-name: c6fme
+    giantswarm.io/cluster: c6fme
+    giantswarm.io/organization: ""
+    release.giantswarm.io/version: 12.0.0
+  name: c6fme
+  namespace: default
+  resourceVersion: "2"
+spec:
+  azure:
+    availabilityZones:
+    - 1
+    credentialSecret:
+      name: credential-default
+      namespace: giantswarm
+    dnsZones:
+      api:
+        name: ghost.westeurope.azure.gigantic.io
+        resourceGroup: ghost
+      etcd:
+        name: ghost.westeurope.azure.gigantic.io
+        resourceGroup: ghost
+      ingress:
+        name: ghost.westeurope.azure.gigantic.io
+        resourceGroup: ghost
+    masters:
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_D4s_v3
+    virtualNetwork:
+      calicoSubnetCIDR: ""
+      cidr: ""
+      masterSubnetCIDR: ""
+      workerSubnetCIDR: ""
+    workers: null
+  cluster:
+    calico:
+      cidr: 16
+      mtu: 1430
+      subnet: 10.1.0.0/16
+    customer:
+      id: ""
+    docker:
+      daemon:
+        cidr: ""
+    etcd:
+      altNames: ""
+      domain: etcd.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+      port: 0
+      prefix: giantswarm.io
+    id: c6fme
+    kubernetes:
+      api:
+        clusterIPRange: 172.31.0.0/16
+        domain: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+        securePort: 443
+      cloudProvider: azure
+      dns:
+        ip: 172.31.0.10
+      domain: ""
+      ingressController:
+        docker:
+          image: ""
+        domain: ""
+        insecurePort: 0
+        securePort: 0
+        wildcardDomain: ""
+      kubelet:
+        altNames: ""
+        domain: worker.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+        labels: giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=4.2.0
+        port: 0
+      networkSetup:
+        docker:
+          image: ""
+        kubeProxy:
+          conntrackMaxPerCore: 0
+      ssh:
+        userList:
+        - name: john
+          publicKey: ssh-rsa ASDFASADFASDFSDAFSADFSDF== john
+        - name: doe
+          publicKey: ssh-rsa FOOBARBAZFOOFOO== doe
+    masters:
+    - id: master-0
+    scaling:
+      max: 0
+      min: 0
+    version: ""
+  versionBundle:
+    version: ""
+status:
+  cluster:
+    conditions:
+    - lastTransitionTime: null
+      status: "True"
+      type: Creating
+    network:
+      cidr: ""
+    scaling:
+      desiredCapacity: 0
+    versions:
+    - date: null
+      lastTransitionTime: "2020-08-25T12:25:51Z"
+      semver: 4.2.0
+  provider:
+    ingress:
+      loadBalancer:
+        publicIPName: ""

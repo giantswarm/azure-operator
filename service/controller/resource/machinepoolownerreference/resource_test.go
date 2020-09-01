@@ -1,4 +1,4 @@
-package controller
+package machinepoolownerreference
 
 import (
 	"context"
@@ -77,7 +77,7 @@ func TestThatMachinePoolIsOwnedByCluster(t *testing.T) {
 }
 
 func whenReconcilingMachinePool(ctx context.Context, ctrlClient client.Client, scheme *runtime.Scheme, machinePool *expcapiv1alpha3.MachinePool) error {
-	controller, err := NewMachinePoolOwnerReferences(MachinePoolOwnerReferencesConfig{
+	controller, err := New(Config{
 		CtrlClient: ctrlClient,
 		Logger:     microloggertest.New(),
 		Scheme:     scheme,

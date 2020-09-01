@@ -83,7 +83,18 @@ type AzureConfigConfig struct {
 	SentryDSN string
 }
 
+type AzureConfig struct {
+	*controller.Controller
+}
+
 func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
+	if config.K8sClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
 	var err error
 
 	var certsSearcher *certs.Searcher
@@ -255,6 +266,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		c := capzcrs.Config{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
+
+			Location: config.Azure.Location,
 		}
 
 		capzcrsResource, err = capzcrs.New(c)
@@ -454,7 +467,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var mastersResource resource.Interface
 	{
 		c := masters.Config{
-			Config: nodesConfig,
+			Config:     nodesConfig,
+			CtrlClient: config.K8sClient.CtrlClient(),
 		}
 
 		mastersResource, err = masters.New(c)
