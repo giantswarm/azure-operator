@@ -387,7 +387,7 @@ func MasterNatGatewayID(cr providerv1alpha1.AzureConfig, subscriptionID string) 
 
 // MasterNICName returns name of the master NIC.
 func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
-	return fmt.Sprintf("%s-Master-1-NIC", ClusterID(&customObject))
+	return fmt.Sprintf("%s-Master-%s-nic", ClusterID(&customObject), ClusterID(&customObject))
 }
 
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {

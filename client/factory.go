@@ -158,6 +158,18 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(credentialNamespace, creden
 	return toVirtualMachineScaleSetVMsClient(client), nil
 }
 
+// GetSnapshotsClient returns *compute.SnapshotsClient that is used for management of Azure
+// snapshots (both disks and VMs). The created client is cached for the time period
+// specified in the factory config.
+func (f *Factory) GetSnapshotsClient(credentialNamespace, credentialName string) (*compute.SnapshotsClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "SnapshotsClient", newSnapshotsClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toSnapshotsClient(client), nil
+}
+
 // GetStorageAccountsClient returns *storage.AccountsClient that is used for management of Azure
 // storage accounts for the specified cluster. The created client is cached for the time period
 // specified in the factory config.

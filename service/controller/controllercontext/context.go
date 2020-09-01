@@ -16,15 +16,14 @@ type contextKey string
 const controllerKey contextKey = "controller"
 
 type Context struct {
-	APILBBackendPoolID  string
-	AzureClientSet      *client.AzureClientSet
-	Client              ContextClient
-	CloudConfig         cloudconfig.Interface
-	ContainerURL        *azblob.ContainerURL
-	EtcdLBBackendPoolID string
-	MasterSubnetID      string
-	Release             ContextRelease
-	WorkerSubnetID      string
+	MasterLBBackendPoolID string
+	AzureClientSet        *client.AzureClientSet
+	Client                ContextClient
+	CloudConfig           cloudconfig.Interface
+	ContainerURL          *azblob.ContainerURL
+	MasterSubnetID        string
+	Release               ContextRelease
+	WorkerSubnetID        string
 }
 
 type ContextRelease struct {
@@ -32,11 +31,8 @@ type ContextRelease struct {
 }
 
 func (c *Context) Validate() error {
-	if c.APILBBackendPoolID == "" {
-		return microerror.Maskf(invalidContextError, "%T.APILBBackendPoolID must not be empty", c)
-	}
-	if c.EtcdLBBackendPoolID == "" {
-		return microerror.Maskf(invalidContextError, "%T.EtcdLBBackendPoolID must not be empty", c)
+	if c.MasterLBBackendPoolID == "" {
+		return microerror.Maskf(invalidContextError, "%T.MasterLBBackendPoolID must not be empty", c)
 	}
 	if c.MasterSubnetID == "" {
 		return microerror.Maskf(invalidContextError, "%T.MasterSubnetID must not be empty", c)
