@@ -377,6 +377,16 @@
               {
                 "caching": "ReadWrite",
                 "createOption": "Empty",
+                "diskSizeGB": 100,
+                "managedDisk":
+                {
+                  "storageAccountType": "[if(contains(variables('vmssStandardLrsSize'), parameters('masterNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
+                },
+                "lun": 0
+              },
+              {
+                "caching": "ReadWrite",
+                "createOption": "Empty",
                 "diskSizeGB": "[if(greater(parameters('masterNodes')[0].dockerVolumeSizeGB, 0), parameters('masterNodes')[0].dockerVolumeSizeGB, 50)]",
                 "managedDisk":
                 {
