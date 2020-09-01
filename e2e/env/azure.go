@@ -165,6 +165,21 @@ func AzureAvailabilityZonesAsStrings() []string {
 	return azs
 }
 
+// AzureAvailabilityZonesCount returns expected number of availability zones for the cluster.
+func AzureAvailabilityZonesCount() int {
+	specifiedZones := AzureAvailabilityZones()
+	specifiedCount := len(specifiedZones)
+
+	switch specifiedCount {
+	case 0:
+		return 1
+	case 1, 2, 3:
+		return specifiedCount
+	default:
+		panic("AvailabilityZones valid numbers are 1, 2, 3.")
+	}
+}
+
 func AzureCalicoSubnetCIDR() string {
 	return azureCalicoSubnetCIDR
 }
