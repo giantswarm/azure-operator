@@ -1231,11 +1231,11 @@
           "outputs": {
             "etcdIpAddress": {
               "type": "String",
-              "value": "[reference(variables('settings').API.PublicIP.ID, parameters('publicIPAddressesAPIVersion')).ipAddress]"
+              "value": "[reference(variables('settings').ETCD.PublicIP.ID, parameters('publicIPAddressesAPIVersion')).ipAddress]"
             },
             "apiIpAddress": {
               "type": "String",
-              "value": "[reference(variables('settings').ETCD.PublicIP.ID, parameters('publicIPAddressesAPIVersion')).ipAddress]"
+              "value": "[reference(variables('settings').API.PublicIP.ID, parameters('publicIPAddressesAPIVersion')).ipAddress]"
             },
             "backendPoolId": {
               "type": "String",

@@ -20,12 +20,6 @@
         "description":"Unique ID of the guest cluster."
       }
     },
-    "etcdLBBackendPoolID":{
-      "type":"string",
-      "metadata":{
-        "description":"Output value of the Etcd load balancer backend pool ID as referenced from the Etcd load balancer setup."
-      }
-    },
     "GiantSwarmTags":{
       "type":"object",
       "defaultValue":{
