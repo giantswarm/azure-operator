@@ -21,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -36,6 +37,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	{
+		objKey := client.ObjectKey{
+			Namespace: cr.Namespace,
+			Name:      cr.Name,
+		}
+		cluster := new(capiv1alpha3.Cluster)
+		err = r.ctrlClient.Get(ctx, objKey, cluster)
+		if errors.IsNotFound(err) {
+			// all good
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else if cluster.GetDeletionTimestamp() != nil {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping mapping AzureConfig CR to CAPI & CAPZ CRs")
+			return nil
+		}
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "mapping AzureConfig CR to CAPI & CAPZ CRs")
