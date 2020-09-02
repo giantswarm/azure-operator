@@ -5,7 +5,9 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
@@ -44,20 +46,46 @@ func NewAzureMachinePoolSubnetChecker(config AzureMachinePoolSubnetCheckerConfig
 // AzureMachinePool.
 func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
 	c.logger.LogCtx(ctx, "level", "debug", "message", "checking if node pool subnet has to be allocated")
+	var err error
 
-	objectKey := client.ObjectKey{
-		Namespace: namespace,
-		Name:      name,
-	}
-	azureMachinePool := &v1alpha3.AzureMachinePool{}
-	err := c.ctrlClient.Get(ctx, objectKey, azureMachinePool)
-	if err != nil {
-		return false, microerror.Mask(err)
+	var azureMachinePool *expcapzv1alpha3.AzureMachinePool
+	{
+		objectKey := client.ObjectKey{
+			Namespace: namespace,
+			Name:      name,
+		}
+
+		azureMachinePool = &expcapzv1alpha3.AzureMachinePool{}
+		err = c.ctrlClient.Get(ctx, objectKey, azureMachinePool)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+
+		if !azureMachinePool.GetDeletionTimestamp().IsZero() {
+			c.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping subnet allocation")
+			return false, nil
+		}
 	}
 
-	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return false, microerror.Mask(err)
+	// Check if Cluster is being deleted. In that case we are skipping subnet allocation.
+	{
+		cluster, err := util.GetClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+
+		if !cluster.GetDeletionTimestamp().IsZero() {
+			c.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping subnet allocation")
+			return false, nil
+		}
+	}
+
+	var azureCluster *capzv1alpha3.AzureCluster
+	{
+		azureCluster, err = helpers.GetAzureClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
 	}
 
 	// In case there is no subnet tracked so far, we want to proceed with the allocation process.
