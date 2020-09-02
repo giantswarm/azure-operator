@@ -46,6 +46,7 @@ type Config struct {
 	SSOPublicKey        string
 }
 
+// Resource simulates a CAPI Bootstrap provider by rendering cloudconfig files while watching Spark CRs.
 type Resource struct {
 	apiServerSecurePort int
 	azure               setting.Azure

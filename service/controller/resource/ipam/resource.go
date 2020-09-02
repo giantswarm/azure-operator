@@ -25,6 +25,9 @@ type Config struct {
 	Persister          Persister
 }
 
+// Resource finds free IP ranges:
+// - AzureConfig: within an installation range to create new virtual network for the tenant cluster.
+// - CAPI/CAPZ: within a virtual network to create new subnets.
 type Resource struct {
 	checker            Checker
 	collector          Collector

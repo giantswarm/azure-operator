@@ -20,6 +20,7 @@ type Config struct {
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 }
 
+// Resource takes care of node pool life cycle.
 type Resource struct {
 	nodes.Resource
 	CredentialProvider        credential.Provider

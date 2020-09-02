@@ -34,7 +34,7 @@ func (r *Resource) createStateMachine() state.Machine {
 	return sm
 }
 
-// This resource applies the ARM template for the worker instances, monitors the process and handles upgrades.
+// EnsureCreated will create an ARM deployment for every node pool.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
