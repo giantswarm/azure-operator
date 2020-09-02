@@ -138,10 +138,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 
 	clientSet := &AzureClientSet{
 		DeploymentsClient:                      toDeploymentsClient(deploymentsClient),
-		DNSRecordSetsClient:                    dnsRecordSetsClient,
+		DNSRecordSetsClient:                    toDNSRecordSetsClient(dnsRecordSetsClient),
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           toGroupsClient(groupsClient),
-		InterfacesClient:                       interfacesClient,
+		InterfacesClient:                       toInterfacesClient(interfacesClient),
 		PublicIpAddressesClient:                publicIpAddressesClient,
 		SecurityRulesClient:                    securityRulesClient,
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
@@ -174,7 +174,14 @@ func newDeploymentsClient(authorizer autorest.Authorizer, subscriptionID, partne
 	return &client, nil
 }
 
-func newDNSRecordSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*dns.RecordSetsClient, error) {
+func newDisksClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+	client := compute.NewDisksClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
+
+	return &client, nil
+}
+
+func newDNSRecordSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
 	client := dns.NewRecordSetsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
@@ -195,7 +202,7 @@ func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID s
 	return &client, nil
 }
 
-func newInterfacesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.InterfacesClient, error) {
+func newInterfacesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewInterfacesClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
 
@@ -283,8 +290,16 @@ func toDeploymentsClient(client interface{}) *resources.DeploymentsClient {
 	return client.(*resources.DeploymentsClient)
 }
 
+func toDisksClient(client interface{}) *compute.DisksClient {
+	return client.(*compute.DisksClient)
+}
+
 func toGroupsClient(client interface{}) *resources.GroupsClient {
 	return client.(*resources.GroupsClient)
+}
+
+func toInterfacesClient(client interface{}) *network.InterfacesClient {
+	return client.(*network.InterfacesClient)
 }
 
 func toVirtualMachineScaleSetsClient(client interface{}) *compute.VirtualMachineScaleSetsClient {
@@ -293,6 +308,10 @@ func toVirtualMachineScaleSetsClient(client interface{}) *compute.VirtualMachine
 
 func toVirtualMachineScaleSetVMsClient(client interface{}) *compute.VirtualMachineScaleSetVMsClient {
 	return client.(*compute.VirtualMachineScaleSetVMsClient)
+}
+
+func toDNSRecordSetsClient(client interface{}) *dns.RecordSetsClient {
+	return client.(*dns.RecordSetsClient)
 }
 
 func toStorageAccountsClient(client interface{}) *storage.AccountsClient {
