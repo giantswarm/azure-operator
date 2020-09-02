@@ -39,6 +39,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "mapping AzureConfig CR to CAPI & CAPZ CRs")
+
 	{
 		objKey := client.ObjectKey{
 			Namespace: cr.Namespace,
@@ -55,8 +57,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return nil
 		}
 	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "mapping AzureConfig CR to CAPI & CAPZ CRs")
 
 	var mappedCRs []crmapping
 	{
