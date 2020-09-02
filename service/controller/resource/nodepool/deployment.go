@@ -214,7 +214,7 @@ func (r *Resource) getOwnerMachinePool(ctx context.Context, obj metav1.ObjectMet
 func (r *Resource) getAzureClusterFromCluster(ctx context.Context, cluster *capiv1alpha3.Cluster) (*capzv1alpha3.AzureCluster, error) {
 	azureCluster := &capzv1alpha3.AzureCluster{}
 	azureClusterName := ctrlclient.ObjectKey{
-		Namespace: cluster.Spec.InfrastructureRef.Namespace,
+		Namespace: cluster.Namespace,
 		Name:      cluster.Spec.InfrastructureRef.Name,
 	}
 	err := r.CtrlClient.Get(ctx, azureClusterName, azureCluster)
