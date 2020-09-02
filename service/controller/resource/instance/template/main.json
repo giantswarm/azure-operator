@@ -2,10 +2,10 @@
   "$schema":"https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion":"1.0.0.0",
   "parameters":{
-    "apiLBBackendPoolID":{
+    "masterLBBackendPoolID":{
       "type":"string",
       "metadata":{
-        "description":"Output value of the API load balancer backend pool ID as referenced from the API load balancer setup."
+        "description":"Output value of the Master nodes load balancer backend pool ID as referenced from the API load balancer setup."
       }
     },
     "azureOperatorVersion":{
@@ -18,12 +18,6 @@
       "type":"string",
       "metadata":{
         "description":"Unique ID of the guest cluster."
-      }
-    },
-    "etcdLBBackendPoolID":{
-      "type":"string",
-      "metadata":{
-        "description":"Output value of the Etcd load balancer backend pool ID as referenced from the Etcd load balancer setup."
       }
     },
     "GiantSwarmTags":{
