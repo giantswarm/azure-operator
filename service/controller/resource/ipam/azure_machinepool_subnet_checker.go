@@ -60,6 +60,11 @@ func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace str
 		if err != nil {
 			return false, microerror.Mask(err)
 		}
+
+		if !azureMachinePool.GetDeletionTimestamp().IsZero() {
+			c.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping subnet allocation")
+			return false, nil
+		}
 	}
 
 	// Check if Cluster is being deleted. In that case we are skipping subnet allocation.
