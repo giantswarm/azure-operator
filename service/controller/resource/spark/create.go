@@ -373,7 +373,7 @@ func (r *Resource) getAzureCluster(ctx context.Context, cluster *capiv1alpha3.Cl
 	}
 
 	azureCluster := &capzv1alpha3.AzureCluster{}
-	objectKey := client.ObjectKey{Name: cluster.Spec.InfrastructureRef.Name, Namespace: cluster.Spec.InfrastructureRef.Namespace}
+	objectKey := client.ObjectKey{Name: cluster.Spec.InfrastructureRef.Name, Namespace: cluster.Namespace}
 	if err := r.ctrlClient.Get(ctx, objectKey, azureCluster); err != nil {
 		return nil, microerror.Mask(err)
 	}
