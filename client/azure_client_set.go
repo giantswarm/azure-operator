@@ -223,6 +223,13 @@ func newSecurityRulesClient(authorizer autorest.Authorizer, subscriptionID, part
 	return &client, nil
 }
 
+func newSnapshotsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+	client := compute.NewSnapshotsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
+
+	return &client, nil
+}
+
 func newStorageAccountsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
 	client := storage.NewAccountsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, partnerID)
@@ -312,6 +319,10 @@ func toVirtualMachineScaleSetVMsClient(client interface{}) *compute.VirtualMachi
 
 func toDNSRecordSetsClient(client interface{}) *dns.RecordSetsClient {
 	return client.(*dns.RecordSetsClient)
+}
+
+func toSnapshotsClient(client interface{}) *compute.SnapshotsClient {
+	return client.(*compute.SnapshotsClient)
 }
 
 func toStorageAccountsClient(client interface{}) *storage.AccountsClient {

@@ -18,6 +18,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Decouple `Service` from controllers using an slice of controllers.
 - Retry failed ARM deployments regardless of the checksum check.
 - Master instances now use a dedicated NAT gateway for egress traffic.
+- Removed the ETCD Private Load Balancer, reusing the API public one for ETCD traffic (needed by HA masters).
 
 ## [4.2.0] - 2020-07-28
 
