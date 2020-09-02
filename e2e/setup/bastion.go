@@ -97,6 +97,7 @@ func CreatePublicIP(ctx context.Context, location, groupName string, ipClient ne
 		network.PublicIPAddress{
 			Name:     to.StringPtr(bastionE2EPublicIpName),
 			Location: to.StringPtr(location),
+			Sku:      &network.PublicIPAddressSku{Name: network.PublicIPAddressSkuNameStandard},
 			PublicIPAddressPropertiesFormat: &network.PublicIPAddressPropertiesFormat{
 				PublicIPAddressVersion:   network.IPv4,
 				PublicIPAllocationMethod: network.Static,
