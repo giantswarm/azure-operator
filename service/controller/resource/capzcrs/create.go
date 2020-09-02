@@ -52,7 +52,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// all good
 		} else if err != nil {
 			return microerror.Mask(err)
-		} else if cluster.GetDeletionTimestamp() != nil {
+		} else if !cluster.GetDeletionTimestamp().IsZero() {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping mapping AzureConfig CR to CAPI & CAPZ CRs")
 			return nil
 		}
