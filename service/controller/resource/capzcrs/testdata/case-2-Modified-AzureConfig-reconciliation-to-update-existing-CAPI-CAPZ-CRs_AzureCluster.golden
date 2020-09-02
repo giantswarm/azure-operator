@@ -42,7 +42,6 @@ spec:
   additionaltags: {}
 status:
   network:
-    securitygroups: {}
     apiserverlb:
       id: ""
       name: ""
@@ -72,9 +71,11 @@ status:
       disksizegb: 0
       manageddisk:
         storageaccounttype: ""
+      diffdisksettings: null
     startupscript: ""
     state: ""
     identity: ""
     tags: {}
     addresses: []
   ready: false
+  conditions: []

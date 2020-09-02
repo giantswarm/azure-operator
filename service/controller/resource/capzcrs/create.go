@@ -152,6 +152,7 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 				Host: key.ClusterAPIEndpoint(cr),
 				Port: 443,
 			},
+			ResourceGroup: key.ClusterID(&cr),
 			NetworkSpec: capzv1alpha3.NetworkSpec{
 				Vnet: capzv1alpha3.VnetSpec{
 					CidrBlock:     key.VnetCIDR(cr),
