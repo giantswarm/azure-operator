@@ -197,10 +197,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
-			// As current and desired state differs, start process from the beginning.
+
+			// Deployment is now stable, ensure the NAT gateway is enabled for the master subnet.
+			err := r.ensureNatGatewayForMasterSubnet(ctx, cr)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
 			return nil
 		}
 
+		// As current and desired state differs, start process from the beginning.
 		r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 	}
 
@@ -267,24 +274,13 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 
 	resourceGroupName := key.ClusterID(&customObject)
 	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "api_load_balancer_setup", "backendPoolId")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "master_load_balancer_setup", "backendPoolId")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			cc.APILBBackendPoolID = v
-		}
-	}
-
-	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "etcd_load_balancer_setup", "backendPoolId")
-		if IsNotFound(err) {
-			// fall through
-		} else if err != nil {
-			return microerror.Mask(err)
-		} else {
-			cc.EtcdLBBackendPoolID = v
+			cc.MasterLBBackendPoolID = v
 		}
 	}
 

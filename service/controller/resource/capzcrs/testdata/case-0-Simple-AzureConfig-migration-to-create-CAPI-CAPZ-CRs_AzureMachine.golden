@@ -46,14 +46,18 @@ spec:
     disksizegb: 50
     manageddisk:
       storageaccounttype: Premium_LRS
+    diffdisksettings: null
+  datadisks: []
   location: westeurope
   sshpublickey: ""
   additionaltags: {}
   allocatepublicip: false
   acceleratednetworking: null
+  spotvmoptions: null
 status:
   ready: false
   addresses: []
   vmstate: null
   failurereason: null
   failuremessage: null
+  conditions: []
