@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -347,6 +348,7 @@ func KubeletLabelsNodePool(getter LabelsGetter) string {
 
 	labels = ensureLabel(labels, label.Provider, "azure")
 	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
+	labels = ensureLabel(labels, apiextensionslabels.MachinePool, MachinePoolID(getter))
 
 	return labels
 }
@@ -599,6 +601,10 @@ func WorkerInstanceName(clusterID, instanceID string) string {
 
 func NodePoolDeploymentName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
 	return NodePoolVMSSName(azureMachinePool)
+}
+
+func MachinePoolID(getter LabelsGetter) string {
+	return getter.GetLabels()[apiextensionslabels.MachinePool]
 }
 
 func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {

@@ -166,18 +166,6 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Cluster CRD exists")
 	}
 
-	var operatorVersion string
-	{
-		// `operatorVersion` is the link between an operator and a `CustomResource`.
-		// azure-operator with version `operatorVersion` will only reconcile `AzureConfig` labeled with `operatorVersion`.
-		operatorVersion = project.Version()
-		if env.TestDir() == "e2e/test/update" {
-			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
-			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
-			operatorVersion = env.GetLatestOperatorRelease()
-		}
-	}
-
 	{
 		err := installChartPackageBeingTested(ctx, config, renderedAzureOperatorChartValues)
 		if err != nil {
@@ -235,7 +223,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": operatorVersion,
+					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
 					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 			},
@@ -309,7 +297,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": operatorVersion,
+					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
 					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 			},
@@ -386,7 +374,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 						Kubelet: providerv1alpha1.ClusterKubernetesKubelet{
 							AltNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local",
 							Domain:   "worker." + env.ClusterID() + ".k8s." + env.CommonDomain(),
-							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + operatorVersion,
+							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + env.GetOperatorVersion(),
 							Port:     10250,
 						},
 						NetworkSetup: providerv1alpha1.ClusterKubernetesNetworkSetup{Docker: providerv1alpha1.ClusterKubernetesNetworkSetupDocker{Image: "quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9"}},
@@ -395,7 +383,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					Masters: []providerv1alpha1.ClusterNode{},
 					Workers: []providerv1alpha1.ClusterNode{},
 				},
-				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: operatorVersion},
+				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: env.GetOperatorVersion()},
 			},
 		}
 		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(azureConfig)
@@ -421,7 +409,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					Namespace: metav1.NamespaceDefault,
 					Labels: map[string]string{
 						capiv1alpha3.ClusterLabelName: env.ClusterID(),
-						label.AzureOperatorVersion:    operatorVersion,
+						label.AzureOperatorVersion:    env.GetOperatorVersion(),
 						label.Cluster:                 env.ClusterID(),
 						label.MachinePool:             env.NodePoolID(),
 						label.Organization:            organization,
@@ -481,7 +469,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Namespace: azureMachinePool.Namespace,
 				Labels: map[string]string{
 					capiv1alpha3.ClusterLabelName: env.ClusterID(),
-					label.AzureOperatorVersion:    operatorVersion,
+					label.AzureOperatorVersion:    env.GetOperatorVersion(),
 					label.Cluster:                 env.ClusterID(),
 					label.ClusterOperatorVersion:  clusterOperatorVersion,
 					label.MachinePool:             env.NodePoolID(),
