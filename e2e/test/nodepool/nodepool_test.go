@@ -234,7 +234,7 @@ func getNumberOfNodesByLabel(nodes *v1.NodeList, labelName, labelValue string) (
 	for _, node := range nodes.Items {
 		existingLabelValue, exists := node.GetLabels()[labelName]
 		if !exists {
-			return 0, microerror.Mask(missingNodePoolLabelError)
+			return 0, microerror.Maskf(missingNodePoolLabelError, fmt.Sprintf("Label %#q is missing from node %#q", labelName, node.Name))
 		}
 
 		if existingLabelValue == labelValue {
