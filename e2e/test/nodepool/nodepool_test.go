@@ -10,6 +10,7 @@ import (
 	"testing"
 
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/label"
 	"github.com/giantswarm/backoff"
@@ -342,6 +343,29 @@ func (s *Nodepool) CreateNodePool(ctx context.Context, nodepoolID string, replic
 		}
 
 		err = config.K8sClients.CtrlClient().Create(ctx, machinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		spark := &v1alpha1.Spark{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "core.giantswarm.io/v1alpha1",
+				Kind:       "Spark",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      nodepoolID,
+				Namespace: azureMachinePool.Namespace,
+				Labels: map[string]string{
+					capiv1alpha3.ClusterLabelName: env.ClusterID(),
+					label.Cluster:                 env.ClusterID(),
+					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+				},
+			},
+		}
+
+		err := config.K8sClients.CtrlClient().Create(ctx, spark)
 		if err != nil {
 			return microerror.Mask(err)
 		}
