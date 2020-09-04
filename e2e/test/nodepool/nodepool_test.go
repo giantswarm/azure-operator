@@ -225,13 +225,7 @@ func getNumberOfNodesByLabel(nodes *v1.NodeList, labelName, labelValue string) (
 func getWorkerNodes(ctx context.Context, ctrlClient client.Client) (*v1.NodeList, error) {
 	nodes := &v1.NodeList{}
 
-	var labelSelector client.MatchingLabels
-	{
-		labelSelector = make(map[string]string)
-		labelSelector["role"] = "worker"
-	}
-
-	err := ctrlClient.List(ctx, nodes, labelSelector)
+	err := ctrlClient.List(ctx, nodes)
 	if err != nil {
 		return nodes, microerror.Mask(err)
 	}
