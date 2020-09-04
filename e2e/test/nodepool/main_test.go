@@ -45,6 +45,7 @@ func init() {
 			Logger:     config.Logger,
 			NodePoolID: env.NodePoolID(),
 			Provider:   p,
+			Guest:      config.Guest,
 		}
 
 		nodepool, err = New(c)
