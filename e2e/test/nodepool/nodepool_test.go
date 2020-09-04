@@ -89,7 +89,7 @@ func New(config Config) (*Nodepool, error) {
 	return s, nil
 }
 
-const LabelVmSize = "node.kubernetes.io/instance-type"
+const LabelVmSize = "beta.kubernetes.io/instance-type"
 
 func (s *Nodepool) Test(ctx context.Context) error {
 	clusterID := s.clusterID
