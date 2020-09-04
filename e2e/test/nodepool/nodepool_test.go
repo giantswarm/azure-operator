@@ -155,31 +155,45 @@ func (s *Nodepool) assertRightNumberOfNodes(ctx context.Context, setupNodePoolID
 		}
 
 		// Check node pool created during setup.
-		err = assertRightNumberOfNodesByNodePool(nodes, setupNodePoolID, setupNodePoolReplicas)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		{
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool %#q has %d nodes", setupNodePoolID, setupNodePoolReplicas))
+			err = assertRightNumberOfNodesByNodePool(nodes, setupNodePoolID, setupNodePoolReplicas)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool %#q has %d nodes", setupNodePoolID, setupNodePoolReplicas))
 
-		err = assertRightNumberOfNodesByVmSize(nodes, setupNodePoolVMSize, setupNodePoolReplicas)
-		if err != nil {
-			return microerror.Mask(err)
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool with VM Size %#q has %d nodes", setupNodePoolVMSize, setupNodePoolReplicas))
+			err = assertRightNumberOfNodesByVmSize(nodes, setupNodePoolVMSize, setupNodePoolReplicas)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool with VM Size %#q has %d nodes", setupNodePoolVMSize, setupNodePoolReplicas))
 		}
 
 		// Check node pool created in test.
-		err = assertRightNumberOfNodesByNodePool(nodes, newNodePoolID, newNodePoolReplicas)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		{
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool %#q has %d nodes", newNodePoolID, newNodePoolReplicas))
+			err = assertRightNumberOfNodesByNodePool(nodes, newNodePoolID, newNodePoolReplicas)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool %#q has %d nodes", newNodePoolID, newNodePoolReplicas))
 
-		err = assertRightNumberOfNodesByVmSize(nodes, newNodePoolVMSize, newNodePoolReplicas)
-		if err != nil {
-			return microerror.Mask(err)
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool with VM Size %#q has %d nodes", newNodePoolVMSize, newNodePoolReplicas))
+			err = assertRightNumberOfNodesByVmSize(nodes, newNodePoolVMSize, newNodePoolReplicas)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool with VM Size %#q has %d nodes", newNodePoolVMSize, newNodePoolReplicas))
 		}
 
 		return nil
 	}
+
 	b := backoff.NewConstant(backoff.ShortMaxWait, backoff.ShortMaxInterval)
-	err := backoff.Retry(o, b)
+	n := backoff.NewNotifier(s.logger, ctx)
+	err := backoff.RetryNotify(o, b, n)
 	if err != nil {
 		return microerror.Mask(err)
 	}
