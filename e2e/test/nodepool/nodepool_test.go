@@ -228,10 +228,10 @@ func getWorkerNodes(ctx context.Context, ctrlClient client.Client) (*v1.NodeList
 	var labelSelector client.MatchingLabels
 	{
 		labelSelector = make(map[string]string)
-		labelSelector["kubernetes.io/role"] = "worker"
+		labelSelector["role"] = "worker"
 	}
 
-	err := ctrlClient.List(ctx, nodes, labelSelector, client.InNamespace(metav1.NamespaceDefault))
+	err := ctrlClient.List(ctx, nodes, labelSelector)
 	if err != nil {
 		return nodes, microerror.Mask(err)
 	}
