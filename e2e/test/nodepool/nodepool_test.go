@@ -89,7 +89,7 @@ func New(config Config) (*Nodepool, error) {
 	return s, nil
 }
 
-const LabelVmSize = "beta.kubernetes.io/instance-type"
+const LabelVmSize = "node.kubernetes.io/instance-type"
 
 func (s *Nodepool) Test(ctx context.Context) error {
 	clusterID := s.clusterID
@@ -234,7 +234,7 @@ func getNumberOfNodesByLabel(nodes *v1.NodeList, labelName, labelValue string) (
 	for _, node := range nodes.Items {
 		existingLabelValue, exists := node.GetLabels()[labelName]
 		if !exists {
-			return 0, microerror.Maskf(missingNodePoolLabelError, fmt.Sprintf("Label %#q is missing from node %#q", labelName, node.Name))
+			return 0, microerror.Maskf(missingNodePoolLabelError, fmt.Sprintf("Label %#q is missing from node %#q. Present labels are %v", labelName, node.Name, node.GetLabels()))
 		}
 
 		if existingLabelValue == labelValue {

@@ -586,7 +586,7 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 		}
 
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
-		commonCluster.Kubernetes.Kubelet.Labels = key.KubeletLabelsNodePool(azureCluster)
+		commonCluster.Kubernetes.Kubelet.Labels = key.KubeletLabelsNodePool(machinePool)
 	}
 
 	{
