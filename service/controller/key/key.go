@@ -343,14 +343,20 @@ func IsSucceededProvisioningState(s string) bool {
 }
 
 // These are the same labels that kubernetesd adds when creating/updating an AzureConfig.
-func KubeletLabelsNodePool(getter LabelsGetter) string {
+func KubeletLabelsNodePool(getter LabelsGetter) (string, error) {
 	var labels string
 
 	labels = ensureLabel(labels, label.Provider, "azure")
 	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
-	labels = ensureLabel(labels, apiextensionslabels.MachinePool, MachinePoolID(getter))
 
-	return labels
+	machinePoolID, err := MachinePoolID(getter)
+	if err != nil {
+		return labels, microerror.Mask(err)
+	}
+
+	labels = ensureLabel(labels, apiextensionslabels.MachinePool, machinePoolID)
+
+	return labels, nil
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
@@ -603,8 +609,13 @@ func NodePoolDeploymentName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) 
 	return NodePoolVMSSName(azureMachinePool)
 }
 
-func MachinePoolID(getter LabelsGetter) string {
-	return getter.GetLabels()[apiextensionslabels.MachinePool]
+func MachinePoolID(getter LabelsGetter) (string, error) {
+	machinePoolID, exists := getter.GetLabels()[apiextensionslabels.MachinePool]
+	if !exists {
+		return "", microerror.Mask(missingMachinePoolLabelError)
+	}
+
+	return machinePoolID, nil
 }
 
 func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
