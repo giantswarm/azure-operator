@@ -350,8 +350,8 @@ func KubeletLabelsNodePool(getter LabelsGetter) (string, error) {
 	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
 
 	machinePoolID, err := MachinePoolID(getter)
-	if err != nil {
-		return labels, microerror.Mask(err)
+	if err != nil || machinePoolID == "" {
+		return labels, microerror.Mask(missingMachinePoolLabelError)
 	}
 
 	labels = ensureLabel(labels, apiextensionslabels.MachinePool, machinePoolID)
