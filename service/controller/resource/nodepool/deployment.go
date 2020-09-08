@@ -36,14 +36,13 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		return azureresource.Deployment{}, microerror.Mask(missingOperatorVersionLabel)
 	}
 
-	certificateEncryptionSecretName := fmt.Sprintf("%s-certificate-encryption", azureCluster.GetName())
-	encrypterObject, err := r.getEncrypterObject(ctx, certificateEncryptionSecretName)
+	encrypterObject, err := r.getEncrypterObject(ctx, key.CertificateEncryptionSecretName(azureCluster))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	storageAccountName := strings.Replace(fmt.Sprintf("%s%s", "gssa", azureCluster.GetName()), "-", "", -1)
-	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, storageAccountsClient, azureCluster.GetName(), storageAccountName, key.WorkerBlobName(operatorVersion), encrypterObject)
+	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, storageAccountsClient, azureCluster.GetName(), storageAccountName, key.BootstrapBlobName(*azureMachinePool), key.WorkerBlobName(operatorVersion), encrypterObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -115,7 +114,7 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
-func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
+func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, containerName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
 	encryptionKey := encrypterObject.GetEncryptionKey()
 	initialVector := encrypterObject.GetInitialVector()
 
@@ -136,7 +135,6 @@ func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClie
 		return "", microerror.Maskf(executionFailedError, "storage account key's list is empty")
 	}
 	primaryKey := *(((*keys.Keys)[0]).Value)
-	containerName := key.BlobContainerName()
 
 	sc, err := azblob.NewSharedKeyCredential(storageAccountName, primaryKey)
 	if err != nil {
@@ -146,7 +144,7 @@ func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClie
 	p := azblob.NewPipeline(sc, azblob.PipelineOptions{})
 	u, _ := url.Parse(fmt.Sprintf("https://%s.blob.core.windows.net", storageAccountName))
 	serviceURL := azblob.NewServiceURL(*u, p)
-	containerURL := serviceURL.NewContainerURL(key.BlobContainerName())
+	containerURL := serviceURL.NewContainerURL(containerName)
 
 	workerBlobURL, err := blobclient.GetBlobURL(workerBlobName, containerName, storageAccountName, primaryKey, &containerURL)
 	if err != nil {

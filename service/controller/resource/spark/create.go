@@ -350,11 +350,12 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 			return nil, microerror.Mask(err)
 		}
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
-			CustomObject:    mappedAzureConfig,
-			Images:          images,
-			MasterCertFiles: masterCertFiles,
-			Versions:        versions,
-			WorkerCertFiles: workerCertFiles,
+			AzureMachinePool: azureMachinePool,
+			CustomObject:     mappedAzureConfig,
+			Images:           images,
+			MasterCertFiles:  masterCertFiles,
+			Versions:         versions,
+			WorkerCertFiles:  workerCertFiles,
 		}
 	}
 
