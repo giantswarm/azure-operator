@@ -1,80 +1,40 @@
-typemeta:
-  kind: AzureCluster
-  apiversion: infrastructure.cluster.x-k8s.io/v1alpha3
-objectmeta:
-  name: ""
-  generatename: ""
-  namespace: ""
-  selflink: ""
-  uid: ""
-  resourceversion: "2"
-  generation: 0
-  creationtimestamp: "0001-01-01T00:00:00Z"
-  deletiontimestamp: null
-  deletiongraceperiodseconds: null
-  labels:
-    azure-operator.giantswarm.io/version: ""
-    cluster.x-k8s.io/cluster-name: ""
-    giantswarm.io/cluster: ""
-    giantswarm.io/organization: ""
-    release.giantswarm.io/version: ""
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureCluster
+metadata:
   annotations:
     cluster.giantswarm.io/description: ""
-  ownerreferences: []
-  finalizers: []
-  clustername: ""
-  managedfields: []
+  creationTimestamp: null
+  labels:
+    azure-operator.giantswarm.io/version: 4.2.0
+    cluster.x-k8s.io/cluster-name: ""
+    giantswarm.io/cluster: c6fme
+    giantswarm.io/organization: ""
+    release.giantswarm.io/version: 12.0.0
+  name: c6fme
+  namespace: default
+  resourceVersion: "2"
 spec:
-  networkspec:
-    vnet:
-      resourcegroup: ""
-      id: ""
-      name: -VirtualNetwork
-      cidrblock: ""
-      tags: {}
-    subnets: []
-  resourcegroup: ""
-  subscriptionid: ""
-  location: westeurope
-  controlplaneendpoint:
+  controlPlaneEndpoint:
     host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
     port: 443
-  additionaltags: {}
+  location: westeurope
+  networkSpec:
+    vnet:
+      cidrBlock: 10.10.0.0/16
+      name: c6fme-VirtualNetwork
+      resourceGroup: c6fme
+  resourceGroup: ""
 status:
-  network:
-    securitygroups: {}
-    apiserverlb:
-      id: ""
-      name: ""
-      sku: ""
-      frontendipconfig: {}
-      backendpool:
-        name: ""
-        id: ""
-      tags: {}
-    apiserverip:
-      id: ""
-      name: ""
-      ipaddress: ""
-      dnsname: ""
-  failuredomains: {}
   bastion:
-    id: ""
-    name: ""
-    availabilityzone: ""
-    vmsize: ""
-    image:
-      id: null
-      sharedgallery: null
-      marketplace: null
-    osdisk:
-      ostype: ""
-      disksizegb: 0
-      manageddisk:
-        storageaccounttype: ""
-    startupscript: ""
-    state: ""
-    identity: ""
-    tags: {}
-    addresses: []
+    image: {}
+    osDisk:
+      diskSizeGB: 0
+      managedDisk:
+        storageAccountType: ""
+      osType: ""
+  network:
+    apiServerIp: {}
+    apiServerLb:
+      backendPool: {}
+      frontendIpConfig: {}
   ready: false

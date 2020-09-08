@@ -45,7 +45,6 @@ require (
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	gopkg.in/yaml.v2 v2.3.0
 	k8s.io/api v0.18.5
 	k8s.io/apiextensions-apiserver v0.18.5
 	k8s.io/apimachinery v0.18.5

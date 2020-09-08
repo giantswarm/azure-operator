@@ -1,59 +1,33 @@
-typemeta:
-  kind: AzureMachine
-  apiversion: infrastructure.cluster.x-k8s.io/v1alpha3
-objectmeta:
-  name: -master-0
-  generatename: ""
-  namespace: ""
-  selflink: ""
-  uid: ""
-  resourceversion: "1"
-  generation: 0
-  creationtimestamp: "0001-01-01T00:00:00Z"
-  deletiontimestamp: null
-  deletiongraceperiodseconds: null
+apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureMachine
+metadata:
+  creationTimestamp: null
   labels:
-    azure-operator.giantswarm.io/version: ""
+    azure-operator.giantswarm.io/version: 4.3.0
     cluster.x-k8s.io/cluster-name: ""
     cluster.x-k8s.io/control-plane: "true"
-    giantswarm.io/cluster: ""
+    giantswarm.io/cluster: c6fme
     giantswarm.io/organization: ""
-    release.giantswarm.io/version: ""
-  annotations: {}
-  ownerreferences: []
-  finalizers: []
-  clustername: ""
-  managedfields: []
+    release.giantswarm.io/version: 12.1.0
+  name: c6fme-master-0
+  namespace: default
+  resourceVersion: "2"
 spec:
-  providerid: null
-  vmsize: ""
-  failuredomain: null
-  availabilityzone:
-    id: null
-    enabled: null
+  availabilityZone: {}
+  failureDomain: "1"
   image:
-    id: null
-    sharedgallery: null
     marketplace:
-      publisher: kinvolk
       offer: flatcar-container-linux-free
+      publisher: kinvolk
       sku: stable
       version: 2345.3.1
-  identity: ""
-  userassignedidentities: []
-  osdisk:
-    ostype: Linux
-    disksizegb: 50
-    manageddisk:
-      storageaccounttype: Premium_LRS
   location: westeurope
-  sshpublickey: ""
-  additionaltags: {}
-  allocatepublicip: false
-  acceleratednetworking: null
+  osDisk:
+    diskSizeGB: 50
+    managedDisk:
+      storageAccountType: Premium_LRS
+    osType: Linux
+  sshPublicKey: ssh-rsa foobarbaz== foobar
+  vmSize: Standard_D4s_v3
 status:
   ready: false
-  addresses: []
-  vmstate: null
-  failurereason: null
-  failuremessage: null
