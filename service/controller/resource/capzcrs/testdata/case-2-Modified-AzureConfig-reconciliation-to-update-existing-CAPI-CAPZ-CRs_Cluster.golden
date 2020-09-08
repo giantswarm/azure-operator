@@ -1,57 +1,31 @@
-typemeta:
-  kind: Cluster
-  apiversion: cluster.x-k8s.io/v1alpha3
-objectmeta:
-  name: ""
-  generatename: ""
-  namespace: ""
-  selflink: ""
-  uid: ""
-  resourceversion: "2"
-  generation: 0
-  creationtimestamp: "0001-01-01T00:00:00Z"
-  deletiontimestamp: null
-  deletiongraceperiodseconds: null
+apiVersion: cluster.x-k8s.io/v1alpha3
+kind: Cluster
+metadata:
+  creationTimestamp: null
   labels:
-    azure-operator.giantswarm.io/version: ""
+    azure-operator.giantswarm.io/version: 4.3.0
     cluster-operator.giantswarm.io/version: ""
-    cluster.x-k8s.io/cluster-name: ""
-    giantswarm.io/cluster: ""
+    cluster.x-k8s.io/cluster-name: c6fme
+    giantswarm.io/cluster: c6fme
     giantswarm.io/organization: ""
-    release.giantswarm.io/version: ""
-  annotations: {}
-  ownerreferences: []
-  finalizers: []
-  clustername: ""
-  managedfields: []
+    release.giantswarm.io/version: 12.1.0
+  name: c6fme
+  namespace: default
+  resourceVersion: "2"
 spec:
-  paused: false
-  clusternetwork:
-    apiserverport: 0
+  clusterNetwork:
+    apiServerPort: 443
+    serviceDomain: c6fme.k8s.ghost.westeurope.azure.gigantic.io
     services:
-      cidrblocks:
-      - ""
-    pods: null
-    servicedomain: c6fme.k8s.ghost.westeurope.azure.gigantic.io
-  controlplaneendpoint:
+      cidrBlocks:
+      - 172.31.0.0/16
+  controlPlaneEndpoint:
     host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
     port: 443
-  controlplaneref: null
-  infrastructureref:
+  infrastructureRef:
     kind: AzureCluster
-    namespace: ""
-    name: ""
-    uid: ""
-    apiversion: ""
-    resourceversion: ""
-    fieldpath: ""
+    name: c6fme
+    namespace: default
 status:
-  failuredomains: {}
-  failurereason: null
-  failuremessage: null
-  phase: ""
-  infrastructureready: false
-  controlplaneinitialized: false
-  controlplaneready: false
-  conditions: []
-  observedgeneration: 0
+  controlPlaneInitialized: false
+  infrastructureReady: false

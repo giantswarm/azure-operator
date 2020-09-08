@@ -1,22 +1,17 @@
 apiVersion: provider.giantswarm.io/v1alpha1
 kind: AzureConfig
 metadata:
-  creationTimestamp: "2020-08-10T11:03:14Z"
+  creationTimestamp: null
   finalizers:
   - operatorkit.giantswarm.io/azure-operator
   - operatorkit.giantswarm.io/legacy-controller
-  generation: 1
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
-    cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: ""
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: default
-  resourceVersion: "176010432"
-  selfLink: /apis/provider.giantswarm.io/v1alpha1/namespaces/default/azureconfigs/c6fme
-  uid: d8fcb3cf-4561-4120-91c2-43e3633d5df2
+  resourceVersion: "1"
 spec:
   azure:
     availabilityZones:
@@ -43,21 +38,24 @@ spec:
       cidr: 10.10.0.0/16
       masterSubnetCIDR: 10.10.0.0/24
       workerSubnetCIDR: 10.10.1.0/24
-    workers: null
+    workers:
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_A2_v2
   cluster:
     calico:
       cidr: 16
       mtu: 1430
       subnet: 10.1.0.0/16
     customer:
-      id: ""
+      id: giantswarm
     docker:
       daemon:
-        cidr: ""
+        cidr: 172.17.0.1/16
     etcd:
       altNames: ""
       domain: etcd.c6fme.k8s.ghost.westeurope.azure.gigantic.io
-      port: 0
+      port: 2379
       prefix: giantswarm.io
     id: c6fme
     kubernetes:
@@ -68,38 +66,42 @@ spec:
       cloudProvider: azure
       dns:
         ip: 172.31.0.10
-      domain: ""
+      domain: cluster.local
       ingressController:
         docker:
-          image: ""
-        domain: ""
-        insecurePort: 0
-        securePort: 0
-        wildcardDomain: ""
+          image: quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.11
+        domain: ingress.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+        insecurePort: 30010
+        securePort: 30011
+        wildcardDomain: '*.c6fme.k8s.ghost.westeurope.azure.gigantic.io'
       kubelet:
-        altNames: ""
+        altNames: kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local
         domain: worker.c6fme.k8s.ghost.westeurope.azure.gigantic.io
-        labels: giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=4.2.0
-        port: 0
+        labels: azure-operator.giantswarm.io/version=4.2.0,giantswarm.io/provider=azure
+        port: 10250
       networkSetup:
         docker:
-          image: ""
+          image: quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9
         kubeProxy:
           conntrackMaxPerCore: 0
       ssh:
         userList:
-        - name: john
-          publicKey: ssh-rsa ASDFASADFASDFSDAFSADFSDF== john
-        - name: doe
-          publicKey: ssh-rsa FOOBARBAZFOOFOO== doe
+        - name: foobar
+          publicKey: ssh-rsa foobarbaz== foobar
+        - name: barbaz
+          publicKey: ssh-rsa barbazfoo== barbaz
+        - name: bazfoo
+          publicKey: ssh-rsa bazfoobar== bazfoo
     masters:
-    - id: master-0
+    - id: 9x5qt
     scaling:
-      max: 0
-      min: 0
+      max: 1
+      min: 1
     version: ""
+    workers:
+    - id: z028u
   versionBundle:
-    version: ""
+    version: 4.2.0
 status:
   cluster:
     conditions:
