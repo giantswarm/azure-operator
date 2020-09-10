@@ -24,6 +24,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 			certFiles:                    data.WorkerCertFiles,
 			customObject:                 data.CustomObject,
 			encrypter:                    encrypter,
+			azureMachinePool:             data.AzureMachinePool,
 			subscriptionID:               c.subscriptionID,
 			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
