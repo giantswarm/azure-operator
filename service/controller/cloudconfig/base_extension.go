@@ -30,6 +30,16 @@ func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 		certsPaths = append(certsPaths, file.AbsolutePath)
 	}
 
+	primaryScaleSetName := key.WorkerVMSSName(e.customObject)
+	if e.azureMachinePool != nil {
+		primaryScaleSetName = key.NodePoolVMSSName(e.azureMachinePool)
+	}
+
+	subnetName := key.WorkerSubnetName(e.customObject)
+	if e.azureMachinePool != nil {
+		subnetName = e.azureMachinePool.Name
+	}
+
 	return templateData{
 		azureCNIFileParams{
 			VnetCIDR: e.vnetCIDR,
@@ -43,11 +53,11 @@ func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 			AADClientSecret:             e.azureClientCredentialsConfig.ClientSecret,
 			EnvironmentName:             e.azure.EnvironmentName,
 			Location:                    e.azure.Location,
-			PrimaryScaleSetName:         key.NodePoolVMSSName(e.azureMachinePool),
+			PrimaryScaleSetName:         primaryScaleSetName,
 			ResourceGroup:               key.ResourceGroupName(e.customObject),
 			RouteTableName:              key.RouteTableName(e.customObject),
 			SecurityGroupName:           key.WorkerSecurityGroupName(e.customObject),
-			SubnetName:                  e.azureMachinePool.Name,
+			SubnetName:                  subnetName,
 			SubscriptionID:              e.subscriptionID,
 			TenantID:                    e.azureClientCredentialsConfig.TenantID,
 			VnetName:                    key.VnetName(e.customObject),
