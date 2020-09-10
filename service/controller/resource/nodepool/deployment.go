@@ -31,18 +31,13 @@ import (
 )
 
 func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
-	operatorVersion, exists := azureMachinePool.GetLabels()[label.OperatorVersion]
-	if !exists {
-		return azureresource.Deployment{}, microerror.Mask(missingOperatorVersionLabel)
-	}
-
 	encrypterObject, err := r.getEncrypterObject(ctx, key.CertificateEncryptionSecretName(azureCluster))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
 	storageAccountName := strings.Replace(fmt.Sprintf("%s%s", "gssa", azureCluster.GetName()), "-", "", -1)
-	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, storageAccountsClient, azureCluster.GetName(), storageAccountName, key.BootstrapBlobName(*azureMachinePool), key.WorkerBlobName(operatorVersion), encrypterObject)
+	workerCloudConfig, err := r.getWorkerCloudConfig(ctx, storageAccountsClient, azureCluster.GetName(), storageAccountName, key.BlobContainerName(), key.BootstrapBlobName(*azureMachinePool), encrypterObject)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
