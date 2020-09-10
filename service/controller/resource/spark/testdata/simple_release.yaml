@@ -1,0 +1,60 @@
+apiVersion: release.giantswarm.io/v1alpha1
+kind: Release
+metadata:
+  name: v12.0.0
+spec:
+  apps:
+    - name: cert-exporter
+      version: 1.2.4
+    - name: chart-operator
+      version: 2.3.0
+    - componentVersion: 1.6.5
+      name: coredns
+      version: 1.2.0
+    - componentVersion: 0.7.3
+      name: external-dns
+      version: 1.4.0
+    - componentVersion: 1.9.5
+      name: kube-state-metrics
+      version: 1.1.0
+    - componentVersion: 0.3.3
+      name: metrics-server
+      version: 1.1.0
+    - name: net-exporter
+      version: 1.8.1
+    - componentVersion: 0.18.1
+      name: node-exporter
+      version: 1.2.0
+  components:
+    - catalog: control-plane-catalog
+      name: app-operator
+      version: 2.1.1
+    - catalog: control-plane-catalog
+      name: azure-operator
+      version: 5.0.0-nodepools
+    - catalog: control-plane-catalog
+      name: cert-operator
+      reference: 0.1.0-2
+      version: 0.1.0
+    - catalog: control-plane-catalog
+      name: cluster-operator
+      version: 0.23.16
+    - catalog: control-plane-catalog
+      name: kubernetes
+      version: 1.17.9
+    - catalog: control-plane-catalog
+      name: containerlinux
+      version: 2512.2.1
+    - catalog: control-plane-catalog
+      name: coredns
+      version: 1.6.5
+    - catalog: control-plane-catalog
+      name: calico
+      version: 3.15.1
+    - catalog: control-plane-catalog
+      name: etcd
+      version: 3.4.9
+  date: "2020-08-31T15:00:00Z"
+  state: active
+status:
+  ready: true

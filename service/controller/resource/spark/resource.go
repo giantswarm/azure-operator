@@ -40,7 +40,7 @@ type Config struct {
 	Ignition            setting.Ignition
 	Logger              micrologger.Logger
 	OIDC                setting.OIDC
-	RandomKeysSearcher  *randomkeys.Searcher
+	RandomKeysSearcher  randomkeys.Interface
 	RegistryDomain      string
 	SSHUserList         string
 	SSOPublicKey        string
@@ -59,7 +59,7 @@ type Resource struct {
 	ignition            setting.Ignition
 	logger              micrologger.Logger
 	oidc                setting.OIDC
-	randomKeysSearcher  *randomkeys.Searcher
+	randomKeysSearcher  randomkeys.Interface
 	registryDomain      string
 	sshUserList         string
 	ssoPublicKey        string

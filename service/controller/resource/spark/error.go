@@ -61,3 +61,12 @@ var ownerReferenceNotSet = &microerror.Error{
 func IsOwnerReferenceNotSet(err error) bool {
 	return microerror.Cause(err) == ownerReferenceNotSet
 }
+
+var unknownKindError = &microerror.Error{
+	Kind: "unknownKindError",
+}
+
+// IsUnknownKindError asserts unknownKindError.
+func IsUnknownKindError(err error) bool {
+	return microerror.Cause(err) == unknownKindError
+}
