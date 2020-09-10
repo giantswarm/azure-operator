@@ -482,6 +482,10 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 		hostResourceGroup = r.azure.HostCluster.ResourceGroup
 	)
 
+	{
+		azureConfig.Spec.Azure.VirtualNetwork.CIDR = azureCluster.Spec.NetworkSpec.Vnet.CidrBlock
+	}
+
 	azureConfig.Spec.Azure.DNSZones.API.Name = hostDNSZone
 	azureConfig.Spec.Azure.DNSZones.API.ResourceGroup = hostResourceGroup
 	azureConfig.Spec.Azure.DNSZones.Etcd.Name = hostDNSZone
