@@ -191,7 +191,7 @@ func (s *Nodepool) assertRightNumberOfNodes(ctx context.Context, setupNodePoolID
 		return nil
 	}
 
-	b := backoff.NewConstant(backoff.ShortMaxWait, backoff.ShortMaxInterval)
+	b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
 	n := backoff.NewNotifier(s.logger, ctx)
 	err := backoff.RetryNotify(o, b, n)
 	if err != nil {
