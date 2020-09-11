@@ -4,14 +4,9 @@ package nodepool
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
-	"strings"
 	"testing"
 
-	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/label"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
@@ -19,17 +14,10 @@ import (
 	"github.com/giantswarm/micrologger"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/kubernetes"
-	"k8s.io/client-go/tools/reference"
-	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
-	"github.com/giantswarm/azure-operator/v4/e2e/setup"
-	key2 "github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func Test_Nodepool(t *testing.T) {
@@ -92,20 +80,17 @@ func New(config Config) (*Nodepool, error) {
 const LabelVmSize = "node.kubernetes.io/instance-type"
 
 func (s *Nodepool) Test(ctx context.Context) error {
+	var err error
+
 	clusterID := s.clusterID
 
 	setupNodePoolID := s.nodePoolID
 	setupNodePoolVmSize := env.AzureVMSize()
-	setupNodePoolReplicas := 2
+	setupNodePoolReplicas := 1
 
 	newNodepoolID := "t3st"
 	newNodePoolVmSize := "Standard_D3_v2"
-	newNodePoolReplicas := 3
-
-	err := s.CreateNodePool(ctx, newNodepoolID, int32(newNodePoolReplicas), newNodePoolVmSize)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	newNodePoolReplicas := 1
 
 	err = s.WaitForNodesReady(ctx, newNodePoolReplicas+setupNodePoolReplicas)
 	if err != nil {
@@ -257,137 +242,6 @@ func getWorkerNodes(ctx context.Context, k8sclient kubernetes.Interface) (*v1.No
 	}
 
 	return nodes, nil
-}
-
-func (s *Nodepool) CreateNodePool(ctx context.Context, nodepoolID string, replicas int32, vmSize string) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, replicas))
-
-	var giantSwarmRelease releasev1alpha1.Release
-	{
-		err := s.ctrlClient.Get(ctx, client.ObjectKey{Namespace: metav1.NamespaceDefault, Name: setup.ReleaseName}, &giantSwarmRelease)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	var azureMachinePool *expcapzv1alpha3.AzureMachinePool
-	{
-		azureMachinePool = &expcapzv1alpha3.AzureMachinePool{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: expcapzv1alpha3.GroupVersion.String(),
-				Kind:       "AzureMachinePool",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      nodepoolID,
-				Namespace: metav1.NamespaceDefault,
-				Labels: map[string]string{
-					capiv1alpha3.ClusterLabelName: env.ClusterID(),
-					label.AzureOperatorVersion:    env.GetOperatorVersion(),
-					label.Cluster:                 env.ClusterID(),
-					label.MachinePool:             nodepoolID,
-					label.Organization:            "giantswarm",
-					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
-				},
-			},
-			Spec: expcapzv1alpha3.AzureMachinePoolSpec{
-				Location: env.AzureLocation(),
-				Template: expcapzv1alpha3.AzureMachineTemplate{
-					VMSize:       vmSize,
-					SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(env.SSHPublicKey())),
-				},
-			},
-		}
-
-		err := config.K8sClients.CtrlClient().Create(ctx, azureMachinePool)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	{
-		var infrastructureCRRef *v1.ObjectReference
-		{
-			s := runtime.NewScheme()
-			err := expcapzv1alpha3.AddToScheme(s)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			infrastructureCRRef, err = reference.GetReference(s, azureMachinePool)
-			if err != nil {
-				config.Logger.LogCtx(ctx, "level", "warning", fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
-				return microerror.Mask(err)
-			}
-		}
-
-		clusterOperatorVersion, err := key2.ComponentVersion(giantSwarmRelease, "cluster-operator")
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		machinePool := &expcapiv1alpha3.MachinePool{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: expcapiv1alpha3.GroupVersion.String(),
-				Kind:       "MachinePool",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      nodepoolID,
-				Namespace: azureMachinePool.Namespace,
-				Labels: map[string]string{
-					capiv1alpha3.ClusterLabelName: env.ClusterID(),
-					label.AzureOperatorVersion:    env.GetOperatorVersion(),
-					label.Cluster:                 env.ClusterID(),
-					label.ClusterOperatorVersion:  clusterOperatorVersion,
-					label.MachinePool:             nodepoolID,
-					label.Organization:            "giantswarm",
-					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
-				},
-			},
-			Spec: expcapiv1alpha3.MachinePoolSpec{
-				ClusterName:    env.ClusterID(),
-				Replicas:       to.Int32Ptr(replicas),
-				FailureDomains: env.AzureAvailabilityZonesAsStrings(),
-				Template: capiv1alpha3.MachineTemplateSpec{
-					Spec: capiv1alpha3.MachineSpec{
-						ClusterName:       env.ClusterID(),
-						InfrastructureRef: *infrastructureCRRef,
-					},
-				},
-			},
-		}
-
-		err = config.K8sClients.CtrlClient().Create(ctx, machinePool)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	{
-		spark := &v1alpha1.Spark{
-			TypeMeta: metav1.TypeMeta{
-				APIVersion: "core.giantswarm.io/v1alpha1",
-				Kind:       "Spark",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name:      nodepoolID,
-				Namespace: azureMachinePool.Namespace,
-				Labels: map[string]string{
-					capiv1alpha3.ClusterLabelName: env.ClusterID(),
-					label.Cluster:                 env.ClusterID(),
-					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
-				},
-			},
-		}
-
-		err := config.K8sClients.CtrlClient().Create(ctx, spark)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-	}
-
-	s.logger.LogCtx(ctx, "level", "debug", "message", "created new node pool")
-
-	return nil
 }
 
 func (s *Nodepool) WaitForNodesReady(ctx context.Context, expectedNodes int) error {

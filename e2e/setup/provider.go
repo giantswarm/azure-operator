@@ -407,6 +407,8 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 }
 
 func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient client.Client, giantSwarmRelease releasev1alpha1.Release, nodepoolID string, replicas int32, vmSize string) error {
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, replicas))
+
 	clusterOperatorVersion, err := key.ComponentVersion(giantSwarmRelease, "cluster-operator")
 	if err != nil {
 		return microerror.Mask(err)
@@ -528,6 +530,8 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 			return microerror.Mask(err)
 		}
 	}
+
+	logger.LogCtx(ctx, "level", "debug", "message", "Created new nodepool")
 
 	return nil
 }
