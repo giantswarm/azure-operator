@@ -36,12 +36,11 @@ func (r *Resource) saveCurrentState(ctx context.Context, customObject v1alpha3.A
 		return microerror.Mask(err)
 	}
 
-	annotations := azureMachinePool.GetAnnotations()
-	if annotations == nil {
-		annotations = map[string]string{}
+	if azureMachinePool.Annotations == nil {
+		azureMachinePool.Annotations = map[string]string{}
 	}
 
-	annotations[annotation.StateMachineCurrentState] = state
+	azureMachinePool.Annotations[annotation.StateMachineCurrentState] = state
 
 	err = r.CtrlClient.Update(ctx, azureMachinePool)
 	if err != nil {
@@ -58,12 +57,11 @@ func (r *Resource) getCurrentState(ctx context.Context, customObject v1alpha3.Az
 		return "", microerror.Mask(err)
 	}
 
-	annotations := azureMachinePool.GetAnnotations()
-	if annotations == nil {
-		annotations = map[string]string{}
+	if azureMachinePool.Annotations == nil {
+		azureMachinePool.Annotations = map[string]string{}
 	}
 
-	status, exists := annotations[annotation.StateMachineCurrentState]
+	status, exists := azureMachinePool.Annotations[annotation.StateMachineCurrentState]
 	if !exists {
 		return "", nil
 	}
