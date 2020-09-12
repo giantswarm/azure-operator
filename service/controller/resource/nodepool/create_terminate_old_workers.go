@@ -39,6 +39,11 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return currentState, microerror.Mask(err)
 	}
 
+	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
@@ -59,7 +64,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	{
 		var strIds []string
 		for _, i := range allWorkerInstances {
-			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, key.ClusterID(&azureMachinePool), i)
+			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, key.ClusterID(&azureMachinePool), i)
 			if err != nil {
 				return DeploymentUninitialized, nil
 			}

@@ -3,18 +3,35 @@ package nodepool
 import (
 	"context"
 
+	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-api/util"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
+	azureMachinePool, err := key.ToAzureMachinePool(obj)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
 
-	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, isWorker)
+	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, tenantClusterK8sClient, isWorker)
 	if IsClientNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
@@ -32,17 +49,8 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	return DrainOldWorkerNodes, nil
 }
 
-func countReadyNodes(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return 0, microerror.Mask(err)
-	}
-
-	if cc.Client.TenantCluster.K8s == nil {
-		return 0, clientNotFoundError
-	}
-
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+func countReadyNodes(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
+	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
@@ -57,8 +65,8 @@ func countReadyNodes(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bo
 	return numNodes, nil
 }
 
-func areNodesReadyForTransitioning(ctx context.Context, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
-	numNodes, err := countReadyNodes(ctx, nodeRoleMatchFunc)
+func areNodesReadyForTransitioning(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
+	numNodes, err := countReadyNodes(ctx, tenantClusterK8sClient, nodeRoleMatchFunc)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}

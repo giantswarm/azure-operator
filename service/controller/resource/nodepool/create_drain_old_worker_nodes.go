@@ -36,6 +36,11 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		return currentState, microerror.Mask(err)
 	}
 
+	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
 
 	drainerConfigs := make(map[string]corev1alpha1.DrainerConfig)
@@ -68,7 +73,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 	var nodesPendingDraining int
 	for _, i := range allWorkerInstances {
-		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, key.ClusterID(&azureMachinePool), i)
+		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, key.ClusterID(&azureMachinePool), i)
 		if err != nil {
 			return DeploymentUninitialized, nil
 		}
