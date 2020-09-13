@@ -3,8 +3,10 @@ package nodepool
 import (
 	"context"
 
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api/util"
@@ -25,7 +27,15 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	}
 
 	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
-	if err != nil {
+	if tenantcluster.IsTimeout(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return currentState, nil
+	} else if tenant.IsAPINotAvailable(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return currentState, nil
+	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 

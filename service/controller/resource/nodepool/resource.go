@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
@@ -70,25 +69,15 @@ func (r *Resource) getTenantClusterK8sClient(ctx context.Context, cluster *capiv
 	var k8sClient k8sclient.Interface
 	{
 		restConfig, err := r.tenantRestConfigProvider.NewRestConfig(ctx, key.ClusterID(cluster), cluster.Spec.ControlPlaneEndpoint.String())
-		if tenantcluster.IsTimeout(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return k8sClient, nil
-		} else if err != nil {
+		if err != nil {
 			return k8sClient, microerror.Mask(err)
 		}
 
-		c := k8sclient.ClientsConfig{
+		k8sClient, err := k8sclient.NewClients(k8sclient.ClientsConfig{
 			Logger:     r.Logger,
 			RestConfig: rest.CopyConfig(restConfig),
-		}
-
-		k8sClient, err := k8sclient.NewClients(c)
-		if tenant.IsAPINotAvailable(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-			return k8sClient, nil
-		} else if err != nil {
+		})
+		if err != nil {
 			return k8sClient, microerror.Mask(err)
 		}
 	}
