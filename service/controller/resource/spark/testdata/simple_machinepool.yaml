@@ -19,11 +19,6 @@ spec:
   template:
     metadata: { }
     spec:
-      bootstrap:
-        configRef:
-          apiVersion: bootstrap.cluster.x-k8s.io/v1alpha3
-          kind: KubeadmConfig
-          name: c6fme
       clusterName: c6fme
       infrastructureRef:
         apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
