@@ -73,7 +73,7 @@ func (r *Resource) getTenantClusterK8sClient(ctx context.Context, cluster *capiv
 			return k8sClient, microerror.Mask(err)
 		}
 
-		k8sClient, err := k8sclient.NewClients(k8sclient.ClientsConfig{
+		k8sClient, err = k8sclient.NewClients(k8sclient.ClientsConfig{
 			Logger:     r.Logger,
 			RestConfig: rest.CopyConfig(restConfig),
 		})
