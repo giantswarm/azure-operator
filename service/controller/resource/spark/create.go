@@ -6,6 +6,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -284,6 +285,15 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		// Sort slices so we have a deterministic output.
+		sort.SliceStable(masterCertFiles, func(i, j int) bool {
+			return masterCertFiles[i].AbsolutePath < masterCertFiles[j].AbsolutePath
+		})
+
+		sort.SliceStable(workerCertFiles, func(i, j int) bool {
+			return workerCertFiles[i].AbsolutePath < workerCertFiles[j].AbsolutePath
+		})
 	}
 
 	var organizationAzureClientCredentialsConfig auth.ClientCredentialsConfig
