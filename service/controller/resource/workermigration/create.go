@@ -57,55 +57,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	var azureMachinePool expcapzv1alpha3.AzureMachinePool
-	{
-		nsName := types.NamespacedName{
-			Name:      cr.GetName(),
-			Namespace: cr.GetNamespace(),
-		}
-		err = r.ctrlClient.Get(ctx, nsName, &azureMachinePool)
-		if errors.IsNotFound(err) {
-			azureMachinePool, err = r.createAzureMachinePool(ctx, cr, *builtinVMSS.Sku.Name)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
+	azureMachinePool, err := r.ensureAzureMachinePoolExists(ctx, cr, *builtinVMSS.Sku.Name)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	var machinePool expcapiv1alpha3.MachinePool
-	{
-		nsName := types.NamespacedName{
-			Name:      cr.GetName(),
-			Namespace: cr.GetNamespace(),
-		}
-		err = r.ctrlClient.Get(ctx, nsName, &machinePool)
-		if errors.IsNotFound(err) {
-			machinePool, err = r.createMachinePool(ctx, cr, azureMachinePool, int(*builtinVMSS.Sku.Capacity))
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
+	machinePool, err := r.ensureMachinePoolExists(ctx, cr, azureMachinePool, int(*builtinVMSS.Sku.Capacity))
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	var sparkCR corev1alpha1.Spark
-	{
-		nsName := types.NamespacedName{
-			Name:      cr.GetName(),
-			Namespace: cr.GetNamespace(),
-		}
-		err = r.ctrlClient.Get(ctx, nsName, &sparkCR)
-		if errors.IsNotFound(err) {
-			sparkCR, err = r.createSpark(ctx, cr)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
+	_, err = r.ensureSparkExists(ctx, cr)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	{
@@ -131,9 +95,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) createAzureMachinePool(ctx context.Context, cr providerv1alpha1.AzureConfig, vmSize string) (expcapzv1alpha3.AzureMachinePool, error) {
-	var err error
-	mp := expcapzv1alpha3.AzureMachinePool{
+func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, vmSize string) (expcapzv1alpha3.AzureMachinePool, error) {
+	var azureMachinePool expcapzv1alpha3.AzureMachinePool
+
+	nsName := types.NamespacedName{
+		Name:      cr.GetName(),
+		Namespace: cr.GetNamespace(),
+	}
+	err := r.ctrlClient.Get(ctx, nsName, &azureMachinePool)
+	if err == nil {
+		// NOTE: Success return when AzureMachinePool CR already exists.
+		return azureMachinePool, nil
+	} else if errors.IsNotFound(err) {
+		// This is ok. CR gets created in a bit.
+	} else if err != nil {
+		return expcapzv1alpha3.AzureMachinePool{}, microerror.Mask(err)
+	}
+
+	// CR didn't exist so it's created here.
+	azureMachinePool = expcapzv1alpha3.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "AzureMachinePool",
 			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
@@ -159,16 +139,31 @@ func (r *Resource) createAzureMachinePool(ctx context.Context, cr providerv1alph
 		},
 	}
 
-	err = r.ctrlClient.Create(ctx, &mp)
+	err = r.ctrlClient.Create(ctx, &azureMachinePool)
 	if err != nil {
 		return expcapzv1alpha3.AzureMachinePool{}, microerror.Mask(err)
 	}
 
-	return mp, nil
+	return azureMachinePool, nil
 }
 
-func (r *Resource) createMachinePool(ctx context.Context, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
-	var err error
+func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
+	var machinePool expcapiv1alpha3.MachinePool
+
+	nsName := types.NamespacedName{
+		Name:      cr.GetName(),
+		Namespace: cr.GetNamespace(),
+	}
+	err := r.ctrlClient.Get(ctx, nsName, &machinePool)
+	if err == nil {
+		// NOTE: Success return when MachinePool CR already exists.
+		return machinePool, nil
+	} else if errors.IsNotFound(err) {
+		// This is ok. CR gets created in a bit.
+	} else if err != nil {
+		return expcapiv1alpha3.MachinePool{}, microerror.Mask(err)
+	}
+
 	var infrastructureCRRef *corev1.ObjectReference
 	{
 		s := runtime.NewScheme()
@@ -224,8 +219,24 @@ func (r *Resource) createMachinePool(ctx context.Context, cr providerv1alpha1.Az
 	return mp, nil
 }
 
-func (r *Resource) createSpark(ctx context.Context, cr providerv1alpha1.AzureConfig) (corev1alpha1.Spark, error) {
-	spark := corev1alpha1.Spark{
+func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.AzureConfig) (corev1alpha1.Spark, error) {
+	var spark corev1alpha1.Spark
+
+	nsName := types.NamespacedName{
+		Name:      cr.GetName(),
+		Namespace: cr.GetNamespace(),
+	}
+	err := r.ctrlClient.Get(ctx, nsName, &spark)
+	if err == nil {
+		// NOTE: Success return when Spark CR already exists.
+		return spark, nil
+	} else if errors.IsNotFound(err) {
+		// This is ok. CR gets created in a bit.
+	} else if err != nil {
+		return corev1alpha1.Spark{}, microerror.Mask(err)
+	}
+
+	spark = corev1alpha1.Spark{
 		TypeMeta: metav1.TypeMeta{
 			Kind:       "Spark",
 			APIVersion: "core.giantswarm.io/v1alpha1",
@@ -242,7 +253,7 @@ func (r *Resource) createSpark(ctx context.Context, cr providerv1alpha1.AzureCon
 		Spec: corev1alpha1.SparkSpec{},
 	}
 
-	err := r.ctrlClient.Create(ctx, &spark)
+	err = r.ctrlClient.Create(ctx, &spark)
 	if err != nil {
 		return corev1alpha1.Spark{}, microerror.Mask(err)
 	}
