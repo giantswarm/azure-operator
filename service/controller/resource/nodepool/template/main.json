@@ -327,7 +327,7 @@
                 "name": "dataDisks",
                 "count": "[length(parameters('dataDisks'))]",
                 "input": {
-                  "caching": "[copyIndex('dataDisks').CachingType]",
+                  "caching": "ReadWrite",
                   "createOption": "Empty",
                   "diskSizeGB": "[copyIndex('dataDisks').DiskSizeGB]",
                   "managedDisk": {
@@ -336,6 +336,7 @@
                   "lun": "[copyIndex('dataDisks').Lun]"
                 }
               }
+            ]
           },
           "networkProfile": {
             "networkInterfaceConfigurations": [
@@ -375,7 +376,7 @@
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
         "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachineScaleSets', variables('vmssName')),'2019-12-01', 'Full').identity.principalId]",
         "scope": "[resourceGroup().id]",
-        "principalType":  "ServicePrincipal"
+        "principalType": "ServicePrincipal"
       }
     }
   ]
