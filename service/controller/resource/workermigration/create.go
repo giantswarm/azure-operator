@@ -147,6 +147,48 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 	return azureMachinePool, nil
 }
 
+func (r *Resource) ensureDrainerConfigExists(ctx context.Context, cr providerv1alpha1.AzureConfig, nodeName string) error {
+	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
+
+	c := &corev1alpha1.DrainerConfig{
+		ObjectMeta: metav1.ObjectMeta{
+			Labels: map[string]string{
+				label.Cluster: key.ClusterID(&cr),
+			},
+			Name:      nodeName,
+			Namespace: key.ClusterID(&cr),
+		},
+		Spec: corev1alpha1.DrainerConfigSpec{
+			Guest: corev1alpha1.DrainerConfigSpecGuest{
+				Cluster: corev1alpha1.DrainerConfigSpecGuestCluster{
+					API: corev1alpha1.DrainerConfigSpecGuestClusterAPI{
+						Endpoint: key.ClusterAPIEndpoint(cr),
+					},
+					ID: key.ClusterID(&cr),
+				},
+				Node: corev1alpha1.DrainerConfigSpecGuestNode{
+					Name: nodeName,
+				},
+			},
+			VersionBundle: corev1alpha1.DrainerConfigSpecVersionBundle{
+				Version: "0.2.0",
+			},
+		},
+	}
+
+	_, err := r.ctrlClient.Create(ctx, c)
+	if errors.IsAlreadyExists(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
+	} else if err != nil {
+		return microerror.Mask(err)
+	} else {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node")
+	}
+
+	return nil
+}
+
 func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
 	var machinePool expcapiv1alpha3.MachinePool
 
