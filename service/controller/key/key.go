@@ -444,6 +444,14 @@ func AvailabilityZones(customObject providerv1alpha1.AzureConfig, location strin
 	return customObject.Spec.Azure.AvailabilityZones
 }
 
+func ScalingMinWorkers(customObject providerv1alpha1.AzureConfig) int {
+	return customObject.Spec.Cluster.Scaling.Min
+}
+
+func ScalingMaxWorkers(customObject providerv1alpha1.AzureConfig) int {
+	return customObject.Spec.Cluster.Scaling.Max
+}
+
 func StorageAccountName(customObject LabelsGetter) string {
 	// In integration tests we use hyphens which are not allowed. We also
 	// need to keep the name globaly unique and within 24 character limit.

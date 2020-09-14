@@ -1,20 +1,15 @@
 apiVersion: provider.giantswarm.io/v1alpha1
 kind: AzureConfig
 metadata:
-  creationTimestamp: "2020-08-10T11:03:14Z"
   finalizers:
   - operatorkit.giantswarm.io/azure-operator
   - operatorkit.giantswarm.io/legacy-controller
-  generation: 1
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
     giantswarm.io/cluster: c6fme
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: default
-  resourceVersion: "176010431"
-  selfLink: /apis/provider.giantswarm.io/v1alpha1/namespaces/default/azureconfigs/c6fme
-  uid: d8fcb3cf-4561-4120-91c2-43e3633d5df2
 spec:
   azure:
     availabilityZones:

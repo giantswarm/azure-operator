@@ -22,7 +22,7 @@ spec:
     vnet:
       name: c6fme-VirtualNetwork
       resourceGroup: c6fme
-  resourceGroup: ""
+  resourceGroup: c6fme
 status:
   bastion:
     image: {}
