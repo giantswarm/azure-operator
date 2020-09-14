@@ -368,8 +368,11 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}
 
+		// We ingore the error here. It happens because AzureCluster or AzureConfig don't know about MachinePoolID.
+		kubeletLabels, _ := key.KubeletLabelsNodePool(&azureCluster)
+
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
-		commonCluster.Kubernetes.Kubelet.Labels = key.KubeletLabelsNodePool(&azureCluster)
+		commonCluster.Kubernetes.Kubelet.Labels = kubeletLabels
 	}
 
 	{

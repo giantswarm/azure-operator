@@ -7,6 +7,7 @@ import (
 	"strings"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/network"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
 )
 
 const (
@@ -226,6 +227,22 @@ func CommonDomainResourceGroup() string {
 
 func GetLatestOperatorRelease() string {
 	return latestOperatorRelease
+}
+
+func GetOperatorVersion() string {
+	var operatorVersion string
+	{
+		// `operatorVersion` is the link between an operator and a `CustomResource`.
+		// azure-operator with version `operatorVersion` will only reconcile `AzureConfig` labeled with `operatorVersion`.
+		operatorVersion = project.Version()
+		if TestDir() == "e2e/test/update" {
+			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
+			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
+			operatorVersion = GetLatestOperatorRelease()
+		}
+	}
+
+	return operatorVersion
 }
 
 func SSHPublicKey() string {

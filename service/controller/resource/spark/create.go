@@ -482,6 +482,10 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 		hostResourceGroup = r.azure.HostCluster.ResourceGroup
 	)
 
+	{
+		azureConfig.Spec.Azure.VirtualNetwork.CIDR = azureCluster.Spec.NetworkSpec.Vnet.CidrBlock
+	}
+
 	azureConfig.Spec.Azure.DNSZones.API.Name = hostDNSZone
 	azureConfig.Spec.Azure.DNSZones.API.ResourceGroup = hostResourceGroup
 	azureConfig.Spec.Azure.DNSZones.Etcd.Name = hostDNSZone
@@ -585,8 +589,13 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}
 
+		kubeletLabels, err := key.KubeletLabelsNodePool(machinePool)
+		if err != nil {
+			return providerv1alpha1.Cluster{}, microerror.Mask(err)
+		}
+
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
-		commonCluster.Kubernetes.Kubelet.Labels = key.KubeletLabelsNodePool(azureCluster)
+		commonCluster.Kubernetes.Kubelet.Labels = kubeletLabels
 	}
 
 	{

@@ -185,7 +185,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 		}
 
 		if shouldSubmitDeployment {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed", "subnet", azureCluster.Spec.NetworkSpec.Subnets[i].Name)
 			err = r.createDeployment(ctx, deploymentsClient, key.ClusterID(&azureCluster), deploymentName, desiredDeployment)
 			if err != nil {
 				return microerror.Mask(err)
@@ -197,7 +197,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 			return nil
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged", "subnet", azureCluster.Spec.NetworkSpec.Subnets[i].Name)
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state %#q", *currentDeployment.Properties.ProvisioningState))
 
 		if key.IsFailedProvisioningState(*currentDeployment.Properties.ProvisioningState) {
@@ -255,7 +255,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, subnetsClient *network.SubnetsClient, azureCluster capzv1alpha3.AzureCluster) error {
 	subnetsIterator, err := subnetsClient.ListComplete(ctx, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name)
 	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Vnet not %#q found, cancelling resource", azureCluster.Spec.NetworkSpec.Vnet.Name))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Vnet %#q not found, cancelling resource", azureCluster.Spec.NetworkSpec.Vnet.Name))
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)

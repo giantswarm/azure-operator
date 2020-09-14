@@ -79,6 +79,16 @@ workflows:
           - hold
 
       - architect/integration-test:
+          name: nodepool-test
+          resource_class: large
+          setup-script: "e2e/config/setup.sh"
+          env-file: "e2e/test/nodepool/.env"
+          test-dir: "e2e/test/nodepool"
+          test-timeout: "90m"
+          requires:
+          - hold
+
+      - architect/integration-test:
           name: cluster-deletion-test
           resource_class: large
           setup-script: "e2e/config/setup.sh"
