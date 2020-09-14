@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/operatorkit/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/resource/wrapper/retryresource"
 	"github.com/giantswarm/randomkeys"
+	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -159,6 +160,36 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tenantRestConfigProvider tenantcluster.Interface
+	{
+		c := tenantcluster.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+
+			CertID: certs.APICert,
+		}
+
+		tenantRestConfigProvider, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	nodesConfig := nodes.Config{
 		Debugger:  newDebugger,
 		G8sClient: config.K8sClient.G8sClient(),
@@ -177,6 +208,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			CredentialProvider:        config.CredentialProvider,
 			CtrlClient:                config.K8sClient.CtrlClient(),
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			TenantRestConfigProvider:  tenantRestConfigProvider,
 		}
 
 		nodepoolResource, err = nodepool.New(c)
@@ -251,21 +283,6 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 
 		ipamResource, err = ipam.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var certsSearcher *certs.Searcher
-	{
-		c := certs.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			WatchTimeout: 5 * time.Second,
-		}
-
-		certsSearcher, err = certs.NewSearcher(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

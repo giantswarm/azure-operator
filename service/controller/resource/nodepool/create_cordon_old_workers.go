@@ -6,7 +6,10 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
+	"github.com/giantswarm/errors/tenant"
+	"github.com/giantswarm/k8sclient"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -15,7 +18,6 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -44,17 +46,20 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
+		return currentState, microerror.Mask(err)
 	}
 
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	if cc.Client.TenantCluster.K8s == nil {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
+	if tenantcluster.IsTimeout(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
+	} else if tenant.IsAPINotAvailable(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return currentState, nil
+	} else if err != nil {
+		return currentState, microerror.Mask(err)
 	}
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
@@ -73,7 +78,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	var nodes []corev1.Node
 	{
-		nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(metav1.ListOptions{})
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
@@ -91,7 +96,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
 
-	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, oldNodes)
+	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, tenantClusterK8sClient, oldNodes)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
@@ -108,12 +113,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 }
 
 // ensureNodesCordoned ensures that given tenant cluster nodes are cordoned.
-func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node) (int, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return 0, microerror.Mask(err)
-	}
-
+func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodes []corev1.Node) (int, error) {
 	var count int
 	for _, n := range nodes {
 		// Node already cordoned?
@@ -125,7 +125,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 		t := types.StrategicMergePatchType
 		p := []byte(UnschedulablePatch)
 
-		_, err = cc.Client.TenantCluster.K8s.CoreV1().Nodes().Patch(n.Name, t, p)
+		_, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().Patch(n.Name, t, p)
 		if apierrors.IsNotFound(err) {
 			// On manual operations or during auto-scaling it may happen that
 			// node gets terminated while instances are processed. It's ok from
@@ -179,15 +179,10 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 	return
 }
 
-func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, clusterID string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
+func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, clusterID string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
 	name := key.WorkerInstanceName(clusterID, *instance.InstanceID)
 
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -203,11 +198,11 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, clusterID st
 	return nil, nil
 }
 
-func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clusterID string, instance compute.VirtualMachineScaleSetVM) (*bool, error) {
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, clusterID string, instance compute.VirtualMachineScaleSetVM) (*bool, error) {
 	t := true
 	f := false
 
-	n, err := r.getK8sWorkerNodeForInstance(ctx, clusterID, instance)
+	n, err := r.getK8sWorkerNodeForInstance(ctx, tenantClusterK8sClient, clusterID, instance)
 	if err != nil {
 		return nil, err
 	}
