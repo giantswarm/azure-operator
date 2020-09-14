@@ -26,6 +26,12 @@
         "description": "Unique ID of the cluster owning the nodepool."
       }
     },
+    "dataDisks": {
+      "type": "array",
+      "metadata": {
+        "description": "Disks attached to the VMSS."
+      }
+    },
     "dockerVolumeSizeGB": {
       "type": "string",
       "defaultValue": "50"
@@ -316,26 +322,20 @@
                 "storageAccountType": "[variables('storageAccountType')]"
               }
             },
-            "dataDisks": [
+            "copy": [
               {
-                "caching": "ReadWrite",
-                "createOption": "Empty",
-                "diskSizeGB": "[parameters('dockerVolumeSizeGB')]",
-                "managedDisk": {
-                  "storageAccountType": "[variables('storageAccountType')]"
-                },
-                "lun": 21
-              },
-              {
-                "caching": "ReadWrite",
-                "createOption": "Empty",
-                "diskSizeGB": "[parameters('kubeletVolumeSizeGB')]",
-                "managedDisk": {
-                  "storageAccountType": "[variables('storageAccountType')]"
-                },
-                "lun": 22
+                "name": "dataDisks",
+                "count": "[length(parameters('dataDisks'))]",
+                "input": {
+                  "caching": "[copyIndex('dataDisks').CachingType]",
+                  "createOption": "Empty",
+                  "diskSizeGB": "[copyIndex('dataDisks').DiskSizeGB]",
+                  "managedDisk": {
+                    "storageAccountType": "[variables('storageAccountType')]"
+                  },
+                  "lun": "[copyIndex('dataDisks').Lun]"
+                }
               }
-            ]
           },
           "networkProfile": {
             "networkInterfaceConfigurations": [
