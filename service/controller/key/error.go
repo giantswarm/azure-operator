@@ -40,3 +40,12 @@ var wrongTypeError = &microerror.Error{
 func IsWrongTypeError(err error) bool {
 	return microerror.Cause(err) == wrongTypeError
 }
+
+var missingMachinePoolLabelError = &microerror.Error{
+	Kind: "missingMachinePoolLabelError",
+}
+
+// IsMissingMachinePoolLabelError asserts missingMachinePoolLabelError.
+func IsMissingMachinePoolLabelError(err error) bool {
+	return microerror.Cause(err) == missingMachinePoolLabelError
+}

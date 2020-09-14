@@ -17,7 +17,8 @@ type ProviderConfig struct {
 	G8sClient   versioned.Interface
 	Logger      micrologger.Logger
 
-	ClusterID string
+	ClusterID  string
+	NodePoolID string
 }
 
 type Provider struct {
@@ -25,7 +26,8 @@ type Provider struct {
 	g8sClient   versioned.Interface
 	logger      micrologger.Logger
 
-	clusterID string
+	clusterID  string
+	nodePoolID string
 }
 
 func NewProvider(config ProviderConfig) (*Provider, error) {
@@ -43,19 +45,24 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", config)
 	}
 
+	if config.NodePoolID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.NodePoolID must not be empty", config)
+	}
+
 	p := &Provider{
 		azureClient: config.AzureClient,
 		g8sClient:   config.G8sClient,
 		logger:      config.Logger,
 
-		clusterID: config.ClusterID,
+		clusterID:  config.ClusterID,
+		nodePoolID: config.NodePoolID,
 	}
 
 	return p, nil
 }
 
 func (p *Provider) GetClusterAZs(ctx context.Context) ([]string, error) {
-	vmss, err := p.azureClient.VirtualMachineScaleSetsClient.Get(ctx, p.clusterID, fmt.Sprintf("%s-worker-%s", p.clusterID, p.clusterID))
+	vmss, err := p.azureClient.VirtualMachineScaleSetsClient.Get(ctx, p.clusterID, fmt.Sprintf("nodepool-%s", p.nodePoolID))
 	if err != nil {
 		return []string{}, microerror.Mask(err)
 	}

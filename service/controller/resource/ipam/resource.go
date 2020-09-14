@@ -1,9 +1,6 @@
 package ipam
 
 import (
-	"net"
-	"reflect"
-
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -11,36 +8,34 @@ import (
 )
 
 const (
-	Name = "ipam"
+	Name                                 = "ipam"
+	SubnetRange         NetworkRangeType = "subnet"
+	VirtualNetworkRange NetworkRangeType = "virtual network"
 )
 
-const (
-	// minAllocatedSubnetMaskBits is the maximum size of guest subnet i.e.
-	// smaller number here -> larger subnet per guest cluster. For now anything
-	// under 16 doesn't make sense in here.
-	minAllocatedSubnetMaskBits = 16
-)
+type NetworkRangeType string
 
 type Config struct {
-	Checker   Checker
-	Collector Collector
-	Locker    locker.Interface
-	Logger    micrologger.Logger
-	Persister Persister
-
-	AllocatedSubnetMaskBits int
-	NetworkRange            net.IPNet
+	Checker            Checker
+	Collector          Collector
+	Locker             locker.Interface
+	Logger             micrologger.Logger
+	NetworkRangeGetter NetworkRangeGetter
+	NetworkRangeType   NetworkRangeType
+	Persister          Persister
 }
 
+// Resource finds free IP ranges:
+// - AzureConfig: within an installation range to create new virtual network for the tenant cluster.
+// - CAPI/CAPZ: within a virtual network to create new subnets.
 type Resource struct {
-	checker   Checker
-	collector Collector
-	locker    locker.Interface
-	logger    micrologger.Logger
-	persister Persister
-
-	allocatedSubnetMask net.IPMask
-	networkRange        net.IPNet
+	checker            Checker
+	collector          Collector
+	locker             locker.Interface
+	logger             micrologger.Logger
+	networkRangeGetter NetworkRangeGetter
+	networkRangeType   NetworkRangeType
+	persister          Persister
 }
 
 func New(config Config) (*Resource, error) {
@@ -56,26 +51,23 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.NetworkRangeGetter == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRangeGetter must not be empty", config)
+	}
+	if config.NetworkRangeType == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRangeType must not be empty", config)
+	}
 	if config.Persister == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Persister must not be empty", config)
 	}
 
-	if config.AllocatedSubnetMaskBits < minAllocatedSubnetMaskBits {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AllocatedSubnetMaskBits (%d) must not be smaller than %d", config, config.AllocatedSubnetMaskBits, minAllocatedSubnetMaskBits)
-	}
-	if reflect.DeepEqual(config.NetworkRange, net.IPNet{}) {
-		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRange must not be empty", config)
-	}
-
 	r := &Resource{
-		checker:   config.Checker,
-		collector: config.Collector,
-		locker:    config.Locker,
-		logger:    config.Logger,
-		persister: config.Persister,
-
-		allocatedSubnetMask: net.CIDRMask(config.AllocatedSubnetMaskBits, 32),
-		networkRange:        config.NetworkRange,
+		checker:            config.Checker,
+		collector:          config.Collector,
+		locker:             config.Locker,
+		logger:             config.Logger,
+		networkRangeGetter: config.NetworkRangeGetter,
+		persister:          config.Persister,
 	}
 
 	return r, nil

@@ -32,6 +32,7 @@ func init() {
 			G8sClient:   config.Host.G8sClient(),
 			Logger:      config.Logger,
 			ClusterID:   env.ClusterID(),
+			CtrlClient:  config.K8sClients.CtrlClient(),
 		}
 
 		p, err = NewProvider(c)

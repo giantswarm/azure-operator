@@ -6,6 +6,7 @@ import (
 	"crypto/sha512"
 	"fmt"
 	"net"
+	"sort"
 	"strconv"
 	"strings"
 	"sync"
@@ -284,6 +285,15 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		// Sort slices so we have a deterministic output.
+		sort.SliceStable(masterCertFiles, func(i, j int) bool {
+			return masterCertFiles[i].AbsolutePath < masterCertFiles[j].AbsolutePath
+		})
+
+		sort.SliceStable(workerCertFiles, func(i, j int) bool {
+			return workerCertFiles[i].AbsolutePath < workerCertFiles[j].AbsolutePath
+		})
 	}
 
 	var organizationAzureClientCredentialsConfig auth.ClientCredentialsConfig
@@ -350,11 +360,12 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 			return nil, microerror.Mask(err)
 		}
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
-			CustomObject:    mappedAzureConfig,
-			Images:          images,
-			MasterCertFiles: masterCertFiles,
-			Versions:        versions,
-			WorkerCertFiles: workerCertFiles,
+			AzureMachinePool: azureMachinePool,
+			CustomObject:     mappedAzureConfig,
+			Images:           images,
+			MasterCertFiles:  masterCertFiles,
+			Versions:         versions,
+			WorkerCertFiles:  workerCertFiles,
 		}
 	}
 
@@ -373,7 +384,7 @@ func (r *Resource) getAzureCluster(ctx context.Context, cluster *capiv1alpha3.Cl
 	}
 
 	azureCluster := &capzv1alpha3.AzureCluster{}
-	objectKey := client.ObjectKey{Name: cluster.Spec.InfrastructureRef.Name, Namespace: cluster.Spec.InfrastructureRef.Namespace}
+	objectKey := client.ObjectKey{Name: cluster.Spec.InfrastructureRef.Name, Namespace: cluster.Namespace}
 	if err := r.ctrlClient.Get(ctx, objectKey, azureCluster); err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -481,6 +492,10 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 		hostResourceGroup = r.azure.HostCluster.ResourceGroup
 	)
 
+	{
+		azureConfig.Spec.Azure.VirtualNetwork.CIDR = azureCluster.Spec.NetworkSpec.Vnet.CidrBlock
+	}
+
 	azureConfig.Spec.Azure.DNSZones.API.Name = hostDNSZone
 	azureConfig.Spec.Azure.DNSZones.API.ResourceGroup = hostResourceGroup
 	azureConfig.Spec.Azure.DNSZones.Etcd.Name = hostDNSZone
@@ -584,8 +599,13 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}
 
+		kubeletLabels, err := key.KubeletLabelsNodePool(machinePool)
+		if err != nil {
+			return providerv1alpha1.Cluster{}, microerror.Mask(err)
+		}
+
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
-		commonCluster.Kubernetes.Kubelet.Labels = key.KubeletLabelsNodePool(azureCluster)
+		commonCluster.Kubernetes.Kubelet.Labels = kubeletLabels
 	}
 
 	{

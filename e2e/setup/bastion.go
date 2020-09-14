@@ -77,9 +77,8 @@ func WaitForNetworkToBeCreated(ctx context.Context, logger micrologger.Logger, r
 
 		return nil
 	}
-	n := backoff.NewNotifier(logger, ctx)
 	b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
-	err := backoff.RetryNotify(o, b, n)
+	err := backoff.Retry(o, b)
 	if err != nil {
 		return microerror.Mask(err)
 	}

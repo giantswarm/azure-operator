@@ -31,6 +31,7 @@ type Config struct {
 	Logger        micrologger.Logger
 }
 
+// Resource manages the blob saved in Azure Storage Account that contains the cloudconfig files to bootstrap our virtual machines.
 type Resource struct {
 	clientFactory *client.Factory
 	ctrlClient    ctrlclient.Client

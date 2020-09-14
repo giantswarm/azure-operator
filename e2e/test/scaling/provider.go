@@ -4,13 +4,16 @@ package scaling
 
 import (
 	"context"
-	"encoding/json"
+	"fmt"
 
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/e2e-harness/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/types"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 type ProviderConfig struct {
@@ -18,7 +21,8 @@ type ProviderConfig struct {
 	HostFramework  *framework.Host
 	Logger         micrologger.Logger
 
-	ClusterID string
+	ClusterID  string
+	CtrlClient client.Client
 }
 
 type Provider struct {
@@ -26,7 +30,8 @@ type Provider struct {
 	hostFramework  *framework.Host
 	logger         micrologger.Logger
 
-	clusterID string
+	clusterID  string
+	ctrlClient client.Client
 }
 
 func NewProvider(config ProviderConfig) (*Provider, error) {
@@ -39,9 +44,11 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
 	if config.ClusterID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", config)
+	}
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 
 	p := &Provider{
@@ -49,32 +56,44 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 		hostFramework:  config.HostFramework,
 		logger:         config.Logger,
 
-		clusterID: config.ClusterID,
+		clusterID:  config.ClusterID,
+		ctrlClient: config.CtrlClient,
 	}
 
 	return p, nil
 }
 
+func (p *Provider) findMachinePool(ctx context.Context) (*v1alpha3.MachinePool, error) {
+	crs := &v1alpha3.MachinePoolList{}
+
+	var labelSelector client.MatchingLabels
+	{
+		labelSelector = make(map[string]string)
+		labelSelector[capiv1alpha3.ClusterLabelName] = p.clusterID
+	}
+
+	err := p.ctrlClient.List(ctx, crs, labelSelector, client.InNamespace(metav1.NamespaceDefault))
+	if err != nil {
+		return &v1alpha3.MachinePool{}, microerror.Mask(err)
+	}
+	if len(crs.Items) < 1 {
+		p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("MachinePool CR for cluster id %q not found", p.clusterID))
+		return &v1alpha3.MachinePool{}, microerror.Maskf(notFoundError, fmt.Sprintf("MachinePool CR for cluster id %q not found", p.clusterID))
+	}
+
+	return &crs.Items[0], nil
+}
+
 func (p *Provider) AddWorker() error {
-	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	ctx := context.Background()
+	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	patches := []Patch{
-		{
-			Op:    "add",
-			Path:  "/spec/azure/workers/-",
-			Value: customObject.Spec.Azure.Workers[0],
-		},
-	}
+	machinePool.Spec.Replicas = to.Int32Ptr(*machinePool.Spec.Replicas + int32(1))
 
-	b, err := json.Marshal(patches)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	_, err = p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(p.clusterID, types.JSONPatchType, b)
+	err = p.ctrlClient.Update(ctx, machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -83,7 +102,7 @@ func (p *Provider) AddWorker() error {
 }
 
 func (p *Provider) NumMasters() (int, error) {
-	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs(metav1.NamespaceDefault).Get(p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
@@ -94,30 +113,25 @@ func (p *Provider) NumMasters() (int, error) {
 }
 
 func (p *Provider) NumWorkers() (int, error) {
-	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Get(p.clusterID, metav1.GetOptions{})
+	ctx := context.Background()
+	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
 
-	num := len(customObject.Spec.Azure.Workers)
-
-	return num, nil
+	return int(*machinePool.Spec.Replicas), nil
 }
 
 func (p *Provider) RemoveWorker() error {
-	patches := []Patch{
-		{
-			Op:   "remove",
-			Path: "/spec/azure/workers/1",
-		},
-	}
-
-	b, err := json.Marshal(patches)
+	ctx := context.Background()
+	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	_, err = p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs("default").Patch(p.clusterID, types.JSONPatchType, b)
+	machinePool.Spec.Replicas = to.Int32Ptr(*machinePool.Spec.Replicas - int32(1))
+
+	err = p.ctrlClient.Update(ctx, machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
