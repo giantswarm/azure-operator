@@ -72,16 +72,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	{
-		if !machinePool.Status.InfrastructureReady || (machinePool.Status.Replicas != machinePool.Status.ReadyReplicas) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "node pool workers are not ready yet")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+	if !machinePool.Status.InfrastructureReady || (machinePool.Status.Replicas != machinePool.Status.ReadyReplicas) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "node pool workers are not ready yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
-			return nil
-		}
-
-		// TODO: Drain old workers.
+		return nil
 	}
+
+	/* TODO: Get corresponding cluster for AzureConfig. Fetch the Node objects
+	* from tenant cluster and create DrainerConfig CRs.
+
+	cluster, err :=
+
+	tc, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// TODO: Drain old workers.
+	*/
 
 	{
 		err = r.azureapi.DeleteVMSS(ctx, key.ResourceGroupName(cr), *builtinVMSS.Name)
@@ -176,7 +185,7 @@ func (r *Resource) ensureDrainerConfigExists(ctx context.Context, cr providerv1a
 		},
 	}
 
-	_, err := r.ctrlClient.Create(ctx, c)
+	err := r.ctrlClient.Create(ctx, c)
 	if errors.IsAlreadyExists(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")

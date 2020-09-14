@@ -31,6 +31,7 @@ import (
 )
 
 //go:generate mockgen -destination internal/mock_azure/api.go -source internal/azure/spec.go API
+//go:generate mockgen -destination internal/mock_tenantclient/factory.go -source internal/tenantclient/spec.go Factory
 
 func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	ctrl := gomock.NewController(t)

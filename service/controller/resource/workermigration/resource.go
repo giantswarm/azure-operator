@@ -7,6 +7,7 @@ import (
 
 	azureclient "github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/tenantclient"
 )
 
 const (
@@ -22,9 +23,10 @@ type Config struct {
 }
 
 type Resource struct {
-	azureapi   azure.API
-	ctrlClient client.Client
-	logger     micrologger.Logger
+	azureapi            azure.API
+	ctrlClient          client.Client
+	logger              micrologger.Logger
+	tenantClientFactory tenantclient.Factory
 
 	location string
 }
