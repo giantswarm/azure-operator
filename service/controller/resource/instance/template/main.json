@@ -26,6 +26,16 @@
         "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "scalingMinWorkers":{
+      "type":"int",
+      "minValue":1,
+      "maxValue":100
+    },
+    "scalingMaxWorkers":{
+      "type":"int",
+      "minValue":1,
+      "maxValue":100
+    },
     "vmssMSIEnabled":{
       "type":"bool"
     },
@@ -177,7 +187,12 @@
             "vmssVmSize":{
               "type":"string"
             },
-            "vmssVmCount":{
+            "vmssVmMinCount":{
+              "type":"int",
+              "minValue":1,
+              "maxValue":100
+            },
+            "vmssVmMaxCount":{
               "type":"int",
               "minValue":1,
               "maxValue":100
@@ -266,12 +281,14 @@
                 "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
                 "cluster-autoscaler-enabled":"true",
                 "cluster-autoscaler-name":"[parameters('clusterID')]",
-                "gs-azure-operator.giantswarm.io-version":"[parameters('azureOperatorVersion')]"
+                "gs-azure-operator.giantswarm.io-version":"[parameters('azureOperatorVersion')]",
+                "min":"[int(parameters('vmssVmMinCount'))]",
+                "max":"[int(parameters('vmssVmMaxCount'))]"
               },
               "sku":{
                 "name":"[parameters('vmssVmSize')]",
                 "tier":"Standard",
-                "capacity":"[int(parameters('vmssVmCount'))]"
+                "capacity":"[int(parameters('vmssVmMinCount'))]"
               },
               "identity":{
                 "type":"[if(parameters('vmssMSIEnabled'), 'systemAssigned', 'None')]"
@@ -383,8 +400,11 @@
           "vmssVmSize":{
             "value":"[parameters('workerNodes')[0].vmSize]"
           },
-          "vmssVmCount":{
-            "value":"[length(parameters('workerNodes'))]"
+          "vmssVmMinCount":{
+            "value":"[parameters('scalingMinWorkers')]"
+          },
+          "vmssVmMaxCount":{
+            "value":"[parameters('scalingMaxWorkers')]"
           },
           "vmssStorageAccountType":{
             "value":"[if(contains(variables('vmssStandardLrsSize'), parameters('workerNodes')[0].vmSize), 'Standard_LRS', 'Premium_LRS')]"
