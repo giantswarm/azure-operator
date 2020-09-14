@@ -192,6 +192,7 @@ func newBuiltinVMSS(nodeCount int, name string) azure.VMSS {
 		vmss = &compute.VirtualMachineScaleSet{
 			Sku: &compute.Sku{
 				Capacity: to.Int64P(int64(nodeCount)),
+				Name:     &name,
 			},
 			Name: &name,
 		}
