@@ -95,6 +95,8 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		"masterLBBackendPoolID": cc.MasterLBBackendPoolID,
 		"azureOperatorVersion":  project.Version(),
 		"clusterID":             key.ClusterID(&obj),
+		"scalingMinWorkers":     key.ScalingMinWorkers(obj),
+		"scalingMaxWorkers":     key.ScalingMaxWorkers(obj),
 		"vmssMSIEnabled":        r.Azure.MSI.Enabled,
 		"workerCloudConfigData": workerCloudConfig,
 		"workerNodes":           vmss.GetWorkerNodesConfiguration(obj, distroVersion),
