@@ -4,7 +4,7 @@ metadata:
   creationTimestamp: null
   labels:
     azure-operator.giantswarm.io/version: 4.3.0
-    cluster.x-k8s.io/cluster-name: ""
+    cluster.x-k8s.io/cluster-name: c6fme
     cluster.x-k8s.io/control-plane: "true"
     giantswarm.io/cluster: c6fme
     giantswarm.io/organization: ""
@@ -27,7 +27,7 @@ spec:
     managedDisk:
       storageAccountType: Premium_LRS
     osType: Linux
-  sshPublicKey: ssh-rsa foobarbaz== foobar
+  sshPublicKey: c3NoLXJzYSBmb29iYXJiYXo9PSBmb29iYXI=
   vmSize: Standard_D4s_v3
 status:
   ready: false
