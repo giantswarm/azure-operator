@@ -12,6 +12,7 @@ provisioner: kubernetes.io/azure-disk
 parameters:
   kind: Managed
   storageaccounttype: Premium_LRS
+allowVolumeExpansion: true
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -24,6 +25,7 @@ provisioner: kubernetes.io/azure-disk
 parameters:
   kind: Managed
   storageaccounttype: Premium_LRS
+allowVolumeExpansion: true
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -36,6 +38,7 @@ provisioner: kubernetes.io/azure-disk
 parameters:
   kind: Managed
   storageaccounttype: Standard_LRS
+allowVolumeExpansion: true
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
