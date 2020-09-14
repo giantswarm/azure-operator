@@ -6,6 +6,7 @@ import (
 	"strconv"
 
 	apiextannotation "github.com/giantswarm/apiextensions/pkg/annotation"
+	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/pkg/label"
 	apiextlabel "github.com/giantswarm/apiextensions/pkg/label"
@@ -90,6 +91,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	var sparkCR corev1alpha1.Spark
+	{
+		nsName := types.NamespacedName{
+			Name:      cr.GetName(),
+			Namespace: cr.GetNamespace(),
+		}
+		err = r.ctrlClient.Get(ctx, nsName, &sparkCR)
+		if errors.IsNotFound(err) {
+			sparkCR, err = r.createSpark(ctx, cr)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	{
 		if !machinePool.Status.InfrastructureReady || (machinePool.Status.Replicas != machinePool.Status.ReadyReplicas) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "node pool workers are not ready yet")
@@ -146,7 +164,7 @@ func (r *Resource) createAzureMachinePool(ctx context.Context, cr providerv1alph
 		return expcapzv1alpha3.AzureMachinePool{}, microerror.Mask(err)
 	}
 
-	return mp, err
+	return mp, nil
 }
 
 func (r *Resource) createMachinePool(ctx context.Context, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
@@ -203,7 +221,33 @@ func (r *Resource) createMachinePool(ctx context.Context, cr providerv1alpha1.Az
 		return expcapiv1alpha3.MachinePool{}, microerror.Mask(err)
 	}
 
-	return mp, err
+	return mp, nil
+}
+
+func (r *Resource) createSpark(ctx context.Context, cr providerv1alpha1.AzureConfig) (corev1alpha1.Spark, error) {
+	spark := corev1alpha1.Spark{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Spark",
+			APIVersion: "core.giantswarm.io/v1alpha1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      cr.Name,
+			Namespace: cr.Namespace, // TODO: Adjust for CR namespacing.
+			Labels: map[string]string{
+				apiextlabel.Cluster:           key.ClusterID(&cr),
+				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+				apiextlabel.ReleaseVersion:    key.ReleaseVersion(&cr),
+			},
+		},
+		Spec: corev1alpha1.SparkSpec{},
+	}
+
+	err := r.ctrlClient.Create(ctx, &spark)
+	if err != nil {
+		return corev1alpha1.Spark{}, microerror.Mask(err)
+	}
+
+	return spark, nil
 }
 
 func intSliceToStringSlice(xs []int) []string {

@@ -8,6 +8,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest"
+	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
@@ -71,17 +72,52 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	opts := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
-	}
-	mpList := new(expcapiv1alpha3.MachinePoolList)
-	err = ctrlClient.List(context.Background(), mpList, opts)
-	if err != nil {
-		t.Fatal(err)
+	// VERIFY: MachinePool is there.
+	{
+		opts := client.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
+		}
+		mpList := new(expcapiv1alpha3.MachinePoolList)
+		err = ctrlClient.List(context.Background(), mpList, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(mpList.Items) == 0 {
+			t.Fatal("expected at least one MachinePool CR to exist. got 0.")
+		}
 	}
 
-	if len(mpList.Items) == 0 {
-		t.Fatal("expected at least one MachinePool CR to exist. got 0.")
+	// VERIFY: AzureMachinePool is there.
+	{
+		opts := client.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
+		}
+		mpList := new(expcapzv1alpha3.AzureMachinePoolList)
+		err = ctrlClient.List(context.Background(), mpList, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(mpList.Items) == 0 {
+			t.Fatal("expected at least one AzureMachinePool CR to exist. got 0.")
+		}
+	}
+
+	// VERIFY: Spark CR is there.
+	{
+		opts := client.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
+		}
+		sparkList := new(corev1alpha1.SparkList)
+		err = ctrlClient.List(context.Background(), sparkList, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(sparkList.Items) == 0 {
+			t.Fatal("expected at least one Spark CR to exist. got 0.")
+		}
 	}
 
 	// gomock verifies rest of the assertions on exit.
@@ -224,6 +260,11 @@ func newFakeClient() client.Client {
 	}
 
 	err = corev1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
+	err = corev1alpha1.AddToScheme(scheme)
 	if err != nil {
 		panic(err)
 	}
