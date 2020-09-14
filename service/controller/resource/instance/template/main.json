@@ -156,6 +156,9 @@
             "location":{
               "type":"string"
             },
+            "clusterID":{
+              "type":"string"
+            },
             "azureOperatorVersion":{
               "type":"string"
             },
@@ -262,7 +265,7 @@
               "tags":{
                 "provider":"[toUpper(parameters('GiantSwarmTags').provider)]",
                 "cluster-autoscaler-enabled":"true",
-                "cluster-autoscaler-name":"[parameters('vmssName')]",
+                "cluster-autoscaler-name":"[parameters('clusterID')]",
                 "gs-azure-operator.giantswarm.io-version":"[parameters('azureOperatorVersion')]"
               },
               "sku":{
@@ -359,6 +362,9 @@
           ]
         },
         "parameters":{
+          "clusterID":{
+            "value":"[parameters('clusterID')]"
+          },
           "location":{
             "value":"[resourceGroup().location]"
           },
