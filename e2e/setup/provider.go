@@ -531,7 +531,7 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 		}
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", "Created new nodepool")
+	logger.LogCtx(ctx, "level", "debug", "message", "created new nodepool")
 
 	return nil
 }
