@@ -14,7 +14,8 @@ import (
 )
 
 const (
-	defaultEtcdPort = 2379
+	defaultEtcdPort                  = 2379
+	defaultImagePullProgressDeadline = "1m"
 )
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
@@ -61,6 +62,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
+		params.ImagePullProgressDeadline = defaultImagePullProgressDeadline
 		params.DisableIngressControllerService = true
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Kubernetes = k8scloudconfig.Kubernetes{
