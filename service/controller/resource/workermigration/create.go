@@ -20,6 +20,7 @@ import (
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
@@ -79,26 +80,106 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	/* TODO: Get corresponding cluster for AzureConfig. Fetch the Node objects
-	* from tenant cluster and create DrainerConfig CRs.
-
-	cluster, err :=
-
-	tc, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	err = r.ensureDrainerConfigsExists(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// TODO: Drain old workers.
-	*/
+	allNodesDrained, err := r.allDrainerConfigsWithDrainedState(ctx, cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
-	{
-		err = r.azureapi.DeleteVMSS(ctx, key.ResourceGroupName(cr), *builtinVMSS.Name)
+	if !allNodesDrained {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "some old worker nodes are still draining")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting timed out drainerconfigs")
+
+		// In case some draining operations timed out, delete CRs so that they
+		// are recreated on next reconciliation.
+		err = r.deleteTimedOutDrainerConfigs(ctx, cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "built-in workers VMSS deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
+		return nil
+	}
+
+	err = r.deleteDrainerConfigs(ctx, cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.azureapi.DeleteVMSS(ctx, key.ResourceGroupName(cr), *builtinVMSS.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "built-in workers VMSS deleted")
+
+	return nil
+}
+
+func (r *Resource) allDrainerConfigsWithDrainedState(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
+	o := client.MatchingLabels{
+		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+	}
+
+	var dcList corev1alpha1.DrainerConfigList
+	err := r.ctrlClient.List(ctx, &dcList, o)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	for _, dc := range dcList.Items {
+		if !dc.Status.HasDrainedCondition() {
+			return false, nil
+		}
+	}
+
+	return true, nil
+}
+
+func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
+	o := client.MatchingLabels{
+		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+	}
+
+	var dcList corev1alpha1.DrainerConfigList
+	err := r.ctrlClient.List(ctx, &dcList, o)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, dc := range dcList.Items {
+		if dc.Status.HasTimeoutCondition() {
+			err = r.ctrlClient.Delete(ctx, &dc)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+	}
+
+	return nil
+}
+
+func (r *Resource) deleteDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
+	o := client.MatchingLabels{
+		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+	}
+
+	var dcList corev1alpha1.DrainerConfigList
+	err := r.ctrlClient.List(ctx, &dcList, o)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, dc := range dcList.Items {
+		err = r.ctrlClient.Delete(ctx, &dc)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
@@ -156,43 +237,63 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 	return azureMachinePool, nil
 }
 
-func (r *Resource) ensureDrainerConfigExists(ctx context.Context, cr providerv1alpha1.AzureConfig, nodeName string) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
-
-	c := &corev1alpha1.DrainerConfig{
-		ObjectMeta: metav1.ObjectMeta{
-			Labels: map[string]string{
-				label.Cluster: key.ClusterID(&cr),
-			},
-			Name:      nodeName,
-			Namespace: key.ClusterID(&cr),
-		},
-		Spec: corev1alpha1.DrainerConfigSpec{
-			Guest: corev1alpha1.DrainerConfigSpecGuest{
-				Cluster: corev1alpha1.DrainerConfigSpecGuestCluster{
-					API: corev1alpha1.DrainerConfigSpecGuestClusterAPI{
-						Endpoint: key.ClusterAPIEndpoint(cr),
-					},
-					ID: key.ClusterID(&cr),
-				},
-				Node: corev1alpha1.DrainerConfigSpecGuestNode{
-					Name: nodeName,
-				},
-			},
-			VersionBundle: corev1alpha1.DrainerConfigSpecVersionBundle{
-				Version: "0.2.0",
-			},
-		},
+func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
+	cluster, err := r.getClusterForAzureConfig(ctx, cr)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	err := r.ctrlClient.Create(ctx, c)
-	if errors.IsAlreadyExists(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
-	} else if err != nil {
+	tc, err := r.tenantClientFactory.GetClient(ctx, &cluster)
+	if err != nil {
 		return microerror.Mask(err)
-	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node")
+	}
+
+	var nodeList corev1.NodeList
+	err = tc.List(ctx, &nodeList)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, n := range nodeList.Items {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
+
+		c := &corev1alpha1.DrainerConfig{
+			ObjectMeta: metav1.ObjectMeta{
+				Labels: map[string]string{
+					label.Cluster:                 key.ClusterID(&cr),
+					capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+				},
+				Name:      n.Name,
+				Namespace: key.ClusterID(&cr),
+			},
+			Spec: corev1alpha1.DrainerConfigSpec{
+				Guest: corev1alpha1.DrainerConfigSpecGuest{
+					Cluster: corev1alpha1.DrainerConfigSpecGuestCluster{
+						API: corev1alpha1.DrainerConfigSpecGuestClusterAPI{
+							Endpoint: key.ClusterAPIEndpoint(cr),
+						},
+						ID: key.ClusterID(&cr),
+					},
+					Node: corev1alpha1.DrainerConfigSpecGuestNode{
+						Name: n.Name,
+					},
+				},
+				VersionBundle: corev1alpha1.DrainerConfigSpecVersionBundle{
+					Version: "0.2.0",
+				},
+			},
+		}
+
+		err := r.ctrlClient.Create(ctx, c)
+		if errors.IsAlreadyExists(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node")
+		}
+
 	}
 
 	return nil
@@ -310,6 +411,21 @@ func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.Az
 	}
 
 	return spark, nil
+}
+
+func (r *Resource) getClusterForAzureConfig(ctx context.Context, cr providerv1alpha1.AzureConfig) (capiv1alpha3.Cluster, error) {
+	var cluster capiv1alpha3.Cluster
+
+	nsName := types.NamespacedName{
+		Name:      cr.GetName(),
+		Namespace: cr.GetNamespace(),
+	}
+	err := r.ctrlClient.Get(ctx, nsName, &cluster)
+	if err != nil {
+		return capiv1alpha3.Cluster{}, microerror.Mask(err)
+	}
+
+	return cluster, nil
 }
 
 func intSliceToStringSlice(xs []int) []string {
