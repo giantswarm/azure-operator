@@ -6,8 +6,8 @@ import (
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest/to"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
