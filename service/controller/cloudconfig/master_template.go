@@ -16,7 +16,7 @@ import (
 const (
 	defaultEtcdPort                  = 2379
 	defaultImagePullProgressDeadline = "1m"
-	EtcdInitialClusterStateNew           = "new"
+	EtcdInitialClusterStateNew       = "new"
 )
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
