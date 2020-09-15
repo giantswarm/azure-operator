@@ -9,12 +9,10 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions v0.4.20
 	github.com/giantswarm/apiextensions/v2 v2.1.0
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
-	github.com/giantswarm/certs/v2 v2.0.0
 	github.com/giantswarm/certs/v3 v3.0.0
 	github.com/giantswarm/e2e-harness v0.3.0
 	github.com/giantswarm/e2e-harness/v2 v2.0.0
@@ -25,7 +23,6 @@ require (
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/helmclient/v2 v2.0.0
 	github.com/giantswarm/ipam v0.2.0
-	github.com/giantswarm/k8sclient v0.2.0
 	github.com/giantswarm/k8sclient/v2 v2.1.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/k8scloudconfig/v8 v8.0.0
@@ -34,12 +31,9 @@ require (
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/microkit v0.2.0
 	github.com/giantswarm/micrologger v0.3.1
-	github.com/giantswarm/operatorkit v1.2.0
 	github.com/giantswarm/operatorkit/v2 v2.0.0
-	github.com/giantswarm/randomkeys v0.2.0
 	github.com/giantswarm/randomkeys/v2 v2.0.0
 	github.com/giantswarm/statusresource/v2 v2.0.0
-	github.com/giantswarm/tenantcluster/v2 v2.0.0
 	github.com/giantswarm/tenantcluster/v3 v3.0.0
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
