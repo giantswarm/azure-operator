@@ -49,6 +49,8 @@ const (
 
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
+	AnnotationNodePoolMinSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
+	AnnotationNodePoolMaxSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
 
 	LabelApp             = "app"
 	LabelCluster         = "giantswarm.io/cluster"
@@ -624,6 +626,28 @@ func MachinePoolID(getter LabelsGetter) (string, error) {
 	}
 
 	return machinePoolID, nil
+}
+
+func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
+	sizeStr := machinePool.Annotations[AnnotationNodePoolMinSize]
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil {
+		// Annotation not found or invalid.
+		return *machinePool.Spec.Replicas
+	}
+
+	return int32(size)
+}
+
+func NodePoolMaxReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
+	sizeStr := machinePool.Annotations[AnnotationNodePoolMaxSize]
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil {
+		// Annotation not found or invalid.
+		return *machinePool.Spec.Replicas
+	}
+
+	return int32(size)
 }
 
 func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {

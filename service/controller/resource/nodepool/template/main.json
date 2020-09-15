@@ -52,10 +52,16 @@
         "description": "Unique Name of the node pool."
       }
     },
-    "replicas": {
+    "minReplicas": {
       "type": "int",
       "metadata": {
-        "description": "Number of VMs in the VMSS."
+        "description": "Minimum number of VMs in the VMSS."
+      }
+    },
+    "maxReplicas": {
+      "type": "int",
+      "metadata": {
+        "description": "Maximum number of VMs in the VMSS."
       }
     },
     "sshPublicKey": {
@@ -266,16 +272,18 @@
       "zones": "[if(greater(length(parameters('zones')),0), parameters('zones'), json('null'))]",
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]",
-        "cluster-autoscaler-enabled": "true",
-        "cluster-autoscaler-name": "[variables('vmssName')]",
+        "cluster-autoscaler-enabled":"true",
+        "cluster-autoscaler-name":"[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
         "capi-azure-machine-pool.giantswarm.io-version": "[parameters('azureMachinePoolVersion')]",
-        "capi-machine-pool.giantswarm.io-version": "[parameters('machinePoolVersion')]"
+        "capi-machine-pool.giantswarm.io-version": "[parameters('machinePoolVersion')]",
+        "min":"[int(parameters('minReplicas'))]",
+        "max":"[int(parameters('maxReplicas'))]"
       },
       "sku": {
         "name": "[parameters('vmSize')]",
         "tier": "Standard",
-        "capacity": "[parameters('replicas')]"
+        "capacity": "[parameters('minReplicas')]"
       },
       "identity": {
         "type": "systemAssigned"
