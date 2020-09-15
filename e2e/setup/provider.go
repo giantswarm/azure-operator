@@ -301,6 +301,9 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
 					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
+				Annotations: map[string]string{
+					annotation.ClusterDescription: "friendly cluster name",
+				},
 			},
 			Spec: providerv1alpha1.AzureConfigSpec{
 				Azure: providerv1alpha1.AzureConfigSpecAzure{
