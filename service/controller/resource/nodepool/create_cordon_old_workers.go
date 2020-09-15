@@ -78,7 +78,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	var nodes []corev1.Node
 	{
-		nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(metav1.ListOptions{})
+		nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
@@ -125,7 +125,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClie
 		t := types.StrategicMergePatchType
 		p := []byte(UnschedulablePatch)
 
-		_, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().Patch(n.Name, t, p)
+		_, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().Patch(ctx, n.Name, t, p, metav1.PatchOptions{})
 		if apierrors.IsNotFound(err) {
 			// On manual operations or during auto-scaling it may happen that
 			// node gets terminated while instances are processed. It's ok from
@@ -182,7 +182,7 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, clusterID string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
 	name := key.WorkerInstanceName(clusterID, *instance.InstanceID)
 
-	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

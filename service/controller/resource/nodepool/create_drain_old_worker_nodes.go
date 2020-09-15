@@ -60,7 +60,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			LabelSelector: fmt.Sprintf("%s=%s", label.Cluster, key.ClusterID(&azureMachinePool)),
 		}
 
-		list, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).List(o)
+		list, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).List(ctx, o)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -110,7 +110,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists but has timed out", n))
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting drainerconfig for %s", n))
 
-			err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
+			err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(ctx, dc.Name, metav1.DeleteOptions{})
 			if errors.IsNotFound(err) {
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node")
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist")
@@ -143,7 +143,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 	// Delete DrainerConfigs now that all nodes have been DRAINED.
 	for _, dc := range drainerConfigs {
-		err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(dc.Name, &metav1.DeleteOptions{})
+		err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(ctx, dc.Name, metav1.DeleteOptions{})
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}

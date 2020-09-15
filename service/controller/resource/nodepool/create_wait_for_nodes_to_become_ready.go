@@ -60,7 +60,7 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 }
 
 func countReadyNodes(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
-	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
