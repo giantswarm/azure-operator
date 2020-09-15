@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
 	"github.com/giantswarm/microerror"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -23,10 +24,14 @@ const (
 	installationTagName       = "GiantSwarmInstallation"
 	organizationTagName       = "GiantSwarmOrganization"
 	MastersVmssDeploymentName = "masters-vmss-template"
+
+	// Kept for the sake of compiling old instance resource. It should be removed as soon as
+	// instance resource is removed.
 	WorkersVmssDeploymentName = "workers-vmss-template"
 
 	CloudConfigSecretKey = "ignitionBlob"
 	blobContainerName    = "ignition"
+
 	// cloudConfigVersion is used in blob object ignition name
 	cloudConfigVersion        = "v7.0.1"
 	storageAccountSuffix      = "gssa"
@@ -152,6 +157,10 @@ func BlobContainerName() string {
 
 func BlobName(customObject LabelsGetter, role string) string {
 	return fmt.Sprintf("%s-%s-%s", OperatorVersion(customObject), cloudConfigVersion, role)
+}
+
+func WorkerBlobName(operatorVersion string) string {
+	return fmt.Sprintf("%s-%s-%s", operatorVersion, cloudConfigVersion, prefixWorker)
 }
 
 func BootstrapBlobName(customObject expcapzv1alpha3.AzureMachinePool) string {
@@ -334,18 +343,31 @@ func IsSucceededProvisioningState(s string) bool {
 }
 
 // These are the same labels that kubernetesd adds when creating/updating an AzureConfig.
-func KubeletLabelsNodePool(getter LabelsGetter) string {
+func KubeletLabelsNodePool(getter LabelsGetter) (string, error) {
 	var labels string
 
 	labels = ensureLabel(labels, label.Provider, "azure")
 	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
 
-	return labels
+	machinePoolID, err := MachinePoolID(getter)
+	if err != nil || machinePoolID == "" {
+		return labels, microerror.Mask(missingMachinePoolLabelError)
+	}
+
+	labels = ensureLabel(labels, apiextensionslabels.MachinePool, machinePoolID)
+
+	return labels, nil
 }
 
 // MasterSecurityGroupName returns name of the security group attached to master subnet.
 func MasterSecurityGroupName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), masterSecurityGroupSuffix)
+}
+
+// WorkerCount returns the desired number of workers. Kept for the sake of compiling old instance
+// resource. It should be removed as soon as instance resource is removed.
+func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
+	return len(customObject.Spec.Azure.Workers)
 }
 
 // WorkerSecurityGroupName returns name of the security group attached to worker subnet.
@@ -360,11 +382,6 @@ func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 
 func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
-}
-
-// WorkerCount returns the desired number of workers.
-func WorkerCount(customObject providerv1alpha1.AzureConfig) int {
-	return len(customObject.Spec.Azure.Workers)
 }
 
 // WorkerSubnetName returns name of the worker subnet.
@@ -568,24 +585,6 @@ func ToString(v interface{}) (string, error) {
 	return s, nil
 }
 
-func ToStringMap(v interface{}) (map[string]string, error) {
-	m, err := ToMap(v)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	stringMap := map[string]string{}
-	for k, v := range m {
-		s, err := ToString(v)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		stringMap[k] = s
-	}
-
-	return stringMap, nil
-}
-
 // VnetName returns name of the virtual network.
 func VnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), virtualNetworkSuffix)
@@ -605,13 +604,30 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), vpnGatewaySuffix)
 }
 
-func WorkerInstanceName(customObject providerv1alpha1.AzureConfig, instanceID string) string {
+func WorkerInstanceName(clusterID, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {
 		panic(err)
 	}
 
-	return fmt.Sprintf("%s-worker-%s-%06s", ClusterID(&customObject), ClusterID(&customObject), idB36)
+	return fmt.Sprintf("%s-worker-%s-%06s", clusterID, clusterID, idB36)
+}
+
+func NodePoolDeploymentName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+	return NodePoolVMSSName(azureMachinePool)
+}
+
+func MachinePoolID(getter LabelsGetter) (string, error) {
+	machinePoolID, exists := getter.GetLabels()[apiextensionslabels.MachinePool]
+	if !exists {
+		return "", microerror.Mask(missingMachinePoolLabelError)
+	}
+
+	return machinePoolID, nil
+}
+
+func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+	return fmt.Sprintf("%s-%s", "nodepool", azureMachinePool.Name)
 }
 
 func WorkerVMSSName(customObject providerv1alpha1.AzureConfig) string {

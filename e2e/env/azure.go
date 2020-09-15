@@ -7,10 +7,12 @@ import (
 	"strings"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/network"
+	"github.com/giantswarm/azure-operator/v4/pkg/project"
 )
 
 const (
 	DefaultAzureLocation             = "westeurope"
+	DefaultAzureVMSize               = "Standard_D4_v2"
 	DefaultCommonDomainResourceGroup = "godsmack"
 
 	EnvVarAzureAZs  = "AZURE_AZS"
@@ -21,6 +23,7 @@ const (
 	EnvVarAzureLocation       = "AZURE_LOCATION"
 	EnvVarAzureSubscriptionID = "AZURE_SUBSCRIPTIONID"
 	EnvVarAzureTenantID       = "AZURE_TENANTID"
+	EnvVarAzureVMSize         = "AZURE_VMSIZE"
 
 	EnvVarCommonDomainResourceGroup = "COMMON_DOMAIN_RESOURCE_GROUP"
 	EnvVarBastionPublicSSHKey       = "BASTION_PUBLIC_SSH_KEY"
@@ -36,6 +39,7 @@ var (
 	azureLocation       string
 	azureSubscriptionID string
 	azureTenantID       string
+	azureVMSize         string
 
 	azureCIDR             string
 	azureCalicoSubnetCIDR string
@@ -73,6 +77,12 @@ func init() {
 	azureTenantID = os.Getenv(EnvVarAzureTenantID)
 	if azureTenantID == "" {
 		panic(fmt.Sprintf("env var '%s' must not be empty", EnvVarAzureTenantID))
+	}
+
+	azureVMSize = os.Getenv(EnvVarAzureVMSize)
+	if azureVMSize == "" {
+		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarAzureVMSize, DefaultAzureVMSize)
+		azureVMSize = DefaultAzureVMSize
 	}
 
 	commonDomainResourceGroup = os.Getenv(EnvVarCommonDomainResourceGroup)
@@ -145,6 +155,32 @@ func AzureAvailabilityZones() []int {
 	return zones
 }
 
+func AzureAvailabilityZonesAsStrings() []string {
+	var azs []string
+
+	for _, azInt := range AzureAvailabilityZones() {
+		az := strconv.Itoa(azInt)
+		azs = append(azs, az)
+	}
+
+	return azs
+}
+
+// AzureAvailabilityZonesCount returns expected number of availability zones for the cluster.
+func AzureAvailabilityZonesCount() int {
+	specifiedZones := AzureAvailabilityZones()
+	specifiedCount := len(specifiedZones)
+
+	switch specifiedCount {
+	case 0:
+		return 1
+	case 1, 2, 3:
+		return specifiedCount
+	default:
+		panic("AvailabilityZones valid numbers are 1, 2, 3.")
+	}
+}
+
 func AzureCalicoSubnetCIDR() string {
 	return azureCalicoSubnetCIDR
 }
@@ -177,6 +213,10 @@ func AzureTenantID() string {
 	return azureTenantID
 }
 
+func AzureVMSize() string {
+	return azureVMSize
+}
+
 func AzureWorkerSubnetCIDR() string {
 	return azureWorkerSubnetCIDR
 }
@@ -187,6 +227,22 @@ func CommonDomainResourceGroup() string {
 
 func GetLatestOperatorRelease() string {
 	return latestOperatorRelease
+}
+
+func GetOperatorVersion() string {
+	var operatorVersion string
+	{
+		// `operatorVersion` is the link between an operator and a `CustomResource`.
+		// azure-operator with version `operatorVersion` will only reconcile `AzureConfig` labeled with `operatorVersion`.
+		operatorVersion = project.Version()
+		if TestDir() == "e2e/test/update" {
+			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
+			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
+			operatorVersion = GetLatestOperatorRelease()
+		}
+	}
+
+	return operatorVersion
 }
 
 func SSHPublicKey() string {

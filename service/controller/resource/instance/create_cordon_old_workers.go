@@ -129,7 +129,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 	return count, nil
 }
 
-func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, customObject providerv1alpha1.AzureConfig, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) (oldNodes []corev1.Node, newNodes []corev1.Node) {
+func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMachineScaleSetVM, customObject providerv1alpha1.AzureConfig, instanceNameFunc func(clusterID, instanceID string) string) (oldNodes []corev1.Node, newNodes []corev1.Node) {
 	nodeMap := make(map[string]corev1.Node)
 	for _, n := range nodes {
 		nodeMap[n.GetName()] = n
@@ -138,7 +138,7 @@ func sortNodesByTenantVMState(nodes []corev1.Node, instances []compute.VirtualMa
 	myVersion := semver.New(project.Version())
 
 	for _, i := range instances {
-		name := instanceNameFunc(customObject, *i.InstanceID)
+		name := instanceNameFunc(key.ClusterID(&customObject), *i.InstanceID)
 
 		n, found := nodeMap[name]
 		if !found {
@@ -173,7 +173,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject
 		return nil, microerror.Mask(err)
 	}
 
-	name := key.WorkerInstanceName(customObject, *instance.InstanceID)
+	name := key.WorkerInstanceName(key.ClusterID(&customObject), *instance.InstanceID)
 
 	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
 	if err != nil {

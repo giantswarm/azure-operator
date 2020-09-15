@@ -158,6 +158,17 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(credentialNamespace, creden
 	return toVirtualMachineScaleSetVMsClient(client), nil
 }
 
+// GetVirtualNetworksClient returns *network.VirtualNetworksClient that is used for management of Azure
+// virtual networks. The created client is cached for the time period specified in the factory config.
+func (f *Factory) GetVirtualNetworksClient(credentialNamespace, credentialName string) (*network.VirtualNetworksClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworksClient", newVirtualNetworksClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toVirtualNetworksClient(client), nil
+}
+
 // GetSnapshotsClient returns *compute.SnapshotsClient that is used for management of Azure
 // snapshots (both disks and VMs). The created client is cached for the time period
 // specified in the factory config.
@@ -182,9 +193,8 @@ func (f *Factory) GetStorageAccountsClient(credentialNamespace, credentialName s
 	return toStorageAccountsClient(client), nil
 }
 
-// GetStorageAccountsClient returns *network.SubnetsClient that is used for management of Azure
-// subnets. The created client is cached for the time period
-// specified in the factory config.
+// GetSubnetsClient returns *network.SubnetsClient that is used for management of Azure subnets.
+// The created client is cached for the time period specified in the factory config.
 func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (*network.SubnetsClient, error) {
 	client, err := f.getClient(credentialNamespace, credentialName, "SubnetsClient", newSubnetsClient)
 	if err != nil {
@@ -192,6 +202,17 @@ func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (
 	}
 
 	return toSubnetsClient(client), nil
+}
+
+// GetNatGatewaysClient returns *network.NatGatewaysClient that is used for management of Nat Gateways.
+// The created client is cached for the time period specified in the factory config.
+func (f *Factory) GetNatGatewaysClient(credentialNamespace, credentialName string) (*network.NatGatewaysClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "NatGatewaysClient", newNatGatewaysClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toNatGatewaysClient(client), nil
 }
 
 func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {

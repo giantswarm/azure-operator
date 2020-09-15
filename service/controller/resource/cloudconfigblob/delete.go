@@ -11,6 +11,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
+// EnsureDeleted will delete the blob in the Storage Account containing the cloud config for the node pool.
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	azureMachinePool, err := key.ToAzureMachinePool(obj)
 	if err != nil {
