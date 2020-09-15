@@ -154,21 +154,5 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		output = append(output, containerObjectState)
 	}
 
-	{
-		b, err := cc.CloudConfig.NewWorkerTemplate(ctx, ignitionTemplateData, encrypter)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-		k := key.BlobName(&cr, prefixWorker)
-		containerObjectState := ContainerObjectState{
-			Body:               b,
-			ContainerName:      containerName,
-			Key:                k,
-			StorageAccountName: storageAccountName,
-		}
-
-		output = append(output, containerObjectState)
-	}
-
 	return output, nil
 }

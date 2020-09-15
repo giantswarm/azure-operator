@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Add monitoring label
 - Add provider independent controllers to manage labeling and setting owner references in other provider dependent objects.
 - Export container logs for e2e tests to azure analytics.
+- Enable persistent volume `expansion` support in the default `Storage Classes`.
 
 ### Changed
 
@@ -19,6 +20,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Retry failed ARM deployments regardless of the checksum check.
 - Master instances now use a dedicated NAT gateway for egress traffic.
 - Updated backward incompatible Kubernetes dependencies to v1.18.5.
+- Removed the ETCD Private Load Balancer, reusing the API public one for ETCD traffic (needed by HA masters).
+- Updated CAPI to `v0.3.8` and CAPZ to `v0.4.7`.
 
 ## [4.2.0] - 2020-07-28
 

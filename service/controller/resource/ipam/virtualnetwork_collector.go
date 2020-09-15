@@ -21,25 +21,25 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
-type SubnetCollectorConfig struct {
+type VirtualNetworkCollectorConfig struct {
 	CredentialProvider credential.Provider
-	K8sClient          k8sclient.Interface
 	InstallationName   string
+	K8sClient          k8sclient.Interface
 	Logger             micrologger.Logger
 
 	NetworkRange net.IPNet
 }
 
-type SubnetCollector struct {
+type VirtualNetworkCollector struct {
 	credentialProvider credential.Provider
-	k8sclient          k8sclient.Interface
 	installationName   string
+	k8sclient          k8sclient.Interface
 	logger             micrologger.Logger
 
 	networkRange net.IPNet
 }
 
-func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) {
+func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualNetworkCollector, error) {
 	if config.CredentialProvider == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
 	}
@@ -57,7 +57,7 @@ func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) 
 		return nil, microerror.Maskf(invalidConfigError, "%T.NetworkRange must not be empty", config)
 	}
 
-	c := &SubnetCollector{
+	c := &VirtualNetworkCollector{
 		credentialProvider: config.CredentialProvider,
 		k8sclient:          config.K8sClient,
 		installationName:   config.InstallationName,
@@ -69,41 +69,41 @@ func NewSubnetCollector(config SubnetCollectorConfig) (*SubnetCollector, error) 
 	return c, nil
 }
 
-func (c *SubnetCollector) Collect(ctx context.Context) ([]net.IPNet, error) {
+func (c *VirtualNetworkCollector) Collect(ctx context.Context, _ interface{}) ([]net.IPNet, error) {
 	var err error
 	var mutex sync.Mutex
-	var reservedSubnets []net.IPNet
+	var reservedVirtualNetworks []net.IPNet
 
 	g := &errgroup.Group{}
 
 	g.Go(func() error {
-		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets from AzureConfig CRs")
+		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated virtual networks from AzureConfig CRs")
 
-		subnets, err := c.getSubnetsFromAzureConfigs(ctx)
+		virtualNetworks, err := c.getVirtualNetworksFromAzureConfigs(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 		mutex.Lock()
-		reservedSubnets = append(reservedSubnets, subnets...)
+		reservedVirtualNetworks = append(reservedVirtualNetworks, virtualNetworks...)
 		mutex.Unlock()
 
-		c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnets from AzureConfig CRs")
+		c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated virtual networks from AzureConfig CRs")
 
 		return nil
 	})
 
 	g.Go(func() error {
-		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets from all resource groups in the subscription")
+		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated virtual networks from all resource groups in the subscription")
 
-		subnets, err := c.getSubnetsFromAllSubscriptions(ctx)
+		virtualNetworks, err := c.getVirtualNetworksFromAllSubscriptions(ctx)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 		mutex.Lock()
-		reservedSubnets = append(reservedSubnets, subnets...)
+		reservedVirtualNetworks = append(reservedVirtualNetworks, virtualNetworks...)
 		mutex.Unlock()
 
-		c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnets from all resource groups in the subscription")
+		c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated virtual networks from all resource groups in the subscription")
 
 		return nil
 	})
@@ -113,12 +113,12 @@ func (c *SubnetCollector) Collect(ctx context.Context) ([]net.IPNet, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	reservedSubnets = ipam.CanonicalizeSubnets(c.networkRange, reservedSubnets)
+	reservedVirtualNetworks = ipam.CanonicalizeSubnets(c.networkRange, reservedVirtualNetworks)
 
-	return reservedSubnets, nil
+	return reservedVirtualNetworks, nil
 }
 
-func (c *SubnetCollector) getSubnetsFromAzureConfigs(ctx context.Context) ([]net.IPNet, error) {
+func (c *VirtualNetworkCollector) getVirtualNetworksFromAzureConfigs(ctx context.Context) ([]net.IPNet, error) {
 	tenantClusterList, err := c.getAllTenantClusters(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -142,7 +142,7 @@ func (c *SubnetCollector) getSubnetsFromAzureConfigs(ctx context.Context) ([]net
 	return results, nil
 }
 
-func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([]net.IPNet, error) {
+func (c *VirtualNetworkCollector) getVirtualNetworksFromAllSubscriptions(ctx context.Context) ([]net.IPNet, error) {
 	tenantClusterList, err := c.getAllTenantClusters(ctx)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -166,11 +166,11 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 			continue
 		}
 
-		nets, err := c.getSubnetsFromSubscription(ctx, organizationAzureClientSet)
+		nets, err := c.getVirtualNetworksFromSubscription(ctx, organizationAzureClientSet)
 		if err != nil {
 			// We can't use this Azure credentials. Might be wrong in the Secret file.
 			// We shouldn't block the network calculation for this reason.
-			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Error getting used subnets for subscription %s: %s", organizationAzureClientSet.SubscriptionID, err))
+			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Error getting used virtual networks for subscription %s: %s", organizationAzureClientSet.SubscriptionID, err))
 			continue
 		}
 
@@ -181,7 +181,7 @@ func (c *SubnetCollector) getSubnetsFromAllSubscriptions(ctx context.Context) ([
 	return ret, nil
 }
 
-func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context, clientSet *client.AzureClientSet) ([]net.IPNet, error) {
+func (c *VirtualNetworkCollector) getVirtualNetworksFromSubscription(ctx context.Context, clientSet *client.AzureClientSet) ([]net.IPNet, error) {
 	groupsClient := clientSet.GroupsClient
 	vnetClient := clientSet.VirtualNetworkClient
 
@@ -197,6 +197,9 @@ func (c *SubnetCollector) getSubnetsFromSubscription(ctx context.Context, client
 		group := iterator.Value()
 
 		// Search a VNET with any of the expected names.
+		// Note: One we move to fully utilize CAPI/CAPZ types only (without AzureConfig), we should
+		// not expect that tenant cluster virtual networks follow any specific naming convention.
+		// We could list VNets by tags (we currently don't set tags to VNets).
 		vnetCandidates := []string{
 			fmt.Sprintf("%s-VirtualNetwork", *group.Name),
 			c.installationName,
@@ -239,7 +242,7 @@ func inArray(a []string, s string) bool {
 	return false
 }
 
-func (c *SubnetCollector) getAllTenantClusters(ctx context.Context) (*v1alpha1.AzureConfigList, error) {
+func (c *VirtualNetworkCollector) getAllTenantClusters(ctx context.Context) (*v1alpha1.AzureConfigList, error) {
 	tenantClusterList := &v1alpha1.AzureConfigList{}
 	err := c.k8sclient.CtrlClient().List(ctx, tenantClusterList, client2.InNamespace(metav1.NamespaceAll))
 

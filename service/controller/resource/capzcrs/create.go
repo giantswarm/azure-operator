@@ -2,6 +2,7 @@ package capzcrs
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"strconv"
 
@@ -20,6 +21,7 @@ import (
 	"k8s.io/apimachinery/pkg/types"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -38,6 +40,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "mapping AzureConfig CR to CAPI & CAPZ CRs")
+
+	{
+		objKey := client.ObjectKey{
+			Namespace: cr.Namespace,
+			Name:      cr.Name,
+		}
+		cluster := new(capiv1alpha3.Cluster)
+		err = r.ctrlClient.Get(ctx, objKey, cluster)
+		if errors.IsNotFound(err) {
+			// all good
+		} else if err != nil {
+			return microerror.Mask(err)
+		} else if !cluster.GetDeletionTimestamp().IsZero() {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping mapping AzureConfig CR to CAPI & CAPZ CRs")
+			return nil
+		}
+	}
 
 	var mappedCRs []crmapping
 	{
@@ -100,8 +119,8 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.ClusterOperatorVersion:  cr.Labels[label.ClusterOperatorVersion],
-				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
+				label.Cluster:                 cr.Name,
+				capiv1alpha3.ClusterLabelName: cr.Name,
 				label.Organization:            key.OrganizationID(&cr),
 				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
@@ -137,8 +156,8 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
-				label.Cluster:                 key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+				label.Cluster:                 cr.Name,
+				capiv1alpha3.ClusterLabelName: cr.Name,
 				label.Organization:            key.OrganizationID(&cr),
 				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
@@ -152,6 +171,7 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 				Host: key.ClusterAPIEndpoint(cr),
 				Port: 443,
 			},
+			ResourceGroup: key.ClusterID(&cr),
 			NetworkSpec: capzv1alpha3.NetworkSpec{
 				Vnet: capzv1alpha3.VnetSpec{
 					CidrBlock:     key.VnetCIDR(cr),
@@ -180,8 +200,8 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 			Namespace: cr.Namespace,
 			Labels: map[string]string{
 				label.AzureOperatorVersion:                key.OperatorVersion(&cr),
-				label.Cluster:                             key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName:             key.ClusterName(&cr),
+				label.Cluster:                             cr.Name,
+				capiv1alpha3.ClusterLabelName:             cr.Name,
 				capiv1alpha3.MachineControlPlaneLabelName: "true",
 				label.Organization:                        key.OrganizationID(&cr),
 				label.ReleaseVersion:                      key.ReleaseVersion(&cr),
@@ -205,7 +225,7 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 				},
 			},
 			Location:     r.location,
-			SSHPublicKey: key.AdminSSHKeyData(cr),
+			SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(key.AdminSSHKeyData(cr))),
 		},
 	}
 

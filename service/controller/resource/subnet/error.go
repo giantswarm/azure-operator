@@ -89,3 +89,12 @@ func IsSubnetInUse(err error) bool {
 
 	return strings.Contains(microerror.Cause(err).Error(), "is in use by")
 }
+
+var natGatewayNotReadyError = &microerror.Error{
+	Kind: "natGatewayNotReadyError",
+}
+
+// IsNatGatewayNotReadyError asserts natGatewayNotReadyError.
+func IsNatGatewayNotReadyError(err error) bool {
+	return microerror.Cause(err) == natGatewayNotReadyError
+}

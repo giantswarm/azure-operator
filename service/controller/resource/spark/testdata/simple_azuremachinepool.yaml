@@ -1,0 +1,28 @@
+apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureMachinePool
+metadata:
+  labels:
+    azure-operator.giantswarm.io/version: 4.2.0
+    cluster.x-k8s.io/cluster-name: c6fme
+    giantswarm.io/machine-pool: nopo1
+    giantswarm.io/cluster: c6fme
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 12.0.0
+  name: nopo1
+  namespace: default
+  ownerReferences:
+    - apiVersion: exp.cluster.x-k8s.io/v1alpha3
+      blockOwnerDeletion: true
+      controller: true
+      kind: MachinePool
+      name: nopo1
+spec:
+  location: westeurope
+  template:
+    osDisk:
+      diskSizeGB: 30
+      managedDisk:
+        storageAccountType: Premium_LRS
+      osType: Linux
+    sshPublicKey: c3NoLXJzYSBBQUFBQjNOemFDMXljMkVBQUFBREFRQUJBQUFDQVFEa1RURmpnLzI4QWtnQWxiQmd1MmpXMXpsbW1ocDN0TFdmKzZ5cDNaTi9Na04rRXpoRkRGMHc3Z2pWWnhGZjlRRTBTc25KRjVvRDVzTjZnMHR1ZmF2ODllUjBUN0QwVVFjeWZNYmRST2VjRFFITkFpdEFDM1dtMmJnWkhDMzhFUXg1OVFicitlaWZpbmpDRzUvamQrNFpRY3pMMXUzakdBZWlBeURWZDBveGJ3TTFjSHhjZFdyOVdyKzZyazlrYks5WFJZSlJjMkJMVHV0VWtFdTM0bnp1a21wVFNEa2cwdDFjTFhWWWNUSzE1dzF6UEtMcENVcWVEMkhUQ0k4QkZYU1c5elVObjh0Qjc5KzhXNTB2UDYwVGRvMnpGOFpHV0JnWnlVc3VKWUxzVHdrNWVIZWdXVUVLVC9zLzd2ZG1JekZ5MXZrdTNublRPNW16NktLUjg2dDcyTnNYd3RGTy9WLzBUZHVNNTlKVjVmOWV5amJpWXJGV3hQR3puaFQvZDAvS05Mck5HNkYxOWJ1M2RjTEY0anZMQk9NeXZHdDhVdThsTG1iL3E3dUczc1NhR3NMRzdnS2loUUY1VFZhVTFldk9xMzJlKzNwektHUU96ZFRJNzFSUTMrY0pRZVRhTllKWXdvUVAvK0tpSHR3NkpCOTNmdExtQVlrUVd3NFp1SE1qclFSdnRMZUhUSEI0VzI4VVFMbnhJRFhHR1UvNytLYzJPbFk0UUR4OU5FVGVLYWpHNXovZzFxbFpGeEVDWUhyMTZSWEdtM0xLaFNxdkkyaDRWQmVGN3BsNEQ2V0UwK2NjdkR1K0hJVDRuK0N5eVJOaTVVaEZ4ZkZ5QVVWNS94d29lRmUyNGpWUlNpY2ZHd0JLUU1NSldTeTViM0RxcDFqTlJQNlp1R0RIRnc9PQ==
+    vmSize: Standard_D2s_v3

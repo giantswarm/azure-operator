@@ -23,7 +23,7 @@ spec:
       cidrBlock: 10.10.0.0/16
       name: c6fme-VirtualNetwork
       resourceGroup: c6fme
-  resourceGroup: ""
+  resourceGroup: c6fme
 status:
   bastion:
     image: {}

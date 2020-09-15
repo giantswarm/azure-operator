@@ -14,6 +14,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 )
 
 func Test_ClusterDeletion(t *testing.T) {
@@ -62,8 +63,15 @@ func New(config Config) (*ClusterDeletion, error) {
 }
 
 func (s *ClusterDeletion) Test(ctx context.Context) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting AzureConfig Custom Resource %#q", s.provider.clusterID))
-	err := s.provider.g8sClient.ProviderV1alpha1().AzureConfigs(s.targetNamespace).Delete(ctx, s.clusterID, metav1.DeleteOptions{})
+	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting Cluster CR %#q", s.provider.clusterID))
+	cluster := &capiv1alpha3.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Namespace: s.targetNamespace,
+			Name:      s.clusterID,
+		},
+		Spec: capiv1alpha3.ClusterSpec{},
+	}
+	err := s.provider.ctrlClient.Delete(ctx, cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

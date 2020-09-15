@@ -32,6 +32,7 @@ func init() {
 			G8sClient:   config.Host.G8sClient(),
 			Logger:      config.Logger,
 			ClusterID:   env.ClusterID(),
+			NodePoolID:  env.NodePoolID(),
 		}
 
 		p, err = NewProvider(c)

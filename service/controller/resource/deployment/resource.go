@@ -274,24 +274,13 @@ func (r *Resource) enrichControllerContext(ctx context.Context, customObject pro
 
 	resourceGroupName := key.ClusterID(&customObject)
 	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "api_load_balancer_setup", "backendPoolId")
+		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "master_load_balancer_setup", "backendPoolId")
 		if IsNotFound(err) {
 			// fall through
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			cc.APILBBackendPoolID = v
-		}
-	}
-
-	{
-		v, err := r.getDeploymentOutputValue(ctx, deploymentsClient, resourceGroupName, "etcd_load_balancer_setup", "backendPoolId")
-		if IsNotFound(err) {
-			// fall through
-		} else if err != nil {
-			return microerror.Mask(err)
-		} else {
-			cc.EtcdLBBackendPoolID = v
+			cc.MasterLBBackendPoolID = v
 		}
 	}
 

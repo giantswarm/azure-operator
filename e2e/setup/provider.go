@@ -2,23 +2,34 @@ package setup
 
 import (
 	"context"
+	"encoding/base64"
 	"fmt"
 	"strings"
 	"time"
 
+	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/giantswarm/apiextensions/pkg/annotation"
+	"github.com/giantswarm/apiextensions/pkg/label"
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/apiextensions/v2/pkg/crd"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
-	v1 "k8s.io/api/core/v1"
+	"github.com/giantswarm/micrologger"
+	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/reference"
+	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
-	"github.com/giantswarm/azure-operator/v4/e2e/key"
+	e2ekey "github.com/giantswarm/azure-operator/v4/e2e/key"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	key2 "github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
@@ -50,14 +61,14 @@ Installation:
                 IssuerURL: "https://login.microsoftonline.com/%s/v2.0"
                 UsernameClaim: "email"
                 GroupsClaim: "groups"
-          ClusterIPRange: ""
+          ClusterIPRange: "172.31.0.0/16"
           Domain: ""
         ClusterDomain: ""
         IngressController:
           BaseDomain: ""
       SSH:
         SSOPublicKey: "ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQDPr6Mxx3cdPNm3v4Ufvo5sRfT7jCgDi7z3wwaCufVrw8am+PBW7toRWBQtGddtp7zsdicHy1+FeWHw09txsbzjupO0yynVAtXSxS8HjsWZOcn0ZRQXMtbbikSxWRs9C255yBswPlD7y9OOiUr8OidIHRYq/vMKIPE+066PqVBYIgO4wR9BRhWPz385+Ob+36K+jkSbniiQr4c8Q545Fm+ilCccLCN1KVVj2pYkCyLHSaEJEp57eyU2ZiBqN0ntgqCVo3xery3HQQalin6Uhqaecwla9bpj48Oo22PLYN2yNhxFU66sSN9TkBquP2VGWlHmWRRg3RPnTY1IPBBC4ea3JOurYOEHydHtoMOGQ6irnd8avqFonXKT2cc/UWUsktv5RwI7S+hUbBdy0o/uX6SbecLIyL+iIIcWL5A0loWyjMEPdDdLjdz72EdnuLVeQohFuSeTpVqpiHugzCCZYwItT7N8QRSgx6wF7j8XkTDZYhWTv9nxtjsRwSDfZJbhsPsgjeQh0z1YJEKZ6RMyrHAzsui/6seFzlgvogRH2iJBzzrKui0uNyE7lQVAeRGHfqUN9YX0DgQ/AvT0BBnCyhMQCD7cJsFJ7A4nRTNsvpPR2uJ2n8fSf2kxXCHH2Tz+CbobVLeZqslKSiz5aO5iKCrHPK7fGnDCKKW8CyYG6V974Q=="
-        UserList: ""
+        UserList: "e2e:%s"
     Name: godsmack
     Provider:
       Azure:
@@ -89,7 +100,7 @@ Installation:
 
 // provider installs the operator and tenant cluster CR.
 func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
-	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
+	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.SSHPublicKey(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
 
@@ -110,6 +121,17 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureCluster CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachine CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("infrastructure.cluster.x-k8s.io", "AzureMachine"), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachine CRD exists")
 	}
 
 	{
@@ -145,18 +167,6 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Cluster CRD exists")
 	}
 
-	var operatorVersion string
-	{
-		// `operatorVersion` is the link between an operator and a `CustomResource`.
-		// azure-operator with version `operatorVersion` will only reconcile `AzureConfig` labeled with `operatorVersion`.
-		operatorVersion = project.Version()
-		if env.TestDir() == "e2e/test/update" {
-			// When testing the update process, we want the latest release of the operator to reconcile the `CustomResource` and create a cluster.
-			// We can then update the label in the `CustomResource`, making the operator under test to reconcile it and update the cluster.
-			operatorVersion = env.GetLatestOperatorRelease()
-		}
-	}
-
 	{
 		err := installChartPackageBeingTested(ctx, config, renderedAzureOperatorChartValues)
 		if err != nil {
@@ -174,9 +184,9 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	}
 
 	{
-		encryptionSecret := &v1.Secret{
+		encryptionSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:      fmt.Sprintf("%s-%s", key.TestAppReleaseName(), "encryption"),
+				Name:      fmt.Sprintf("%s-%s", e2ekey.TestAppReleaseName(), "encryption"),
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/cluster":   env.ClusterID(),
@@ -202,7 +212,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 	}
 
-	clusterOperatorVersion, err := key2.ComponentVersion(giantSwarmRelease, "cluster-operator")
+	clusterOperatorVersion, err := key.ComponentVersion(giantSwarmRelease, "cluster-operator")
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -214,7 +224,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": operatorVersion,
+					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
 					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 			},
@@ -288,7 +298,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Namespace: "default",
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": operatorVersion,
+					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
 					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 			},
@@ -315,7 +325,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					},
 					Masters: []providerv1alpha1.AzureConfigSpecAzureNode{
 						{
-							VMSize: "Standard_D4_v2",
+							VMSize: env.AzureVMSize(),
 						},
 					},
 					VirtualNetwork: providerv1alpha1.AzureConfigSpecAzureVirtualNetwork{
@@ -326,10 +336,10 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					},
 					Workers: []providerv1alpha1.AzureConfigSpecAzureNode{
 						{
-							VMSize: "Standard_D4_v2",
+							VMSize: env.AzureVMSize(),
 						},
 						{
-							VMSize: "Standard_D4_v2",
+							VMSize: env.AzureVMSize(),
 						},
 					},
 				},
@@ -365,7 +375,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 						Kubelet: providerv1alpha1.ClusterKubernetesKubelet{
 							AltNames: "kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local",
 							Domain:   "worker." + env.ClusterID() + ".k8s." + env.CommonDomain(),
-							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + operatorVersion,
+							Labels:   "giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=" + env.GetOperatorVersion(),
 							Port:     10250,
 						},
 						NetworkSetup: providerv1alpha1.ClusterKubernetesNetworkSetup{Docker: providerv1alpha1.ClusterKubernetesNetworkSetupDocker{Image: "quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9"}},
@@ -374,7 +384,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					Masters: []providerv1alpha1.ClusterNode{},
 					Workers: []providerv1alpha1.ClusterNode{},
 				},
-				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: operatorVersion},
+				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: env.GetOperatorVersion()},
 			},
 		}
 		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(ctx, azureConfig, metav1.CreateOptions{})
@@ -382,6 +392,146 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 			return microerror.Mask(err)
 		}
 	}
+
+	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, env.NodePoolID(), 1, env.AzureVMSize())
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, "t3st", 1, "Standard_D3_v2")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient client.Client, giantSwarmRelease releasev1alpha1.Release, nodepoolID string, replicas int32, vmSize string) error {
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, replicas))
+
+	clusterOperatorVersion, err := key.ComponentVersion(giantSwarmRelease, "cluster-operator")
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	machinePoolName := "e2e test node pool"
+	var azureMachinePool *expcapzv1alpha3.AzureMachinePool
+	{
+		azureMachinePool = &expcapzv1alpha3.AzureMachinePool{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: expcapzv1alpha3.GroupVersion.String(),
+				Kind:       "AzureMachinePool",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      nodepoolID,
+				Namespace: metav1.NamespaceDefault,
+				Labels: map[string]string{
+					capiv1alpha3.ClusterLabelName: env.ClusterID(),
+					label.AzureOperatorVersion:    env.GetOperatorVersion(),
+					label.Cluster:                 env.ClusterID(),
+					label.MachinePool:             nodepoolID,
+					label.Organization:            organization,
+					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+				},
+				Annotations: map[string]string{
+					annotation.MachinePoolName: machinePoolName,
+				},
+			},
+			Spec: expcapzv1alpha3.AzureMachinePoolSpec{
+				Location: env.AzureLocation(),
+				Template: expcapzv1alpha3.AzureMachineTemplate{
+					VMSize:       vmSize,
+					SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(env.SSHPublicKey())),
+				},
+			},
+		}
+
+		err := ctrlClient.Create(ctx, azureMachinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		var infrastructureCRRef *corev1.ObjectReference
+		{
+			s := runtime.NewScheme()
+			err := expcapzv1alpha3.AddToScheme(s)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			infrastructureCRRef, err = reference.GetReference(s, azureMachinePool)
+			if err != nil {
+				logger.LogCtx(ctx, "level", "warning", fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
+				return microerror.Mask(err)
+			}
+		}
+
+		machinePool := &expcapiv1alpha3.MachinePool{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: expcapiv1alpha3.GroupVersion.String(),
+				Kind:       "MachinePool",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      nodepoolID,
+				Namespace: azureMachinePool.Namespace,
+				Labels: map[string]string{
+					capiv1alpha3.ClusterLabelName: env.ClusterID(),
+					label.AzureOperatorVersion:    env.GetOperatorVersion(),
+					label.Cluster:                 env.ClusterID(),
+					label.ClusterOperatorVersion:  clusterOperatorVersion,
+					label.MachinePool:             nodepoolID,
+					label.Organization:            organization,
+					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+				},
+				Annotations: map[string]string{
+					annotation.MachinePoolName: machinePoolName,
+				},
+			},
+			Spec: expcapiv1alpha3.MachinePoolSpec{
+				ClusterName:    env.ClusterID(),
+				Replicas:       to.Int32Ptr(replicas),
+				FailureDomains: env.AzureAvailabilityZonesAsStrings(),
+				Template: capiv1alpha3.MachineTemplateSpec{
+					Spec: capiv1alpha3.MachineSpec{
+						ClusterName:       env.ClusterID(),
+						InfrastructureRef: *infrastructureCRRef,
+					},
+				},
+			},
+		}
+
+		err := ctrlClient.Create(ctx, machinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	{
+		spark := &v1alpha1.Spark{
+			TypeMeta: metav1.TypeMeta{
+				APIVersion: "core.giantswarm.io/v1alpha1",
+				Kind:       "Spark",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name:      nodepoolID,
+				Namespace: azureMachinePool.Namespace,
+				Labels: map[string]string{
+					capiv1alpha3.ClusterLabelName: env.ClusterID(),
+					label.Cluster:                 env.ClusterID(),
+					label.ReleaseVersion:          strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+				},
+			},
+		}
+
+		err := ctrlClient.Create(ctx, spark)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	logger.LogCtx(ctx, "level", "debug", "message", "created new nodepool")
 
 	return nil
 }

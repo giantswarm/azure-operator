@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"net"
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -15,6 +14,7 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/retryresource"
 	"github.com/giantswarm/randomkeys/v2"
+	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -24,8 +24,13 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfigblob"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/ipam"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/spark"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 )
@@ -38,10 +43,8 @@ type AzureMachinePoolConfig struct {
 	CredentialProvider        credential.Provider
 	EtcdPrefix                string
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	GuestSubnetMaskBits       int
 	Ignition                  setting.Ignition
 	InstallationName          string
-	IPAMNetworkRange          net.IPNet
 	K8sClient                 k8sclient.Interface
 	Locker                    locker.Interface
 	Logger                    micrologger.Logger
@@ -50,6 +53,8 @@ type AzureMachinePoolConfig struct {
 	SentryDSN                 string
 	SSHUserList               string
 	SSOPublicKey              string
+	VMSSCheckWorkers          int
+	VMSSMSIEnabled            bool
 }
 
 func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller, error) {
@@ -129,6 +134,32 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
+	var newDebugger *debugger.Debugger
+	{
+		c := debugger.Config{
+			Logger: config.Logger,
+		}
+
+		newDebugger, err = debugger.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var iwd vmsscheck.InstanceWatchdog
+	{
+		c := vmsscheck.Config{
+			Logger:     config.Logger,
+			NumWorkers: config.VMSSCheckWorkers,
+		}
+
+		var err error
+		iwd, err = vmsscheck.NewInstanceWatchdog(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var certsSearcher *certs.Searcher
 	{
 		c := certs.Config{
@@ -139,6 +170,119 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 
 		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tenantRestConfigProvider tenantcluster.Interface
+	{
+		c := tenantcluster.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+
+			CertID: certs.APICert,
+		}
+
+		tenantRestConfigProvider, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	nodesConfig := nodes.Config{
+		Debugger:  newDebugger,
+		G8sClient: config.K8sClient.G8sClient(),
+		K8sClient: config.K8sClient.K8sClient(),
+		Logger:    config.Logger,
+
+		Azure:            config.Azure,
+		ClientFactory:    clientFactory,
+		InstanceWatchdog: iwd,
+	}
+
+	var nodepoolResource resource.Interface
+	{
+		c := nodepool.Config{
+			Config:                    nodesConfig,
+			CredentialProvider:        config.CredentialProvider,
+			CtrlClient:                config.K8sClient.CtrlClient(),
+			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
+			TenantRestConfigProvider:  tenantRestConfigProvider,
+		}
+
+		nodepoolResource, err = nodepool.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetChecker *ipam.AzureMachinePoolSubnetChecker
+	{
+		c := ipam.AzureMachinePoolSubnetCheckerConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		subnetChecker, err = ipam.NewAzureMachinePoolSubnetChecker(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetPersister *ipam.AzureMachinePoolSubnetPersister
+	{
+		c := ipam.AzureMachinePoolSubnetPersisterConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		subnetPersister, err = ipam.NewAzureMachinePoolSubnetPersister(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
+	{
+		c := ipam.AzureMachinePoolSubnetCollectorConfig{
+			AzureClientFactory: clientFactory,
+			CtrlClient:         config.K8sClient.CtrlClient(),
+			Logger:             config.Logger,
+		}
+
+		subnetCollector, err = ipam.NewAzureMachineSubnetCollector(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var networkRangeGetter *ipam.AzureMachinePoolNetworkRangeGetter
+	{
+		c := ipam.AzureMachinePoolNetworkRangeGetterConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		networkRangeGetter, err = ipam.NewAzureMachinePoolNetworkRangeGetter(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var ipamResource resource.Interface
+	{
+		c := ipam.Config{
+			Checker:            subnetChecker,
+			Collector:          subnetCollector,
+			Locker:             config.Locker,
+			Logger:             config.Logger,
+			NetworkRangeGetter: networkRangeGetter,
+			NetworkRangeType:   ipam.SubnetRange,
+			Persister:          subnetPersister,
+		}
+
+		ipamResource, err = ipam.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -187,6 +331,8 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	resources := []resource.Interface{
 		sparkResource,
 		cloudconfigblobResource,
+		ipamResource,
+		nodepoolResource,
 	}
 
 	{

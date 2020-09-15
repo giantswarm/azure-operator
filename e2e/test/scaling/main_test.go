@@ -34,7 +34,8 @@ func init() {
 			HostFramework:  config.Host,
 			Logger:         config.Logger,
 
-			ClusterID: env.ClusterID(),
+			ClusterID:  env.ClusterID(),
+			CtrlClient: config.K8sClients.CtrlClient(),
 		}
 
 		p, err = NewProvider(c)

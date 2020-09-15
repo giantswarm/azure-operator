@@ -76,15 +76,14 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 		"case 12: Changed Worker Blob Url":       defaultTestData().WithworkerBlobUrl("http://www.giantwarm.io"),
 		"case 13: Changed Worker Encryption Key": defaultTestData().WithworkerEncryptionKey("0123456789abcdef"),
 		"case 14: Changed Worker Initial Vector": defaultTestData().WithworkerInitialVector("fedcba9876543210"),
-		"case 15: Changed Api LB Backend Pool":   defaultTestData().WithapiLBBackendPoolID("/just/a/test"),
+		"case 15: Changed MasterLB Backend Pool": defaultTestData().WithmasterLBBackendPoolID("/just/a/test"),
 		"case 16: Changed Cluster ID":            defaultTestData().WithclusterID("abcde"),
-		"case 17: Changed ETCD LB Backend Pool":  defaultTestData().WithetcdLBBackendPoolID("/and/another/test"),
-		"case 18: Changed Master Subnet ID":      defaultTestData().WithmasterSubnetID("/and/another/one"),
-		"case 19: Change VMSS MSIE enabled":      defaultTestData().WithvmssMSIEnabled(false),
-		"case 20: Changed Worker Subnet ID":      defaultTestData().WithworkerSubnetID("/and/the/last/one"),
-		"case 21: Added a new field":             defaultTestData().WithadditionalFields(map[string]string{"additional": "field"}),
-		"case 22: Removed a field":               defaultTestData().WithremovedFields([]string{"masterSubnetID"}),
-		"case 23: Changed the cloud config tmpl": defaultTestData().WithcloudConfigSmallTemplates([]string{"{}"}),
+		"case 17: Changed Master Subnet ID":      defaultTestData().WithmasterSubnetID("/and/another/one"),
+		"case 18: Change VMSS MSIE enabled":      defaultTestData().WithvmssMSIEnabled(false),
+		"case 19: Changed Worker Subnet ID":      defaultTestData().WithworkerSubnetID("/and/the/last/one"),
+		"case 20: Added a new field":             defaultTestData().WithadditionalFields(map[string]string{"additional": "field"}),
+		"case 21: Removed a field":               defaultTestData().WithremovedFields([]string{"masterSubnetID"}),
+		"case 22: Changed the cloud config tmpl": defaultTestData().WithcloudConfigSmallTemplates([]string{"{}"}),
 	}
 
 	for name, tc := range testCases {
@@ -127,9 +126,8 @@ type testData struct {
 	workerEncryptionKey       string
 	workerInitialVector       string
 	workerInstanceRole        string
-	apiLBBackendPoolID        string
+	masterLBBackendPoolID     string
 	clusterID                 string
-	etcdLBBackendPoolID       string
 	masterSubnetID            string
 	vmssMSIEnabled            bool
 	workerSubnetID            string
@@ -159,9 +157,8 @@ func defaultTestData() testData {
 		workerEncryptionKey:       "eeddccbbaa99887766554433221100ffeeddccbbaa99887766554433221100",
 		workerInitialVector:       "eeddccbbaa0099887766554433221100",
 		workerInstanceRole:        "worker",
-		apiLBBackendPoolID:        "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-API-PublicLoadBalancer/backendAddressPools/tjb62-API-PublicLoadBalancer-BackendPool",
+		masterLBBackendPoolID:     "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-API-PublicLoadBalancer/backendAddressPools/tjb62-API-PublicLoadBalancer-BackendPool",
 		clusterID:                 "tjb62",
-		etcdLBBackendPoolID:       "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/loadBalancers/tjb62-ETCD-PrivateLoadBalancer/backendAddressPools/tjb62-ETCD-PrivateLoadBalancer-BackendPool", // string
 		masterSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-MasterSubnet",
 		vmssMSIEnabled:            true,
 		workerSubnetID:            "/subscriptions/746379f9-ad35-1d92-1829-cba8579d71e6/resourceGroups/tjb62/providers/Microsoft.Network/virtualNetworks/tjb62-VirtualNetwork/subnets/tjb62-VirtualNetwork-WorkerSubnet",
@@ -169,7 +166,7 @@ func defaultTestData() testData {
 		removedFields:             nil,
 		cloudConfigSmallTemplates: key.CloudConfigSmallTemplates(),
 
-		checksumIs:    to.StringPtr("5f1495ec062e2c8cae5fd39bed0316987d4719be6ee3298b183b6c2c272a77c4"),
+		checksumIs:    to.StringPtr("ffa47332b6cac79fd0976cb867be0af03d01ffaead0ca7a467404938d7e653e9"),
 		checksumIsNot: nil,
 	}
 }
@@ -284,8 +281,8 @@ func (td testData) WithworkerInitialVector(data string) testData {
 	return td
 }
 
-func (td testData) WithapiLBBackendPoolID(data string) testData {
-	td.apiLBBackendPoolID = data
+func (td testData) WithmasterLBBackendPoolID(data string) testData {
+	td.masterLBBackendPoolID = data
 	td.checksumIsNot = td.checksumIs
 	td.checksumIs = nil
 
@@ -294,14 +291,6 @@ func (td testData) WithapiLBBackendPoolID(data string) testData {
 
 func (td testData) WithclusterID(data string) testData {
 	td.clusterID = data
-	td.checksumIsNot = td.checksumIs
-	td.checksumIs = nil
-
-	return td
-}
-
-func (td testData) WithetcdLBBackendPoolID(data string) testData {
-	td.etcdLBBackendPoolID = data
 	td.checksumIsNot = td.checksumIs
 	td.checksumIs = nil
 
@@ -400,9 +389,8 @@ func getDeployment(data testData) (*resources.Deployment, error) {
 	encodedWorkerCloudConfig := base64.StdEncoding.EncodeToString([]byte(workerCloudConfig))
 
 	parameters := map[string]interface{}{
-		"apiLBBackendPoolID":    data.apiLBBackendPoolID,
+		"masterLBBackendPoolID": data.masterLBBackendPoolID,
 		"clusterID":             data.clusterID,
-		"etcdLBBackendPoolID":   data.etcdLBBackendPoolID,
 		"masterCloudConfigData": struct{ Value interface{} }{Value: encodedMasterCloudConfig},
 		"masterNodes":           nodes,
 		"masterSubnetID":        data.masterSubnetID,

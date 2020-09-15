@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/giantswarm/apiextensions/pkg/apis/application/v1alpha1"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/apiextensions/v2/pkg/crd"
@@ -253,17 +254,6 @@ Installation:
           DockerConfigJSON: '{ "auths": { "quay.io": { "auth": "Z2lhbnRzd2FybStnb2RzbWFjazo0MzQ3RTJRSVZaN1Y4TzNUOFk4UlhKNFZGTDU2WjUzQ0FaMEMyVjE1TldJQkNNRkxOUjZCUzRCM1FDMzNWUTk2", "email": "" }}}'
 `
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AWSClusterConfig CRD exists")
-
-		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewAWSClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AWSClusterConfig CRD exists")
-	}
-
-	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "AzureClusterConfig"), backoff.NewMaxRetries(7, 1*time.Second))
@@ -275,14 +265,25 @@ Installation:
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring KVMClusterConfig CRD exists")
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring App CRD exists")
 
-		err := config.LegacyK8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewKVMClusterConfigCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, v1alpha1.NewAppCRD(), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured KVMClusterConfig CRD exists")
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured App CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Spark CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, corev1alpha1.NewSparkCRD(), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Spark CRD exists")
 	}
 
 	{

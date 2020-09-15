@@ -4,6 +4,7 @@ import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -13,6 +14,7 @@ import (
 type baseExtension struct {
 	azure                        setting.Azure
 	azureClientCredentialsConfig auth.ClientCredentialsConfig
+	azureMachinePool             *capzexpv1alpha3.AzureMachinePool
 	calicoCIDR                   string
 	certFiles                    []certs.File
 	customObject                 providerv1alpha1.AzureConfig
@@ -28,6 +30,16 @@ func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 		certsPaths = append(certsPaths, file.AbsolutePath)
 	}
 
+	primaryScaleSetName := key.WorkerVMSSName(e.customObject)
+	if e.azureMachinePool != nil {
+		primaryScaleSetName = key.NodePoolVMSSName(e.azureMachinePool)
+	}
+
+	subnetName := key.WorkerSubnetName(e.customObject)
+	if e.azureMachinePool != nil {
+		subnetName = e.azureMachinePool.Name
+	}
+
 	return templateData{
 		azureCNIFileParams{
 			VnetCIDR: e.vnetCIDR,
@@ -41,11 +53,11 @@ func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 			AADClientSecret:             e.azureClientCredentialsConfig.ClientSecret,
 			EnvironmentName:             e.azure.EnvironmentName,
 			Location:                    e.azure.Location,
-			PrimaryScaleSetName:         key.WorkerVMSSName(e.customObject),
+			PrimaryScaleSetName:         primaryScaleSetName,
 			ResourceGroup:               key.ResourceGroupName(e.customObject),
 			RouteTableName:              key.RouteTableName(e.customObject),
 			SecurityGroupName:           key.WorkerSecurityGroupName(e.customObject),
-			SubnetName:                  key.WorkerSubnetName(e.customObject),
+			SubnetName:                  subnetName,
 			SubscriptionID:              e.subscriptionID,
 			TenantID:                    e.azureClientCredentialsConfig.TenantID,
 			VnetName:                    key.VnetName(e.customObject),

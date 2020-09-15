@@ -65,13 +65,13 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			continue
 		}
 
-		n := key.WorkerInstanceName(cr, *i.InstanceID)
+		n := key.WorkerInstanceName(key.ClusterID(&cr), *i.InstanceID)
 
 		dc, drainerConfigExists := drainerConfigs[n]
 		if !drainerConfigExists {
 			nodesPendingDraining++
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.CreateDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, key.ClusterID(&cr), key.ClusterAPIEndpoint(cr), key.WorkerInstanceName(key.ClusterID(&cr), *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
 			}
@@ -91,7 +91,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			}
 
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.CreateDrainerConfig(ctx, cr, key.WorkerInstanceName(cr, *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, key.ClusterID(&cr), key.ClusterAPIEndpoint(cr), key.WorkerInstanceName(key.ClusterID(&cr), *i.InstanceID))
 			if err != nil {
 				return "", microerror.Mask(err)
 			}

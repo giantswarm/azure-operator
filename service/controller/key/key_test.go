@@ -269,7 +269,7 @@ func Test_Functions_for_DNSKeys(t *testing.T) {
 }
 
 func Test_MasterNICName(t *testing.T) {
-	expectedMasterNICName := "3p5j2-Master-1-NIC"
+	expectedMasterNICName := "3p5j2-master-3p5j2-nic"
 
 	customObject := providerv1alpha1.AzureConfig{
 		ObjectMeta: metav1.ObjectMeta{

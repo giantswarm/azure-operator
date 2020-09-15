@@ -4,10 +4,13 @@ package multiaz
 
 import (
 	"context"
+	"sort"
 	"testing"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+
+	"github.com/giantswarm/azure-operator/v4/e2e/env"
 )
 
 func Test_AZ(t *testing.T) {
@@ -51,12 +54,23 @@ func (s *MultiAZ) Test(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", zones)
+	expectedZonesCount := env.AzureAvailabilityZonesCount()
 
-	if len(zones) != 1 {
-		return microerror.Maskf(executionFailedError, "The amount of AZ's used is not correct. Expected %d zones, got %d zones", 1, len(zones))
+	if len(zones) != expectedZonesCount {
+		return microerror.Maskf(executionFailedError, "The amount of AZ's used is not correct. Expected %d zones, got %d zones", 2, len(zones))
 	}
-	if zones[0] != "1" {
-		return microerror.Maskf(executionFailedError, "The AZ used is not correct. Expected %s, got %s", "1", zones[0])
+
+	if expectedZonesCount > 1 {
+		expectedZones := env.AzureAvailabilityZonesAsStrings()
+
+		sort.Strings(zones)
+		sort.Strings(expectedZones)
+
+		for i := range zones {
+			if zones[i] != expectedZones[i] {
+				return microerror.Maskf(executionFailedError, "The AZ used is not correct. Expected %s, got %s", expectedZones[i], zones[i])
+			}
+		}
 	}
 
 	return nil

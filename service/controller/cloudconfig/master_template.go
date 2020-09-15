@@ -228,11 +228,6 @@ func (me *masterExtension) Units() ([]k8scloudconfig.UnitAsset, error) {
 			Enabled:      true,
 		},
 		{
-			AssetContent: ignition.EtcdLBHostsEntry,
-			Name:         "etcd-lb-hosts-entry.service",
-			Enabled:      true,
-		},
-		{
 			AssetContent: ignition.EtcdMountUnit,
 			Name:         "var-lib-etcd.mount",
 			Enabled:      true,

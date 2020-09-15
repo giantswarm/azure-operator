@@ -6,7 +6,7 @@ metadata:
   creationTimestamp: null
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
-    cluster.x-k8s.io/cluster-name: ""
+    cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
     giantswarm.io/organization: ""
     release.giantswarm.io/version: 12.0.0
@@ -23,7 +23,7 @@ spec:
       cidrBlock: 10.10.0.0/16
       name: c6fme-VirtualNetwork
       resourceGroup: c6fme
-  resourceGroup: ""
+  resourceGroup: c6fme
 status:
   bastion:
     image: {}

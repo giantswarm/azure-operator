@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
@@ -20,10 +21,11 @@ import (
 )
 
 type Config struct {
-	Debugger  *debugger.Debugger
-	G8sClient versioned.Interface
-	K8sClient kubernetes.Interface
-	Logger    micrologger.Logger
+	CtrlClient ctrlclient.Client
+	Debugger   *debugger.Debugger
+	G8sClient  versioned.Interface
+	K8sClient  kubernetes.Interface
+	Logger     micrologger.Logger
 
 	Azure            setting.Azure
 	ClientFactory    *client.Factory
@@ -32,6 +34,7 @@ type Config struct {
 }
 
 type Resource struct {
+	CtrlClient   ctrlclient.Client
 	Debugger     *debugger.Debugger
 	G8sClient    versioned.Interface
 	k8sClient    kubernetes.Interface
@@ -45,6 +48,9 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
+	}
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
 	}
@@ -73,10 +79,11 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		Debugger:  config.Debugger,
-		G8sClient: config.G8sClient,
-		k8sClient: config.K8sClient,
-		Logger:    config.Logger,
+		CtrlClient: config.CtrlClient,
+		Debugger:   config.Debugger,
+		G8sClient:  config.G8sClient,
+		k8sClient:  config.K8sClient,
+		Logger:     config.Logger,
 
 		Azure:            config.Azure,
 		ClientFactory:    config.ClientFactory,

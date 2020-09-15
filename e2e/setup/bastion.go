@@ -77,9 +77,8 @@ func WaitForNetworkToBeCreated(ctx context.Context, logger micrologger.Logger, r
 
 		return nil
 	}
-	n := backoff.NewNotifier(logger, ctx)
 	b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
-	err := backoff.RetryNotify(o, b, n)
+	err := backoff.Retry(o, b)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -97,6 +96,7 @@ func CreatePublicIP(ctx context.Context, location, groupName string, ipClient ne
 		network.PublicIPAddress{
 			Name:     to.StringPtr(bastionE2EPublicIpName),
 			Location: to.StringPtr(location),
+			Sku:      &network.PublicIPAddressSku{Name: network.PublicIPAddressSkuNameStandard},
 			PublicIPAddressPropertiesFormat: &network.PublicIPAddressPropertiesFormat{
 				PublicIPAddressVersion:   network.IPv4,
 				PublicIPAllocationMethod: network.Static,
