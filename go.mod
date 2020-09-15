@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions/v2 v2.0.0
+	github.com/giantswarm/apiextensions/v2 v2.1.0
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
@@ -22,7 +22,7 @@ require (
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/helmclient/v2 v2.0.0
 	github.com/giantswarm/ipam v0.2.0
-	github.com/giantswarm/k8sclient/v2 v2.0.1-0.20200803135311-f993c059637f
+	github.com/giantswarm/k8sclient/v2 v2.1.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/k8scloudconfig/v8 v8.0.0
 	github.com/giantswarm/kubelock/v2 v2.0.0
