@@ -50,8 +50,6 @@ const (
 
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
-	AnnotationNodePoolMinSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
-	AnnotationNodePoolMaxSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
 
 	LabelApp             = "app"
 	LabelCluster         = "giantswarm.io/cluster"
