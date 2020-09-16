@@ -25,6 +25,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 
+	azureclient "github.com/giantswarm/azure-operator/v4/client"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/mock_azure"
@@ -40,9 +41,9 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	ctrlClient := newFakeClient()
 	m := mock_azure.NewMockAPI(ctrl)
 	r := &Resource{
-		azureapi:   m,
-		ctrlClient: ctrlClient,
-		logger:     microloggertest.New(),
+		ctrlClient:   ctrlClient,
+		logger:       microloggertest.New(),
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API { return m },
 	}
 
 	ensureCRsExist(t, ctrlClient, []string{
@@ -131,9 +132,9 @@ func TestFinishedMigration(t *testing.T) {
 	client := newFakeClient()
 	m := mock_azure.NewMockAPI(ctrl)
 	r := &Resource{
-		azureapi:   m,
-		ctrlClient: client,
-		logger:     microloggertest.New(),
+		ctrlClient:   client,
+		logger:       microloggertest.New(),
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API { return m },
 	}
 
 	ensureCRsExist(t, client, []string{

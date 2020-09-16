@@ -25,6 +25,15 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
+var missingOrganizationLabel = &microerror.Error{
+	Kind: "missingOrganizationLabel",
+}
+
+// IsMissingOrganizationLabel asserts missingOrganizationLabel.
+func IsMissingOrganizationLabel(err error) bool {
+	return microerror.Cause(err) == missingOrganizationLabel
+}
+
 var notFoundError = &microerror.Error{
 	Kind: "notFoundError",
 }

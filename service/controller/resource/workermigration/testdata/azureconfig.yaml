@@ -5,6 +5,7 @@ metadata:
   - operatorkit.giantswarm.io/azure-operator
   - operatorkit.giantswarm.io/legacy-controller
   labels:
+    giantswarm.io/organization: ""
     azure-operator.giantswarm.io/version: 4.2.0
     giantswarm.io/cluster: c6fme
     release.giantswarm.io/version: 12.0.0

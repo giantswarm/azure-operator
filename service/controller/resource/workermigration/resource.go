@@ -1,6 +1,7 @@
 package workermigration
 
 import (
+	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -11,6 +12,9 @@ import (
 )
 
 const (
+	credentialDefaultName = "credential-default"
+	credentialNamespace   = "giantswarm"
+
 	Name = "workermigration"
 )
 
@@ -23,10 +27,11 @@ type Config struct {
 }
 
 type Resource struct {
-	azureapi            azure.API
+	clientFactory       *azureclient.Factory
 	ctrlClient          client.Client
 	logger              micrologger.Logger
 	tenantClientFactory tenantclient.Factory
+	wrapAzureAPI        func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API
 
 	location string
 }
@@ -46,9 +51,10 @@ func New(config Config) (*Resource, error) {
 	}
 
 	newResource := &Resource{
-		azureapi:   azure.NewAPI(config.ClientFactory),
-		ctrlClient: config.CtrlClient,
-		logger:     config.Logger,
+		clientFactory: config.ClientFactory,
+		ctrlClient:    config.CtrlClient,
+		logger:        config.Logger,
+		wrapAzureAPI:  azure.GetAPI,
 
 		location: config.Location,
 	}
