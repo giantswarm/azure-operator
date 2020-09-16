@@ -9,7 +9,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/e2e-harness/pkg/framework"
+	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	v1 "k8s.io/api/core/v1"
@@ -236,7 +236,7 @@ func getWorkerNodes(ctx context.Context, k8sclient kubernetes.Interface) (*v1.No
 	listOptions := metav1.ListOptions{
 		LabelSelector: labelSelector,
 	}
-	nodes, err := k8sclient.CoreV1().Nodes().List(listOptions)
+	nodes, err := k8sclient.CoreV1().Nodes().List(ctx, listOptions)
 	if err != nil {
 		return &v1.NodeList{}, microerror.Mask(err)
 	}
