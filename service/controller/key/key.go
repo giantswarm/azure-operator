@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest/to"
+	apiextensionsannotations "github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
@@ -49,8 +50,6 @@ const (
 
 	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
 	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
-	AnnotationNodePoolMinSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
-	AnnotationNodePoolMaxSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
 
 	LabelApp             = "app"
 	LabelCluster         = "giantswarm.io/cluster"
@@ -629,7 +628,7 @@ func MachinePoolID(getter LabelsGetter) (string, error) {
 }
 
 func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
-	sizeStr := machinePool.Annotations[AnnotationNodePoolMinSize]
+	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMaxSize]
 	size, err := strconv.Atoi(sizeStr)
 	if err != nil {
 		// Annotation not found or invalid.
@@ -640,7 +639,7 @@ func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
 }
 
 func NodePoolMaxReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
-	sizeStr := machinePool.Annotations[AnnotationNodePoolMaxSize]
+	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMaxSize]
 	size, err := strconv.Atoi(sizeStr)
 	if err != nil {
 		// Annotation not found or invalid.
