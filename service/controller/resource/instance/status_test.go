@@ -4,7 +4,7 @@ import (
 	"reflect"
 	"testing"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 )
 
 func Test_Resource_Instance_computeForDeleteResourceStatus(t *testing.T) {

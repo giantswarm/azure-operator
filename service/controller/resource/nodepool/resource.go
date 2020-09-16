@@ -4,9 +4,9 @@ import (
 	"context"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/k8sclient/v2/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
+	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/client-go/kubernetes"
 	"k8s.io/client-go/rest"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"

@@ -5,7 +5,7 @@ package scaling
 import (
 	"testing"
 
-	"github.com/giantswarm/e2etests/scaling"
+	"github.com/giantswarm/e2etests/v2/scaling"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"

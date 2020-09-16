@@ -24,7 +24,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// Lookup the current state of the service.
 	var service *corev1.Service
 	{
-		manifest, err := r.k8sClient.CoreV1().Services(namespace).Get(masterServiceName, apismetav1.GetOptions{})
+		manifest, err := r.k8sClient.CoreV1().Services(namespace).Get(ctx, masterServiceName, apismetav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the master service in the Kubernetes API")
 			// fall through

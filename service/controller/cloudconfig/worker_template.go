@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
@@ -30,8 +30,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
-		params = k8scloudconfig.DefaultParams()
-
+		params = k8scloudconfig.Params{}
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
 		params.Kubernetes = k8scloudconfig.Kubernetes{
@@ -53,6 +52,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 			LogsToken:  c.ignition.LogsToken,
 		}
 		params.Images = data.Images
+		params.ImagePullProgressDeadline = defaultImagePullProgressDeadline
 		params.RegistryMirrors = c.registryMirrors
 		params.Versions = data.Versions
 		params.SSOPublicKey = c.ssoPublicKey

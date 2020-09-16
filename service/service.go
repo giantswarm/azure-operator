@@ -7,16 +7,15 @@ import (
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/k8sclient/v3/pkg/k8sclient"
-	"github.com/giantswarm/k8sclient/v3/pkg/k8srestconfig"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
+	"github.com/giantswarm/k8sclient/v4/pkg/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	operatorkitcontroller "github.com/giantswarm/operatorkit/controller"
-	"github.com/giantswarm/statusresource"
+	operatorkitcontroller "github.com/giantswarm/operatorkit/v2/pkg/controller"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
 	"k8s.io/client-go/rest"
@@ -53,9 +52,8 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	bootOnce                sync.Once
-	controllers             []*operatorkitcontroller.Controller
-	statusResourceCollector *statusresource.CollectorSet
+	bootOnce    sync.Once
+	controllers []*operatorkitcontroller.Controller
 }
 
 // New creates a new configured service object.
@@ -382,19 +380,6 @@ func New(config Config) (*Service, error) {
 		controllers = append(controllers, machinePoolController)
 	}
 
-	var statusResourceCollector *statusresource.CollectorSet
-	{
-		c := statusresource.CollectorSetConfig{
-			Logger:  config.Logger,
-			Watcher: k8sClient.G8sClient().ProviderV1alpha1().AzureConfigs("").Watch,
-		}
-
-		statusResourceCollector, err = statusresource.NewCollectorSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var versionService *version.Service
 	{
 		c := version.Config{
@@ -413,10 +398,9 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
-		bootOnce:                sync.Once{},
-		controllers:             controllers,
-		statusResourceCollector: statusResourceCollector,
-		Version:                 versionService,
+		bootOnce:    sync.Once{},
+		controllers: controllers,
+		Version:     versionService,
 	}
 
 	return s, nil
@@ -424,8 +408,6 @@ func New(config Config) (*Service, error) {
 
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
-		go s.statusResourceCollector.Boot(ctx) // nolint: errcheck
-
 		for _, ctrl := range s.controllers {
 			go ctrl.Boot(ctx)
 		}

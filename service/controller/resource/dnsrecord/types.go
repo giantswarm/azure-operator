@@ -3,7 +3,7 @@ package dnsrecord
 import (
 	"reflect"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )

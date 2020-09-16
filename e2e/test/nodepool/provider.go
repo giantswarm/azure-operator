@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/apiextensions/pkg/label"
+	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

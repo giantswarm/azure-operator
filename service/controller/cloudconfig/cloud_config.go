@@ -1,13 +1,15 @@
 package cloudconfig
 
 import (
+	"context"
+
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/certs/v2/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs/v3/pkg/certs"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/randomkeys"
+	"github.com/giantswarm/randomkeys/v2"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
@@ -88,8 +90,8 @@ func New(config Config) (*CloudConfig, error) {
 	return c, nil
 }
 
-func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig) (string, error) {
-	cluster, err := c.randomkeysSearcher.SearchCluster(key.ClusterID(&customObject))
+func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject providerv1alpha1.AzureConfig) (string, error) {
+	cluster, err := c.randomkeysSearcher.SearchCluster(ctx, key.ClusterID(&customObject))
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -97,10 +99,10 @@ func (c CloudConfig) getEncryptionkey(customObject providerv1alpha1.AzureConfig)
 }
 
 func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
-	c := k8scloudconfig.DefaultCloudConfigConfig()
-	c.Params = params
-	c.Template = template
-
+	c := k8scloudconfig.CloudConfigConfig{
+		Params:   params,
+		Template: template,
+	}
 	cloudConfig, err := k8scloudconfig.NewCloudConfig(c)
 	if err != nil {
 		return "", microerror.Mask(err)

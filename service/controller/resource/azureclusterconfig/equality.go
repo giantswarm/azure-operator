@@ -1,6 +1,6 @@
 package azureclusterconfig
 
-import corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
+import corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 
 func azureClusterConfigsEqual(cr1, cr2 corev1alpha1.AzureClusterConfig) bool {
 	switch {

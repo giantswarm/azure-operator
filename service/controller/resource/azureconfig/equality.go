@@ -1,6 +1,6 @@
 package azureconfig
 
-import providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+import providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 
 func azureConfigsEqual(cr1, cr2 providerv1alpha1.AzureConfig) bool {
 	// Common Cluster Checks.

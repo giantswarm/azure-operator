@@ -6,7 +6,7 @@ metadata:
   creationTimestamp: null
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
-    cluster.x-k8s.io/cluster-name: c6fme
+    cluster.x-k8s.io/cluster-name: ""
     giantswarm.io/cluster: c6fme
     giantswarm.io/organization: ""
     release.giantswarm.io/version: 12.0.0

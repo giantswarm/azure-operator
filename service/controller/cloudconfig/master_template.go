@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
@@ -14,13 +14,15 @@ import (
 )
 
 const (
-	defaultEtcdPort = 2379
+	defaultEtcdPort                  = 2379
+	defaultImagePullProgressDeadline = "1m"
+	EtcdInitialClusterStateNew       = "new"
 )
 
 // NewMasterCloudConfig generates a new master cloudconfig and returns it as a
 // base64 encoded string.
 func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplateData, encrypter encrypter.Interface) (string, error) {
-	apiserverEncryptionKey, err := c.getEncryptionkey(data.CustomObject)
+	apiserverEncryptionKey, err := c.getEncryptionkey(ctx, data.CustomObject)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -56,13 +58,16 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
-		params = k8scloudconfig.DefaultParams()
+		params = k8scloudconfig.Params{}
 		params.BaseDomain = key.ClusterBaseDomain(data.CustomObject)
 		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
+		params.ImagePullProgressDeadline = defaultImagePullProgressDeadline
 		params.DisableIngressControllerService = true
 		params.Etcd.ClientPort = defaultEtcdPort
+		params.Etcd.HighAvailability = false
+		params.Etcd.InitialClusterState = EtcdInitialClusterStateNew
 		params.Kubernetes = k8scloudconfig.Kubernetes{
 			Apiserver: k8scloudconfig.KubernetesPodOptions{
 				HostExtraMounts: []k8scloudconfig.KubernetesPodOptionsHostMount{

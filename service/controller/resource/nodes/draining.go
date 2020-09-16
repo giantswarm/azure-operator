@@ -3,7 +3,7 @@ package nodes
 import (
 	"context"
 
-	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -39,7 +39,7 @@ func (r *Resource) CreateDrainerConfig(ctx context.Context, clusterID, clusterAP
 		},
 	}
 
-	_, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(clusterID).Create(c)
+	_, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(clusterID).Create(ctx, c, metav1.CreateOptions{})
 	if errors.IsAlreadyExists(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
