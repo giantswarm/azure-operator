@@ -118,9 +118,10 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	var cluster *capiv1alpha3.Cluster
+	var cluster capiv1alpha3.Cluster
 	{
-		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}, cluster)
+		cluster = capiv1alpha3.Cluster{}
+		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}, &cluster)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -139,7 +140,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		images := k8scloudconfig.BuildImages(r.registryDomain, versions)
 
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
-			Cluster:         cluster,
+			Cluster:         &cluster,
 			CustomObject:    cr,
 			Images:          images,
 			MasterCertFiles: masterCertFiles,
