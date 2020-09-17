@@ -3,11 +3,11 @@ package tenantclient
 import (
 	"context"
 
-	"github.com/giantswarm/certs/v2/pkg/certs"
-	"github.com/giantswarm/k8sclient"
+	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/tenantcluster/v2/pkg/tenantcluster"
+	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/client-go/rest"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
