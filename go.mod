@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions/v2 v2.3.0
+	github.com/giantswarm/apiextensions/v2 v2.3.1-0.20200917102032-c27840cb3a27
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0

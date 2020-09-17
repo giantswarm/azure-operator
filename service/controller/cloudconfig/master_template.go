@@ -5,6 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
+	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
 
@@ -29,20 +30,9 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 
 	var k8sAPIExtraArgs []string
 	{
+		oidcExtraArgs := c.oidcExtraArgs(ctx, data)
 		k8sAPIExtraArgs = append(k8sAPIExtraArgs, "--cloud-config=/etc/kubernetes/config/azure.yaml")
-
-		if c.OIDC.ClientID != "" {
-			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-client-id=%s", c.OIDC.ClientID))
-		}
-		if c.OIDC.IssuerURL != "" {
-			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-issuer-url=%s", c.OIDC.IssuerURL))
-		}
-		if c.OIDC.UsernameClaim != "" {
-			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-username-claim=%s", c.OIDC.UsernameClaim))
-		}
-		if c.OIDC.GroupsClaim != "" {
-			k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-groups-claim=%s", c.OIDC.GroupsClaim))
-		}
+		k8sAPIExtraArgs = append(k8sAPIExtraArgs, oidcExtraArgs...)
 	}
 
 	var params k8scloudconfig.Params
@@ -133,6 +123,51 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 
 type masterExtension struct {
 	baseExtension
+}
+
+// oidcExtraArgs returns oidc parameters reading the configuration from `Cluster` annotations.
+// It uses the oidc configuration passed to the operator as fallback.
+func (c CloudConfig) oidcExtraArgs(ctx context.Context, data IgnitionTemplateData) []string {
+	var k8sAPIExtraArgs []string
+
+	oidcClientID, oidcClientIDExists := data.Cluster.Annotations[annotation.OIDCClientID]
+	oidcIssuerURL, oidcIssuerURLExists := data.Cluster.Annotations[annotation.OIDCIssuerURL]
+	oidcUsernameClaim, oidcUsernameClaimExists := data.Cluster.Annotations[annotation.OIDCUsernameClaim]
+	oidcGroupsClaim, oidcGroupsClaimExists := data.Cluster.Annotations[annotation.OIDCGroupClaim]
+
+	if !oidcClientIDExists {
+		oidcClientID = c.OIDC.ClientID
+	}
+
+	if !oidcIssuerURLExists {
+		oidcIssuerURL = c.OIDC.IssuerURL
+	}
+
+	if !oidcUsernameClaimExists {
+		oidcUsernameClaim = c.OIDC.UsernameClaim
+	}
+
+	if !oidcGroupsClaimExists {
+		oidcGroupsClaim = c.OIDC.GroupsClaim
+	}
+
+	if oidcClientID != "" {
+		k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-client-id=%s", oidcClientID))
+	}
+
+	if oidcIssuerURL != "" {
+		k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-issuer-url=%s", oidcIssuerURL))
+	}
+
+	if oidcUsernameClaim != "" {
+		k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-username-claim=%s", oidcUsernameClaim))
+	}
+
+	if oidcGroupsClaim != "" {
+		k8sAPIExtraArgs = append(k8sAPIExtraArgs, fmt.Sprintf("--oidc-groups-claim=%s", oidcGroupsClaim))
+	}
+
+	return k8sAPIExtraArgs
 }
 
 // Files allows files to be injected into the master cloudconfig.
