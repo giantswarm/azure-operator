@@ -7,7 +7,6 @@ import (
 
 	apiextannotation "github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	apiextlabel "github.com/giantswarm/apiextensions/v2/pkg/label"
@@ -34,11 +33,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, &cr)
-	if err != nil {
-		return microerror.Mask(err)
+	credentialSecret := &providerv1alpha1.CredentialSecret{
+		Name:      key.CredentialName(cr),
+		Namespace: key.CredentialNamespace(cr),
 	}
-
 	azureAPI := r.wrapAzureAPI(r.clientFactory, credentialSecret)
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers are migrated to node pool")
@@ -434,61 +432,6 @@ func (r *Resource) getClusterForAzureConfig(ctx context.Context, cr providerv1al
 	}
 
 	return cluster, nil
-}
-
-func (r *Resource) getCredentialSecret(ctx context.Context, cluster key.LabelsGetter) (*v1alpha1.CredentialSecret, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
-
-	organization, exists := cluster.GetLabels()[label.Organization]
-	if !exists {
-		return nil, microerror.Mask(missingOrganizationLabel)
-	}
-
-	secretList := &corev1.SecretList{}
-	{
-		err := r.ctrlClient.List(
-			ctx,
-			secretList,
-			client.InNamespace(credentialNamespace),
-			client.MatchingLabels{
-				"app":              "credentiald",
-				label.Organization: organization,
-			},
-		)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	// We currently only support one credential secret per organization.
-	// If there are more than one, return an error.
-	if len(secretList.Items) > 1 {
-		return nil, microerror.Mask(tooManyCredentialsError)
-	}
-
-	// If one credential secret is found, we use that.
-	if len(secretList.Items) == 1 {
-		secret := secretList.Items[0]
-
-		credentialSecret := &providerv1alpha1.CredentialSecret{
-			Namespace: secret.Namespace,
-			Name:      secret.Name,
-		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
-
-		return credentialSecret, nil
-	}
-
-	// If no credential secrets are found, we use the default.
-	credentialSecret := &v1alpha1.CredentialSecret{
-		Namespace: credentialNamespace,
-		Name:      credentialDefaultName,
-	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
-
-	return credentialSecret, nil
 }
 
 func intSliceToStringSlice(xs []int) []string {
