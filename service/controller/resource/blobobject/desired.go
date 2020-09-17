@@ -4,10 +4,10 @@ import (
 	"context"
 	"sync"
 
-	"github.com/giantswarm/certs/v2/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
+	"github.com/giantswarm/certs/v3/pkg/certs"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/resourcecanceledcontext"
 	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
@@ -34,7 +34,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		m := sync.Mutex{}
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(&cr), certs.APICert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.APICert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -46,7 +46,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(&cr), certs.CalicoEtcdClientCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.CalicoEtcdClientCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -59,7 +59,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(&cr), certs.EtcdCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.EtcdCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -71,7 +71,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(&cr), certs.ServiceAccountCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.ServiceAccountCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -83,7 +83,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterID(&cr), certs.WorkerCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterID(&cr), certs.WorkerCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}

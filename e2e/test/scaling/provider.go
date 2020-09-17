@@ -7,7 +7,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/e2e-harness/pkg/framework"
+	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -101,8 +101,8 @@ func (p *Provider) AddWorker() error {
 	return nil
 }
 
-func (p *Provider) NumMasters() (int, error) {
-	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs(metav1.NamespaceDefault).Get(p.clusterID, metav1.GetOptions{})
+func (p *Provider) NumMasters(ctx context.Context) (int, error) {
+	customObject, err := p.hostFramework.G8sClient().ProviderV1alpha1().AzureConfigs(metav1.NamespaceDefault).Get(ctx, p.clusterID, metav1.GetOptions{})
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
@@ -132,15 +132,6 @@ func (p *Provider) RemoveWorker() error {
 	machinePool.Spec.Replicas = to.Int32Ptr(*machinePool.Spec.Replicas - int32(1))
 
 	err = p.ctrlClient.Update(ctx, machinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
-}
-
-func (p *Provider) WaitForNodes(ctx context.Context, num int) error {
-	err := p.guestFramework.WaitForNodesReady(ctx, num)
 	if err != nil {
 		return microerror.Mask(err)
 	}

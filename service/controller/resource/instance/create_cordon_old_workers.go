@@ -6,7 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -61,7 +61,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	var nodes []corev1.Node
 	{
-		nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+		nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -113,7 +113,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, nodes []corev1.Node)
 		t := types.StrategicMergePatchType
 		p := []byte(UnschedulablePatch)
 
-		_, err = cc.Client.TenantCluster.K8s.CoreV1().Nodes().Patch(n.Name, t, p)
+		_, err = cc.Client.TenantCluster.K8s.CoreV1().Nodes().Patch(ctx, n.Name, t, p, metav1.PatchOptions{})
 		if apierrors.IsNotFound(err) {
 			// On manual operations or during auto-scaling it may happen that
 			// node gets terminated while instances are processed. It's ok from
@@ -175,7 +175,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, customObject
 
 	name := key.WorkerInstanceName(key.ClusterID(&customObject), *instance.InstanceID)
 
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(metav1.ListOptions{})
+	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

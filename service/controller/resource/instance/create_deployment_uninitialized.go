@@ -5,8 +5,8 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
-	"github.com/giantswarm/operatorkit/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/resourcecanceledcontext"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
@@ -73,7 +73,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentTemplateChk != "" {
-			err = r.SetResourceStatus(cr, DeploymentTemplateChecksum, deploymentTemplateChk)
+			err = r.SetResourceStatus(ctx, cr, DeploymentTemplateChecksum, deploymentTemplateChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}
@@ -89,7 +89,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		if deploymentParametersChk != "" {
-			err = r.SetResourceStatus(cr, DeploymentParametersChecksum, deploymentParametersChk)
+			err = r.SetResourceStatus(ctx, cr, DeploymentParametersChecksum, deploymentParametersChk)
 			if err != nil {
 				return currentState, microerror.Mask(err)
 			}

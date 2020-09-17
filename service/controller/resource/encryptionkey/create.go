@@ -52,7 +52,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey secret")
 
-	_, err = r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Create(secret)
+	_, err = r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Create(ctx, secret, metav1.CreateOptions{})
 	if apierrors.IsAlreadyExists(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "creating encryptionkey: already created")
 	} else if err != nil {

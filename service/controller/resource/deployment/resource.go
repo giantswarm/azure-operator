@@ -6,11 +6,11 @@ import (
 	"time"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/apiextensions/v2/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v4/client"
@@ -185,12 +185,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if failed {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "the main deployment is failed")
 	} else {
-		currentDeploymentTemplateChk, err := r.getResourceStatus(cr, DeploymentTemplateChecksum)
+		currentDeploymentTemplateChk, err := r.getResourceStatus(ctx, cr, DeploymentTemplateChecksum)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		currentDeploymentParametersChk, err := r.getResourceStatus(cr, DeploymentParametersChecksum)
+		currentDeploymentParametersChk, err := r.getResourceStatus(ctx, cr, DeploymentParametersChecksum)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -228,7 +228,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
 
 	if desiredDeploymentTemplateChk != "" {
-		err = r.setResourceStatus(cr, DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
+		err = r.setResourceStatus(ctx, cr, DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -239,7 +239,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if desiredDeploymentParametersChk != "" {
-		err = r.setResourceStatus(cr, DeploymentParametersChecksum, desiredDeploymentParametersChk)
+		err = r.setResourceStatus(ctx, cr, DeploymentParametersChecksum, desiredDeploymentParametersChk)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -346,9 +346,9 @@ func (r *Resource) getDeploymentOutputValue(ctx context.Context, deploymentsClie
 	return s, nil
 }
 
-func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, t string) (string, error) {
+func (r *Resource) getResourceStatus(ctx context.Context, customObject providerv1alpha1.AzureConfig, t string) (string, error) {
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(ctx, customObject.Name, metav1.GetOptions{})
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -371,14 +371,14 @@ func (r *Resource) getResourceStatus(customObject providerv1alpha1.AzureConfig, 
 	return "", nil
 }
 
-func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, t string, s string) error {
+func (r *Resource) setResourceStatus(ctx context.Context, customObject providerv1alpha1.AzureConfig, t string, s string) error {
 	// Get the newest CR version. Otherwise status update may fail because of:
 	//
 	//	 the object has been modified; please apply your changes to the
 	//	 latest version and try again
 	//
 	{
-		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(customObject.Name, metav1.GetOptions{})
+		c, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(ctx, customObject.Name, metav1.GetOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -420,7 +420,7 @@ func (r *Resource) setResourceStatus(customObject providerv1alpha1.AzureConfig, 
 
 	{
 		n := customObject.GetNamespace()
-		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(&customObject)
+		_, err := r.g8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(ctx, &customObject, metav1.UpdateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}

@@ -6,7 +6,7 @@ import (
 	"testing"
 	"time"
 
-	"github.com/giantswarm/e2etests/update"
+	"github.com/giantswarm/e2etests/v2/update"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
 	"github.com/giantswarm/azure-operator/v4/e2e/setup"

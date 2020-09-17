@@ -3,7 +3,7 @@ package nodes
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/v2/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -105,7 +105,7 @@ func (r *Resource) SetStateMachine(stateMachine state.Machine) {
 func (r *Resource) GetEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
 
-	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(secretName, metav1.GetOptions{})
+	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(ctx, secretName, metav1.GetOptions{})
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -13,13 +13,13 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
-	corev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/certs/v2/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v7/pkg/template"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/certs/v3/pkg/certs"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/controller/context/reconciliationcanceledcontext"
+	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
 	"golang.org/x/sync/errgroup"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -219,7 +219,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		m := sync.Mutex{}
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.APICert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterName(cluster), certs.APICert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -231,7 +231,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.CalicoEtcdClientCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterName(cluster), certs.CalicoEtcdClientCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -244,7 +244,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.EtcdCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterName(cluster), certs.EtcdCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -256,7 +256,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.ServiceAccountCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterName(cluster), certs.ServiceAccountCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -268,7 +268,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		})
 
 		g.Go(func() error {
-			tls, err := r.certsSearcher.SearchTLS(key.ClusterName(cluster), certs.WorkerCert)
+			tls, err := r.certsSearcher.SearchTLS(ctx, key.ClusterName(cluster), certs.WorkerCert)
 			if err != nil {
 				return microerror.Mask(err)
 			}

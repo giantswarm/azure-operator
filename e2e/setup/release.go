@@ -4,8 +4,8 @@ import (
 	"context"
 	"time"
 
-	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/apiextensions/pkg/crd"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/apiextensions/v2/pkg/crd"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -85,7 +85,7 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 				State: "active",
 			},
 		}
-		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(release)
+		_, err := config.K8sClients.G8sClient().ReleaseV1alpha1().Releases().Create(ctx, release, metav1.CreateOptions{})
 		if err != nil {
 			return &releasev1alpha1.Release{}, microerror.Mask(err)
 		}

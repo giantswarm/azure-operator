@@ -6,7 +6,7 @@ import (
 	"context"
 	"testing"
 
-	"github.com/giantswarm/apiextensions/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/v2/pkg/clientset/versioned"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -77,13 +77,13 @@ func (s *Connectivity) Test(ctx context.Context) error {
 			Containers:    []v1.Container{{Name: "connectivity", Image: "busybox", Command: []string{"nc"}, Args: []string{"-z", "api." + s.clusterID + ".k8s." + env.CommonDomain(), "443"}}},
 		},
 	}
-	_, err := s.k8sClient.CoreV1().Pods(podNamespace).Create(pod)
+	_, err := s.k8sClient.CoreV1().Pods(podNamespace).Create(ctx, pod, metav1.CreateOptions{})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	o := func() error {
-		pod, err = s.k8sClient.CoreV1().Pods(podNamespace).Get(podName, metav1.GetOptions{})
+		pod, err = s.k8sClient.CoreV1().Pods(podNamespace).Get(ctx, podName, metav1.GetOptions{})
 		if err != nil {
 			return microerror.Maskf(executionFailedError, "can't find %#q pod on control plane", podName)
 		}

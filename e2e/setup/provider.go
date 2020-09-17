@@ -8,12 +8,12 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/apiextensions/pkg/annotation"
-	"github.com/giantswarm/apiextensions/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/provider/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/apiextensions/pkg/crd"
-	"github.com/giantswarm/apiextensions/pkg/label"
+	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/apiextensions/v2/pkg/crd"
+	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -199,14 +199,14 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 			Type: "Opaque",
 		}
 
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("default").Create(encryptionSecret)
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("default").Create(ctx, encryptionSecret, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("giantswarm").Create(credentialDefault())
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("giantswarm").Create(ctx, credentialDefault(), metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -271,7 +271,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: clusterOperatorVersion},
 			},
 		}
-		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(azureClusterConfig)
+		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(ctx, azureClusterConfig, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -300,6 +300,9 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
 					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+				},
+				Annotations: map[string]string{
+					annotation.ClusterDescription: "friendly cluster name",
 				},
 			},
 			Spec: providerv1alpha1.AzureConfigSpec{
@@ -387,7 +390,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: env.GetOperatorVersion()},
 			},
 		}
-		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(azureConfig)
+		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(ctx, azureConfig, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
