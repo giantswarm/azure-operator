@@ -12,9 +12,6 @@ import (
 )
 
 const (
-	credentialDefaultName = "credential-default"
-	credentialNamespace   = "giantswarm"
-
 	Name = "workermigration"
 )
 
