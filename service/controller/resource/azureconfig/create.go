@@ -7,6 +7,7 @@ import (
 	"strings"
 	"time"
 
+	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
@@ -211,6 +212,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 
 	azureConfig := providerv1alpha1.AzureConfig{}
 	azureConfig.Labels = make(map[string]string)
+	azureConfig.Annotations = make(map[string]string)
 
 	{
 		azureConfig.ObjectMeta.Name = key.ClusterName(&cluster)
@@ -226,6 +228,10 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 		cluster.Kubernetes.CloudProvider = ProviderAzure
 
 		azureConfig.Spec.Cluster = cluster
+	}
+
+	{
+		azureConfig.Annotations[annotation.ClusterDescription] = cluster.Annotations[annotation.ClusterDescription]
 	}
 
 	{
