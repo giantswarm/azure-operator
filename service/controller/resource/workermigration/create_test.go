@@ -77,7 +77,7 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	// VERIFY: MachinePool is there.
 	{
 		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
+			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
 		}
 		mpList := new(expcapiv1alpha3.MachinePoolList)
 		err = ctrlClient.List(context.Background(), mpList, opts)
