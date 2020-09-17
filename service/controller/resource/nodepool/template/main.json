@@ -329,11 +329,11 @@
                 "input": {
                   "caching": "ReadWrite",
                   "createOption": "Empty",
-                  "diskSizeGB": "[parameters('dataDisks')[copyIndex()].diskSizeGB]",
+                  "diskSizeGB": "[parameters('dataDisks')[copyIndex('dataDisks')].diskSizeGB]",
                   "managedDisk": {
                     "storageAccountType": "[variables('storageAccountType')]"
                   },
-                  "lun": "[parameters('dataDisks')[copyIndex()].lun]"
+                  "lun": "[parameters('dataDisks')[copyIndex('dataDisks')].lun]"
                 }
               }
             ]
