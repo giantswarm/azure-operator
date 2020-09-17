@@ -347,7 +347,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 			Labels: map[string]string{
 				apiextlabel.AzureOperatorVersion: key.OperatorVersion(&cr),
 				apiextlabel.Cluster:              key.ClusterID(&cr),
-				capiv1alpha3.ClusterLabelName:    key.ClusterName(&cr),
+				capiv1alpha3.ClusterLabelName:    key.ClusterID(&cr),
 				apiextlabel.MachinePool:          key.ClusterID(&cr),
 				apiextlabel.Organization:         key.OrganizationID(&cr),
 				apiextlabel.ReleaseVersion:       key.ReleaseVersion(&cr),
@@ -357,12 +357,12 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 			},
 		},
 		Spec: expcapiv1alpha3.MachinePoolSpec{
-			ClusterName:    key.ClusterName(&cr),
+			ClusterName:    key.ClusterID(&cr),
 			Replicas:       toInt32P(int32(replicas)),
 			FailureDomains: intSliceToStringSlice(key.AvailabilityZones(cr, r.location)),
 			Template: capiv1alpha3.MachineTemplateSpec{
 				Spec: capiv1alpha3.MachineSpec{
-					ClusterName:       key.ClusterName(&cr),
+					ClusterName:       key.ClusterID(&cr),
 					InfrastructureRef: *infrastructureCRRef,
 				},
 			},
