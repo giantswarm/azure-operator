@@ -67,6 +67,7 @@ func New(config Config) (*Resource, error) {
 		locker:             config.Locker,
 		logger:             config.Logger,
 		networkRangeGetter: config.NetworkRangeGetter,
+		networkRangeType:   config.NetworkRangeType,
 		persister:          config.Persister,
 	}
 
