@@ -62,6 +62,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		"azureMachinePoolVersion": strconv.FormatInt(azureMachinePool.ObjectMeta.Generation, 10),
 		"azureOperatorVersion":    project.Version(),
 		"clusterID":               azureCluster.GetName(),
+		"dataDisks":               azureMachinePool.Spec.Template.DataDisks,
 		"dockerVolumeSizeGB":      "50",
 		"kubeletVolumeSizeGB":     "100",
 		"nodepoolName":            key.NodePoolVMSSName(azureMachinePool),

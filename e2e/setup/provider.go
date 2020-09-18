@@ -21,6 +21,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/client-go/tools/reference"
+	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
@@ -443,8 +444,20 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 			Spec: expcapzv1alpha3.AzureMachinePoolSpec{
 				Location: env.AzureLocation(),
 				Template: expcapzv1alpha3.AzureMachineTemplate{
-					VMSize:       vmSize,
+					DataDisks: []v1alpha3.DataDisk{
+						{
+							NameSuffix: "docker",
+							DiskSizeGB: 50,
+							Lun:        to.Int32Ptr(21),
+						},
+						{
+							NameSuffix: "kubelet",
+							DiskSizeGB: 100,
+							Lun:        to.Int32Ptr(22),
+						},
+					},
 					SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(env.SSHPublicKey())),
+					VMSize:       vmSize,
 				},
 			},
 		}

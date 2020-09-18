@@ -26,6 +26,12 @@
         "description": "Unique ID of the cluster owning the nodepool."
       }
     },
+    "dataDisks": {
+      "type": "array",
+      "metadata": {
+        "description": "Disks attached to the VMSS."
+      }
+    },
     "dockerVolumeSizeGB": {
       "type": "string",
       "defaultValue": "50"
@@ -316,24 +322,19 @@
                 "storageAccountType": "[variables('storageAccountType')]"
               }
             },
-            "dataDisks": [
+            "copy": [
               {
-                "caching": "ReadWrite",
-                "createOption": "Empty",
-                "diskSizeGB": "[parameters('dockerVolumeSizeGB')]",
-                "managedDisk": {
-                  "storageAccountType": "[variables('storageAccountType')]"
-                },
-                "lun": 21
-              },
-              {
-                "caching": "ReadWrite",
-                "createOption": "Empty",
-                "diskSizeGB": "[parameters('kubeletVolumeSizeGB')]",
-                "managedDisk": {
-                  "storageAccountType": "[variables('storageAccountType')]"
-                },
-                "lun": 22
+                "name": "dataDisks",
+                "count": "[length(parameters('dataDisks'))]",
+                "input": {
+                  "caching": "ReadWrite",
+                  "createOption": "Empty",
+                  "diskSizeGB": "[parameters('dataDisks')[copyIndex('dataDisks')].diskSizeGB]",
+                  "managedDisk": {
+                    "storageAccountType": "[variables('storageAccountType')]"
+                  },
+                  "lun": "[parameters('dataDisks')[copyIndex('dataDisks')].lun]"
+                }
               }
             ]
           },
@@ -375,7 +376,7 @@
         "roleDefinitionId": "[variables('contributorRoleDefinitionId')]",
         "principalId": "[reference(resourceId('Microsoft.Compute/virtualMachineScaleSets', variables('vmssName')),'2019-12-01', 'Full').identity.principalId]",
         "scope": "[resourceGroup().id]",
-        "principalType":  "ServicePrincipal"
+        "principalType": "ServicePrincipal"
       }
     }
   ]
