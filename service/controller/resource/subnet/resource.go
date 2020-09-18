@@ -295,7 +295,7 @@ func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient 
 }
 
 func (r *Resource) deleteARMDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName, deploymentName string) error {
-	r.logger.LogCtx(ctx, "message", "Deleting subnet ARM deployment")
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting subnet %#q ARM deployment", deploymentName))
 
 	_, err := deploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
 	if IsNotFound(err) {
@@ -305,7 +305,7 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, deploymentsClient *a
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "message", "Deleted subnet ARM deployment")
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Deleted subnet %#q ARM deployment", deploymentName))
 
 	return nil
 }
