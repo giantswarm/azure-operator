@@ -193,7 +193,7 @@ func assertRightNumberOfNodesByNodePool(nodes *v1.NodeList, nodepoolID string, e
 	}
 
 	if existingNodesInNodePool != expectedNumberOfNodes {
-		return microerror.Mask(unexpectedNumberOfNodesError)
+		return microerror.Maskf(unexpectedNumberOfNodesError, fmt.Sprintf("Expected %d, got %d", expectedNumberOfNodes, existingNodesInNodePool))
 	}
 
 	return nil
