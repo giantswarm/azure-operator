@@ -366,6 +366,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	{
 		c := blobobject.Config{
 			CertsSearcher:  certsSearcher,
+			CtrlClient:     config.K8sClient.CtrlClient(),
 			G8sClient:      config.K8sClient.G8sClient(),
 			K8sClient:      config.K8sClient.K8sClient(),
 			Logger:         config.Logger,
