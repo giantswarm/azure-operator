@@ -398,7 +398,7 @@ func (r *Resource) isDeploymentOutOfDate(ctx context.Context, cr capzv1alpha3.Az
 		return false, microerror.Maskf(wrongTypeError, "expected 'string', got '%T'", currentDeployment.Properties.Parameters)
 	}
 
-	r.logger.LogCtx(ctx, "message", "Checking if deployment is out of date", "azureClusterVersion", crVersion, "deploymentParameter", currentParams["azureClusterVersion"])
+	r.logger.LogCtx(ctx, "message", "Checking if deployment is out of date", "azureClusterVersion", crVersion, "deploymentParameter", deploymentVersion)
 
 	return crVersion != deploymentVersion, nil
 }
