@@ -10,6 +10,8 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/resourcecanceledcontext"
 	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
@@ -116,6 +118,15 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
+	var cluster capiv1alpha3.Cluster
+	{
+		cluster = capiv1alpha3.Cluster{}
+		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}, &cluster)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData
 	{
 		versions, err := k8scloudconfig.ExtractComponentVersions(cc.Release.Release.Spec.Components)
@@ -129,6 +140,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		images := k8scloudconfig.BuildImages(r.registryDomain, versions)
 
 		ignitionTemplateData = cloudconfig.IgnitionTemplateData{
+			Cluster:         &cluster,
 			CustomObject:    cr,
 			Images:          images,
 			MasterCertFiles: masterCertFiles,

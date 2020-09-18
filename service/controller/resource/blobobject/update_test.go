@@ -13,6 +13,7 @@ import (
 	"k8s.io/client-go/kubernetes/fake"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v4/service/unittest"
 )
 
 const (
@@ -164,6 +165,7 @@ func Test_Resource_ContainerObject_newUpdate(t *testing.T) {
 			{
 				c := Config{
 					CertsSearcher:         certstest.NewSearcher(certstest.Config{}),
+					CtrlClient:            unittest.FakeK8sClient().CtrlClient(),
 					G8sClient:             g8sfake.NewSimpleClientset(),
 					K8sClient:             fake.NewSimpleClientset(),
 					Logger:                microloggertest.New(),
