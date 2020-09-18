@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -22,6 +23,7 @@ const (
 
 type Config struct {
 	CertsSearcher         certs.Interface
+	CtrlClient            client.Client
 	G8sClient             versioned.Interface
 	K8sClient             kubernetes.Interface
 	Logger                micrologger.Logger
@@ -31,6 +33,7 @@ type Config struct {
 
 type Resource struct {
 	certsSearcher  certs.Interface
+	ctrlClient     client.Client
 	g8sClient      versioned.Interface
 	k8sClient      kubernetes.Interface
 	logger         micrologger.Logger
@@ -40,6 +43,9 @@ type Resource struct {
 func New(config Config) (*Resource, error) {
 	if config.CertsSearcher == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CertsSearcher must not be empty", config)
+	}
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
@@ -56,6 +62,7 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		certsSearcher:  config.CertsSearcher,
+		ctrlClient:     config.CtrlClient,
 		g8sClient:      config.G8sClient,
 		k8sClient:      config.K8sClient,
 		logger:         config.Logger,
