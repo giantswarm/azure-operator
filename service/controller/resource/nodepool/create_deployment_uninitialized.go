@@ -176,6 +176,7 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSets
 
 	provisioningState := capzv1alpha3.VMState(*vmss.ProvisioningState)
 	azureMachinePool.Status.ProvisioningState = &provisioningState
+	azureMachinePool.Status.Ready = provisioningState == "Succeeded"
 	azureMachinePool.Status.Replicas = int32(len(instances))
 	azureMachinePool.Spec.ProviderID = fmt.Sprintf("azure://%s", *vmss.ID)
 
