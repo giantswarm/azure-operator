@@ -8,6 +8,9 @@ import (
 	"strconv"
 	"strings"
 
+	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	"sigs.k8s.io/cluster-api/util"
+
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
