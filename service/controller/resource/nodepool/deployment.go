@@ -4,7 +4,9 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"net/url"
+	"sigs.k8s.io/cluster-api/util"
 	"strconv"
 	"strings"
 
