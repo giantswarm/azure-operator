@@ -8,13 +8,15 @@ import (
 const (
 	DefaultCommonDomain = "godsmack.westeurope.azure.gigantic.io"
 
-	EnvVarCommonDomain = "COMMON_DOMAIN"
-	EnvVarVaultToken   = "VAULT_TOKEN"
+	EnvVarCommonDomain       = "COMMON_DOMAIN"
+	EnvVarRegistryPullSecret = "REGISTRY_PULL_SECRET"
+	EnvVarVaultToken         = "VAULT_TOKEN"
 )
 
 var (
-	commonDomain string
-	vaultToken   string
+	commonDomain       string
+	registryPullSecret string
+	vaultToken         string
 )
 
 func init() {
@@ -22,6 +24,11 @@ func init() {
 	if commonDomain == "" {
 		commonDomain = DefaultCommonDomain
 		fmt.Printf("No value found in '%s': using default value %s\n", EnvVarCommonDomain, DefaultCommonDomain)
+	}
+
+	registryPullSecret = os.Getenv(EnvVarRegistryPullSecret)
+	if registryPullSecret == "" {
+		fmt.Printf("No value found in '%s'\n", EnvVarCommonDomain)
 	}
 
 	vaultToken = os.Getenv(EnvVarVaultToken)
@@ -33,6 +40,10 @@ func init() {
 
 func CommonDomain() string {
 	return commonDomain
+}
+
+func RegistryPullSecret() string {
+	return registryPullSecret
 }
 
 func VaultToken() string {
