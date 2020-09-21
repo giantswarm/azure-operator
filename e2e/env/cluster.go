@@ -9,7 +9,7 @@ const (
 	DefaultCommonDomain = "godsmack.westeurope.azure.gigantic.io"
 
 	EnvVarCommonDomain       = "COMMON_DOMAIN"
-	EnvVarRegistryPullSecret = "REGISTRY_PULL_SECRET"
+	EnvVarRegistryPullSecret = "REGISTRY_PULL_SECRET" // nolint:gosec
 	EnvVarVaultToken         = "VAULT_TOKEN"
 )
 

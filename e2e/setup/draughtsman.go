@@ -14,7 +14,7 @@ import (
 const (
 	DraughtsmanNamespace     = "draughtsman"
 	DraughtsmanConfigMapName = "draughtsman-values-configmap"
-	DraughtsmanSecretName    = "draughtsman-values-secret"
+	DraughtsmanSecretName    = "draughtsman-values-secret" // nolint:gosec
 
 	draughtsmanConfigMap = `Auth:
       Vault:
