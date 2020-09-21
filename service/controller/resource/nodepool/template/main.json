@@ -52,6 +52,12 @@
         "description": "Unique Name of the node pool."
       }
     },
+    "currentReplicas": {
+      "type": "int",
+      "metadata": {
+        "description": "Current number of VMs in the VMSS."
+      }
+    },
     "minReplicas": {
       "type": "int",
       "metadata": {
@@ -283,7 +289,7 @@
       "sku": {
         "name": "[parameters('vmSize')]",
         "tier": "Standard",
-        "capacity": "[parameters('minReplicas')]"
+        "capacity": "[parameters('currentReplicas')]"
       },
       "identity": {
         "type": "systemAssigned"
