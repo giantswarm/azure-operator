@@ -3,10 +3,11 @@ package setup
 import (
 	"context"
 	"fmt"
+	"time"
+
 	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 	v12 "k8s.io/api/rbac/v1"
 	v1 "k8s.io/api/scheduling/v1"
-	"time"
 
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/application/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"

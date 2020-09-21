@@ -5,6 +5,8 @@ package clusterautoscaler
 import (
 	"context"
 	"fmt"
+	"testing"
+
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
 	"github.com/giantswarm/microerror"
@@ -13,7 +15,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/client-go/kubernetes"
-	"testing"
 )
 
 const (

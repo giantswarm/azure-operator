@@ -3,10 +3,12 @@ package setup
 import (
 	"context"
 	"fmt"
-	"github.com/giantswarm/azure-operator/v4/e2e/env"
+
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+
+	"github.com/giantswarm/azure-operator/v4/e2e/env"
 )
 
 const (
