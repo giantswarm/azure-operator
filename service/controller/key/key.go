@@ -628,7 +628,7 @@ func MachinePoolID(getter LabelsGetter) (string, error) {
 }
 
 func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
-	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMaxSize]
+	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMinSize]
 	size, err := strconv.Atoi(sizeStr)
 	if err != nil {
 		// Annotation not found or invalid.
