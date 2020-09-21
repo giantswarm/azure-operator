@@ -190,6 +190,11 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSets
 		return microerror.Mask(err)
 	}
 
+	err = r.CtrlClient.Status().Update(ctx, azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "saved provider status info in CR")
 
 	return nil
