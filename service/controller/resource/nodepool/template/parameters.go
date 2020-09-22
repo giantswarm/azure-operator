@@ -1,9 +1,8 @@
 package template
 
 import (
-	"fmt"
-
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 )
@@ -101,10 +100,22 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		return Parameters{}, microerror.Maskf(wrongTypeError, "currentReplicas should be float64, got '%T'", parameters["currentReplicas"].(map[string]interface{})["value"])
 	}
 
-	disks, ok := parameters["dataDisks"].(map[string]interface{})["value"].([]v1alpha3.DataDisk)
+	var dataDisks []v1alpha3.DataDisk
+	disks, ok := parameters["dataDisks"].(map[string]interface{})["value"].([]interface{})
 	if !ok {
-		fmt.Printf("%v", parameters["dataDisks"].(map[string]interface{})["value"])
 		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []v1alpha3.DataDisk, got '%T'", parameters["dataDisks"].(map[string]interface{})["value"])
+	}
+
+	for _, disk := range disks {
+		d, ok := disk.(map[string]interface{})
+		if !ok {
+			return Parameters{}, microerror.Maskf(wrongTypeError, "disk should be map[string]interface{}, got '%T'", disk)
+		}
+		dataDisks = append(dataDisks, v1alpha3.DataDisk{
+			NameSuffix: d["nameSuffix"].(string),
+			DiskSizeGB: d["diskSizeGB"].(int32),
+			Lun:        to.Int32Ptr(d["lun"].(int32)),
+		})
 	}
 
 	zones, ok := parameters["zones"].(map[string]interface{})["value"].([]string)
@@ -115,7 +126,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 	return Parameters{
 		AzureOperatorVersion: cast(parameters["azureOperatorVersion"]),
 		ClusterID:            cast(parameters["clusterID"]),
-		DataDisks:            disks,
+		DataDisks:            dataDisks,
 		NodepoolName:         cast(parameters["nodepoolName"]),
 		OSImage: OSImage{
 			Publisher: cast(parameters["osImagePublisher"]),
