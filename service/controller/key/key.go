@@ -6,6 +6,7 @@ import (
 	"strings"
 
 	"github.com/Azure/go-autorest/autorest/to"
+	apiextensionsannotations "github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
@@ -624,6 +625,28 @@ func MachinePoolID(getter LabelsGetter) (string, error) {
 	}
 
 	return machinePoolID, nil
+}
+
+func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
+	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMinSize]
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil {
+		// Annotation not found or invalid.
+		return *machinePool.Spec.Replicas
+	}
+
+	return int32(size)
+}
+
+func NodePoolMaxReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
+	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMaxSize]
+	size, err := strconv.Atoi(sizeStr)
+	if err != nil {
+		// Annotation not found or invalid.
+		return *machinePool.Spec.Replicas
+	}
+
+	return int32(size)
 }
 
 func NodePoolVMSSName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
