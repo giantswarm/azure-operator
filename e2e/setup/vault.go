@@ -16,7 +16,7 @@ import (
 func installVault(ctx context.Context, config Config) error {
 	// Create RBAC rule to allow Vault to use the kubernetes auth backend.
 	{
-		clusterRoleBinding := v12.ClusterRoleBinding{
+		clusterRoleBinding := rbacv1.ClusterRoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "jwt-reviewer",
 			},
