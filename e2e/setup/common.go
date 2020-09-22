@@ -21,7 +21,6 @@ func common(ctx context.Context, config Config, giantSwarmRelease releasev1alpha
 
 	// Install Vault.
 	{
-		// Steup RBAC.
 		err := installVault(ctx, config)
 		if err != nil {
 			return microerror.Mask(err)
