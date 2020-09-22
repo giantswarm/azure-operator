@@ -37,98 +37,34 @@ type OSImage struct {
 }
 
 func (p Parameters) ToDeployParams() map[string]interface{} {
-	allParams := map[string]interface{}{}
-	allParams["azureOperatorVersion"] = struct {
-		Value interface{}
-	}{
-		Value: p.AzureOperatorVersion,
-	}
-	allParams["clusterID"] = struct {
-		Value interface{}
-	}{
-		Value: p.ClusterID,
-	}
-	allParams["dataDisks"] = struct {
-		Value interface{}
-	}{
-		Value: p.DataDisks,
-	}
-	allParams["nodepoolName"] = struct {
-		Value interface{}
-	}{
-		Value: p.NodepoolName,
-	}
-	allParams["osImagePublisher"] = struct {
-		Value interface{}
-	}{
-		Value: p.OSImage.Publisher,
-	}
-	allParams["osImageOffer"] = struct {
-		Value interface{}
-	}{
-		Value: p.OSImage.Offer,
-	}
-	allParams["osImageSKU"] = struct {
-		Value interface{}
-	}{
-		Value: p.OSImage.SKU,
-	}
-	allParams["osImageVersion"] = struct {
-		Value interface{}
-	}{
-		Value: p.OSImage.Version,
-	}
-	allParams["minReplicas"] = struct {
-		Value interface{}
-	}{
-		Value: p.Scaling.MinReplicas,
-	}
-	allParams["maxReplicas"] = struct {
-		Value interface{}
-	}{
-		Value: p.Scaling.MaxReplicas,
-	}
-	allParams["currentReplicas"] = struct {
-		Value interface{}
-	}{
-		Value: p.Scaling.CurrentReplicas,
-	}
-	allParams["sshPublicKey"] = struct {
-		Value interface{}
-	}{
-		Value: p.SSHPublicKey,
-	}
-	allParams["subnetName"] = struct {
-		Value interface{}
-	}{
-		Value: p.SubnetName,
-	}
-	allParams["vmCustomData"] = struct {
-		Value interface{}
-	}{
-		Value: p.VMCustomData,
-	}
-	allParams["vmSize"] = struct {
-		Value interface{}
-	}{
-		Value: p.VMSize,
-	}
-	allParams["vnetName"] = struct {
-		Value interface{}
-	}{
-		Value: p.VnetName,
-	}
-	allParams["zones"] = struct {
-		Value interface{}
-	}{
-		Value: p.Zones,
-	}
+	armDeploymentParameters := map[string]interface{}{}
+	armDeploymentParameters["azureOperatorVersion"] = toARMParam(p.AzureOperatorVersion)
+	armDeploymentParameters["clusterID"] = toARMParam(p.ClusterID)
+	armDeploymentParameters["dataDisks"] = toARMParam(p.DataDisks)
+	armDeploymentParameters["nodepoolName"] = toARMParam(p.NodepoolName)
+	armDeploymentParameters["osImagePublisher"] = toARMParam(p.OSImage.Publisher)
+	armDeploymentParameters["osImageOffer"] = toARMParam(p.OSImage.Offer)
+	armDeploymentParameters["osImageSKU"] = toARMParam(p.OSImage.SKU)
+	armDeploymentParameters["osImageVersion"] = toARMParam(p.OSImage.Version)
+	armDeploymentParameters["minReplicas"] = toARMParam(p.Scaling.MinReplicas)
+	armDeploymentParameters["maxReplicas"] = toARMParam(p.Scaling.MaxReplicas)
+	armDeploymentParameters["currentReplicas"] = toARMParam(p.Scaling.CurrentReplicas)
+	armDeploymentParameters["sshPublicKey"] = toARMParam(p.SSHPublicKey)
+	armDeploymentParameters["subnetName"] = toARMParam(p.SubnetName)
+	armDeploymentParameters["vmCustomData"] = toARMParam(p.VMCustomData)
+	armDeploymentParameters["vmSize"] = toARMParam(p.VMSize)
+	armDeploymentParameters["vnetName"] = toARMParam(p.VnetName)
+	armDeploymentParameters["zones"] = toARMParam(p.Zones)
 
-	return allParams
+	return armDeploymentParameters
 }
 
-var wrongTypeError = &microerror.Error{
-	Kind: "wrongTypeError",
+func toARMParam(v interface{}) interface{} {
+	return struct {
+		Value interface{}
+	}{
+		Value: v,
+	}
 }
 
 func NewFromDeployment(deployment azureresource.Deployment) (Parameters, error) {

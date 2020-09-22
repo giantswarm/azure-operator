@@ -41,49 +41,55 @@ func NewDeployment(templateParams Parameters) (azureresource.Deployment, error) 
 	}, nil
 }
 
-// IsOutOfDate returns whether or not two Azure ARM Deployments are equal.
-func IsOutOfDate(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) (bool, error) {
-	if currentDeployment.IsHTTPStatus(404) {
-		return true, nil
-	}
+func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) ([]string, error) {
+	var changes []string
 
 	currentParameters, err := NewFromExtendedDeployment(currentDeployment)
 	if err != nil {
-		return false, microerror.Mask(err)
+		return changes, microerror.Mask(err)
 	}
 
 	desiredParameters, err := NewFromDeployment(desiredDeployment)
 	if err != nil {
-		return false, microerror.Mask(err)
+		return changes, microerror.Mask(err)
 	}
 
-	return !reflect.DeepEqual(currentParameters, desiredParameters), nil
-}
-
-// NeedToRolloutNodes tells whether or not we need to replace the existing VMs.
-// We only don't roll out nodes when we change the scaling parameters.
-func NeedToRolloutNodes(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) (bool, error) {
-	currentParameters, err := NewFromExtendedDeployment(currentDeployment)
-	if err != nil {
-		return false, microerror.Mask(err)
+	if currentParameters.AzureOperatorVersion != desiredParameters.AzureOperatorVersion {
+		changes = append(changes, "azureOperatorVersion")
+	}
+	if currentParameters.ClusterID != desiredParameters.ClusterID {
+		changes = append(changes, "clusterID")
+	}
+	if currentParameters.NodepoolName != desiredParameters.NodepoolName {
+		changes = append(changes, "nodepoolName")
+	}
+	if currentParameters.SSHPublicKey != desiredParameters.SSHPublicKey {
+		changes = append(changes, "sshPublicKey")
+	}
+	if currentParameters.SubnetName != desiredParameters.SubnetName {
+		changes = append(changes, "subnetName")
+	}
+	if currentParameters.VMCustomData != desiredParameters.VMCustomData {
+		changes = append(changes, "vmCustomData")
+	}
+	if currentParameters.VMSize != desiredParameters.VMSize {
+		changes = append(changes, "vmSize")
+	}
+	if currentParameters.VnetName != desiredParameters.VnetName {
+		changes = append(changes, "vnetName")
+	}
+	if !reflect.DeepEqual(currentParameters.DataDisks, currentParameters.DataDisks) {
+		changes = append(changes, "dataDisks")
+	}
+	if !reflect.DeepEqual(currentParameters.Scaling, currentParameters.Scaling) {
+		changes = append(changes, "scaling")
+	}
+	if !reflect.DeepEqual(currentParameters.OSImage, currentParameters.OSImage) {
+		changes = append(changes, "osImage")
+	}
+	if !reflect.DeepEqual(currentParameters.Zones, currentParameters.Zones) {
+		changes = append(changes, "zones")
 	}
 
-	desiredParameters, err := NewFromDeployment(desiredDeployment)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	rolloutnodes := currentParameters.AzureOperatorVersion != desiredParameters.AzureOperatorVersion ||
-		currentParameters.ClusterID != desiredParameters.ClusterID ||
-		currentParameters.NodepoolName != desiredParameters.NodepoolName ||
-		currentParameters.SSHPublicKey != desiredParameters.SSHPublicKey ||
-		currentParameters.SubnetName != desiredParameters.SubnetName ||
-		currentParameters.VMCustomData != desiredParameters.VMCustomData ||
-		currentParameters.VMSize != desiredParameters.VMSize ||
-		currentParameters.VnetName != desiredParameters.VnetName ||
-		!reflect.DeepEqual(currentParameters.DataDisks, currentParameters.DataDisks) ||
-		!reflect.DeepEqual(currentParameters.OSImage, currentParameters.OSImage) ||
-		!reflect.DeepEqual(currentParameters.Zones, currentParameters.Zones)
-
-	return rolloutnodes, nil
+	return changes, nil
 }
