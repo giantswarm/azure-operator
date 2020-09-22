@@ -20,31 +20,17 @@
         "description": "Generation field for the MachinePool object that triggered this deployment."
       }
     },
-    "clusterID": {
-      "type": "string",
-      "metadata": {
-        "description": "Unique ID of the cluster owning the nodepool."
-      }
-    },
     "dataDisks": {
       "type": "array",
       "metadata": {
         "description": "Disks attached to the VMSS."
       }
     },
-    "dockerVolumeSizeGB": {
-      "type": "string",
-      "defaultValue": "50"
-    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
-    },
-    "kubeletVolumeSizeGB": {
-      "type": "string",
-      "defaultValue": "100"
     },
     "nodepoolName": {
       "type": "string",
