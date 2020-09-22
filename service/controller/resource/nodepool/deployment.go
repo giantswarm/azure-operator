@@ -5,7 +5,6 @@ import (
 	"encoding/base64"
 	"fmt"
 	"net/url"
-	"strconv"
 	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -27,7 +26,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	instance "github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
 
 func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
@@ -71,42 +70,36 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		}
 	}
 
-	templateParams := map[string]interface{}{
-		"machinePoolVersion":      strconv.FormatInt(machinePool.ObjectMeta.Generation, 10),
-		"azureMachinePoolVersion": strconv.FormatInt(azureMachinePool.ObjectMeta.Generation, 10),
-		"azureOperatorVersion":    project.Version(),
-		"clusterID":               azureCluster.GetName(),
-		"dataDisks":               azureMachinePool.Spec.Template.DataDisks,
-		"nodepoolName":            key.NodePoolVMSSName(azureMachinePool),
-		"osImagePublisher":        "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
-		"osImageOffer":            "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,
-		"osImageSKU":              "stable",                       // azureMachinePool.Spec.Template.Image.Marketplace.SKU,
-		"osImageVersion":          distroVersion,                  // azureMachinePool.Spec.Template.Image.Marketplace.Version,
-		"minReplicas":             key.NodePoolMinReplicas(machinePool),
-		"maxReplicas":             key.NodePoolMaxReplicas(machinePool),
-		"currentReplicas":         currentReplicas,
-		"sshPublicKey":            string(sshPublicKey),
-		"subnetName":              subnetName,
-		"vmCustomData":            workerCloudConfig,
-		"vmSize":                  azureMachinePool.Spec.Template.VMSize,
-		"vnetName":                vnetName,
-		"zones":                   machinePool.Spec.FailureDomains,
+	templateParameters := template.Parameters{
+		AzureOperatorVersion: project.Version(),
+		ClusterID:            azureCluster.GetName(),
+		DataDisks:            azureMachinePool.Spec.Template.DataDisks,
+		NodepoolName:         key.NodePoolVMSSName(azureMachinePool),
+		OSImage: template.OSImage{
+			Publisher: "kinvolk",
+			Offer:     "flatcar-container-linux-free",
+			SKU:       "stable",
+			Version:   distroVersion,
+		},
+		Scaling: template.Scaling{
+			MinReplicas:     key.NodePoolMinReplicas(machinePool),
+			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
+			CurrentReplicas: currentReplicas,
+		},
+		SSHPublicKey: string(sshPublicKey),
+		SubnetName:   subnetName,
+		VMCustomData: workerCloudConfig,
+		VMSize:       azureMachinePool.Spec.Template.VMSize,
+		VnetName:     vnetName,
+		Zones:        machinePool.Spec.FailureDomains,
 	}
 
-	armTemplate, err := instance.GetARMTemplate()
+	deployment, err := template.NewDeployment(templateParameters)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	d := azureresource.Deployment{
-		Properties: &azureresource.DeploymentProperties{
-			Mode:       azureresource.Incremental,
-			Parameters: key.ToParameters(templateParams),
-			Template:   armTemplate,
-		},
-	}
-
-	return d, nil
+	return deployment, nil
 }
 
 func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, string, error) {

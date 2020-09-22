@@ -18,6 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
 
 func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -90,10 +91,17 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	deploymentIsOutOfDate, nodesNeedToBeRolled, err := r.deploymentIsOutOfDate(ctx, currentDeployment, desiredDeployment)
+	deploymentIsOutOfDate, err := template.IsOutOfDate(currentDeployment, desiredDeployment)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
+
+	nodesNeedToBeRolled, err := template.NeedToRolloutNodes(currentDeployment, desiredDeployment)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	r.Logger.LogCtx(ctx, "message", "Checking if deployment is out of date", "outOfDate", deploymentIsOutOfDate, "nodesWillBeRolledOut", nodesNeedToBeRolled)
 
 	if deploymentIsOutOfDate {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
@@ -140,60 +148,6 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	}
-}
-
-// deploymentIsOutOfDate decides whether or not we need to re-apply the ARM deployment template.
-// There are two cases where we want to update the cluster:
-// - customer has decided to update to a newer GiantSwarm release
-// - customer has changed some configuration and we need to apply it
-func (r *Resource) deploymentIsOutOfDate(ctx context.Context, currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) (bool, bool, error) {
-	if currentDeployment.IsHTTPStatus(404) {
-		return true, false, nil
-	}
-
-	currentDeploymentParameters, ok := currentDeployment.Properties.Parameters.(map[string]interface{})
-	if !ok {
-		return false, false, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, currentDeployment.Properties.Parameters)
-	}
-
-	desiredDeploymentParameters, ok := desiredDeployment.Properties.Parameters.(map[string]interface{})
-	if !ok {
-		return false, false, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, currentDeployment.Properties.Parameters)
-	}
-
-	currentAzureMachinePoolVersion := castCurrent(currentDeploymentParameters["azureMachinePoolVersion"])
-	desiredAzureMachinePoolVersion := castDesired(desiredDeploymentParameters["azureMachinePoolVersion"])
-	customerHasChangedConfiguration := currentAzureMachinePoolVersion != desiredAzureMachinePoolVersion
-
-	currentMachinePoolVersion := castCurrent(currentDeploymentParameters["machinePoolVersion"])
-	desiredMachinePoolVersion := castDesired(desiredDeploymentParameters["machinePoolVersion"])
-	customerHasScaledTheCluster := currentMachinePoolVersion != desiredMachinePoolVersion
-
-	currentAzureOperatorVersion := castCurrent(currentDeploymentParameters["azureOperatorVersion"])
-	desiredAzureOperatorVersion := castDesired(desiredDeploymentParameters["azureOperatorVersion"])
-	customerIsUpgradingTheCluster := currentAzureOperatorVersion != desiredAzureOperatorVersion
-
-	r.Logger.LogCtx(ctx, "message", "Checking if deployment is out of date",
-		"customerHasChangedConfiguration", customerHasChangedConfiguration,
-		"customerIsUpgradingTheCluster", customerIsUpgradingTheCluster,
-		"customerHasScaledTheCluster", customerHasScaledTheCluster,
-		"nodesWillBeRolledOut", customerIsUpgradingTheCluster || customerHasChangedConfiguration,
-		"currentAzureOperatorVersion", currentAzureOperatorVersion,
-		"desiredAzureOperatorVersion", desiredAzureOperatorVersion,
-		"currentAzureMachinePoolVersion", currentAzureMachinePoolVersion,
-		"desiredAzureMachinePoolVersion", desiredAzureMachinePoolVersion,
-		"currentMachinePoolVersion", currentMachinePoolVersion,
-		"desiredMachinePoolVersion", desiredMachinePoolVersion)
-
-	return customerHasChangedConfiguration || customerIsUpgradingTheCluster || customerHasScaledTheCluster, customerIsUpgradingTheCluster || customerHasChangedConfiguration, nil
-}
-
-func castCurrent(param interface{}) string {
-	return param.(map[string]interface{})["value"].(string)
-}
-
-func castDesired(param interface{}) string {
-	return param.(struct{ Value interface{} }).Value.(string)
 }
 
 func (r *Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool) (azureresource.Deployment, error) {
