@@ -8,9 +8,6 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
-	"sigs.k8s.io/cluster-api/util"
-
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -33,7 +30,7 @@ import (
 	instance "github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
 
-func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
 	encrypterObject, err := r.getEncrypterObject(ctx, key.CertificateEncryptionSecretName(azureCluster))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -63,17 +60,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 	currentReplicas := key.NodePoolMinReplicas(machinePool)
 	if key.NodePoolMinReplicas(machinePool) != key.NodePoolMaxReplicas(machinePool) {
 		// Autoscaler is enabled, will need to get the current number of replicas from the VMSS.
-		cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
-		if err != nil {
-			return azureresource.Deployment{}, microerror.Mask(err)
-		}
-
-		credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-		if err != nil {
-			return azureresource.Deployment{}, microerror.Mask(err)
-		}
-
-		candidate, err := r.getVMSScurrentScaling(ctx, *credentialSecret, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
+		candidate, err := r.getVMSScurrentScaling(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
 		if err != nil {
 			return azureresource.Deployment{}, microerror.Mask(err)
 		}
@@ -88,6 +75,7 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		"machinePoolVersion":      strconv.FormatInt(machinePool.ObjectMeta.Generation, 10),
 		"azureMachinePoolVersion": strconv.FormatInt(azureMachinePool.ObjectMeta.Generation, 10),
 		"azureOperatorVersion":    project.Version(),
+		"clusterID":               azureCluster.GetName(),
 		"dataDisks":               azureMachinePool.Spec.Template.DataDisks,
 		"nodepoolName":            key.NodePoolVMSSName(azureMachinePool),
 		"osImagePublisher":        "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
@@ -135,7 +123,12 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
-func (r *Resource) getVMSScurrentScaling(ctx context.Context, credentialSecret v1alpha1.CredentialSecret, resourceGroupName string, vmssName string) (int32, error) {
+func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (int32, error) {
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return -1, microerror.Mask(err)
+	}
+
 	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
 		return -1, microerror.Mask(err)

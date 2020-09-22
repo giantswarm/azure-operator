@@ -20,6 +20,12 @@
         "description": "Generation field for the MachinePool object that triggered this deployment."
       }
     },
+    "clusterID": {
+      "type": "string",
+      "metadata": {
+        "description": "Unique ID of the cluster owning the nodepool."
+      }
+    },
     "dataDisks": {
       "type": "array",
       "metadata": {
@@ -265,12 +271,12 @@
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]",
         "cluster-autoscaler-enabled": "true",
-        "cluster-autoscaler-name":"[parameters('clusterID')]",
+        "cluster-autoscaler-name": "[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
         "capi-azure-machine-pool.giantswarm.io-version": "[parameters('azureMachinePoolVersion')]",
         "capi-machine-pool.giantswarm.io-version": "[parameters('machinePoolVersion')]",
-        "min":"[int(parameters('minReplicas'))]",
-        "max":"[int(parameters('maxReplicas'))]"
+        "min": "[int(parameters('minReplicas'))]",
+        "max": "[int(parameters('maxReplicas'))]"
       },
       "sku": {
         "name": "[parameters('vmSize')]",
