@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/e2e-harness/v2/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
-	v12 "k8s.io/api/rbac/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
@@ -16,18 +16,18 @@ import (
 func installVault(ctx context.Context, config Config) error {
 	// Create RBAC rule to allow Vault to use the kubernetes auth backend.
 	{
-		clusterRoleBinding := v12.ClusterRoleBinding{
+		clusterRoleBinding := rbacv1.ClusterRoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "jwt-reviewer",
 			},
-			Subjects: []v12.Subject{
+			Subjects: []rbacv1.Subject{
 				{
 					Kind:      "ServiceAccount",
 					Name:      "default",
 					Namespace: "default",
 				},
 			},
-			RoleRef: v12.RoleRef{
+			RoleRef: rbacv1.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "ClusterRole",
 				Name:     "cluster-admin",

@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	v12 "k8s.io/api/rbac/v1"
+	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
@@ -46,7 +46,7 @@ func installClusterService(ctx context.Context, config Config) error {
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "jwt-reviewer-cluster-service",
 			},
-			Subjects: []v12.Subject{
+			Subjects: []rbacv1.Subject{
 				{
 					Kind:      "ServiceAccount",
 					Name:      "cluster-service",
