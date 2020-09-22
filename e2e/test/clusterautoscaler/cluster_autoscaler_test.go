@@ -30,19 +30,13 @@ func Test_clusterautoscaler(t *testing.T) {
 }
 
 type Config struct {
-	ClusterID       string
-	Logger          micrologger.Logger
-	Guest           *framework.Guest
-	Provider        *Provider
-	TargetNamespace string
+	Logger micrologger.Logger
+	Guest  *framework.Guest
 }
 
 type ClusterAutoscaler struct {
-	clusterID       string
-	logger          micrologger.Logger
-	guest           *framework.Guest
-	provider        *Provider
-	targetNamespace string
+	logger micrologger.Logger
+	guest  *framework.Guest
 }
 
 func New(config Config) (*ClusterAutoscaler, error) {
@@ -52,22 +46,10 @@ func New(config Config) (*ClusterAutoscaler, error) {
 	if config.Guest == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Guest must not be empty", config)
 	}
-	if config.Provider == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Provider must not be empty", config)
-	}
-	if config.ClusterID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", config)
-	}
-	if config.TargetNamespace == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TargetNamespace must not be empty", config)
-	}
 
 	s := &ClusterAutoscaler{
-		logger:          config.Logger,
-		guest:           config.Guest,
-		provider:        config.Provider,
-		clusterID:       config.ClusterID,
-		targetNamespace: config.TargetNamespace,
+		logger: config.Logger,
+		guest:  config.Guest,
 	}
 
 	return s, nil

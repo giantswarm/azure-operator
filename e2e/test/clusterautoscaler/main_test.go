@@ -28,11 +28,8 @@ func init() {
 	var p *Provider
 	{
 		c := ProviderConfig{
-			AzureClient: config.AzureClient,
-			G8sClient:   config.Host.G8sClient(),
-			Logger:      config.Logger,
-			ClusterID:   env.ClusterID(),
-			CtrlClient:  config.K8sClients.CtrlClient(),
+			G8sClient: config.Host.G8sClient(),
+			Logger:    config.Logger,
 		}
 
 		p, err = NewProvider(c)
