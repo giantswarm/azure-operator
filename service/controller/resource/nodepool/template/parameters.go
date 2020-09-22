@@ -113,8 +113,8 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		}
 		dataDisks = append(dataDisks, v1alpha3.DataDisk{
 			NameSuffix: d["nameSuffix"].(string),
-			DiskSizeGB: d["diskSizeGB"].(int32),
-			Lun:        to.Int32Ptr(d["lun"].(int32)),
+			DiskSizeGB: int32(d["diskSizeGB"].(float64)),
+			Lun:        to.Int32Ptr(int32(d["lun"].(float64))),
 		})
 	}
 
