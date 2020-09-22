@@ -42,7 +42,7 @@ func installAzureAppsCollection(ctx context.Context, config Config) error {
 func installClusterService(ctx context.Context, config Config) error {
 	// Steup RBAC.
 	{
-		clusterRoleBinding := v12.ClusterRoleBinding{
+		clusterRoleBinding := rbacv1.ClusterRoleBinding{
 			ObjectMeta: metav1.ObjectMeta{
 				Name: "jwt-reviewer-cluster-service",
 			},
@@ -53,7 +53,7 @@ func installClusterService(ctx context.Context, config Config) error {
 					Namespace: "giantswarm",
 				},
 			},
-			RoleRef: v12.RoleRef{
+			RoleRef: rbacv1.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "ClusterRole",
 				Name:     "cluster-admin",
