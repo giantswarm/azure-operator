@@ -1,0 +1,22 @@
+apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
+kind: AzureMachinePool
+metadata:
+  labels:
+    azure-operator.giantswarm.io/version: 4.2.0
+    cluster.x-k8s.io/cluster-name: c6fme
+    giantswarm.io/cluster: c6fme
+    giantswarm.io/machine-pool: c6fme
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 12.0.0
+  name: c6fme
+  namespace: default
+spec:
+  location: westeurope
+  template:
+    osDisk:
+      diskSizeGB: 0
+      managedDisk:
+        storageAccountType: ""
+      osType: ""
+    sshPublicKey: abcdefg
+    vmSize: Standard_D4s_v3

@@ -1,0 +1,10 @@
+apiVersion: core.giantswarm.io/v1alpha1
+kind: Spark
+metadata:
+  labels:
+    cluster.x-k8s.io/cluster-name: c6fme
+    giantswarm.io/cluster: c6fme
+    release.giantswarm.io/version: 12.0.0
+  name: c6fme
+  namespace: default
+spec: {}

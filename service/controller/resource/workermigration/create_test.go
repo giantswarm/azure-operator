@@ -2,6 +2,7 @@ package workermigration
 
 import (
 	"context"
+	"fmt"
 	"io/ioutil"
 	"path/filepath"
 	"testing"
@@ -29,10 +30,86 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/mock_azure"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/mock_tenantclient"
 )
 
 //go:generate mockgen -destination internal/mock_azure/api.go -source internal/azure/spec.go API
 //go:generate mockgen -destination internal/mock_tenantclient/factory.go -source internal/tenantclient/spec.go Factory
+
+func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctrlClient := newFakeClient()
+	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
+	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
+	r := &Resource{
+		ctrlClient:          ctrlClient,
+		logger:              microloggertest.New(),
+		tenantClientFactory: mockTenantClientFactory,
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
+			return mockAzureAPI
+		},
+	}
+
+	ensureCRsExist(t, ctrlClient, []string{
+		"cluster.yaml",
+		"azureconfig.yaml",
+		"azurecluster.yaml",
+		"azuremachinepool.yaml",
+		"machinepool.yaml",
+		"spark.yaml",
+	})
+
+	o, err := loadCR("azureconfig.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cr := o.(*providerv1alpha1.AzureConfig)
+
+	ensureNodePoolIsReady(t, ctrlClient, cr)
+	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
+		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(0)
+
+	mockTenantClientFactory.
+		EXPECT().
+		GetClient(gomock.Any(), gomock.Any()).
+		Return(tcCtrlClient, nil).
+		Times(1)
+
+	err = r.EnsureCreated(context.Background(), cr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// VERIFY: DrainerConfig CRs are there.
+	{
+		opts := client.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
+		}
+		dcList := new(corev1alpha1.DrainerConfigList)
+		err = ctrlClient.List(context.Background(), dcList, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(dcList.Items) != key.WorkerCount(*cr) {
+			t.Fatalf("expected %d drainer config crs to exist. got %d.", key.WorkerCount(*cr), len(dcList.Items))
+		}
+	}
+
+	// gomock verifies rest of the assertions on exit.
+}
 
 func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -182,6 +259,44 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 	}
 }
 
+func ensureNodePoolIsReady(t *testing.T, ctrlClient client.Client, cr *providerv1alpha1.AzureConfig) {
+	t.Helper()
+
+	var azureMachinePool expcapzv1alpha3.AzureMachinePool
+	{
+		o := client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}
+		err := ctrlClient.Get(context.Background(), o, &azureMachinePool)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		azureMachinePool.Status.Ready = true
+		azureMachinePool.Status.Replicas = int32(key.WorkerCount(*cr))
+		err = ctrlClient.Status().Update(context.Background(), &azureMachinePool)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	var machinePool expcapiv1alpha3.MachinePool
+	{
+		o := client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}
+		err := ctrlClient.Get(context.Background(), o, &machinePool)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		machinePool.Status.BootstrapReady = true
+		machinePool.Status.InfrastructureReady = azureMachinePool.Status.Ready
+		machinePool.Status.Replicas = azureMachinePool.Status.Replicas
+		machinePool.Status.ReadyReplicas = azureMachinePool.Status.Replicas
+		err = ctrlClient.Status().Update(context.Background(), &machinePool)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+}
+
 func loadCR(fName string) (runtime.Object, error) {
 	var err error
 	var obj runtime.Object
@@ -211,6 +326,12 @@ func loadCR(fName string) (runtime.Object, error) {
 		obj = new(capzv1alpha3.AzureCluster)
 	case "AzureMachine":
 		obj = new(capzv1alpha3.AzureMachine)
+	case "AzureMachinePool":
+		obj = new(expcapzv1alpha3.AzureMachinePool)
+	case "MachinePool":
+		obj = new(expcapiv1alpha3.MachinePool)
+	case "Spark":
+		obj = new(corev1alpha1.Spark)
 	default:
 		return nil, microerror.Maskf(unknownKindError, "kind: %s", t.Kind)
 	}
@@ -277,4 +398,36 @@ func newFakeClient() client.Client {
 	}
 
 	return fake.NewFakeClientWithScheme(scheme)
+}
+
+func newTenantFakeClientWithNodes(t *testing.T, cr *providerv1alpha1.AzureConfig) client.Client {
+	t.Helper()
+
+	scheme := runtime.NewScheme()
+
+	err := corev1.AddToScheme(scheme)
+	if err != nil {
+		panic(err)
+	}
+
+	ctrlClient := fake.NewFakeClientWithScheme(scheme)
+
+	for i := 0; i < key.WorkerCount(*cr); i++ {
+		n := &corev1.Node{
+			TypeMeta: metav1.TypeMeta{
+				Kind:       "Node",
+				APIVersion: "core/v1",
+			},
+			ObjectMeta: metav1.ObjectMeta{
+				Name: fmt.Sprintf("%s-node-%d", key.ClusterID(cr), i),
+			},
+		}
+
+		err := ctrlClient.Create(context.Background(), n)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
+
+	return ctrlClient
 }
