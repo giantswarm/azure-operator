@@ -5,11 +5,12 @@ package scaling
 import (
 	"context"
 	"fmt"
-
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/exp/api/v1alpha3"
@@ -84,8 +85,7 @@ func (p *Provider) findMachinePool(ctx context.Context) (*v1alpha3.MachinePool, 
 	return &crs.Items[0], nil
 }
 
-func (p *Provider) AddWorker() error {
-	ctx := context.Background()
+func (p *Provider) AddWorker(ctx context.Context) error {
 	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return microerror.Mask(err)
@@ -112,8 +112,7 @@ func (p *Provider) NumMasters(ctx context.Context) (int, error) {
 	return num, nil
 }
 
-func (p *Provider) NumWorkers() (int, error) {
-	ctx := context.Background()
+func (p *Provider) NumWorkers(ctx context.Context) (int, error) {
 	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return 0, microerror.Mask(err)
@@ -122,8 +121,7 @@ func (p *Provider) NumWorkers() (int, error) {
 	return int(*machinePool.Spec.Replicas), nil
 }
 
-func (p *Provider) RemoveWorker() error {
-	ctx := context.Background()
+func (p *Provider) RemoveWorker(ctx context.Context) error {
 	machinePool, err := p.findMachinePool(ctx)
 	if err != nil {
 		return microerror.Mask(err)
@@ -136,5 +134,52 @@ func (p *Provider) RemoveWorker() error {
 		return microerror.Mask(err)
 	}
 
+	return nil
+}
+
+func (p *Provider) WaitForNodes(ctx context.Context, expectedNodes int) error {
+	p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waiting for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady))
+
+	o := func() error {
+		// Get all all nodes from the kubernetes API.
+		var allNodes []v1.Node
+		{
+			labelSelector := fmt.Sprintf("role=%s", "worker")
+
+			listOptions := metav1.ListOptions{
+				LabelSelector: labelSelector,
+			}
+			nodeList, err := p.guestFramework.K8sClient().CoreV1().Nodes().List(ctx, listOptions)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			allNodes = nodeList.Items
+		}
+
+		var nodesReady int
+		for _, n := range allNodes {
+			for _, c := range n.Status.Conditions {
+				if c.Type == v1.NodeReady && c.Status == v1.ConditionTrue {
+					nodesReady++
+				}
+			}
+		}
+
+		if nodesReady != expectedNodes {
+			return microerror.Maskf(waitError, "found %d/%d k8s allNodes in %#q state but %d are expected", nodesReady, len(allNodes), v1.NodeReady, expectedNodes)
+		}
+
+		return nil
+	}
+	b := backoff.NewConstant(backoff.LongMaxWait, backoff.LongMaxInterval)
+	n := backoff.NewNotifier(p.logger, ctx)
+
+	err := backoff.RetryNotify(o, b, n)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waited for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady))
 	return nil
 }
