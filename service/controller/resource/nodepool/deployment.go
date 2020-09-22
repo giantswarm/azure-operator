@@ -73,7 +73,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	templateParameters := template.Parameters{
 		AzureOperatorVersion: project.Version(),
 		ClusterID:            azureCluster.GetName(),
-		DataDisks:            fromCapiDisksToTemplateDisks(azureMachinePool.Spec.Template.DataDisks),
+		DataDisks:            azureMachinePool.Spec.Template.DataDisks,
 		NodepoolName:         key.NodePoolVMSSName(azureMachinePool),
 		OSImage: template.OSImage{
 			Publisher: "kinvolk",
@@ -100,15 +100,6 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	}
 
 	return deployment, nil
-}
-
-func fromCapiDisksToTemplateDisks(capiDisks []capzv1alpha3.DataDisk) []template.Disk {
-	var templateDisks []template.Disk
-	for _, disk := range capiDisks {
-		templateDisks = append(templateDisks, template.NewDisk(disk.NameSuffix, disk.DiskSizeGB, *disk.Lun))
-	}
-
-	return templateDisks
 }
 
 func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (string, string, error) {
