@@ -143,32 +143,26 @@ func (p *Provider) WaitForNodes(ctx context.Context, expectedNodes int) error {
 
 	o := func() error {
 		// Get all all nodes from the kubernetes API.
-		var allNodes []v1.Node
+		var nodesReady int
+		var allNodes int
 		{
-			labelSelector := fmt.Sprintf("role=%s", "worker")
-
-			listOptions := metav1.ListOptions{
-				LabelSelector: labelSelector,
-			}
-			nodeList, err := p.guestFramework.K8sClient().CoreV1().Nodes().List(ctx, listOptions)
+			nodeList, err := p.guestFramework.K8sClient().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			allNodes = nodeList.Items
-		}
-
-		var nodesReady int
-		for _, n := range allNodes {
-			for _, c := range n.Status.Conditions {
-				if c.Type == v1.NodeReady && c.Status == v1.ConditionTrue {
-					nodesReady++
+			for _, n := range nodeList.Items {
+				for _, c := range n.Status.Conditions {
+					allNodes++
+					if c.Type == v1.NodeReady && c.Status == v1.ConditionTrue {
+						nodesReady++
+					}
 				}
 			}
 		}
 
 		if nodesReady != expectedNodes {
-			return microerror.Maskf(waitError, "found %d/%d k8s allNodes in %#q state but %d are expected", nodesReady, len(allNodes), v1.NodeReady, expectedNodes)
+			return microerror.Maskf(waitError, "found %d/%d k8s nodes in %#q state but %d are expected", nodesReady, allNodes, v1.NodeReady, expectedNodes)
 		}
 
 		return nil
