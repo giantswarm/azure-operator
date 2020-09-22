@@ -164,7 +164,7 @@ func (p *Provider) WaitForNodes(ctx context.Context, expectedNodes int) error {
 	p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waiting for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady))
 
 	o := func() error {
-		// Get all all nodes from the kubernetes API.
+		// Get all nodes from the kubernetes API.
 		var nodesReady int
 		var allNodes int
 		{
