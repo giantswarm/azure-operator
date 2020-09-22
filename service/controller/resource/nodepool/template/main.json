@@ -32,19 +32,11 @@
         "description": "Disks attached to the VMSS."
       }
     },
-    "dockerVolumeSizeGB": {
-      "type": "string",
-      "defaultValue": "50"
-    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
-    },
-    "kubeletVolumeSizeGB": {
-      "type": "string",
-      "defaultValue": "100"
     },
     "nodepoolName": {
       "type": "string",
@@ -279,12 +271,12 @@
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]",
         "cluster-autoscaler-enabled": "true",
-        "cluster-autoscaler-name":"[parameters('clusterID')]",
+        "cluster-autoscaler-name": "[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
         "capi-azure-machine-pool.giantswarm.io-version": "[parameters('azureMachinePoolVersion')]",
         "capi-machine-pool.giantswarm.io-version": "[parameters('machinePoolVersion')]",
-        "min":"[int(parameters('minReplicas'))]",
-        "max":"[int(parameters('maxReplicas'))]"
+        "min": "[int(parameters('minReplicas'))]",
+        "max": "[int(parameters('maxReplicas'))]"
       },
       "sku": {
         "name": "[parameters('vmSize')]",
