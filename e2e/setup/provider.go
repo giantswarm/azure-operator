@@ -35,6 +35,7 @@ import (
 )
 
 const (
+	ClusterIPRange           = "172.31.0.0/16"
 	azureOperatorChartValues = `
 ---
 Installation:
@@ -564,4 +565,26 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 	logger.LogCtx(ctx, "level", "debug", "message", "created new nodepool")
 
 	return nil
+}
+
+func credentialDefault() *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "credential-default",
+			Namespace: "giantswarm",
+			Labels: map[string]string{
+				"app":                        "credentiald",
+				"giantswarm.io/managed-by":   "credentiald",
+				"giantswarm.io/organization": "giantswarm",
+				"giantswarm.io/service-type": "system",
+			},
+		},
+		Data: map[string][]byte{
+			"azure.azureoperator.clientid":       []byte(env.AzureClientID()),
+			"azure.azureoperator.clientsecret":   []byte(env.AzureClientSecret()),
+			"azure.azureoperator.subscriptionid": []byte(env.AzureSubscriptionID()),
+			"azure.azureoperator.tenantid":       []byte(env.AzureTenantID()),
+		},
+		Type: "Opaque",
+	}
 }

@@ -46,6 +46,7 @@ func ensureAppCatalogs(ctx context.Context, config Config, version string) error
 	}
 
 	for _, def := range catalogs {
+		// If a configmap is set for this catalog, ensure it exists.
 		{
 			err := ensureConfigmapForCatalog(ctx, config, def)
 			if err != nil {
@@ -53,9 +54,10 @@ func ensureAppCatalogs(ctx context.Context, config Config, version string) error
 			}
 		}
 
+		// Create the AppCatalog CR.
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring app catalog %s", def.Name))
 		{
-			defaultCatalog := v1alpha1.AppCatalog{
+			catalog := v1alpha1.AppCatalog{
 				ObjectMeta: metav1.ObjectMeta{
 					Name: def.Name,
 					Labels: map[string]string{
@@ -85,7 +87,7 @@ func ensureAppCatalogs(ctx context.Context, config Config, version string) error
 				},
 			}
 
-			_, err := config.K8sClients.G8sClient().ApplicationV1alpha1().AppCatalogs().Create(ctx, &defaultCatalog, metav1.CreateOptions{})
+			_, err := config.K8sClients.G8sClient().ApplicationV1alpha1().AppCatalogs().Create(ctx, &catalog, metav1.CreateOptions{})
 			if err != nil {
 				return microerror.Mask(err)
 			}
