@@ -4,6 +4,7 @@ import (
 	"context"
 	"encoding/base64"
 	"fmt"
+	"strconv"
 	"strings"
 	"time"
 
@@ -34,6 +35,7 @@ import (
 )
 
 const (
+	ClusterIPRange           = "172.31.0.0/16"
 	azureOperatorChartValues = `
 ---
 Installation:
@@ -111,6 +113,17 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig CRD exists")
+	}
+
+	{
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
+
+		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "AzureClusterConfig"), backoff.NewMaxRetries(7, 1*time.Second))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureClusterConfig CRD exists")
 	}
 
 	{
@@ -237,7 +250,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 						ID:                env.ClusterID(),
 						Name:              env.ClusterID(),
 						Owner:             "giantswarm",
-						ReleaseVersion:    giantSwarmRelease.GetName(),
+						ReleaseVersion:    strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 						VersionBundles: []v1alpha1.ClusterGuestConfigVersionBundle{
 							{
 								Name:    "cert-operator",
@@ -397,12 +410,12 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 	}
 
-	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, env.NodePoolID(), 1, env.AzureVMSize())
+	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, env.NodePoolID(), 1, 3, env.AzureVMSize())
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, "t3st", 1, "Standard_D3_v2")
+	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, "t3st", 1, 3, "Standard_D3_v2")
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -410,8 +423,8 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	return nil
 }
 
-func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient client.Client, giantSwarmRelease releasev1alpha1.Release, nodepoolID string, replicas int32, vmSize string) error {
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, replicas))
+func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient client.Client, giantSwarmRelease releasev1alpha1.Release, nodepoolID string, minReplicas int32, maxReplicas int32, vmSize string) error {
+	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, minReplicas))
 
 	clusterOperatorVersion, err := key.ComponentVersion(giantSwarmRelease, "cluster-operator")
 	if err != nil {
@@ -503,11 +516,13 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 				},
 				Annotations: map[string]string{
 					annotation.MachinePoolName: machinePoolName,
+					annotation.NodePoolMaxSize: strconv.FormatInt(int64(maxReplicas), 10),
+					annotation.NodePoolMinSize: strconv.FormatInt(int64(minReplicas), 10),
 				},
 			},
 			Spec: expcapiv1alpha3.MachinePoolSpec{
 				ClusterName:    env.ClusterID(),
-				Replicas:       to.Int32Ptr(replicas),
+				Replicas:       to.Int32Ptr(minReplicas),
 				FailureDomains: env.AzureAvailabilityZonesAsStrings(),
 				Template: capiv1alpha3.MachineTemplateSpec{
 					Spec: capiv1alpha3.MachineSpec{
@@ -550,4 +565,26 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 	logger.LogCtx(ctx, "level", "debug", "message", "created new nodepool")
 
 	return nil
+}
+
+func credentialDefault() *corev1.Secret {
+	return &corev1.Secret{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "credential-default",
+			Namespace: "giantswarm",
+			Labels: map[string]string{
+				"app":                        "credentiald",
+				"giantswarm.io/managed-by":   "credentiald",
+				"giantswarm.io/organization": "giantswarm",
+				"giantswarm.io/service-type": "system",
+			},
+		},
+		Data: map[string][]byte{
+			"azure.azureoperator.clientid":       []byte(env.AzureClientID()),
+			"azure.azureoperator.clientsecret":   []byte(env.AzureClientSecret()),
+			"azure.azureoperator.subscriptionid": []byte(env.AzureSubscriptionID()),
+			"azure.azureoperator.tenantid":       []byte(env.AzureTenantID()),
+		},
+		Type: "Opaque",
+	}
 }
