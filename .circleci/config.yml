@@ -119,12 +119,3 @@ workflows:
           requires:
           - hold
 
-      - architect/integration-test:
-          name: cluster-autoscaler-test
-          resource_class: large
-          setup-script: "e2e/config/setup.sh"
-          env-file: "e2e/test/clusterautoscaler/.env"
-          test-dir: "e2e/test/clusterautoscaler"
-          test-timeout: "120m"
-          requires:
-            - hold
