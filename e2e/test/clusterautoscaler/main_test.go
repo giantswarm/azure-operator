@@ -7,7 +7,6 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/env"
 	"github.com/giantswarm/azure-operator/v4/e2e/setup"
 )
 
@@ -25,26 +24,10 @@ func init() {
 		}
 	}
 
-	var p *Provider
-	{
-		c := ProviderConfig{
-			G8sClient: config.Host.G8sClient(),
-			Logger:    config.Logger,
-		}
-
-		p, err = NewProvider(c)
-		if err != nil {
-			panic(microerror.JSON(err))
-		}
-	}
-
 	{
 		c := Config{
-			Logger:          config.Logger,
-			Guest:           config.Guest,
-			Provider:        p,
-			ClusterID:       env.ClusterID(),
-			TargetNamespace: config.Host.TargetNamespace(),
+			Logger: config.Logger,
+			Guest:  config.Guest,
 		}
 
 		autoscaler, err = New(c)
