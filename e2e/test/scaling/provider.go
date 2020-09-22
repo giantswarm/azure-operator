@@ -5,6 +5,7 @@ package scaling
 import (
 	"context"
 	"fmt"
+
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
