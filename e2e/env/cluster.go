@@ -28,7 +28,7 @@ func init() {
 
 	registryPullSecret = os.Getenv(EnvVarRegistryPullSecret)
 	if registryPullSecret == "" {
-		fmt.Printf("No value found in '%s'\n", EnvVarCommonDomain)
+		panic(fmt.Sprintf("No value found in '%s'\n", EnvVarCommonDomain))
 	}
 
 	vaultToken = os.Getenv(EnvVarVaultToken)

@@ -3,6 +3,7 @@ package setup
 import (
 	"context"
 	"fmt"
+
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/scheduling/v1"

@@ -3,6 +3,7 @@ package setup
 import (
 	"context"
 	"fmt"
+
 	"github.com/giantswarm/microerror"
 	v12 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
