@@ -27,7 +27,7 @@ func installVault(ctx context.Context, config Config) error {
 					Namespace: "default",
 				},
 			},
-			RoleRef: v12.RoleRef{
+			RoleRef: rbacv1.RoleRef{
 				APIGroup: "rbac.authorization.k8s.io",
 				Kind:     "ClusterRole",
 				Name:     "cluster-admin",
