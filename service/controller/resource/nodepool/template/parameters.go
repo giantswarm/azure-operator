@@ -103,7 +103,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 	var dataDisks []v1alpha3.DataDisk
 	disks, ok := parameters["dataDisks"].(map[string]interface{})["value"].([]interface{})
 	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []v1alpha3.DataDisk, got '%T'", parameters["dataDisks"].(map[string]interface{})["value"])
+		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []interface, got '%T'", parameters["dataDisks"].(map[string]interface{})["value"])
 	}
 
 	for _, disk := range disks {
@@ -118,9 +118,19 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		})
 	}
 
-	zones, ok := parameters["zones"].(map[string]interface{})["value"].([]string)
+	var zones []string
+	rawZones, ok := parameters["zones"].(map[string]interface{})["value"].([]interface{})
 	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "zones should be []string, got '%T'", parameters["zones"].(map[string]interface{})["value"])
+		return Parameters{}, microerror.Maskf(wrongTypeError, "zones should be []interface, got '%T'", parameters["zones"].(map[string]interface{})["value"])
+	}
+
+	for _, rawZone := range rawZones {
+		zone, ok := rawZone.(string)
+		if !ok {
+			return Parameters{}, microerror.Maskf(wrongTypeError, "zone should be string, got '%T'", rawZone)
+		}
+
+		zones = append(zones, zone)
 	}
 
 	return Parameters{
