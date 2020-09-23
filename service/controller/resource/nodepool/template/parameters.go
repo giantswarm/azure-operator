@@ -38,7 +38,7 @@ type OSImage struct {
 func (p Parameters) ToDeployParams() map[string]interface{} {
 	var dataDisks []interface{}
 	for _, disk := range p.DataDisks {
-		dataDisks = append(dataDisks, map[string]interface{}{"nameSuffix": disk.NameSuffix, "lun": disk.Lun, "diskSizeGB": disk.DiskSizeGB})
+		dataDisks = append(dataDisks, map[string]interface{}{"nameSuffix": disk.NameSuffix, "lun": float64(*disk.Lun), "diskSizeGB": float64(disk.DiskSizeGB)})
 	}
 
 	var zones []interface{}
@@ -55,9 +55,9 @@ func (p Parameters) ToDeployParams() map[string]interface{} {
 	armDeploymentParameters["osImageOffer"] = toARMParam(p.OSImage.Offer)
 	armDeploymentParameters["osImageSKU"] = toARMParam(p.OSImage.SKU)
 	armDeploymentParameters["osImageVersion"] = toARMParam(p.OSImage.Version)
-	armDeploymentParameters["minReplicas"] = toARMParam(p.Scaling.MinReplicas)
-	armDeploymentParameters["maxReplicas"] = toARMParam(p.Scaling.MaxReplicas)
-	armDeploymentParameters["currentReplicas"] = toARMParam(p.Scaling.CurrentReplicas)
+	armDeploymentParameters["minReplicas"] = toARMParam(float64(p.Scaling.MinReplicas))
+	armDeploymentParameters["maxReplicas"] = toARMParam(float64(p.Scaling.MaxReplicas))
+	armDeploymentParameters["currentReplicas"] = toARMParam(float64(p.Scaling.CurrentReplicas))
 	armDeploymentParameters["sshPublicKey"] = toARMParam(p.SSHPublicKey)
 	armDeploymentParameters["subnetName"] = toARMParam(p.SubnetName)
 	armDeploymentParameters["vmCustomData"] = toARMParam(p.VMCustomData)
