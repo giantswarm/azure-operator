@@ -35,6 +35,26 @@ type OSImage struct {
 	Version   string
 }
 
+func NewFromDeployment(deployment azureresource.Deployment) (Parameters, error) {
+	parameters, ok := deployment.Properties.Parameters.(map[string]interface{})
+	if !ok {
+		return Parameters{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, deployment.Properties.Parameters)
+	}
+
+	return newParameters(parameters, castDesired)
+}
+
+func NewFromExtendedDeployment(deployment azureresource.DeploymentExtended) (Parameters, error) {
+	parameters, ok := deployment.Properties.Parameters.(map[string]interface{})
+	if !ok {
+		return Parameters{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, deployment.Properties.Parameters)
+	}
+
+	return newParameters(parameters, castCurrent)
+}
+
+// ToDeployParams prepares the parameters to the format that ARM API understand.
+// We also try to use the same types that the ARM API will return, that's why we convert to float64 or interface{} types.
 func (p Parameters) ToDeployParams() map[string]interface{} {
 	var dataDisks []interface{}
 	for _, disk := range p.DataDisks {
@@ -76,25 +96,8 @@ func toARMParam(v interface{}) interface{} {
 	}
 }
 
-func NewFromDeployment(deployment azureresource.Deployment) (Parameters, error) {
-	parameters, ok := deployment.Properties.Parameters.(map[string]interface{})
-	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, deployment.Properties.Parameters)
-	}
-
-	return newParameters(parameters, castDesired)
-}
-
-func NewFromExtendedDeployment(deployment azureresource.DeploymentExtended) (Parameters, error) {
-	parameters, ok := deployment.Properties.Parameters.(map[string]interface{})
-	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, deployment.Properties.Parameters)
-	}
-
-	return newParameters(parameters, castCurrent)
-}
-
 func newParameters(parameters map[string]interface{}, cast func(param interface{}) interface{}) (Parameters, error) {
+	// DataDisks is an untyped array so we need to work a little bit to get the right types.
 	var dataDisks []v1alpha3.DataDisk
 	disks, ok := cast(parameters["dataDisks"]).([]interface{})
 	if !ok {
@@ -113,6 +116,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		})
 	}
 
+	// Zones is an untyped array so we need to work a little bit to get the right types.
 	var zones []string
 	rawZones, ok := cast(parameters["zones"]).([]interface{})
 	if !ok {
@@ -128,6 +132,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		zones = append(zones, zone)
 	}
 
+	// Finally return typed parameters.
 	return Parameters{
 		AzureOperatorVersion: cast(parameters["azureOperatorVersion"]).(string),
 		ClusterID:            cast(parameters["clusterID"]).(string),
