@@ -12,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
 
@@ -76,7 +77,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, azureCluster, machinePool, &azureMachinePool)
+	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, cluster, azureCluster, machinePool, &azureMachinePool)
 	if IsNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "Azure resource not found, canceling resource")
 		return currentState, nil
@@ -255,8 +256,8 @@ func castDesired(param interface{}) string {
 	return param.(struct{ Value interface{} }).Value.(string)
 }
 
-func (r *Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool) (azureresource.Deployment, error) {
-	desiredDeployment, err := r.newDeployment(ctx, storageAccountsClient, release, machinePool, azureMachinePool, azureCluster)
+func (r *Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool) (azureresource.Deployment, error) {
+	desiredDeployment, err := r.newDeployment(ctx, storageAccountsClient, release, machinePool, azureMachinePool, cluster, azureCluster)
 	if controllercontext.IsInvalidContext(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", err.Error())
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
