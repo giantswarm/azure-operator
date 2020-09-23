@@ -151,7 +151,8 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		},
 		SSHPublicKey: cast(parameters["sshPublicKey"]),
 		SubnetName:   cast(parameters["subnetName"]),
-		VMCustomData: cast(parameters["vmCustomData"]),
+		// It comes empty from Azure API.
+		VMCustomData: "",
 		VMSize:       cast(parameters["vmSize"]),
 		VnetName:     cast(parameters["vnetName"]),
 		Zones:        zones,

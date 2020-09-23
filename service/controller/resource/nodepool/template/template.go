@@ -54,6 +54,9 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 		return changes, microerror.Mask(err)
 	}
 
+	// If any of the following fields change, it means the deployments are not in sync.
+	// We are not taking the field `VMCustomData` in consideration because it comes empty from Azure.
+	// That's ok because changing `VMCustomData` would mean changing the `AzureOperatorVersion` field.
 	if currentParameters.AzureOperatorVersion != desiredParameters.AzureOperatorVersion {
 		changes = append(changes, "azureOperatorVersion")
 	}
@@ -68,9 +71,6 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	}
 	if currentParameters.SubnetName != desiredParameters.SubnetName {
 		changes = append(changes, "subnetName")
-	}
-	if currentParameters.VMCustomData != desiredParameters.VMCustomData {
-		changes = append(changes, "vmCustomData")
 	}
 	if currentParameters.VMSize != desiredParameters.VMSize {
 		changes = append(changes, "vmSize")
