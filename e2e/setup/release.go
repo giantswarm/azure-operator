@@ -42,23 +42,42 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 				},
 			},
 			Spec: releasev1alpha1.ReleaseSpec{
-				Apps: []releasev1alpha1.ReleaseSpecApp{},
+				Apps: []releasev1alpha1.ReleaseSpecApp{
+					{
+						Name:    "chart-operator",
+						Version: "2.3.0",
+					},
+					{
+						ComponentVersion: "1.17.4",
+						Name:             "cluster-autoscaler",
+						Version:          "1.17.4",
+					},
+					{
+						ComponentVersion: "1.6.5",
+						Name:             "coredns",
+						Version:          "1.2.0",
+					},
+				},
 				Components: []releasev1alpha1.ReleaseSpecComponent{
 					{
-						Name:    project.Name(),
-						Version: project.Version(),
+						Name:                  project.Name(),
+						ReleaseOperatorDeploy: false,
+						Version:               project.Version(),
 					},
 					{
-						Name:    "cluster-operator",
-						Version: "0.23.12",
+						Name:                  "cluster-operator",
+						ReleaseOperatorDeploy: true,
+						Version:               "0.23.16",
 					},
 					{
-						Name:    "cert-operator",
-						Version: "0.1.0",
+						Name:                  "cert-operator",
+						ReleaseOperatorDeploy: true,
+						Version:               "0.1.0",
 					},
 					{
-						Name:    "app-operator",
-						Version: "1.0.0",
+						Name:                  "app-operator",
+						ReleaseOperatorDeploy: true,
+						Version:               "2.1.1",
 					},
 					{
 						Name:    "calico",

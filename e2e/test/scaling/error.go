@@ -21,3 +21,12 @@ var notFoundError = &microerror.Error{
 func IsNotFoundError(err error) bool {
 	return microerror.Cause(err) == notFoundError
 }
+
+var waitError = &microerror.Error{
+	Kind: "waitError",
+}
+
+// IsWait asserts waitError.
+func IsWait(err error) bool {
+	return microerror.Cause(err) == waitError
+}
