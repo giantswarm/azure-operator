@@ -174,8 +174,8 @@ func (p *Provider) WaitForNodes(ctx context.Context, expectedNodes int) error {
 			}
 
 			for _, n := range nodeList.Items {
+				allNodes++
 				for _, c := range n.Status.Conditions {
-					allNodes++
 					if c.Type == v1.NodeReady && c.Status == v1.ConditionTrue {
 						nodesReady++
 					}
