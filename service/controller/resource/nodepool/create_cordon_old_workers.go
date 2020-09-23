@@ -66,7 +66,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	{
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-		allWorkerInstances, err = r.AllWorkerInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}

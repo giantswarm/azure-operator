@@ -2,7 +2,9 @@ package nodepool
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
@@ -56,6 +58,11 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -124,12 +131,17 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 	// Potential states are: Succeeded, Failed, Canceled. All other values indicate the operation is still running.
 	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations#provisioningstate-values
-	provisioningState := capzv1alpha3.VMState(*currentDeployment.Properties.ProvisioningState)
-	azureMachinePool.Status.ProvisioningState = &provisioningState
 	switch *currentDeployment.Properties.ProvisioningState {
 	case "Failed", "Canceled":
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "ARM deployment has failed, re-applying")
 		r.Debugger.LogFailedDeployment(ctx, currentDeployment, err)
+
+		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient, &azureMachinePool)
+		if err != nil {
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return currentState, nil
+		}
 
 		// Deployment is not running and not succeeded (Failed?)
 		// This indicates some kind of error in the deployment template and/or parameters.
@@ -145,9 +157,57 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, nil
 	default:
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+
+		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient, &azureMachinePool)
+		if err != nil {
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			return currentState, nil
+		}
+
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	}
+}
+
+func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "saving provider status info in CR")
+
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	instances, err := r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	provisioningState := capzv1alpha3.VMState(*vmss.ProvisioningState)
+	azureMachinePool.Status.ProvisioningState = &provisioningState
+	azureMachinePool.Status.Ready = provisioningState == "Succeeded"
+	azureMachinePool.Status.Replicas = int32(len(instances))
+	azureMachinePool.Spec.ProviderID = fmt.Sprintf("azure://%s", *vmss.ID)
+
+	providerIDList := make([]string, len(instances))
+	for i, vm := range instances {
+		providerIDList[i] = fmt.Sprintf("azure://%s", *vm.ID)
+	}
+	azureMachinePool.Spec.ProviderIDList = providerIDList
+
+	err = r.CtrlClient.Update(ctx, azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.CtrlClient.Status().Update(ctx, azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "saved provider status info in CR")
+
+	return nil
 }
 
 func contains(s []string, e string) bool {
