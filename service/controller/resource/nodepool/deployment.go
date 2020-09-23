@@ -30,7 +30,7 @@ import (
 	instance "github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
 
-func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
+func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
 	encrypterObject, err := r.getEncrypterObject(ctx, key.CertificateEncryptionSecretName(azureCluster))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -57,27 +57,40 @@ func (r Resource) newDeployment(ctx context.Context, storageAccountsClient *stor
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	currentReplicas := key.NodePoolMinReplicas(machinePool)
+	if key.NodePoolMinReplicas(machinePool) != key.NodePoolMaxReplicas(machinePool) {
+		// Autoscaler is enabled, will need to get the current number of replicas from the VMSS.
+		candidate, err := r.getVMSScurrentScaling(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
+		if err != nil {
+			return azureresource.Deployment{}, microerror.Mask(err)
+		}
+
+		// Function getVMSScurrentScaling returns 0 when the VMSS is not found.
+		if candidate != 0 {
+			currentReplicas = candidate
+		}
+	}
+
 	templateParams := map[string]interface{}{
 		"machinePoolVersion":      strconv.FormatInt(machinePool.ObjectMeta.Generation, 10),
 		"azureMachinePoolVersion": strconv.FormatInt(azureMachinePool.ObjectMeta.Generation, 10),
 		"azureOperatorVersion":    project.Version(),
 		"clusterID":               azureCluster.GetName(),
 		"dataDisks":               azureMachinePool.Spec.Template.DataDisks,
-		"dockerVolumeSizeGB":      "50",
-		"kubeletVolumeSizeGB":     "100",
 		"nodepoolName":            key.NodePoolVMSSName(azureMachinePool),
-		"sshPublicKey":            string(sshPublicKey),
 		"osImagePublisher":        "kinvolk",                      // azureMachinePool.Spec.Template.Image.Marketplace.Publisher,
 		"osImageOffer":            "flatcar-container-linux-free", // azureMachinePool.Spec.Template.Image.Marketplace.Offer,
 		"osImageSKU":              "stable",                       // azureMachinePool.Spec.Template.Image.Marketplace.SKU,
 		"osImageVersion":          distroVersion,                  // azureMachinePool.Spec.Template.Image.Marketplace.Version,
-		"replicas":                machinePool.Spec.Replicas,
-		"vnetName":                vnetName,
+		"minReplicas":             key.NodePoolMinReplicas(machinePool),
+		"maxReplicas":             key.NodePoolMaxReplicas(machinePool),
+		"currentReplicas":         currentReplicas,
+		"sshPublicKey":            string(sshPublicKey),
 		"subnetName":              subnetName,
+		"vmCustomData":            workerCloudConfig,
 		"vmSize":                  azureMachinePool.Spec.Template.VMSize,
+		"vnetName":                vnetName,
 		"zones":                   machinePool.Spec.FailureDomains,
-		// This should come from the bootstrap operator.
-		"vmCustomData": workerCloudConfig,
 	}
 
 	armTemplate, err := instance.GetARMTemplate()
@@ -108,6 +121,31 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	}
 
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
+}
+
+func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (int32, error) {
+	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
+	if err != nil {
+		return -1, microerror.Mask(err)
+	}
+
+	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return -1, microerror.Mask(err)
+	}
+
+	npVMSS, err := client.Get(ctx, resourceGroupName, vmssName)
+	if IsNotFound(err) {
+		// VMSS not found, scaling is unknown.
+		return 0, nil
+	} else if err != nil {
+		return -1, microerror.Mask(err)
+	}
+
+	capacity64 := *npVMSS.Sku.Capacity
+
+	// Unsafe type casting in theory, but in practice the capacity will never reach numbers not even close to 2^32.
+	return int32(capacity64), nil
 }
 
 func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, containerName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
