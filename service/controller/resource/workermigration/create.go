@@ -148,7 +148,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 func (r *Resource) allDrainerConfigsWithDrainedState(ctx context.Context, cr providerv1alpha1.AzureConfig) (bool, error) {
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 	}
 
 	var dcList corev1alpha1.DrainerConfigList
@@ -168,7 +168,7 @@ func (r *Resource) allDrainerConfigsWithDrainedState(ctx context.Context, cr pro
 
 func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 	}
 
 	var dcList corev1alpha1.DrainerConfigList
@@ -191,7 +191,7 @@ func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr provider
 
 func (r *Resource) deleteDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
 	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 	}
 
 	var dcList corev1alpha1.DrainerConfigList
@@ -286,7 +286,7 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: map[string]string{
 					label.Cluster:                 key.ClusterID(&cr),
-					capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
+					capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 				},
 				Name:      n.Name,
 				Namespace: key.ClusterID(&cr),

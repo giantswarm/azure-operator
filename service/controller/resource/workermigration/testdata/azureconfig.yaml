@@ -41,6 +41,14 @@ spec:
     - dockerVolumeSizeGB: 50
       kubeletVolumeSizeGB: 100
       vmSize: Standard_A2_v2
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_A2_v2
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_A2_v2
+  cluster:
+  cluster:
   cluster:
     calico:
       cidr: 16
@@ -94,11 +102,13 @@ spec:
     masters:
     - id: 9x5qt
     scaling:
-      max: 1
-      min: 1
+      max: 3
+      min: 3
     version: ""
     workers:
     - id: z028u
+    - id: ab28u
+    - id: cdb8u
   versionBundle:
     version: 4.2.0
 status:

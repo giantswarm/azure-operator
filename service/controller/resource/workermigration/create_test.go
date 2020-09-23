@@ -36,81 +36,6 @@ import (
 //go:generate mockgen -destination internal/mock_azure/api.go -source internal/azure/spec.go API
 //go:generate mockgen -destination internal/mock_tenantclient/factory.go -source internal/tenantclient/spec.go Factory
 
-func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
-	ctrl := gomock.NewController(t)
-	defer ctrl.Finish()
-
-	ctrlClient := newFakeClient()
-	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
-	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
-	r := &Resource{
-		ctrlClient:          ctrlClient,
-		logger:              microloggertest.New(),
-		tenantClientFactory: mockTenantClientFactory,
-		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
-			return mockAzureAPI
-		},
-	}
-
-	ensureCRsExist(t, ctrlClient, []string{
-		"cluster.yaml",
-		"azureconfig.yaml",
-		"azurecluster.yaml",
-		"azuremachinepool.yaml",
-		"machinepool.yaml",
-		"spark.yaml",
-	})
-
-	o, err := loadCR("azureconfig.yaml")
-	if err != nil {
-		t.Fatal(err)
-	}
-	cr := o.(*providerv1alpha1.AzureConfig)
-
-	ensureNodePoolIsReady(t, ctrlClient, cr)
-	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
-
-	mockAzureAPI.
-		EXPECT().
-		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
-		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
-		Times(1)
-
-	mockAzureAPI.
-		EXPECT().
-		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
-		Times(0)
-
-	mockTenantClientFactory.
-		EXPECT().
-		GetClient(gomock.Any(), gomock.Any()).
-		Return(tcCtrlClient, nil).
-		Times(1)
-
-	err = r.EnsureCreated(context.Background(), cr)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	// VERIFY: DrainerConfig CRs are there.
-	{
-		opts := client.MatchingLabels{
-			capiv1alpha3.ClusterLabelName: key.ClusterName(cr),
-		}
-		dcList := new(corev1alpha1.DrainerConfigList)
-		err = ctrlClient.List(context.Background(), dcList, opts)
-		if err != nil {
-			t.Fatal(err)
-		}
-
-		if len(dcList.Items) != key.WorkerCount(*cr) {
-			t.Fatalf("expected %d drainer config crs to exist. got %d.", key.WorkerCount(*cr), len(dcList.Items))
-		}
-	}
-
-	// gomock verifies rest of the assertions on exit.
-}
-
 func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -202,6 +127,237 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	// gomock verifies rest of the assertions on exit.
 }
 
+func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctrlClient := newFakeClient()
+	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
+	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
+	r := &Resource{
+		ctrlClient:          ctrlClient,
+		logger:              microloggertest.New(),
+		tenantClientFactory: mockTenantClientFactory,
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
+			return mockAzureAPI
+		},
+	}
+
+	ensureCRsExist(t, ctrlClient, []string{
+		"cluster.yaml",
+		"azureconfig.yaml",
+		"azurecluster.yaml",
+		"azuremachinepool.yaml",
+		"machinepool.yaml",
+		"namespace.yaml",
+		"spark.yaml",
+	})
+
+	o, err := loadCR("azureconfig.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cr := o.(*providerv1alpha1.AzureConfig)
+
+	ensureNodePoolIsReady(t, ctrlClient, cr)
+	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
+		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(0)
+
+	mockTenantClientFactory.
+		EXPECT().
+		GetClient(gomock.Any(), gomock.Any()).
+		Return(tcCtrlClient, nil).
+		Times(1)
+
+	err = r.EnsureCreated(context.Background(), cr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// VERIFY: DrainerConfig CRs are there.
+	{
+		opts := client.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+		}
+		dcList := new(corev1alpha1.DrainerConfigList)
+		err = ctrlClient.List(context.Background(), dcList, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(dcList.Items) != key.WorkerCount(*cr) {
+			t.Fatalf("expected %d drainer config crs to exist. got %d.", key.WorkerCount(*cr), len(dcList.Items))
+		}
+	}
+
+	// gomock verifies rest of the assertions on exit.
+}
+
+func TestVMSSIsNotDeletedBeforeDrainingIsDone(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctrlClient := newFakeClient()
+	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
+	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
+	r := &Resource{
+		ctrlClient:          ctrlClient,
+		logger:              microloggertest.New(),
+		tenantClientFactory: mockTenantClientFactory,
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
+			return mockAzureAPI
+		},
+	}
+
+	ensureCRsExist(t, ctrlClient, []string{
+		"cluster.yaml",
+		"azureconfig.yaml",
+		"azurecluster.yaml",
+		"azuremachinepool.yaml",
+		"machinepool.yaml",
+		"namespace.yaml",
+		"spark.yaml",
+		"drainerconfigs.yaml",
+	})
+
+	o, err := loadCR("azureconfig.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cr := o.(*providerv1alpha1.AzureConfig)
+
+	ensureNodePoolIsReady(t, ctrlClient, cr)
+	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
+		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(0)
+
+	mockTenantClientFactory.
+		EXPECT().
+		GetClient(gomock.Any(), gomock.Any()).
+		Return(tcCtrlClient, nil).
+		Times(1)
+
+	err = r.EnsureCreated(context.Background(), cr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// VERIFY: DrainerConfig CRs are there.
+	{
+		opts := client.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+		}
+		dcList := new(corev1alpha1.DrainerConfigList)
+		err = ctrlClient.List(context.Background(), dcList, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(dcList.Items) != key.WorkerCount(*cr) {
+			t.Fatalf("expected %d drainer config crs to exist. got %d.", key.WorkerCount(*cr), len(dcList.Items))
+		}
+	}
+
+	// gomock verifies rest of the assertions on exit.
+}
+
+func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctrlClient := newFakeClient()
+	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
+	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
+	r := &Resource{
+		ctrlClient:          ctrlClient,
+		logger:              microloggertest.New(),
+		tenantClientFactory: mockTenantClientFactory,
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
+			return mockAzureAPI
+		},
+	}
+
+	ensureCRsExist(t, ctrlClient, []string{
+		"cluster.yaml",
+		"azureconfig.yaml",
+		"azurecluster.yaml",
+		"azuremachinepool.yaml",
+		"machinepool.yaml",
+		"namespace.yaml",
+		"spark.yaml",
+		"drainerconfigs.yaml",
+	})
+
+	o, err := loadCR("azureconfig.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cr := o.(*providerv1alpha1.AzureConfig)
+
+	ensureNodePoolIsReady(t, ctrlClient, cr)
+	setDrainerConfigsAsDrained(t, ctrlClient, cr)
+	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
+		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(1)
+
+	mockTenantClientFactory.
+		EXPECT().
+		GetClient(gomock.Any(), gomock.Any()).
+		Return(tcCtrlClient, nil).
+		Times(1)
+
+	err = r.EnsureCreated(context.Background(), cr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// VERIFY: DrainerConfig CRs are gone.
+	{
+		opts := client.MatchingLabels{
+			capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+		}
+		dcList := new(corev1alpha1.DrainerConfigList)
+		err = ctrlClient.List(context.Background(), dcList, opts)
+		if err != nil {
+			t.Fatal(err)
+		}
+
+		if len(dcList.Items) > 0 {
+			t.Fatalf("expected 0 drainer config crs to exist. got %d.", len(dcList.Items))
+		}
+	}
+
+	// gomock verifies rest of the assertions on exit.
+}
+
 func TestFinishedMigration(t *testing.T) {
 	ctrl := gomock.NewController(t)
 	defer ctrl.Finish()
@@ -250,6 +406,17 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 		o, err := loadCR(f)
 		if err != nil {
 			t.Fatalf("failed to load input file %s: %#v", f, err)
+		}
+
+		if o.GetObjectKind().GroupVersionKind().Kind == "DrainerConfigList" {
+			lst := o.(*corev1alpha1.DrainerConfigList)
+			for _, i := range lst.Items {
+				err = client.Create(context.Background(), &i)
+				if err != nil {
+					t.Fatalf("failed to create object from input file %s: %#v", f, err)
+				}
+			}
+			continue
 		}
 
 		err = client.Create(context.Background(), o)
@@ -328,8 +495,14 @@ func loadCR(fName string) (runtime.Object, error) {
 		obj = new(capzv1alpha3.AzureMachine)
 	case "AzureMachinePool":
 		obj = new(expcapzv1alpha3.AzureMachinePool)
+	case "DrainerConfig":
+		obj = new(corev1alpha1.DrainerConfig)
+	case "DrainerConfigList":
+		obj = new(corev1alpha1.DrainerConfigList)
 	case "MachinePool":
 		obj = new(expcapiv1alpha3.MachinePool)
+	case "Namespace":
+		obj = new(corev1.Namespace)
 	case "Spark":
 		obj = new(corev1alpha1.Spark)
 	default:
@@ -430,4 +603,24 @@ func newTenantFakeClientWithNodes(t *testing.T, cr *providerv1alpha1.AzureConfig
 	}
 
 	return ctrlClient
+}
+
+func setDrainerConfigsAsDrained(t *testing.T, ctrlClient client.Client, cr *providerv1alpha1.AzureConfig) {
+	o := client.MatchingLabels{
+		capiv1alpha3.ClusterLabelName: key.ClusterID(cr),
+	}
+
+	var dcList corev1alpha1.DrainerConfigList
+	err := ctrlClient.List(context.Background(), &dcList, o)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	for _, dc := range dcList.Items {
+		dc.Status.Conditions = append(dc.Status.Conditions, dc.Status.NewDrainedCondition())
+		err = ctrlClient.Status().Update(context.Background(), &dc)
+		if err != nil {
+			t.Fatal(err)
+		}
+	}
 }
