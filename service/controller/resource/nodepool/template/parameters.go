@@ -88,7 +88,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 	var dataDisks []v1alpha3.DataDisk
 	disks, ok := cast(parameters["dataDisks"]).([]interface{})
 	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []interface, got '%T'", parameters["dataDisks"].(map[string]interface{})["value"])
+		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []interface, got '%T'", cast(parameters["dataDisks"]))
 	}
 
 	for _, disk := range disks {
@@ -106,7 +106,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 	var zones []string
 	rawZones, ok := cast(parameters["zones"]).([]interface{})
 	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "zones should be []interface, got '%T'", parameters["zones"].(map[string]interface{})["value"])
+		return Parameters{}, microerror.Maskf(wrongTypeError, "zones should be []interface, got '%T'", cast(parameters["zones"]))
 	}
 
 	for _, rawZone := range rawZones {
