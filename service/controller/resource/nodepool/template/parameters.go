@@ -86,7 +86,7 @@ func NewFromExtendedDeployment(deployment azureresource.DeploymentExtended) (Par
 
 func newParameters(parameters map[string]interface{}, cast func(param interface{}) interface{}) (Parameters, error) {
 	var dataDisks []v1alpha3.DataDisk
-	disks, ok := parameters["dataDisks"].(map[string]interface{})["value"].([]interface{})
+	disks, ok := cast(parameters["dataDisks"]).([]interface{})
 	if !ok {
 		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []interface, got '%T'", parameters["dataDisks"].(map[string]interface{})["value"])
 	}
@@ -104,7 +104,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 	}
 
 	var zones []string
-	rawZones, ok := parameters["zones"].(map[string]interface{})["value"].([]interface{})
+	rawZones, ok := cast(parameters["zones"]).([]interface{})
 	if !ok {
 		return Parameters{}, microerror.Maskf(wrongTypeError, "zones should be []interface, got '%T'", parameters["zones"].(map[string]interface{})["value"])
 	}
