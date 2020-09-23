@@ -18,6 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/machinepoolownerreference"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodestatus"
 )
 
 type MachinePoolConfig struct {
@@ -104,9 +105,23 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var nodestatusResource resource.Interface
+	{
+		c := nodestatus.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		nodestatusResource, err = nodestatus.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []resource.Interface{
 		machinepoolDependentsResource,
 		ownerReferencesResource,
+		nodestatusResource,
 	}
 
 	{
