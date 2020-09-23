@@ -2,7 +2,6 @@ package template
 
 import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 )
@@ -85,37 +84,14 @@ func NewFromExtendedDeployment(deployment azureresource.DeploymentExtended) (Par
 }
 
 func newParameters(parameters map[string]interface{}, cast func(param interface{}) interface{}) (Parameters, error) {
-	var dataDisks []v1alpha3.DataDisk
-	disks, ok := cast(parameters["dataDisks"]).([]interface{})
+	dataDisks, ok := cast(parameters["dataDisks"]).([]v1alpha3.DataDisk)
 	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []interface, got '%T'", cast(parameters["dataDisks"]))
+		return Parameters{}, microerror.Maskf(wrongTypeError, "dataDisks should be []v1alpha3.DataDisk, got '%T'", cast(parameters["dataDisks"]))
 	}
 
-	for _, disk := range disks {
-		d, ok := disk.(map[string]interface{})
-		if !ok {
-			return Parameters{}, microerror.Maskf(wrongTypeError, "disk should be map[string]interface{}, got '%T'", disk)
-		}
-		dataDisks = append(dataDisks, v1alpha3.DataDisk{
-			NameSuffix: d["nameSuffix"].(string),
-			DiskSizeGB: int32(d["diskSizeGB"].(float64)),
-			Lun:        to.Int32Ptr(int32(d["lun"].(float64))),
-		})
-	}
-
-	var zones []string
-	rawZones, ok := cast(parameters["zones"]).([]interface{})
+	zones, ok := cast(parameters["zones"]).([]string)
 	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "zones should be []interface, got '%T'", cast(parameters["zones"]))
-	}
-
-	for _, rawZone := range rawZones {
-		zone, ok := rawZone.(string)
-		if !ok {
-			return Parameters{}, microerror.Maskf(wrongTypeError, "zone should be string, got '%T'", rawZone)
-		}
-
-		zones = append(zones, zone)
+		return Parameters{}, microerror.Maskf(wrongTypeError, "zones should be []string, got '%T'", cast(parameters["zones"]))
 	}
 
 	return Parameters{
