@@ -7,6 +7,7 @@ import (
 	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/to"
+	apiextensionsannotations "github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -52,7 +53,10 @@ func (p *Provider) AddWorker(ctx context.Context, clusterID, nodepoolID string) 
 		return microerror.Mask(err)
 	}
 
-	machinePool.Spec.Replicas = to.Int32Ptr(*machinePool.Spec.Replicas + int32(1))
+	newSize := *machinePool.Spec.Replicas + int32(1)
+	machinePool.Spec.Replicas = to.Int32Ptr(newSize)
+	machinePool.Annotations[apiextensionsannotations.NodePoolMinSize] = fmt.Sprintf("%d", newSize)
+	machinePool.Annotations[apiextensionsannotations.NodePoolMaxSize] = fmt.Sprintf("%d", newSize)
 
 	err = p.ctrlClient.Update(ctx, machinePool)
 	if err != nil {
