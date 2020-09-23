@@ -36,7 +36,7 @@ type OSImage struct {
 }
 
 func (p Parameters) ToDeployParams() map[string]interface{} {
-	var dataDisks []map[string]interface{}
+	var dataDisks []interface{}
 	for _, disk := range p.DataDisks {
 		dataDisks = append(dataDisks, map[string]interface{}{"nameSuffix": disk.NameSuffix, "lun": disk.Lun, "diskSizeGB": disk.DiskSizeGB})
 	}
