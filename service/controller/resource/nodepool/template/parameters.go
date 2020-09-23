@@ -84,22 +84,7 @@ func NewFromExtendedDeployment(deployment azureresource.DeploymentExtended) (Par
 	return newParameters(parameters, castCurrent)
 }
 
-func newParameters(parameters map[string]interface{}, cast func(param interface{}) string) (Parameters, error) {
-	minReplicas, ok := parameters["minReplicas"].(map[string]interface{})["value"].(float64)
-	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "minReplicas should be float64, got '%T'", parameters["minReplicas"].(map[string]interface{})["value"])
-	}
-
-	maxReplicas, ok := parameters["maxReplicas"].(map[string]interface{})["value"].(float64)
-	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "maxReplicas should be float64, got '%T'", parameters["maxReplicas"].(map[string]interface{})["value"])
-	}
-
-	currentReplicas, ok := parameters["currentReplicas"].(map[string]interface{})["value"].(float64)
-	if !ok {
-		return Parameters{}, microerror.Maskf(wrongTypeError, "currentReplicas should be float64, got '%T'", parameters["currentReplicas"].(map[string]interface{})["value"])
-	}
-
+func newParameters(parameters map[string]interface{}, cast func(param interface{}) interface{}) (Parameters, error) {
 	var dataDisks []v1alpha3.DataDisk
 	disks, ok := parameters["dataDisks"].(map[string]interface{})["value"].([]interface{})
 	if !ok {
@@ -134,35 +119,35 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 	}
 
 	return Parameters{
-		AzureOperatorVersion: cast(parameters["azureOperatorVersion"]),
-		ClusterID:            cast(parameters["clusterID"]),
+		AzureOperatorVersion: cast(parameters["azureOperatorVersion"]).(string),
+		ClusterID:            cast(parameters["clusterID"]).(string),
 		DataDisks:            dataDisks,
-		NodepoolName:         cast(parameters["nodepoolName"]),
+		NodepoolName:         cast(parameters["nodepoolName"]).(string),
 		OSImage: OSImage{
-			Publisher: cast(parameters["osImagePublisher"]),
-			Offer:     cast(parameters["osImageOffer"]),
-			SKU:       cast(parameters["osImageSKU"]),
-			Version:   cast(parameters["osImageVersion"]),
+			Publisher: cast(parameters["osImagePublisher"]).(string),
+			Offer:     cast(parameters["osImageOffer"]).(string),
+			SKU:       cast(parameters["osImageSKU"]).(string),
+			Version:   cast(parameters["osImageVersion"]).(string),
 		},
 		Scaling: Scaling{
-			MinReplicas:     int32(minReplicas),
-			MaxReplicas:     int32(maxReplicas),
-			CurrentReplicas: int32(currentReplicas),
+			MinReplicas:     int32(cast(parameters["minReplicas"]).(float64)),
+			MaxReplicas:     int32(cast(parameters["maxReplicas"]).(float64)),
+			CurrentReplicas: int32(cast(parameters["currentReplicas"]).(float64)),
 		},
-		SSHPublicKey: cast(parameters["sshPublicKey"]),
-		SubnetName:   cast(parameters["subnetName"]),
+		SSHPublicKey: cast(parameters["sshPublicKey"]).(string),
+		SubnetName:   cast(parameters["subnetName"]).(string),
 		// It comes empty from Azure API.
 		VMCustomData: "",
-		VMSize:       cast(parameters["vmSize"]),
-		VnetName:     cast(parameters["vnetName"]),
+		VMSize:       cast(parameters["vmSize"]).(string),
+		VnetName:     cast(parameters["vnetName"]).(string),
 		Zones:        zones,
 	}, nil
 }
 
-func castCurrent(param interface{}) string {
-	return param.(map[string]interface{})["value"].(string)
+func castCurrent(param interface{}) interface{} {
+	return param.(map[string]interface{})["value"]
 }
 
-func castDesired(param interface{}) string {
-	return param.(struct{ Value interface{} }).Value.(string)
+func castDesired(param interface{}) interface{} {
+	return param.(struct{ Value interface{} }).Value
 }
