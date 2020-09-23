@@ -42,11 +42,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers are migrated to node pool")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding built-in workers VMSS")
 	var builtinVMSS azure.VMSS
 	{
 		builtinVMSS, err = azureAPI.GetVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 		if azure.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "built-in workers don't exist anymore")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find built-in workers VMSS")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 			return nil
@@ -65,33 +66,46 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found built-in workers VMSS")
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachinePool CR exists for built-in workers VMSS")
 	azureMachinePool, err := r.ensureAzureMachinePoolExists(ctx, cr, *builtinVMSS.Sku.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachinePool CR exists for built-in workers VMSS")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring MachinePool CR exists for built-in workers VMSS")
 	machinePool, err := r.ensureMachinePoolExists(ctx, cr, azureMachinePool, int(*builtinVMSS.Sku.Capacity))
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured MachinePool CR exists for built-in workers VMSS")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring Spark CR exists for built-in workers VMSS")
 	_, err = r.ensureSparkExists(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured Spark CR exists for built-in workers VMSS")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if node pool workers are ready")
 	if !machinePool.Status.InfrastructureReady || (machinePool.Status.Replicas != machinePool.Status.ReadyReplicas) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "node pool workers are not ready yet")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 		return nil
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found that node pool workers are ready")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers have drainerconfig cr")
 	err = r.ensureDrainerConfigsExists(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that built-in workers have drainerconfig cr")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers are drained")
 	allNodesDrained, err := r.allDrainerConfigsWithDrainedState(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
@@ -108,22 +122,26 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
+		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted timed out drainerconfigs")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 		return nil
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that built-in workers are drained")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainerconfigs")
 	err = r.deleteDrainerConfigs(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainerconfigs")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting built-in workers' VMSS")
 	err = azureAPI.DeleteVMSS(ctx, key.ResourceGroupName(cr), *builtinVMSS.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "built-in workers VMSS deleted")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted built-in workers' VMSS")
 
 	return nil
 }
@@ -262,7 +280,7 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1
 	}
 
 	for _, n := range nodeList.Items {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainer config for tenant cluster node %q", n.Name))
 
 		c := &corev1alpha1.DrainerConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -293,14 +311,13 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1
 
 		err := r.ctrlClient.Create(ctx, c)
 		if errors.IsAlreadyExists(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create drainer config for tenant cluster node %q", n.Name))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node")
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created drainer config for tenant cluster node %q", n.Name))
 		}
-
 	}
 
 	return nil
