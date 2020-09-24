@@ -43,9 +43,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	machinePool.Status.InfrastructureReady = azureMachinePool.Status.Ready
-	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
-
 	machinePool.Spec.ProviderIDList = azureMachinePool.Spec.ProviderIDList
 	if len(azureMachinePool.Spec.ProviderIDList) == 0 {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool.Spec.ProviderIDList haven't been set yet")
@@ -53,8 +50,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
+	err = r.ctrlClient.Update(ctx, &machinePool)
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
 	// Check that the Machine doesn't already have a NodeRefs.
-	if machinePool.Status.Replicas == machinePool.Status.ReadyReplicas && len(machinePool.Status.NodeRefs) == int(machinePool.Status.ReadyReplicas) {
+	if azureMachinePool.Status.Replicas == machinePool.Status.ReadyReplicas && len(machinePool.Status.NodeRefs) == int(machinePool.Status.ReadyReplicas) {
 		return nil
 	}
 
@@ -82,21 +88,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	machinePool.Status.InfrastructureReady = azureMachinePool.Status.Ready
+	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
 	machinePool.Status.ReadyReplicas = int32(nodeRefsResult.ready)
 	machinePool.Status.AvailableReplicas = int32(nodeRefsResult.available)
 	machinePool.Status.UnavailableReplicas = machinePool.Status.Replicas - machinePool.Status.AvailableReplicas
 	machinePool.Status.NodeRefs = nodeRefsResult.references
-
-	// First we update the spec field (that way `ProviderIDList` is updated) then the status field.
-	// Making it the other way around would return early and never update the spec field.
-	err = r.ctrlClient.Update(ctx, &machinePool)
-	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
 
 	err = r.ctrlClient.Status().Update(ctx, &machinePool)
 	if apierrors.IsConflict(err) {
