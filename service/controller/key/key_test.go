@@ -288,3 +288,32 @@ func Test_MasterNICName(t *testing.T) {
 		t.Fatalf("Expected master nic name %s but was %s", expectedMasterNICName, MasterNICName(customObject))
 	}
 }
+
+func Test_NodePoolInstanceName(t *testing.T) {
+	type testCase struct {
+		desired  string
+		nodepool string
+		instance string
+	}
+
+	testCases := []testCase{
+		{
+			desired:  "nodepool-123ab-000001",
+			nodepool: "123ab",
+			instance: "1",
+		},
+		{
+			desired:  "nodepool-123ab-00000a",
+			nodepool: "123ab",
+			instance: "10",
+		},
+	}
+
+	for _, tc := range testCases {
+		effective := NodePoolInstanceName(tc.nodepool, tc.instance)
+
+		if effective != tc.desired {
+			t.Fatalf("Expected node pool instance name %s but was %s", tc.desired, effective)
+		}
+	}
+}

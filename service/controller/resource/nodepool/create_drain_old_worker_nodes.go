@@ -33,6 +33,11 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
 	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
 	if err != nil {
 		return currentState, microerror.Mask(err)
@@ -48,6 +53,11 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
@@ -83,7 +93,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 	var nodesPendingDraining int
 	for _, i := range allWorkerInstances {
-		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, key.ClusterID(&azureMachinePool), i)
+		old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, azureMachinePool.Name, i, vmss)
 		if err != nil {
 			return DeploymentUninitialized, nil
 		}
@@ -93,13 +103,13 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			continue
 		}
 
-		n := key.WorkerInstanceName(key.ClusterID(&azureMachinePool), *i.InstanceID)
+		n := key.NodePoolInstanceName(azureMachinePool.Name, *i.InstanceID)
 
 		dc, drainerConfigExists := drainerConfigs[n]
 		if !drainerConfigExists {
 			nodesPendingDraining++
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.CreateDrainerConfig(ctx, key.ClusterID(&azureMachinePool), cluster.Spec.ControlPlaneEndpoint.String(), key.WorkerInstanceName(key.ClusterID(&azureMachinePool), *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, key.ClusterID(&azureMachinePool), cluster.Spec.ControlPlaneEndpoint.String(), key.NodePoolInstanceName(azureMachinePool.Name, *i.InstanceID))
 			if err != nil {
 				return DeploymentUninitialized, microerror.Mask(err)
 			}
@@ -119,7 +129,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			}
 
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainerconfig for %s", n))
-			err = r.CreateDrainerConfig(ctx, key.ClusterID(&azureMachinePool), cluster.Spec.ControlPlaneEndpoint.String(), key.WorkerInstanceName(key.ClusterID(&azureMachinePool), *i.InstanceID))
+			err = r.CreateDrainerConfig(ctx, key.ClusterID(&azureMachinePool), cluster.Spec.ControlPlaneEndpoint.String(), key.NodePoolInstanceName(azureMachinePool.Name, *i.InstanceID))
 			if err != nil {
 				return DeploymentUninitialized, microerror.Mask(err)
 			}
