@@ -6,6 +6,7 @@ import (
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	apicorev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/controllers/noderefutil"
 	"sigs.k8s.io/cluster-api/util"
@@ -89,12 +90,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// First we update the spec field (that way `ProviderIDList` is updated) then the status field.
 	// Making it the other way around would return early and never update the spec field.
 	err = r.ctrlClient.Update(ctx, &machinePool)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
 	err = r.ctrlClient.Status().Update(ctx, &machinePool)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
