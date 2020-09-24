@@ -180,25 +180,23 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSets
 		return microerror.Mask(err)
 	}
 
-	provisioningState := capzv1alpha3.VMState(*vmss.ProvisioningState)
-	azureMachinePool.Status.ProvisioningState = &provisioningState
-	azureMachinePool.Status.Ready = provisioningState == "Succeeded"
-	azureMachinePool.Status.Replicas = int32(len(instances))
-	azureMachinePool.Spec.ProviderID = fmt.Sprintf("azure://%s", *vmss.ID)
-
 	providerIDList := make([]string, len(instances))
 	for i, vm := range instances {
 		providerIDList[i] = fmt.Sprintf("azure://%s", *vm.ID)
 	}
 	azureMachinePool.Spec.ProviderIDList = providerIDList
+	azureMachinePool.Spec.ProviderID = fmt.Sprintf("azure://%s", *vmss.ID)
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "updating AzureMachinePool spec", "provisionState", *vmss.ProvisioningState, "provisionState2", azureMachinePool.Status.ProvisioningState, "providerID", azureMachinePool.Spec.ProviderID)
 	err = r.CtrlClient.Update(ctx, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "updating AzureMachinePool status", "provisionState", *vmss.ProvisioningState, "provisionState2", azureMachinePool.Status.ProvisioningState, "replicas", azureMachinePool.Status.Replicas, "ready", azureMachinePool.Status.Ready)
+	provisioningState := capzv1alpha3.VMState(*vmss.ProvisioningState)
+	azureMachinePool.Status.ProvisioningState = &provisioningState
+	azureMachinePool.Status.Ready = provisioningState == "Succeeded"
+	azureMachinePool.Status.Replicas = int32(len(instances))
+
 	err = r.CtrlClient.Status().Update(ctx, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
