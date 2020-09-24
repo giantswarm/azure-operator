@@ -107,7 +107,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		// we don't need to move to the next state of the state machine which will rollout all the nodes.
 		numberOfChangedParameters := len(changes)
 		deploymentNeedsToBeSubmitted = numberOfChangedParameters > 0
-		nodesNeedToBeRolled = numberOfChangedParameters > 1 || numberOfChangedParameters == 1 && !contains(changes, "scaling")
+		nodesNeedToBeRolled = numberOfChangedParameters > 1 || numberOfChangedParameters == 1 && (!contains(changes, "scaling") && !contains(changes, "spotInstancesMaxPrice"))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "Checking if deployment is out of date and needs to be re-submitted", "deploymentNeedsToBeSubmitted", deploymentNeedsToBeSubmitted, "nodesNeedToBeRolled", nodesNeedToBeRolled, "changedParameters", changes)
 	}
 

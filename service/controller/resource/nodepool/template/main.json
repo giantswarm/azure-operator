@@ -106,6 +106,20 @@
         "description": "When turned on, the scale set actually spins up more VMs than you asked for, then deletes the extra VMs once the requested number of VMs are successfully provisioned."
       }
     },
+    "spotInstancesEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "When turned on, the scale set will use spot instances rather than on demand ones."
+      }
+    },
+    "spotInstancesMaxPrice": {
+      "type": "string",
+      "defaultValue": "-1",
+      "metadata": {
+        "description": "The max price you are willing to pay to purchase a spot instance."
+      }
+    },
     "upgradePolicy": {
       "type": "string",
       "defaultValue": "Manual",
@@ -262,7 +276,8 @@
         "cluster-autoscaler-name": "[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
         "min": "[int(parameters('minReplicas'))]",
-        "max": "[int(parameters('maxReplicas'))]"
+        "max": "[int(parameters('maxReplicas'))]",
+        "spot": "[if(parameters('spotInstancesEnabled'), 'true', 'false')]"
       },
       "sku": {
         "name": "[parameters('vmSize')]",
@@ -284,6 +299,11 @@
         },
         "singlePlacementGroup": "[parameters('vmssSinglePlacementGroup')]",
         "virtualMachineProfile": {
+          "evictionPolicy": "Delete",
+          "priority": "[if(parameters('spotInstancesEnabled'), 'Spot', 'Regular')]",
+          "billingProfile": {
+            "maxPrice": "[float(parameters('spotInstancesMaxPrice'))]"
+          },
           "osProfile": {
             "adminUsername": "[parameters('sshUser')]",
             "computerNamePrefix": "[concat(variables('vmssName'), '-')]",

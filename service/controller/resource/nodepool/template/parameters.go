@@ -14,6 +14,7 @@ type Parameters struct {
 	NodepoolName         string
 	OSImage              OSImage
 	Scaling              Scaling
+	SpotInstanceConfig   SpotInstanceConfig
 	SSHPublicKey         string
 	SubnetName           string
 	VMCustomData         string
@@ -26,6 +27,11 @@ type Scaling struct {
 	MinReplicas     int32
 	MaxReplicas     int32
 	CurrentReplicas int32
+}
+
+type SpotInstanceConfig struct {
+	Enabled  bool
+	MaxPrice string
 }
 
 type OSImage struct {
@@ -78,6 +84,8 @@ func (p Parameters) ToDeployParams() map[string]interface{} {
 	armDeploymentParameters["minReplicas"] = toARMParam(float64(p.Scaling.MinReplicas))
 	armDeploymentParameters["maxReplicas"] = toARMParam(float64(p.Scaling.MaxReplicas))
 	armDeploymentParameters["currentReplicas"] = toARMParam(float64(p.Scaling.CurrentReplicas))
+	armDeploymentParameters["spotInstancesEnabled"] = toARMParam(p.SpotInstanceConfig.Enabled)
+	armDeploymentParameters["spotInstancesMaxPrice"] = toARMParam(p.SpotInstanceConfig.MaxPrice)
 	armDeploymentParameters["sshPublicKey"] = toARMParam(p.SSHPublicKey)
 	armDeploymentParameters["subnetName"] = toARMParam(p.SubnetName)
 	armDeploymentParameters["vmCustomData"] = toARMParam(p.VMCustomData)
@@ -132,6 +140,11 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		zones = append(zones, zone)
 	}
 
+	bidPrice := "-1"
+	if parameters["spotInstancesMaxPrice"] != nil {
+		bidPrice = cast(parameters["spotInstancesMaxPrice"]).(string)
+	}
+
 	// Finally return typed parameters.
 	return Parameters{
 		AzureOperatorVersion: cast(parameters["azureOperatorVersion"]).(string),
@@ -148,6 +161,10 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 			MinReplicas:     int32(cast(parameters["minReplicas"]).(float64)),
 			MaxReplicas:     int32(cast(parameters["maxReplicas"]).(float64)),
 			CurrentReplicas: int32(cast(parameters["currentReplicas"]).(float64)),
+		},
+		SpotInstanceConfig: SpotInstanceConfig{
+			Enabled:  cast(parameters["spotInstancesEnabled"]).(bool),
+			MaxPrice: bidPrice,
 		},
 		SSHPublicKey: cast(parameters["sshPublicKey"]).(string),
 		SubnetName:   cast(parameters["subnetName"]).(string),

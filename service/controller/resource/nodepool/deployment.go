@@ -86,6 +86,10 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
 			CurrentReplicas: currentReplicas,
 		},
+		SpotInstanceConfig: template.SpotInstanceConfig{
+			Enabled:  key.NodePoolEnableSpotInstances(azureMachinePool),
+			MaxPrice: fmt.Sprintf("%f", key.NodePoolSpotInstancesMaxPrice(azureMachinePool)),
+		},
 		SSHPublicKey: string(sshPublicKey),
 		SubnetName:   subnetName,
 		VMCustomData: workerCloudConfig,

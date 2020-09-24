@@ -48,10 +48,10 @@ const (
 	vpnGatewaySubnet          = "GatewaySubnet"
 	vpnGatewaySuffix          = "VPNGateway"
 
-	AnnotationEtcdDomain        = "giantswarm.io/etcd-domain"
-	AnnotationPrometheusCluster = "giantswarm.io/prometheus-cluster"
-	AnnotationNodePoolMinSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-min-size"
-	AnnotationNodePoolMaxSize   = "cluster.k8s.io/cluster-api-autoscaler-node-group-max-size"
+	AnnotationEtcdDomain            = "giantswarm.io/etcd-domain"
+	AnnotationPrometheusCluster     = "giantswarm.io/prometheus-cluster"
+	AnnotationSpotInstancesEnabled  = "giantswarm.io/spot-instances-enabled"
+	AnnotationSpotInstancesMaxPrice = "giantswarm.io/spot-instances-max-price"
 
 	LabelApp             = "app"
 	LabelCluster         = "giantswarm.io/cluster"
@@ -618,6 +618,28 @@ func WorkerInstanceName(clusterID, instanceID string) string {
 
 func NodePoolDeploymentName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
 	return NodePoolVMSSName(azureMachinePool)
+}
+
+func NodePoolEnableSpotInstances(azuremachinePool *expcapzv1alpha3.AzureMachinePool) bool {
+	enabledStr := azuremachinePool.Annotations[AnnotationSpotInstancesEnabled]
+	enabled, err := strconv.ParseBool(enabledStr)
+	if err != nil {
+		// Annotation not found or invalid.
+		return false
+	}
+
+	return enabled
+}
+
+func NodePoolSpotInstancesMaxPrice(azuremachinePool *expcapzv1alpha3.AzureMachinePool) float64 {
+	maxPriceStr := azuremachinePool.Annotations[AnnotationSpotInstancesMaxPrice]
+	maxPrice, err := strconv.ParseFloat(maxPriceStr, 64)
+	if err != nil {
+		// Annotation not found or invalid.
+		return -1
+	}
+
+	return maxPrice
 }
 
 func MachinePoolID(getter LabelsGetter) (string, error) {
