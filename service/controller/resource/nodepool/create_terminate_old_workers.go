@@ -66,15 +66,20 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
-
 	resourceGroupName := key.ClusterID(&azureMachinePool)
 	nodePoolVMSSName := key.NodePoolVMSSName(&azureMachinePool)
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroupName, nodePoolVMSSName)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
+
 	var ids compute.VirtualMachineScaleSetVMInstanceRequiredIDs
 	{
 		var strIds []string
 		for _, i := range allWorkerInstances {
-			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, key.ClusterID(&azureMachinePool), i)
+			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, azureMachinePool.Name, i, vmss)
 			if err != nil {
 				return DeploymentUninitialized, nil
 			}

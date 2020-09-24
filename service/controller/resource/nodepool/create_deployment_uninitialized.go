@@ -126,9 +126,6 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, nil
 	}
 
-	// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
-	r.InstanceWatchdog.DeleteFailedVMSS(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
-
 	// Potential states are: Succeeded, Failed, Canceled. All other values indicate the operation is still running.
 	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations#provisioningstate-values
 	switch *currentDeployment.Properties.ProvisioningState {

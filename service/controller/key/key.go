@@ -629,6 +629,15 @@ func MachinePoolID(getter LabelsGetter) (string, error) {
 	return machinePoolID, nil
 }
 
+func NodePoolInstanceName(nodePoolName, instanceID string) string {
+	idB36, err := vmssInstanceIDBase36(instanceID)
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("nodepool-%s-%06s", nodePoolName, idB36)
+}
+
 func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
 	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMinSize]
 	size, err := strconv.Atoi(sizeStr)

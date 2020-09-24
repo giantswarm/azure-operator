@@ -286,7 +286,7 @@
         "virtualMachineProfile": {
           "osProfile": {
             "adminUsername": "[parameters('sshUser')]",
-            "computerNamePrefix": "[variables('vmssName')]",
+            "computerNamePrefix": "[concat(variables('vmssName'), '-')]",
             "customData": "[parameters('vmCustomData')]",
             "linuxConfiguration": {
               "disablePasswordAuthentication": "true",
