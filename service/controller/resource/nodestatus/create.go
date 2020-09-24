@@ -56,15 +56,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	if err = r.deleteRetiredNodes(ctx, tenantClusterK8sClient.CtrlClient(), machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList); err != nil {
+
+	if err = r.deleteRetiredNodes(ctx, tenantClusterK8sClient, machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList); err != nil {
 		return nil
 	}
 
-	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient.CtrlClient(), machinePool.Spec.ProviderIDList)
+	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Spec.ProviderIDList)
 	if err != nil {
 		if IsErrNoAvailableNodes(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "Cannot assign NodeRefs to MachinePool, no matching Nodes")

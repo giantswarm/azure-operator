@@ -5,7 +5,9 @@ import (
 	"fmt"
 	"testing"
 
+	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/micrologger/microloggertest"
+	"github.com/golang/mock/gomock"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -13,17 +15,29 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/mock/mock_tenantcluster"
 	"github.com/giantswarm/azure-operator/v4/service/unittest"
 )
 
 func Test_NodeStatusIsSaved(t *testing.T) {
 	ctx := context.Background()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	fakeClient := unittest.FakeK8sClient()
 	ctrlClient := fakeClient.CtrlClient()
 
+	mockTenantClientFactory := mock_tenantcluster.NewMockFactory(ctrl)
+	mockTenantClientFactory.
+		EXPECT().
+		GetClient(gomock.Any(), gomock.Any()).
+		Return(ctrlClient, nil).
+		Times(1)
+
 	config := Config{
-		CtrlClient: ctrlClient,
-		Logger:     microloggertest.New(),
+		CtrlClient:          ctrlClient,
+		Logger:              microloggertest.New(),
+		TenantClientFactory: mockTenantClientFactory,
 	}
 	handler, err := New(config)
 	if err != nil {
@@ -69,12 +83,23 @@ func Test_NodeStatusIsSaved(t *testing.T) {
 
 func Test_NodeStatusIsSavedWhenThereIsOneNodeNotReady(t *testing.T) {
 	ctx := context.Background()
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
 	fakeClient := unittest.FakeK8sClient()
 	ctrlClient := fakeClient.CtrlClient()
 
+	mockTenantClientFactory := mock_tenantcluster.NewMockFactory(ctrl)
+	mockTenantClientFactory.
+		EXPECT().
+		GetClient(gomock.Any(), gomock.Any()).
+		Return(ctrlClient, nil).
+		Times(1)
+
 	config := Config{
-		CtrlClient: ctrlClient,
-		Logger:     microloggertest.New(),
+		CtrlClient:          ctrlClient,
+		Logger:              microloggertest.New(),
+		TenantClientFactory: mockTenantClientFactory,
 	}
 	handler, err := New(config)
 	if err != nil {
@@ -127,10 +152,30 @@ func Test_NodeStatusIsSavedWhenThereIsOneNodeNotReady(t *testing.T) {
 }
 
 func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, replicas int) (*expcapiv1alpha3.MachinePool, *expcapzv1alpha3.AzureMachinePool, error) {
+	cluster := &capiv1alpha3.Cluster{
+		ObjectMeta: metav1.ObjectMeta{
+			Name:      "clustername",
+			Namespace: metav1.NamespaceDefault,
+			Labels: map[string]string{
+				label.Cluster:                 "clustername",
+				capiv1alpha3.ClusterLabelName: "clustername",
+			},
+		},
+		Spec: capiv1alpha3.ClusterSpec{},
+	}
+	err := ctrclient.Create(ctx, cluster)
+	if err != nil {
+		return &expcapiv1alpha3.MachinePool{}, &expcapzv1alpha3.AzureMachinePool{}, err
+	}
+
 	azureMachinePool := &expcapzv1alpha3.AzureMachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: metav1.NamespaceDefault,
 			Name:      "my-azure-machine-pool",
+			Labels: map[string]string{
+				label.Cluster:                 "clustername",
+				capiv1alpha3.ClusterLabelName: "clustername",
+			},
 		},
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
 			ProviderIDList: []string{"azure://worker1", "azure://worker2", "azure://worker3", "azure://worker4"},
@@ -144,7 +189,7 @@ func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, rep
 		},
 	}
 
-	err := ctrclient.Create(ctx, azureMachinePool)
+	err = ctrclient.Create(ctx, azureMachinePool)
 	if err != nil {
 		return &expcapiv1alpha3.MachinePool{}, &expcapzv1alpha3.AzureMachinePool{}, err
 	}
@@ -153,6 +198,10 @@ func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, rep
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: metav1.NamespaceDefault,
 			Name:      "my-machine-pool",
+			Labels: map[string]string{
+				label.Cluster:                 "clustername",
+				capiv1alpha3.ClusterLabelName: "clustername",
+			},
 		},
 		Spec: expcapiv1alpha3.MachinePoolSpec{
 			Template: capiv1alpha3.MachineTemplateSpec{
