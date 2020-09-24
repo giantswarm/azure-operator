@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"time"
 
+	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -10,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/resource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/retryresource"
+	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
@@ -105,11 +108,42 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tenantRestConfigProvider tenantcluster.Interface
+	{
+		c := tenantcluster.Config{
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+
+			CertID: certs.APICert,
+		}
+
+		tenantRestConfigProvider, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var nodestatusResource resource.Interface
 	{
 		c := nodestatus.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			CtrlClient:               config.K8sClient.CtrlClient(),
+			Logger:                   config.Logger,
+			TenantRestConfigProvider: tenantRestConfigProvider,
 		}
 
 		nodestatusResource, err = nodestatus.New(c)

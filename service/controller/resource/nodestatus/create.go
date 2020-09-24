@@ -7,6 +7,7 @@ import (
 	apicorev1 "k8s.io/api/core/v1"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/controllers/noderefutil"
+	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -30,24 +31,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	cluster, err := util.GetClusterFromMetadata(ctx, r.ctrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	// Check that the MachinePool or AzureMachinePool haven't been deleted or in the process.
 	if !machinePool.DeletionTimestamp.IsZero() || !azureMachinePool.DeletionTimestamp.IsZero() {
 		return nil
 	}
 
 	machinePool.Status.InfrastructureReady = azureMachinePool.Status.Ready
-	if !azureMachinePool.Status.Ready {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool.Status.Ready is not true yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return nil
-	}
-
 	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
-	if azureMachinePool.Status.Replicas == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool.Status.Replicas is still 0")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return nil
-	}
 
 	machinePool.Spec.ProviderIDList = azureMachinePool.Spec.ProviderIDList
 	if len(azureMachinePool.Spec.ProviderIDList) == 0 {
@@ -61,11 +56,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	if err = r.deleteRetiredNodes(ctx, r.ctrlClient, machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList); err != nil {
+	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	if err = r.deleteRetiredNodes(ctx, tenantClusterK8sClient.CtrlClient(), machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList); err != nil {
 		return nil
 	}
 
-	nodeRefsResult, err := r.getNodeReferences(ctx, r.ctrlClient, machinePool.Spec.ProviderIDList)
+	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient.CtrlClient(), machinePool.Spec.ProviderIDList)
 	if err != nil {
 		if IsErrNoAvailableNodes(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "Cannot assign NodeRefs to MachinePool, no matching Nodes")
