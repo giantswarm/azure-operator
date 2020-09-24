@@ -3,6 +3,7 @@ package nodestatus
 import (
 	"context"
 
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	apicorev1 "k8s.io/api/core/v1"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -57,7 +58,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if err != nil {
+	if tenant.IsAPINotAvailable(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
