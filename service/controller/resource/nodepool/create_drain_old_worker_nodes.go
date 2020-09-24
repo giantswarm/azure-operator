@@ -73,7 +73,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs)))
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-	allWorkerInstances, err := r.AllWorkerInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	allWorkerInstances, err := r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

@@ -46,8 +46,8 @@ func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alph
 	return instances, nil
 }
 
-func (r *Resource) AllWorkerInstances(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", vmssName))
+func (r *Resource) GetVMSSInstances(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set %#q", vmssName))
 
 	result, err := virtualMachineScaleSetVMsClient.List(ctx, resourceGroupName, vmssName, "", "", "")
 	if err != nil {
@@ -65,7 +65,7 @@ func (r *Resource) AllWorkerInstances(ctx context.Context, virtualMachineScaleSe
 		}
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", vmssName))
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d instances in the scale set %#q", len(instances), vmssName))
 
 	return instances, nil
 }

@@ -8,18 +8,6 @@
         "description": "Version of the azure operator that created the deployment."
       }
     },
-    "azureMachinePoolVersion": {
-      "type": "string",
-      "metadata": {
-        "description": "Generation field for the AzureMachinePool object that triggered this deployment."
-      }
-    },
-    "machinePoolVersion": {
-      "type": "string",
-      "metadata": {
-        "description": "Generation field for the MachinePool object that triggered this deployment."
-      }
-    },
     "clusterID": {
       "type": "string",
       "metadata": {
@@ -273,8 +261,6 @@
         "cluster-autoscaler-enabled": "true",
         "cluster-autoscaler-name": "[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
-        "capi-azure-machine-pool.giantswarm.io-version": "[parameters('azureMachinePoolVersion')]",
-        "capi-machine-pool.giantswarm.io-version": "[parameters('machinePoolVersion')]",
         "min": "[int(parameters('minReplicas'))]",
         "max": "[int(parameters('maxReplicas'))]"
       },
