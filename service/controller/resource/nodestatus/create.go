@@ -64,6 +64,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
+	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Name: machinePool.Name, Namespace: machinePool.Namespace}, &machinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenant.IsAPINotAvailable(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")

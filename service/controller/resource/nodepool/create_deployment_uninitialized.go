@@ -11,6 +11,7 @@ import (
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -188,6 +189,11 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSets
 	azureMachinePool.Spec.ProviderID = fmt.Sprintf("azure://%s", *vmss.ID)
 
 	err = r.CtrlClient.Update(ctx, azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.CtrlClient.Get(ctx, ctrlclient.ObjectKey{Name: azureMachinePool.Name, Namespace: azureMachinePool.Namespace}, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
