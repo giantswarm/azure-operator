@@ -27,11 +27,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Name: machinePool.Name, Namespace: machinePool.Namespace}, &machinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if err != nil {
@@ -45,6 +40,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// Check that the MachinePool or AzureMachinePool haven't been deleted or in the process.
 	if !machinePool.DeletionTimestamp.IsZero() || !azureMachinePool.DeletionTimestamp.IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "object is being deleted")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	}
 
@@ -64,11 +61,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	// Check that the Machine doesn't already have a NodeRefs.
-	if azureMachinePool.Status.Replicas == machinePool.Status.ReadyReplicas && len(machinePool.Status.NodeRefs) == int(machinePool.Status.ReadyReplicas) {
-		return nil
-	}
-
 	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Name: machinePool.Name, Namespace: machinePool.Namespace}, &machinePool)
 	if err != nil {
 		return microerror.Mask(err)
@@ -84,14 +76,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	if err = r.deleteRetiredNodes(ctx, tenantClusterK8sClient, machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList); err != nil {
-		return nil
+	err = r.deleteRetiredNodes(ctx, tenantClusterK8sClient, machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Spec.ProviderIDList)
 	if err != nil {
 		if IsErrNoAvailableNodes(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "Cannot assign NodeRefs to MachinePool, no matching Nodes")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 
