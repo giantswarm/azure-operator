@@ -27,6 +27,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Name: machinePool.Name, Namespace: machinePool.Namespace}, &machinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if err != nil {
