@@ -134,10 +134,10 @@ func CreateVM(ctx context.Context, location, groupName, sshKeyData string, nic n
 				},
 				StorageProfile: &compute.StorageProfile{
 					ImageReference: &compute.ImageReference{
-						Publisher: to.StringPtr("CoreOS"),
-						Offer:     to.StringPtr("CoreOS"),
-						Sku:       to.StringPtr("Stable"),
-						Version:   to.StringPtr("2135.6.0"),
+						Publisher: to.StringPtr("kinvolk"),
+						Offer:     to.StringPtr("flatcar-container-linux-free"),
+						Sku:       to.StringPtr("stable"),
+						Version:   to.StringPtr("2605.5.0"),
 					},
 				},
 				OsProfile: &compute.OSProfile{
