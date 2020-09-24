@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"strconv"
 
+	"github.com/Azure/go-autorest/autorest/to"
 	apiextannotation "github.com/giantswarm/apiextensions/v2/pkg/annotation"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
@@ -18,6 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"k8s.io/apimachinery/pkg/types"
 	"k8s.io/client-go/tools/reference"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
@@ -227,6 +229,23 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 		return expcapzv1alpha3.AzureMachinePool{}, microerror.Mask(err)
 	}
 
+	var dockerDiskSizeGB int
+	var kubeletDiskSizeGB int
+	{
+		if key.WorkerCount(cr) > 0 {
+			dockerDiskSizeGB = cr.Spec.Azure.Workers[0].DockerVolumeSizeGB
+			kubeletDiskSizeGB = cr.Spec.Azure.Workers[0].KubeletVolumeSizeGB
+		}
+
+		if dockerDiskSizeGB <= 0 {
+			dockerDiskSizeGB = 100
+		}
+
+		if kubeletDiskSizeGB <= 0 {
+			kubeletDiskSizeGB = 100
+		}
+	}
+
 	// CR didn't exist so it's created here.
 	azureMachinePool = expcapzv1alpha3.AzureMachinePool{
 		TypeMeta: metav1.TypeMeta{
@@ -248,6 +267,18 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 		Spec: expcapzv1alpha3.AzureMachinePoolSpec{
 			Location: r.location,
 			Template: expcapzv1alpha3.AzureMachineTemplate{
+				DataDisks: []capzv1alpha3.DataDisk{
+					{
+						NameSuffix: "docker",
+						DiskSizeGB: int32(dockerDiskSizeGB),
+						Lun:        to.Int32Ptr(21),
+					},
+					{
+						NameSuffix: "kubelet",
+						DiskSizeGB: int32(kubeletDiskSizeGB),
+						Lun:        to.Int32Ptr(22),
+					},
+				},
 				SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(key.AdminSSHKeyData(cr))),
 				VMSize:       vmSize,
 			},
