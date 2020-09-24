@@ -12,13 +12,13 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/resource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/retryresource"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/machinepoolownerreference"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodestatus"
@@ -123,16 +123,9 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var tenantRestConfigProvider tenantcluster.Interface
+	var tenantClientFactory tenantcluster.Factory
 	{
-		c := tenantcluster.Config{
-			CertsSearcher: certsSearcher,
-			Logger:        config.Logger,
-
-			CertID: certs.APICert,
-		}
-
-		tenantRestConfigProvider, err = tenantcluster.New(c)
+		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -141,9 +134,9 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var nodestatusResource resource.Interface
 	{
 		c := nodestatus.Config{
-			CtrlClient:               config.K8sClient.CtrlClient(),
-			Logger:                   config.Logger,
-			TenantRestConfigProvider: tenantRestConfigProvider,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
+			TenantClientFactory: tenantClientFactory,
 		}
 
 		nodestatusResource, err = nodestatus.New(c)

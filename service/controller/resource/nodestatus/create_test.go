@@ -27,11 +27,14 @@ func Test_NodeStatusIsSaved(t *testing.T) {
 	fakeClient := unittest.FakeK8sClient()
 	ctrlClient := fakeClient.CtrlClient()
 
+	fakeTenantClient := unittest.FakeK8sClient()
+	ctrlClientTenant := fakeTenantClient.CtrlClient()
+
 	mockTenantClientFactory := mock_tenantcluster.NewMockFactory(ctrl)
 	mockTenantClientFactory.
 		EXPECT().
 		GetClient(gomock.Any(), gomock.Any()).
-		Return(ctrlClient, nil).
+		Return(ctrlClientTenant, nil).
 		Times(1)
 
 	config := Config{
@@ -50,7 +53,7 @@ func Test_NodeStatusIsSaved(t *testing.T) {
 		givenReadyNode("worker3"),
 		givenReadyNode("worker4"),
 	}
-	err = givenNodes(ctx, ctrlClient, nodes)
+	err = givenNodes(ctx, ctrlClientTenant, nodes)
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -89,11 +92,14 @@ func Test_NodeStatusIsSavedWhenThereIsOneNodeNotReady(t *testing.T) {
 	fakeClient := unittest.FakeK8sClient()
 	ctrlClient := fakeClient.CtrlClient()
 
+	fakeTenantClient := unittest.FakeK8sClient()
+	ctrlClientTenant := fakeTenantClient.CtrlClient()
+
 	mockTenantClientFactory := mock_tenantcluster.NewMockFactory(ctrl)
 	mockTenantClientFactory.
 		EXPECT().
 		GetClient(gomock.Any(), gomock.Any()).
-		Return(ctrlClient, nil).
+		Return(ctrlClientTenant, nil).
 		Times(1)
 
 	config := Config{
@@ -116,7 +122,7 @@ func Test_NodeStatusIsSavedWhenThereIsOneNodeNotReady(t *testing.T) {
 	var nodes []corev1.Node
 	nodes = append(nodes, readyNodes...)
 	nodes = append(nodes, notReadyNodes...)
-	err = givenNodes(ctx, ctrlClient, nodes)
+	err = givenNodes(ctx, ctrlClientTenant, nodes)
 	if err != nil {
 		t.Fatal(err)
 	}
