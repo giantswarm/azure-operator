@@ -192,11 +192,13 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSets
 	}
 	azureMachinePool.Spec.ProviderIDList = providerIDList
 
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "updating AzureMachinePool spec", "provisionState", *vmss.ProvisioningState, "provisionState2", azureMachinePool.Status.ProvisioningState, "providerID", azureMachinePool.Spec.ProviderID)
 	err = r.CtrlClient.Update(ctx, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "updating AzureMachinePool status", "provisionState", *vmss.ProvisioningState, "provisionState2", azureMachinePool.Status.ProvisioningState, "replicas", azureMachinePool.Status.Replicas, "ready", azureMachinePool.Status.Ready)
 	err = r.CtrlClient.Status().Update(ctx, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
