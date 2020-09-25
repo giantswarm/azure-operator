@@ -121,6 +121,16 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
+	var organizationClientFactory client.OrganizationFactory
+	{
+		c := client.OrganizationFactoryConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Factory:    clientFactory,
+			Logger:     config.Logger,
+		}
+		organizationClientFactory = client.NewOrganizationFactory(c)
+	}
+
 	var randomkeysSearcher *randomkeys.Searcher
 	{
 		c := randomkeys.Config{
@@ -197,7 +207,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		Logger:    config.Logger,
 
 		Azure:            config.Azure,
-		ClientFactory:    clientFactory,
+		ClientFactory:    organizationClientFactory,
 		InstanceWatchdog: iwd,
 	}
 
@@ -246,7 +256,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
 	{
 		c := ipam.AzureMachinePoolSubnetCollectorConfig{
-			AzureClientFactory: clientFactory,
+			AzureClientFactory: organizationClientFactory,
 			CtrlClient:         config.K8sClient.CtrlClient(),
 			Logger:             config.Logger,
 		}
@@ -317,7 +327,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var cloudconfigblobResource resource.Interface
 	{
 		c := cloudconfigblob.Config{
-			ClientFactory: clientFactory,
+			ClientFactory: organizationClientFactory,
 			CtrlClient:    config.K8sClient.CtrlClient(),
 			Logger:        config.Logger,
 		}

@@ -10,32 +10,27 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
-	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/client"
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	subnet "github.com/giantswarm/azure-operator/v4/service/controller/resource/subnet/template"
 )
 
 const (
-	credentialDefaultName = "credential-default"
-	credentialNamespace   = "giantswarm"
-	mainDeploymentName    = "subnet"
+	mainDeploymentName = "subnet"
 	// Name is the identifier of the resource.
 	Name = "subnet"
 )
 
 type Config struct {
-	AzureClientsFactory *client.Factory
+	AzureClientsFactory client.OrganizationFactory
 	CtrlClient          ctrlclient.Client
 	Debugger            *debugger.Debugger
 	Logger              micrologger.Logger
@@ -43,7 +38,7 @@ type Config struct {
 
 // Resource creates a different subnet for every node pool using ARM deployments.
 type Resource struct {
-	azureClientsFactory *client.Factory
+	azureClientsFactory client.OrganizationFactory
 	ctrlClient          ctrlclient.Client
 	debugger            *debugger.Debugger
 	logger              micrologger.Logger
@@ -55,9 +50,6 @@ type StorageAccountIpRule struct {
 }
 
 func New(config Config) (*Resource, error) {
-	if config.AzureClientsFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientsFactory must not be empty", config)
-	}
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
@@ -86,27 +78,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, &azureCluster)
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(credentialSecret.Namespace, credentialSecret.Name)
+	natGatewaysClient, err := r.azureClientsFactory.GetNatGatewaysClient(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	natGatewaysClient, err := r.azureClientsFactory.GetNatGatewaysClient(credentialSecret.Namespace, credentialSecret.Name)
+	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -450,59 +437,4 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-func (r *Resource) getCredentialSecret(ctx context.Context, cluster key.LabelsGetter) (*v1alpha1.CredentialSecret, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
-
-	organization, exists := cluster.GetLabels()[label.Organization]
-	if !exists {
-		return nil, microerror.Mask(missingOrganizationLabel)
-	}
-
-	secretList := &corev1.SecretList{}
-	{
-		err := r.ctrlClient.List(
-			ctx,
-			secretList,
-			ctrlclient.InNamespace(credentialNamespace),
-			ctrlclient.MatchingLabels{
-				label.App:          "credentiald",
-				label.Organization: organization,
-			},
-		)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	// We currently only support one credential secret per organization.
-	// If there are more than one, return an error.
-	if len(secretList.Items) > 1 {
-		return nil, microerror.Mask(tooManyCredentialsError)
-	}
-
-	// If one credential secret is found, we use that.
-	if len(secretList.Items) == 1 {
-		secret := secretList.Items[0]
-
-		credentialSecret := &v1alpha1.CredentialSecret{
-			Namespace: secret.Namespace,
-			Name:      secret.Name,
-		}
-
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
-
-		return credentialSecret, nil
-	}
-
-	// If no credential secrets are found, we use the default.
-	credentialSecret := &v1alpha1.CredentialSecret{
-		Namespace: credentialNamespace,
-		Name:      credentialDefaultName,
-	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
-
-	return credentialSecret, nil
 }

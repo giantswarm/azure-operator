@@ -8,11 +8,11 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -34,11 +34,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	if machinePool == nil {
 		return microerror.Mask(ownerReferenceNotSet)
-	}
-
-	credentialSecret, err := r.getCredentialSecret(ctx, &azureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	blobName := key.BootstrapBlobName(azureMachinePool)
@@ -63,7 +58,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var containerURL azblob.ContainerURL
 	{
-		containerURL, err = r.getContainerURL(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
+		containerURL, err = r.getContainerURL(ctx, &azureMachinePool, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
 		if IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -129,10 +124,10 @@ func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expc
 	return sparkCR.Status.DataSecretName, nil
 }
 
-func (r *Resource) getContainerURL(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
+func (r *Resource) getContainerURL(ctx context.Context, azureMachinePool *v1alpha3.AzureMachinePool, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Finding ContainerURL to upload bootstrap config")
 
-	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return azblob.ContainerURL{}, microerror.Mask(err)
 	}
