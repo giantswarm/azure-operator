@@ -302,13 +302,15 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 	for _, n := range nodes {
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainer config for tenant cluster node %q", *n.Name))
 
+		name := nodeName(key.ClusterID(&cr), *n.InstanceID)
+
 		c := &corev1alpha1.DrainerConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Labels: map[string]string{
 					label.Cluster:                 key.ClusterID(&cr),
 					capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 				},
-				Name:      *n.Name,
+				Name:      name,
 				Namespace: key.ClusterID(&cr),
 			},
 			Spec: corev1alpha1.DrainerConfigSpec{
@@ -320,7 +322,7 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 						ID: key.ClusterID(&cr),
 					},
 					Node: corev1alpha1.DrainerConfigSpecGuestNode{
-						Name: *n.Name,
+						Name: name,
 					},
 				},
 				VersionBundle: corev1alpha1.DrainerConfigSpecVersionBundle{
@@ -331,12 +333,12 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 
 		err := r.ctrlClient.Create(ctx, c)
 		if errors.IsAlreadyExists(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create drainer config for tenant cluster node %q", *n.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create drainer config for tenant cluster node %q", name))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created drainer config for tenant cluster node %q", *n.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created drainer config for tenant cluster node %q", name))
 		}
 	}
 
@@ -467,4 +469,13 @@ func intSliceToStringSlice(xs []int) []string {
 
 func toInt32P(i int32) *int32 {
 	return &i
+}
+
+func nodeName(clusterID, instanceID string) string {
+	i, err := strconv.ParseUint(instanceID, 10, 64)
+	if err != nil {
+		panic(err)
+	}
+
+	return fmt.Sprintf("%s-worker-%s-%06s", clusterID, clusterID, strconv.FormatUint(i, 36))
 }

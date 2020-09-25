@@ -6,7 +6,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: c6fme
       giantswarm.io/cluster: c6fme
-    name: c6fme-node-0
+    name: c6fme-worker-c6fme-000000
     namespace: c6fme
   spec:
     guest:
@@ -15,7 +15,7 @@ items:
           endpoint: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
         id: c6fme
       node:
-        name: c6fme-node-0
+        name: c6fme-worker-c6fme-000000
     versionBundle:
       version: 0.2.0
 - apiVersion: core.giantswarm.io/v1alpha1
@@ -24,7 +24,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: c6fme
       giantswarm.io/cluster: c6fme
-    name: c6fme-node-1
+    name: c6fme-worker-c6fme-000001
     namespace: c6fme
   spec:
     guest:
@@ -33,7 +33,7 @@ items:
           endpoint: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
         id: c6fme
       node:
-        name: c6fme-node-1
+        name: c6fme-worker-c6fme-000001
     versionBundle:
       version: 0.2.0
 - apiVersion: core.giantswarm.io/v1alpha1
@@ -42,7 +42,7 @@ items:
     labels:
       cluster.x-k8s.io/cluster-name: c6fme
       giantswarm.io/cluster: c6fme
-    name: c6fme-node-2
+    name: c6fme-worker-c6fme-000002
     namespace: c6fme
   spec:
     guest:
@@ -51,7 +51,7 @@ items:
           endpoint: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
         id: c6fme
       node:
-        name: c6fme-node-2
+        name: c6fme-worker-c6fme-000002
     versionBundle:
       version: 0.2.0
 kind: DrainerConfigList

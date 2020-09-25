@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"io/ioutil"
 	"path/filepath"
+	"strconv"
 	"testing"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
@@ -594,8 +595,10 @@ func workersAsVMSSNodes(cr providerv1alpha1.AzureConfig) azure.VMSSNodes {
 	var nodes azure.VMSSNodes
 	for i := 0; i < key.WorkerCount(cr); i++ {
 		nodeName := fmt.Sprintf("%s-node-%d", key.ClusterID(&cr), i)
+		id := strconv.Itoa(i)
 		n := compute.VirtualMachineScaleSetVM{
-			Name: &nodeName,
+			InstanceID: &id,
+			Name:       &nodeName,
 		}
 		nodes = append(nodes, n)
 	}
