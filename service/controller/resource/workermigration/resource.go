@@ -2,6 +2,7 @@ package workermigration
 
 import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -16,6 +17,7 @@ const (
 )
 
 type Config struct {
+	CertsSearcher certs.Interface
 	ClientFactory *azureclient.Factory
 	CtrlClient    client.Client
 	Logger        micrologger.Logger
@@ -47,11 +49,17 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
 	}
 
+	tenantClientFactory, err := tenantclient.NewFactory(config.CertsSearcher, config.Logger)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	newResource := &Resource{
-		clientFactory: config.ClientFactory,
-		ctrlClient:    config.CtrlClient,
-		logger:        config.Logger,
-		wrapAzureAPI:  azure.GetAPI,
+		clientFactory:       config.ClientFactory,
+		ctrlClient:          config.CtrlClient,
+		logger:              config.Logger,
+		tenantClientFactory: tenantClientFactory,
+		wrapAzureAPI:        azure.GetAPI,
 
 		location: config.Location,
 	}
