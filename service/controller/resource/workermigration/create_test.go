@@ -570,53 +570,6 @@ func newFakeClient() client.Client {
 	return fake.NewFakeClientWithScheme(scheme)
 }
 
-func newTenantFakeClientWithNodes(t *testing.T, cr *providerv1alpha1.AzureConfig) client.Client {
-	t.Helper()
-
-	scheme := runtime.NewScheme()
-
-	err := corev1.AddToScheme(scheme)
-	if err != nil {
-		panic(err)
-	}
-
-	ctrlClient := fake.NewFakeClientWithScheme(scheme)
-
-	n := &corev1.Node{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Node",
-			APIVersion: "core/v1",
-		},
-		ObjectMeta: metav1.ObjectMeta{
-			Name: fmt.Sprintf("%s-master-%d", key.ClusterID(cr), 0),
-		},
-	}
-
-	err = ctrlClient.Create(context.Background(), n)
-	if err != nil {
-		t.Fatal(err)
-	}
-
-	for i := 0; i < key.WorkerCount(*cr); i++ {
-		n := &corev1.Node{
-			TypeMeta: metav1.TypeMeta{
-				Kind:       "Node",
-				APIVersion: "core/v1",
-			},
-			ObjectMeta: metav1.ObjectMeta{
-				Name: fmt.Sprintf("%s-node-%d", key.ClusterID(cr), i),
-			},
-		}
-
-		err = ctrlClient.Create(context.Background(), n)
-		if err != nil {
-			t.Fatal(err)
-		}
-	}
-
-	return ctrlClient
-}
-
 func setDrainerConfigsAsDrained(t *testing.T, ctrlClient client.Client, cr *providerv1alpha1.AzureConfig) {
 	o := client.MatchingLabels{
 		capiv1alpha3.ClusterLabelName: key.ClusterID(cr),

@@ -457,21 +457,6 @@ func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.Az
 	return spark, nil
 }
 
-func (r *Resource) getClusterForAzureConfig(ctx context.Context, cr providerv1alpha1.AzureConfig) (capiv1alpha3.Cluster, error) {
-	var cluster capiv1alpha3.Cluster
-
-	nsName := types.NamespacedName{
-		Name:      cr.GetName(),
-		Namespace: cr.GetNamespace(),
-	}
-	err := r.ctrlClient.Get(ctx, nsName, &cluster)
-	if err != nil {
-		return capiv1alpha3.Cluster{}, microerror.Mask(err)
-	}
-
-	return cluster, nil
-}
-
 func intSliceToStringSlice(xs []int) []string {
 	ys := make([]string, 0, len(xs))
 	for _, x := range xs {
