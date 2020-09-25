@@ -300,9 +300,9 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 	}
 
 	for _, n := range nodes {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainer config for tenant cluster node %q", *n.Name))
-
 		name := nodeName(key.ClusterID(&cr), *n.InstanceID)
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainer config for tenant cluster node %q", name))
 
 		c := &corev1alpha1.DrainerConfig{
 			ObjectMeta: metav1.ObjectMeta{
