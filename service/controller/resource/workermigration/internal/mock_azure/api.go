@@ -6,9 +6,11 @@ package mock_azure
 
 import (
 	context "context"
-	azure "github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
-	gomock "github.com/golang/mock/gomock"
 	reflect "reflect"
+
+	gomock "github.com/golang/mock/gomock"
+
+	azure "github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
 )
 
 // MockAPI is a mock of API interface
