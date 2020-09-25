@@ -3,10 +3,13 @@ package nodestatus
 import (
 	"context"
 
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	apicorev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/controllers/noderefutil"
+	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -30,21 +33,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	cluster, err := util.GetClusterFromMetadata(ctx, r.ctrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	// Check that the MachinePool or AzureMachinePool haven't been deleted or in the process.
 	if !machinePool.DeletionTimestamp.IsZero() || !azureMachinePool.DeletionTimestamp.IsZero() {
-		return nil
-	}
-
-	machinePool.Status.InfrastructureReady = azureMachinePool.Status.Ready
-	if !azureMachinePool.Status.Ready {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool.Status.Ready is not true yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return nil
-	}
-
-	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
-	if azureMachinePool.Status.Replicas == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool.Status.Replicas is still 0")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "object is being deleted")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	}
@@ -56,39 +52,59 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	// Check that the Machine doesn't already have a NodeRefs.
-	if machinePool.Status.Replicas == machinePool.Status.ReadyReplicas && len(machinePool.Status.NodeRefs) == int(machinePool.Status.ReadyReplicas) {
+	err = r.ctrlClient.Update(ctx, &machinePool)
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
 		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
 	}
 
-	if err = r.deleteRetiredNodes(ctx, r.ctrlClient, machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList); err != nil {
-		return nil
+	err = r.ctrlClient.Get(ctx, ctrlclient.ObjectKey{Name: machinePool.Name, Namespace: machinePool.Namespace}, &machinePool)
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	nodeRefsResult, err := r.getNodeReferences(ctx, r.ctrlClient, machinePool.Spec.ProviderIDList)
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if tenant.IsAPINotAvailable(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.deleteRetiredNodes(ctx, tenantClusterK8sClient, machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Spec.ProviderIDList)
 	if err != nil {
 		if IsErrNoAvailableNodes(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "Cannot assign NodeRefs to MachinePool, no matching Nodes")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
 		}
 
 		return microerror.Mask(err)
 	}
 
+	machinePool.Status.InfrastructureReady = azureMachinePool.Status.Ready
+	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
 	machinePool.Status.ReadyReplicas = int32(nodeRefsResult.ready)
 	machinePool.Status.AvailableReplicas = int32(nodeRefsResult.available)
 	machinePool.Status.UnavailableReplicas = machinePool.Status.Replicas - machinePool.Status.AvailableReplicas
 	machinePool.Status.NodeRefs = nodeRefsResult.references
 
-	// First we update the spec field (that way `ProviderIDList` is updated) then the status field.
-	// Making it the other way around would return early and never update the spec field.
-	err = r.ctrlClient.Update(ctx, &machinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	err = r.ctrlClient.Status().Update(ctx, &machinePool)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 

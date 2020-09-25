@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"time"
 
+	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -16,6 +18,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/machinepoolownerreference"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodestatus"
@@ -105,11 +108,35 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tenantClientFactory tenantcluster.Factory
+	{
+		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var nodestatusResource resource.Interface
 	{
 		c := nodestatus.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
+			TenantClientFactory: tenantClientFactory,
 		}
 
 		nodestatusResource, err = nodestatus.New(c)
