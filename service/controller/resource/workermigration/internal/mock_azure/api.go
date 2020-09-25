@@ -6,11 +6,9 @@ package mock_azure
 
 import (
 	context "context"
-	reflect "reflect"
-
-	gomock "github.com/golang/mock/gomock"
-
 	azure "github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
+	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 )
 
 // MockAPI is a mock of API interface
@@ -63,4 +61,19 @@ func (m *MockAPI) DeleteVMSS(ctx context.Context, resourceGroupName, vmssName st
 func (mr *MockAPIMockRecorder) DeleteVMSS(ctx, resourceGroupName, vmssName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteVMSS", reflect.TypeOf((*MockAPI)(nil).DeleteVMSS), ctx, resourceGroupName, vmssName)
+}
+
+// ListVMSSNodes mocks base method
+func (m *MockAPI) ListVMSSNodes(ctx context.Context, resourceGroupName, vmssName string) (azure.VMSSNodes, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListVMSSNodes", ctx, resourceGroupName, vmssName)
+	ret0, _ := ret[0].(azure.VMSSNodes)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListVMSSNodes indicates an expected call of ListVMSSNodes
+func (mr *MockAPIMockRecorder) ListVMSSNodes(ctx, resourceGroupName, vmssName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVMSSNodes", reflect.TypeOf((*MockAPI)(nil).ListVMSSNodes), ctx, resourceGroupName, vmssName)
 }

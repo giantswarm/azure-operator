@@ -3,6 +3,7 @@ package azure
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
@@ -47,4 +48,28 @@ func (a *api) DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string
 	}
 
 	return nil
+}
+
+func (a *api) ListVMSSNodes(ctx context.Context, resourceGroupName, vmssName string) (VMSSNodes, error) {
+	client, err := a.clientFactory.GetVirtualMachineScaleSetVMsClient(a.credentials.Namespace, a.credentials.Name)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	result, err := client.List(ctx, resourceGroupName, vmssName, "", "", "")
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var vms []compute.VirtualMachineScaleSetVM
+	for result.NotDone() {
+		vms = append(vms, result.Values()...)
+
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return vms, nil
 }

@@ -101,7 +101,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found that node pool workers are ready")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers have drainerconfig cr")
-	err = r.ensureDrainerConfigsExists(ctx, cr)
+	err = r.ensureDrainerConfigsExists(ctx, azureAPI, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -293,25 +293,14 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 	return azureMachinePool, nil
 }
 
-func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	cluster, err := r.getClusterForAzureConfig(ctx, cr)
+func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azure.API, cr providerv1alpha1.AzureConfig) error {
+	nodes, err := azureAPI.ListVMSSNodes(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	tc, err := r.tenantClientFactory.GetClient(ctx, &cluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	var nodeList corev1.NodeList
-	err = tc.List(ctx, &nodeList)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	for _, n := range nodeList.Items {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainer config for tenant cluster node %q", n.Name))
+	for _, n := range nodes {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainer config for tenant cluster node %q", *n.Name))
 
 		c := &corev1alpha1.DrainerConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -319,7 +308,7 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1
 					label.Cluster:                 key.ClusterID(&cr),
 					capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
 				},
-				Name:      n.Name,
+				Name:      *n.Name,
 				Namespace: key.ClusterID(&cr),
 			},
 			Spec: corev1alpha1.DrainerConfigSpec{
@@ -331,7 +320,7 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1
 						ID: key.ClusterID(&cr),
 					},
 					Node: corev1alpha1.DrainerConfigSpecGuestNode{
-						Name: n.Name,
+						Name: *n.Name,
 					},
 				},
 				VersionBundle: corev1alpha1.DrainerConfigSpecVersionBundle{
@@ -342,12 +331,12 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, cr providerv1
 
 		err := r.ctrlClient.Create(ctx, c)
 		if errors.IsAlreadyExists(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create drainer config for tenant cluster node %q", n.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create drainer config for tenant cluster node %q", *n.Name))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created drainer config for tenant cluster node %q", n.Name))
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created drainer config for tenant cluster node %q", *n.Name))
 		}
 	}
 

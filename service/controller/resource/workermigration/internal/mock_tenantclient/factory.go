@@ -5,10 +5,9 @@
 package mock_tenantclient
 
 import (
-	"context"
-	"reflect"
-
+	context "context"
 	gomock "github.com/golang/mock/gomock"
+	reflect "reflect"
 	v1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	client "sigs.k8s.io/controller-runtime/pkg/client"
 )

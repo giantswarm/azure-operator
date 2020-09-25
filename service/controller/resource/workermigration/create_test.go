@@ -160,7 +160,6 @@ func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
 	cr := o.(*providerv1alpha1.AzureConfig)
 
 	ensureNodePoolIsReady(t, ctrlClient, cr)
-	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
 
 	mockAzureAPI.
 		EXPECT().
@@ -173,10 +172,10 @@ func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
 		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(0)
 
-	mockTenantClientFactory.
+	mockAzureAPI.
 		EXPECT().
-		GetClient(gomock.Any(), gomock.Any()).
-		Return(tcCtrlClient, nil).
+		ListVMSSNodes(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(workersAsVMSSNodes(*cr), nil).
 		Times(1)
 
 	err = r.EnsureCreated(context.Background(), cr)
@@ -237,7 +236,6 @@ func TestVMSSIsNotDeletedBeforeDrainingIsDone(t *testing.T) {
 	cr := o.(*providerv1alpha1.AzureConfig)
 
 	ensureNodePoolIsReady(t, ctrlClient, cr)
-	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
 
 	mockAzureAPI.
 		EXPECT().
@@ -250,10 +248,10 @@ func TestVMSSIsNotDeletedBeforeDrainingIsDone(t *testing.T) {
 		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(0)
 
-	mockTenantClientFactory.
+	mockAzureAPI.
 		EXPECT().
-		GetClient(gomock.Any(), gomock.Any()).
-		Return(tcCtrlClient, nil).
+		ListVMSSNodes(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(workersAsVMSSNodes(*cr), nil).
 		Times(1)
 
 	err = r.EnsureCreated(context.Background(), cr)
@@ -315,7 +313,6 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 
 	ensureNodePoolIsReady(t, ctrlClient, cr)
 	setDrainerConfigsAsDrained(t, ctrlClient, cr)
-	tcCtrlClient := newTenantFakeClientWithNodes(t, cr)
 
 	mockAzureAPI.
 		EXPECT().
@@ -328,10 +325,10 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(1)
 
-	mockTenantClientFactory.
+	mockAzureAPI.
 		EXPECT().
-		GetClient(gomock.Any(), gomock.Any()).
-		Return(tcCtrlClient, nil).
+		ListVMSSNodes(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(workersAsVMSSNodes(*cr), nil).
 		Times(1)
 
 	err = r.EnsureCreated(context.Background(), cr)
@@ -585,6 +582,21 @@ func newTenantFakeClientWithNodes(t *testing.T, cr *providerv1alpha1.AzureConfig
 
 	ctrlClient := fake.NewFakeClientWithScheme(scheme)
 
+	n := &corev1.Node{
+		TypeMeta: metav1.TypeMeta{
+			Kind:       "Node",
+			APIVersion: "core/v1",
+		},
+		ObjectMeta: metav1.ObjectMeta{
+			Name: fmt.Sprintf("%s-master-%d", key.ClusterID(cr), 0),
+		},
+	}
+
+	err = ctrlClient.Create(context.Background(), n)
+	if err != nil {
+		t.Fatal(err)
+	}
+
 	for i := 0; i < key.WorkerCount(*cr); i++ {
 		n := &corev1.Node{
 			TypeMeta: metav1.TypeMeta{
@@ -596,7 +608,7 @@ func newTenantFakeClientWithNodes(t *testing.T, cr *providerv1alpha1.AzureConfig
 			},
 		}
 
-		err := ctrlClient.Create(context.Background(), n)
+		err = ctrlClient.Create(context.Background(), n)
 		if err != nil {
 			t.Fatal(err)
 		}
@@ -623,4 +635,17 @@ func setDrainerConfigsAsDrained(t *testing.T, ctrlClient client.Client, cr *prov
 			t.Fatal(err)
 		}
 	}
+}
+
+func workersAsVMSSNodes(cr providerv1alpha1.AzureConfig) azure.VMSSNodes {
+	var nodes azure.VMSSNodes
+	for i := 0; i < key.WorkerCount(cr); i++ {
+		nodeName := fmt.Sprintf("%s-node-%d", key.ClusterID(&cr), i)
+		n := compute.VirtualMachineScaleSetVM{
+			Name: &nodeName,
+		}
+		nodes = append(nodes, n)
+	}
+
+	return nodes
 }

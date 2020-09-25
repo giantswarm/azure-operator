@@ -7,6 +7,7 @@ import (
 )
 
 type VMSS *compute.VirtualMachineScaleSet
+type VMSSNodes []compute.VirtualMachineScaleSetVM
 
 type API interface {
 	// GetVMSS gets VMSS metadata from Azure API.
@@ -14,4 +15,7 @@ type API interface {
 
 	// DeleteVMSS deletes the corresponding VMSS via Azure API.
 	DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string) error
+
+	// ListVMSSNodes lists VMs in given VMSS via Azure API.
+	ListVMSSNodes(ctx context.Context, resourceGroupName, vmssName string) (VMSSNodes, error)
 }
