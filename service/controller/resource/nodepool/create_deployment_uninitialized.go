@@ -11,6 +11,7 @@ import (
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -180,22 +181,27 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSets
 		return microerror.Mask(err)
 	}
 
-	provisioningState := capzv1alpha3.VMState(*vmss.ProvisioningState)
-	azureMachinePool.Status.ProvisioningState = &provisioningState
-	azureMachinePool.Status.Ready = provisioningState == "Succeeded"
-	azureMachinePool.Status.Replicas = int32(len(instances))
-	azureMachinePool.Spec.ProviderID = fmt.Sprintf("azure://%s", *vmss.ID)
-
 	providerIDList := make([]string, len(instances))
 	for i, vm := range instances {
 		providerIDList[i] = fmt.Sprintf("azure://%s", *vm.ID)
 	}
 	azureMachinePool.Spec.ProviderIDList = providerIDList
+	azureMachinePool.Spec.ProviderID = fmt.Sprintf("azure://%s", *vmss.ID)
 
 	err = r.CtrlClient.Update(ctx, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	err = r.CtrlClient.Get(ctx, ctrlclient.ObjectKey{Name: azureMachinePool.Name, Namespace: azureMachinePool.Namespace}, azureMachinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	provisioningState := capzv1alpha3.VMState(*vmss.ProvisioningState)
+	azureMachinePool.Status.ProvisioningState = &provisioningState
+	azureMachinePool.Status.Ready = provisioningState == "Succeeded"
+	azureMachinePool.Status.Replicas = int32(len(instances))
 
 	err = r.CtrlClient.Status().Update(ctx, azureMachinePool)
 	if err != nil {

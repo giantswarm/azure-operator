@@ -73,6 +73,7 @@ rules:
       - exp.cluster.x-k8s.io
     resources:
       - machinepools
+      - machinepools/status
     verbs:
       - "*"
   # The operator needs read and write access to all provider specific
