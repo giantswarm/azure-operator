@@ -175,6 +175,16 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 		}
 	}
 
+	var organizationClientFactory client.OrganizationFactory
+	{
+		c := client.OrganizationFactoryConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Factory:    clientFactory,
+			Logger:     config.Logger,
+		}
+		organizationClientFactory = client.NewOrganizationFactory(c)
+	}
+
 	var newDebugger *debugger.Debugger
 	{
 		c := debugger.Config{
@@ -190,7 +200,7 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	var subnetResource resource.Interface
 	{
 		c := subnet.Config{
-			AzureClientsFactory: clientFactory,
+			AzureClientsFactory: organizationClientFactory,
 			CtrlClient:          config.K8sClient.CtrlClient(),
 			Debugger:            newDebugger,
 			Logger:              config.Logger,

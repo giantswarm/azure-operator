@@ -117,12 +117,7 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 }
 
 func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (int32, error) {
-	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-	if err != nil {
-		return -1, microerror.Mask(err)
-	}
-
-	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, cluster.ObjectMeta)
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}

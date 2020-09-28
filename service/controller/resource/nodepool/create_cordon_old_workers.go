@@ -6,7 +6,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/k8sclient/v2/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -41,11 +40,6 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
 	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
 	if tenantcluster.IsTimeout(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
@@ -61,7 +55,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
 
-	oldNodes, newNodes, err := r.sortNodesByTenantVMState(ctx, credentialSecret, tenantClusterK8sClient, azureMachinePool, key.NodePoolInstanceName)
+	oldNodes, newNodes, err := r.sortNodesByTenantVMState(ctx, tenantClusterK8sClient, &azureMachinePool, key.NodePoolInstanceName)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -120,18 +114,18 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClie
 	return count, nil
 }
 
-func (r *Resource) sortNodesByTenantVMState(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, tenantClusterK8sClient k8sclient.Interface, azureMachinePool v1alpha3.AzureMachinePool, instanceNameFunc func(nodePoolId, instanceID string) string) ([]corev1.Node, []corev1.Node, error) {
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, azureMachinePool *v1alpha3.AzureMachinePool, instanceNameFunc func(nodePoolId, instanceID string) string) ([]corev1.Node, []corev1.Node, error) {
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
 
-	vmss, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
@@ -149,7 +143,7 @@ func (r *Resource) sortNodesByTenantVMState(ctx context.Context, credentialSecre
 	{
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}

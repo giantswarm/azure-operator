@@ -17,11 +17,11 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
-	groupsClient, err := r.ClientFactory.GetGroupsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
