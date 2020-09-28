@@ -192,21 +192,9 @@ func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr provider
 }
 
 func (r *Resource) deleteDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	o := client.MatchingLabels{
-		capiv1alpha3.ClusterLabelName: key.ClusterID(&cr),
-	}
-
-	var dcList corev1alpha1.DrainerConfigList
-	err := r.ctrlClient.List(ctx, &dcList, o)
+	err := r.ctrlClient.DeleteAllOf(ctx, &corev1alpha1.DrainerConfig{}, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterID(&cr)})
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	for _, dc := range dcList.Items {
-		err = r.ctrlClient.Delete(ctx, &dc)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	return nil
