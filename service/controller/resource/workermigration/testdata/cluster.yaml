@@ -9,7 +9,7 @@ metadata:
     giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme
-  namespace: default
+  namespace: giantswarm
 spec:
   clusterNetwork:
     apiServerPort: 443

@@ -1,11 +1,13 @@
 apiVersion: provider.giantswarm.io/v1alpha1
 kind: AzureConfig
 metadata:
+  annotations:
+    cluster.giantswarm.io/description: "dummy cluster"
   finalizers:
   - operatorkit.giantswarm.io/azure-operator
   - operatorkit.giantswarm.io/legacy-controller
   labels:
-    giantswarm.io/organization: ""
+    giantswarm.io/organization: giantswarm
     azure-operator.giantswarm.io/version: 4.2.0
     giantswarm.io/cluster: c6fme
     release.giantswarm.io/version: 12.0.0

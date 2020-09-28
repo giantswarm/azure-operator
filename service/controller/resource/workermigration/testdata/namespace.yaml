@@ -1,13 +1,26 @@
 apiVersion: v1
-kind: Namespace
-metadata:
-  labels:
-    app: master
-    cluster: c6fme
-    customer: giantswarm
-    giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: giantswarm
-  name: c6fme
-spec:
-  finalizers:
-  - kubernetes
+items:
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    labels:
+      app: master
+      cluster: c6fme
+      customer: giantswarm
+      giantswarm.io/cluster: c6fme
+      giantswarm.io/organization: giantswarm
+    name: c6fme
+  spec:
+    finalizers:
+    - kubernetes
+- apiVersion: v1
+  kind: Namespace
+  metadata:
+    labels:
+      customer: giantswarm
+      giantswarm.io/organization: giantswarm
+    name: giantswarm
+  spec:
+    finalizers:
+    - kubernetes
+kind: NamespaceList

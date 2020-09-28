@@ -416,6 +416,17 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 			continue
 		}
 
+		if o.GetObjectKind().GroupVersionKind().Kind == "NamespaceList" {
+			lst := o.(*corev1.NamespaceList)
+			for _, i := range lst.Items {
+				err = client.Create(context.Background(), &i)
+				if err != nil {
+					t.Fatalf("failed to create object from input file %s: %#v", f, err)
+				}
+			}
+			continue
+		}
+
 		err = client.Create(context.Background(), o)
 		if err != nil {
 			t.Fatalf("failed to create object from input file %s: %#v", f, err)
@@ -428,7 +439,7 @@ func ensureNodePoolIsReady(t *testing.T, ctrlClient client.Client, cr *providerv
 
 	var azureMachinePool expcapzv1alpha3.AzureMachinePool
 	{
-		o := client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}
+		o := client.ObjectKey{Namespace: key.OrganizationID(cr), Name: cr.Name}
 		err := ctrlClient.Get(context.Background(), o, &azureMachinePool)
 		if err != nil {
 			t.Fatal(err)
@@ -444,7 +455,7 @@ func ensureNodePoolIsReady(t *testing.T, ctrlClient client.Client, cr *providerv
 
 	var machinePool expcapiv1alpha3.MachinePool
 	{
-		o := client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}
+		o := client.ObjectKey{Namespace: key.OrganizationID(cr), Name: cr.Name}
 		err := ctrlClient.Get(context.Background(), o, &machinePool)
 		if err != nil {
 			t.Fatal(err)
@@ -500,6 +511,8 @@ func loadCR(fName string) (runtime.Object, error) {
 		obj = new(expcapiv1alpha3.MachinePool)
 	case "Namespace":
 		obj = new(corev1.Namespace)
+	case "NamespaceList":
+		obj = new(corev1.NamespaceList)
 	case "Spark":
 		obj = new(corev1alpha1.Spark)
 	default:

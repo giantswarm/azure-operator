@@ -205,7 +205,7 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
-		Namespace: cr.GetNamespace(),
+		Namespace: key.OrganizationID(&cr),
 	}
 	err := r.ctrlClient.Get(ctx, nsName, &azureMachinePool)
 	if err == nil {
@@ -238,7 +238,7 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 	azureMachinePool = expcapzv1alpha3.AzureMachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: cr.Namespace, // TODO: Adjust for CR namespacing.
+			Namespace: key.OrganizationID(&cr),
 			Labels: map[string]string{
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.Cluster:                 key.ClusterID(&cr),
@@ -334,7 +334,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
-		Namespace: cr.GetNamespace(),
+		Namespace: key.OrganizationID(&cr),
 	}
 	err := r.ctrlClient.Get(ctx, nsName, &machinePool)
 	if err == nil {
@@ -363,7 +363,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 	mp := expcapiv1alpha3.MachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: cr.Namespace, // TODO: Adjust for CR namespacing.
+			Namespace: key.OrganizationID(&cr),
 			Labels: map[string]string{
 				apiextlabel.AzureOperatorVersion: key.OperatorVersion(&cr),
 				apiextlabel.Cluster:              key.ClusterID(&cr),
@@ -402,7 +402,7 @@ func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.Az
 
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
-		Namespace: cr.GetNamespace(),
+		Namespace: key.OrganizationID(&cr),
 	}
 	err := r.ctrlClient.Get(ctx, nsName, &spark)
 	if err == nil {
@@ -417,7 +417,7 @@ func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.Az
 	spark = corev1alpha1.Spark{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: cr.Namespace, // TODO: Adjust for CR namespacing.
+			Namespace: key.OrganizationID(&cr),
 			Labels: map[string]string{
 				apiextlabel.Cluster:           key.ClusterID(&cr),
 				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),

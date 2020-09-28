@@ -2,15 +2,15 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: AzureCluster
 metadata:
   annotations:
-    cluster.giantswarm.io/description: ""
+    cluster.giantswarm.io/description: "dummy cluster"
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
     cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: ""
+    giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme
-  namespace: default
+  namespace: giantswarm
 spec:
   controlPlaneEndpoint:
     host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
