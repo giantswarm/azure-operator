@@ -42,7 +42,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/afero v1.3.4
-	github.com/spf13/viper v1.6.3
+	github.com/spf13/viper v1.7.1
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200814200057-3d37ad5750ed // indirect
 	k8s.io/api v0.18.9
