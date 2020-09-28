@@ -378,7 +378,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 		},
 		Spec: expcapiv1alpha3.MachinePoolSpec{
 			ClusterName:    key.ClusterID(&cr),
-			Replicas:       toInt32P(int32(replicas)),
+			Replicas:       to.Int32Ptr(int32(replicas)),
 			FailureDomains: intSliceToStringSlice(key.AvailabilityZones(cr, r.location)),
 			Template: capiv1alpha3.MachineTemplateSpec{
 				Spec: capiv1alpha3.MachineSpec{
@@ -441,10 +441,6 @@ func intSliceToStringSlice(xs []int) []string {
 		ys = append(ys, strconv.Itoa(x))
 	}
 	return ys
-}
-
-func toInt32P(i int32) *int32 {
-	return &i
 }
 
 func nodeName(clusterID, instanceID string) string {
