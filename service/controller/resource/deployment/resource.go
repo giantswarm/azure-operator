@@ -38,7 +38,7 @@ type Config struct {
 	Logger           micrologger.Logger
 
 	Azure                      setting.Azure
-	ClientFactory              *client.Factory
+	ClientFactory              client.OrganizationFactory
 	ControlPlaneSubscriptionID string
 	Debug                      setting.Debug
 }
@@ -50,7 +50,7 @@ type Resource struct {
 	logger           micrologger.Logger
 
 	azure                      setting.Azure
-	clientFactory              *client.Factory
+	clientFactory              client.OrganizationFactory
 	controlPlaneSubscriptionID string
 	debug                      setting.Debug
 }
@@ -73,12 +73,8 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
-	}
-	if config.ClientFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.ClientFactory must not be empty", config)
 	}
 	if config.ControlPlaneSubscriptionID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ControlPlaneSubscriptionID must not be empty", config)
@@ -112,7 +108,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(cr.Spec.Azure.CredentialSecret.Namespace, cr.Spec.Azure.CredentialSecret.Name)
+	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}

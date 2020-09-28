@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/randomkeys/v2"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
@@ -25,7 +26,6 @@ const (
 	Name = "spark"
 
 	credentialDefaultName = "credential-default"
-	credentialNamespace   = "giantswarm"
 )
 
 type Config struct {
@@ -182,7 +182,7 @@ func (r *Resource) toEncrypterObject(ctx context.Context, secretName string) (en
 	return enc, nil
 }
 
-func (r *Resource) getCredentialSecret(ctx context.Context, azureMachinePool key.LabelsGetter) (*v1alpha1.CredentialSecret, error) {
+func (r *Resource) getCredentialSecret(ctx context.Context, azureMachinePool v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
 
 	organization, exists := azureMachinePool.GetLabels()[label.Organization]
@@ -195,7 +195,7 @@ func (r *Resource) getCredentialSecret(ctx context.Context, azureMachinePool key
 		err := r.ctrlClient.List(
 			ctx,
 			secretList,
-			client.InNamespace(credentialNamespace),
+			client.InNamespace(azureMachinePool.Namespace),
 			client.MatchingLabels{
 				label.App:          "credentiald",
 				label.Organization: organization,
@@ -228,7 +228,7 @@ func (r *Resource) getCredentialSecret(ctx context.Context, azureMachinePool key
 
 	// If no credential secrets are found, we use the default.
 	credentialSecret := &v1alpha1.CredentialSecret{
-		Namespace: credentialNamespace,
+		Namespace: azureMachinePool.Namespace,
 		Name:      credentialDefaultName,
 	}
 

@@ -29,7 +29,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return "", microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -76,7 +76,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 }
 
 func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) (int64, error) {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}
@@ -113,7 +113,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 }
 
 func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(customObject), key.CredentialName(customObject))
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}

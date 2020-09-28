@@ -19,7 +19,7 @@ import (
 )
 
 type AzureMachinePoolSubnetCollectorConfig struct {
-	AzureClientFactory *client.Factory
+	AzureClientFactory client.OrganizationFactory
 	CtrlClient         ctrl.Client
 	Logger             micrologger.Logger
 }
@@ -28,15 +28,12 @@ type AzureMachinePoolSubnetCollectorConfig struct {
 // already allocated in tenant cluster virtual network. See Collect function implementation and
 // docs for more details.
 type AzureMachinePoolSubnetCollector struct {
-	azureClientFactory *client.Factory
+	azureClientFactory client.OrganizationFactory
 	ctrlClient         ctrl.Client
 	logger             micrologger.Logger
 }
 
 func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig) (*AzureMachinePoolSubnetCollector, error) {
-	if config.AzureClientFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientFactory must not be empty", config)
-	}
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
@@ -170,16 +167,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 		"level", "debug",
 		"message", fmt.Sprintf("finding subnets created in Azure VNet %q", azureCluster.Spec.NetworkSpec.Vnet.Name))
 
-	// Reads "giantswarm.io/organization" label from AzureCluster CR, and then uses organization
-	// name to get Azure credentials.
-	credentials, err := helpers.GetCredentialSecretFromMetadata(ctx, c.logger, c.ctrlClient, azureCluster.ObjectMeta)
-	if err != nil {
-		errorMessage := fmt.Sprintf("error while getting organization credentials for cluster %q", azureCluster.Name)
-		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
-		return nil, microerror.Mask(err)
-	}
-
-	subnetsClient, err := c.azureClientFactory.GetSubnetsClient(credentials.Namespace, credentials.Name)
+	subnetsClient, err := c.azureClientFactory.GetSubnetsClient(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		errorMessage := fmt.Sprintf("error while creating/getting Azure subnets client for cluster %q", azureCluster.Name)
 		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
