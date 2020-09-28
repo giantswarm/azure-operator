@@ -28,14 +28,13 @@ import (
 	"sigs.k8s.io/yaml"
 
 	azureclient "github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/mock/mock_tenantcluster"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/mock_azure"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/mock_tenantclient"
 )
 
 //go:generate mockgen -destination internal/mock_azure/api.go -source internal/azure/spec.go API
-//go:generate mockgen -destination internal/mock_tenantclient/factory.go -source internal/tenantclient/spec.go Factory
 
 func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -134,11 +133,11 @@ func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
 
 	ctrlClient := newFakeClient()
 	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
-	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
+	mockTenantClusterFactory := mock_tenantcluster.NewMockFactory(ctrl)
 	r := &Resource{
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
-		tenantClientFactory: mockTenantClientFactory,
+		tenantClientFactory: mockTenantClusterFactory,
 		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
 			return mockAzureAPI
 		},
@@ -209,11 +208,11 @@ func TestVMSSIsNotDeletedBeforeDrainingIsDone(t *testing.T) {
 
 	ctrlClient := newFakeClient()
 	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
-	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
+	mockTenantCluster := mock_tenantcluster.NewMockFactory(ctrl)
 	r := &Resource{
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
-		tenantClientFactory: mockTenantClientFactory,
+		tenantClientFactory: mockTenantCluster,
 		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
 			return mockAzureAPI
 		},
@@ -285,11 +284,11 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 
 	ctrlClient := newFakeClient()
 	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
-	mockTenantClientFactory := mock_tenantclient.NewMockFactory(ctrl)
+	mockTenantClusterFactory := mock_tenantcluster.NewMockFactory(ctrl)
 	r := &Resource{
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
-		tenantClientFactory: mockTenantClientFactory,
+		tenantClientFactory: mockTenantClusterFactory,
 		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
 			return mockAzureAPI
 		},

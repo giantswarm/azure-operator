@@ -8,8 +8,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	azureclient "github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v4/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/tenantclient"
 )
 
 const (
@@ -29,7 +29,7 @@ type Resource struct {
 	clientFactory       *azureclient.Factory
 	ctrlClient          client.Client
 	logger              micrologger.Logger
-	tenantClientFactory tenantclient.Factory
+	tenantClientFactory tenantcluster.Factory
 	wrapAzureAPI        func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API
 
 	location string
@@ -49,7 +49,7 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
 	}
 
-	tenantClientFactory, err := tenantclient.NewFactory(config.CertsSearcher, config.Logger)
+	tenantClientFactory, err := tenantcluster.NewFactory(config.CertsSearcher, config.Logger)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
