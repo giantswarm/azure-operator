@@ -3,8 +3,10 @@
 package nodepool
 
 import (
+	"context"
 	"testing"
 
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
@@ -17,9 +19,20 @@ var (
 )
 
 func init() {
+	ctx := context.Background()
+
 	var err error
+	var release *releasev1alpha1.Release
 	{
-		config, err = setup.NewConfig()
+		release, err = setup.CreateGSReleaseContainingOperatorVersion(ctx, config)
+		if err != nil {
+			panic(microerror.JSON(err))
+		}
+	}
+
+	var config setup.Config
+	{
+		config, err = setup.NewConfig(release)
 		if err != nil {
 			panic(microerror.JSON(err))
 		}

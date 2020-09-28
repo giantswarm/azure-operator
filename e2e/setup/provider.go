@@ -103,7 +103,7 @@ Installation:
 )
 
 // provider installs the operator and tenant cluster CR.
-func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
+func provider(ctx context.Context, config Config) error {
 	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.SSHPublicKey(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
 	{
 		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
@@ -227,7 +227,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 	}
 
-	clusterOperatorVersion, err := key.ComponentVersion(giantSwarmRelease, "cluster-operator")
+	clusterOperatorVersion, err := key.ComponentVersion(*config.GiantSwarmRelease, "cluster-operator")
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -240,7 +240,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
-					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+					"release.giantswarm.io/version":        strings.TrimPrefix(config.GiantSwarmRelease.GetName(), "v"),
 				},
 			},
 			Spec: v1alpha1.AzureClusterConfigSpec{
@@ -251,7 +251,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 						ID:                env.ClusterID(),
 						Name:              env.ClusterID(),
 						Owner:             "giantswarm",
-						ReleaseVersion:    strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+						ReleaseVersion:    strings.TrimPrefix(config.GiantSwarmRelease.GetName(), "v"),
 						VersionBundles: []v1alpha1.ClusterGuestConfigVersionBundle{
 							{
 								Name:    "cert-operator",
@@ -314,7 +314,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
-					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+					"release.giantswarm.io/version":        strings.TrimPrefix(config.GiantSwarmRelease.GetName(), "v"),
 				},
 				Annotations: map[string]string{
 					annotation.ClusterDescription: "friendly cluster name",
@@ -411,12 +411,12 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 	}
 
-	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, env.NodePoolID(), 1, 3, env.AzureVMSize())
+	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), config.GiantSwarmRelease, env.NodePoolID(), 1, 3, env.AzureVMSize())
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), giantSwarmRelease, "t3st", 1, 3, "Standard_D3_v2")
+	err = createNodePool(ctx, config.Logger, config.K8sClients.CtrlClient(), config.GiantSwarmRelease, "t3st", 1, 3, "Standard_D3_v2")
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -424,10 +424,10 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 	return nil
 }
 
-func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient client.Client, giantSwarmRelease releasev1alpha1.Release, nodepoolID string, minReplicas int32, maxReplicas int32, vmSize string) error {
+func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient client.Client, giantSwarmRelease *releasev1alpha1.Release, nodepoolID string, minReplicas int32, maxReplicas int32, vmSize string) error {
 	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, minReplicas))
 
-	clusterOperatorVersion, err := key.ComponentVersion(giantSwarmRelease, "cluster-operator")
+	clusterOperatorVersion, err := key.ComponentVersion(*giantSwarmRelease, "cluster-operator")
 	if err != nil {
 		return microerror.Mask(err)
 	}

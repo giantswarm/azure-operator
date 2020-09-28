@@ -43,10 +43,11 @@ type Config struct {
 	K8sClients         k8sclient.Interface
 	Logger             micrologger.Logger
 	Release            *release.Release
+	GiantSwarmRelease  *releasev1alpha1.Release
 	LogAnalyticsConfig LogAnalyticsConfig
 }
 
-func NewConfig() (Config, error) {
+func NewConfig(giantSwarmRelease *releasev1alpha1.Release) (Config, error) {
 	var err error
 
 	var azureClient *e2eclientsazure.Client
@@ -212,6 +213,7 @@ func NewConfig() (Config, error) {
 		LegacyK8sClients:   legacyCPK8sClients,
 		Logger:             logger,
 		Release:            newRelease,
+		GiantSwarmRelease:  giantSwarmRelease,
 		LogAnalyticsConfig: logAnalyticsConfig,
 	}
 

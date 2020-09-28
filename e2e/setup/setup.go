@@ -41,12 +41,7 @@ func WrapTestMain(m *testing.M, c Config) {
 func Setup(ctx context.Context, c Config) error {
 	var err error
 
-	release, err := createGSReleaseContainingOperatorVersion(ctx, c)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = common(ctx, c, *release)
+	err = common(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -56,7 +51,7 @@ func Setup(ctx context.Context, c Config) error {
 		c.Logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Unable to deploy the log forwarder app. Will continue anyway: %s", err))
 	}
 
-	err = provider(ctx, c, *release)
+	err = provider(ctx, c)
 	if err != nil {
 		return microerror.Mask(err)
 	}

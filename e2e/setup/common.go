@@ -4,14 +4,13 @@ import (
 	"context"
 	"fmt"
 
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 	v1 "k8s.io/api/scheduling/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 )
 
 // common installs components required to run the operator.
-func common(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
+func common(ctx context.Context, config Config) error {
 	{
 		err := config.K8s.EnsureNamespaceCreated(ctx, namespace)
 		if err != nil {

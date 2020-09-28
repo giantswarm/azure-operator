@@ -3,8 +3,10 @@
 package scaling
 
 import (
+	"context"
 	"testing"
 
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/e2etests/v2/scaling"
 	"github.com/giantswarm/microerror"
 
@@ -18,10 +20,20 @@ var (
 )
 
 func init() {
-	var err error
+	ctx := context.Background()
 
+	var err error
+	var release *releasev1alpha1.Release
 	{
-		config, err = setup.NewConfig()
+		release, err = setup.CreateGSReleaseContainingOperatorVersion(ctx, config)
+		if err != nil {
+			panic(microerror.JSON(err))
+		}
+	}
+
+	var config setup.Config
+	{
+		config, err = setup.NewConfig(release)
 		if err != nil {
 			panic(microerror.JSON(err))
 		}
