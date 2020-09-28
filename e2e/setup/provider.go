@@ -36,6 +36,7 @@ import (
 
 const (
 	ClusterIPRange           = "172.31.0.0/16"
+	OrganizationNamespace    = "default"
 	azureOperatorChartValues = `
 ---
 Installation:
@@ -201,7 +202,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		encryptionSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", e2ekey.TestAppReleaseName(), "encryption"),
-				Namespace: "default",
+				Namespace: OrganizationNamespace,
 				Labels: map[string]string{
 					"giantswarm.io/cluster":   env.ClusterID(),
 					"giantswarm.io/randomkey": "encryption",
@@ -213,14 +214,14 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 			Type: "Opaque",
 		}
 
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("default").Create(ctx, encryptionSecret, metav1.CreateOptions{})
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(OrganizationNamespace).Create(ctx, encryptionSecret, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets("giantswarm").Create(ctx, credentialDefault(), metav1.CreateOptions{})
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(OrganizationNamespace).Create(ctx, credentialDefault(), metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -235,7 +236,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		azureClusterConfig := &v1alpha1.AzureClusterConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      env.ClusterID(),
-				Namespace: "default",
+				Namespace: OrganizationNamespace,
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
@@ -260,7 +261,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					},
 					CredentialSecret: v1alpha1.AzureClusterConfigSpecGuestCredentialSecret{
 						Name:      "credential-default",
-						Namespace: "giantswarm",
+						Namespace: OrganizationNamespace,
 					},
 					Masters: []v1alpha1.AzureClusterConfigSpecGuestMaster{
 						{
@@ -285,7 +286,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				VersionBundle: v1alpha1.AzureClusterConfigSpecVersionBundle{Version: clusterOperatorVersion},
 			},
 		}
-		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs("default").Create(ctx, azureClusterConfig, metav1.CreateOptions{})
+		_, err := config.K8sClients.G8sClient().CoreV1alpha1().AzureClusterConfigs(OrganizationNamespace).Create(ctx, azureClusterConfig, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -309,7 +310,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		azureConfig := &providerv1alpha1.AzureConfig{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      env.ClusterID(),
-				Namespace: "default",
+				Namespace: OrganizationNamespace,
 				Labels: map[string]string{
 					"giantswarm.io/cluster":                env.ClusterID(),
 					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
@@ -324,7 +325,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 					AvailabilityZones: env.AzureAvailabilityZones(),
 					CredentialSecret: providerv1alpha1.CredentialSecret{
 						Name:      "credential-default",
-						Namespace: "giantswarm",
+						Namespace: OrganizationNamespace,
 					},
 					DNSZones: providerv1alpha1.AzureConfigSpecAzureDNSZones{
 						API: providerv1alpha1.AzureConfigSpecAzureDNSZonesDNSZone{
@@ -404,7 +405,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				VersionBundle: providerv1alpha1.AzureConfigSpecVersionBundle{Version: env.GetOperatorVersion()},
 			},
 		}
-		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs("default").Create(ctx, azureConfig, metav1.CreateOptions{})
+		_, err := config.K8sClients.G8sClient().ProviderV1alpha1().AzureConfigs(OrganizationNamespace).Create(ctx, azureConfig, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -571,7 +572,7 @@ func credentialDefault() *corev1.Secret {
 	return &corev1.Secret{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      "credential-default",
-			Namespace: "giantswarm",
+			Namespace: OrganizationNamespace,
 			Labels: map[string]string{
 				"app":                        "credentiald",
 				"giantswarm.io/managed-by":   "credentiald",

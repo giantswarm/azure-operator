@@ -35,7 +35,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

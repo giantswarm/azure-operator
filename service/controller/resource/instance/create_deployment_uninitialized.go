@@ -20,15 +20,15 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	groupsClient, err := r.ClientFactory.GetGroupsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(key.CredentialNamespace(cr), key.CredentialName(cr))
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
