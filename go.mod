@@ -29,7 +29,7 @@ require (
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/microkit v0.2.0
-	github.com/giantswarm/micrologger v0.3.1
+	github.com/giantswarm/micrologger v0.3.3
 	github.com/giantswarm/operatorkit/v2 v2.0.0
 	github.com/giantswarm/randomkeys/v2 v2.0.0
 	github.com/giantswarm/statusresource/v2 v2.0.0
@@ -37,7 +37,7 @@ require (
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/mock v1.4.4
-	github.com/google/go-cmp v0.5.1
+	github.com/google/go-cmp v0.5.2
 	github.com/markbates/pkger v0.17.0
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
