@@ -236,10 +236,6 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 
 	// CR didn't exist so it's created here.
 	azureMachinePool = expcapzv1alpha3.AzureMachinePool{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "AzureMachinePool",
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: cr.Namespace, // TODO: Adjust for CR namespacing.
@@ -365,10 +361,6 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 	}
 
 	mp := expcapiv1alpha3.MachinePool{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "MachinePool",
-			APIVersion: "exp.infrastructure.cluster.x-k8s.io/v1alpha3",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: cr.Namespace, // TODO: Adjust for CR namespacing.
@@ -423,10 +415,6 @@ func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.Az
 	}
 
 	spark = corev1alpha1.Spark{
-		TypeMeta: metav1.TypeMeta{
-			Kind:       "Spark",
-			APIVersion: "core.giantswarm.io/v1alpha1",
-		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: cr.Namespace, // TODO: Adjust for CR namespacing.
