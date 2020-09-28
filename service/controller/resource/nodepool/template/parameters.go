@@ -8,19 +8,20 @@ import (
 )
 
 type Parameters struct {
-	AzureOperatorVersion string
-	ClusterID            string
-	DataDisks            []v1alpha3.DataDisk
-	NodepoolName         string
-	OSImage              OSImage
-	Scaling              Scaling
-	SpotInstanceConfig   SpotInstanceConfig
-	SSHPublicKey         string
-	SubnetName           string
-	VMCustomData         string
-	VMSize               string
-	VnetName             string
-	Zones                []string
+	AzureOperatorVersion        string
+	ClusterID                   string
+	DataDisks                   []v1alpha3.DataDisk
+	EnableAcceleratedNetworking bool
+  NodepoolName                string
+	OSImage                     OSImage
+	Scaling                     Scaling
+	SpotInstanceConfig          SpotInstanceConfig
+	SSHPublicKey                string
+	SubnetName                  string
+	VMCustomData                string
+	VMSize                      string
+	VnetName                    string
+	Zones                       []string
 }
 
 type Scaling struct {
@@ -76,6 +77,7 @@ func (p Parameters) ToDeployParams() map[string]interface{} {
 	armDeploymentParameters["azureOperatorVersion"] = toARMParam(p.AzureOperatorVersion)
 	armDeploymentParameters["clusterID"] = toARMParam(p.ClusterID)
 	armDeploymentParameters["dataDisks"] = toARMParam(dataDisks)
+	armDeploymentParameters["enableAcceleratedNetworking"] = toARMParam(p.EnableAcceleratedNetworking)
 	armDeploymentParameters["nodepoolName"] = toARMParam(p.NodepoolName)
 	armDeploymentParameters["osImagePublisher"] = toARMParam(p.OSImage.Publisher)
 	armDeploymentParameters["osImageOffer"] = toARMParam(p.OSImage.Offer)
@@ -147,10 +149,11 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 
 	// Finally return typed parameters.
 	return Parameters{
-		AzureOperatorVersion: cast(parameters["azureOperatorVersion"]).(string),
-		ClusterID:            cast(parameters["clusterID"]).(string),
-		DataDisks:            dataDisks,
-		NodepoolName:         cast(parameters["nodepoolName"]).(string),
+		AzureOperatorVersion:        cast(parameters["azureOperatorVersion"]).(string),
+		ClusterID:                   cast(parameters["clusterID"]).(string),
+		DataDisks:                   dataDisks,
+		EnableAcceleratedNetworking: cast(parameters["enableAcceleratedNetworking"]).(bool),
+		NodepoolName:                cast(parameters["nodepoolName"]).(string),
 		OSImage: OSImage{
 			Publisher: cast(parameters["osImagePublisher"]).(string),
 			Offer:     cast(parameters["osImageOffer"]).(string),

@@ -30,18 +30,13 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, &azureMachinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	blobName := key.BootstrapBlobName(azureMachinePool)
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting container object %#q", blobName))
 
 	var containerURL azblob.ContainerURL
 	{
-		containerURL, err = r.getContainerURL(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
+		containerURL, err = r.getContainerURL(ctx, &azureMachinePool, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
 		if IsNotFound(err) {
 			// Resource Group deleted or deletion in progress. Storage Account already gone.
 			return nil

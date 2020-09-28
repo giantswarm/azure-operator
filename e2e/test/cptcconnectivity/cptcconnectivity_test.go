@@ -15,6 +15,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 
 	"github.com/giantswarm/azure-operator/v4/e2e/env"
+	"github.com/giantswarm/azure-operator/v4/e2e/setup"
 )
 
 func Test_Connectivity(t *testing.T) {
@@ -66,7 +67,7 @@ func New(config Config) (*Connectivity, error) {
 func (s *Connectivity) Test(ctx context.Context) error {
 	s.logger.LogCtx(ctx, "level", "debug", "message", "testing connectivity between control plane cluster and tenant cluster")
 	podName := "e2e-connectivity"
-	podNamespace := "default"
+	podNamespace := setup.OrganizationNamespace
 	pod := &v1.Pod{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      podName,

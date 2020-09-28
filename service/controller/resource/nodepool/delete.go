@@ -3,7 +3,6 @@ package nodepool
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -30,12 +29,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.removeNodePool(ctx, azureMachinePool, credentialSecret)
+	err = r.removeNodePool(ctx, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -73,15 +67,15 @@ func (r *Resource) removeSubnetFromAzureCluster(ctx context.Context, azureCluste
 	return nil
 }
 
-func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool capzexpv1alpha3.AzureMachinePool, credentialSecret *v1alpha1.CredentialSecret) error {
+func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
 	var err error
 
-	err = r.deleteARMDeployment(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.NodePoolDeploymentName(&azureMachinePool))
+	err = r.deleteARMDeployment(ctx, azureMachinePool, key.ClusterID(azureMachinePool), key.NodePoolDeploymentName(azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = r.deleteVMSS(ctx, credentialSecret, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	err = r.deleteVMSS(ctx, azureMachinePool, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -90,10 +84,10 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool capzexpv
 }
 
 // deleteARMDeployment deletes the ARM deployment from Azure.
-func (r *Resource) deleteARMDeployment(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, deploymentName string) error {
+func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, deploymentName string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool ARM deployment")
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(credentialSecret.Namespace, credentialSecret.Name)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -112,10 +106,10 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, credentialSecret *v1
 }
 
 // deleteVMSS deletes the VMSS from Azure.
-func (r *Resource) deleteVMSS(ctx context.Context, credentialSecret *v1alpha1.CredentialSecret, resourceGroupName, vmssName string) error {
+func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, vmssName string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS")
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
