@@ -28,7 +28,7 @@ func pullLatestChart(ctx context.Context, config Config, chartName string, catal
 		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %#q release version", chartName))
 
 		o := func() error {
-			latestRelease, err = appcatalog.GetLatestVersion(ctx, catalogURL, chartName)
+			latestRelease, err = appcatalog.GetLatestVersion(ctx, catalogURL, chartName, "")
 
 			if latestRelease == "" {
 				return invalidAppVersionError
