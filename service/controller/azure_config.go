@@ -221,6 +221,16 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
+	var organizationClientFactory client.OrganizationFactory
+	{
+		c := client.OrganizationFactoryConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Factory:    clientFactory,
+			Logger:     config.Logger,
+		}
+		organizationClientFactory = client.NewOrganizationFactory(c)
+	}
+
 	var newDebugger *debugger.Debugger
 	{
 		c := debugger.Config{
@@ -393,7 +403,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			Logger:           config.Logger,
 
 			Azure:                      config.Azure,
-			ClientFactory:              clientFactory,
+			ClientFactory:              organizationClientFactory,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
 			Debug:                      config.Debug,
 		}
@@ -462,7 +472,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		Logger:     config.Logger,
 
 		Azure:            config.Azure,
-		ClientFactory:    clientFactory,
+		ClientFactory:    organizationClientFactory,
 		InstanceWatchdog: iwd,
 	}
 

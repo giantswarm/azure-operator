@@ -5,7 +5,6 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
@@ -29,22 +28,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -107,17 +96,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	credentialSecret, err := r.getCredentialSecret(ctx, *cluster)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

@@ -9,7 +9,7 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.0
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions/v2 v2.4.0
+	github.com/giantswarm/apiextensions/v2 v2.5.1
 	github.com/giantswarm/appcatalog v0.1.11
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
@@ -29,29 +29,29 @@ require (
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/microkit v0.2.0
-	github.com/giantswarm/micrologger v0.3.1
-	github.com/giantswarm/operatorkit/v2 v2.0.0
+	github.com/giantswarm/micrologger v0.3.3
+	github.com/giantswarm/operatorkit/v2 v2.0.1
 	github.com/giantswarm/randomkeys/v2 v2.0.0
 	github.com/giantswarm/statusresource/v2 v2.0.0
 	github.com/giantswarm/tenantcluster/v3 v3.0.0
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/mock v1.4.4
-	github.com/google/go-cmp v0.5.1
-	github.com/markbates/pkger v0.17.0
+	github.com/google/go-cmp v0.5.2
+	github.com/markbates/pkger v0.17.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/spf13/afero v1.3.4
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	golang.org/x/sys v0.0.0-20200814200057-3d37ad5750ed // indirect
-	k8s.io/api v0.18.6
+	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.6
-	k8s.io/apimachinery v0.18.6
-	k8s.io/client-go v0.18.6
+	k8s.io/apimachinery v0.18.9
+	k8s.io/client-go v0.18.9
 	sigs.k8s.io/cluster-api v0.3.9
 	sigs.k8s.io/cluster-api-provider-azure v0.4.7
-	sigs.k8s.io/controller-runtime v0.6.2
+	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/yaml v1.2.0
 )
 
