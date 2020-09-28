@@ -71,10 +71,11 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	}
 
 	templateParameters := template.Parameters{
-		AzureOperatorVersion: project.Version(),
-		ClusterID:            azureCluster.GetName(),
-		DataDisks:            azureMachinePool.Spec.Template.DataDisks,
-		NodepoolName:         key.NodePoolVMSSName(azureMachinePool),
+		AzureOperatorVersion:        project.Version(),
+		ClusterID:                   azureCluster.GetName(),
+		DataDisks:                   azureMachinePool.Spec.Template.DataDisks,
+		EnableAcceleratedNetworking: key.EnableAcceleratedNetworking(*azureMachinePool),
+		NodepoolName:                key.NodePoolVMSSName(azureMachinePool),
 		OSImage: template.OSImage{
 			Publisher: "kinvolk",
 			Offer:     "flatcar-container-linux-free",

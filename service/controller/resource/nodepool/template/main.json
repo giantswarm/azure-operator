@@ -20,6 +20,13 @@
         "description": "Disks attached to the VMSS."
       }
     },
+    "enableAcceleratedNetworking": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "When turned on, the scale set will have accelerated networking enabled."
+      }
+    },
     "GiantSwarmTags": {
       "type": "object",
       "defaultValue": {
@@ -336,6 +343,7 @@
                 "name": "[concat(variables('vmssName'), '-nic')]",
                 "properties": {
                   "enableIPForwarding": true,
+                  "enableAcceleratedNetworking": "[parameters('enableAcceleratedNetworking')]",
                   "primary": "true",
                   "ipConfigurations": [
                     {
