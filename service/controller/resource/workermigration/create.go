@@ -29,7 +29,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
 )
 
-// EnsureCreated ensures that built-in workers are migrated to node pool.
+// EnsureCreated ensures that legacy workers are migrated to node pool.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
@@ -42,14 +42,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	azureAPI := r.wrapAzureAPI(r.clientFactory, credentialSecret)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers are migrated to node pool")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers are migrated to node pool")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding built-in workers VMSS")
-	var builtinVMSS azure.VMSS
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding legacy workers VMSS")
+	var legacyVMSS azure.VMSS
 	{
-		builtinVMSS, err = azureAPI.GetVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		legacyVMSS, err = azureAPI.GetVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 		if azure.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find built-in workers VMSS")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find legacy workers VMSS")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 			return nil
@@ -57,39 +57,39 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		if builtinVMSS.Sku == nil {
-			return microerror.Maskf(executionFailedError, "built-in VMSS Sku is nil")
+		if legacyVMSS.Sku == nil {
+			return microerror.Maskf(executionFailedError, "legacy VMSS Sku is nil")
 		}
-		if builtinVMSS.Sku.Name == nil {
-			return microerror.Maskf(executionFailedError, "built-in VMSS Sku.Name is nil")
+		if legacyVMSS.Sku.Name == nil {
+			return microerror.Maskf(executionFailedError, "legacy VMSS Sku.Name is nil")
 		}
-		if builtinVMSS.Sku.Capacity == nil {
-			return microerror.Maskf(executionFailedError, "built-in VMSS Sku.Capacity is nil")
+		if legacyVMSS.Sku.Capacity == nil {
+			return microerror.Maskf(executionFailedError, "legacy VMSS Sku.Capacity is nil")
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found built-in workers VMSS")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "found legacy workers VMSS")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachinePool CR exists for built-in workers VMSS")
-	azureMachinePool, err := r.ensureAzureMachinePoolExists(ctx, cr, *builtinVMSS.Sku.Name)
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachinePool CR exists for legacy workers VMSS")
+	azureMachinePool, err := r.ensureAzureMachinePoolExists(ctx, cr, *legacyVMSS.Sku.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachinePool CR exists for built-in workers VMSS")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachinePool CR exists for legacy workers VMSS")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring MachinePool CR exists for built-in workers VMSS")
-	machinePool, err := r.ensureMachinePoolExists(ctx, cr, azureMachinePool, int(*builtinVMSS.Sku.Capacity))
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring MachinePool CR exists for legacy workers VMSS")
+	machinePool, err := r.ensureMachinePoolExists(ctx, cr, azureMachinePool, int(*legacyVMSS.Sku.Capacity))
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured MachinePool CR exists for built-in workers VMSS")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured MachinePool CR exists for legacy workers VMSS")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring Spark CR exists for built-in workers VMSS")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring Spark CR exists for legacy workers VMSS")
 	_, err = r.ensureSparkExists(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured Spark CR exists for built-in workers VMSS")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured Spark CR exists for legacy workers VMSS")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if node pool workers are ready")
 	if !machinePool.Status.InfrastructureReady || (machinePool.Status.Replicas != machinePool.Status.ReadyReplicas) {
@@ -100,14 +100,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found that node pool workers are ready")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers have drainerconfig cr")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers have drainerconfig cr")
 	err = r.ensureDrainerConfigsExists(ctx, azureAPI, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that built-in workers have drainerconfig cr")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that legacy workers have drainerconfig cr")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that built-in workers are drained")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers are drained")
 	allNodesDrained, err := r.allDrainerConfigsWithDrainedState(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
@@ -129,7 +129,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		return nil
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that built-in workers are drained")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that legacy workers are drained")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainerconfigs")
 	err = r.deleteDrainerConfigs(ctx, cr)
@@ -138,12 +138,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainerconfigs")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting built-in workers' VMSS")
-	err = azureAPI.DeleteVMSS(ctx, key.ResourceGroupName(cr), *builtinVMSS.Name)
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting legacy workers' VMSS")
+	err = azureAPI.DeleteVMSS(ctx, key.ResourceGroupName(cr), *legacyVMSS.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted built-in workers' VMSS")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted legacy workers' VMSS")
 
 	return nil
 }
@@ -393,7 +393,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 				apiextlabel.ReleaseVersion:       key.ReleaseVersion(&cr),
 			},
 			Annotations: map[string]string{
-				apiextannotation.MachinePoolName: "migrated built-in workers",
+				apiextannotation.MachinePoolName: "migrated legacy workers",
 			},
 		},
 		Spec: expcapiv1alpha3.MachinePoolSpec{
