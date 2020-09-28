@@ -312,8 +312,8 @@ github.com/giantswarm/e2e-harness/v2 v2.0.0 h1:6pWWMBvsejVDxz0OZ54Hi7uNkUvh8anWc
 github.com/giantswarm/e2e-harness/v2 v2.0.0/go.mod h1:P23MUQx+PtY3WoWvQORtIV+oRiEcJ9piNBkzDHq55bw=
 github.com/giantswarm/e2eclients v0.2.0 h1:fk3/dU1tAt9NHgSZwz4C9Bm15E9lFuNfYYneLjkw5Sg=
 github.com/giantswarm/e2eclients v0.2.0/go.mod h1:HOsP2xBW2ivFgBb3CNkhckjMNGokj1RDWz+03pIdgv0=
-github.com/giantswarm/e2esetup/v2 v2.0.0 h1:Q9DcpzNyJyqwhsXBX3YSQpcLQgGQpPrIP5yZwzovQJg=
-github.com/giantswarm/e2esetup/v2 v2.0.0/go.mod h1:BXNyRwBQE4F2vXHJ18yhNbA23sxi9v8kT/7jmU4izOw=
+github.com/giantswarm/e2esetup/v2 v2.1.0 h1:aKqijYGYFDn5AATpDmNxbWpqLhC3AX7QYc/oKptLSio=
+github.com/giantswarm/e2esetup/v2 v2.1.0/go.mod h1:BXNyRwBQE4F2vXHJ18yhNbA23sxi9v8kT/7jmU4izOw=
 github.com/giantswarm/e2etemplates v0.2.0 h1:xwsa8hSirDF8nFdRJZJROPwjiL1vsuhWltz+6k9CQRc=
 github.com/giantswarm/e2etemplates v0.2.0/go.mod h1:q7aE42HUEdxm6NtLJ/csoMBWoRoIfhdy0WC85aRjLi8=
 github.com/giantswarm/e2etests/v2 v2.0.0 h1:cOvVducDHMbafK9nLmEsngzYlPcSqCOx4+/cznzo/+w=
