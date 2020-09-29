@@ -25,6 +25,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
 )
@@ -70,11 +71,31 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 		}
 	}
 
+	var enableAcceleratedNetworking bool
+	{
+		if azureMachinePool.Spec.Template.AcceleratedNetworking != nil {
+			enableAcceleratedNetworking = *azureMachinePool.Spec.Template.AcceleratedNetworking
+		} else {
+			// Enable accelerated networking if VM type supports it.
+			client, err := r.ClientFactory.GetResourceSkusClient(ctx, cluster.ObjectMeta)
+			if err != nil {
+				return azureresource.Deployment{}, microerror.Mask(err)
+			}
+
+			vmSKU, err := vmsku.New(ctx, client, azureMachinePool.Spec.Template.VMSize)
+			if err != nil {
+				return azureresource.Deployment{}, microerror.Mask(err)
+			}
+
+			enableAcceleratedNetworking = vmSKU.HasCapability(vmsku.CapabilityAcceleratedNetworking)
+		}
+	}
+
 	templateParameters := template.Parameters{
 		AzureOperatorVersion:        project.Version(),
 		ClusterID:                   azureCluster.GetName(),
 		DataDisks:                   azureMachinePool.Spec.Template.DataDisks,
-		EnableAcceleratedNetworking: key.EnableAcceleratedNetworking(*azureMachinePool),
+		EnableAcceleratedNetworking: enableAcceleratedNetworking,
 		NodepoolName:                key.NodePoolVMSSName(azureMachinePool),
 		OSImage: template.OSImage{
 			Publisher: "kinvolk",

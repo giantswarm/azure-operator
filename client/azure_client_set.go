@@ -307,6 +307,13 @@ func newVnetPeeringClient(authorizer autorest.Authorizer, subscriptionID, partne
 	return &client, nil
 }
 
+func newResourceSkusClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+	client := compute.NewResourceSkusClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
+
+	return &client, nil
+}
+
 func toDeploymentsClient(client interface{}) *resources.DeploymentsClient {
 	return client.(*resources.DeploymentsClient)
 }
@@ -353,4 +360,8 @@ func toSubnetsClient(client interface{}) *network.SubnetsClient {
 
 func toNatGatewaysClient(client interface{}) *network.NatGatewaysClient {
 	return client.(*network.NatGatewaysClient)
+}
+
+func toResourceSkusClient(client interface{}) *compute.ResourceSkusClient {
+	return client.(*compute.ResourceSkusClient)
 }

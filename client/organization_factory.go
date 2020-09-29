@@ -39,6 +39,7 @@ type Interface interface {
 	GetStorageAccountsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*storage.AccountsClient, error)
 	GetSubnetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.SubnetsClient, error)
 	GetNatGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.NatGatewaysClient, error)
+	GetResourceSkusClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.ResourceSkusClient, error)
 }
 
 type OrganizationFactoryConfig struct {
@@ -167,6 +168,15 @@ func (f *OrganizationFactory) GetNatGatewaysClient(ctx context.Context, objectMe
 	}
 
 	return f.factory.GetNatGatewaysClient(credentialSecret.Namespace, credentialSecret.Name)
+}
+
+func (f *OrganizationFactory) GetResourceSkusClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.ResourceSkusClient, error) {
+	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return f.factory.GetResourceSkusClient(credentialSecret.Namespace, credentialSecret.Name)
 }
 
 func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {

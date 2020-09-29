@@ -323,14 +323,6 @@ func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureC
 	return customObject.Spec.Azure.DNSZones
 }
 
-func EnableAcceleratedNetworking(azureMachinePool expcapzv1alpha3.AzureMachinePool) bool {
-	if azureMachinePool.Spec.Template.AcceleratedNetworking != nil {
-		return *azureMachinePool.Spec.Template.AcceleratedNetworking
-	}
-
-	return false
-}
-
 // IsClusterCreating check if the cluster is being created.
 func IsClusterCreating(cr providerv1alpha1.AzureConfig) bool {
 	// When cluster creation is in the beginning, it doesn't necessarily have

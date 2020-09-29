@@ -215,6 +215,17 @@ func (f *Factory) GetNatGatewaysClient(credentialNamespace, credentialName strin
 	return toNatGatewaysClient(client), nil
 }
 
+// GetResourceSkusClient returns *compute.ResourceSkusClient that is used for reading VM instance types.
+// The created client is cached for the time period specified in the factory config.
+func (f *Factory) GetResourceSkusClient(credentialNamespace, credentialName string) (*compute.ResourceSkusClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "ResourceSkusClient", newResourceSkusClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toResourceSkusClient(client), nil
+}
+
 func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {
 	l := f.logger.With(
 		logLevelLogKey, logLevelDebug,
