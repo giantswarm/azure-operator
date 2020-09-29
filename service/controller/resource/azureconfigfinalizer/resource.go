@@ -24,7 +24,7 @@ type Config struct {
 	Logger     micrologger.Logger
 }
 
-// Resource manages the cluster ID label in the AzureConfig CR.
+// Resource does garbage collection on the AzureConfig CR finalizers.
 type Resource struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
