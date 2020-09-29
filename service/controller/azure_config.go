@@ -142,7 +142,7 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 					return nil, microerror.Mask(err)
 				}
 
-				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cr), key.CredentialName(cr))
+				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, &cr.ObjectMeta)
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}

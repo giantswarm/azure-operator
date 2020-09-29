@@ -30,18 +30,18 @@ const (
 )
 
 type Config struct {
-	AzureClientsFactory client.OrganizationFactory
-	CtrlClient          ctrlclient.Client
-	Debugger            *debugger.Debugger
-	Logger              micrologger.Logger
+	CtrlClient                 ctrlclient.Client
+	Debugger                   *debugger.Debugger
+	Logger                     micrologger.Logger
+	OrganizationAzureClientSet *client.OrganizationAzureClientSet
 }
 
 // Resource creates a different subnet for every node pool using ARM deployments.
 type Resource struct {
-	azureClientsFactory client.OrganizationFactory
-	ctrlClient          ctrlclient.Client
-	debugger            *debugger.Debugger
-	logger              micrologger.Logger
+	ctrlClient                 ctrlclient.Client
+	debugger                   *debugger.Debugger
+	logger                     micrologger.Logger
+	organizationAzureClientSet *client.OrganizationAzureClientSet
 }
 
 type StorageAccountIpRule struct {
@@ -59,12 +59,15 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.OrganizationAzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.OrganizationAzureClientSet must not be empty", config)
+	}
 
 	r := &Resource{
-		azureClientsFactory: config.AzureClientsFactory,
-		ctrlClient:          config.CtrlClient,
-		debugger:            config.Debugger,
-		logger:              config.Logger,
+		organizationAzureClientSet: config.OrganizationAzureClientSet,
+		ctrlClient:                 config.CtrlClient,
+		debugger:                   config.Debugger,
+		logger:                     config.Logger,
 	}
 
 	return r, nil
@@ -78,27 +81,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureCluster.ObjectMeta)
+	organizationAzureClientSet, err := r.organizationAzureClientSet.Get(ctx, &azureCluster.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	natGatewaysClient, err := r.azureClientsFactory.GetNatGatewaysClient(ctx, azureCluster.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(ctx, azureCluster.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureCluster.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.garbageCollectSubnets(ctx, deploymentsClient, subnetsClient, azureCluster)
+	err = r.garbageCollectSubnets(ctx, organizationAzureClientSet.DeploymentsClient, organizationAzureClientSet.SubnetsClient, azureCluster)
 	if IsNotFound(err) {
 		r.logger.LogCtx(ctx, "message", "resources not ready")
 		r.logger.LogCtx(ctx, "message", "canceling resource")
@@ -107,7 +95,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.ensureSubnets(ctx, deploymentsClient, storageAccountsClient, natGatewaysClient, azureCluster)
+	err = r.ensureSubnets(ctx, organizationAzureClientSet.DeploymentsClient, organizationAzureClientSet.StorageAccountsClient, organizationAzureClientSet.NatGatewaysClient, azureCluster)
 	if IsNatGatewayNotReadyError(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Nat Gateway needs to be in state 'Succeeded' before subnets can be created")
 		r.logger.LogCtx(ctx, "message", "cancelling resource")

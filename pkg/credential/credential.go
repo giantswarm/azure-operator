@@ -2,14 +2,19 @@ package credential
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
-	v1 "k8s.io/api/core/v1"
+	"github.com/giantswarm/micrologger"
+	corev1 "k8s.io/api/core/v1"
+	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
+	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
 
 const (
@@ -22,23 +27,24 @@ const (
 )
 
 type K8SCredential struct {
-	k8sclient  k8sclient.Interface
 	gsTenantID string
+	k8sclient  k8sclient.Interface
+	logger     micrologger.Logger
 }
 
-func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string) Provider {
+func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string, logger micrologger.Logger) Provider {
 	return K8SCredential{
-		k8sclient:  k8sclient,
 		gsTenantID: gsTenantID,
+		k8sclient:  k8sclient,
+		logger:     logger,
 	}
 }
 
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
-func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, credentialNamespace, credentialName string) (auth.ClientCredentialsConfig, string, string, error) {
-	secret := &v1.Secret{}
-	err := k.k8sclient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: credentialNamespace, Name: credentialName}, secret)
+func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, objectMeta *v1.ObjectMeta) (auth.ClientCredentialsConfig, string, string, error) {
+	secret, err := k.getOrganizationCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
@@ -84,7 +90,7 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, cred
 	return credentials, subscriptionID, partnerID, nil
 }
 
-func valueFromSecret(secret *v1.Secret, key string) (string, error) {
+func valueFromSecret(secret *corev1.Secret, key string) (string, error) {
 	v, ok := secret.Data[key]
 	if !ok {
 		return "", microerror.Maskf(missingValueError, key)
@@ -115,4 +121,40 @@ func NewAzureCredentials(clientID, clientSecret, tenantID string) (auth.ClientCr
 	}
 
 	return settings.GetClientCredentials()
+}
+
+func (k K8SCredential) getOrganizationCredentialSecret(ctx context.Context, objectMeta *v1.ObjectMeta) (*corev1.Secret, error) {
+	k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(objectMeta)))
+	secretList := &corev1.SecretList{}
+	{
+		err := k.k8sclient.CtrlClient().List(
+			ctx,
+			secretList,
+			client.InNamespace(objectMeta.Namespace),
+			client.MatchingLabels{
+				label.App:                        "credentiald",
+				apiextensionslabels.Organization: key.OrganizationID(objectMeta),
+			},
+		)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	// We currently only support one credential secret per organization.
+	// If there are more than one, return an error.
+	if len(secretList.Items) > 1 {
+		return nil, microerror.Mask(tooManyCredentialsError)
+	}
+
+	if len(secretList.Items) < 1 {
+		return nil, microerror.Mask(credentialsNotFoundError)
+	}
+
+	// If one credential secret is found, we use that.
+	secret := secretList.Items[0]
+
+	k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", secret.Namespace, secret.Name))
+
+	return &secret, nil
 }

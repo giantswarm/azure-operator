@@ -2,7 +2,6 @@ package controller
 
 import (
 	"context"
-	"time"
 
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
@@ -161,28 +160,14 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 		}
 	}
 
-	var clientFactory *client.Factory
+	var organizationAzureClientSet *client.OrganizationAzureClientSet
 	{
-		c := client.FactoryConfig{
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
+		c := client.OrganizationAzureClientSetConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
 			Logger:     config.Logger,
+			Provider:   config.CredentialProvider,
 		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
+		organizationAzureClientSet = client.NewOrganizationAzureClientSet(c)
 	}
 
 	var newDebugger *debugger.Debugger
@@ -200,10 +185,10 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	var subnetResource resource.Interface
 	{
 		c := subnet.Config{
-			AzureClientsFactory: organizationClientFactory,
-			CtrlClient:          config.K8sClient.CtrlClient(),
-			Debugger:            newDebugger,
-			Logger:              config.Logger,
+			OrganizationAzureClientSet: organizationAzureClientSet,
+			CtrlClient:                 config.K8sClient.CtrlClient(),
+			Debugger:                   newDebugger,
+			Logger:                     config.Logger,
 		}
 
 		subnetResource, err = subnet.New(c)

@@ -299,7 +299,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 	var organizationAzureClientCredentialsConfig auth.ClientCredentialsConfig
 	var subscriptionID string
 	{
-		organizationAzureClientCredentialsConfig, subscriptionID, _, err = r.credentialProvider.GetOrganizationAzureCredentials(ctx, credentialSecret.Namespace, credentialSecret.Name)
+		organizationAzureClientCredentialsConfig, subscriptionID, _, err = r.credentialProvider.GetOrganizationAzureCredentials(ctx, &azureMachinePool.ObjectMeta)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

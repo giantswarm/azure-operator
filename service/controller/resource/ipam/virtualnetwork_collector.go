@@ -151,7 +151,7 @@ func (c *VirtualNetworkCollector) getVirtualNetworksFromAllSubscriptions(ctx con
 	var doneSubscriptions []string
 	var ret []net.IPNet
 	for _, cluster := range tenantClusterList.Items {
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := c.credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cluster), key.CredentialName(cluster))
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := c.credentialProvider.GetOrganizationAzureCredentials(ctx, &cluster.ObjectMeta)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
