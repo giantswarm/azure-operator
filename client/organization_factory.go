@@ -21,7 +21,8 @@ import (
 )
 
 const (
-	credentialDefaultName = "credential-default"
+	credentialDefaultNamespace = "giantswarm"
+	credentialDefaultName      = "credential-default"
 )
 
 type Interface interface {
@@ -170,6 +171,30 @@ func (f *OrganizationFactory) GetNatGatewaysClient(ctx context.Context, objectMe
 func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
 	f.logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
 
+	var err error
+	var credentialSecret *v1alpha1.CredentialSecret
+
+	credentialSecret, err = f.getOrganizationCredentialSecret(ctx, objectMeta)
+	if IsCredentialsNotFoundError(err) {
+		credentialSecret, err = f.getLegacyCredentialSecret(ctx, objectMeta)
+		if IsCredentialsNotFoundError(err) {
+			f.logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
+			return &v1alpha1.CredentialSecret{
+				Namespace: credentialDefaultNamespace,
+				Name:      credentialDefaultName,
+			}, nil
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	} else if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return credentialSecret, nil
+}
+
+// getOrganizationCredentialSecret tries to find a Secret in the organization namespace.
+func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
@@ -192,27 +217,61 @@ func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMet
 		return nil, microerror.Mask(tooManyCredentialsError)
 	}
 
+	if len(secretList.Items) < 1 {
+		return nil, microerror.Mask(credentialsNotFoundError)
+	}
+
 	// If one credential secret is found, we use that.
-	if len(secretList.Items) == 1 {
-		secret := secretList.Items[0]
+	secret := secretList.Items[0]
 
-		credentialSecret := &v1alpha1.CredentialSecret{
-			Namespace: secret.Namespace,
-			Name:      secret.Name,
-		}
-
-		f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
-
-		return credentialSecret, nil
-	}
-
-	// If no credential secrets are found, we use the default.
 	credentialSecret := &v1alpha1.CredentialSecret{
-		Namespace: objectMeta.Namespace,
-		Name:      credentialDefaultName,
+		Namespace: secret.Namespace,
+		Name:      secret.Name,
 	}
 
-	f.logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
+	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
+
+	return credentialSecret, nil
+}
+
+// getLegacyCredentialSecret tries to find a Secret in the default credentials namespace but labeled with the organization name.
+// This is needed while we migrate everything to the org namespace and org credentials are created in the org namespace instead of the default namespace.
+func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
+	secretList := &corev1.SecretList{}
+	{
+		err := f.ctrlClient.List(
+			ctx,
+			secretList,
+			client.InNamespace(credentialDefaultNamespace),
+			client.MatchingLabels{
+				label.App:          "credentiald",
+				label.Organization: key.OrganizationID(&objectMeta),
+			},
+		)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	// We currently only support one credential secret per organization.
+	// If there are more than one, return an error.
+	if len(secretList.Items) > 1 {
+		return nil, microerror.Mask(tooManyCredentialsError)
+	}
+
+	if len(secretList.Items) < 1 {
+		return nil, microerror.Mask(credentialsNotFoundError)
+	}
+
+	// If one credential secret is found, we use that.
+	secret := secretList.Items[0]
+
+	credentialSecret := &v1alpha1.CredentialSecret{
+		Namespace: secret.Namespace,
+		Name:      secret.Name,
+	}
+
+	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
 
 	return credentialSecret, nil
 }
