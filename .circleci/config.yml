@@ -9,7 +9,7 @@ workflows:
       - architect/go-build:
           name: go-build
           binary: azure-operator
-          resource_class: large
+          resource_class: xlarge
           filters:
             tags:
               only: /^v.*/
