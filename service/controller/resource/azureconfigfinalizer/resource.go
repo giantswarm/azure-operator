@@ -58,7 +58,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	{
 		// Refresh the CR object.
-		err := r.ctrlClient.Get(ctx, client.ObjectKey{cr.Name, cr.Namespace}, &cr)
+		err := r.ctrlClient.Get(ctx, client.ObjectKey{Name: cr.Name, Namespace: cr.Namespace}, &cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
