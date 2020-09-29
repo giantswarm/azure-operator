@@ -178,7 +178,7 @@ func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMet
 	if IsCredentialsNotFoundError(err) {
 		credentialSecret, err = f.getLegacyCredentialSecret(ctx, objectMeta)
 		if IsCredentialsNotFoundError(err) {
-			f.logger.LogCtx(ctx, "level", "debug", "message", "did not find credential secret, using default secret")
+			f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find credential secret, using default '%s/%s'", credentialDefaultNamespace, credentialDefaultName))
 			return &v1alpha1.CredentialSecret{
 				Namespace: credentialDefaultNamespace,
 				Name:      credentialDefaultName,
@@ -195,7 +195,7 @@ func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMet
 
 // getOrganizationCredentialSecret tries to find a Secret in the organization namespace.
 func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q ", objectMeta.Namespace))
+	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta)))
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
@@ -219,6 +219,7 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 	}
 
 	if len(secretList.Items) < 1 {
+		f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found these items %v", secretList.Items), "lenItems", len(secretList.Items))
 		return nil, microerror.Mask(credentialsNotFoundError)
 	}
 
@@ -238,7 +239,7 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 // getLegacyCredentialSecret tries to find a Secret in the default credentials namespace but labeled with the organization name.
 // This is needed while we migrate everything to the org namespace and org credentials are created in the org namespace instead of the default namespace.
 func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q ", credentialDefaultNamespace))
+	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta)))
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
@@ -262,6 +263,7 @@ func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, obj
 	}
 
 	if len(secretList.Items) < 1 {
+		f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found these items %v", secretList.Items), "lenItems", len(secretList.Items))
 		return nil, microerror.Mask(credentialsNotFoundError)
 	}
 
