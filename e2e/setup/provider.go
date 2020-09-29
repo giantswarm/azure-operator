@@ -36,7 +36,7 @@ import (
 
 const (
 	ClusterIPRange           = "172.31.0.0/16"
-	OrganizationNamespace    = "default"
+	OrganizationNamespace    = "org-giantswarm"
 	azureOperatorChartValues = `
 ---
 Installation:
