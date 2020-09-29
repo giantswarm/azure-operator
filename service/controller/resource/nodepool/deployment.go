@@ -77,17 +77,10 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			enableAcceleratedNetworking = *azureMachinePool.Spec.Template.AcceleratedNetworking
 		} else {
 			// Enable accelerated networking if VM type supports it.
-			client, err := r.ClientFactory.GetResourceSkusClient(ctx, cluster.ObjectMeta)
+			enableAcceleratedNetworking, err = r.vmsku.HasCapability(ctx, azureMachinePool.Spec.Template.VMSize, vmsku.CapabilityAcceleratedNetworking)
 			if err != nil {
 				return azureresource.Deployment{}, microerror.Mask(err)
 			}
-
-			vmSKU, err := vmsku.New(ctx, client, azureMachinePool.Spec.Template.VMSize)
-			if err != nil {
-				return azureresource.Deployment{}, microerror.Mask(err)
-			}
-
-			enableAcceleratedNetworking = vmSKU.HasCapability(vmsku.CapabilityAcceleratedNetworking)
 		}
 	}
 

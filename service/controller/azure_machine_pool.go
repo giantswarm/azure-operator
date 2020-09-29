@@ -24,6 +24,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfigblob"
@@ -197,6 +198,17 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		InstanceWatchdog: iwd,
 	}
 
+	var vmSKU *vmsku.Interface
+	{
+		vmSKU, err = vmsku.New(vmsku.Config{
+			ClientFactory: clientFactory,
+			Location:      config.Azure.Location,
+		})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var nodepoolResource resource.Interface
 	{
 		c := nodepool.Config{
@@ -205,6 +217,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			CtrlClient:                config.K8sClient.CtrlClient(),
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 			TenantRestConfigProvider:  tenantRestConfigProvider,
+			VMSKU:                     vmSKU,
 		}
 
 		nodepoolResource, err = nodepool.New(c)

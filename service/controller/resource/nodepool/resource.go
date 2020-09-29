@@ -13,6 +13,7 @@ import (
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
 )
@@ -27,6 +28,7 @@ type Config struct {
 	CtrlClient                ctrlclient.Client
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	TenantRestConfigProvider  tenantcluster.Interface
+	VMSKU                     *vmsku.Interface
 }
 
 // Resource takes care of node pool life cycle.
@@ -37,6 +39,7 @@ type Resource struct {
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	k8sClient                 kubernetes.Interface
 	tenantRestConfigProvider  tenantcluster.Interface
+	vmsku                     *vmsku.Interface
 }
 
 func New(config Config) (*Resource, error) {
@@ -54,6 +57,7 @@ func New(config Config) (*Resource, error) {
 		GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 		k8sClient:                 config.K8sClient,
 		tenantRestConfigProvider:  config.TenantRestConfigProvider,
+		vmsku:                     config.VMSKU,
 	}
 	stateMachine := r.createStateMachine()
 	r.SetStateMachine(stateMachine)
