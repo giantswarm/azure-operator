@@ -10,6 +10,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
@@ -203,8 +204,8 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 			secretList,
 			client.InNamespace(objectMeta.Namespace),
 			client.MatchingLabels{
-				label.App:          "credentiald",
-				label.Organization: key.OrganizationID(&objectMeta),
+				label.App:                        "credentiald",
+				apiextensionslabels.Organization: key.OrganizationID(&objectMeta),
 			},
 		)
 		if err != nil {
@@ -219,7 +220,6 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 	}
 
 	if len(secretList.Items) < 1 {
-		f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found these items %v", secretList.Items), "lenItems", len(secretList.Items))
 		return nil, microerror.Mask(credentialsNotFoundError)
 	}
 
@@ -247,8 +247,8 @@ func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, obj
 			secretList,
 			client.InNamespace(credentialDefaultNamespace),
 			client.MatchingLabels{
-				label.App:          "credentiald",
-				label.Organization: key.OrganizationID(&objectMeta),
+				label.App:                        "credentiald",
+				apiextensionslabels.Organization: key.OrganizationID(&objectMeta),
 			},
 		)
 		if err != nil {
@@ -263,7 +263,6 @@ func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, obj
 	}
 
 	if len(secretList.Items) < 1 {
-		f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found these items %v", secretList.Items), "lenItems", len(secretList.Items))
 		return nil, microerror.Mask(credentialsNotFoundError)
 	}
 

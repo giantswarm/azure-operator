@@ -312,9 +312,10 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Name:      env.ClusterID(),
 				Namespace: OrganizationNamespace,
 				Labels: map[string]string{
-					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
-					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+					label.Organization:         organization,
+					label.Cluster:              env.ClusterID(),
+					label.AzureOperatorVersion: env.GetOperatorVersion(),
+					label.ReleaseVersion:       strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 				Annotations: map[string]string{
 					annotation.ClusterDescription: "friendly cluster name",
@@ -575,8 +576,8 @@ func credentialDefault() *corev1.Secret {
 			Namespace: OrganizationNamespace,
 			Labels: map[string]string{
 				"app":                        "credentiald",
-				"giantswarm.io/managed-by":   "credentiald",
-				"giantswarm.io/organization": "giantswarm",
+				label.ManagedBy:              "credentiald",
+				label.Organization:           "giantswarm",
 				"giantswarm.io/service-type": "system",
 			},
 		},
