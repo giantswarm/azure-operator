@@ -442,7 +442,7 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      nodepoolID,
-				Namespace: metav1.NamespaceDefault,
+				Namespace: OrganizationNamespace,
 				Labels: map[string]string{
 					capiv1alpha3.ClusterLabelName: env.ClusterID(),
 					label.AzureOperatorVersion:    env.GetOperatorVersion(),
