@@ -69,6 +69,9 @@ const (
 	ContainerLinuxComponentName = "containerlinux"
 
 	OrganizationSecretsLabelSelector = "app=credentiald" // nolint:gosec
+
+	credentialDefaultNamespace = "giantswarm"
+	credentialDefaultName      = "credential-default"
 )
 
 // Container image versions for k8scloudconfig.
@@ -244,12 +247,20 @@ func ClusterTags(customObject providerv1alpha1.AzureConfig, installationName str
 
 // CredentialName returns name of the credential secret.
 func CredentialName(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.CredentialSecret.Name
+	name := customObject.Spec.Azure.CredentialSecret.Name
+	if name == "" {
+		name = credentialDefaultName
+	}
+	return name
 }
 
 // CredentialNamespace returns namespace of the credential secret.
 func CredentialNamespace(customObject providerv1alpha1.AzureConfig) string {
-	return customObject.Spec.Azure.CredentialSecret.Namespace
+	namespace := customObject.Spec.Azure.CredentialSecret.Namespace
+	if namespace == "" {
+		namespace = credentialDefaultNamespace
+	}
+	return namespace
 }
 
 func DefaultVersions() k8scloudconfig.Versions {
