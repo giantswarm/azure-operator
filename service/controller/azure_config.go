@@ -32,6 +32,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfigfinalizer"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
@@ -253,6 +254,19 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 
 		tenantCluster, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureconfigFinalizerResource resource.Interface
+	{
+		c := azureconfigfinalizer.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		azureconfigFinalizerResource, err = azureconfigfinalizer.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -647,6 +661,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	}
 
 	resources := []resource.Interface{
+		azureconfigFinalizerResource,
 		clusteridResource,
 		capzcrsResource,
 		namespaceResource,
