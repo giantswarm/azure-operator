@@ -45,3 +45,12 @@ var tooManyCredentialsError = &microerror.Error{
 func IsTooManyCredentials(err error) bool {
 	return microerror.Cause(err) == tooManyCredentialsError
 }
+
+var credentialsNotFoundError = &microerror.Error{
+	Kind: "credentialsNotFoundError",
+}
+
+// IsCredentialsNotFoundError asserts credentialsNotFoundError.
+func IsCredentialsNotFoundError(err error) bool {
+	return microerror.Cause(err) == credentialsNotFoundError
+}
