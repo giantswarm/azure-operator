@@ -27,6 +27,8 @@ type AzureClientSet struct {
 
 	// DeploymentsClient manages deployments of ARM templates.
 	DeploymentsClient *resources.DeploymentsClient
+	// DeploymentsClient manages deployments of ARM templates.
+	DisksClient *compute.DisksClient
 	// GroupsClient manages ARM resource groups.
 	GroupsClient *resources.GroupsClient
 	// DNSRecordSetsClient manages DNS zones' records.
@@ -41,6 +43,8 @@ type AzureClientSet struct {
 	PublicIpAddressesClient *network.PublicIPAddressesClient
 	// SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
+	// SnapshotsClient manages snapshots.
+	SnapshotsClient *compute.SnapshotsClient
 	// StorageAccountsClient manages blobs in storage containers.
 	StorageAccountsClient *storage.AccountsClient
 	// SubnetsClient manages subnets.
@@ -77,6 +81,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	disksClient, err := newDisksClient(authorizer, subscriptionID, partnerID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	dnsRecordSetsClient, err := newDNSRecordSetsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -102,6 +110,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		return nil, microerror.Mask(err)
 	}
 	securityRulesClient, err := newSecurityRulesClient(authorizer, subscriptionID, partnerID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	snapshotsClient, err := newSnapshotsClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -144,6 +156,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 
 	clientSet := &AzureClientSet{
 		DeploymentsClient:                      toDeploymentsClient(deploymentsClient),
+		DisksClient:                            toDisksClient(disksClient),
 		DNSRecordSetsClient:                    toDNSRecordSetsClient(dnsRecordSetsClient),
 		DNSZonesClient:                         dnsZonesClient,
 		GroupsClient:                           toGroupsClient(groupsClient),
@@ -151,6 +164,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		NatGatewaysClient:                      toNatGatewaysClient(natGatewaysClient),
 		PublicIpAddressesClient:                publicIpAddressesClient,
 		SecurityRulesClient:                    securityRulesClient,
+		SnapshotsClient:                        toSnapshotsClient(snapshotsClient),
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
 		SubnetsClient:                          toSubnetsClient(subnetsClient),
 		SubscriptionID:                         subscriptionID,

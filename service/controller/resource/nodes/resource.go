@@ -27,10 +27,10 @@ type Config struct {
 	K8sClient  kubernetes.Interface
 	Logger     micrologger.Logger
 
-	Azure            setting.Azure
-	ClientFactory    client.OrganizationFactory
-	InstanceWatchdog vmsscheck.InstanceWatchdog
-	Name             string
+	Azure                      setting.Azure
+	OrganizationAzureClientSet *client.OrganizationAzureClientSet
+	InstanceWatchdog           vmsscheck.InstanceWatchdog
+	Name                       string
 }
 
 type Resource struct {
@@ -41,10 +41,10 @@ type Resource struct {
 	Logger       micrologger.Logger
 	StateMachine state.Machine
 
-	Azure            setting.Azure
-	ClientFactory    client.OrganizationFactory
-	InstanceWatchdog vmsscheck.InstanceWatchdog
-	name             string
+	Azure                      setting.Azure
+	OrganizationAzureClientSet *client.OrganizationAzureClientSet
+	InstanceWatchdog           vmsscheck.InstanceWatchdog
+	name                       string
 }
 
 func New(config Config) (*Resource, error) {
@@ -66,6 +66,9 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.OrganizationAzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.OrganizationAzureClientSet must not be empty", config)
+	}
 
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
@@ -82,10 +85,10 @@ func New(config Config) (*Resource, error) {
 		k8sClient:  config.K8sClient,
 		Logger:     config.Logger,
 
-		Azure:            config.Azure,
-		ClientFactory:    config.ClientFactory,
-		InstanceWatchdog: config.InstanceWatchdog,
-		name:             config.Name,
+		Azure:                      config.Azure,
+		OrganizationAzureClientSet: config.OrganizationAzureClientSet,
+		InstanceWatchdog:           config.InstanceWatchdog,
+		name:                       config.Name,
 	}
 
 	return r, nil

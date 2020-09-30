@@ -17,16 +17,13 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &cr.ObjectMeta)
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, cr.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
 
-	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName)
+	d, err := organizationAzureClientSet.DeploymentsClient.Get(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
@@ -38,7 +35,7 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	s := *d.Properties.ProvisioningState
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
 
-	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
+	group, err := organizationAzureClientSet.GroupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

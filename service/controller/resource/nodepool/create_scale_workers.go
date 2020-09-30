@@ -28,17 +28,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &azureMachinePool.ObjectMeta)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
 		return currentState, nil
@@ -56,7 +51,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	desiredWorkerCount := int64(*machinePool.Spec.Replicas * 2)
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
 
-	currentWorkerCount, err := r.GetInstancesCount(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	currentWorkerCount, err := r.GetInstancesCount(ctx, organizationAzureClientSet.VirtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
@@ -64,17 +59,17 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 
 	if desiredWorkerCount > currentWorkerCount {
 		// Disable cluster autoscaler for this nodepool.
-		err = r.disableClusterAutoscaler(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		err = r.disableClusterAutoscaler(ctx, organizationAzureClientSet.VirtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), desiredWorkerCount, strategy)
+		err = r.ScaleVMSS(ctx, organizationAzureClientSet.VirtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), desiredWorkerCount, strategy)
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		r.InstanceWatchdog.GuardVMSS(ctx, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
 
 		// Let's stay in the current state.
@@ -96,9 +91,9 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &azureMachinePool.ObjectMeta)
 	if err != nil {
-		return currentState, microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	// Scale down to the desired number of nodes in worker VMSS.
@@ -106,7 +101,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
 
 	strategy := scalestrategy.Quick{}
-	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), int64(desiredWorkerCount), strategy)
+	err = r.ScaleVMSS(ctx, organizationAzureClientSet.VirtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), int64(desiredWorkerCount), strategy)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
@@ -114,7 +109,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
 
 	// Enable cluster autoscaler for this nodepool.
-	err = r.enableClusterAutoscaler(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	err = r.enableClusterAutoscaler(ctx, organizationAzureClientSet.VirtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

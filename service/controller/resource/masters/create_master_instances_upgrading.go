@@ -201,19 +201,14 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 		return nil
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, customObject.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &customObject.ObjectMeta)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil
 	}
 
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName))
-
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
 
 	resourceGroupName := key.ResourceGroupName(customObject)
 	vmssName := deploymentNameFunc(customObject)
@@ -222,16 +217,16 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 			*instance.InstanceID,
 		}),
 	}
-	res, err := c.Reimage(ctx, resourceGroupName, vmssName, ids)
+	res, err := organizationAzureClientSet.VirtualMachineScaleSetsClient.Reimage(ctx, resourceGroupName, vmssName, ids)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	_, err = c.ReimageResponder(res.Response())
+	_, err = organizationAzureClientSet.VirtualMachineScaleSetsClient.ReimageResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, resourceGroupName, vmssName)
+	r.InstanceWatchdog.GuardVMSS(ctx, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName)
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName))
 
 	return nil
@@ -242,19 +237,14 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 		return nil
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, customObject.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &customObject.ObjectMeta)
 	if err != nil {
-		return microerror.Mask(err)
+		return nil
 	}
 
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
-
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
 
 	resourceGroupName := key.ResourceGroupName(customObject)
 	vmssName := deploymentNameFunc(customObject)
@@ -263,17 +253,17 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 			*instance.InstanceID,
 		}),
 	}
-	res, err := c.UpdateInstances(ctx, resourceGroupName, vmssName, ids)
+	res, err := organizationAzureClientSet.VirtualMachineScaleSetsClient.UpdateInstances(ctx, resourceGroupName, vmssName, ids)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	_, err = c.UpdateInstancesResponder(res.Response())
+	_, err = organizationAzureClientSet.VirtualMachineScaleSetsClient.UpdateInstancesResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
-	r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, resourceGroupName, vmssName)
+	r.InstanceWatchdog.GuardVMSS(ctx, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName)
 
 	return nil
 }

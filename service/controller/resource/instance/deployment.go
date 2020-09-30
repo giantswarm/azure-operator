@@ -28,6 +28,11 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &obj.ObjectMeta)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
 	prefixWorker := key.PrefixWorker()
 
 	workerBlobName := key.BlobName(&obj, prefixWorker)
@@ -63,14 +68,9 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	encryptionKey := encrypter.GetEncryptionKey()
 	initialVector := encrypter.GetInitialVector()
 
-	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, obj.ObjectMeta)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	groupName := key.ResourceGroupName(obj)
 	storageAccountName := key.StorageAccountName(&obj)
-	keys, err := storageAccountsClient.ListKeys(ctx, groupName, storageAccountName, "")
+	keys, err := organizationAzureClientSet.StorageAccountsClient.ListKeys(ctx, groupName, storageAccountName, "")
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}

@@ -107,28 +107,14 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller,
 func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.Interface, error) {
 	var err error
 
-	var clientFactory *client.Factory
+	var organizationAzureClientSet *client.OrganizationAzureClientSet
 	{
-		c := client.FactoryConfig{
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
+		c := client.OrganizationAzureClientSetConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
 			Logger:     config.Logger,
+			Provider:   config.CredentialProvider,
 		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
+		organizationAzureClientSet = client.NewOrganizationAzureClientSet(c)
 	}
 
 	var randomkeysSearcher *randomkeys.Searcher
@@ -206,9 +192,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		K8sClient: config.K8sClient.K8sClient(),
 		Logger:    config.Logger,
 
-		Azure:            config.Azure,
-		ClientFactory:    organizationClientFactory,
-		InstanceWatchdog: iwd,
+		Azure:                      config.Azure,
+		OrganizationAzureClientSet: organizationAzureClientSet,
+		InstanceWatchdog:           iwd,
 	}
 
 	var nodepoolResource resource.Interface
@@ -256,9 +242,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
 	{
 		c := ipam.AzureMachinePoolSubnetCollectorConfig{
-			AzureClientFactory: organizationClientFactory,
-			CtrlClient:         config.K8sClient.CtrlClient(),
-			Logger:             config.Logger,
+			CtrlClient:                 config.K8sClient.CtrlClient(),
+			Logger:                     config.Logger,
+			OrganizationAzureClientSet: organizationAzureClientSet,
 		}
 
 		subnetCollector, err = ipam.NewAzureMachineSubnetCollector(c)
@@ -327,9 +313,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var cloudconfigblobResource resource.Interface
 	{
 		c := cloudconfigblob.Config{
-			ClientFactory: organizationClientFactory,
-			CtrlClient:    config.K8sClient.CtrlClient(),
-			Logger:        config.Logger,
+			CtrlClient:                 config.K8sClient.CtrlClient(),
+			Logger:                     config.Logger,
+			OrganizationAzureClientSet: organizationAzureClientSet,
 		}
 
 		cloudconfigblobResource, err = cloudconfigblob.New(c)

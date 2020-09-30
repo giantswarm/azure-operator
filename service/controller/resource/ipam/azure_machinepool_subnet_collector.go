@@ -19,18 +19,18 @@ import (
 )
 
 type AzureMachinePoolSubnetCollectorConfig struct {
-	AzureClientFactory client.OrganizationFactory
-	CtrlClient         ctrl.Client
-	Logger             micrologger.Logger
+	CtrlClient                 ctrl.Client
+	Logger                     micrologger.Logger
+	OrganizationAzureClientSet *client.OrganizationAzureClientSet
 }
 
 // AzureMachinePoolSubnetCollector is a Collector implementation that collects all subnets that are
 // already allocated in tenant cluster virtual network. See Collect function implementation and
 // docs for more details.
 type AzureMachinePoolSubnetCollector struct {
-	azureClientFactory client.OrganizationFactory
-	ctrlClient         ctrl.Client
-	logger             micrologger.Logger
+	ctrlClient                 ctrl.Client
+	logger                     micrologger.Logger
+	organizationAzureClientSet *client.OrganizationAzureClientSet
 }
 
 func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig) (*AzureMachinePoolSubnetCollector, error) {
@@ -40,11 +40,14 @@ func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.OrganizationAzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.OrganizationAzureClientSet must not be empty", config)
+	}
 
 	c := &AzureMachinePoolSubnetCollector{
-		azureClientFactory: config.AzureClientFactory,
-		ctrlClient:         config.CtrlClient,
-		logger:             config.Logger,
+		organizationAzureClientSet: config.OrganizationAzureClientSet,
+		ctrlClient:                 config.CtrlClient,
+		logger:                     config.Logger,
 	}
 
 	return c, nil
@@ -167,12 +170,14 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 		"level", "debug",
 		"message", fmt.Sprintf("finding subnets created in Azure VNet %q", azureCluster.Spec.NetworkSpec.Vnet.Name))
 
-	subnetsClient, err := c.azureClientFactory.GetSubnetsClient(ctx, azureCluster.ObjectMeta)
+	organizationAzureClientSet, err := c.organizationAzureClientSet.Get(ctx, &azureCluster.ObjectMeta)
 	if err != nil {
 		errorMessage := fmt.Sprintf("error while creating/getting Azure subnets client for cluster %q", azureCluster.Name)
 		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return nil, microerror.Mask(err)
 	}
+
+	subnetsClient := organizationAzureClientSet.SubnetsClient
 
 	// cluster ID is tenant cluster resource group name
 	resourceGroupName := azureCluster.Name

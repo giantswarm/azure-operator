@@ -87,12 +87,12 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, deploymentName string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool ARM deployment")
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	_, err = deploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
+	_, err = organizationAzureClientSet.DeploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
 	if IsDeploymentNotFound(err) {
 		r.Logger.LogCtx(ctx, "message", "Machine pool ARM deployment was already deleted")
 		return nil
@@ -109,12 +109,12 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *ca
 func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, vmssName string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS")
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	_, err = virtualMachineScaleSetsClient.Delete(ctx, resourceGroupName, vmssName)
+	_, err = organizationAzureClientSet.VirtualMachineScaleSetsClient.Delete(ctx, resourceGroupName, vmssName)
 	if IsNotFound(err) {
 		r.Logger.LogCtx(ctx, "message", "Machine pool VMSS was already deleted")
 		return nil

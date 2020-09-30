@@ -18,16 +18,16 @@ const (
 )
 
 type Config struct {
-	ClientFactory client.OrganizationFactory
-	CtrlClient    ctrlclient.Client
-	Logger        micrologger.Logger
+	CtrlClient                 ctrlclient.Client
+	Logger                     micrologger.Logger
+	OrganizationAzureClientSet *client.OrganizationAzureClientSet
 }
 
 // Resource manages the blob saved in Azure Storage Account that contains the cloudconfig files to bootstrap our virtual machines.
 type Resource struct {
-	clientFactory client.OrganizationFactory
-	ctrlClient    ctrlclient.Client
-	logger        micrologger.Logger
+	ctrlClient                 ctrlclient.Client
+	logger                     micrologger.Logger
+	organizationAzureClientSet *client.OrganizationAzureClientSet
 }
 
 func New(config Config) (*Resource, error) {
@@ -37,11 +37,14 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.OrganizationAzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.OrganizationAzureClientSet must not be empty", config)
+	}
 
 	r := &Resource{
-		clientFactory: config.ClientFactory,
-		ctrlClient:    config.CtrlClient,
-		logger:        config.Logger,
+		ctrlClient:                 config.CtrlClient,
+		logger:                     config.Logger,
+		organizationAzureClientSet: config.OrganizationAzureClientSet,
 	}
 
 	return r, nil

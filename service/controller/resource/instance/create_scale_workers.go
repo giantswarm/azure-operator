@@ -29,9 +29,9 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return "", microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, cr.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &cr.ObjectMeta)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	desiredWorkerCount := int64(key.WorkerCount(cr) * 2)
@@ -43,7 +43,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
 
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 	if vmsscheck.IsVMSSUnsafeError(err) {
 		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
 		return ScaleUpWorkerVMSS, nil
@@ -65,7 +65,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 			return "", microerror.Mask(err)
 		}
 
-		r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		r.InstanceWatchdog.GuardVMSS(ctx, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 
 		// Let's stay in the current state.
 		return ScaleUpWorkerVMSS, nil
@@ -76,12 +76,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 }
 
 func (r *Resource) getInstancesCount(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) (int64, error) {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &customObject.ObjectMeta)
 	if err != nil {
 		return -1, microerror.Mask(err)
 	}
 
-	vmss, err := c.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
+	vmss, err := organizationAzureClientSet.VirtualMachineScaleSetsClient.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
@@ -113,12 +113,12 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 }
 
 func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &customObject.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	vmss, err := c.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
+	vmss, err := organizationAzureClientSet.VirtualMachineScaleSetsClient.Get(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -126,12 +126,12 @@ func (r *Resource) scaleVMSS(ctx context.Context, customObject providerv1alpha1.
 	computedCount := scaleStrategy.GetNodeCount(*vmss.Sku.Capacity, desiredNodeCount)
 
 	*vmss.Sku.Capacity = computedCount
-	res, err := c.CreateOrUpdate(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject), vmss)
+	res, err := organizationAzureClientSet.VirtualMachineScaleSetsClient.CreateOrUpdate(ctx, key.ResourceGroupName(customObject), deploymentNameFunc(customObject), vmss)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	_, err = c.CreateOrUpdateResponder(res.Response())
+	_, err = organizationAzureClientSet.VirtualMachineScaleSetsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -19,6 +19,11 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &cr.ObjectMeta)
+	if err != nil {
+		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
@@ -34,11 +39,6 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
-
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, cr.ObjectMeta)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
 
@@ -66,11 +66,11 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtered instance IDs for old instances")
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminating %d old worker instances", len(*ids.InstanceIds)))
 
-	res, err := c.DeleteInstances(ctx, g, s, ids)
+	res, err := organizationAzureClientSet.VirtualMachineScaleSetsClient.DeleteInstances(ctx, g, s, ids)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
-	_, err = c.DeleteInstancesResponder(res.Response())
+	_, err = organizationAzureClientSet.VirtualMachineScaleSetsClient.DeleteInstancesResponder(res.Response())
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}

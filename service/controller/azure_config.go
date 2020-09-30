@@ -32,6 +32,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfigfinalizer"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
@@ -207,28 +208,14 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
 
-	var clientFactory *client.Factory
+	var organizationAzureClientSet *client.OrganizationAzureClientSet
 	{
-		c := client.FactoryConfig{
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
+		c := client.OrganizationAzureClientSetConfig{
 			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
 			Logger:     config.Logger,
+			Provider:   config.CredentialProvider,
 		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
+		organizationAzureClientSet = client.NewOrganizationAzureClientSet(c)
 	}
 
 	var newDebugger *debugger.Debugger
@@ -253,6 +240,19 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 
 		tenantCluster, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureconfigFinalizerResource resource.Interface
+	{
+		c := azureconfigfinalizer.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		azureconfigFinalizerResource, err = azureconfigfinalizer.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -403,7 +403,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			Logger:           config.Logger,
 
 			Azure:                      config.Azure,
-			ClientFactory:              organizationClientFactory,
+			OrganizationAzureClientSet: organizationAzureClientSet,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
 			Debug:                      config.Debug,
 		}
@@ -471,9 +471,9 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		K8sClient:  config.K8sClient.K8sClient(),
 		Logger:     config.Logger,
 
-		Azure:            config.Azure,
-		ClientFactory:    organizationClientFactory,
-		InstanceWatchdog: iwd,
+		Azure:                      config.Azure,
+		OrganizationAzureClientSet: organizationAzureClientSet,
+		InstanceWatchdog:           iwd,
 	}
 
 	var mastersResource resource.Interface
@@ -647,6 +647,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	}
 
 	resources := []resource.Interface{
+		azureconfigFinalizerResource,
 		clusteridResource,
 		capzcrsResource,
 		namespaceResource,

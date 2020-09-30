@@ -38,7 +38,7 @@ type Config struct {
 	Logger           micrologger.Logger
 
 	Azure                      setting.Azure
-	ClientFactory              client.OrganizationFactory
+	OrganizationAzureClientSet *client.OrganizationAzureClientSet
 	ControlPlaneSubscriptionID string
 	Debug                      setting.Debug
 }
@@ -50,7 +50,7 @@ type Resource struct {
 	logger           micrologger.Logger
 
 	azure                      setting.Azure
-	clientFactory              client.OrganizationFactory
+	organizationAzureClientSet *client.OrganizationAzureClientSet
 	controlPlaneSubscriptionID string
 	debug                      setting.Debug
 }
@@ -79,6 +79,9 @@ func New(config Config) (*Resource, error) {
 	if config.ControlPlaneSubscriptionID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ControlPlaneSubscriptionID must not be empty", config)
 	}
+	if config.OrganizationAzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.OrganizationAzureClientSet must not be empty", config)
+	}
 
 	r := &Resource{
 		debugger:         config.Debugger,
@@ -87,7 +90,7 @@ func New(config Config) (*Resource, error) {
 		logger:           config.Logger,
 
 		azure:                      config.Azure,
-		clientFactory:              config.ClientFactory,
+		organizationAzureClientSet: config.OrganizationAzureClientSet,
 		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
 		debug:                      config.Debug,
 	}
@@ -108,10 +111,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+	organizationAzureClientSet, err := r.organizationAzureClientSet.Get(ctx, &cr.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	deploymentsClient := organizationAzureClientSet.DeploymentsClient
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 

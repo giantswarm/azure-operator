@@ -48,28 +48,13 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
 	// Compute desired state for Azure ARM Deployment.
-	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, machinePool, &azureMachinePool, cluster, azureCluster)
+	desiredDeployment, err := r.getDesiredDeployment(ctx, organizationAzureClientSet.StorageAccountsClient, release, machinePool, &azureMachinePool, cluster, azureCluster)
 	if IsNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "Azure resource not found")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -83,7 +68,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	// Fetch current Azure ARM Deployment.
-	currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolDeploymentName(&azureMachinePool))
+	currentDeployment, err := organizationAzureClientSet.DeploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolDeploymentName(&azureMachinePool))
 	if IsDeploymentNotFound(err) {
 		// We haven't created the deployment just yet, it's fine.
 	} else if err != nil {
@@ -110,7 +95,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if deploymentNeedsToBeSubmitted {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
 
-		_, err = r.ensureDeployment(ctx, deploymentsClient, desiredDeployment, &azureMachinePool)
+		_, err = r.ensureDeployment(ctx, organizationAzureClientSet.DeploymentsClient, desiredDeployment, &azureMachinePool)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
@@ -129,7 +114,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "ARM deployment has failed, re-applying")
 		r.Debugger.LogFailedDeployment(ctx, currentDeployment, err)
 
-		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient, &azureMachinePool)
+		err := r.saveAzureIDsInCR(ctx, organizationAzureClientSet.VirtualMachineScaleSetsClient, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, &azureMachinePool)
 		if err != nil {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -140,7 +125,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		// This indicates some kind of error in the deployment template and/or parameters.
 		// Restart state machine on the next loop to apply the deployment once again.
 		// (If the azure operator has been fixed/updated in the meantime that could lead to a fix).
-		_, err = r.ensureDeployment(ctx, deploymentsClient, desiredDeployment, &azureMachinePool)
+		_, err = r.ensureDeployment(ctx, organizationAzureClientSet.DeploymentsClient, desiredDeployment, &azureMachinePool)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
@@ -151,7 +136,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	default:
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
 
-		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient, &azureMachinePool)
+		err := r.saveAzureIDsInCR(ctx, organizationAzureClientSet.VirtualMachineScaleSetsClient, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, &azureMachinePool)
 		if err != nil {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")

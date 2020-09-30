@@ -42,12 +42,12 @@ type Resource struct {
 func New(config Config) (*Resource, error) {
 	r := &Resource{
 		Resource: nodes.Resource{
-			Logger:           config.Logger,
-			Debugger:         config.Debugger,
-			G8sClient:        config.G8sClient,
-			Azure:            config.Azure,
-			ClientFactory:    config.ClientFactory,
-			InstanceWatchdog: config.InstanceWatchdog,
+			Logger:                     config.Logger,
+			Debugger:                   config.Debugger,
+			G8sClient:                  config.G8sClient,
+			Azure:                      config.Azure,
+			OrganizationAzureClientSet: config.OrganizationAzureClientSet,
+			InstanceWatchdog:           config.InstanceWatchdog,
 		},
 		CredentialProvider:        config.CredentialProvider,
 		CtrlClient:                config.CtrlClient,

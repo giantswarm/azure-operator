@@ -115,17 +115,12 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClie
 }
 
 func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, azureMachinePool *v1alpha3.AzureMachinePool, instanceNameFunc func(nodePoolId, instanceID string) string) ([]corev1.Node, []corev1.Node, error) {
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return nil, nil, microerror.Mask(err)
-	}
-
-	vmss, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
+	vmss, err := organizationAzureClientSet.VirtualMachineScaleSetsClient.Get(ctx, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
@@ -143,7 +138,7 @@ func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8
 	{
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
 
-		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
+		allWorkerInstances, err = r.GetVMSSInstances(ctx, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}

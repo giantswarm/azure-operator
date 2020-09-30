@@ -20,22 +20,15 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+
+	organizationAzureClientSet, err := r.OrganizationAzureClientSet.Get(ctx, &cr.ObjectMeta)
 	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, cr.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, cr.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
+		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
-	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
+	group, err := organizationAzureClientSet.GroupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -55,12 +48,12 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	} else {
-		res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), key.WorkersVmssDeploymentName, computedDeployment)
+		res, err := organizationAzureClientSet.DeploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), key.WorkersVmssDeploymentName, computedDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
 
-		_, err = deploymentsClient.CreateOrUpdateResponder(res.Response())
+		_, err = organizationAzureClientSet.DeploymentsClient.CreateOrUpdateResponder(res.Response())
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}
@@ -100,7 +93,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		}
 
 		// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
-		r.InstanceWatchdog.DeleteFailedVMSS(ctx, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
+		r.InstanceWatchdog.DeleteFailedVMSS(ctx, organizationAzureClientSet.VirtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)

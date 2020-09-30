@@ -17,10 +17,11 @@ import (
 // would not get the nat gateway attached to their masters without this function.
 // It can be deleted once all tenant clusters will have the nat gateway enabled.
 func (r *Resource) ensureNatGatewayForMasterSubnet(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	subnetsClient, err := r.clientFactory.GetSubnetsClient(ctx, cr.ObjectMeta)
+	organizationAzureClientSet, err := r.organizationAzureClientSet.Get(ctx, &cr.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+	subnetsClient := organizationAzureClientSet.SubnetsClient
 
 	r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("Checking if subnet %s has the nat gateway set as expected", key.MasterSubnetName(cr)))
 
