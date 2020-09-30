@@ -162,7 +162,7 @@ func (r *Resource) buildAzureClusterConfig(ctx context.Context, cluster capiv1al
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
 	}
 
-	credentialSecret, err := r.getCredentialSecret(ctx, cluster)
+	credentialSecret, err := r.getCredentialSecret(ctx, cluster.ObjectMeta)
 	if err != nil {
 		return corev1alpha1.AzureClusterConfig{}, microerror.Mask(err)
 	}

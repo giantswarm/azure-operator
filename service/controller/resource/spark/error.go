@@ -70,3 +70,12 @@ var unknownKindError = &microerror.Error{
 func IsUnknownKindError(err error) bool {
 	return microerror.Cause(err) == unknownKindError
 }
+
+var credentialsNotFoundError = &microerror.Error{
+	Kind: "credentialsNotFoundError",
+}
+
+// IsCredentialsNotFoundError asserts credentialsNotFoundError.
+func IsCredentialsNotFoundError(err error) bool {
+	return microerror.Cause(err) == credentialsNotFoundError
+}
