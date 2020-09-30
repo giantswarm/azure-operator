@@ -203,6 +203,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		vmSKU, err = vmsku.New(vmsku.Config{
 			ClientFactory: clientFactory,
 			Location:      config.Azure.Location,
+			Logger:        config.Logger,
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)
