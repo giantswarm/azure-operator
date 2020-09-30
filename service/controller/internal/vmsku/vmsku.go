@@ -91,8 +91,6 @@ func (v *Interface) initCache(ctx context.Context) error {
 	for iterator.NotDone() {
 		sku := iterator.Value()
 
-		v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Adding SKU %s in cache", *sku.Name))
-
 		skus[*sku.Name] = &sku
 
 		err := iterator.NextWithContext(ctx)
@@ -100,6 +98,8 @@ func (v *Interface) initCache(ctx context.Context) error {
 			return microerror.Mask(err)
 		}
 	}
+
+	v.skus = skus
 
 	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Number of SKUs in cache: '%d'", len(skus)))
 
