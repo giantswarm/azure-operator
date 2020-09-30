@@ -132,7 +132,9 @@ func init() {
 func AzureAvailabilityZones() []int {
 	azureAvailabilityZones := os.Getenv(EnvVarAzureAZs)
 	if azureAvailabilityZones == "" {
-		return []int{}
+		return []int{
+			1,
+		}
 	}
 
 	azs := strings.Split(strings.TrimSpace(azureAvailabilityZones), " ")

@@ -43,10 +43,9 @@ func init() {
 
 	{
 		c := Config{
-			Logger:          config.Logger,
-			Provider:        p,
-			ClusterID:       env.ClusterID(),
-			TargetNamespace: config.Host.TargetNamespace(),
+			Logger:    config.Logger,
+			Provider:  p,
+			ClusterID: env.ClusterID(),
 		}
 
 		deletecluster, err = New(c)
