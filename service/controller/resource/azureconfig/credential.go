@@ -15,7 +15,8 @@ import (
 )
 
 const (
-	credentialDefaultName = "credential-default"
+	credentialDefaultNamespace = "giantswarm"
+	credentialDefaultName      = "credential-default"
 )
 
 func (r *Resource) getCredentialSecret(ctx context.Context, cluster capiv1alpha3.Cluster) (*v1alpha1.CredentialSecret, error) {
@@ -59,7 +60,7 @@ func (r *Resource) getCredentialSecret(ctx context.Context, cluster capiv1alpha3
 
 	// If no credential secrets are found, we use the default.
 	credentialSecret := &v1alpha1.CredentialSecret{
-		Namespace: cluster.Namespace,
+		Namespace: credentialDefaultNamespace,
 		Name:      credentialDefaultName,
 	}
 
