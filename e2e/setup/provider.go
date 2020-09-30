@@ -202,7 +202,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		encryptionSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", e2ekey.TestAppReleaseName(), "encryption"),
-				Namespace: OrganizationNamespace,
+				Namespace: metav1.NamespaceDefault,
 				Labels: map[string]string{
 					"giantswarm.io/cluster":   env.ClusterID(),
 					"giantswarm.io/randomkey": "encryption",
@@ -214,14 +214,15 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 			Type: "Opaque",
 		}
 
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(OrganizationNamespace).Create(ctx, encryptionSecret, metav1.CreateOptions{})
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(encryptionSecret.Namespace).Create(ctx, encryptionSecret, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(OrganizationNamespace).Create(ctx, credentialDefault(), metav1.CreateOptions{})
+		credentialDefault := credentialDefault()
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(credentialDefault.Namespace).Create(ctx, credentialDefault, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
