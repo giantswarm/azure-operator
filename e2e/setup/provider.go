@@ -36,7 +36,7 @@ import (
 
 const (
 	ClusterIPRange           = "172.31.0.0/16"
-	OrganizationNamespace    = "default"
+	OrganizationNamespace    = "org-giantswarm"
 	azureOperatorChartValues = `
 ---
 Installation:
@@ -202,7 +202,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		encryptionSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      fmt.Sprintf("%s-%s", e2ekey.TestAppReleaseName(), "encryption"),
-				Namespace: OrganizationNamespace,
+				Namespace: metav1.NamespaceDefault,
 				Labels: map[string]string{
 					"giantswarm.io/cluster":   env.ClusterID(),
 					"giantswarm.io/randomkey": "encryption",
@@ -214,14 +214,15 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 			Type: "Opaque",
 		}
 
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(OrganizationNamespace).Create(ctx, encryptionSecret, metav1.CreateOptions{})
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(encryptionSecret.Namespace).Create(ctx, encryptionSecret, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(OrganizationNamespace).Create(ctx, credentialDefault(), metav1.CreateOptions{})
+		credentialDefault := credentialDefault()
+		_, err := config.K8sClients.K8sClient().CoreV1().Secrets(credentialDefault.Namespace).Create(ctx, credentialDefault, metav1.CreateOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -312,9 +313,10 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 				Name:      env.ClusterID(),
 				Namespace: OrganizationNamespace,
 				Labels: map[string]string{
-					"giantswarm.io/cluster":                env.ClusterID(),
-					"azure-operator.giantswarm.io/version": env.GetOperatorVersion(),
-					"release.giantswarm.io/version":        strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
+					label.Organization:         organization,
+					label.Cluster:              env.ClusterID(),
+					label.AzureOperatorVersion: env.GetOperatorVersion(),
+					label.ReleaseVersion:       strings.TrimPrefix(giantSwarmRelease.GetName(), "v"),
 				},
 				Annotations: map[string]string{
 					annotation.ClusterDescription: "friendly cluster name",
@@ -442,7 +444,7 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 			},
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      nodepoolID,
-				Namespace: metav1.NamespaceDefault,
+				Namespace: OrganizationNamespace,
 				Labels: map[string]string{
 					capiv1alpha3.ClusterLabelName: env.ClusterID(),
 					label.AzureOperatorVersion:    env.GetOperatorVersion(),
@@ -575,8 +577,8 @@ func credentialDefault() *corev1.Secret {
 			Namespace: OrganizationNamespace,
 			Labels: map[string]string{
 				"app":                        "credentiald",
-				"giantswarm.io/managed-by":   "credentiald",
-				"giantswarm.io/organization": "giantswarm",
+				label.ManagedBy:              "credentiald",
+				label.Organization:           "giantswarm",
 				"giantswarm.io/service-type": "system",
 			},
 		},

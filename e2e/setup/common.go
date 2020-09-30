@@ -18,6 +18,12 @@ func common(ctx context.Context, config Config, giantSwarmRelease releasev1alpha
 			return microerror.Mask(err)
 		}
 	}
+	{
+		err := config.K8s.EnsureNamespaceCreated(ctx, OrganizationNamespace)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
 
 	// Install Vault.
 	{

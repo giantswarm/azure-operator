@@ -15,6 +15,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+
+	"github.com/giantswarm/azure-operator/v4/e2e/setup"
 )
 
 func Test_ClusterDeletion(t *testing.T) {
@@ -25,17 +27,15 @@ func Test_ClusterDeletion(t *testing.T) {
 }
 
 type Config struct {
-	ClusterID       string
-	Logger          micrologger.Logger
-	Provider        *Provider
-	TargetNamespace string
+	ClusterID string
+	Logger    micrologger.Logger
+	Provider  *Provider
 }
 
 type ClusterDeletion struct {
-	clusterID       string
-	logger          micrologger.Logger
-	provider        *Provider
-	targetNamespace string
+	clusterID string
+	logger    micrologger.Logger
+	provider  *Provider
 }
 
 func New(config Config) (*ClusterDeletion, error) {
@@ -48,15 +48,11 @@ func New(config Config) (*ClusterDeletion, error) {
 	if config.ClusterID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterID must not be empty", config)
 	}
-	if config.TargetNamespace == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TargetNamespace must not be empty", config)
-	}
 
 	s := &ClusterDeletion{
-		logger:          config.Logger,
-		provider:        config.Provider,
-		clusterID:       config.ClusterID,
-		targetNamespace: config.TargetNamespace,
+		logger:    config.Logger,
+		provider:  config.Provider,
+		clusterID: config.ClusterID,
 	}
 
 	return s, nil
@@ -66,7 +62,7 @@ func (s *ClusterDeletion) Test(ctx context.Context) error {
 	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting Cluster CR %#q", s.provider.clusterID))
 	cluster := &capiv1alpha3.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
-			Namespace: s.targetNamespace,
+			Namespace: setup.OrganizationNamespace,
 			Name:      s.clusterID,
 		},
 		Spec: capiv1alpha3.ClusterSpec{},
