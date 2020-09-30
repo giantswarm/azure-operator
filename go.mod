@@ -18,7 +18,6 @@ require (
 	github.com/giantswarm/e2eclients v0.2.0
 	github.com/giantswarm/e2esetup/v2 v2.1.0
 	github.com/giantswarm/e2etemplates v0.2.0
-	github.com/giantswarm/e2etests/v2 v2.0.0
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/helmclient/v2 v2.0.0
 	github.com/giantswarm/ipam v0.2.0

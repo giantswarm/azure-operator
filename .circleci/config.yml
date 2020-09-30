@@ -9,7 +9,7 @@ workflows:
       - architect/go-build:
           name: go-build
           binary: azure-operator
-          resource_class: large
+          resource_class: xlarge
           filters:
             tags:
               only: /^v.*/
@@ -47,27 +47,6 @@ workflows:
           requires:
             - push-azure-operator-to-control-plane-app-catalog
 
-#      - architect/integration-test:
-#          name: cluster-state-test
-#          resource_class: large
-#          setup-script: "e2e/config/setup.sh"
-#          env-file: "e2e/test/clusterstate/.env"
-#          test-dir: "e2e/test/clusterstate"
-#          test-timeout: "90m"
-#          requires:
-#          - hold
-#          - push-azure-operator-to-control-plane-app-catalog
-
-      - architect/integration-test:
-          name: scaling-test
-          resource_class: large
-          setup-script: "e2e/config/setup.sh"
-          env-file: "e2e/test/scaling/.env"
-          test-dir: "e2e/test/scaling"
-          test-timeout: "90m"
-          requires:
-          - hold
-
       - architect/integration-test:
           name: multiaz-test
           resource_class: large
@@ -97,17 +76,6 @@ workflows:
           test-timeout: "240m"
           requires:
           - hold
-
-       # this test is known to be broken for releases < 4.2.1
-#      - architect/integration-test:
-#          name: update-test
-#          resource_class: large
-#          setup-script: "e2e/config/setup.sh"
-#          env-file: "e2e/test/update/.env"
-#          test-dir: "e2e/test/update"
-#          test-timeout: "180m"
-#          requires:
-#          - hold
 
       - architect/integration-test:
           name: cp-tc-connectivity-test
