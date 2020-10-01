@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"strings"
+	"sync"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/microerror"
@@ -30,6 +31,7 @@ type VMSKUs struct {
 	location      string
 	skus          map[string]*compute.ResourceSku
 	logger        micrologger.Logger
+	mux           sync.Mutex
 }
 
 func New(config Config) (*VMSKUs, error) {
@@ -50,11 +52,9 @@ func New(config Config) (*VMSKUs, error) {
 }
 
 func (v *VMSKUs) HasCapability(ctx context.Context, vmType string, name string) (bool, error) {
-	if len(v.skus) == 0 {
-		err := v.initCache(ctx)
-		if err != nil {
-			return false, microerror.Mask(err)
-		}
+	err := v.ensureInitialized(ctx)
+	if err != nil {
+		return false, microerror.Mask(err)
 	}
 	vmsku, found := v.skus[vmType]
 	if !found {
@@ -70,6 +70,19 @@ func (v *VMSKUs) HasCapability(ctx context.Context, vmType string, name string) 
 		}
 	}
 	return false, nil
+}
+
+func (v *VMSKUs) ensureInitialized(ctx context.Context) error {
+	v.mux.Lock()
+	defer v.mux.Unlock()
+	if len(v.skus) == 0 {
+		err := v.initCache(ctx)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
 }
 
 func (v *VMSKUs) getResourcesSkusClient() (*compute.ResourceSkusClient, error) {
