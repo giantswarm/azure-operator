@@ -16,7 +16,6 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/crud"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/retryresource"
-	"github.com/giantswarm/randomkeys/v2"
 	"github.com/giantswarm/statusresource/v2"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
@@ -113,19 +112,6 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 		}
 	}
 
-	var randomkeysSearcher *randomkeys.Searcher
-	{
-		c := randomkeys.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-		}
-
-		randomkeysSearcher, err = randomkeys.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var resources []resource.Interface
 	{
 		resources, err = newAzureConfigResources(config, certsSearcher)
@@ -156,13 +142,11 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 				var cloudConfig *cloudconfig.CloudConfig
 				{
 					c := cloudconfig.Config{
-						CertsSearcher:      certsSearcher,
-						Logger:             config.Logger,
-						RandomkeysSearcher: randomkeysSearcher,
-
 						Azure:                  config.Azure,
 						AzureClientCredentials: organizationAzureClientCredentialsConfig,
+						CtrlClient:             config.K8sClient.CtrlClient(),
 						Ignition:               config.Ignition,
+						Logger:                 config.Logger,
 						OIDC:                   config.OIDC,
 						RegistryMirrors:        config.RegistryMirrors,
 						SSOPublicKey:           config.SSOPublicKey,
