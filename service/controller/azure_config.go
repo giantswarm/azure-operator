@@ -16,7 +16,6 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/crud"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/retryresource"
-	"github.com/giantswarm/randomkeys/v2"
 	"github.com/giantswarm/statusresource/v2"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
@@ -32,6 +31,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfigfinalizer"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/blobobject"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/capzcrs"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterid"
@@ -112,19 +112,6 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 		}
 	}
 
-	var randomkeysSearcher *randomkeys.Searcher
-	{
-		c := randomkeys.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-		}
-
-		randomkeysSearcher, err = randomkeys.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var resources []resource.Interface
 	{
 		resources, err = newAzureConfigResources(config, certsSearcher)
@@ -155,13 +142,11 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 				var cloudConfig *cloudconfig.CloudConfig
 				{
 					c := cloudconfig.Config{
-						CertsSearcher:      certsSearcher,
-						Logger:             config.Logger,
-						RandomkeysSearcher: randomkeysSearcher,
-
 						Azure:                  config.Azure,
 						AzureClientCredentials: organizationAzureClientCredentialsConfig,
+						CtrlClient:             config.K8sClient.CtrlClient(),
 						Ignition:               config.Ignition,
+						Logger:                 config.Logger,
 						OIDC:                   config.OIDC,
 						RegistryMirrors:        config.RegistryMirrors,
 						SSOPublicKey:           config.SSOPublicKey,
@@ -253,6 +238,19 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 
 		tenantCluster, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var azureconfigFinalizerResource resource.Interface
+	{
+		c := azureconfigfinalizer.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		azureconfigFinalizerResource, err = azureconfigfinalizer.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -647,6 +645,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	}
 
 	resources := []resource.Interface{
+		azureconfigFinalizerResource,
 		clusteridResource,
 		capzcrsResource,
 		namespaceResource,

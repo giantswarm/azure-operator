@@ -11,11 +11,12 @@ import (
 	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	v1alpha32 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v4/e2e/setup"
 )
 
 type ProviderConfig struct {
@@ -108,7 +109,7 @@ func (p *Provider) findMachinePool(ctx context.Context, clusterID, nodepoolID st
 		labelSelector[label.MachinePool] = nodepoolID
 	}
 
-	err := p.ctrlClient.List(ctx, crs, labelSelector, client.InNamespace(metav1.NamespaceDefault))
+	err := p.ctrlClient.List(ctx, crs, labelSelector, client.InNamespace(setup.OrganizationNamespace))
 	if err != nil {
 		return &v1alpha3.MachinePool{}, microerror.Mask(err)
 	}
