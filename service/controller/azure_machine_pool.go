@@ -40,6 +40,7 @@ type AzureMachinePoolConfig struct {
 	Azure                     setting.Azure
 	Calico                    azureconfig.CalicoConfig
 	ClusterIPRange            string
+	CPAzureClientSet          *client.AzureClientSet
 	CredentialProvider        credential.Provider
 	EtcdPrefix                string
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
@@ -60,6 +61,10 @@ type AzureMachinePoolConfig struct {
 func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
+	if config.CPAzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CPAzureClientSet must not be empty", config)
 	}
 
 	if config.K8sClient == nil {
@@ -201,9 +206,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var vmSKU *vmsku.VMSKUs
 	{
 		vmSKU, err = vmsku.New(vmsku.Config{
-			ClientFactory: clientFactory,
-			Location:      config.Azure.Location,
-			Logger:        config.Logger,
+			AzureClientSet: config.CPAzureClientSet,
+			Location:       config.Azure.Location,
+			Logger:         config.Logger,
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)

@@ -39,6 +39,8 @@ type AzureClientSet struct {
 	NatGatewaysClient *network.NatGatewaysClient
 	// PublicIpAddressesClient manages public IP addresses.
 	PublicIpAddressesClient *network.PublicIPAddressesClient
+	// ResourceSkusClient manages VM type SKUs.
+	ResourceSkusClient *compute.ResourceSkusClient
 	// SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
 	// StorageAccountsClient manages blobs in storage containers.
@@ -101,6 +103,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	resourcesSkusClient, err := newResourceSkusClient(authorizer, subscriptionID, partnerID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	securityRulesClient, err := newSecurityRulesClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -150,6 +156,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		InterfacesClient:                       toInterfacesClient(interfacesClient),
 		NatGatewaysClient:                      toNatGatewaysClient(natGatewaysClient),
 		PublicIpAddressesClient:                publicIpAddressesClient,
+		ResourceSkusClient:                     toResourceSkusClient(resourcesSkusClient),
 		SecurityRulesClient:                    securityRulesClient,
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
 		SubnetsClient:                          toSubnetsClient(subnetsClient),
