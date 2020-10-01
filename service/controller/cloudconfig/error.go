@@ -21,10 +21,10 @@ func IsInvalidSecret(err error) bool {
 	return microerror.Cause(err) == invalidSecretError
 }
 
-var timeoutError = &microerror.Error{
-	Kind: "timeoutError",
+var secretNotFoundError = &microerror.Error{
+	Kind: "secretNotFoundError",
 }
 
-func IsTimeout(err error) bool {
-	return microerror.Cause(err) == timeoutError
+func IsSecretNotFoundError(err error) bool {
+	return microerror.Cause(err) == secretNotFoundError
 }
