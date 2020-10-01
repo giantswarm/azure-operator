@@ -313,6 +313,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *exp
 		c := cloudconfig.Config{
 			Azure:                  r.azure,
 			AzureClientCredentials: organizationAzureClientCredentialsConfig,
+			CtrlClient:             r.ctrlClient,
 			Logger:                 r.logger,
 			Ignition:               r.ignition,
 			OIDC:                   r.oidc,
