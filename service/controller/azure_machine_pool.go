@@ -13,7 +13,6 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/resource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/retryresource"
-	"github.com/giantswarm/randomkeys/v2"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -115,19 +114,6 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			Provider:   config.CredentialProvider,
 		}
 		organizationAzureClientSet = client.NewOrganizationAzureClientSet(c)
-	}
-
-	var randomkeysSearcher *randomkeys.Searcher
-	{
-		c := randomkeys.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-		}
-
-		randomkeysSearcher, err = randomkeys.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
 	}
 
 	var newDebugger *debugger.Debugger
@@ -298,7 +284,6 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			Ignition:            config.Ignition,
 			Logger:              config.Logger,
 			OIDC:                config.OIDC,
-			RandomKeysSearcher:  randomkeysSearcher,
 			RegistryDomain:      config.RegistryDomain,
 			SSHUserList:         config.SSHUserList,
 			SSOPublicKey:        config.SSOPublicKey,
