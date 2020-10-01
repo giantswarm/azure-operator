@@ -7,6 +7,7 @@ import (
 	"net/url"
 	"strings"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
@@ -78,7 +79,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			enableAcceleratedNetworking = *azureMachinePool.Spec.Template.AcceleratedNetworking
 		} else {
 			// The flag is not set.
-			enabled, err := vmssHasAcceleratedNetworkingEnabled(ctx, *azureMachinePool)
+			enabled, err := r.vmssHasAcceleratedNetworkingEnabled(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
 			if IsNotFound(err) {
 				// Scale set does not exist yet.
 				// We want to enable accelerated networking only if VM type supports it.
@@ -142,21 +143,25 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
 }
 
-func vmssHasAcceleratedNetworkingEnabled(ctx context.Context, pool capzexpv1alpha3.AzureMachinePool) (bool, error) {
-	return true, nil
+func (r *Resource) vmssHasAcceleratedNetworkingEnabled(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (bool, error) {
+	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	cfgs := npVMSS.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations
+	if cfgs != nil && len(*cfgs) > 0 {
+		cfg := (*cfgs)[0]
+		return *cfg.EnableAcceleratedNetworking, nil
+	}
+
+	// Unexpected response from azure.
+	return false, microerror.Mask(unexpectedUpstreamResponseError)
 }
 
 func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (int32, error) {
-	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, cluster.ObjectMeta)
+	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
 	if err != nil {
-		return -1, microerror.Mask(err)
-	}
-
-	npVMSS, err := client.Get(ctx, resourceGroupName, vmssName)
-	if IsNotFound(err) {
-		// VMSS not found, scaling is unknown.
-		return 0, nil
-	} else if err != nil {
 		return -1, microerror.Mask(err)
 	}
 
@@ -164,6 +169,20 @@ func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alp
 
 	// Unsafe type casting in theory, but in practice the capacity will never reach numbers not even close to 2^32.
 	return int32(capacity64), nil
+}
+
+func (r *Resource) getVMSS(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, cluster.ObjectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	npVMSS, err := client.Get(ctx, resourceGroupName, vmssName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return &npVMSS, nil
 }
 
 func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, containerName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
