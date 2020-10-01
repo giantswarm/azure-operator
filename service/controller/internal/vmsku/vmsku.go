@@ -31,7 +31,7 @@ type VMSKUs struct {
 	location       string
 	skus           map[string]*compute.ResourceSku
 	logger         micrologger.Logger
-	mux            sync.Mutex
+	initMutex      sync.Mutex
 }
 
 func New(config Config) (*VMSKUs, error) {
@@ -73,8 +73,8 @@ func (v *VMSKUs) HasCapability(ctx context.Context, vmType string, name string) 
 }
 
 func (v *VMSKUs) ensureInitialized(ctx context.Context) error {
-	v.mux.Lock()
-	defer v.mux.Unlock()
+	v.initMutex.Lock()
+	defer v.initMutex.Unlock()
 	if len(v.skus) == 0 {
 		err := v.initCache(ctx)
 		if err != nil {
