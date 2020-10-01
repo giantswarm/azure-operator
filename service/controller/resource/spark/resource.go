@@ -6,7 +6,7 @@ import (
 
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
-	"github.com/giantswarm/randomkeys/v2"
+	"github.com/giantswarm/certs/v3/pkg/certs"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/credential"
@@ -16,7 +16,6 @@ import (
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
 
-	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
@@ -42,7 +41,6 @@ type Config struct {
 	Ignition            setting.Ignition
 	Logger              micrologger.Logger
 	OIDC                setting.OIDC
-	RandomKeysSearcher  randomkeys.Interface
 	RegistryDomain      string
 	SSHUserList         string
 	SSOPublicKey        string
@@ -61,7 +59,6 @@ type Resource struct {
 	ignition            setting.Ignition
 	logger              micrologger.Logger
 	oidc                setting.OIDC
-	randomKeysSearcher  randomkeys.Interface
 	registryDomain      string
 	sshUserList         string
 	ssoPublicKey        string
@@ -109,10 +106,6 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	if config.RandomKeysSearcher == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.RandomKeysSearcher must not be empty", config)
-	}
-
 	if config.RegistryDomain == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RegistryDomain must not be empty", config)
 	}
@@ -137,7 +130,6 @@ func New(config Config) (*Resource, error) {
 		ignition:            config.Ignition,
 		logger:              config.Logger,
 		oidc:                config.OIDC,
-		randomKeysSearcher:  config.RandomKeysSearcher,
 		registryDomain:      config.RegistryDomain,
 		sshUserList:         config.SSHUserList,
 		ssoPublicKey:        config.SSOPublicKey,

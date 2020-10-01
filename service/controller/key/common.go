@@ -50,6 +50,10 @@ func OrganizationID(getter LabelsGetter) string {
 	return getter.GetLabels()[label.Organization]
 }
 
+func OrganizationNamespace(getter LabelsGetter) string {
+	return fmt.Sprintf("org-%s", getter.GetLabels()[label.Organization])
+}
+
 func ReleaseVersion(getter LabelsGetter) string {
 	return getter.GetLabels()[label.ReleaseVersion]
 }
