@@ -88,10 +88,10 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 				}
 			} else if err != nil {
 				return azureresource.Deployment{}, microerror.Mask(err)
+			} else {
+				// VMSS already exists, we want to stick with what is the current situation.
+				enableAcceleratedNetworking = enabled
 			}
-
-			// VMSS already exists we want to stick with what is the current situation.
-			enableAcceleratedNetworking = enabled
 		}
 	}
 
