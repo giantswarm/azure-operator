@@ -25,26 +25,15 @@ const (
 	FilePermission              = 0700
 	// randomKeyLabel is the label used in the secret to identify a secret
 	// containing the random key.
-	randomKeyLabel = "giantswarm.io/randomkey"
-	// clusterLabel is the label used in the secret to identify a secret
-	// containing the random key.
-	clusterLabel = "giantswarm.io/cluster"
+	randomKeyLabel      = "giantswarm.io/randomkey"
+	randomKeyLabelValue = "encryption"
+	secretKey           = "encryption"
 )
 
 type Key string
 
 func (k Key) String() string {
 	return string(k)
-}
-
-const (
-	EncryptionKey Key = "encryption"
-)
-
-type RandomKey []byte
-
-type Cluster struct {
-	APIServerEncryptionKey RandomKey
 }
 
 type Config struct {
@@ -107,11 +96,48 @@ func New(config Config) (*CloudConfig, error) {
 }
 
 func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject providerv1alpha1.AzureConfig) (string, error) {
-	cluster, err := SearchCluster(ctx, c.ctrlClient, key.ClusterID(&customObject), key.OrganizationNamespace(&customObject))
-	if err != nil {
-		return "", microerror.Mask(err)
+	secretList := &corev1.SecretList{}
+	{
+		err := c.ctrlClient.List(
+			ctx,
+			secretList,
+			ctrl.InNamespace(key.OrganizationNamespace(&customObject)),
+			ctrl.MatchingLabels{
+				randomKeyLabel:              randomKeyLabelValue,
+				apiextensionslabels.Cluster: key.ClusterID(&customObject),
+			},
+		)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		if secretList.Size() < 1 {
+			err := c.ctrlClient.List(
+				ctx,
+				secretList,
+				ctrl.InNamespace(corev1.NamespaceDefault),
+				ctrl.MatchingLabels{
+					randomKeyLabel:              randomKeyLabelValue,
+					apiextensionslabels.Cluster: key.ClusterID(&customObject),
+				},
+			)
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+		}
 	}
-	return string(cluster.APIServerEncryptionKey), nil
+
+	if secretList.Size() > 0 {
+		randomkey, ok := secretList.Items[0].Data[secretKey]
+		if !ok {
+			return "", microerror.Maskf(invalidSecretError, "%q key missing", secretKey)
+		}
+
+		return string(randomkey), nil
+	}
+
+	return "", microerror.Mask(secretNotFoundError)
+
 }
 
 func newCloudConfig(template string, params k8scloudconfig.Params) (string, error) {
@@ -129,85 +155,4 @@ func newCloudConfig(template string, params k8scloudconfig.Params) (string, erro
 	}
 
 	return cloudConfig.String(), nil
-}
-
-func SearchCluster(ctx context.Context, ctrlClient ctrl.Client, clusterID, namespace string) (Cluster, error) {
-	var cluster Cluster
-
-	keys := []struct {
-		RandomKey *RandomKey
-		Type      Key
-	}{
-		{RandomKey: &cluster.APIServerEncryptionKey, Type: EncryptionKey},
-	}
-
-	for _, k := range keys {
-		err := search(ctx, ctrlClient, k.RandomKey, clusterID, namespace, k.Type)
-		if err != nil {
-			return Cluster{}, microerror.Mask(err)
-		}
-	}
-
-	return cluster, nil
-}
-
-func search(ctx context.Context, ctrlClient ctrl.Client, randomKey *RandomKey, clusterID, namespace string, key Key) error {
-	secretList := &corev1.SecretList{}
-	{
-		err := ctrlClient.List(
-			ctx,
-			secretList,
-			ctrl.InNamespace(namespace),
-			ctrl.MatchingLabels{
-				randomKeyLabel:              key.String(),
-				apiextensionslabels.Cluster: clusterID,
-			},
-		)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		if secretList.Size() < 1 {
-			err := ctrlClient.List(
-				ctx,
-				secretList,
-				ctrl.InNamespace(corev1.NamespaceDefault),
-				ctrl.MatchingLabels{
-					randomKeyLabel:              key.String(),
-					apiextensionslabels.Cluster: clusterID,
-				},
-			)
-			if err != nil {
-				return microerror.Mask(err)
-			}
-		}
-	}
-
-	if secretList.Size() > 0 {
-		err := fillRandomKeyFromSecret(randomKey, (*secretList).Items[0], clusterID, key)
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		return nil
-	}
-
-	return microerror.Mask(timeoutError)
-}
-
-func fillRandomKeyFromSecret(randomkey *RandomKey, secret corev1.Secret, clusterID string, key Key) error {
-	gotClusterID := secret.Labels[clusterLabel]
-	if clusterID != gotClusterID {
-		return microerror.Maskf(invalidSecretError, "expected clusterID = %q, got %q", clusterID, gotClusterID)
-	}
-	gotKeys := secret.Labels[randomKeyLabel]
-	if string(key) != gotKeys {
-		return microerror.Maskf(invalidSecretError, "expected random key = %q, got %q", key, gotKeys)
-	}
-	var ok bool
-	if *randomkey, ok = secret.Data[string(EncryptionKey)]; !ok {
-		return microerror.Maskf(invalidSecretError, "%q key missing", EncryptionKey)
-	}
-
-	return nil
 }

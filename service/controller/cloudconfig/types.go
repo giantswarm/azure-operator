@@ -55,7 +55,6 @@ type IgnitionTemplateData struct {
 	AzureMachinePool *expcapzv1alpha3.AzureMachinePool
 	AzureCluster     *capzv1alpha3.AzureCluster
 	Cluster          *capiv1alpha3.Cluster
-	ClusterKeys      Cluster
 	CustomObject     providerv1alpha1.AzureConfig
 	Images           k8scloudconfig.Images
 	MachinePool      *expcapiv1alpha3.MachinePool
