@@ -74,13 +74,24 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	var enableAcceleratedNetworking bool
 	{
 		if azureMachinePool.Spec.Template.AcceleratedNetworking != nil {
+			// The flag is set, just use its value.
 			enableAcceleratedNetworking = *azureMachinePool.Spec.Template.AcceleratedNetworking
 		} else {
-			// Enable accelerated networking if VM type supports it.
-			enableAcceleratedNetworking, err = r.vmsku.HasCapability(ctx, azureMachinePool.Spec.Template.VMSize, vmsku.CapabilityAcceleratedNetworking)
-			if err != nil {
+			// The flag is not set.
+			enabled, err := vmssHasAcceleratedNetworkingEnabled(ctx, *azureMachinePool)
+			if IsNotFound(err) {
+				// Scale set does not exist yet.
+				// We want to enable accelerated networking only if VM type supports it.
+				enableAcceleratedNetworking, err = r.vmsku.HasCapability(ctx, azureMachinePool.Spec.Template.VMSize, vmsku.CapabilityAcceleratedNetworking)
+				if err != nil {
+					return azureresource.Deployment{}, microerror.Mask(err)
+				}
+			} else if err != nil {
 				return azureresource.Deployment{}, microerror.Mask(err)
 			}
+
+			// VMSS already exists we want to stick with what is the current situation.
+			enableAcceleratedNetworking = enabled
 		}
 	}
 
@@ -129,6 +140,10 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	}
 
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
+}
+
+func vmssHasAcceleratedNetworkingEnabled(ctx context.Context, pool capzexpv1alpha3.AzureMachinePool) (bool, error) {
+	return true, nil
 }
 
 func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (int32, error) {
