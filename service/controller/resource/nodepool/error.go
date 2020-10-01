@@ -153,3 +153,12 @@ var subnetNotReadyError = &microerror.Error{
 func IsSubnetNotReadyError(err error) bool {
 	return microerror.Cause(err) == subnetNotReadyError
 }
+
+var unexpectedUpstreamResponseError = &microerror.Error{
+	Kind: "unexpectedUpstreamResponseError",
+}
+
+// IsUnexpectedUpstreamResponse asserts unexpectedUpstreamResponseError.
+func IsUnexpectedUpstreamResponse(err error) bool {
+	return microerror.Cause(err) == unexpectedUpstreamResponseError
+}
