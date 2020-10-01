@@ -144,6 +144,7 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 					c := cloudconfig.Config{
 						Azure:                  config.Azure,
 						AzureClientCredentials: organizationAzureClientCredentialsConfig,
+						CtrlClient:             config.K8sClient.CtrlClient(),
 						Ignition:               config.Ignition,
 						Logger:                 config.Logger,
 						OIDC:                   config.OIDC,
