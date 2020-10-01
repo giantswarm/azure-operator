@@ -25,14 +25,14 @@ type Config struct {
 	Logger        micrologger.Logger
 }
 
-type Interface struct {
+type VMSKUs struct {
 	clientFactory *client.Factory
 	location      string
 	skus          map[string]*compute.ResourceSku
 	logger        micrologger.Logger
 }
 
-func New(config Config) (*Interface, error) {
+func New(config Config) (*VMSKUs, error) {
 	if config.ClientFactory == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClientFactory must not be empty", config)
 	}
@@ -42,14 +42,14 @@ func New(config Config) (*Interface, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	return &Interface{
+	return &VMSKUs{
 		clientFactory: config.ClientFactory,
 		location:      config.Location,
 		logger:        config.Logger,
 	}, nil
 }
 
-func (v *Interface) HasCapability(ctx context.Context, vmType string, name string) (bool, error) {
+func (v *VMSKUs) HasCapability(ctx context.Context, vmType string, name string) (bool, error) {
 	if len(v.skus) == 0 {
 		err := v.initCache(ctx)
 		if err != nil {
@@ -72,9 +72,18 @@ func (v *Interface) HasCapability(ctx context.Context, vmType string, name strin
 	return false, nil
 }
 
-func (v *Interface) initCache(ctx context.Context) error {
-	v.logger.LogCtx(ctx, "level", "debug", "message", "Initializing cache for VMSKU")
+func (v *VMSKUs) getResourcesSkusClient() (*compute.ResourceSkusClient, error) {
 	cl, err := v.clientFactory.GetResourceSkusClient("giantswarm", "credential-default")
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return cl, nil
+}
+
+func (v *VMSKUs) initCache(ctx context.Context) error {
+	v.logger.LogCtx(ctx, "level", "debug", "message", "Initializing cache for VMSKU")
+	cl, err := v.getResourcesSkusClient()
 	if err != nil {
 		return microerror.Mask(err)
 	}

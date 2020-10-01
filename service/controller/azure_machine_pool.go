@@ -198,7 +198,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		InstanceWatchdog: iwd,
 	}
 
-	var vmSKU *vmsku.Interface
+	var vmSKU *vmsku.VMSKUs
 	{
 		vmSKU, err = vmsku.New(vmsku.Config{
 			ClientFactory: clientFactory,

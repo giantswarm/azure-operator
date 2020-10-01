@@ -28,7 +28,7 @@ type Config struct {
 	CtrlClient                ctrlclient.Client
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	TenantRestConfigProvider  tenantcluster.Interface
-	VMSKU                     *vmsku.Interface
+	VMSKU                     *vmsku.VMSKUs
 }
 
 // Resource takes care of node pool life cycle.
@@ -39,7 +39,7 @@ type Resource struct {
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	k8sClient                 kubernetes.Interface
 	tenantRestConfigProvider  tenantcluster.Interface
-	vmsku                     *vmsku.Interface
+	vmsku                     *vmsku.VMSKUs
 }
 
 func New(config Config) (*Resource, error) {
