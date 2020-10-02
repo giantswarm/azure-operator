@@ -69,6 +69,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	switch *currentDeployment.Properties.ProvisioningState {
 	case "Failed", "Canceled":
 		// Deployment is failed or canceled, I need to go back and re-apply it.
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Node Pool deployment is in state %s, we need to reapply it.", *currentDeployment.Properties.ProvisioningState))
 		return DeploymentUninitialized, nil
 	case "Succeeded":
 		// Deployment is succeeded, safe to go on.
