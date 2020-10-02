@@ -62,7 +62,7 @@ func (p Parameters) ToDeployParams() map[string]interface{} {
 		dataDisks = append(dataDisks, map[string]interface{}{"nameSuffix": disk.NameSuffix, "lun": float64(*disk.Lun), "diskSizeGB": float64(disk.DiskSizeGB)})
 	}
 
-	var zones []interface{}
+	zones := []interface{}{}
 	for _, zone := range p.Zones {
 		zones = append(zones, zone)
 	}
