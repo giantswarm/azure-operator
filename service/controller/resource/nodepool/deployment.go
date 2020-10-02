@@ -69,7 +69,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 		}
 
 		// Function getVMSScurrentScaling returns 0 when the VMSS is not found.
-		if candidate != 0 {
+		if candidate > 0 {
 			currentReplicas = candidate
 		}
 	}
