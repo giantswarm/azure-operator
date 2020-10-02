@@ -23,6 +23,11 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
 	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
@@ -51,6 +56,27 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 
 	strategy := scalestrategy.Quick{}
+
+	// Ensure the deployment is successful before we move on with scaling.
+	currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolDeploymentName(&azureMachinePool))
+	if IsDeploymentNotFound(err) {
+		// Deployment not found, we need to apply it again.
+		return DeploymentUninitialized, microerror.Mask(err)
+	} else if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	switch *currentDeployment.Properties.ProvisioningState {
+	case "Failed", "Canceled":
+		// Deployment is failed or canceled, I need to go back and re-apply it.
+		return DeploymentUninitialized, nil
+	case "Succeeded":
+		// Deployment is succeeded, safe to go on.
+	default:
+		// Deployment is still running, we need to wait for another reconciliation loop.
+		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Node Pool deployment is in state %s, waiting for it to be succeeded.", *currentDeployment.Properties.ProvisioningState))
+		return currentState, nil
+	}
 
 	// All workers ready, we can scale up if needed.
 	desiredWorkerCount := int64(*machinePool.Spec.Replicas * 2)
