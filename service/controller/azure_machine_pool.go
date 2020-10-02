@@ -24,6 +24,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v4/service/controller/resource/cloudconfigblob"
@@ -39,6 +40,7 @@ type AzureMachinePoolConfig struct {
 	Azure                     setting.Azure
 	Calico                    azureconfig.CalicoConfig
 	ClusterIPRange            string
+	CPAzureClientSet          *client.AzureClientSet
 	CredentialProvider        credential.Provider
 	EtcdPrefix                string
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
@@ -59,6 +61,10 @@ type AzureMachinePoolConfig struct {
 func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
+	if config.CPAzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CPAzureClientSet must not be empty", config)
 	}
 
 	if config.K8sClient == nil {
@@ -197,6 +203,18 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		InstanceWatchdog: iwd,
 	}
 
+	var vmSKU *vmsku.VMSKUs
+	{
+		vmSKU, err = vmsku.New(vmsku.Config{
+			AzureClientSet: config.CPAzureClientSet,
+			Location:       config.Azure.Location,
+			Logger:         config.Logger,
+		})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var nodepoolResource resource.Interface
 	{
 		c := nodepool.Config{
@@ -205,6 +223,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			CtrlClient:                config.K8sClient.CtrlClient(),
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
 			TenantRestConfigProvider:  tenantRestConfigProvider,
+			VMSKU:                     vmSKU,
 		}
 
 		nodepoolResource, err = nodepool.New(c)

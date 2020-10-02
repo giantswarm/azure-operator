@@ -275,13 +275,13 @@ func New(config Config) (*Service, error) {
 		controllers = append(controllers, azureClusterController)
 	}
 
+	cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	var azureConfigController *operatorkitcontroller.Controller
 	{
-		cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
 		c := controller.AzureConfigConfig{
 			Azure:                     azure,
 			ClusterVNetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
@@ -324,6 +324,7 @@ func New(config Config) (*Service, error) {
 			},
 			ClusterIPRange:            config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
 			CredentialProvider:        credentialProvider,
+			CPAzureClientSet:          cpAzureClientSet,
 			EtcdPrefix:                config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			Ignition:                  Ignition,

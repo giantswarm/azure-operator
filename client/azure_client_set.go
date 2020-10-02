@@ -40,6 +40,8 @@ type AzureClientSet struct {
 	NatGatewaysClient *network.NatGatewaysClient
 	// PublicIpAddressesClient manages public IP addresses.
 	PublicIpAddressesClient *network.PublicIPAddressesClient
+	// ResourceSkusClient manages VM type SKUs.
+	ResourceSkusClient *compute.ResourceSkusClient
 	// SecurityRulesClient manages networking rules in a security group.
 	SecurityRulesClient *network.SecurityRulesClient
 	SnapshotsClient     *compute.SnapshotsClient
@@ -107,6 +109,10 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
+	resourcesSkusClient, err := newResourceSkusClient(authorizer, subscriptionID, partnerID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 	securityRulesClient, err := newSecurityRulesClient(authorizer, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -161,6 +167,7 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 		InterfacesClient:                       toInterfacesClient(interfacesClient),
 		NatGatewaysClient:                      toNatGatewaysClient(natGatewaysClient),
 		PublicIpAddressesClient:                publicIpAddressesClient,
+		ResourceSkusClient:                     toResourceSkusClient(resourcesSkusClient),
 		SecurityRulesClient:                    securityRulesClient,
 		SnapshotsClient:                        toSnapshotsClient(snapshotsClient),
 		StorageAccountsClient:                  toStorageAccountsClient(storageAccountsClient),
@@ -319,6 +326,13 @@ func newVnetPeeringClient(authorizer autorest.Authorizer, subscriptionID, partne
 	return &client, nil
 }
 
+func newResourceSkusClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+	client := compute.NewResourceSkusClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, partnerID)
+
+	return &client, nil
+}
+
 func toDeploymentsClient(client interface{}) *resources.DeploymentsClient {
 	return client.(*resources.DeploymentsClient)
 }
@@ -365,4 +379,8 @@ func toSubnetsClient(client interface{}) *network.SubnetsClient {
 
 func toNatGatewaysClient(client interface{}) *network.NatGatewaysClient {
 	return client.(*network.NatGatewaysClient)
+}
+
+func toResourceSkusClient(client interface{}) *compute.ResourceSkusClient {
+	return client.(*compute.ResourceSkusClient)
 }
