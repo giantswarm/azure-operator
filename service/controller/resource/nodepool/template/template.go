@@ -2,6 +2,7 @@ package template
 
 import (
 	"encoding/json"
+	"fmt"
 	"reflect"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -31,6 +32,8 @@ func NewDeployment(templateParams Parameters) (azureresource.Deployment, error) 
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
+
+	fmt.Println(templateParams.ToDeployParams())
 
 	return azureresource.Deployment{
 		Properties: &azureresource.DeploymentProperties{
