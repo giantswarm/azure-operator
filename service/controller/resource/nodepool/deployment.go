@@ -62,12 +62,14 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	if key.NodePoolMinReplicas(machinePool) != key.NodePoolMaxReplicas(machinePool) {
 		// Autoscaler is enabled, will need to get the current number of replicas from the VMSS.
 		candidate, err := r.getVMSScurrentScaling(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
-		if err != nil {
+		if IsNotFound(err) {
+			// It's ok. VMSS not created yet.
+		} else if err != nil {
 			return azureresource.Deployment{}, microerror.Mask(err)
 		}
 
 		// Function getVMSScurrentScaling returns 0 when the VMSS is not found.
-		if candidate != 0 {
+		if candidate > 0 {
 			currentReplicas = candidate
 		}
 	}

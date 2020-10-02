@@ -71,11 +71,11 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	// Compute desired state for Azure ARM Deployment.
 	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, machinePool, &azureMachinePool, cluster, azureCluster)
 	if IsNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Azure resource not found")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Azure resource not found", "stack", microerror.JSON(err))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if IsSubnetNotReadyError(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "subnet is not Ready, it's probably still being created")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "subnet is not Ready, it's probably still being created", "stack", microerror.JSON(err))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return currentState, nil
 	} else if err != nil {
