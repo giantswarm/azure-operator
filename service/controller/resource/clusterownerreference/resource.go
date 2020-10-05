@@ -63,6 +63,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping setting owner references")
+		return nil
+	}
+
 	err = r.ensureAzureCluster(ctx, cluster)
 	if err != nil {
 		return microerror.Mask(err)

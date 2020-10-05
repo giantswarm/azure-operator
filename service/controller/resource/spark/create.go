@@ -54,6 +54,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	if !azureMachinePool.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping rendering cloud config")
+		return nil
+	}
+
 	var sparkCR corev1alpha1.Spark
 	{
 		err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: azureMachinePool.Name}, &sparkCR)

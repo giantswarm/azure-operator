@@ -78,6 +78,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	if !azureCluster.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureCluster is being deleted, skipping reconciling subnets")
+		return nil
+	}
+
 	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
