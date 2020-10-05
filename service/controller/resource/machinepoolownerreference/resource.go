@@ -68,8 +68,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
-	if err != nil {
+	if apierrors.IsNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name, machinePool.Name))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if !azureMachinePool.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping setting owner reference")
+		return nil
 	}
 
 	if machinePool.Labels == nil {
@@ -85,6 +94,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.Namespace, machinePool.Spec.ClusterName)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping setting owner reference")
+		return nil
 	}
 
 	// Set Cluster as owner of MachinePool
