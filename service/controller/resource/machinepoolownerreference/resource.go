@@ -68,7 +68,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
-	if err != nil {
+	if apierrors.IsNotFound(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name, machinePool.Name))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
