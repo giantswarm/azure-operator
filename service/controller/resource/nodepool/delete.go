@@ -2,8 +2,10 @@ package nodepool
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/microerror"
+	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
@@ -25,6 +27,11 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 
 	azureCluster, err := r.getAzureClusterFromCluster(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.removeNodesFromK8s(ctx, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -78,6 +85,26 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 	err = r.deleteVMSS(ctx, azureMachinePool, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
+// Deletes all the node objects belonging to the node pool using the k8s API.
+// This happens automatically eventually, but we make this much quicker by doing it on the API server directly.
+func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
+	nodeList, err := r.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{
+		LabelSelector: fmt.Sprintf("giantswarm.io/machine-pool=%s", azureMachinePool.Name),
+	})
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, n := range nodeList.Items {
+		err = r.k8sClient.CoreV1().Nodes().Delete(ctx, n.Name, metav1.DeleteOptions{})
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	return nil
