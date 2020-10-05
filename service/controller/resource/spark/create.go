@@ -54,11 +54,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	if !azureMachinePool.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping rendering cloud config")
-		return nil
-	}
-
 	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)

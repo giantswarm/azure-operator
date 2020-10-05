@@ -41,11 +41,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	if !azureMachinePool.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping reconciling node pool")
-		return nil
-	}
-
 	if isMasterUpgrading(&azureMachinePool) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")

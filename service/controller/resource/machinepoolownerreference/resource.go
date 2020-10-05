@@ -64,11 +64,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	if !machinePool.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping setting owner reference")
-		return nil
-	}
-
 	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %#q label and 'ownerReference' fields on MachinePool '%s/%s' and AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name))
 
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
