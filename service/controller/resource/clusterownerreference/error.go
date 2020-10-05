@@ -12,3 +12,12 @@ var invalidConfigError = &microerror.Error{
 func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
+
+var crBeingDeletedError = &microerror.Error{
+	Kind: "crBeingDeletedError",
+}
+
+// IsCRBeingDeletedError asserts crBeingDeletedError.
+func IsCRBeingDeletedError(err error) bool {
+	return microerror.Cause(err) == crBeingDeletedError
+}

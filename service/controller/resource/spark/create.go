@@ -59,6 +59,40 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
+	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if machinePool == nil {
+		return microerror.Mask(ownerReferenceNotSet)
+	}
+
+	if !machinePool.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping rendering cloud config")
+		return nil
+	}
+
+	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.Namespace, machinePool.Spec.ClusterName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping rendering cloud config")
+		return nil
+	}
+
+	azureCluster, err := r.getAzureCluster(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if !azureCluster.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureCluster is being deleted, skipping rendering cloud config")
+		return nil
+	}
+
 	var sparkCR corev1alpha1.Spark
 	{
 		err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: azureMachinePool.Name}, &sparkCR)
@@ -77,7 +111,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "trying to render ignition cloud config for this node pool")
 
-		ignitionBlob, err = r.createIgnitionBlob(ctx, &azureMachinePool)
+		ignitionBlob, err = r.createIgnitionBlob(ctx, cluster, azureCluster, machinePool, &azureMachinePool)
 		if IsRequirementsNotMet(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob rendering requirements not met")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
@@ -187,26 +221,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) createIgnitionBlob(ctx context.Context, azureMachinePool *expcapzv1alpha3.AzureMachinePool) ([]byte, error) {
-	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	if machinePool == nil {
-		return nil, microerror.Mask(ownerReferenceNotSet)
-	}
-
-	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.Namespace, machinePool.Spec.ClusterName)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	azureCluster, err := r.getAzureCluster(ctx, cluster)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
+func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster, machinePool *expcapiv1alpha3.MachinePool, azureMachinePool *expcapzv1alpha3.AzureMachinePool) ([]byte, error) {
 	release, err := r.getRelease(ctx, machinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)

@@ -69,7 +69,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.ensureAzureCluster(ctx, cluster)
-	if err != nil {
+	if IsCRBeingDeletedError(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureCluster is being deleted, skipping setting owner references")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
@@ -101,6 +104,10 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 		return microerror.Mask(err)
 	}
 
+	if !azureCluster.GetDeletionTimestamp().IsZero() {
+		return microerror.Mask(crBeingDeletedError)
+	}
+
 	if azureCluster.Labels == nil {
 		azureCluster.Labels = make(map[string]string)
 	}
@@ -115,7 +122,7 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 	err = r.ctrlClient.Update(ctx, &azureCluster)
 	if apierrors.IsConflict(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -138,6 +145,11 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 	}
 
 	for _, machinePool := range mpList.Items {
+		if !machinePool.GetDeletionTimestamp().IsZero() {
+			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("MachinePool %#q is being deleted, skipping setting owner references", machinePool.Name))
+			continue
+		}
+
 		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
 
 		if machinePool.Labels == nil {

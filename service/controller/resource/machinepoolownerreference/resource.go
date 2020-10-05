@@ -77,6 +77,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	if !azureMachinePool.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping setting owner reference")
+		return nil
+	}
+
 	if machinePool.Labels == nil {
 		machinePool.Labels = make(map[string]string)
 	}
@@ -90,6 +95,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cluster, err := capiutil.GetClusterByName(ctx, r.ctrlClient, machinePool.Namespace, machinePool.Spec.ClusterName)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping setting owner reference")
+		return nil
 	}
 
 	// Set Cluster as owner of MachinePool
