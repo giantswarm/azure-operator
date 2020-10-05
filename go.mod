@@ -13,7 +13,7 @@ require (
 	github.com/giantswarm/appcatalog v0.2.7
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
-	github.com/giantswarm/certs/v3 v3.0.0
+	github.com/giantswarm/certs/v3 v3.1.0
 	github.com/giantswarm/e2e-harness/v2 v2.0.0
 	github.com/giantswarm/e2eclients v0.2.0
 	github.com/giantswarm/e2esetup/v2 v2.1.0
