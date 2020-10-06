@@ -111,13 +111,6 @@ rules:
       - {{ include "resource.default.name"  . }}
     verbs:
       - get
-  - apiGroups:
-      - ""
-    resources:
-      - nodes
-    verbs:
-      - delete
-      - list
   - nonResourceURLs:
       - "/"
       - "/healthz"
