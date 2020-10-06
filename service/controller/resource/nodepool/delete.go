@@ -105,27 +105,9 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 func (r *Resource) removeNodesFromK8s(ctx context.Context, ctrlClient client.Client, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
 	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting nodes from k8s API for machine pool %s", azureMachinePool.Name))
 
-	nodeList := &corev1.NodeList{}
-
-	var labelSelector client.MatchingLabels
-	{
-		labelSelector = make(map[string]string)
-		labelSelector[label.MachinePool] = azureMachinePool.Name
-	}
-
-	err := ctrlClient.List(ctx, nodeList, labelSelector)
+	err := ctrlClient.DeleteAllOf(ctx, &corev1.Node{}, client.MatchingLabels{label.MachinePool: azureMachinePool.Name})
 	if err != nil {
 		return microerror.Mask(err)
-	}
-
-	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Found %d nodes to be deleted", len(nodeList.Items)))
-
-	for _, n := range nodeList.Items {
-		r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting node %s", n.Name))
-		err = ctrlClient.Delete(ctx, &n)
-		if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleted nodes from k8s API for machine pool %s", azureMachinePool.Name))
