@@ -106,7 +106,7 @@ func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *cap
 	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Found %d nodes to be deleted using labelSelector %s", len(nodeList.Items), labelSelector))
 
 	for _, n := range nodeList.Items {
-		r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting node", n.Name))
+		r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting node %s", n.Name))
 		err = r.k8sClient.CoreV1().Nodes().Delete(ctx, n.Name, metav1.DeleteOptions{})
 		if err != nil {
 			return microerror.Mask(err)
