@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
@@ -95,15 +96,15 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
 	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting nodes from k8s API for machine pool %s", azureMachinePool.Name))
 
-	labelSelector := fmt.Sprintf("giantswarm.io/machine-pool=%s", azureMachinePool.Name)
+	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{"giantswarm.io/machine-pool": azureMachinePool.Name}}
 	nodeList, err := r.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{
-		LabelSelector: labelSelector,
+		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
 	})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Found %d nodes to be deleted using labelSelector %s", len(nodeList.Items), labelSelector))
+	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Found %d nodes to be deleted", len(nodeList.Items)))
 
 	for _, n := range nodeList.Items {
 		r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting node %s", n.Name))
