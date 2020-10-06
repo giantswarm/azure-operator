@@ -11,6 +11,11 @@ import (
 	conditions "sigs.k8s.io/cluster-api/util/conditions"
 )
 
+const (
+	ProvisioningStateSucceeded = "Succeeded"
+	ProvisioningStateFailed    = "Failed"
+)
+
 func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, provisioningState *string) error {
 	conditionType := azureconditions.DeploymentSucceededCondition
 
@@ -23,9 +28,9 @@ func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azure
 			"Deployment has not been found.")
 	} else {
 		switch *provisioningState {
-		case "Succeeded":
+		case ProvisioningStateSucceeded:
 			conditions.MarkTrue(azureMachinePool, conditionType)
-		case "Failed":
+		case ProvisioningStateFailed:
 			conditions.MarkFalse(
 				azureMachinePool,
 				conditionType,
