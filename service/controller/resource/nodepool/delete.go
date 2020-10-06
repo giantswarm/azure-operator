@@ -4,12 +4,13 @@ import (
 	"context"
 	"fmt"
 
+	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/apimachinery/pkg/labels"
+	corev1 "k8s.io/api/core/v1"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
 )
@@ -96,10 +97,15 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
 	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting nodes from k8s API for machine pool %s", azureMachinePool.Name))
 
-	labelSelector := metav1.LabelSelector{MatchLabels: map[string]string{"giantswarm.io/machine-pool": azureMachinePool.Name}}
-	nodeList, err := r.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{
-		LabelSelector: labels.Set(labelSelector.MatchLabels).String(),
-	})
+	nodeList := &corev1.NodeList{}
+
+	var labelSelector client.MatchingLabels
+	{
+		labelSelector = make(map[string]string)
+		labelSelector[label.MachinePool] = azureMachinePool.Name
+	}
+
+	err := r.CtrlClient.List(ctx, nodeList, labelSelector)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -108,7 +114,7 @@ func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *cap
 
 	for _, n := range nodeList.Items {
 		r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting node %s", n.Name))
-		err = r.k8sClient.CoreV1().Nodes().Delete(ctx, n.Name, metav1.DeleteOptions{})
+		err = r.CtrlClient.Delete(ctx, &n)
 		if err != nil {
 			return microerror.Mask(err)
 		}
