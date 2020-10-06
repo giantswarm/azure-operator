@@ -90,6 +90,15 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
+	defer func() {
+		var currentProvisioningState *string
+		if currentDeployment.Properties != nil && currentDeployment.Properties.ProvisioningState != nil {
+			currentProvisioningState = currentDeployment.Properties.ProvisioningState
+		}
+		// Update DeploymentSucceeded Condition for this AzureMachinePool
+		_ = r.UpdateDeploymentSucceededCondition(ctx, &azureMachinePool, currentProvisioningState)
+	}()
+
 	// Figure out if we need to submit the ARM Deployment.
 	deploymentNeedsToBeSubmitted := currentDeployment.IsHTTPStatus(404)
 	nodesNeedToBeRolled := false
