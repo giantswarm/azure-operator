@@ -36,6 +36,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(ownerReferenceNotSet)
 	}
 
+	if !machinePool.GetDeletionTimestamp().IsZero() {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping saving cloud config in Azure blob")
+		return nil
+	}
+
 	blobName := key.BootstrapBlobName(azureMachinePool)
 
 	var payload string

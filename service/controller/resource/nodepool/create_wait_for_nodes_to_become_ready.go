@@ -26,6 +26,11 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
+		return currentState, nil
+	}
+
 	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
 	if tenantcluster.IsTimeout(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
