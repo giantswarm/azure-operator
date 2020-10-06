@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	apiev1alpha3 "github.com/giantswarm/apiextensions/v2/pkg/apis/infrastructure/v1alpha3"
+	azureconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, provisioningState *string) error {
-	conditionType := apiev1alpha3.DeploymentSucceededCondition
+	conditionType := azureconditions.DeploymentSucceededCondition
 
 	if provisioningState == nil {
 		conditions.MarkFalse(
