@@ -53,15 +53,6 @@ func IsMissingOrganizationLabel(err error) bool {
 	return microerror.Cause(err) == missingOrganizationLabel
 }
 
-var ownerReferenceNotSet = &microerror.Error{
-	Kind: "ownerReferenceNotSet",
-}
-
-// IsOwnerReferenceNotSet asserts ownerReferenceNotSet.
-func IsOwnerReferenceNotSet(err error) bool {
-	return microerror.Cause(err) == ownerReferenceNotSet
-}
-
 var unknownKindError = &microerror.Error{
 	Kind: "unknownKindError",
 }
