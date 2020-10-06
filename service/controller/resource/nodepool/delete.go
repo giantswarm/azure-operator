@@ -33,7 +33,15 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.removeNodesFromK8s(ctx, &azureMachinePool)
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
+		return nil
+	}
+
+	err = r.removeNodesFromK8s(ctx, tenantClusterK8sClient, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -94,7 +102,7 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 
 // Deletes all the node objects belonging to the node pool using the k8s API.
 // This happens automatically eventually, but we make this much quicker by doing it on the API server directly.
-func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
+func (r *Resource) removeNodesFromK8s(ctx context.Context, ctrlClient client.Client, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
 	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting nodes from k8s API for machine pool %s", azureMachinePool.Name))
 
 	nodeList := &corev1.NodeList{}
@@ -105,7 +113,7 @@ func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *cap
 		labelSelector[label.MachinePool] = azureMachinePool.Name
 	}
 
-	err := r.CtrlClient.List(ctx, nodeList, labelSelector)
+	err := ctrlClient.List(ctx, nodeList, labelSelector)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -114,7 +122,7 @@ func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *cap
 
 	for _, n := range nodeList.Items {
 		r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting node %s", n.Name))
-		err = r.CtrlClient.Delete(ctx, &n)
+		err = ctrlClient.Delete(ctx, &n)
 		if err != nil {
 			return microerror.Mask(err)
 		}
