@@ -189,10 +189,10 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantCluste
 
 	nodeList := &corev1.NodeList{}
 	var labelSelector ctrlclient.MatchingLabels
-	//{
-	//	labelSelector = make(map[string]string)
-	//	labelSelector[apiextensionslabels.MachinePool] = azureMachinePool.Name
-	//}
+	{
+		labelSelector = make(map[string]string)
+		labelSelector[apiextensionslabels.MachinePool] = nodePoolId
+	}
 
 	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
 	if err != nil {
