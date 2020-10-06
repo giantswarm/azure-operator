@@ -93,26 +93,34 @@ func (r *Resource) removeNodePool(ctx context.Context, azureMachinePool *capzexp
 // Deletes all the node objects belonging to the node pool using the k8s API.
 // This happens automatically eventually, but we make this much quicker by doing it on the API server directly.
 func (r *Resource) removeNodesFromK8s(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool) error {
+	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting nodes from k8s API for machine pool %s", azureMachinePool.Name))
+
+	labelSelector := fmt.Sprintf("giantswarm.io/machine-pool=%s", azureMachinePool.Name)
 	nodeList, err := r.k8sClient.CoreV1().Nodes().List(ctx, metav1.ListOptions{
-		LabelSelector: fmt.Sprintf("giantswarm.io/machine-pool=%s", azureMachinePool.Name),
+		LabelSelector: labelSelector,
 	})
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
+	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Found %d nodes to be deleted using labelSelector %s", len(nodeList.Items), labelSelector))
+
 	for _, n := range nodeList.Items {
+		r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleting node", n.Name))
 		err = r.k8sClient.CoreV1().Nodes().Delete(ctx, n.Name, metav1.DeleteOptions{})
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
+	r.Logger.LogCtx(ctx, "message", fmt.Sprintf("Deleted nodes from k8s API for machine pool %s", azureMachinePool.Name))
+
 	return nil
 }
 
 // deleteARMDeployment deletes the ARM deployment from Azure.
 func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, deploymentName string) error {
-	r.Logger.LogCtx(ctx, "message", "Deleting machine pool ARM deployment")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "Deleting machine pool ARM deployment")
 
 	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
@@ -121,13 +129,13 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *ca
 
 	_, err = deploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
 	if IsDeploymentNotFound(err) {
-		r.Logger.LogCtx(ctx, "message", "Machine pool ARM deployment was already deleted")
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Machine pool ARM deployment was already deleted")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "message", "Deleted machine pool ARM deployment")
+	r.Logger.LogCtx(ctx, "level", "debug", "message", "Deleted machine pool ARM deployment")
 
 	return nil
 }
