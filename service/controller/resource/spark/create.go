@@ -60,7 +60,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if machinePool == nil {
-		return microerror.Mask(ownerReferenceNotSet)
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Owner Reference hasn't been set yet, so we don't know parent MachinePool")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		reconciliationcanceledcontext.SetCanceled(ctx)
+		return nil
 	}
 
 	if !machinePool.GetDeletionTimestamp().IsZero() {
@@ -109,11 +112,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		ignitionBlob, err = r.createIgnitionBlob(ctx, cluster, azureCluster, machinePool, &azureMachinePool)
 		if IsRequirementsNotMet(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob rendering requirements not met")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
-			reconciliationcanceledcontext.SetCanceled(ctx)
-			return nil
-		} else if IsOwnerReferenceNotSet(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool OwnerReference not set yet")
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
