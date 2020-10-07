@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Removed the ETCD Private Load Balancer, reusing the API public one for ETCD traffic (needed by HA masters).
 - Updated CAPI to `v0.3.9` and CAPZ to `v0.4.7`, using GiantSwarm forks that contain k8s 1.18 changes.
 - Use `DataDisks` field to define VM disks when creating node pools.
-- Don't error if certificates are not present yet.
+- Don't error if certificates are not present yet. Cancel reconciliation and wait until next loop instead.
 
 ## [4.2.0] - 2020-07-28
 
