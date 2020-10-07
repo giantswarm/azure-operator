@@ -115,6 +115,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
+		} else if certs.IsTimeout(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "waited too long for certificates")
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
@@ -293,9 +298,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 		})
 
 		err := g.Wait()
-		if certs.IsTimeout(err) {
-			return nil, microerror.Maskf(timeoutError, "waited too long for certificates")
-		} else if err != nil {
+		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
