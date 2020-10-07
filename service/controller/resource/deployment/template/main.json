@@ -428,7 +428,7 @@
                       "sourcePortRange":"*",
                       "destinationPortRange":"22",
                       "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
-                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
                       "access":"Allow",
                       "direction":"Inbound",
                       "priority":"4093"
