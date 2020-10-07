@@ -18,6 +18,7 @@ spec:
       offer: flatcar-container-linux-free
       publisher: kinvolk
       sku: stable
+      thirdPartyImage: false
       version: 2345.3.1
   location: westeurope
   osDisk:
