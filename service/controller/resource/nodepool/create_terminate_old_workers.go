@@ -6,9 +6,7 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
-	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
@@ -41,17 +39,12 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return currentState, microerror.Mask(err)
 	}
 
-	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
-	if tenantcluster.IsTimeout(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 		return currentState, nil
-	} else if tenant.IsAPINotAvailable(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
-		return currentState, nil
-	} else if err != nil {
-		return currentState, microerror.Mask(err)
 	}
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
