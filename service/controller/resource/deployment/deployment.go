@@ -46,7 +46,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"virtualNetworkName":         key.VnetName(customObject),
 		"vnetGatewaySubnetName":      key.VNetGatewaySubnetName(),
 		"vpnSubnetCidr":              vpnSubnet.String(),
-		"workerSubnetCidr":           key.AzureConfigNetworkCIDR(customObject),
+		"workerSubnetCidr":           key.WorkersSubnetCIDR(customObject),
 	}
 
 	armTemplate, err := template.GetARMTemplate()

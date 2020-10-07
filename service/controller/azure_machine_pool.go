@@ -13,7 +13,6 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/resource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource/wrapper/retryresource"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -23,6 +22,7 @@ import (
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/locker"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v4/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
@@ -177,16 +177,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	var tenantRestConfigProvider tenantcluster.Interface
+	var tenantClientFactory tenantcluster.Factory
 	{
-		c := tenantcluster.Config{
-			CertsSearcher: certsSearcher,
-			Logger:        config.Logger,
-
-			CertID: certs.APICert,
-		}
-
-		tenantRestConfigProvider, err = tenantcluster.New(c)
+		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -222,7 +215,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			CredentialProvider:        config.CredentialProvider,
 			CtrlClient:                config.K8sClient.CtrlClient(),
 			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-			TenantRestConfigProvider:  tenantRestConfigProvider,
+			TenantClientFactory:       tenantClientFactory,
 			VMSKU:                     vmSKU,
 		}
 
