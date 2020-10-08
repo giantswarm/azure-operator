@@ -2,14 +2,22 @@ package resourcegroup
 
 import (
 	"context"
+	"fmt"
+	"net/http"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	azureconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
+	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util/conditions"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -22,7 +30,8 @@ const (
 )
 
 type Config struct {
-	Logger micrologger.Logger
+	CtrlClient client.Client
+	Logger     micrologger.Logger
 
 	Azure            setting.Azure
 	InstallationName string
@@ -30,13 +39,17 @@ type Config struct {
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	logger micrologger.Logger
+	ctrlClient client.Client
+	logger     micrologger.Logger
 
 	azure            setting.Azure
 	installationName string
 }
 
 func New(config Config) (*Resource, error) {
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
+	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -51,8 +64,9 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		installationName: config.InstallationName,
 
-		azure:  config.Azure,
-		logger: config.Logger,
+		azure:      config.Azure,
+		ctrlClient: config.CtrlClient,
+		logger:     config.Logger,
 	}
 
 	return r, nil
@@ -66,6 +80,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	groupsClient, err := r.getGroupsClient(ctx)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.checkAndUpdateClusterCreationCondition(ctx, cr, groupsClient)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -145,4 +164,71 @@ func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsCl
 	}
 
 	return cc.AzureClientSet.GroupsClient, nil
+}
+
+func (r *Resource) checkAndUpdateClusterCreationCondition(ctx context.Context, azureConfig v1alpha1.AzureConfig, groupsClient *azureresource.GroupsClient) error {
+	logger := r.logger.With("level", "debug", "type", "AzureCluster", "message", "setting Status.Condition", "conditionType", azureconditions.ResourceGroupReadyCondition)
+
+	azureCluster, err := helpers.GetAzureClusterByName(ctx, r.ctrlClient, azureConfig.Namespace, azureConfig.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Resource group is already created
+	if conditions.IsTrue(azureCluster, azureconditions.ResourceGroupReadyCondition) {
+		return nil
+	}
+
+	group, err := groupsClient.Get(ctx, azureConfig.Name)
+	const genericErrorMessage = "Failed to get resource group from Azure API"
+	var conditionReason string
+	var conditionSeverity capi.ConditionSeverity
+
+	// error: resource group not found
+	if IsNotFound(err) {
+		conditionReason = "ResourceGroupNotFound"
+		conditionSeverity = capi.ConditionSeverityWarning
+		conditions.MarkFalse(
+			azureCluster,
+			azureconditions.ResourceGroupReadyCondition,
+			conditionReason,
+			conditionSeverity,
+			"Resource group is not found")
+		logger.LogCtx(ctx, "conditionStatus", false, "conditionReason", conditionReason, "conditionSeverity", conditionSeverity)
+	} else if err != nil {
+		conditionReason = "AzureAPIResourceGroupGetError"
+		conditionSeverity = capi.ConditionSeverityWarning
+		conditions.MarkFalse(
+			azureCluster,
+			azureconditions.ResourceGroupReadyCondition,
+			conditionReason,
+			conditionSeverity,
+			fmt.Sprintf("%s, %s", genericErrorMessage, group.Status))
+		logger.LogCtx(ctx, "conditionStatus", false, "conditionReason", conditionReason, "conditionSeverity", conditionSeverity)
+	} else if group.StatusCode == http.StatusOK {
+		conditions.MarkTrue(azureCluster, azureconditions.ResourceGroupReadyCondition)
+		logger.LogCtx(ctx, "conditionStatus", true)
+	} else {
+		conditionReason = "AzureAPIResourceGroupGetError"
+		conditionSeverity = capi.ConditionSeverityWarning
+		conditions.MarkFalse(
+			azureCluster,
+			azureconditions.ResourceGroupReadyCondition,
+			conditionReason,
+			conditionSeverity,
+			fmt.Sprintf("%s, %s", genericErrorMessage, group.Status))
+		logger.LogCtx(ctx, "conditionStatus", false, "conditionReason", conditionReason, "conditionSeverity", conditionSeverity)
+	}
+
+	ctrlClientError := r.ctrlClient.Status().Update(ctx, azureCluster)
+	// Prioritize initial Azure API error over controller client update error
+	if err != nil {
+		return microerror.Mask(err)
+	} else if ctrlClientError != nil {
+		return microerror.Mask(ctrlClientError)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "type", "AzureCluster", "message", "set Status.Condition", "conditionType", azureconditions.ResourceGroupReadyCondition)
+
+	return nil
 }
