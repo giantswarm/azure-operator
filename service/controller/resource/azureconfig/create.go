@@ -25,8 +25,9 @@ import (
 const (
 	dockerVolumeSizeGB  = 50
 	kubeletVolumeSizeGB = 100
-
-	kubeDNSIPLastOctet = 10
+	// DNS domain for dns searches in pods.
+	kubeletClusterDomain = "cluster.local"
+	kubeDNSIPLastOctet   = 10
 
 	ProviderAzure = "azure"
 )
@@ -379,6 +380,10 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
 		commonCluster.Kubernetes.Kubelet.Labels = kubeletLabels
+	}
+
+	{
+		commonCluster.Kubernetes.Domain = kubeletClusterDomain
 	}
 
 	{
