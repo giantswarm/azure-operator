@@ -54,8 +54,8 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		ctrlClient: config.CtrlClient,
-		debugger: config.Debugger,
-		logger:   config.Logger,
+		debugger:   config.Debugger,
+		logger:     config.Logger,
 
 		azure: config.Azure,
 	}
