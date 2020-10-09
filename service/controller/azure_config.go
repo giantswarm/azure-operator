@@ -614,8 +614,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	{
 		c := vpn.Config{
 			CtrlClient: config.K8sClient.CtrlClient(),
-			Debugger: newDebugger,
-			Logger:   config.Logger,
+			Debugger:   newDebugger,
+			Logger:     config.Logger,
 
 			Azure: config.Azure,
 		}
