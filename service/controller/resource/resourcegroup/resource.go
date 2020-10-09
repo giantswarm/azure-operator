@@ -176,7 +176,8 @@ func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context
 		return microerror.Mask(err)
 	}
 
-	cluster, err := util.GetOwnerCluster(ctx, r.ctrlClient, azureCluster.ObjectMeta)
+	// Cluster/owner reference may still not be set in AzureCluster
+	cluster, err := util.GetClusterByName(ctx, r.ctrlClient, azureCluster.Namespace, azureCluster.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -193,6 +194,7 @@ func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context
 	const genericErrorMessage = "Failed to get resource group from Azure API"
 	var conditionReason string
 	var conditionSeverity capi.ConditionSeverity
+	didSetCreatingCondition := false
 
 	if IsNotFound(err) {
 		// resource group is not found, which means that the cluster is being created
@@ -217,6 +219,8 @@ func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context
 			"message", "setting Status.Condition",
 			"conditionType", capiconditions.CreatingCondition,
 			"conditionStatus", true)
+
+		didSetCreatingCondition = true
 	} else if err != nil {
 		conditionReason = "AzureAPIResourceGroupGetError"
 		conditionSeverity = capi.ConditionSeverityWarning
@@ -251,6 +255,20 @@ func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "type", "AzureCluster", "message", "set Status.Condition", "conditionType", azureconditions.ResourceGroupReadyCondition)
+
+	if didSetCreatingCondition {
+		ctrlClientError = r.ctrlClient.Status().Update(ctx, cluster)
+		if ctrlClientError != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx,
+			"level", "debug",
+			"type", "Cluster",
+			"message", fmt.Sprintf("set Status.Condition[%s]", capiconditions.CreatingCondition),
+			"conditionType", capiconditions.CreatingCondition,
+			"conditionStatus", true)
+	}
 
 	return nil
 }
