@@ -80,14 +80,28 @@ func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger m
 	isAzureClusterReady = isVpnGatewayReadyCondition && allAzureMachinePoolsAreReady
 
 	if isAzureClusterReady {
-		conditions.MarkTrue(azureCluster, azureconditions.VPNGatewayReadyCondition)
+		conditions.MarkTrue(azureCluster, capiV1alpha3.ReadyCondition)
 	} else {
+		var conditionReason string
+		var conditionMessage string
+
+		if !isVpnGatewayReadyCondition {
+			conditionReason = "VPNNotReady"
+			conditionMessage = "VPN Gateway is not ready"
+		} else if !allAzureMachinePoolsAreReady {
+			conditionReason = "AzureMachinePoolNotReady"
+			conditionMessage = "At least one AzureMachinePool is not ready"
+		} else {
+			conditionReason = "UnknownReason"
+			conditionMessage = "Cluster is not ready for an unexpected reason"
+		}
+
 		conditions.MarkFalse(
 			azureCluster,
-			azureconditions.VPNGatewayReadyCondition,
-			"VPNNotReady",
+			capiV1alpha3.ReadyCondition,
+			conditionReason,
 			capiV1alpha3.ConditionSeverityWarning,
-			"VPN is not ready")
+			conditionMessage)
 	}
 
 	err := c.Status().Update(ctx, azureCluster)
