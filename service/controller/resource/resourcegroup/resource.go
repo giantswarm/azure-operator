@@ -86,9 +86,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.checkAndUpdateResourceGroupReadyCondition(ctx, cr, groupsClient)
-	if err != nil {
-		return microerror.Mask(err)
+	conditionsUpdateError := r.checkAndUpdateResourceGroupReadyCondition(ctx, cr, groupsClient)
+	if conditionsUpdateError != nil {
+		r.logger.LogCtx(ctx, "level", "warning", "message", "error while updating AzureCluster ResourceGroupReady condition", "error", conditionsUpdateError.Error())
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring resource group is created")
