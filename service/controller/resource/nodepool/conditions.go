@@ -8,7 +8,10 @@ import (
 	"github.com/giantswarm/microerror"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
 	conditions "sigs.k8s.io/cluster-api/util/conditions"
+
+	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
 )
 
 const (
@@ -83,6 +86,26 @@ func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azure
 			"type", "AzureMachinePool",
 			"conditionType", conditionType,
 			"message", "error while setting Status.Condition")
+		return microerror.Mask(err)
+	}
+
+	// Update AzureCluster conditions
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	err = helpers.UpdateAzureClusterConditions(ctx, r.CtrlClient, r.Logger, azureCluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// Update Cluster conditions
+	cluster, err := util.GetOwnerCluster(ctx, r.CtrlClient, azureCluster.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	err = helpers.UpdateClusterConditions(ctx, r.CtrlClient, r.Logger, cluster, azureCluster)
+	if err != nil {
 		return microerror.Mask(err)
 	}
 

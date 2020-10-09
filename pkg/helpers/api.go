@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiV1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -34,4 +35,12 @@ func GetAzureClusterByName(ctx context.Context, c client.Client, namespace, name
 	}
 
 	return azureCluster, nil
+}
+
+func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger micrologger.Logger, azureCluster *capzV1alpha3.AzureCluster) error {
+	return nil
+}
+
+func UpdateClusterConditions(ctx context.Context, c client.Client, logger micrologger.Logger, cluster *capiV1alpha3.Cluster, azureCluster *capzV1alpha3.AzureCluster) error {
+	return nil
 }
