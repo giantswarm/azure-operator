@@ -9,7 +9,8 @@ require (
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.2
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
-	github.com/giantswarm/apiextensions/v2 v2.5.4-0.20201009093021-e54a81309486
+	github.com/giantswarm/apiextensions/v2 v2.5.3
+	github.com/giantswarm/apiextensions/v3 v3.1.0
 	github.com/giantswarm/appcatalog v0.2.7
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
@@ -43,7 +44,7 @@ require (
 	github.com/spf13/viper v1.7.1
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.18.9
-	k8s.io/apiextensions-apiserver v0.18.8
+	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v0.18.9
 	sigs.k8s.io/cluster-api v0.3.10

@@ -3,8 +3,8 @@ package helpers
 import (
 	"context"
 
-	apieconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions"
-	azureconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions/azure"
+	apieconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
+	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"

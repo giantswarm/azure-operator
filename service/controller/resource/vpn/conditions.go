@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/apiextensions/v2/pkg/conditions/azure"
+	"github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util/conditions"

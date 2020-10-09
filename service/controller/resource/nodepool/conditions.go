@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	azureconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions/azure"
+	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
