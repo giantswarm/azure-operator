@@ -7,6 +7,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
@@ -20,22 +21,27 @@ const (
 
 // Config contains information required by Resource.
 type Config struct {
-	Debugger *debugger.Debugger
-	Logger   micrologger.Logger
+	CtrlClient ctrlclient.Client
+	Debugger   *debugger.Debugger
+	Logger     micrologger.Logger
 
 	Azure setting.Azure
 }
 
 // Resource ensures Microsoft Virtual Network Gateways are running.
 type Resource struct {
-	debugger *debugger.Debugger
-	logger   micrologger.Logger
+	ctrlClient ctrlclient.Client
+	debugger   *debugger.Debugger
+	logger     micrologger.Logger
 
 	azure setting.Azure
 }
 
 // New validates Config and creates a new Resource with it.
 func New(config Config) (*Resource, error) {
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
+	}
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
 	}
@@ -47,6 +53,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
+		ctrlClient: config.CtrlClient,
 		debugger: config.Debugger,
 		logger:   config.Logger,
 
