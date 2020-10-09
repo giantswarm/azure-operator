@@ -6,8 +6,8 @@ import (
 
 	azureconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
-	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	conditions "sigs.k8s.io/cluster-api/util/conditions"
 )
 
@@ -16,15 +16,15 @@ const (
 	ProvisioningStateFailed    = "Failed"
 )
 
-func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, provisioningState *string) error {
+func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool, provisioningState *string) error {
 	conditionType := azureconditions.DeploymentSucceededCondition
 	var conditionReason string
-	var conditionSeverity capiv1alpha3.ConditionSeverity
+	var conditionSeverity capi.ConditionSeverity
 	logger := r.Logger.With("level", "debug", "type", "AzureMachinePool", "message", "setting Status.Condition", "conditionType", conditionType)
 
 	if provisioningState == nil {
 		conditionReason = "DeploymentNotFound"
-		conditionSeverity = capiv1alpha3.ConditionSeverityWarning
+		conditionSeverity = capi.ConditionSeverityWarning
 		conditions.MarkFalse(
 			azureMachinePool,
 			conditionType,
@@ -38,7 +38,7 @@ func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azure
 			conditions.MarkTrue(azureMachinePool, conditionType)
 			logger.LogCtx(ctx, "conditionStatus", true)
 		case ProvisioningStateFailed:
-			conditionSeverity = capiv1alpha3.ConditionSeverityError
+			conditionSeverity = capi.ConditionSeverityError
 			conditionReason = "ProvisioningStateFailed"
 			conditions.MarkFalse(
 				azureMachinePool,
@@ -48,7 +48,7 @@ func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azure
 				"Deployment has failed.")
 			logger.LogCtx(ctx, "conditionStatus", false, "conditionReason", conditionReason, "conditionSeverity", conditionSeverity)
 		default:
-			conditionSeverity = capiv1alpha3.ConditionSeverityWarning
+			conditionSeverity = capi.ConditionSeverityWarning
 			conditionReason = fmt.Sprintf("ProvisioningState%s", *provisioningState)
 			conditions.MarkFalse(
 				azureMachinePool,
@@ -59,6 +59,21 @@ func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azure
 				*provisioningState)
 			logger.LogCtx(ctx, "conditionStatus", false, "conditionReason", conditionReason, "conditionSeverity", conditionSeverity)
 		}
+	}
+
+	// Preview implementation only: DeploymentSucceeded -> Ready
+	// It the final version it will include more detailed and more accurate conditions.
+	if conditions.IsTrue(azureMachinePool, azureconditions.DeploymentSucceededCondition) {
+		conditions.MarkTrue(azureMachinePool, capi.ReadyCondition)
+	} else {
+		conditionReason = "Deploying"
+		conditionSeverity = capi.ConditionSeverityWarning
+		conditions.MarkFalse(
+			azureMachinePool,
+			capi.ReadyCondition,
+			conditionReason,
+			conditionSeverity,
+			"Node pool deployment is in progress.")
 	}
 
 	err := r.CtrlClient.Status().Update(ctx, azureMachinePool)
