@@ -8,12 +8,14 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	capiconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions"
 	azureconditions "github.com/giantswarm/apiextensions/v2/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/finalizerskeptcontext"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -84,7 +86,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.checkAndUpdateClusterCreationCondition(ctx, cr, groupsClient)
+	err = r.checkAndUpdateResourceGroupReadyCondition(ctx, cr, groupsClient)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -166,7 +168,7 @@ func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsCl
 	return cc.AzureClientSet.GroupsClient, nil
 }
 
-func (r *Resource) checkAndUpdateClusterCreationCondition(ctx context.Context, azureConfig v1alpha1.AzureConfig, groupsClient *azureresource.GroupsClient) error {
+func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context, azureConfig v1alpha1.AzureConfig, groupsClient *azureresource.GroupsClient) error {
 	logger := r.logger.With("level", "debug", "type", "AzureCluster", "message", "setting Status.Condition", "conditionType", azureconditions.ResourceGroupReadyCondition)
 
 	azureCluster, err := helpers.GetAzureClusterByName(ctx, r.ctrlClient, azureConfig.Namespace, azureConfig.Name)
@@ -174,8 +176,16 @@ func (r *Resource) checkAndUpdateClusterCreationCondition(ctx context.Context, a
 		return microerror.Mask(err)
 	}
 
+	cluster, err := util.GetOwnerCluster(ctx, r.ctrlClient, azureCluster.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	isResourceGroupCreated := conditions.IsTrue(azureCluster, azureconditions.ResourceGroupReadyCondition)
+	isCreatingConditionSet := conditions.Get(cluster, capiconditions.CreatingCondition) != nil
+
 	// Resource group is already created
-	if conditions.IsTrue(azureCluster, azureconditions.ResourceGroupReadyCondition) {
+	if isResourceGroupCreated && isCreatingConditionSet {
 		return nil
 	}
 
@@ -184,8 +194,11 @@ func (r *Resource) checkAndUpdateClusterCreationCondition(ctx context.Context, a
 	var conditionReason string
 	var conditionSeverity capi.ConditionSeverity
 
-	// error: resource group not found
 	if IsNotFound(err) {
+		// resource group is not found, which means that the cluster is being created
+
+		// let's set AzureCluster condition "ResourceGroupReady" to False, with reason
+		// ResourceGroupNotFound, to signal that the resource group is not created yet
 		conditionReason = "ResourceGroupNotFound"
 		conditionSeverity = capi.ConditionSeverityWarning
 		conditions.MarkFalse(
@@ -195,6 +208,15 @@ func (r *Resource) checkAndUpdateClusterCreationCondition(ctx context.Context, a
 			conditionSeverity,
 			"Resource group is not found")
 		logger.LogCtx(ctx, "conditionStatus", false, "conditionReason", conditionReason, "conditionSeverity", conditionSeverity)
+
+		// let's set Cluster condition "Creating" to True to signal that the cluster is being created
+		conditions.MarkTrue(cluster, capiconditions.CreatingCondition)
+		r.logger.LogCtx(ctx,
+			"level", "debug",
+			"type", "Cluster",
+			"message", "setting Status.Condition",
+			"conditionType", capiconditions.CreatingCondition,
+			"conditionStatus", true)
 	} else if err != nil {
 		conditionReason = "AzureAPIResourceGroupGetError"
 		conditionSeverity = capi.ConditionSeverityWarning

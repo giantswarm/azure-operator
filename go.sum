@@ -298,8 +298,8 @@ github.com/ghodss/yaml v1.0.1-0.20190212211648-25d852aebe32/go.mod h1:GIjDIg/heH
 github.com/giantswarm/apiextensions/v2 v2.0.0/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+rJqsPZewzz4jjMXkXYFw=
 github.com/giantswarm/apiextensions/v2 v2.1.0/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+rJqsPZewzz4jjMXkXYFw=
 github.com/giantswarm/apiextensions/v2 v2.5.1/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+rJqsPZewzz4jjMXkXYFw=
-github.com/giantswarm/apiextensions/v2 v2.5.4-0.20201008154447-c4af8f6bb395 h1:8y+dXSGQvJd6x4Uctny8z9ovQLn7xnv2Wk9MNW/9v1s=
-github.com/giantswarm/apiextensions/v2 v2.5.4-0.20201008154447-c4af8f6bb395/go.mod h1:OCZoaqOBIsO44BUF3TUImjQmBkzYAX7eD+iroSh44u0=
+github.com/giantswarm/apiextensions/v2 v2.5.4-0.20201009093021-e54a81309486 h1:e4Qfsz0CtNA/pQ9w6aqHLSGVj06KSij6TnMdru1yNdU=
+github.com/giantswarm/apiextensions/v2 v2.5.4-0.20201009093021-e54a81309486/go.mod h1:OCZoaqOBIsO44BUF3TUImjQmBkzYAX7eD+iroSh44u0=
 github.com/giantswarm/appcatalog v0.2.7 h1:SVD1OH/C5zEP8TaeS3L9t8+lVcfaRZhwY98sn8v9lYs=
 github.com/giantswarm/appcatalog v0.2.7/go.mod h1:WHO5lJvcuwzToxxHPdiX9CVxvMsmP8YZfjoo4E/NTLs=
 github.com/giantswarm/apprclient/v2 v2.0.0 h1:LJeBJAqBvezoAMSx4c3j4N+NnIOIj2zEQPHIY5NYXHs=
