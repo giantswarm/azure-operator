@@ -198,6 +198,7 @@ func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context
 
 	if IsNotFound(err) {
 		// resource group is not found, which means that the cluster is being created
+		err = nil
 
 		// let's set AzureCluster condition "ResourceGroupReady" to False, with reason
 		// ResourceGroupNotFound, to signal that the resource group is not created yet
@@ -246,18 +247,8 @@ func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context
 		logger.LogCtx(ctx, "conditionStatus", false, "conditionReason", conditionReason, "conditionSeverity", conditionSeverity)
 	}
 
-	ctrlClientError := r.ctrlClient.Status().Update(ctx, azureCluster)
-	// Prioritize initial Azure API error over controller client update error
-	if err != nil {
-		return microerror.Mask(err)
-	} else if ctrlClientError != nil {
-		return microerror.Mask(ctrlClientError)
-	}
-
-	r.logger.LogCtx(ctx, "level", "debug", "type", "AzureCluster", "message", "set Status.Condition", "conditionType", azureconditions.ResourceGroupReadyCondition)
-
 	if didSetCreatingCondition {
-		ctrlClientError = r.ctrlClient.Status().Update(ctx, cluster)
+		ctrlClientError := r.ctrlClient.Status().Update(ctx, cluster)
 		if ctrlClientError != nil {
 			return microerror.Mask(err)
 		}
@@ -269,6 +260,16 @@ func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context
 			"conditionType", capiconditions.CreatingCondition,
 			"conditionStatus", true)
 	}
+
+	ctrlClientError := r.ctrlClient.Status().Update(ctx, azureCluster)
+	// Prioritize initial Azure API error over controller client update error
+	if err != nil {
+		return microerror.Mask(err)
+	} else if ctrlClientError != nil {
+		return microerror.Mask(ctrlClientError)
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "type", "AzureCluster", "message", "set Status.Condition", "conditionType", azureconditions.ResourceGroupReadyCondition)
 
 	return nil
 }
