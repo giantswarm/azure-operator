@@ -3,13 +3,12 @@ package nodepool
 import (
 	"context"
 
-	"github.com/giantswarm/errors/tenant"
-	"github.com/giantswarm/k8sclient/v2/pkg/k8sclient"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v4/service/controller/key"
@@ -26,22 +25,22 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
-	if tenantcluster.IsTimeout(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
 		return currentState, nil
-	} else if tenant.IsAPINotAvailable(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+	}
+
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 		return currentState, nil
-	} else if err != nil {
-		return currentState, microerror.Mask(err)
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
 
-	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, tenantClusterK8sClient, isWorker)
+	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, tenantClusterK8sClient, &azureMachinePool, isWorker)
 	if IsClientNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
@@ -59,8 +58,15 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	return DrainOldWorkerNodes, nil
 }
 
-func countReadyNodes(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
-	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+func countReadyNodes(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *v1alpha3.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
+	nodeList := &corev1.NodeList{}
+	var labelSelector ctrlclient.MatchingLabels
+	{
+		labelSelector = make(map[string]string)
+		labelSelector[apiextensionslabels.MachinePool] = azureMachinePool.Name
+	}
+
+	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
 	if err != nil {
 		return 0, microerror.Mask(err)
 	}
@@ -75,8 +81,8 @@ func countReadyNodes(ctx context.Context, tenantClusterK8sClient k8sclient.Inter
 	return numNodes, nil
 }
 
-func areNodesReadyForTransitioning(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
-	numNodes, err := countReadyNodes(ctx, tenantClusterK8sClient, nodeRoleMatchFunc)
+func areNodesReadyForTransitioning(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *v1alpha3.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (bool, error) {
+	numNodes, err := countReadyNodes(ctx, tenantClusterK8sClient, azureMachinePool, nodeRoleMatchFunc)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}

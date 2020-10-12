@@ -33,14 +33,29 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(ownerReferenceNotSet)
 	}
 
+	if !machinePool.GetDeletionTimestamp().IsZero() {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping reconciling node pool")
+		return currentState, nil
+	}
+
 	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
+		return currentState, nil
+	}
+
 	azureCluster, err := r.getAzureClusterFromCluster(ctx, cluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
+	}
+
+	if !azureCluster.GetDeletionTimestamp().IsZero() {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "AzureCluster is being deleted, skipping reconciling node pool")
+		return currentState, nil
 	}
 
 	release, err := r.getReleaseFromMetadata(ctx, azureMachinePool.ObjectMeta)

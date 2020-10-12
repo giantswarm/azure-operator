@@ -6,16 +6,14 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
-	"github.com/giantswarm/errors/tenant"
-	"github.com/giantswarm/k8sclient/v2/pkg/k8sclient"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v4/pkg/label"
 	"github.com/giantswarm/azure-operator/v4/pkg/project"
@@ -40,17 +38,17 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	tenantClusterK8sClient, err := r.getTenantClusterK8sClient(ctx, cluster)
-	if tenantcluster.IsTimeout(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "timeout fetching certificates")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+	if !cluster.GetDeletionTimestamp().IsZero() {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
 		return currentState, nil
-	} else if tenant.IsAPINotAvailable(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+	}
+
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 		return currentState, nil
-	} else if err != nil {
-		return currentState, microerror.Mask(err)
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
@@ -86,7 +84,7 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 }
 
 // ensureNodesCordoned ensures that given tenant cluster nodes are cordoned.
-func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodes []corev1.Node) (int, error) {
+func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, nodes []corev1.Node) (int, error) {
 	var count int
 	for _, n := range nodes {
 		// Node already cordoned?
@@ -95,10 +93,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClie
 			continue
 		}
 
-		t := types.StrategicMergePatchType
-		p := []byte(UnschedulablePatch)
-
-		_, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().Patch(ctx, n.Name, t, p, metav1.PatchOptions{})
+		err := tenantClusterK8sClient.Patch(context.Background(), &n, ctrlclient.RawPatch(types.StrategicMergePatchType, []byte(UnschedulablePatch)))
 		if apierrors.IsNotFound(err) {
 			// On manual operations or during auto-scaling it may happen that
 			// node gets terminated while instances are processed. It's ok from
@@ -114,7 +109,7 @@ func (r *Resource) ensureNodesCordoned(ctx context.Context, tenantClusterK8sClie
 	return count, nil
 }
 
-func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, azureMachinePool *v1alpha3.AzureMachinePool, instanceNameFunc func(nodePoolId, instanceID string) string) ([]corev1.Node, []corev1.Node, error) {
+func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *v1alpha3.AzureMachinePool, instanceNameFunc func(nodePoolId, instanceID string) string) ([]corev1.Node, []corev1.Node, error) {
 	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
@@ -130,13 +125,19 @@ func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8
 		return nil, nil, microerror.Mask(err)
 	}
 
-	var nodes []corev1.Node
+	var nodeList *corev1.NodeList
 	{
-		nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+		nodeList = &corev1.NodeList{}
+		var labelSelector ctrlclient.MatchingLabels
+		{
+			labelSelector = make(map[string]string)
+			labelSelector[apiextensionslabels.MachinePool] = azureMachinePool.Name
+		}
+
+		err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
-		nodes = nodeList.Items
 	}
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
@@ -152,7 +153,7 @@ func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8
 	}
 
 	nodeMap := make(map[string]corev1.Node)
-	for _, n := range nodes {
+	for _, n := range nodeList.Items {
 		nodeMap[n.GetName()] = n
 	}
 
@@ -183,15 +184,22 @@ func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8
 	return oldNodes, newNodes, nil
 }
 
-func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodePoolId string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
+func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, nodePoolId string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
 	name := key.NodePoolInstanceName(nodePoolId, *instance.InstanceID)
 
-	nodeList, err := tenantClusterK8sClient.K8sClient().CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	nodeList := &corev1.NodeList{}
+	var labelSelector ctrlclient.MatchingLabels
+	{
+		labelSelector = make(map[string]string)
+		labelSelector[apiextensionslabels.MachinePool] = nodePoolId
+	}
+
+	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	nodes := nodeList.Items
 
+	nodes := nodeList.Items
 	for _, n := range nodes {
 		if n.GetName() == name {
 			return &n, nil
@@ -202,7 +210,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantCluste
 	return nil, nil
 }
 
-func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, tenantClusterK8sClient k8sclient.Interface, nodePoolId string, instance compute.VirtualMachineScaleSetVM, vmss compute.VirtualMachineScaleSet) (*bool, error) {
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, nodePoolId string, instance compute.VirtualMachineScaleSetVM, vmss compute.VirtualMachineScaleSet) (*bool, error) {
 	t := true
 	f := false
 

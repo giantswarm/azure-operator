@@ -23,14 +23,23 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
 	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
+	}
+
+	if machinePool == nil {
+		return currentState, microerror.Mask(ownerReferenceNotSet)
+	}
+
+	if !machinePool.GetDeletionTimestamp().IsZero() {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping reconciling node pool")
+		return currentState, nil
+	}
+
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return currentState, microerror.Mask(err)
 	}
 
 	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)

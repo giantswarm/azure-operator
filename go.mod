@@ -1,6 +1,6 @@
 module github.com/giantswarm/azure-operator/v4
 
-go 1.14
+go 1.15
 
 require (
 	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
@@ -22,7 +22,6 @@ require (
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/helmclient/v2 v2.1.4
 	github.com/giantswarm/ipam v0.2.0
-	github.com/giantswarm/k8sclient/v2 v2.1.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/k8scloudconfig/v8 v8.0.2
 	github.com/giantswarm/kubelock/v2 v2.0.0
@@ -54,6 +53,8 @@ require (
 )
 
 replace (
+	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
+	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.24+incompatible
 	sigs.k8s.io/cluster-api v0.3.10 => github.com/giantswarm/cluster-api v0.3.10-gs
 	sigs.k8s.io/cluster-api-provider-azure v0.4.9 => github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2
 )
