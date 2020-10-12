@@ -23,13 +23,6 @@ spec:
       resourceGroup: c6fme
   resourceGroup: ""
 status:
-  bastion:
-    image: {}
-    osDisk:
-      diskSizeGB: 0
-      managedDisk:
-        storageAccountType: ""
-      osType: ""
   network:
     apiServerIp: {}
     apiServerLb:

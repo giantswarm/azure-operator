@@ -332,7 +332,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var resourceGroupResource resource.Interface
 	{
 		c := resourcegroup.Config{
-			Logger: config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 
 			Azure:            config.Azure,
 			InstallationName: config.InstallationName,
@@ -612,8 +613,9 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var vpnResource resource.Interface
 	{
 		c := vpn.Config{
-			Debugger: newDebugger,
-			Logger:   config.Logger,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Debugger:   newDebugger,
+			Logger:     config.Logger,
 
 			Azure: config.Azure,
 		}
