@@ -3,7 +3,7 @@ module github.com/giantswarm/azure-operator/v4
 go 1.15
 
 require (
-	github.com/Azure/azure-sdk-for-go v45.1.0+incompatible
+	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.10.0
 	github.com/Azure/go-autorest/autorest v0.11.7
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.2
@@ -45,8 +45,8 @@ require (
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v0.18.9
-	sigs.k8s.io/cluster-api v0.3.9
-	sigs.k8s.io/cluster-api-provider-azure v0.4.7
+	sigs.k8s.io/cluster-api v0.3.10
+	sigs.k8s.io/cluster-api-provider-azure v0.4.9
 	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/yaml v1.2.0
 )
