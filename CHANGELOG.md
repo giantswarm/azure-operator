@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0-alpha1] - 2020-10-12
+
 ### Added
 
 - Add monitoring label
@@ -154,7 +156,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v4.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha1...HEAD
+[5.0.0-alpha1]: https://github.com/giantswarm/azure-operator/compare/v4.2.0...v5.0.0-alpha1
 [4.2.0]: https://github.com/giantswarm/azure-operator/compare/v4.1.0...v4.2.0
 [4.1.0]: https://github.com/giantswarm/azure-operator/compare/v4.0.1...v4.1.0
 [4.0.1]: https://github.com/giantswarm/azure-operator/compare/v4.0.0...v4.0.1
