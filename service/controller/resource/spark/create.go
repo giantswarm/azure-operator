@@ -41,8 +41,10 @@ import (
 const (
 	dockerVolumeSizeGB  = 50
 	kubeletVolumeSizeGB = 100
-	kubeDNSIPLastOctet  = 10
-	ProviderAzure       = "azure"
+	// DNS domain for dns searches in pods.
+	kubeletClusterDomain = "cluster.local"
+	kubeDNSIPLastOctet   = 10
+	ProviderAzure        = "azure"
 )
 
 // EnsureCreated is checking if corresponding Spark CRD exists. In that case it renders
@@ -621,6 +623,10 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 
 		commonCluster.Kubernetes.Kubelet.Domain = kubeletDomain
 		commonCluster.Kubernetes.Kubelet.Labels = kubeletLabels
+	}
+
+	{
+		commonCluster.Kubernetes.Domain = kubeletClusterDomain
 	}
 
 	{

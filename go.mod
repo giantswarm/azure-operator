@@ -1,6 +1,6 @@
 module github.com/giantswarm/azure-operator/v4
 
-go 1.14
+go 1.15
 
 require (
 	github.com/Azure/azure-sdk-for-go v45.1.0+incompatible
@@ -21,7 +21,6 @@ require (
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/helmclient/v2 v2.1.4
 	github.com/giantswarm/ipam v0.2.0
-	github.com/giantswarm/k8sclient/v2 v2.1.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/k8scloudconfig/v8 v8.0.2
 	github.com/giantswarm/kubelock/v2 v2.0.0
@@ -42,7 +41,6 @@ require (
 	github.com/spf13/afero v1.4.0
 	github.com/spf13/viper v1.7.1
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
-	golang.org/x/sys v0.0.0-20200814200057-3d37ad5750ed // indirect
 	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
