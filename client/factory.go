@@ -17,7 +17,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	gocache "github.com/patrickmn/go-cache"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 )
 
 const (

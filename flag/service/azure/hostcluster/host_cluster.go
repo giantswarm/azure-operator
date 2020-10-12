@@ -1,7 +1,7 @@
 package hostcluster
 
 import (
-	"github.com/giantswarm/azure-operator/v4/flag/service/azure/hostcluster/tenant"
+	"github.com/giantswarm/azure-operator/v5/flag/service/azure/hostcluster/tenant"
 )
 
 type HostCluster struct {

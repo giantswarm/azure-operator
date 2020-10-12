@@ -6,8 +6,8 @@ import (
 	"strconv"
 	"strings"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/network"
-	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/e2e/network"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
 )
 
 const (

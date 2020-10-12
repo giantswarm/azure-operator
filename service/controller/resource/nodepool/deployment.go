@@ -21,14 +21,14 @@ import (
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/helpers/vmss"
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsku"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers/vmss"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool/template"
 )
 
 func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {

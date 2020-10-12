@@ -17,7 +17,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/env"
+	"github.com/giantswarm/azure-operator/v5/e2e/env"
 )
 
 func Test_Nodepool(t *testing.T) {

@@ -1,7 +1,7 @@
 package docker
 
 import (
-	"github.com/giantswarm/azure-operator/v4/flag/service/cluster/docker/daemon"
+	"github.com/giantswarm/azure-operator/v5/flag/service/cluster/docker/daemon"
 )
 
 type Docker struct {

@@ -3,7 +3,7 @@ package senddecorator
 import (
 	"github.com/Azure/go-autorest/autorest"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/backpressure"
+	"github.com/giantswarm/azure-operator/v5/pkg/backpressure"
 )
 
 // ConfigureClient accepts backpressure instance and configures given autorest

@@ -1,4 +1,4 @@
-module github.com/giantswarm/azure-operator/v4
+module github.com/giantswarm/azure-operator/v5
 
 go 1.15
 

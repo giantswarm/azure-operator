@@ -14,11 +14,11 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterdependents"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/clusterownerreference"
-	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterdependents"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterownerreference"
+	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
 type ClusterConfig struct {
