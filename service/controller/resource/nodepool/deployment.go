@@ -86,6 +86,30 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 		}
 	}
 
+	var storageAccountType string
+	{
+		currentType, err := r.vmssStorageAccountType(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
+		if IsNotFound(err) {
+			// Scale set does not exist yet.
+			// We want to use Premium LRS disks only if VM type supports it.
+			supportsPremium, err := r.vmsku.HasCapability(ctx, azureMachinePool.Spec.Template.VMSize, vmsku.CapabilityPremiumIO)
+			if err != nil {
+				return azureresource.Deployment{}, microerror.Mask(err)
+			}
+
+			if supportsPremium {
+				storageAccountType = string(compute.StorageAccountTypesPremiumLRS)
+			} else {
+				storageAccountType = string(compute.StorageAccountTypeStandardLRS)
+			}
+		} else if err != nil {
+			return azureresource.Deployment{}, microerror.Mask(err)
+		} else {
+			// VMSS already exists, we want to stick with what is the current situation.
+			storageAccountType = currentType
+		}
+	}
+
 	templateParameters := template.Parameters{
 		AzureOperatorVersion:        project.Version(),
 		ClusterID:                   azureCluster.GetName(),
@@ -103,11 +127,13 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
 			CurrentReplicas: currentReplicas,
 		},
-		SubnetName:   subnetName,
-		VMCustomData: workerCloudConfig,
-		VMSize:       azureMachinePool.Spec.Template.VMSize,
-		VnetName:     vnetName,
-		Zones:        machinePool.Spec.FailureDomains,
+		StorageAccountType: storageAccountType,
+		SubnetName:         subnetName,
+		VMCustomData:       workerCloudConfig,
+		VMSize:             azureMachinePool.Spec.Template.VMSize,
+		VnetName:           vnetName,
+		Zones:              machinePool.Spec.FailureDomains,
+
 	}
 
 	deployment, err := template.NewDeployment(templateParameters)
@@ -130,6 +156,57 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	}
 
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
+}
+
+func (r *Resource) vmssStorageAccountType(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (string, error) {
+	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	return string(npVMSS.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType), nil
+}
+
+func (r *Resource) vmssHasAcceleratedNetworkingEnabled(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (bool, error) {
+	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	cfgs := npVMSS.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations
+	if cfgs != nil && len(*cfgs) > 0 {
+		cfg := (*cfgs)[0]
+		return *cfg.EnableAcceleratedNetworking, nil
+	}
+
+	// Unexpected response from azure.
+	return false, microerror.Mask(unexpectedUpstreamResponseError)
+}
+
+func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (int32, error) {
+	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
+	if err != nil {
+		return -1, microerror.Mask(err)
+	}
+
+	capacity64 := *npVMSS.Sku.Capacity
+
+	// Unsafe type casting in theory, but in practice the capacity will never reach numbers not even close to 2^32.
+	return int32(capacity64), nil
+}
+
+func (r *Resource) getVMSS(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
+	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, cluster.ObjectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	npVMSS, err := client.Get(ctx, resourceGroupName, vmssName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return &npVMSS, nil
 }
 
 func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, containerName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {

@@ -15,6 +15,7 @@ type Parameters struct {
 	NodepoolName                string
 	OSImage                     OSImage
 	Scaling                     Scaling
+	StorageAccountType          string
 	SubnetName                  string
 	VMCustomData                string
 	VMSize                      string
@@ -79,6 +80,7 @@ func (p Parameters) ToDeployParams() map[string]interface{} {
 	armDeploymentParameters["minReplicas"] = toARMParam(float64(p.Scaling.MinReplicas))
 	armDeploymentParameters["maxReplicas"] = toARMParam(float64(p.Scaling.MaxReplicas))
 	armDeploymentParameters["currentReplicas"] = toARMParam(float64(p.Scaling.CurrentReplicas))
+	armDeploymentParameters["storageAccountType"] = toARMParam(p.StorageAccountType)
 	armDeploymentParameters["subnetName"] = toARMParam(p.SubnetName)
 	armDeploymentParameters["vmCustomData"] = toARMParam(p.VMCustomData)
 	armDeploymentParameters["vmSize"] = toARMParam(p.VMSize)
@@ -150,7 +152,8 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 			MaxReplicas:     int32(cast(parameters["maxReplicas"]).(float64)),
 			CurrentReplicas: int32(cast(parameters["currentReplicas"]).(float64)),
 		},
-		SubnetName: cast(parameters["subnetName"]).(string),
+		SSHPublicKey: cast(parameters["sshPublicKey"]).(string),
+		SubnetName:   cast(parameters["subnetName"]).(string),
 		// It comes empty from Azure API.
 		VMCustomData: "",
 		VMSize:       cast(parameters["vmSize"]).(string),
