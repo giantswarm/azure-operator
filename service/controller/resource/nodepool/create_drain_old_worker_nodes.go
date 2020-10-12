@@ -10,9 +10,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api/util"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

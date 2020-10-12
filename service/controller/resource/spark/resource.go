@@ -9,12 +9,12 @@ import (
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/azureconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"

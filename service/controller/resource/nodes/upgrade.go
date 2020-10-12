@@ -7,9 +7,9 @@ import (
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 )
 
 // AnyOutOfDate iterates over all nodes in tenant cluster and finds

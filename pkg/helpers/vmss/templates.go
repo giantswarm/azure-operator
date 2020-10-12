@@ -6,8 +6,8 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/templates"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/templates"
 )
 
 func RenderCloudConfig(blobURL string, encryptionKey string, initialVector string, instanceRole string) (string, error) {

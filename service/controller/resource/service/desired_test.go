@@ -12,7 +12,7 @@ import (
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 )
 
 func Test_Resource_Service_GetDesiredState(t *testing.T) {

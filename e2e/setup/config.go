@@ -18,7 +18,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/env"
+	"github.com/giantswarm/azure-operator/v5/e2e/env"
 )
 
 const (

@@ -10,7 +10,7 @@ import (
 
 	gomock "github.com/golang/mock/gomock"
 
-	azure "github.com/giantswarm/azure-operator/v4/service/controller/resource/workermigration/internal/azure"
+	azure "github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
 )
 
 // MockAPI is a mock of API interface

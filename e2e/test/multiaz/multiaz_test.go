@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/env"
+	"github.com/giantswarm/azure-operator/v5/e2e/env"
 )
 
 func Test_AZ(t *testing.T) {

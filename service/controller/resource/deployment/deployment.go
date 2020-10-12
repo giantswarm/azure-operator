@@ -9,9 +9,9 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/deployment/template"
-	"github.com/giantswarm/azure-operator/v4/service/network"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/deployment/template"
+	"github.com/giantswarm/azure-operator/v5/service/network"
 )
 
 func (r Resource) newDeployment(ctx context.Context, customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {

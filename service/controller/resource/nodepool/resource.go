@@ -5,10 +5,10 @@ import (
 	"k8s.io/client-go/kubernetes"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
-	"github.com/giantswarm/azure-operator/v4/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsku"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
+	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
 )
 
 const (

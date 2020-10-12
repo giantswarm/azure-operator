@@ -7,7 +7,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/setup"
+	"github.com/giantswarm/azure-operator/v5/e2e/setup"
 )
 
 var (

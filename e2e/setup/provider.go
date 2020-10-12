@@ -28,10 +28,10 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/env"
-	e2ekey "github.com/giantswarm/azure-operator/v4/e2e/key"
-	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/e2e/env"
+	e2ekey "github.com/giantswarm/azure-operator/v5/e2e/key"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 const (

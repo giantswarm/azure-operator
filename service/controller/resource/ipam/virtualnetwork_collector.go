@@ -16,9 +16,9 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/client"
-	"github.com/giantswarm/azure-operator/v4/pkg/credential"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 type VirtualNetworkCollectorConfig struct {

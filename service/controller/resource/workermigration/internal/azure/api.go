@@ -7,7 +7,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v5/client"
 )
 
 type api struct {

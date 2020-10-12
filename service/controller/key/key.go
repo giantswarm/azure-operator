@@ -16,8 +16,8 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/service/controller/templates/ignition"
 )
 
 const (

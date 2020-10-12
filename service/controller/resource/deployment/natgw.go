@@ -9,7 +9,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 // This function ensures that the Master subnet has a nat gateway attached as expected.

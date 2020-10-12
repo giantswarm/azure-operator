@@ -9,7 +9,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 )
 
 func Test_ClusterID(t *testing.T) {

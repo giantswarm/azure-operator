@@ -7,7 +7,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 const (
@@ -63,10 +63,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), vpnDeploymentName)
 		if IsNotFound(err) {
+			conditionsUpdateError := r.UpdateVPNGatewayReadyCondition(ctx, cr, nil)
+			if conditionsUpdateError != nil {
+				r.logger.LogCtx(ctx, "level", "warning", "message", "error while updating conditions", "error", conditionsUpdateError.Error())
+			}
 			// fallthrough
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
+			conditionsUpdateError := r.UpdateVPNGatewayReadyCondition(ctx, cr, d.Properties.ProvisioningState)
+			if conditionsUpdateError != nil {
+				r.logger.LogCtx(ctx, "level", "warning", "message", "error while updating conditions", "error", conditionsUpdateError.Error())
+			}
+
 			s := *d.Properties.ProvisioningState
 
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("vpn gateway deployment is in state '%s'", s))

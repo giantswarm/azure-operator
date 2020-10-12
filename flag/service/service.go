@@ -3,13 +3,13 @@ package service
 import (
 	"github.com/giantswarm/operatorkit/v2/pkg/flag/service/kubernetes"
 
-	"github.com/giantswarm/azure-operator/v4/flag/service/azure"
-	"github.com/giantswarm/azure-operator/v4/flag/service/cluster"
-	"github.com/giantswarm/azure-operator/v4/flag/service/debug"
-	"github.com/giantswarm/azure-operator/v4/flag/service/installation"
-	"github.com/giantswarm/azure-operator/v4/flag/service/registry"
-	"github.com/giantswarm/azure-operator/v4/flag/service/sentry"
-	"github.com/giantswarm/azure-operator/v4/flag/service/tenant"
+	"github.com/giantswarm/azure-operator/v5/flag/service/azure"
+	"github.com/giantswarm/azure-operator/v5/flag/service/cluster"
+	"github.com/giantswarm/azure-operator/v5/flag/service/debug"
+	"github.com/giantswarm/azure-operator/v5/flag/service/installation"
+	"github.com/giantswarm/azure-operator/v5/flag/service/registry"
+	"github.com/giantswarm/azure-operator/v5/flag/service/sentry"
+	"github.com/giantswarm/azure-operator/v5/flag/service/tenant"
 )
 
 type Service struct {

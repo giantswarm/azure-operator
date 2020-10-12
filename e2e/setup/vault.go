@@ -9,8 +9,8 @@ import (
 	rbacv1 "k8s.io/api/rbac/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/env"
-	"github.com/giantswarm/azure-operator/v4/e2e/key"
+	"github.com/giantswarm/azure-operator/v5/e2e/env"
+	"github.com/giantswarm/azure-operator/v5/e2e/key"
 )
 
 func installVault(ctx context.Context, config Config) error {

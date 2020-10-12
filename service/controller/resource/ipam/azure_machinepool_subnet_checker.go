@@ -10,7 +10,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 )
 
 type AzureMachinePoolSubnetCheckerConfig struct {

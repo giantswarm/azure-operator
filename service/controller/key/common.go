@@ -7,7 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 )
 
 const (

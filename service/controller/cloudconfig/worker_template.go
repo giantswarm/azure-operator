@@ -8,8 +8,8 @@ import (
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v4/service/controller/templates/ignition"
+	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v5/service/controller/templates/ignition"
 )
 
 // NewWorkerCloudConfig generates a new worker cloudconfig and returns it as a

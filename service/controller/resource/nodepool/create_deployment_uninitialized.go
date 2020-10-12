@@ -13,9 +13,9 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodepool/template"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool/template"
 )
 
 func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -104,6 +104,15 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	}
+
+	defer func() {
+		var currentProvisioningState *string
+		if currentDeployment.Properties != nil && currentDeployment.Properties.ProvisioningState != nil {
+			currentProvisioningState = currentDeployment.Properties.ProvisioningState
+		}
+		// Update DeploymentSucceeded Condition for this AzureMachinePool
+		_ = r.UpdateDeploymentSucceededCondition(ctx, &azureMachinePool, currentProvisioningState)
+	}()
 
 	// Figure out if we need to submit the ARM Deployment.
 	deploymentNeedsToBeSubmitted := currentDeployment.IsHTTPStatus(404)

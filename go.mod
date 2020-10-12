@@ -1,15 +1,16 @@
-module github.com/giantswarm/azure-operator/v4
+module github.com/giantswarm/azure-operator/v5
 
 go 1.15
 
 require (
-	github.com/Azure/azure-sdk-for-go v45.1.0+incompatible
+	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.10.0
 	github.com/Azure/go-autorest/autorest v0.11.7
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.2
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.5.3
+	github.com/giantswarm/apiextensions/v3 v3.1.0
 	github.com/giantswarm/appcatalog v0.2.7
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
@@ -45,8 +46,8 @@ require (
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v0.18.9
-	sigs.k8s.io/cluster-api v0.3.9
-	sigs.k8s.io/cluster-api-provider-azure v0.4.7
+	sigs.k8s.io/cluster-api v0.3.10
+	sigs.k8s.io/cluster-api-provider-azure v0.4.9
 	sigs.k8s.io/controller-runtime v0.6.3
 	sigs.k8s.io/yaml v1.2.0
 )
@@ -54,6 +55,6 @@ require (
 replace (
 	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
 	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.24+incompatible
-	sigs.k8s.io/cluster-api v0.3.9 => github.com/giantswarm/cluster-api v0.3.9-gs
-	sigs.k8s.io/cluster-api-provider-azure v0.4.7 => github.com/giantswarm/cluster-api-provider-azure v0.4.7-gs
+	sigs.k8s.io/cluster-api v0.3.10 => github.com/giantswarm/cluster-api v0.3.10-gs
+	sigs.k8s.io/cluster-api-provider-azure v0.4.9 => github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2
 )

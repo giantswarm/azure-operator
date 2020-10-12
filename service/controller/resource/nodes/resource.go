@@ -10,14 +10,14 @@ import (
 	"k8s.io/client-go/kubernetes"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/client"
-	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/vmsscheck"
-	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
+	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
 type Config struct {
