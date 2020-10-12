@@ -9,9 +9,9 @@ import (
 	"github.com/giantswarm/micrologger"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v4/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v4/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
 const (

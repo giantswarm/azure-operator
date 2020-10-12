@@ -16,7 +16,7 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/setup"
+	"github.com/giantswarm/azure-operator/v5/e2e/setup"
 )
 
 func Test_ClusterDeletion(t *testing.T) {

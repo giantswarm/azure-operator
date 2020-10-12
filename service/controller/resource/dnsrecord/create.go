@@ -6,7 +6,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 // ApplyCreateChange is never called. We do not like it. It is not idempotent.

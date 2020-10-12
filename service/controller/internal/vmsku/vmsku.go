@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v4/client"
+	"github.com/giantswarm/azure-operator/v5/client"
 )
 
 const (

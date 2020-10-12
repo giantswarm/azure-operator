@@ -9,8 +9,8 @@ import (
 
 	"github.com/giantswarm/versionbundle"
 
-	"github.com/giantswarm/azure-operator/v4/e2e/entityid"
-	"github.com/giantswarm/azure-operator/v4/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/e2e/entityid"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
 )
 
 const (

@@ -1,10 +1,10 @@
 package kubernetes
 
 import (
-	"github.com/giantswarm/azure-operator/v4/flag/service/cluster/kubernetes/api"
-	"github.com/giantswarm/azure-operator/v4/flag/service/cluster/kubernetes/ingress"
-	"github.com/giantswarm/azure-operator/v4/flag/service/cluster/kubernetes/kubelet"
-	"github.com/giantswarm/azure-operator/v4/flag/service/cluster/kubernetes/ssh"
+	"github.com/giantswarm/azure-operator/v5/flag/service/cluster/kubernetes/api"
+	"github.com/giantswarm/azure-operator/v5/flag/service/cluster/kubernetes/ingress"
+	"github.com/giantswarm/azure-operator/v5/flag/service/cluster/kubernetes/kubelet"
+	"github.com/giantswarm/azure-operator/v5/flag/service/cluster/kubernetes/ssh"
 )
 
 type Kubernetes struct {

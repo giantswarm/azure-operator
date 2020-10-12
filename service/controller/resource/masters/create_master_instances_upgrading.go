@@ -13,10 +13,10 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
 )
 
 func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

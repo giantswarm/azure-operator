@@ -7,8 +7,8 @@ import (
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 // EnsureDeleted will delete the blob in the Storage Account containing the cloud config for the node pool.

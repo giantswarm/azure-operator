@@ -3,7 +3,7 @@ package instance
 import (
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/resource/nodes"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
 )
 
 const (

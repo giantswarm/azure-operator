@@ -11,9 +11,9 @@ import (
 	"github.com/giantswarm/micrologger/microloggertest"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/project"
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v4/service/unittest"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v5/service/unittest"
 )
 
 func Test_Resource_Puts_Release_In_Context_When_Release_Has_Leading_V(t *testing.T) {

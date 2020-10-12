@@ -12,8 +12,8 @@ import (
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/micrologger/microloggertest"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 func Test_Resource_Namespace_GetDesiredState(t *testing.T) {

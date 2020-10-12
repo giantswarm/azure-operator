@@ -12,7 +12,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 // EnsureDeleted is a noop since the deletion of deployments is redirected to

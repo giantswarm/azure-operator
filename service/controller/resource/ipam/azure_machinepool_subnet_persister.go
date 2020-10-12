@@ -11,7 +11,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 )
 
 type AzureMachinePoolSubnetPersisterConfig struct {

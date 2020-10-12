@@ -31,11 +31,11 @@ import (
 	capiutil "sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/pkg/label"
-	"github.com/giantswarm/azure-operator/v4/service/controller/cloudconfig"
-	"github.com/giantswarm/azure-operator/v4/service/controller/encrypter"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
-	"github.com/giantswarm/azure-operator/v4/service/network"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
+	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/network"
 )
 
 const (

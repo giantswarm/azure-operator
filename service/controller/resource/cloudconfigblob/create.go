@@ -16,8 +16,8 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 // EnsureCreated will make sure that a blob is saved in the Storage Account containing the cloud config for the node pool.

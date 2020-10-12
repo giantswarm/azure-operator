@@ -9,8 +9,8 @@ import (
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/client-go/rest"
 
-	"github.com/giantswarm/azure-operator/v4/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v4/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
