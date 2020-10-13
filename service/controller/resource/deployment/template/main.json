@@ -484,7 +484,7 @@
                       "sourcePortRange":"*",
                       "destinationPortRange":"[variables('cadvisorPort')]",
                       "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
-                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
                       "access":"Allow",
                       "direction":"Inbound",
                       "priority":"3500"
@@ -498,7 +498,7 @@
                       "sourcePortRange":"*",
                       "destinationPortRange":"[variables('kubeletPort')]",
                       "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
-                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
                       "access":"Allow",
                       "direction":"Inbound",
                       "priority":"3501"
@@ -512,7 +512,7 @@
                       "sourcePortRange":"*",
                       "destinationPortRange":"[variables('nodeExporterPort')]",
                       "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
-                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
                       "access":"Allow",
                       "direction":"Inbound",
                       "priority":"3502"
@@ -526,7 +526,7 @@
                       "sourcePortRange":"*",
                       "destinationPortRange":"[variables('kubeStateMetricsPort')]",
                       "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
-                      "destinationAddressPrefix":"[parameters('workerSubnetCidr')]",
+                      "destinationAddressPrefix":"[parameters('virtualNetworkCidr')]",
                       "access":"Allow",
                       "direction":"Inbound",
                       "priority":"3503"
