@@ -2,10 +2,12 @@ package credential
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -24,12 +26,14 @@ const (
 type K8SCredential struct {
 	k8sclient  k8sclient.Interface
 	gsTenantID string
+	logger     micrologger.Logger
 }
 
-func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string) Provider {
+func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string, logger micrologger.Logger) Provider {
 	return K8SCredential{
 		k8sclient:  k8sclient,
 		gsTenantID: gsTenantID,
+		logger:     logger,
 	}
 }
 
@@ -74,10 +78,13 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, cred
 
 	if _, exists := secret.GetLabels()[label.SingleTenantSP]; exists || tenantID == k.gsTenantID {
 		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
+		k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Azure subscription %#q is linked to the same tenant ID %#q that owns the service principal. Using single tenant authentication", subscriptionID, tenantID))
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
 	}
 
+	// The tenant cluster resources will belong to a subscription linked to a different Tenant ID than the one used for authentication.
+	k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Azure subscription %#q is linked to the tenant ID %#q which is different than the Tenant ID %#q that owns the Service Principal. Using multi tenant authentication", subscriptionID, tenantID, k.gsTenantID))
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, k.gsTenantID)
 	credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
 
