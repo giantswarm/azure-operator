@@ -152,7 +152,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 			MaxReplicas:     int32(cast(parameters["maxReplicas"]).(float64)),
 			CurrentReplicas: int32(cast(parameters["currentReplicas"]).(float64)),
 		},
-		SSHPublicKey: cast(parameters["sshPublicKey"]).(string),
+		StorageAccountType: cast(parameters["storageAccountType"]).(string),
 		SubnetName:   cast(parameters["subnetName"]).(string),
 		// It comes empty from Azure API.
 		VMCustomData: "",
