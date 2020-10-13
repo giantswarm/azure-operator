@@ -17,7 +17,7 @@ const maxDNSLabelLength = 63
 func AsDNSLabelName(v string) string {
 	var xs []rune
 
-	for _, x := range []rune(strings.ToLower(v)) {
+	for _, x := range strings.ToLower(v) {
 
 		// Is x in whitelisted characters?
 		if x == '-' || unicode.IsDigit(x) || ('a' <= x && x <= 'z') {
