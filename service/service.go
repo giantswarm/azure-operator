@@ -10,6 +10,7 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
+	"github.com/giantswarm/exporterkit/collector"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
@@ -52,8 +53,9 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	bootOnce    sync.Once
-	controllers []*operatorkitcontroller.Controller
+	bootOnce          sync.Once
+	operatorCollector *collector.Set
+	controllers       []*operatorkitcontroller.Controller
 }
 
 // New creates a new configured service object.
@@ -438,7 +440,7 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 }
 
 // NewCPAzureClientSet return an Azure client set configured for the Control Plane cluster.
-func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig) (*client.AzureClientSet, error) {
+func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig, metricsCollector collector.AzureAPIMetrics) (*client.AzureClientSet, error) {
 	cpTenantID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.TenantID)
 	if cpTenantID != "" {
 		// We want the code to work both when using Single Tenant Service Principal and Multi Tenant Service Principal.
@@ -456,5 +458,5 @@ func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCre
 		cpPartnerID = config.Viper.GetString(config.Flag.Service.Azure.PartnerID)
 	}
 
-	return client.NewAzureClientSet(gsClientCredentialsConfig, cpSubscriptionID, cpPartnerID)
+	return client.NewAzureClientSet(gsClientCredentialsConfig, metricsCollector, cpSubscriptionID, cpPartnerID)
 }

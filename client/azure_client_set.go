@@ -14,6 +14,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/client/senddecorator"
 	"github.com/giantswarm/azure-operator/v5/pkg/backpressure"
+	"github.com/giantswarm/azure-operator/v5/service/collector"
 )
 
 const (
@@ -66,7 +67,7 @@ type AzureClientSet struct {
 }
 
 // NewAzureClientSet returns the Azure API clients using the given Authorizer.
-func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, subscriptionID, partnerID string) (*AzureClientSet, error) {
+func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*AzureClientSet, error) {
 	authorizer, err := clientCredentialsConfig.Authorizer()
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -77,83 +78,83 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	}
 	partnerID = fmt.Sprintf("pid-%s", partnerID)
 
-	deploymentsClient, err := newDeploymentsClient(authorizer, subscriptionID, partnerID)
+	deploymentsClient, err := newDeploymentsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	disksClient, err := newDisksClient(authorizer, subscriptionID, partnerID)
+	disksClient, err := newDisksClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	dnsRecordSetsClient, err := newDNSRecordSetsClient(authorizer, subscriptionID, partnerID)
+	dnsRecordSetsClient, err := newDNSRecordSetsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	dnsZonesClient, err := newDNSZonesClient(authorizer, subscriptionID, partnerID)
+	dnsZonesClient, err := newDNSZonesClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	groupsClient, err := newGroupsClient(authorizer, subscriptionID, partnerID)
+	groupsClient, err := newGroupsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	interfacesClient, err := newInterfacesClient(authorizer, subscriptionID, partnerID)
+	interfacesClient, err := newInterfacesClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	natGatewaysClient, err := newNatGatewaysClient(authorizer, subscriptionID, partnerID)
+	natGatewaysClient, err := newNatGatewaysClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	publicIpAddressesClient, err := newPublicIPAddressesClient(authorizer, subscriptionID, partnerID)
+	publicIpAddressesClient, err := newPublicIPAddressesClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	resourcesSkusClient, err := newResourceSkusClient(authorizer, subscriptionID, partnerID)
+	resourcesSkusClient, err := newResourceSkusClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	securityRulesClient, err := newSecurityRulesClient(authorizer, subscriptionID, partnerID)
+	securityRulesClient, err := newSecurityRulesClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	snapshotsClient, err := newSnapshotsClient(authorizer, subscriptionID, partnerID)
+	snapshotsClient, err := newSnapshotsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	storageAccountsClient, err := newStorageAccountsClient(authorizer, subscriptionID, partnerID)
+	storageAccountsClient, err := newStorageAccountsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	subnetsClient, err := newSubnetsClient(authorizer, subscriptionID, partnerID)
+	subnetsClient, err := newSubnetsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	usageClient, err := newUsageClient(authorizer, subscriptionID, partnerID)
+	usageClient, err := newUsageClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualNetworkClient, err := newVirtualNetworksClient(authorizer, subscriptionID, partnerID)
+	virtualNetworkClient, err := newVirtualNetworksClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualNetworkGatewayConnectionsClient, err := newVirtualNetworkGatewayConnectionsClient(authorizer, subscriptionID, partnerID)
+	virtualNetworkGatewayConnectionsClient, err := newVirtualNetworkGatewayConnectionsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualNetworkGatewaysClient, err := newVirtualNetworkGatewaysClient(authorizer, subscriptionID, partnerID)
+	virtualNetworkGatewaysClient, err := newVirtualNetworkGatewaysClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(authorizer, subscriptionID, partnerID)
+	virtualMachineScaleSetVMsClient, err := newVirtualMachineScaleSetVMsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(authorizer, subscriptionID, partnerID)
+	virtualMachineScaleSetsClient, err := newVirtualMachineScaleSetsClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	vnetPeeringClient, err := newVnetPeeringClient(authorizer, subscriptionID, partnerID)
+	vnetPeeringClient, err := newVnetPeeringClient(authorizer, metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -185,150 +186,154 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, sub
 	return clientSet, nil
 }
 
-func prepareClient(client *autorest.Client, authorizer autorest.Authorizer, partnerID string) *autorest.Client {
+func prepareClient(client *autorest.Client, authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, name, subscriptionID, partnerID string) *autorest.Client {
 	client.Authorizer = authorizer
 	_ = client.AddToUserAgent(partnerID)
-	senddecorator.ConfigureClient(&backpressure.Backpressure{}, client)
+	senddecorator.WrapClient(client,
+		senddecorator.MetricsDecorator("all_services", subscriptionID, metricsCollector),
+		senddecorator.MetricsDecorator(name, subscriptionID, metricsCollector),
+		senddecorator.RateLimitCircuitBreaker(&backpressure.Backpressure{}),
+	)
 
 	return client
 }
 
-func newDeploymentsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newDeploymentsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := resources.NewDeploymentsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "deployments", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newDisksClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newDisksClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := compute.NewDisksClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "disks", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newDNSRecordSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newDNSRecordSetsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := dns.NewRecordSetsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "dns_record_sets", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newDNSZonesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*dns.ZonesClient, error) {
+func newDNSZonesClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*dns.ZonesClient, error) {
 	client := dns.NewZonesClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "dns_zones", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newGroupsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newGroupsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := resources.NewGroupsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "groups", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newInterfacesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newInterfacesClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewInterfacesClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "interfaces", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newNatGatewaysClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newNatGatewaysClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewNatGatewaysClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "nat_gateways", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newPublicIPAddressesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.PublicIPAddressesClient, error) {
+func newPublicIPAddressesClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.PublicIPAddressesClient, error) {
 	client := network.NewPublicIPAddressesClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "public_ip_addresses", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newSecurityRulesClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.SecurityRulesClient, error) {
+func newSecurityRulesClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.SecurityRulesClient, error) {
 	client := network.NewSecurityRulesClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "security_rules", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newSnapshotsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newSnapshotsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := compute.NewSnapshotsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "snapshots", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newStorageAccountsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newStorageAccountsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := storage.NewAccountsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "storage_accounts", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newSubnetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newSubnetsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewSubnetsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "subnets", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newUsageClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*compute.UsageClient, error) {
+func newUsageClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*compute.UsageClient, error) {
 	client := compute.NewUsageClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "usage", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newVirtualNetworksClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newVirtualNetworksClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewVirtualNetworksClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "virtual_networks", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
 	client := network.NewVirtualNetworkGatewayConnectionsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "virtual_network_gateway_connections", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkGatewaysClient, error) {
+func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.VirtualNetworkGatewaysClient, error) {
 	client := network.NewVirtualNetworkGatewaysClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "virtual_network_gateways", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newVirtualMachineScaleSetsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newVirtualMachineScaleSetsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := compute.NewVirtualMachineScaleSetsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "virtual_machine_scale_sets", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newVirtualMachineScaleSetVMsClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newVirtualMachineScaleSetVMsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := compute.NewVirtualMachineScaleSetVMsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "virtual_machine_scale_set_vms", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newVnetPeeringClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (*network.VirtualNetworkPeeringsClient, error) {
+func newVnetPeeringClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.VirtualNetworkPeeringsClient, error) {
 	client := network.NewVirtualNetworkPeeringsClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "vnet_peering", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newResourceSkusClient(authorizer autorest.Authorizer, subscriptionID, partnerID string) (interface{}, error) {
+func newResourceSkusClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := compute.NewResourceSkusClient(subscriptionID)
-	prepareClient(&client.Client, authorizer, partnerID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "resource_skus", subscriptionID, partnerID)
 
 	return &client, nil
 }
