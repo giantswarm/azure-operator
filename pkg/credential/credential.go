@@ -77,14 +77,14 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, cred
 	}
 
 	if _, exists := secret.GetLabels()[label.SingleTenantSP]; exists || tenantID == k.gsTenantID {
-		// The tenant cluster resources will belong to a subscription linked to the same Tenant ID used for authentication.
-		k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Azure subscription %#q is linked to the same tenant ID %#q that owns the service principal. Using single tenant authentication", subscriptionID, tenantID))
+		// The tenant cluster resources will belong to a subscription that belongs to the same Tenant ID used for authentication.
+		k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Azure subscription %#q belongs to the same tenant ID %#q that owns the service principal. Using single tenant authentication", subscriptionID, tenantID))
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 		return credentials, subscriptionID, partnerID, nil
 	}
 
-	// The tenant cluster resources will belong to a subscription linked to a different Tenant ID than the one used for authentication.
-	k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Azure subscription %#q is linked to the tenant ID %#q which is different than the Tenant ID %#q that owns the Service Principal. Using multi tenant authentication", subscriptionID, tenantID, k.gsTenantID))
+	// The tenant cluster resources will belong to a subscription that belongs to a different Tenant ID than the one used for authentication.
+	k.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Azure subscription %#q belongs to the tenant ID %#q which is different than the Tenant ID %#q that owns the Service Principal. Using multi tenant authentication", subscriptionID, tenantID, k.gsTenantID))
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, k.gsTenantID)
 	credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
 
