@@ -101,7 +101,7 @@ func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject provider
 		err := c.ctrlClient.List(
 			ctx,
 			secretList,
-			ctrl.InNamespace(key.OrganizationNamespace(&customObject)),
+			ctrl.InNamespace(customObject.Namespace),
 			ctrl.MatchingLabels{
 				randomKeyLabel:              randomKeyLabelValue,
 				apiextensionslabels.Cluster: key.ClusterID(&customObject),
