@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed firewall rules to allow prometheus to scrape node-level exporters from all node pools.
 - Encryption secret is now taken from the CR namespace rather than the organization namespace.
 
+### Changed
+
+- Don't attempt to change the storage account type from standard to premium when changing instance type of a node pool.
+
 ## [5.0.0-alpha1] - 2020-10-12
 
 ### Added
