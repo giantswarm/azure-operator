@@ -24,7 +24,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Don't attempt to change the storage account type from standard to premium when changing instance type of a node pool.
+- Get the storage account type to use for node pools' VMSS from the AzureMachinePool CR.
 
 ## [5.0.0-alpha1] - 2020-10-12
 

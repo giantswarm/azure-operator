@@ -18,7 +18,6 @@ const (
 	CapabilitySupported = "True"
 
 	CapabilityAcceleratedNetworking = "AcceleratedNetworkingEnabled"
-	CapabilityPremiumIO             = "PremiumIO"
 )
 
 type Config struct {
