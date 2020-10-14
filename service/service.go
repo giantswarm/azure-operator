@@ -437,6 +437,7 @@ func New(config Config) (*Service, error) {
 	return s, nil
 }
 
+// nolint: errcheck
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		for _, ctrl := range s.controllers {
