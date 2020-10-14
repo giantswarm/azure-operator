@@ -37,7 +37,7 @@ func NewAzureAPIMetricsCollector(config Config) (*AzureAPIMetricsCollector, erro
 	return &c, nil
 }
 
-func (c *AzureAPIMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
+func (c *AzureAPIMetricsCollector) Describe(ch chan<- *prometheus.Desc) error {
 	for _, c := range c.counters {
 		ch <- c.Desc()
 	}
@@ -45,9 +45,11 @@ func (c *AzureAPIMetricsCollector) Describe(ch chan<- *prometheus.Desc) {
 	for _, h := range c.histograms {
 		ch <- h.Desc()
 	}
+
+	return nil
 }
 
-func (c *AzureAPIMetricsCollector) Collect(ch chan<- prometheus.Metric) {
+func (c *AzureAPIMetricsCollector) Collect(ch chan<- prometheus.Metric) error {
 	for _, c := range c.counters {
 		ch <- c
 	}
@@ -55,6 +57,8 @@ func (c *AzureAPIMetricsCollector) Collect(ch chan<- prometheus.Metric) {
 	for _, h := range c.histograms {
 		ch <- h
 	}
+
+	return nil
 }
 
 func (c *AzureAPIMetricsCollector) GetCounter(opts prometheus.Opts) prometheus.Counter {

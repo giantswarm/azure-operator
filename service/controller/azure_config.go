@@ -26,6 +26,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
@@ -61,7 +62,8 @@ type AzureConfigConfig struct {
 	Locker             locker.Interface
 	Logger             micrologger.Logger
 
-	Azure setting.Azure
+	Azure                 setting.Azure
+	AzureMetricsCollector collector.AzureAPIMetrics
 	// Azure client set used when managing control plane resources
 	CPAzureClientSet *client.AzureClientSet
 	// Azure credentials used to create Azure client set for tenant clusters
@@ -134,7 +136,7 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 					return nil, microerror.Mask(err)
 				}
 
-				tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
+				tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, config.AzureMetricsCollector, subscriptionID, partnerID)
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}
@@ -195,6 +197,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
+			AzureAPIMetrics:    config.AzureMetricsCollector,
 			CacheDuration:      30 * time.Minute,
 			CredentialProvider: config.CredentialProvider,
 			Logger:             config.Logger,
