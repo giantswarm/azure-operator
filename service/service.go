@@ -243,7 +243,7 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
+	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID), config.Logger)
 
 	var controllers []*operatorkitcontroller.Controller
 

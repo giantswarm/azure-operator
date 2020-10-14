@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger/microloggertest"
 	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
@@ -161,10 +162,7 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	credentialProvider := K8SCredential{
-		k8sclient:  fakeK8sClient,
-		gsTenantID: tenantID,
-	}
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, tenantID, microloggertest.New())
 	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(*azureConfig), key.CredentialName(*azureConfig))
 	if err != nil {
 		t.Fatal(err)
@@ -198,10 +196,7 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePr
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	credentialProvider := K8SCredential{
-		k8sclient:  fakeK8sClient,
-		gsTenantID: "giantswarmTenantID",
-	}
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "giantswarmTenantID", microloggertest.New())
 	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(*azureConfig), key.CredentialName(*azureConfig))
 	if err != nil {
 		t.Fatal(err)
@@ -226,10 +221,7 @@ func TestWhenOrganizationSecretDoesntExistThenCredentialsFailToCreate(t *testing
 	ctx := context.Background()
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", &v1.Secret{})
-	credentialProvider := K8SCredential{
-		k8sclient:  fakeK8sClient,
-		gsTenantID: "giantswarmTenantID",
-	}
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "giantswarmTenantID", microloggertest.New())
 	_, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(*azureConfig), key.CredentialName(*azureConfig))
 	if err == nil {
 		t.Fatalf("it should fail when organization credential secret is missing")
@@ -247,10 +239,7 @@ func TestFailsToCreateCredentialsUsingOrganizationSecretWhenMissingConfigFromSec
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	credentialProvider := K8SCredential{
-		k8sclient:  fakeK8sClient,
-		gsTenantID: "giantswarmTenantID",
-	}
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "giantswarmTenantID", microloggertest.New())
 	_, _, _, err = credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(*azureConfig), key.CredentialName(*azureConfig))
 	if err == nil {
 		t.Fatalf("it should fail when key is missing from credential secret: client id is missing")
@@ -307,10 +296,7 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	credentialProvider := K8SCredential{
-		k8sclient:  fakeK8sClient,
-		gsTenantID: "giantswarmTenantID",
-	}
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "giantswarmTenantID", microloggertest.New())
 	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(*azureConfig), key.CredentialName(*azureConfig))
 	if err != nil {
 		t.Fatal(err)
