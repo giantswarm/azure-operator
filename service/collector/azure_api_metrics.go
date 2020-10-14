@@ -15,8 +15,8 @@ type Config struct {
 type AzureAPIMetricsCollector struct {
 	logger micrologger.Logger
 
-	counters   map[string]prometheus.Counter
-	histograms map[string]prometheus.Histogram
+	counters   map[string]*prometheus.CounterVec
+	histograms map[string]*prometheus.HistogramVec
 
 	mutex *sync.Mutex
 }
@@ -29,8 +29,8 @@ func NewAzureAPIMetricsCollector(config Config) (*AzureAPIMetricsCollector, erro
 	c := AzureAPIMetricsCollector{
 		logger: config.Logger,
 
-		counters:   map[string]prometheus.Counter{},
-		histograms: map[string]prometheus.Histogram{},
+		counters:   map[string]*prometheus.CounterVec{},
+		histograms: map[string]*prometheus.HistogramVec{},
 		mutex:      &sync.Mutex{},
 	}
 
@@ -39,11 +39,11 @@ func NewAzureAPIMetricsCollector(config Config) (*AzureAPIMetricsCollector, erro
 
 func (c *AzureAPIMetricsCollector) Describe(ch chan<- *prometheus.Desc) error {
 	for _, c := range c.counters {
-		ch <- c.Desc()
+		c.Describe(ch)
 	}
 
 	for _, h := range c.histograms {
-		ch <- h.Desc()
+		h.Describe(ch)
 	}
 
 	return nil
@@ -51,17 +51,17 @@ func (c *AzureAPIMetricsCollector) Describe(ch chan<- *prometheus.Desc) error {
 
 func (c *AzureAPIMetricsCollector) Collect(ch chan<- prometheus.Metric) error {
 	for _, c := range c.counters {
-		ch <- c
+		c.Collect(ch)
 	}
 
 	for _, h := range c.histograms {
-		ch <- h
+		h.Collect(ch)
 	}
 
 	return nil
 }
 
-func (c *AzureAPIMetricsCollector) GetCounter(opts prometheus.Opts) prometheus.Counter {
+func (c *AzureAPIMetricsCollector) GetCounterVec(opts prometheus.Opts, labelNames []string) *prometheus.CounterVec {
 	k := opts.Namespace + "/" + opts.Name
 	counter, exists := c.counters[k]
 	if !exists {
@@ -70,7 +70,7 @@ func (c *AzureAPIMetricsCollector) GetCounter(opts prometheus.Opts) prometheus.C
 
 		counter, exists = c.counters[k]
 		if !exists {
-			counter = prometheus.NewCounter(prometheus.CounterOpts(opts))
+			counter = prometheus.NewCounterVec(prometheus.CounterOpts(opts), labelNames)
 			c.counters[k] = counter
 		}
 	}
@@ -78,7 +78,7 @@ func (c *AzureAPIMetricsCollector) GetCounter(opts prometheus.Opts) prometheus.C
 	return counter
 }
 
-func (c *AzureAPIMetricsCollector) GetHistogram(opts prometheus.Opts) prometheus.Histogram {
+func (c *AzureAPIMetricsCollector) GetHistogramVec(opts prometheus.Opts, labelNames []string) *prometheus.HistogramVec {
 	k := opts.Namespace + "/" + opts.Name
 	histogram, exists := c.histograms[k]
 	if !exists {
@@ -94,7 +94,7 @@ func (c *AzureAPIMetricsCollector) GetHistogram(opts prometheus.Opts) prometheus
 				ConstLabels: opts.ConstLabels,
 			}
 
-			histogram = prometheus.NewHistogram(o)
+			histogram = prometheus.NewHistogramVec(o, labelNames)
 			c.histograms[k] = histogram
 		}
 	}

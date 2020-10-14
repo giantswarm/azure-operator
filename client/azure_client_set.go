@@ -196,9 +196,7 @@ func prepareClient(client *autorest.Client, authorizer autorest.Authorizer, metr
 		senddecorator.RateLimitCircuitBreaker(&backpressure.Backpressure{}),
 
 		// Gather metrics from API calls.
-		senddecorator.MetricsDecorator("all_services", subscriptionID, metricsCollector),
 		senddecorator.MetricsDecorator(name, subscriptionID, metricsCollector),
-		senddecorator.RateLimitedMetricsDecorator(name, subscriptionID, metricsCollector),
 	)
 
 	return client

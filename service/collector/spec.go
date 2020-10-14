@@ -3,6 +3,6 @@ package collector
 import "github.com/prometheus/client_golang/prometheus"
 
 type AzureAPIMetrics interface {
-	GetCounter(opts prometheus.Opts) prometheus.Counter
-	GetHistogram(opts prometheus.Opts) prometheus.Histogram
+	GetCounterVec(opts prometheus.Opts, labelNames []string) *prometheus.CounterVec
+	GetHistogramVec(opts prometheus.Opts, labelNames []string) *prometheus.HistogramVec
 }
