@@ -86,30 +86,6 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 		}
 	}
 
-	var storageAccountType string
-	{
-		currentType, err := r.vmssStorageAccountType(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
-		if IsNotFound(err) {
-			// Scale set does not exist yet.
-			// We want to use Premium LRS disks only if VM type supports it.
-			supportsPremium, err := r.vmsku.HasCapability(ctx, azureMachinePool.Spec.Template.VMSize, vmsku.CapabilityPremiumIO)
-			if err != nil {
-				return azureresource.Deployment{}, microerror.Mask(err)
-			}
-
-			if supportsPremium {
-				storageAccountType = string(compute.StorageAccountTypesPremiumLRS)
-			} else {
-				storageAccountType = string(compute.StorageAccountTypeStandardLRS)
-			}
-		} else if err != nil {
-			return azureresource.Deployment{}, microerror.Mask(err)
-		} else {
-			// VMSS already exists, we want to stick with what is the current situation.
-			storageAccountType = currentType
-		}
-	}
-
 	templateParameters := template.Parameters{
 		AzureOperatorVersion:        project.Version(),
 		ClusterID:                   azureCluster.GetName(),
@@ -127,7 +103,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
 			CurrentReplicas: currentReplicas,
 		},
-		StorageAccountType: storageAccountType,
+		StorageAccountType: azureMachinePool.Spec.Template.OSDisk.ManagedDisk.StorageAccountType,
 		SubnetName:         subnetName,
 		VMCustomData:       workerCloudConfig,
 		VMSize:             azureMachinePool.Spec.Template.VMSize,
@@ -156,15 +132,6 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	}
 
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
-}
-
-func (r *Resource) vmssStorageAccountType(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (string, error) {
-	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	return string(npVMSS.VirtualMachineProfile.StorageProfile.OsDisk.ManagedDisk.StorageAccountType), nil
 }
 
 func (r *Resource) vmssHasAcceleratedNetworkingEnabled(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (bool, error) {
