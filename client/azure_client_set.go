@@ -190,9 +190,15 @@ func prepareClient(client *autorest.Client, authorizer autorest.Authorizer, metr
 	client.Authorizer = authorizer
 	_ = client.AddToUserAgent(partnerID)
 	senddecorator.WrapClient(client,
+		// Rate limit circuit breaker should be first so that it shortcuts the
+		// request before metrics measurements. Otherwise the request metrics
+		// would be skewed by sub-millisecond roundtrips.
+		senddecorator.RateLimitCircuitBreaker(&backpressure.Backpressure{}),
+
+		// Gather metrics from API calls.
 		senddecorator.MetricsDecorator("all_services", subscriptionID, metricsCollector),
 		senddecorator.MetricsDecorator(name, subscriptionID, metricsCollector),
-		senddecorator.RateLimitCircuitBreaker(&backpressure.Backpressure{}),
+		senddecorator.RateLimitedMetricsDecorator(name, subscriptionID, metricsCollector),
 	)
 
 	return client
