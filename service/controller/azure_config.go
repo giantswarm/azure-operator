@@ -532,10 +532,11 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var virtualNetworkCollector *ipam.VirtualNetworkCollector
 	{
 		c := ipam.VirtualNetworkCollectorConfig{
-			CredentialProvider: config.CredentialProvider,
-			K8sClient:          config.K8sClient,
-			InstallationName:   config.InstallationName,
-			Logger:             config.Logger,
+			AzureMetricsCollector: config.AzureMetricsCollector,
+			CredentialProvider:    config.CredentialProvider,
+			K8sClient:             config.K8sClient,
+			InstallationName:      config.InstallationName,
+			Logger:                config.Logger,
 
 			NetworkRange: config.IPAMNetworkRange,
 		}
