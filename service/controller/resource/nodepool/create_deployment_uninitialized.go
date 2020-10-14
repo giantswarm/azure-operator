@@ -91,7 +91,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	// Compute desired state for Azure ARM Deployment.
-	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, machinePool, &azureMachinePool, cluster, azureCluster, vmss)
+	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, machinePool, &azureMachinePool, azureCluster, vmss)
 	if IsNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "Azure resource not found", "stack", microerror.JSON(err))
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -160,7 +160,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "ARM deployment has failed, re-applying")
 		r.Debugger.LogFailedDeployment(ctx, currentDeployment, err)
 
-		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
+		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
 		if err != nil {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -182,7 +182,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	default:
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
 
-		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
+		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
 		if err != nil {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
@@ -194,7 +194,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 }
 
-func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, azureMachinePool *capzexpv1alpha3.AzureMachinePool, vmss compute.VirtualMachineScaleSet) error {
+func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, azureMachinePool *capzexpv1alpha3.AzureMachinePool, vmss compute.VirtualMachineScaleSet) error {
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "saving provider status info in CR")
 
 	instances, err := r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
