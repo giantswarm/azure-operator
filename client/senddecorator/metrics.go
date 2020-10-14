@@ -16,16 +16,6 @@ const metricsNamespace = "azure_operator_azure_api"
 func MetricsDecorator(name, subscriptionID string, metricsCollector collector.AzureAPIMetrics) autorest.SendDecorator {
 	lowerName := strings.ToLower(name)
 
-	// XXX: Following is slightly ugly as code, but better for UX. I buy the tradeoff. - @tuommaki
-	titleName := strings.ReplaceAll(lowerName, "_", " ")
-	titleName = strings.Title(titleName)
-	titleName = strings.ReplaceAll(titleName, "Dns", "DNS")
-	titleName = strings.ReplaceAll(titleName, "Gw", "GW")
-	titleName = strings.ReplaceAll(titleName, "Ip", "IP")
-	titleName = strings.ReplaceAll(titleName, "Nat", "NAT")
-	titleName = strings.ReplaceAll(titleName, "Skus", "SKUs")
-	titleName = strings.ReplaceAll(titleName, "Vms", "VMs")
-
 	totalCallsOpts := prometheus.Opts{Namespace: metricsNamespace, Name: "total_calls", Help: "Total number of API calls"}
 	ratelimitedCallsOpts := prometheus.Opts{Namespace: metricsNamespace, Name: "ratelimited_calls", Help: "Total number of API calls ratelimited"}
 	errorRespOpts := prometheus.Opts{Namespace: metricsNamespace, Name: "error_resp", Help: "Total number of API error responses"}
