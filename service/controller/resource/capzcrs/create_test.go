@@ -14,6 +14,7 @@ import (
 	"unicode"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource"
@@ -110,9 +111,9 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", azureConfig.Name), Namespace: azureConfig.Namespace})
+			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: azureConfig.Name, Namespace: key.OrganizationNamespace(azureConfig)})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: azureConfig.Name, Namespace: key.OrganizationNamespace(azureConfig)})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", azureConfig.Name), Namespace: key.OrganizationNamespace(azureConfig)})
 
 			switch {
 			case err == nil && tc.errorMatcher == nil:

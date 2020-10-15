@@ -439,7 +439,7 @@ func ensureNodePoolIsReady(t *testing.T, ctrlClient client.Client, cr *providerv
 
 	var azureMachinePool expcapzv1alpha3.AzureMachinePool
 	{
-		o := client.ObjectKey{Namespace: key.OrganizationID(cr), Name: cr.Name}
+		o := client.ObjectKey{Namespace: key.OrganizationNamespace(cr), Name: cr.Name}
 		err := ctrlClient.Get(context.Background(), o, &azureMachinePool)
 		if err != nil {
 			t.Fatal(err)
@@ -455,7 +455,7 @@ func ensureNodePoolIsReady(t *testing.T, ctrlClient client.Client, cr *providerv
 
 	var machinePool expcapiv1alpha3.MachinePool
 	{
-		o := client.ObjectKey{Namespace: key.OrganizationID(cr), Name: cr.Name}
+		o := client.ObjectKey{Namespace: key.OrganizationNamespace(cr), Name: cr.Name}
 		err := ctrlClient.Get(context.Background(), o, &machinePool)
 		if err != nil {
 			t.Fatal(err)

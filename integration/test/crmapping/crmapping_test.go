@@ -48,8 +48,9 @@ func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 			name:      "case 0: migrate AzureConfig",
 			location:  "westeurope",
 			clusterID: "c6fme",
-			namespace: "default",
+			namespace: "org-giantswarm",
 			preConditionFiles: []string{
+				"namespaces.yaml",
 				"simple_azureconfig.yaml",
 			},
 		},
@@ -65,7 +66,7 @@ func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 			// Reconcile AzureConfig.
 			{
 				obj := &providerv1alpha1.AzureConfig{}
-				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
+				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: metav1.NamespaceDefault}, obj)
 				if err != nil {
 					t.Fatal(microerror.JSON(err))
 				}
@@ -94,7 +95,7 @@ func Test_BidirectionalAzureConfigCRMapping(t *testing.T) {
 				}
 			}
 
-			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: metav1.NamespaceDefault})
 			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
 			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
 			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
@@ -118,8 +119,9 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 			name:      "case 0: create AzureConfig",
 			location:  "westeurope",
 			clusterID: "c6fme",
-			namespace: "default",
+			namespace: "org-giantswarm",
 			preConditionFiles: []string{
+				"namespaces.yaml",
 				"simple_azurecluster.yaml",
 				"simple_azuremachine.yaml",
 				"simple_cluster.yaml",
@@ -153,7 +155,7 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 			// Reconcile AzureConfig.
 			{
 				obj := &providerv1alpha1.AzureConfig{}
-				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace}, obj)
+				err := client.Get(context.Background(), types.NamespacedName{Name: tc.clusterID, Namespace: metav1.NamespaceDefault}, obj)
 				if err != nil {
 					t.Fatal(microerror.JSON(err))
 				}
@@ -166,7 +168,7 @@ func Test_BidirectionalAzureClusterCRMapping(t *testing.T) {
 				}
 			}
 
-			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
+			verifyCR(t, client, tc.name, new(providerv1alpha1.AzureConfig), types.NamespacedName{Name: tc.clusterID, Namespace: metav1.NamespaceDefault})
 			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
 			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: tc.clusterID, Namespace: tc.namespace})
 			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", tc.clusterID), Namespace: tc.namespace})
@@ -226,6 +228,17 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 			t.Fatalf("failed to load input file %s: %#v", f, err)
 		}
 
+		if o.GetObjectKind().GroupVersionKind().Kind == "NamespaceList" {
+			lst := o.(*corev1.NamespaceList)
+			for _, i := range lst.Items {
+				err = client.Create(context.Background(), &i)
+				if err != nil {
+					t.Fatalf("failed to create object from input file %s: %#v", f, err)
+				}
+			}
+			continue
+		}
+
 		err = client.Create(context.Background(), o)
 		if err != nil {
 			t.Fatalf("failed to create object from input file %s: %#v", f, err)
@@ -262,6 +275,10 @@ func loadCR(fName string) (runtime.Object, error) {
 		obj = new(capzv1alpha3.AzureCluster)
 	case "AzureMachine":
 		obj = new(capzv1alpha3.AzureMachine)
+	case "Namespace":
+		obj = new(corev1.Namespace)
+	case "NamespaceList":
+		obj = new(corev1.NamespaceList)
 	default:
 		return nil, microerror.Maskf(unknownKindError, "kind: %s", t.Kind)
 	}

@@ -10,7 +10,7 @@ metadata:
     giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme
-  namespace: giantswarm
+  namespace: org-giantswarm
 spec:
   controlPlaneEndpoint:
     host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io

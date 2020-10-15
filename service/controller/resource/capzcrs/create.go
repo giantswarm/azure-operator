@@ -152,7 +152,7 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: cr.Namespace,
+			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.Cluster:                 cr.Name,

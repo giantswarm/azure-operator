@@ -11,7 +11,7 @@ metadata:
     giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme
-  namespace: giantswarm
+  namespace: org-giantswarm
 spec:
   clusterName: c6fme
   failureDomains:

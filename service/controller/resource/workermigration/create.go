@@ -2,7 +2,6 @@ package workermigration
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"strconv"
 
@@ -263,8 +262,7 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 						Lun:        to.Int32Ptr(22),
 					},
 				},
-				SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(key.AdminSSHKeyData(cr))),
-				VMSize:       vmSize,
+				VMSize: vmSize,
 			},
 		},
 	}
