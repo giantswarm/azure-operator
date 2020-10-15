@@ -153,7 +153,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 			CurrentReplicas: int32(cast(parameters["currentReplicas"]).(float64)),
 		},
 		StorageAccountType: cast(parameters["storageAccountType"]).(string),
-		SubnetName:   cast(parameters["subnetName"]).(string),
+		SubnetName:         cast(parameters["subnetName"]).(string),
 		// It comes empty from Azure API.
 		VMCustomData: "",
 		VMSize:       cast(parameters["vmSize"]).(string),
