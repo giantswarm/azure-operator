@@ -121,7 +121,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 	var cluster capiv1alpha3.Cluster
 	{
 		cluster = capiv1alpha3.Cluster{}
-		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Name}, &cluster)
+		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: key.OrganizationNamespace(&cr), Name: cr.Name}, &cluster)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
