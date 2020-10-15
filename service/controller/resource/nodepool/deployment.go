@@ -2,7 +2,6 @@ package nodepool
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"net/url"
 	"strings"
@@ -31,7 +30,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool/template"
 )
 
-func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, cluster *capiv1alpha3.Cluster, azureCluster *capzv1alpha3.AzureCluster) (azureresource.Deployment, error) {
+func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster, vmss compute.VirtualMachineScaleSet) (azureresource.Deployment, error) {
 	encrypterObject, err := r.getEncrypterObject(ctx, key.CertificateEncryptionSecretName(azureCluster))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
@@ -53,24 +52,11 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
-	sshPublicKey, err := base64.StdEncoding.DecodeString(azureMachinePool.Spec.Template.SSHPublicKey)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
 	currentReplicas := key.NodePoolMinReplicas(machinePool)
 	if key.NodePoolMinReplicas(machinePool) != key.NodePoolMaxReplicas(machinePool) {
-		// Autoscaler is enabled, will need to get the current number of replicas from the VMSS.
-		candidate, err := r.getVMSScurrentScaling(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
-		if IsNotFound(err) {
-			// It's ok. VMSS not created yet.
-		} else if err != nil {
-			return azureresource.Deployment{}, microerror.Mask(err)
-		}
-
-		// Function getVMSScurrentScaling returns 0 when the VMSS is not found.
-		if candidate > 0 {
-			currentReplicas = candidate
+		// Autoscaler is enabled. Will need to use the current number of replicas from the VMSS if it exists.
+		if !vmss.IsHTTPStatus(404) {
+			currentReplicas = int32(*vmss.Sku.Capacity)
 		}
 	}
 
@@ -81,19 +67,21 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			enableAcceleratedNetworking = *azureMachinePool.Spec.Template.AcceleratedNetworking
 		} else {
 			// The flag is not set.
-			enabled, err := r.vmssHasAcceleratedNetworkingEnabled(ctx, cluster, azureCluster.GetName(), key.NodePoolVMSSName(azureMachinePool))
-			if IsNotFound(err) {
+			if vmss.IsHTTPStatus(404) {
 				// Scale set does not exist yet.
 				// We want to enable accelerated networking only if VM type supports it.
 				enableAcceleratedNetworking, err = r.vmsku.HasCapability(ctx, azureMachinePool.Spec.Template.VMSize, vmsku.CapabilityAcceleratedNetworking)
 				if err != nil {
 					return azureresource.Deployment{}, microerror.Mask(err)
 				}
-			} else if err != nil {
-				return azureresource.Deployment{}, microerror.Mask(err)
 			} else {
 				// VMSS already exists, we want to stick with what is the current situation.
-				enableAcceleratedNetworking = enabled
+				cfgs := vmss.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations
+				if cfgs != nil && len(*cfgs) > 0 {
+					enableAcceleratedNetworking = *(*cfgs)[0].EnableAcceleratedNetworking
+				} else {
+					return azureresource.Deployment{}, microerror.Mask(unexpectedUpstreamResponseError)
+				}
 			}
 		}
 	}
@@ -115,7 +103,6 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
 			CurrentReplicas: currentReplicas,
 		},
-		SSHPublicKey: string(sshPublicKey),
 		SubnetName:   subnetName,
 		VMCustomData: workerCloudConfig,
 		VMSize:       azureMachinePool.Spec.Template.VMSize,
@@ -143,48 +130,6 @@ func (r Resource) getSubnetName(azureMachinePool *capzexpv1alpha3.AzureMachinePo
 	}
 
 	return "", "", microerror.Maskf(notFoundError, "there is no allocated subnet for nodepool %#q in virtual network called %#q", azureMachinePool.Name, azureCluster.Spec.NetworkSpec.Vnet.ID)
-}
-
-func (r *Resource) vmssHasAcceleratedNetworkingEnabled(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (bool, error) {
-	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	cfgs := npVMSS.VirtualMachineProfile.NetworkProfile.NetworkInterfaceConfigurations
-	if cfgs != nil && len(*cfgs) > 0 {
-		cfg := (*cfgs)[0]
-		return *cfg.EnableAcceleratedNetworking, nil
-	}
-
-	// Unexpected response from azure.
-	return false, microerror.Mask(unexpectedUpstreamResponseError)
-}
-
-func (r *Resource) getVMSScurrentScaling(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (int32, error) {
-	npVMSS, err := r.getVMSS(ctx, cluster, resourceGroupName, vmssName)
-	if err != nil {
-		return -1, microerror.Mask(err)
-	}
-
-	capacity64 := *npVMSS.Sku.Capacity
-
-	// Unsafe type casting in theory, but in practice the capacity will never reach numbers not even close to 2^32.
-	return int32(capacity64), nil
-}
-
-func (r *Resource) getVMSS(ctx context.Context, cluster *capiv1alpha3.Cluster, resourceGroupName string, vmssName string) (*compute.VirtualMachineScaleSet, error) {
-	client, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, cluster.ObjectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	npVMSS, err := client.Get(ctx, resourceGroupName, vmssName)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return &npVMSS, nil
 }
 
 func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName, containerName, workerBlobName string, encrypterObject encrypter.Interface) (string, error) {
