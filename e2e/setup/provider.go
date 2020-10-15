@@ -2,7 +2,6 @@ package setup
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"strconv"
 	"strings"
@@ -472,7 +471,7 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 							Lun:        to.Int32Ptr(22),
 						},
 					},
-					SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(env.SSHPublicKey())),
+					SSHPublicKey: "",
 					VMSize:       vmSize,
 				},
 			},

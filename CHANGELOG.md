@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Do not use public SSH keys coming from the CRs.
+
 ### Fixed
 
 - Try to send only one request to VMSS Azure API from `nodepool` handler.

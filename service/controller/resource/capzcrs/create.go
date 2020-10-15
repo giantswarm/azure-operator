@@ -2,7 +2,6 @@ package capzcrs
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"strconv"
 
@@ -224,8 +223,9 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 					StorageAccountType: "Premium_LRS",
 				},
 			},
-			Location:     r.location,
-			SSHPublicKey: base64.StdEncoding.EncodeToString([]byte(key.AdminSSHKeyData(cr))),
+			Location: r.location,
+			// We use ignition for SSH keys deployment.
+			SSHPublicKey: "",
 		},
 	}
 
