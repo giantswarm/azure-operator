@@ -92,8 +92,6 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 				t.Fatalf("Unable to construct a deployment: %v", err)
 			}
 
-			fmt.Printf("%+v\n", deployment)
-
 			chk, err := GetDeploymentParametersChecksum(*deployment)
 			if err != nil {
 				t.Fatalf("Unexpected error")
