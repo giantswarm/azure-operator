@@ -43,8 +43,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	{
 		objKey := client.ObjectKey{
-			Namespace: cr.Namespace,
 			Name:      cr.Name,
+			Namespace: key.OrganizationNamespace(&cr),
 		}
 		cluster := new(capiv1alpha3.Cluster)
 		err = r.ctrlClient.Get(ctx, objKey, cluster)
@@ -73,7 +73,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		infraRef := &corev1.ObjectReference{
 			Kind:      "AzureCluster",
 			Name:      cr.Name,
-			Namespace: cr.Namespace,
+			Namespace: key.OrganizationNamespace(&cr),
 		}
 		o, err = r.mapAzureConfigToCluster(ctx, cr, infraRef)
 		if err != nil {
@@ -114,7 +114,7 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: cr.Namespace,
+			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
@@ -197,7 +197,7 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 		},
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      fmt.Sprintf("%s-master-0", key.ClusterID(&cr)),
-			Namespace: cr.Namespace,
+			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
 				label.AzureOperatorVersion:                key.OperatorVersion(&cr),
 				label.Cluster:                             cr.Name,
