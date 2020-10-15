@@ -107,7 +107,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterName(&cluster),
-			Namespace: azureCluster.Namespace,
+			Namespace: metav1.NamespaceDefault,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if errors.IsNotFound(err) {
@@ -217,7 +217,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 
 	{
 		azureConfig.ObjectMeta.Name = key.ClusterName(&cluster)
-		azureConfig.ObjectMeta.Namespace = cluster.Namespace
+		azureConfig.ObjectMeta.Namespace = metav1.NamespaceDefault
 	}
 
 	{

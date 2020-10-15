@@ -25,6 +25,7 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/normalize"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
 )
@@ -203,9 +204,11 @@ func (r *Resource) deleteDrainerConfigs(ctx context.Context, cr providerv1alpha1
 func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, vmSize string) (expcapzv1alpha3.AzureMachinePool, error) {
 	var azureMachinePool expcapzv1alpha3.AzureMachinePool
 
+	namespace := normalize.AsDNSLabelName(fmt.Sprintf("org-%s", key.OrganizationID(&cr)))
+
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
-		Namespace: key.OrganizationID(&cr),
+		Namespace: namespace,
 	}
 	err := r.ctrlClient.Get(ctx, nsName, &azureMachinePool)
 	if err == nil {
@@ -238,7 +241,7 @@ func (r *Resource) ensureAzureMachinePoolExists(ctx context.Context, cr provider
 	azureMachinePool = expcapzv1alpha3.AzureMachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: key.OrganizationID(&cr),
+			Namespace: namespace,
 			Labels: map[string]string{
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
 				label.Cluster:                 key.ClusterID(&cr),
@@ -332,9 +335,11 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
 	var machinePool expcapiv1alpha3.MachinePool
 
+	namespace := normalize.AsDNSLabelName(fmt.Sprintf("org-%s", key.OrganizationID(&cr)))
+
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
-		Namespace: key.OrganizationID(&cr),
+		Namespace: namespace,
 	}
 	err := r.ctrlClient.Get(ctx, nsName, &machinePool)
 	if err == nil {
@@ -363,7 +368,7 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 	mp := expcapiv1alpha3.MachinePool{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: key.OrganizationID(&cr),
+			Namespace: namespace,
 			Labels: map[string]string{
 				apiextlabel.AzureOperatorVersion: key.OperatorVersion(&cr),
 				apiextlabel.Cluster:              key.ClusterID(&cr),
@@ -400,9 +405,11 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.AzureConfig) (corev1alpha1.Spark, error) {
 	var spark corev1alpha1.Spark
 
+	namespace := normalize.AsDNSLabelName(fmt.Sprintf("org-%s", key.OrganizationID(&cr)))
+
 	nsName := types.NamespacedName{
 		Name:      cr.GetName(),
-		Namespace: key.OrganizationID(&cr),
+		Namespace: namespace,
 	}
 	err := r.ctrlClient.Get(ctx, nsName, &spark)
 	if err == nil {
@@ -417,7 +424,7 @@ func (r *Resource) ensureSparkExists(ctx context.Context, cr providerv1alpha1.Az
 	spark = corev1alpha1.Spark{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
-			Namespace: key.OrganizationID(&cr),
+			Namespace: namespace,
 			Labels: map[string]string{
 				apiextlabel.Cluster:           key.ClusterID(&cr),
 				capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
