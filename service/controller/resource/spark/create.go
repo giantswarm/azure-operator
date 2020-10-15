@@ -62,7 +62,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if machinePool == nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Owner Reference hasn't been set yet, so we don't know parent MachinePool")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool Owner Reference hasn't been set yet, so we don't know parent MachinePool")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return nil
