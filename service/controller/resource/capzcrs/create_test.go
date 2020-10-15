@@ -14,7 +14,6 @@ import (
 	"unicode"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger/microloggertest"
 	"github.com/giantswarm/operatorkit/v2/pkg/resource"
@@ -29,6 +28,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 var update = flag.Bool("update", false, "update .golden reference files")
