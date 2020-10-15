@@ -18,6 +18,7 @@ import (
 	gocache "github.com/patrickmn/go-cache"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/service/collector"
 )
 
 const (
@@ -30,6 +31,7 @@ const (
 )
 
 type FactoryConfig struct {
+	AzureAPIMetrics    collector.AzureAPIMetrics
 	CacheDuration      time.Duration
 	CredentialProvider credential.Provider
 	Logger             micrologger.Logger
@@ -40,17 +42,21 @@ type FactoryConfig struct {
 type Factory struct {
 	credentialProvider credential.Provider
 	logger             micrologger.Logger
+	metricsCollector   collector.AzureAPIMetrics
 	mutex              sync.Mutex
 
 	// map [credentialName + client type] -> client
 	cachedClients *gocache.Cache
 }
 
-type clientCreatorFunc func(autorest.Authorizer, string, string) (interface{}, error)
+type clientCreatorFunc func(autorest.Authorizer, collector.AzureAPIMetrics, string, string) (interface{}, error)
 
 // NewFactory returns a new Azure client factory that is used throughout entire azure-operator
 // lifetime.
 func NewFactory(config FactoryConfig) (*Factory, error) {
+	if config.AzureAPIMetrics == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureAPIMetrics must not be empty", config)
+	}
 	if config.CacheDuration < 5*time.Minute { // cache at least for one reconciliation loop duration
 		return nil, microerror.Maskf(invalidConfigError, "%T.CacheDuration must be at least 5 minutes", config)
 	}
@@ -65,6 +71,7 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 		logger:             config.Logger,
 		credentialProvider: config.CredentialProvider,
 		cachedClients:      gocache.New(config.CacheDuration, 2*config.CacheDuration),
+		metricsCollector:   config.AzureAPIMetrics,
 	}
 
 	factory.cachedClients.OnEvicted(func(clientKey string, i interface{}) {
@@ -266,7 +273,7 @@ func (f *Factory) createClient(credentialNamespace, credentialName string, creat
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-	client, err := createClient(authorizer, subscriptionID, partnerID)
+	client, err := createClient(authorizer, f.metricsCollector, subscriptionID, partnerID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
