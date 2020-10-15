@@ -77,6 +77,7 @@ type AzureConfigConfig struct {
 	Ignition         setting.Ignition
 	IPAMNetworkRange net.IPNet
 	OIDC             setting.OIDC
+	SSHUserList      []v1alpha1.ClusterKubernetesSSHUser
 	SSOPublicKey     string
 	TemplateVersion  string
 	VMSSCheckWorkers int
@@ -383,6 +384,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			K8sClient:      config.K8sClient.K8sClient(),
 			Logger:         config.Logger,
 			RegistryDomain: config.RegistryDomain,
+			SSHUserList:    config.SSHUserList,
 		}
 
 		blobObject, err := blobobject.New(c)

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"net"
+	"strings"
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -307,6 +308,16 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	var sshUserList []providerv1alpha1.ClusterKubernetesSSHUser
+	{
+		str := config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList)
+
+		sshUserList, err = newSpecClusterKubernetesSSHUsers(str)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var azureConfigController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureConfigConfig{
@@ -327,6 +338,7 @@ func New(config Config) (*Service, error) {
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			RegistryMirrors:           config.Viper.GetStringSlice(config.Flag.Service.Registry.Mirrors),
 			SentryDSN:                 sentryDSN,
+			SSHUserList:               sshUserList,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			Debug:                     debugSettings,
@@ -364,7 +376,7 @@ func New(config Config) (*Service, error) {
 			OIDC:                      OIDC,
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SentryDSN:                 sentryDSN,
-			SSHUserList:               config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
+			SSHUserList:               sshUserList,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
@@ -490,4 +502,30 @@ func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCre
 	}
 
 	return client.NewAzureClientSet(gsClientCredentialsConfig, metricsCollector, cpSubscriptionID, cpPartnerID)
+}
+
+func newSpecClusterKubernetesSSHUsers(userList string) ([]providerv1alpha1.ClusterKubernetesSSHUser, error) {
+	var sshUsers []providerv1alpha1.ClusterKubernetesSSHUser
+
+	for _, user := range strings.Split(userList, ",") {
+		if user == "" {
+			continue
+		}
+
+		trimmed := strings.TrimSpace(user)
+		split := strings.Split(trimmed, ":")
+
+		if len(split) != 2 {
+			return nil, microerror.Maskf(invalidConfigError, "SSH user format must be <name>:<public key>")
+		}
+
+		u := providerv1alpha1.ClusterKubernetesSSHUser{
+			Name:      split[0],
+			PublicKey: split[1],
+		}
+
+		sshUsers = append(sshUsers, u)
+	}
+
+	return sshUsers, nil
 }

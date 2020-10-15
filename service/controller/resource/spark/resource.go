@@ -42,7 +42,7 @@ type Config struct {
 	Logger              micrologger.Logger
 	OIDC                setting.OIDC
 	RegistryDomain      string
-	SSHUserList         string
+	SSHUserList         []v1alpha1.ClusterKubernetesSSHUser
 	SSOPublicKey        string
 }
 
@@ -60,7 +60,7 @@ type Resource struct {
 	logger              micrologger.Logger
 	oidc                setting.OIDC
 	registryDomain      string
-	sshUserList         string
+	sshUserList         []v1alpha1.ClusterKubernetesSSHUser
 	ssoPublicKey        string
 }
 
@@ -108,10 +108,6 @@ func New(config Config) (*Resource, error) {
 
 	if config.RegistryDomain == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RegistryDomain must not be empty", config)
-	}
-
-	if config.SSHUserList == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.SSHUserList must not be empty", config)
 	}
 
 	if config.SSOPublicKey == "" {
