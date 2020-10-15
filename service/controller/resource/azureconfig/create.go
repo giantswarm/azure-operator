@@ -387,6 +387,8 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
+		// The AzureCOnfig field containing the list of SSH keys is not used any more,
+		// but is a mandatory field so we set it to an empty slice.
 		commonCluster.Kubernetes.SSH.UserList = []providerv1alpha1.ClusterKubernetesSSHUser{}
 	}
 
