@@ -63,27 +63,26 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 	testCases := map[string]testData{
 		"case 0: Default test data":              defaultTestData(),
 		"case 1: Changed Admin Username":         defaultTestData().WithadminUsername("giantswarm2"),
-		"case 2: Changed SSH key":                defaultTestData().WithadminSSHKeyData("ssh-rsa AAAAB3aC1yc...k+y+ls2D0xJfqxw=="),
-		"case 3: Changed OS Image Offer":         defaultTestData().WithosImageOffer("Ubuntu"),
-		"case 4: Changed OS Image Publisher":     defaultTestData().WithosImagePublisher("Canonical"),
-		"case 5: Changed OS Image SKU":           defaultTestData().WithosImageSKU("LTS"),
-		"case 6: Changed OS Image Version":       defaultTestData().WithosImageVersion("18.04"),
-		"case 7: Changed VM Size":                defaultTestData().WithvmSize("very_sml"),
-		"case 8: Changed Docker Volume Size":     defaultTestData().WithdockerVolumeSizeGB(100),
-		"case 9: Changed Master Blob Url":        defaultTestData().WithmasterBlobUrl("http://www.giantwarm.io"),
-		"case 10: Changed Master Encryption Key": defaultTestData().WithmasterEncryptionKey("0123456789abcdef"),
-		"case 11: Changed Master Initial Vector": defaultTestData().WithmasterInitialVector("fedcba9876543210"),
-		"case 12: Changed Worker Blob Url":       defaultTestData().WithworkerBlobUrl("http://www.giantwarm.io"),
-		"case 13: Changed Worker Encryption Key": defaultTestData().WithworkerEncryptionKey("0123456789abcdef"),
-		"case 14: Changed Worker Initial Vector": defaultTestData().WithworkerInitialVector("fedcba9876543210"),
-		"case 15: Changed MasterLB Backend Pool": defaultTestData().WithmasterLBBackendPoolID("/just/a/test"),
-		"case 16: Changed Cluster ID":            defaultTestData().WithclusterID("abcde"),
-		"case 17: Changed Master Subnet ID":      defaultTestData().WithmasterSubnetID("/and/another/one"),
-		"case 18: Change VMSS MSIE enabled":      defaultTestData().WithvmssMSIEnabled(false),
-		"case 19: Changed Worker Subnet ID":      defaultTestData().WithworkerSubnetID("/and/the/last/one"),
-		"case 20: Added a new field":             defaultTestData().WithadditionalFields(map[string]string{"additional": "field"}),
-		"case 21: Removed a field":               defaultTestData().WithremovedFields([]string{"masterSubnetID"}),
-		"case 22: Changed the cloud config tmpl": defaultTestData().WithcloudConfigSmallTemplates([]string{"{}"}),
+		"case 2: Changed OS Image Offer":         defaultTestData().WithosImageOffer("Ubuntu"),
+		"case 3: Changed OS Image Publisher":     defaultTestData().WithosImagePublisher("Canonical"),
+		"case 4: Changed OS Image SKU":           defaultTestData().WithosImageSKU("LTS"),
+		"case 5: Changed OS Image Version":       defaultTestData().WithosImageVersion("18.04"),
+		"case 6: Changed VM Size":                defaultTestData().WithvmSize("very_sml"),
+		"case 7: Changed Docker Volume Size":     defaultTestData().WithdockerVolumeSizeGB(100),
+		"case 8: Changed Master Blob Url":        defaultTestData().WithmasterBlobUrl("http://www.giantwarm.io"),
+		"case 9: Changed Master Encryption Key":  defaultTestData().WithmasterEncryptionKey("0123456789abcdef"),
+		"case 10: Changed Master Initial Vector": defaultTestData().WithmasterInitialVector("fedcba9876543210"),
+		"case 11: Changed Worker Blob Url":       defaultTestData().WithworkerBlobUrl("http://www.giantwarm.io"),
+		"case 12: Changed Worker Encryption Key": defaultTestData().WithworkerEncryptionKey("0123456789abcdef"),
+		"case 13: Changed Worker Initial Vector": defaultTestData().WithworkerInitialVector("fedcba9876543210"),
+		"case 14: Changed MasterLB Backend Pool": defaultTestData().WithmasterLBBackendPoolID("/just/a/test"),
+		"case 15: Changed Cluster ID":            defaultTestData().WithclusterID("abcde"),
+		"case 16: Changed Master Subnet ID":      defaultTestData().WithmasterSubnetID("/and/another/one"),
+		"case 17: Change VMSS MSIE enabled":      defaultTestData().WithvmssMSIEnabled(false),
+		"case 18: Changed Worker Subnet ID":      defaultTestData().WithworkerSubnetID("/and/the/last/one"),
+		"case 19: Added a new field":             defaultTestData().WithadditionalFields(map[string]string{"additional": "field"}),
+		"case 20: Removed a field":               defaultTestData().WithremovedFields([]string{"masterSubnetID"}),
+		"case 21: Changed the cloud config tmpl": defaultTestData().WithcloudConfigSmallTemplates([]string{"{}"}),
 	}
 
 	for name, tc := range testCases {
@@ -93,13 +92,15 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 				t.Fatalf("Unable to construct a deployment: %v", err)
 			}
 
+			fmt.Printf("%+v\n", deployment)
+
 			chk, err := GetDeploymentParametersChecksum(*deployment)
 			if err != nil {
 				t.Fatalf("Unexpected error")
 			}
 
 			if tc.checksumIs != nil && chk != *tc.checksumIs {
-				t.Fatalf("Checksum calculation invalid %s", chk)
+				t.Fatalf("Checksum calculation invalid (expected %s, got %s)", *tc.checksumIs, chk)
 			}
 
 			if tc.checksumIsNot != nil && chk == *tc.checksumIsNot {
@@ -111,7 +112,6 @@ func Test_getDeploymentParametersChecksum(t *testing.T) {
 
 type testData struct {
 	adminUsername             string
-	adminSSHKeyData           string
 	osImageOffer              string
 	osImagePublisher          string
 	osImageSKU                string
@@ -142,7 +142,6 @@ type testData struct {
 func defaultTestData() testData {
 	return testData{
 		adminUsername:             "giantswarm",
-		adminSSHKeyData:           "ssh-rsa AAAAB3NzaC1yc...k+y+ls2D0xJfqxw==",
 		osImageOffer:              "CoreOS",
 		osImagePublisher:          "CoreOS",
 		osImageSKU:                "Stable",
@@ -166,21 +165,13 @@ func defaultTestData() testData {
 		removedFields:             nil,
 		cloudConfigSmallTemplates: key.CloudConfigSmallTemplates(),
 
-		checksumIs:    to.StringPtr("ffa47332b6cac79fd0976cb867be0af03d01ffaead0ca7a467404938d7e653e9"),
+		checksumIs:    to.StringPtr("7f6cc62302d51c1574499a0074a559e0902e0b3a34a93d3a057a89ccf6819e1f"),
 		checksumIsNot: nil,
 	}
 }
 
 func (td testData) WithadminUsername(data string) testData {
 	td.adminUsername = data
-	td.checksumIsNot = td.checksumIs
-	td.checksumIs = nil
-
-	return td
-}
-
-func (td testData) WithadminSSHKeyData(data string) testData {
-	td.adminSSHKeyData = data
 	td.checksumIsNot = td.checksumIs
 	td.checksumIs = nil
 
@@ -348,8 +339,7 @@ func (td testData) WithcloudConfigSmallTemplates(data []string) testData {
 func getDeployment(data testData) (*resources.Deployment, error) {
 	nodes := []vmss.Node{
 		{
-			AdminUsername:   data.adminUsername,
-			AdminSSHKeyData: data.adminSSHKeyData,
+			AdminUsername: data.adminUsername,
 			OSImage: vmss.NodeOSImage{
 				Offer:     data.osImageOffer,
 				Publisher: data.osImagePublisher,
