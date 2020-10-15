@@ -22,6 +22,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Fixed firewall rules to allow prometheus to scrape node-level exporters from all node pools.
 - Encryption secret is now taken from the CR namespace rather than the organization namespace.
 
+### Changed
+
+- Get the storage account type to use for node pools' VMSS from the AzureMachinePool CR.
+
 ## [5.0.0-alpha1] - 2020-10-12
 
 ### Added
