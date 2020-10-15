@@ -387,12 +387,7 @@ func (r *Resource) newCluster(cluster capiv1alpha3.Cluster, azureCluster capzv1a
 	}
 
 	{
-		userList, err := newSpecClusterKubernetesSSHUsers(r.sshUserList)
-		if err != nil {
-			return providerv1alpha1.Cluster{}, microerror.Mask(err)
-		}
-
-		commonCluster.Kubernetes.SSH.UserList = userList
+		commonCluster.Kubernetes.SSH.UserList = []providerv1alpha1.ClusterKubernetesSSHUser{}
 	}
 
 	{
@@ -429,30 +424,4 @@ func newSpecClusterWorkerNodes(numWorkers int) []providerv1alpha1.ClusterNode {
 	}
 
 	return workerNodes
-}
-
-func newSpecClusterKubernetesSSHUsers(userList string) ([]providerv1alpha1.ClusterKubernetesSSHUser, error) {
-	var sshUsers []providerv1alpha1.ClusterKubernetesSSHUser
-
-	for _, user := range strings.Split(userList, ",") {
-		if user == "" {
-			continue
-		}
-
-		trimmed := strings.TrimSpace(user)
-		split := strings.Split(trimmed, ":")
-
-		if len(split) != 2 {
-			return nil, microerror.Maskf(executionFailedError, "SSH user format must be <name>:<public key>")
-		}
-
-		u := providerv1alpha1.ClusterKubernetesSSHUser{
-			Name:      split[0],
-			PublicKey: split[1],
-		}
-
-		sshUsers = append(sshUsers, u)
-	}
-
-	return sshUsers, nil
 }

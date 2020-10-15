@@ -83,13 +83,7 @@ spec:
         kubeProxy:
           conntrackMaxPerCore: 0
       ssh:
-        userList:
-        - name: foobar
-          publicKey: ssh-rsa foobarbaz== foobar
-        - name: barbaz
-          publicKey: ssh-rsa barbazfoo== barbaz
-        - name: bazfoo
-          publicKey: ssh-rsa bazfoobar== bazfoo
+        userList: []
     masters:
     - id: 9x5qt
     scaling:

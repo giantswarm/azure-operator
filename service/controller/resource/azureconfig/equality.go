@@ -82,17 +82,6 @@ func commonClusterKubernetesEqual(v1, v2 providerv1alpha1.ClusterKubernetes) boo
 		return false
 	}
 
-	if len(v1.SSH.UserList) != len(v2.SSH.UserList) {
-		return false
-	}
-
-	for i, u := range v1.SSH.UserList {
-		u2 := v2.SSH.UserList[i]
-		if u.Name != u2.Name || u.PublicKey != u2.PublicKey {
-			return false
-		}
-	}
-
 	return true
 }
 
