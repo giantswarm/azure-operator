@@ -2,7 +2,6 @@ package nodepool
 
 import (
 	"context"
-	"encoding/base64"
 	"fmt"
 	"net/url"
 	"strings"
@@ -49,11 +48,6 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	}
 
 	vnetName, subnetName, err := r.getSubnetName(azureMachinePool, azureCluster)
-	if err != nil {
-		return azureresource.Deployment{}, microerror.Mask(err)
-	}
-
-	sshPublicKey, err := base64.StdEncoding.DecodeString(azureMachinePool.Spec.Template.SSHPublicKey)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
@@ -109,7 +103,6 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
 			CurrentReplicas: currentReplicas,
 		},
-		SSHPublicKey: string(sshPublicKey),
 		SubnetName:   subnetName,
 		VMCustomData: workerCloudConfig,
 		VMSize:       azureMachinePool.Spec.Template.VMSize,

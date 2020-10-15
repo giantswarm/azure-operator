@@ -7,8 +7,6 @@ import (
 type Node struct {
 	// AdminUsername is the vm administrator username
 	AdminUsername string `json:"adminUsername" yaml:"adminUsername"`
-	//  AdminSSHKeyData is the vm administrator ssh public key
-	AdminSSHKeyData string `json:"adminSSHKeyData" yaml:"adminSSHKeyData"`
 	// OSImage is the vm OS image object.
 	OSImage NodeOSImage `json:"osImage" yaml:"osImage"`
 	// VMSize is the master vm size (e.g. Standard_A1)
@@ -33,10 +31,9 @@ type NodeOSImage struct {
 	Version string `json:"version" yaml:"version"`
 }
 
-func NewNode(adminUsername string, adminSSHKeyData string, distroVersion string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) Node {
+func NewNode(adminUsername string, distroVersion string, vmSize string, dockerVolumeSizeGB int, kubeletVolumeSizeGB int) Node {
 	return Node{
 		AdminUsername:       adminUsername,
-		AdminSSHKeyData:     adminSSHKeyData,
 		OSImage:             newNodeOSImageCoreOS(distroVersion),
 		VMSize:              vmSize,
 		DockerVolumeSizeGB:  dockerVolumeSizeGB,

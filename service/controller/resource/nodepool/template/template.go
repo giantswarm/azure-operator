@@ -66,9 +66,6 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	if currentParameters.NodepoolName != desiredParameters.NodepoolName {
 		changes = append(changes, "nodepoolName")
 	}
-	if currentParameters.SSHPublicKey != desiredParameters.SSHPublicKey {
-		changes = append(changes, "sshPublicKey")
-	}
 	if currentParameters.SubnetName != desiredParameters.SubnetName {
 		changes = append(changes, "subnetName")
 	}
