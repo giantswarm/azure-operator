@@ -250,18 +250,6 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 		}
 	}
 
-	/*
-			XXX: Let's see if we can live without this. -tuommaki
-		{
-			clusterStatus, err := r.newClusterStatus(ctx, request, azureConfig.Labels[label.OperatorVersion])
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-			azureConfig.Status.Cluster = clusterStatus
-		}
-	*/
-
 	var (
 		// hostDNSZone is created by stripping 3 first components from
 		// API domain are e.g.
