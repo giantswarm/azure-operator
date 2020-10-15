@@ -191,7 +191,7 @@ func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr provider
 }
 
 func (r *Resource) deleteDrainerConfigs(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	err := r.ctrlClient.DeleteAllOf(ctx, &corev1alpha1.DrainerConfig{}, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterID(&cr)})
+	err := r.ctrlClient.DeleteAllOf(ctx, &corev1alpha1.DrainerConfig{}, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterID(&cr)}, client.InNamespace(key.ClusterID(&cr)))
 	if err != nil {
 		return microerror.Mask(err)
 	}
