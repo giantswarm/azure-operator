@@ -23,6 +23,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
@@ -38,6 +39,7 @@ import (
 type AzureMachinePoolConfig struct {
 	APIServerSecurePort       int
 	Azure                     setting.Azure
+	AzureMetricsCollector     collector.AzureAPIMetrics
 	Calico                    azureconfig.CalicoConfig
 	ClusterIPRange            string
 	CPAzureClientSet          *client.AzureClientSet
@@ -115,6 +117,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
+			AzureAPIMetrics:    config.AzureMetricsCollector,
 			CacheDuration:      30 * time.Minute,
 			CredentialProvider: config.CredentialProvider,
 			Logger:             config.Logger,

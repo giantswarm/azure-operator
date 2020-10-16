@@ -10,6 +10,7 @@ import (
 	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
+	exporterkitcollector "github.com/giantswarm/exporterkit/collector"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8srestconfig"
 	"github.com/giantswarm/microendpoint/service/version"
@@ -29,6 +30,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
@@ -52,8 +54,9 @@ type Config struct {
 type Service struct {
 	Version *version.Service
 
-	bootOnce    sync.Once
-	controllers []*operatorkitcontroller.Controller
+	bootOnce          sync.Once
+	operatorCollector *exporterkitcollector.Set
+	controllers       []*operatorkitcontroller.Controller
 }
 
 // New creates a new configured service object.
@@ -241,7 +244,30 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
+	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID), config.Logger)
+
+	var azureCollector collector.AzureAPIMetrics
+	var collectorSet *exporterkitcollector.Set
+	{
+		azureAPIMetricsCollector, err := collector.NewAzureAPIMetricsCollector(collector.Config{Logger: config.Logger})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		azureCollector = azureAPIMetricsCollector
+
+		c := exporterkitcollector.SetConfig{
+			Collectors: []exporterkitcollector.Interface{
+				azureAPIMetricsCollector,
+			},
+			Logger: config.Logger,
+		}
+
+		collectorSet, err = exporterkitcollector.NewSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var controllers []*operatorkitcontroller.Controller
 
@@ -255,14 +281,15 @@ func New(config Config) (*Service, error) {
 			Flag:  config.Flag,
 			Viper: config.Viper,
 
-			Azure:            azure,
-			Ignition:         Ignition,
-			OIDC:             OIDC,
-			InstallationName: config.Viper.GetString(config.Flag.Service.Installation.Name),
-			ProjectName:      config.ProjectName,
-			RegistryDomain:   config.Viper.GetString(config.Flag.Service.Registry.Domain),
-			SSOPublicKey:     config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers: config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
+			Azure:                 azure,
+			AzureMetricsCollector: azureCollector,
+			Ignition:              Ignition,
+			OIDC:                  OIDC,
+			InstallationName:      config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:           config.ProjectName,
+			RegistryDomain:        config.Viper.GetString(config.Flag.Service.Registry.Domain),
+			SSOPublicKey:          config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSCheckWorkers:      config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 
 			SentryDSN: sentryDSN,
 		}
@@ -275,7 +302,7 @@ func New(config Config) (*Service, error) {
 		controllers = append(controllers, azureClusterController)
 	}
 
-	cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig)
+	cpAzureClientSet, err := NewCPAzureClientSet(config, gsClientCredentialsConfig, azureCollector)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -284,6 +311,7 @@ func New(config Config) (*Service, error) {
 	{
 		c := controller.AzureConfigConfig{
 			Azure:                     azure,
+			AzureMetricsCollector:     azureCollector,
 			ClusterVNetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			CredentialProvider:        credentialProvider,
 			CPAzureClientSet:          cpAzureClientSet,
@@ -315,8 +343,9 @@ func New(config Config) (*Service, error) {
 	var azureMachinePoolController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureMachinePoolConfig{
-			APIServerSecurePort: config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
-			Azure:               azure,
+			APIServerSecurePort:   config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
+			Azure:                 azure,
+			AzureMetricsCollector: azureCollector,
 			Calico: azureconfig.CalicoConfig{
 				CIDRSize: config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
 				MTU:      config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
@@ -399,19 +428,23 @@ func New(config Config) (*Service, error) {
 	}
 
 	s := &Service{
-		bootOnce:    sync.Once{},
-		controllers: controllers,
-		Version:     versionService,
+		bootOnce:          sync.Once{},
+		controllers:       controllers,
+		operatorCollector: collectorSet,
+		Version:           versionService,
 	}
 
 	return s, nil
 }
 
+// nolint: errcheck
 func (s *Service) Boot(ctx context.Context) {
 	s.bootOnce.Do(func() {
 		for _, ctrl := range s.controllers {
 			go ctrl.Boot(ctx)
 		}
+
+		go s.operatorCollector.Boot(context.Background())
 	})
 }
 
@@ -438,7 +471,7 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 }
 
 // NewCPAzureClientSet return an Azure client set configured for the Control Plane cluster.
-func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig) (*client.AzureClientSet, error) {
+func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig, metricsCollector collector.AzureAPIMetrics) (*client.AzureClientSet, error) {
 	cpTenantID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.TenantID)
 	if cpTenantID != "" {
 		// We want the code to work both when using Single Tenant Service Principal and Multi Tenant Service Principal.
@@ -456,5 +489,5 @@ func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCre
 		cpPartnerID = config.Viper.GetString(config.Flag.Service.Azure.PartnerID)
 	}
 
-	return client.NewAzureClientSet(gsClientCredentialsConfig, cpSubscriptionID, cpPartnerID)
+	return client.NewAzureClientSet(gsClientCredentialsConfig, metricsCollector, cpSubscriptionID, cpPartnerID)
 }

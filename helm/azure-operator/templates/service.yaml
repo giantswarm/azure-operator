@@ -7,7 +7,7 @@ metadata:
     {{- include "labels.common" . | nindent 4 }}
     giantswarm.io/monitoring: "true"
   annotations:
-    prometheus.io/scrape: "false"
+    prometheus.io/scrape: "true"
 spec:
   type: NodePort
   ports:
