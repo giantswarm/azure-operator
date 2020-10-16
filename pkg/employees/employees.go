@@ -3,7 +3,6 @@ package employees
 import (
 	"strings"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 )
 
@@ -32,18 +31,4 @@ func FromDraughtsmanString(userList string) (SSHUserList, error) {
 	}
 
 	return sshUsers, nil
-}
-
-func (s *SSHUserList) ToClusterKubernetesSSHUser() []v1alpha1.ClusterKubernetesSSHUser {
-	var ret []v1alpha1.ClusterKubernetesSSHUser
-
-	for name, keys := range *s {
-		ret = append(ret, v1alpha1.ClusterKubernetesSSHUser{
-			Name: name,
-			// v1alpha1 type currently supports only one ssh key per user.
-			PublicKey: keys[0],
-		})
-	}
-
-	return ret
 }

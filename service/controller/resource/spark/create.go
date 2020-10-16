@@ -630,7 +630,7 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 	}
 
 	{
-		commonCluster.Kubernetes.SSH.UserList = r.sshUserList.ToClusterKubernetesSSHUser()
+		commonCluster.Kubernetes.SSH.UserList = key.ToClusterKubernetesSSHUser(r.sshUserList)
 	}
 
 	{

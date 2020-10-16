@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	apiextensionsannotations "github.com/giantswarm/apiextensions/v2/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
@@ -16,6 +17,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/templates/ignition"
 )
@@ -479,6 +481,20 @@ func ToClusterEndpoint(v interface{}) (string, error) {
 	}
 
 	return cr.Spec.Cluster.Kubernetes.API.Domain, nil
+}
+
+func ToClusterKubernetesSSHUser(s employees.SSHUserList) []v1alpha1.ClusterKubernetesSSHUser {
+	var ret []v1alpha1.ClusterKubernetesSSHUser
+
+	for name, keys := range s {
+		ret = append(ret, v1alpha1.ClusterKubernetesSSHUser{
+			Name: name,
+			// v1alpha1 type currently supports only one ssh key per user.
+			PublicKey: keys[0],
+		})
+	}
+
+	return ret
 }
 
 func ToClusterID(v interface{}) (string, error) {
