@@ -23,6 +23,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -77,7 +78,7 @@ type AzureConfigConfig struct {
 	Ignition         setting.Ignition
 	IPAMNetworkRange net.IPNet
 	OIDC             setting.OIDC
-	SSHUserList      []v1alpha1.ClusterKubernetesSSHUser
+	SSHUserList      employees.SSHUserList
 	SSOPublicKey     string
 	TemplateVersion  string
 	VMSSCheckWorkers int

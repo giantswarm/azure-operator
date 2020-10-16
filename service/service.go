@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strings"
 	"sync"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
@@ -29,6 +28,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/flag"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -308,11 +308,11 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	var sshUserList []providerv1alpha1.ClusterKubernetesSSHUser
+	var sshUserList employees.SSHUserList
 	{
 		str := config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList)
 
-		sshUserList, err = newSpecClusterKubernetesSSHUsers(str)
+		sshUserList, err = employees.FromDraughtsmanString(str)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -502,30 +502,4 @@ func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCre
 	}
 
 	return client.NewAzureClientSet(gsClientCredentialsConfig, metricsCollector, cpSubscriptionID, cpPartnerID)
-}
-
-func newSpecClusterKubernetesSSHUsers(userList string) ([]providerv1alpha1.ClusterKubernetesSSHUser, error) {
-	var sshUsers []providerv1alpha1.ClusterKubernetesSSHUser
-
-	for _, user := range strings.Split(userList, ",") {
-		if user == "" {
-			continue
-		}
-
-		trimmed := strings.TrimSpace(user)
-		split := strings.Split(trimmed, ":")
-
-		if len(split) != 2 {
-			return nil, microerror.Maskf(invalidConfigError, "SSH user format must be <name>:<public key>")
-		}
-
-		u := providerv1alpha1.ClusterKubernetesSSHUser{
-			Name:      split[0],
-			PublicKey: split[1],
-		}
-
-		sshUsers = append(sshUsers, u)
-	}
-
-	return sshUsers, nil
 }

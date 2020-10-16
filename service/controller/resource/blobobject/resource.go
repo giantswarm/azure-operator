@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/apiextensions/v2/pkg/clientset/versioned"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/microerror"
@@ -13,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -29,7 +29,7 @@ type Config struct {
 	K8sClient             kubernetes.Interface
 	Logger                micrologger.Logger
 	RegistryDomain        string
-	SSHUserList           []providerv1alpha1.ClusterKubernetesSSHUser
+	SSHUserList           employees.SSHUserList
 	StorageAccountsClient *storage.AccountsClient
 }
 
@@ -40,7 +40,7 @@ type Resource struct {
 	k8sClient      kubernetes.Interface
 	logger         micrologger.Logger
 	registryDomain string
-	sshUserList    []providerv1alpha1.ClusterKubernetesSSHUser
+	sshUserList    employees.SSHUserList
 }
 
 func New(config Config) (*Resource, error) {

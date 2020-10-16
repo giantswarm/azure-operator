@@ -129,7 +129,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 
 	// Inject in the azureConfig the SREs' public keys.
 	{
-		cr.Spec.Cluster.Kubernetes.SSH.UserList = r.sshUserList
+		cr.Spec.Cluster.Kubernetes.SSH.UserList = r.sshUserList.ToClusterKubernetesSSHUser()
 	}
 
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData

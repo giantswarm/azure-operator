@@ -5,7 +5,6 @@ import (
 	"time"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -20,6 +19,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -55,7 +55,7 @@ type AzureMachinePoolConfig struct {
 	OIDC                      setting.OIDC
 	RegistryDomain            string
 	SentryDSN                 string
-	SSHUserList               []v1alpha1.ClusterKubernetesSSHUser
+	SSHUserList               employees.SSHUserList
 	SSOPublicKey              string
 	VMSSCheckWorkers          int
 	VMSSMSIEnabled            bool
