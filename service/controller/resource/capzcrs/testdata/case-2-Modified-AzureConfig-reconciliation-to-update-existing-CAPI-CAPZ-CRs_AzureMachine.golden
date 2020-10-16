@@ -28,7 +28,7 @@ spec:
     managedDisk:
       storageAccountType: Premium_LRS
     osType: Linux
-  sshPublicKey: c3NoLXJzYSBmb29iYXJiYXo9PSBmb29iYXI=
+  sshPublicKey: ""
   vmSize: Standard_D4s_v3
 status:
   ready: false

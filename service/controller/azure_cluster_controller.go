@@ -22,6 +22,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureclusterconfig"
@@ -40,10 +41,11 @@ type AzureClusterConfig struct {
 	Flag  *flag.Flag
 	Viper *viper.Viper
 
-	Azure            setting.Azure
-	CPAzureClientSet client.AzureClientSet
-	ProjectName      string
-	RegistryDomain   string
+	Azure                 setting.Azure
+	AzureMetricsCollector collector.AzureAPIMetrics
+	CPAzureClientSet      client.AzureClientSet
+	ProjectName           string
+	RegistryDomain        string
 
 	Ignition         setting.Ignition
 	OIDC             setting.OIDC
@@ -164,6 +166,7 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
+			AzureAPIMetrics:    config.AzureMetricsCollector,
 			CacheDuration:      30 * time.Minute,
 			CredentialProvider: config.CredentialProvider,
 			Logger:             config.Logger,

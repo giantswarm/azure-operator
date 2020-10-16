@@ -18,28 +18,34 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 type VirtualNetworkCollectorConfig struct {
-	CredentialProvider credential.Provider
-	InstallationName   string
-	K8sClient          k8sclient.Interface
-	Logger             micrologger.Logger
+	AzureMetricsCollector collector.AzureAPIMetrics
+	CredentialProvider    credential.Provider
+	InstallationName      string
+	K8sClient             k8sclient.Interface
+	Logger                micrologger.Logger
 
 	NetworkRange net.IPNet
 }
 
 type VirtualNetworkCollector struct {
-	credentialProvider credential.Provider
-	installationName   string
-	k8sclient          k8sclient.Interface
-	logger             micrologger.Logger
+	azureMetricsCollector collector.AzureAPIMetrics
+	credentialProvider    credential.Provider
+	installationName      string
+	k8sclient             k8sclient.Interface
+	logger                micrologger.Logger
 
 	networkRange net.IPNet
 }
 
 func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualNetworkCollector, error) {
+	if config.AzureMetricsCollector == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureMetricsCollector must not be empty", config)
+	}
 	if config.CredentialProvider == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
 	}
@@ -58,10 +64,11 @@ func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualN
 	}
 
 	c := &VirtualNetworkCollector{
-		credentialProvider: config.CredentialProvider,
-		k8sclient:          config.K8sClient,
-		installationName:   config.InstallationName,
-		logger:             config.Logger,
+		azureMetricsCollector: config.AzureMetricsCollector,
+		credentialProvider:    config.CredentialProvider,
+		k8sclient:             config.K8sClient,
+		installationName:      config.InstallationName,
+		logger:                config.Logger,
 
 		networkRange: config.NetworkRange,
 	}
@@ -156,7 +163,7 @@ func (c *VirtualNetworkCollector) getVirtualNetworksFromAllSubscriptions(ctx con
 			return nil, microerror.Mask(err)
 		}
 
-		organizationAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, subscriptionID, partnerID)
+		organizationAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, c.azureMetricsCollector, subscriptionID, partnerID)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
