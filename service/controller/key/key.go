@@ -98,15 +98,6 @@ func AdminUsername(customObject providerv1alpha1.AzureConfig) string {
 	return users[0].Name
 }
 
-func AdminSSHKeyData(customObject providerv1alpha1.AzureConfig) string {
-	users := customObject.Spec.Cluster.Kubernetes.SSH.UserList
-	// We don't want panics when someone is doing something nasty.
-	if len(users) == 0 {
-		return ""
-	}
-	return users[0].PublicKey
-}
-
 func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
 	return customObject.Spec.Cluster.Kubernetes.API.SecurePort
 }
