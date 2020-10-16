@@ -25,7 +25,6 @@ type Config struct {
 	ClusterIPRange                 string
 	EtcdPrefix                     string
 	ManagementClusterResourceGroup string
-	SSHUserList                    string
 }
 
 type Resource struct {
@@ -37,7 +36,6 @@ type Resource struct {
 	clusterIPRange                 string
 	etcdPrefix                     string
 	managementClusterResourceGroup string
-	sshUserList                    string
 }
 
 func New(config Config) (*Resource, error) {
@@ -59,7 +57,6 @@ func New(config Config) (*Resource, error) {
 		clusterIPRange:                 config.ClusterIPRange,
 		etcdPrefix:                     config.EtcdPrefix,
 		managementClusterResourceGroup: config.ManagementClusterResourceGroup,
-		sshUserList:                    config.SSHUserList,
 	}
 
 	return newResource, nil

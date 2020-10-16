@@ -28,6 +28,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/flag"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -307,6 +308,16 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	var sshUserList employees.SSHUserList
+	{
+		str := config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList)
+
+		sshUserList, err = employees.FromDraughtsmanString(str)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var azureConfigController *operatorkitcontroller.Controller
 	{
 		c := controller.AzureConfigConfig{
@@ -327,6 +338,7 @@ func New(config Config) (*Service, error) {
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			RegistryMirrors:           config.Viper.GetStringSlice(config.Flag.Service.Registry.Mirrors),
 			SentryDSN:                 sentryDSN,
+			SSHUserList:               sshUserList,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			Debug:                     debugSettings,
@@ -364,7 +376,7 @@ func New(config Config) (*Service, error) {
 			OIDC:                      OIDC,
 			RegistryDomain:            config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SentryDSN:                 sentryDSN,
-			SSHUserList:               config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.SSH.UserList),
+			SSHUserList:               sshUserList,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
 			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),

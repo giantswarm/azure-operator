@@ -292,20 +292,6 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 		}
 	}
 
-	nodeSSHConfiguration := providerv1alpha1.ClusterKubernetesSSH{UserList: []providerv1alpha1.ClusterKubernetesSSHUser{}}
-	{
-		if env.SSHPublicKey() != "" {
-			nodeSSHConfiguration = providerv1alpha1.ClusterKubernetesSSH{
-				UserList: []providerv1alpha1.ClusterKubernetesSSHUser{
-					{
-						Name:      "e2e",
-						PublicKey: env.SSHPublicKey(),
-					},
-				},
-			}
-		}
-	}
-
 	{
 		azureConfig := &providerv1alpha1.AzureConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -398,7 +384,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 							Port:     10250,
 						},
 						NetworkSetup: providerv1alpha1.ClusterKubernetesNetworkSetup{Docker: providerv1alpha1.ClusterKubernetesNetworkSetupDocker{Image: "quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9"}},
-						SSH:          nodeSSHConfiguration,
+						SSH:          providerv1alpha1.ClusterKubernetesSSH{UserList: []providerv1alpha1.ClusterKubernetesSSHUser{}},
 					},
 					Masters: []providerv1alpha1.ClusterNode{},
 					Workers: []providerv1alpha1.ClusterNode{},
