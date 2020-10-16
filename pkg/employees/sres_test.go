@@ -79,7 +79,3 @@ func Test_FromDraughtsmanString(t *testing.T) {
 		})
 	}
 }
-
-//func Test_ToClusterKubernetesSSHUser(t *testing.T) {
-//
-//}
