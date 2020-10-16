@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0-alpha3] - 2020-10-16
+
 ### Changed
 
 - Do not use public SSH keys coming from the CRs.
@@ -175,7 +177,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha2...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha3...HEAD
+[5.0.0-alpha3]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha2...v5.0.0-alpha3
 [5.0.0-alpha2]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha1...v5.0.0-alpha2
 [5.0.0-alpha1]: https://github.com/giantswarm/azure-operator/compare/v4.2.0...v5.0.0-alpha1
 [4.2.0]: https://github.com/giantswarm/azure-operator/compare/v4.1.0...v4.2.0
