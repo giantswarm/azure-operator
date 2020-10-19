@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Removed
+
+- Removed instance watchdog to save on VMSS API calls.
+
 ## [5.0.0-alpha3] - 2020-10-16
 
 ### Changed

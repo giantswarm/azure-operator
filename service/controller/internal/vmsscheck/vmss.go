@@ -13,6 +13,10 @@ import (
 )
 
 const (
+	// Provisioning States.
+	provisioningStateFailed    = "Failed"
+	provisioningStateSucceeded = "Succeeded"
+
 	// Max number of HighCostGetVMScaleSet calls that can be made during a 30-minute period
 	remainingCallsMax30m = 900
 

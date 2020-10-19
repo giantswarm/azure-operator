@@ -31,7 +31,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfigfinalizer"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/blobobject"
@@ -81,7 +80,6 @@ type AzureConfigConfig struct {
 	SSHUserList      employees.SSHUserList
 	SSOPublicKey     string
 	TemplateVersion  string
-	VMSSCheckWorkers int
 
 	Debug     setting.Debug
 	SentryDSN string
@@ -455,20 +453,6 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
-	var iwd vmsscheck.InstanceWatchdog
-	{
-		c := vmsscheck.Config{
-			Logger:     config.Logger,
-			NumWorkers: config.VMSSCheckWorkers,
-		}
-
-		var err error
-		iwd, err = vmsscheck.NewInstanceWatchdog(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	nodesConfig := nodes.Config{
 		CtrlClient: config.K8sClient.CtrlClient(),
 		Debugger:   newDebugger,
@@ -476,9 +460,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		K8sClient:  config.K8sClient.K8sClient(),
 		Logger:     config.Logger,
 
-		Azure:            config.Azure,
-		ClientFactory:    organizationClientFactory,
-		InstanceWatchdog: iwd,
+		Azure:         config.Azure,
+		ClientFactory: organizationClientFactory,
 	}
 
 	var mastersResource resource.Interface
