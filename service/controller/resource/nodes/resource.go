@@ -16,7 +16,6 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
-	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
@@ -27,10 +26,9 @@ type Config struct {
 	K8sClient  kubernetes.Interface
 	Logger     micrologger.Logger
 
-	Azure            setting.Azure
-	ClientFactory    client.OrganizationFactory
-	InstanceWatchdog vmsscheck.InstanceWatchdog
-	Name             string
+	Azure         setting.Azure
+	ClientFactory client.OrganizationFactory
+	Name          string
 }
 
 type Resource struct {
@@ -41,10 +39,9 @@ type Resource struct {
 	Logger       micrologger.Logger
 	StateMachine state.Machine
 
-	Azure            setting.Azure
-	ClientFactory    client.OrganizationFactory
-	InstanceWatchdog vmsscheck.InstanceWatchdog
-	name             string
+	Azure         setting.Azure
+	ClientFactory client.OrganizationFactory
+	name          string
 }
 
 func New(config Config) (*Resource, error) {
@@ -56,9 +53,6 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.G8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
-	}
-	if config.InstanceWatchdog == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.InstanceWatchdog must not be empty", config)
 	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
@@ -82,10 +76,9 @@ func New(config Config) (*Resource, error) {
 		k8sClient:  config.K8sClient,
 		Logger:     config.Logger,
 
-		Azure:            config.Azure,
-		ClientFactory:    config.ClientFactory,
-		InstanceWatchdog: config.InstanceWatchdog,
-		name:             config.Name,
+		Azure:         config.Azure,
+		ClientFactory: config.ClientFactory,
+		name:          config.Name,
 	}
 
 	return r, nil

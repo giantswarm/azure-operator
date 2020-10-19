@@ -7,15 +7,14 @@ import (
 )
 
 type Azure struct {
-	ClientID         string
-	ClientSecret     string
-	EnvironmentName  string
-	HostCluster      hostcluster.HostCluster
-	MSI              msi.MSI
-	Location         string
-	PartnerID        string
-	SubscriptionID   string
-	TenantID         string
-	Template         template.Template
-	VMSSCheckWorkers string
+	ClientID        string
+	ClientSecret    string
+	EnvironmentName string
+	HostCluster     hostcluster.HostCluster
+	MSI             msi.MSI
+	Location        string
+	PartnerID       string
+	SubscriptionID  string
+	TenantID        string
+	Template        template.Template
 }
