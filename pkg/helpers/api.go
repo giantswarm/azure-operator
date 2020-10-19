@@ -158,6 +158,17 @@ func UpdateClusterConditions(ctx context.Context, c client.Client, logger microl
 		creatingCompleted = true
 	}
 
+	upgradingCompleted := false
+	if conditions.IsTrue(cluster, apieconditions.UpgradingCondition) && conditions.IsTrue(cluster, capiV1alpha3.ReadyCondition) {
+		conditions.MarkFalse(
+			cluster,
+			apieconditions.UpgradingCondition,
+			"UpgradeCompleted",
+			capiV1alpha3.ConditionSeverityInfo,
+			"Cluster upgrade is completed")
+		upgradingCompleted = true
+	}
+
 	err := c.Status().Update(ctx, cluster)
 	if err != nil {
 		return microerror.Mask(err)
@@ -176,6 +187,15 @@ func UpdateClusterConditions(ctx context.Context, c client.Client, logger microl
 			"type", "Cluster",
 			"message", "set Status.Condition",
 			"conditionType", apieconditions.CreatingCondition,
+			"conditionStatus", metav1.ConditionTrue)
+	}
+
+	if upgradingCompleted {
+		logger.LogCtx(ctx,
+			"level", "debug",
+			"type", "Cluster",
+			"message", "set Status.Condition",
+			"conditionType", apieconditions.UpgradingCondition,
 			"conditionStatus", metav1.ConditionTrue)
 	}
 
