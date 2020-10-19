@@ -28,10 +28,6 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, cr.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
 
@@ -98,9 +94,6 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		} else {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
 		}
-
-		// Start watcher on the instances to avoid stuck VMs to block the deployment progress forever
-		r.InstanceWatchdog.DeleteFailedVMSS(ctx, virtualMachineScaleSetVMsClient, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
