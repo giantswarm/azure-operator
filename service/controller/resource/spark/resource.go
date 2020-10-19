@@ -10,6 +10,7 @@ import (
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -42,7 +43,7 @@ type Config struct {
 	Logger              micrologger.Logger
 	OIDC                setting.OIDC
 	RegistryDomain      string
-	SSHUserList         string
+	SSHUserList         employees.SSHUserList
 	SSOPublicKey        string
 }
 
@@ -60,7 +61,7 @@ type Resource struct {
 	logger              micrologger.Logger
 	oidc                setting.OIDC
 	registryDomain      string
-	sshUserList         string
+	sshUserList         employees.SSHUserList
 	ssoPublicKey        string
 }
 
@@ -108,10 +109,6 @@ func New(config Config) (*Resource, error) {
 
 	if config.RegistryDomain == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RegistryDomain must not be empty", config)
-	}
-
-	if config.SSHUserList == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.SSHUserList must not be empty", config)
 	}
 
 	if config.SSOPublicKey == "" {

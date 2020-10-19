@@ -19,6 +19,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -54,7 +55,7 @@ type AzureMachinePoolConfig struct {
 	OIDC                      setting.OIDC
 	RegistryDomain            string
 	SentryDSN                 string
-	SSHUserList               string
+	SSHUserList               employees.SSHUserList
 	SSOPublicKey              string
 	VMSSCheckWorkers          int
 	VMSSMSIEnabled            bool

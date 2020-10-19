@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -28,6 +29,7 @@ type Config struct {
 	K8sClient             kubernetes.Interface
 	Logger                micrologger.Logger
 	RegistryDomain        string
+	SSHUserList           employees.SSHUserList
 	StorageAccountsClient *storage.AccountsClient
 }
 
@@ -38,6 +40,7 @@ type Resource struct {
 	k8sClient      kubernetes.Interface
 	logger         micrologger.Logger
 	registryDomain string
+	sshUserList    employees.SSHUserList
 }
 
 func New(config Config) (*Resource, error) {
@@ -67,6 +70,7 @@ func New(config Config) (*Resource, error) {
 		k8sClient:      config.K8sClient,
 		logger:         config.Logger,
 		registryDomain: config.RegistryDomain,
+		sshUserList:    config.SSHUserList,
 	}
 
 	return r, nil

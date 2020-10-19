@@ -183,9 +183,6 @@
             "vmssVmDataDisks":{
               "type":"array"
             },
-            "vmssSshUser":{
-              "type":"string"
-            },
             "vmssOsImagePublisher":{
               "type":"string"
             },
@@ -232,6 +229,7 @@
             "contributorRoleDefinitionGUID":"b24988ac-6180-42a0-ab88-20f7382dd24c",
             "contributorRoleDefinitionId":"[concat('/subscriptions/', subscription().subscriptionId, '/providers/Microsoft.Authorization/roleDefinitions/', variables('contributorRoleDefinitionGUID'))]",
             "roleAssignmentName":"[guid(concat(parameters('vmssName'), '-', 'roleassignment'))]",
+            "sshUser":"giantswarm",
             "vmssExtensions":[],
             "vmssResourceId":"[resourceId('Microsoft.Compute/virtualMachineScaleSets', parameters('vmssName'))]",
             "vmssSinglePlacementGroup":"true",
@@ -269,7 +267,7 @@
                 "singlePlacementGroup":"[variables('vmssSinglePlacementGroup')]",
                 "virtualMachineProfile":{
                   "osProfile":{
-                    "adminUsername":"[parameters('vmssSshUser')]",
+                    "adminUsername":"[variables('sshUser')]",
                     "computerNamePrefix":"[variables('vmssVmNamePrefix')]",
                     "customData":"[parameters('vmssVmCustomData')]",
                     "linuxConfiguration":{
@@ -278,7 +276,7 @@
                         "publicKeys":[
                           {
                             "keyData":"ssh-rsa AAAAB3NzaC1yc2EAAAADAQABAAACAQCuJvxy3FKGrfJ4XB5exEdKXiqqteXEPFzPtex6dC0lHyigtO7l+NXXbs9Lga2+Ifs0Tza92MRhg/FJ+6za3oULFo7+gDyt86DIkZkMFdnSv9+YxYe+g4zqakSV+bLVf2KP6krUGJb7t4Nb+gGH62AiUx+58Onxn5rvYC0/AXOYhkAiH8PydXTDJDPhSA/qWSWEeCQistpZEDFnaVi0e7uq/k3hWJ+v9Gz0qqChHKWWOYp3W6aiIE3G6gLOXNEBdWRrjK6xmrSmo9Toqh1G7iIV0Y6o9w5gIHJxf6+8X70DCuVDx9OLHmjjMyGnd+1c3yTFMUdugtvmeiGWE0E7ZjNSNIqWlnvYJ0E1XPBiyQ7nhitOtVvPC4kpRP7nOFiCK9n8Lr3z3p4v3GO0FU3/qvLX+ECOrYK316gtwSJMd+HIouCbaJaFGvT34peaq1uluOP/JE+rFOnszZFpCYgTY2b4lWjf2krkI/a/3NDJPnRpjoE3RjmbepkZeIdOKTCTH1xYZ3O8dWKRX8X4xORvKJO+oV2UdoZlFa/WJTmq23z4pCVm0UWDYR5C2b9fHwxh/xrPT7CQ0E+E9wmeOvR4wppDMseGQCL+rSzy2AYiQ3D8iQxk0r6T+9MyiRCfuY73p63gB3m37jMQSLHvm77MkRnYcBy61Qxk+y+ls2D0xJfqxw== fake",
-                            "path":"[concat('/home/', parameters('vmssSshUser'), '/.ssh/authorized_keys')]"
+                            "path":"[concat('/home/', variables('sshUser'), '/.ssh/authorized_keys')]"
                           }
                         ]
                       }
@@ -400,9 +398,6 @@
                 "lun": 2
               }
             ]
-          },
-          "vmssSshUser":{
-            "value":"[parameters('masterNodes')[0].adminUsername]"
           },
           "vmssOsImagePublisher":{
             "value":"[parameters('masterNodes')[0].osImage.publisher]"

@@ -103,11 +103,12 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
 			CurrentReplicas: currentReplicas,
 		},
-		SubnetName:   subnetName,
-		VMCustomData: workerCloudConfig,
-		VMSize:       azureMachinePool.Spec.Template.VMSize,
-		VnetName:     vnetName,
-		Zones:        machinePool.Spec.FailureDomains,
+		StorageAccountType: azureMachinePool.Spec.Template.OSDisk.ManagedDisk.StorageAccountType,
+		SubnetName:         subnetName,
+		VMCustomData:       workerCloudConfig,
+		VMSize:             azureMachinePool.Spec.Template.VMSize,
+		VnetName:           vnetName,
+		Zones:              machinePool.Spec.FailureDomains,
 	}
 
 	deployment, err := template.NewDeployment(templateParameters)

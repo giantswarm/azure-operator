@@ -127,6 +127,11 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		}
 	}
 
+	// Inject in the azureConfig the SREs' public keys.
+	{
+		cr.Spec.Cluster.Kubernetes.SSH.UserList = key.ToClusterKubernetesSSHUser(r.sshUserList)
+	}
+
 	var ignitionTemplateData cloudconfig.IgnitionTemplateData
 	{
 		versions, err := k8scloudconfig.ExtractComponentVersions(cc.Release.Release.Spec.Components)
