@@ -36,6 +36,20 @@ func (a *api) GetVMSS(ctx context.Context, resourceGroupName, vmssName string) (
 	return &vmss, nil
 }
 
+func (a *api) DeleteDeployment(ctx context.Context, resourceGroupName, deploymentName string) error {
+	client, err := a.clientFactory.GetDeploymentsClient(a.credentials.Namespace, a.credentials.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, err = client.Delete(ctx, resourceGroupName, deploymentName)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
+}
+
 func (a *api) DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string) error {
 	client, err := a.clientFactory.GetVirtualMachineScaleSetsClient(a.credentials.Namespace, a.credentials.Name)
 	if err != nil {

@@ -51,6 +51,20 @@ func (mr *MockAPIMockRecorder) GetVMSS(ctx, resourceGroupName, vmssName interfac
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "GetVMSS", reflect.TypeOf((*MockAPI)(nil).GetVMSS), ctx, resourceGroupName, vmssName)
 }
 
+// DeleteDeployment mocks base method
+func (m *MockAPI) DeleteDeployment(ctx context.Context, resourceGroupName, deploymentName string) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "DeleteDeployment", ctx, resourceGroupName, deploymentName)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// DeleteDeployment indicates an expected call of DeleteDeployment
+func (mr *MockAPIMockRecorder) DeleteDeployment(ctx, resourceGroupName, deploymentName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "DeleteDeployment", reflect.TypeOf((*MockAPI)(nil).DeleteDeployment), ctx, resourceGroupName, deploymentName)
+}
+
 // DeleteVMSS mocks base method
 func (m *MockAPI) DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string) error {
 	m.ctrl.T.Helper()

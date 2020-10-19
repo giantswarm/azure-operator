@@ -13,6 +13,9 @@ type API interface {
 	// GetVMSS gets VMSS metadata from Azure API.
 	GetVMSS(ctx context.Context, resourceGroupName, vmssName string) (VMSS, error)
 
+	// DeleteDeployment deletes the corresponding deployment via Azure API.
+	DeleteDeployment(ctx context.Context, resourceGroupName, deploymentName string) error
+
 	// DeleteVMSS deletes the corresponding VMSS via Azure API.
 	DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string) error
 

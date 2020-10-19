@@ -137,6 +137,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainerconfigs")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting legacy workers' deployment")
+	err = azureAPI.DeleteDeployment(ctx, key.ResourceGroupName(cr), key.WorkersVmssDeploymentName)
+	if azure.IsNotFound(err) {
+		// It's ok. We would have deleted it anyway ¯\_(ツ)_/¯
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted legacy workers' deployment")
+
 	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting legacy workers' VMSS")
 	err = azureAPI.DeleteVMSS(ctx, key.ResourceGroupName(cr), *legacyVMSS.Name)
 	if err != nil {

@@ -4,6 +4,7 @@ import (
 	"context"
 	"fmt"
 	"io/ioutil"
+	"net/http"
 	"path/filepath"
 	"strconv"
 	"testing"
@@ -322,6 +323,11 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 
 	mockAzureAPI.
 		EXPECT().
+		DeleteDeployment(gomock.Any(), key.ResourceGroupName(*cr), key.WorkersVmssDeploymentName).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
 		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
 		Times(1)
 
@@ -350,6 +356,139 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 		if len(dcList.Items) > 0 {
 			t.Fatalf("expected 0 drainer config crs to exist. got %d.", len(dcList.Items))
 		}
+	}
+
+	// gomock verifies rest of the assertions on exit.
+}
+
+func TestLegacyWorkerDeploymentIsDeleted(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctrlClient := newFakeClient()
+	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
+	mockTenantClusterFactory := mock_tenantcluster.NewMockFactory(ctrl)
+	r := &Resource{
+		ctrlClient:          ctrlClient,
+		logger:              microloggertest.New(),
+		tenantClientFactory: mockTenantClusterFactory,
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
+			return mockAzureAPI
+		},
+	}
+
+	ensureCRsExist(t, ctrlClient, []string{
+		"cluster.yaml",
+		"azureconfig.yaml",
+		"azurecluster.yaml",
+		"azuremachinepool.yaml",
+		"machinepool.yaml",
+		"namespace.yaml",
+		"spark.yaml",
+		"drainerconfigs.yaml",
+	})
+
+	o, err := loadCR("azureconfig.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cr := o.(*providerv1alpha1.AzureConfig)
+
+	ensureNodePoolIsReady(t, ctrlClient, cr)
+	setDrainerConfigsAsDrained(t, ctrlClient, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
+		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteDeployment(gomock.Any(), key.ResourceGroupName(*cr), key.WorkersVmssDeploymentName).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		ListVMSSNodes(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(workersAsVMSSNodes(*cr), nil).
+		Times(1)
+
+	err = r.EnsureCreated(context.Background(), cr)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	// gomock verifies rest of the assertions on exit.
+}
+
+func TestLegacyWorkerDeploymentDeletionDoesntErrorInNotFoundCase(t *testing.T) {
+	ctrl := gomock.NewController(t)
+	defer ctrl.Finish()
+
+	ctrlClient := newFakeClient()
+	mockAzureAPI := mock_azure.NewMockAPI(ctrl)
+	mockTenantClusterFactory := mock_tenantcluster.NewMockFactory(ctrl)
+	r := &Resource{
+		ctrlClient:          ctrlClient,
+		logger:              microloggertest.New(),
+		tenantClientFactory: mockTenantClusterFactory,
+		wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API {
+			return mockAzureAPI
+		},
+	}
+
+	ensureCRsExist(t, ctrlClient, []string{
+		"cluster.yaml",
+		"azureconfig.yaml",
+		"azurecluster.yaml",
+		"azuremachinepool.yaml",
+		"machinepool.yaml",
+		"namespace.yaml",
+		"spark.yaml",
+		"drainerconfigs.yaml",
+	})
+
+	o, err := loadCR("azureconfig.yaml")
+	if err != nil {
+		t.Fatal(err)
+	}
+	cr := o.(*providerv1alpha1.AzureConfig)
+
+	ensureNodePoolIsReady(t, ctrlClient, cr)
+	setDrainerConfigsAsDrained(t, ctrlClient, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
+		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteVMSS(gomock.Any(), gomock.Any(), gomock.Any()).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		ListVMSSNodes(gomock.Any(), gomock.Any(), gomock.Any()).
+		Return(workersAsVMSSNodes(*cr), nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
+		DeleteDeployment(gomock.Any(), key.ResourceGroupName(*cr), key.WorkersVmssDeploymentName).
+		Return(autorest.NewErrorWithResponse("deployment", "DELETE", &http.Response{StatusCode: 404}, "Deployment not found")).
+		Times(1)
+
+	err = r.EnsureCreated(context.Background(), cr)
+	if err != nil {
+		t.Fatal(err)
 	}
 
 	// gomock verifies rest of the assertions on exit.
