@@ -27,7 +27,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
-	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/cloudconfigblob"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/ipam"
@@ -57,7 +56,6 @@ type AzureMachinePoolConfig struct {
 	SentryDSN                 string
 	SSHUserList               employees.SSHUserList
 	SSOPublicKey              string
-	VMSSCheckWorkers          int
 	VMSSMSIEnabled            bool
 }
 
@@ -152,20 +150,6 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	var iwd vmsscheck.InstanceWatchdog
-	{
-		c := vmsscheck.Config{
-			Logger:     config.Logger,
-			NumWorkers: config.VMSSCheckWorkers,
-		}
-
-		var err error
-		iwd, err = vmsscheck.NewInstanceWatchdog(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var certsSearcher *certs.Searcher
 	{
 		c := certs.Config{
@@ -195,9 +179,8 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		K8sClient: config.K8sClient.K8sClient(),
 		Logger:    config.Logger,
 
-		Azure:            config.Azure,
-		ClientFactory:    organizationClientFactory,
-		InstanceWatchdog: iwd,
+		Azure:         config.Azure,
+		ClientFactory: organizationClientFactory,
 	}
 
 	var vmSKU *vmsku.VMSKUs

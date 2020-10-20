@@ -47,11 +47,10 @@ type AzureClusterConfig struct {
 	ProjectName           string
 	RegistryDomain        string
 
-	Ignition         setting.Ignition
-	OIDC             setting.OIDC
-	SSOPublicKey     string
-	TemplateVersion  string
-	VMSSCheckWorkers int
+	Ignition        setting.Ignition
+	OIDC            setting.OIDC
+	SSOPublicKey    string
+	TemplateVersion string
 
 	SentryDSN string
 }

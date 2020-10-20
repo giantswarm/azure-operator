@@ -290,7 +290,6 @@ func New(config Config) (*Service, error) {
 			ProjectName:           config.ProjectName,
 			RegistryDomain:        config.Viper.GetString(config.Flag.Service.Registry.Domain),
 			SSOPublicKey:          config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers:      config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 
 			SentryDSN: sentryDSN,
 		}
@@ -340,7 +339,6 @@ func New(config Config) (*Service, error) {
 			SentryDSN:                 sentryDSN,
 			SSHUserList:               sshUserList,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			Debug:                     debugSettings,
 		}
 
@@ -378,7 +376,6 @@ func New(config Config) (*Service, error) {
 			SentryDSN:                 sentryDSN,
 			SSHUserList:               sshUserList,
 			SSOPublicKey:              config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSCheckWorkers:          config.Viper.GetInt(config.Flag.Service.Azure.VMSSCheckWorkers),
 			VMSSMSIEnabled:            config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		}
 

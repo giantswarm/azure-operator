@@ -201,11 +201,6 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 		return nil
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, customObject.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName))
@@ -231,7 +226,6 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 		return microerror.Mask(err)
 	}
 
-	r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, resourceGroupName, vmssName)
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName))
 
 	return nil
@@ -240,11 +234,6 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 func (r *Resource) updateInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
 	if instance == nil {
 		return nil
-	}
-
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, customObject.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
 	}
 
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
@@ -273,7 +262,6 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
-	r.InstanceWatchdog.GuardVMSS(ctx, virtualMachineScaleSetVMsClient, resourceGroupName, vmssName)
 
 	return nil
 }
