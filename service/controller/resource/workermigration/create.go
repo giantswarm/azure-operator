@@ -25,7 +25,14 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
+)
+
+const (
+	// Status condition types for master upgrade state checking.
+	DeploymentCompleted = "DeploymentCompleted"
+	Stage               = "Stage"
 )
 
 // EnsureCreated ensures that legacy workers are migrated to node pool.
@@ -33,6 +40,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	// Wait for master upgrade to pass first in order to avoid conflicts with
+	// Azure deployments ordering.
+	masterUpgrading, err := r.isMasterUpgrading(cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if masterUpgrading {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil
 	}
 
 	credentialSecret := &providerv1alpha1.CredentialSecret{
@@ -448,6 +468,31 @@ func intSliceToStringSlice(xs []int) []string {
 		ys = append(ys, strconv.Itoa(x))
 	}
 	return ys
+}
+
+func (r *Resource) isMasterUpgrading(obj providerv1alpha1.AzureConfig) (bool, error) {
+	cr := &providerv1alpha1.AzureConfig{}
+	err := r.ctrlClient.Get(context.Background(), client.ObjectKey{Name: obj.Name, Namespace: obj.Namespace}, cr)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	var status string
+	{
+		for _, r := range cr.Status.Cluster.Resources {
+			if r.Name != masters.Name {
+				continue
+			}
+
+			for _, c := range r.Conditions {
+				if c.Type == Stage {
+					status = c.Status
+				}
+			}
+		}
+	}
+
+	return (status != DeploymentCompleted), nil
 }
 
 func nodeName(clusterID, instanceID string) string {

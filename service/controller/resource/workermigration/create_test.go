@@ -31,11 +31,63 @@ import (
 	azureclient "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/mock/mock_tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/mock_azure"
 )
 
 //go:generate mockgen -destination internal/mock_azure/api.go -source internal/azure/spec.go API
+
+func TestMigrationWaitsForMasterUpgradeToFinish(t *testing.T) {
+	masterUpgradePendingStatuses := []string{
+		"ClusterUpgradeRequirementCheck",
+		"DeploymentUninitialized",
+		"DeploymentInitialized",
+		"",
+		"MasterInstancesUpgrading",
+		"ProvisioningSuccessful",
+		"WaitForMastersToBecomeReady",
+	}
+
+	for i, s := range masterUpgradePendingStatuses {
+		t.Run(strconv.Itoa(i), func(t *testing.T) {
+			defer func() {
+				if r := recover(); r != nil {
+					t.Fatal("master is upgrading but condition was not respected")
+				}
+			}()
+
+			t.Log("master status condition: " + s)
+
+			ctrlClient := newFakeClient()
+			r := &Resource{
+				ctrlClient:   ctrlClient,
+				logger:       microloggertest.New(),
+				wrapAzureAPI: func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API { return nil },
+			}
+
+			ensureCRsExist(t, ctrlClient, []string{
+				"azureconfig.yaml",
+			})
+
+			o, err := loadCR("azureconfig.yaml")
+			if err != nil {
+				t.Fatal(err)
+			}
+			cr := o.(*providerv1alpha1.AzureConfig)
+
+			err = setStatusCondition(ctrlClient, cr, masters.Name, Stage, s)
+			if err != nil {
+				t.Fatal(err)
+			}
+
+			err = r.EnsureCreated(context.Background(), cr)
+			if err != nil {
+				t.Fatal(err)
+			}
+		})
+	}
+}
 
 func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	ctrl := gomock.NewController(t)
@@ -740,6 +792,52 @@ func setDrainerConfigsAsDrained(t *testing.T, ctrlClient client.Client, cr *prov
 			t.Fatal(err)
 		}
 	}
+}
+
+func setStatusCondition(ctrlClient client.Client, obj *providerv1alpha1.AzureConfig, resourceName, conditionType, status string) error {
+	cr := &providerv1alpha1.AzureConfig{}
+	err := ctrlClient.Get(context.Background(), client.ObjectKey{Name: obj.Name, Namespace: obj.Namespace}, cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	resourceStatus := providerv1alpha1.StatusClusterResource{
+		Conditions: []providerv1alpha1.StatusClusterResourceCondition{
+			{
+				Status: status,
+				Type:   conditionType,
+			},
+		},
+		Name: resourceName,
+	}
+
+	var set bool
+	for i, resource := range cr.Status.Cluster.Resources {
+		if resource.Name != resourceName {
+			continue
+		}
+
+		for _, c := range resource.Conditions {
+			if c.Type == conditionType {
+				continue
+			}
+			resourceStatus.Conditions = append(resourceStatus.Conditions, c)
+		}
+
+		cr.Status.Cluster.Resources[i] = resourceStatus
+		set = true
+	}
+
+	if !set {
+		cr.Status.Cluster.Resources = append(cr.Status.Cluster.Resources, resourceStatus)
+	}
+
+	err = ctrlClient.Update(context.Background(), cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }
 
 func workersAsVMSSNodes(cr providerv1alpha1.AzureConfig) azure.VMSSNodes {
