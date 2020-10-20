@@ -27,12 +27,11 @@ type Config struct {
 // Resource takes care of node pool life cycle.
 type Resource struct {
 	nodes.Resource
-	CredentialProvider        credential.Provider
-	CtrlClient                ctrlclient.Client
-	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	k8sClient                 kubernetes.Interface
-	tenantClientFactory       tenantcluster.Factory
-	vmsku                     *vmsku.VMSKUs
+	CredentialProvider  credential.Provider
+	CtrlClient          ctrlclient.Client
+	k8sClient           kubernetes.Interface
+	tenantClientFactory tenantcluster.Factory
+	vmsku               *vmsku.VMSKUs
 }
 
 func New(config Config) (*Resource, error) {
@@ -44,12 +43,11 @@ func New(config Config) (*Resource, error) {
 			Azure:         config.Azure,
 			ClientFactory: config.ClientFactory,
 		},
-		CredentialProvider:        config.CredentialProvider,
-		CtrlClient:                config.CtrlClient,
-		GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-		k8sClient:                 config.K8sClient,
-		tenantClientFactory:       config.TenantClientFactory,
-		vmsku:                     config.VMSKU,
+		CredentialProvider:  config.CredentialProvider,
+		CtrlClient:          config.CtrlClient,
+		k8sClient:           config.K8sClient,
+		tenantClientFactory: config.TenantClientFactory,
+		vmsku:               config.VMSKU,
 	}
 	stateMachine := r.createStateMachine()
 	r.SetStateMachine(stateMachine)

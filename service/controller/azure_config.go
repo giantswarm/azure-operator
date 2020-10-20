@@ -5,7 +5,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
@@ -66,11 +65,9 @@ type AzureConfigConfig struct {
 	AzureMetricsCollector collector.AzureAPIMetrics
 	// Azure client set used when managing control plane resources
 	CPAzureClientSet *client.AzureClientSet
-	// Azure credentials used to create Azure client set for tenant clusters
-	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	ProjectName               string
-	RegistryDomain            string
-	RegistryMirrors           []string
+	ProjectName      string
+	RegistryDomain   string
+	RegistryMirrors  []string
 
 	ClusterVNetMaskBits int
 
