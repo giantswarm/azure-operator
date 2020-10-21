@@ -25,6 +25,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	err = r.ensureUpgradingCondition(ctx, &cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	err = r.ctrlClient.Status().Update(ctx, &cluster)
 	if err != nil {
 		return microerror.Mask(err)

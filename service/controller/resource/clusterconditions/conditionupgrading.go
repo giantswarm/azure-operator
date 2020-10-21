@@ -45,7 +45,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 
 	if capiconditions.IsTrue(cluster, aeconditions.CreatingCondition) {
 		// Cluster is just being created, no upgrade yet.
-		setUpgradeNotStarted(cluster)
+		markUpgradingNotStarted(cluster)
 		return nil
 	}
 
@@ -78,17 +78,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 		if becameReadyWhileUpgrading || upgradingWithoutReadyUpdateThresholdReached {
 			// Cluster was in Upgrading state, but now it's ready, upgrade has
 			// been completed.
-			message := UpgradingConditionMessage{
-				Message:        "Upgrade has been completed",
-				ReleaseVersion: key.ReleaseVersion(cluster),
-			}
-			messageString := SerializeUpgradingConditionMessage(message)
-			capiconditions.MarkFalse(
-				cluster,
-				aeconditions.UpgradingCondition,
-				UpgradeCompletedReason,
-				capi.ConditionSeverityInfo,
-				messageString)
+			markUpgradingCompleted(cluster)
 			return nil
 		}
 
@@ -109,9 +99,9 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 	}
 
 	if isUpgrading {
-		capiconditions.MarkTrue(cluster, aeconditions.UpgradingCondition)
+		markUpgradingTrue(cluster)
 	} else {
-		setUpgradeNotStarted(cluster)
+		markUpgradingNotStarted(cluster)
 	}
 
 	return nil
@@ -156,7 +146,7 @@ func (r *Resource) checkIfUpgradingHasBeenStarted(ctx context.Context, cluster *
 	return false, nil
 }
 
-func setUpgradeNotStarted(cluster *capi.Cluster) {
+func markUpgradingNotStarted(cluster *capi.Cluster) {
 	// Cluster is just being created, no upgrade yet.
 	message := UpgradingConditionMessage{
 		Message:        "Upgrade not started",
@@ -167,6 +157,24 @@ func setUpgradeNotStarted(cluster *capi.Cluster) {
 		cluster,
 		aeconditions.UpgradingCondition,
 		UpgradeNotStartedReason,
+		capi.ConditionSeverityInfo,
+		messageString)
+}
+
+func markUpgradingTrue(cluster *capi.Cluster) {
+	capiconditions.MarkTrue(cluster, aeconditions.UpgradingCondition)
+}
+
+func markUpgradingCompleted(cluster *capi.Cluster) {
+	message := UpgradingConditionMessage{
+		Message:        "Upgrade has been completed",
+		ReleaseVersion: key.ReleaseVersion(cluster),
+	}
+	messageString := SerializeUpgradingConditionMessage(message)
+	capiconditions.MarkFalse(
+		cluster,
+		aeconditions.UpgradingCondition,
+		UpgradeCompletedReason,
 		capi.ConditionSeverityInfo,
 		messageString)
 }
