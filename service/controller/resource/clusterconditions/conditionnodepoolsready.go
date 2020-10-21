@@ -44,6 +44,6 @@ func (r *Resource) ensureNodePoolsReadyCondition(ctx context.Context, cluster *c
 		aeconditions.NodePoolsReadyCondition,
 		azureMachinePoolPointers,
 		capiconditions.WithStepCounter(), // add a "x of y completed" string to the message
-		capiconditions.AddSourceRef()) // add info about the originating object to the target Reason
+		capiconditions.AddSourceRef())    // add info about the originating object to the target Reason
 	return nil
 }
