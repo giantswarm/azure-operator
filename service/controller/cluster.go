@@ -16,6 +16,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterdependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
@@ -78,6 +79,19 @@ func NewCluster(config ClusterConfig) (*controller.Controller, error) {
 func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 	var err error
 
+	var clusterConditionsResource resource.Interface
+	{
+		c := clusterconditions.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		clusterConditionsResource, err = clusterconditions.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var clusterDependentsResource resource.Interface
 	{
 		c := clusterdependents.Config{
@@ -106,6 +120,7 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 	}
 
 	resources := []resource.Interface{
+		clusterConditionsResource,
 		clusterDependentsResource,
 		ownerReferencesResource,
 	}

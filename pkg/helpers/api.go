@@ -11,7 +11,6 @@ import (
 	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiV1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
@@ -21,7 +20,7 @@ func GetAzureClusterFromMetadata(ctx context.Context, c client.Client, obj metav
 	// Check if "cluster.x-k8s.io/cluster-name" label is set.
 	if obj.Labels[capiV1alpha3.ClusterLabelName] == "" {
 		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capiV1alpha3.ClusterLabelName, obj.GetSelfLink())
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 
 	return GetAzureClusterByName(ctx, c, obj.Namespace, obj.Labels[capiV1alpha3.ClusterLabelName])
@@ -36,10 +35,41 @@ func GetAzureClusterByName(ctx context.Context, c client.Client, namespace, name
 	}
 
 	if err := c.Get(ctx, key, azureCluster); err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 
 	return azureCluster, nil
+}
+
+func GetAzureMachinePoolsByMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*capzexp.AzureMachinePoolList, error) {
+	if obj.Labels[capiV1alpha3.ClusterLabelName] == "" {
+		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capiV1alpha3.ClusterLabelName, obj.GetSelfLink())
+		return nil, microerror.Mask(err)
+	}
+
+	azureMachinePools, err := GetAzureMachinePoolsByClusterID(ctx, c, obj.Namespace, obj.Labels[capiV1alpha3.ClusterLabelName])
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return azureMachinePools, nil
+}
+
+func GetAzureMachinePoolsByClusterID(ctx context.Context, c client.Client, clusterNamespace, clusterID string) (*capzexp.AzureMachinePoolList, error) {
+	azureMachinePools := &capzexp.AzureMachinePoolList{}
+	var labelSelector client.MatchingLabels
+	{
+		labelSelector = map[string]string{
+			capiV1alpha3.ClusterLabelName: clusterID,
+		}
+	}
+
+	err := c.List(ctx, azureMachinePools, labelSelector, client.InNamespace(clusterNamespace))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return azureMachinePools, nil
 }
 
 func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger micrologger.Logger, azureCluster *capzV1alpha3.AzureCluster) error {
@@ -48,36 +78,10 @@ func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger m
 	// implementation should include checking of other Azure resources as well.
 	var isAzureClusterReady bool
 	var isVpnGatewayReadyCondition bool
-	var allAzureMachinePoolsAreReady bool
 
 	// Check if VPN gateway is ready
 	isVpnGatewayReadyCondition = conditions.IsTrue(azureCluster, azureconditions.VPNGatewayReadyCondition)
-
-	// if VPN gateway is ready, now check node pool resources (currently reflects only node pools VMSS deployment states)
-	if isVpnGatewayReadyCondition {
-		azureMachinePools := &capzexp.AzureMachinePoolList{}
-		var labelSelector client.MatchingLabels
-		{
-			labelSelector = map[string]string{
-				capiV1alpha3.ClusterLabelName: azureCluster.Name,
-			}
-		}
-
-		err := c.List(ctx, azureMachinePools, labelSelector, client.InNamespace(azureCluster.Namespace))
-		if err != nil {
-			return microerror.Mask(err)
-		}
-
-		allAzureMachinePoolsAreReady = true
-		for _, azureMachinePool := range azureMachinePools.Items {
-			if !conditions.IsTrue(&azureMachinePool, capiV1alpha3.ReadyCondition) {
-				allAzureMachinePoolsAreReady = false
-				break
-			}
-		}
-	}
-
-	isAzureClusterReady = isVpnGatewayReadyCondition && allAzureMachinePoolsAreReady
+	isAzureClusterReady = isVpnGatewayReadyCondition
 
 	if isAzureClusterReady {
 		conditions.MarkTrue(azureCluster, capiV1alpha3.ReadyCondition)
@@ -86,11 +90,8 @@ func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger m
 		var conditionMessage string
 
 		if !isVpnGatewayReadyCondition {
-			conditionReason = "VPNNotReady"
+			conditionReason = "VPNGatewayNotReady"
 			conditionMessage = "VPN Gateway is not ready"
-		} else if !allAzureMachinePoolsAreReady {
-			conditionReason = "AzureMachinePoolNotReady"
-			conditionMessage = "At least one AzureMachinePool is not ready"
 		} else {
 			conditionReason = "UnknownReason"
 			conditionMessage = "Cluster is not ready for an unexpected reason"
@@ -116,18 +117,6 @@ func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger m
 		"conditionType", capiV1alpha3.ReadyCondition,
 		"conditionStatus", isAzureClusterReady)
 
-	// Note: Updating of Cluster conditions should not be done here synchronously, but
-	// probably in a separate handler. This is an alpha implementation.
-
-	// Update Cluster conditions
-	cluster, err := util.GetOwnerCluster(ctx, c, azureCluster.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	err = UpdateClusterConditions(ctx, c, logger, cluster, azureCluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
 	return nil
 }
 
@@ -160,6 +149,7 @@ func UpdateClusterConditions(ctx context.Context, c client.Client, logger microl
 
 	upgradingCompleted := false
 	if conditions.IsTrue(cluster, apieconditions.UpgradingCondition) && conditions.IsTrue(cluster, capiV1alpha3.ReadyCondition) {
+		// TODO: check Ready.LastUpdateTime > Upgrading.LastUpdateTime before setting Upgrading to False
 		conditions.MarkFalse(
 			cluster,
 			apieconditions.UpgradingCondition,
