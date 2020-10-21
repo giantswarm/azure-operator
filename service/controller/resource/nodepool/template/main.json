@@ -174,7 +174,7 @@
       "zones": "[if(greater(length(parameters('zones')),0), parameters('zones'), json('null'))]",
       "tags": {
         "provider": "[toUpper(parameters('GiantSwarmTags').provider)]",
-        "cluster-autoscaler-enabled": "true",
+        "cluster-autoscaler-enabled": "[if(equals(parameters('minReplicas'),parameters('maxReplicas')), 'false', 'true')]",
         "cluster-autoscaler-name": "[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
         "min": "[int(parameters('minReplicas'))]",

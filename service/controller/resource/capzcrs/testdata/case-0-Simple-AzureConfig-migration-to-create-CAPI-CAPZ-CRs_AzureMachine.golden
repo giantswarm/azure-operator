@@ -7,10 +7,10 @@ metadata:
     cluster.x-k8s.io/cluster-name: c6fme
     cluster.x-k8s.io/control-plane: "true"
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: ""
+    giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme-master-0
-  namespace: default
+  namespace: org-giantswarm
   resourceVersion: "1"
 spec:
   availabilityZone: {}

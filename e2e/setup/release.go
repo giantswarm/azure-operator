@@ -48,9 +48,9 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 						Version: "2.3.0",
 					},
 					{
-						ComponentVersion: "1.17.4",
+						ComponentVersion: "1.18.2",
 						Name:             "cluster-autoscaler",
-						Version:          "1.17.4",
+						Version:          "1.18.2",
 					},
 					{
 						ComponentVersion: "1.6.5",

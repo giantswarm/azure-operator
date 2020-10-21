@@ -2,12 +2,12 @@ apiVersion: infrastructure.cluster.x-k8s.io/v1alpha3
 kind: AzureCluster
 metadata:
   annotations:
-    cluster.giantswarm.io/description: ""
+    cluster.giantswarm.io/description: "dummy cluster"
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
     cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: "giantswarm"
+    giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: org-giantswarm
@@ -17,20 +17,6 @@ spec:
     port: 443
   location: westeurope
   networkSpec:
-    subnets:
-    - role: node
-      id: nodepool-np201
-      name: nodepool-np201
-      cidrblock: 10.100.2.0/24
-      internallbipaddress: ""
-      securitygroup:
-        id: ""
-        name: ""
-        ingressrules: []
-        tags: {}
-        routetable:
-          id: ""
-          name: ""
     vnet:
       cidrBlock: 10.10.0.0/16
       name: c6fme-VirtualNetwork

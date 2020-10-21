@@ -4,7 +4,6 @@ import (
 	"context"
 	"time"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -37,26 +36,25 @@ import (
 )
 
 type AzureMachinePoolConfig struct {
-	APIServerSecurePort       int
-	Azure                     setting.Azure
-	AzureMetricsCollector     collector.AzureAPIMetrics
-	Calico                    azureconfig.CalicoConfig
-	ClusterIPRange            string
-	CPAzureClientSet          *client.AzureClientSet
-	CredentialProvider        credential.Provider
-	EtcdPrefix                string
-	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	Ignition                  setting.Ignition
-	InstallationName          string
-	K8sClient                 k8sclient.Interface
-	Locker                    locker.Interface
-	Logger                    micrologger.Logger
-	OIDC                      setting.OIDC
-	RegistryDomain            string
-	SentryDSN                 string
-	SSHUserList               employees.SSHUserList
-	SSOPublicKey              string
-	VMSSMSIEnabled            bool
+	APIServerSecurePort   int
+	Azure                 setting.Azure
+	AzureMetricsCollector collector.AzureAPIMetrics
+	Calico                azureconfig.CalicoConfig
+	ClusterIPRange        string
+	CPAzureClientSet      *client.AzureClientSet
+	CredentialProvider    credential.Provider
+	EtcdPrefix            string
+	Ignition              setting.Ignition
+	InstallationName      string
+	K8sClient             k8sclient.Interface
+	Locker                locker.Interface
+	Logger                micrologger.Logger
+	OIDC                  setting.OIDC
+	RegistryDomain        string
+	SentryDSN             string
+	SSHUserList           employees.SSHUserList
+	SSOPublicKey          string
+	VMSSMSIEnabled        bool
 }
 
 func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller, error) {
@@ -198,12 +196,11 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	var nodepoolResource resource.Interface
 	{
 		c := nodepool.Config{
-			Config:                    nodesConfig,
-			CredentialProvider:        config.CredentialProvider,
-			CtrlClient:                config.K8sClient.CtrlClient(),
-			GSClientCredentialsConfig: config.GSClientCredentialsConfig,
-			TenantClientFactory:       tenantClientFactory,
-			VMSKU:                     vmSKU,
+			Config:              nodesConfig,
+			CredentialProvider:  config.CredentialProvider,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			TenantClientFactory: tenantClientFactory,
+			VMSKU:               vmSKU,
 		}
 
 		nodepoolResource, err = nodepool.New(c)

@@ -7,10 +7,10 @@ metadata:
     cluster-operator.giantswarm.io/version: ""
     cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: ""
+    giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.1.0
   name: c6fme
-  namespace: default
+  namespace: org-giantswarm
   resourceVersion: "2"
 spec:
   clusterNetwork:
@@ -25,7 +25,7 @@ spec:
   infrastructureRef:
     kind: AzureCluster
     name: c6fme
-    namespace: default
+    namespace: org-giantswarm
 status:
   controlPlaneInitialized: false
   infrastructureReady: false

@@ -5,7 +5,6 @@ import (
 	"net"
 	"time"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
@@ -41,7 +40,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/endpoints"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/namespace"
@@ -52,6 +50,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/tenantclients"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpn"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpnconnection"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
@@ -66,11 +65,9 @@ type AzureConfigConfig struct {
 	AzureMetricsCollector collector.AzureAPIMetrics
 	// Azure client set used when managing control plane resources
 	CPAzureClientSet *client.AzureClientSet
-	// Azure credentials used to create Azure client set for tenant clusters
-	GSClientCredentialsConfig auth.ClientCredentialsConfig
-	ProjectName               string
-	RegistryDomain            string
-	RegistryMirrors           []string
+	ProjectName      string
+	RegistryDomain   string
+	RegistryMirrors  []string
 
 	ClusterVNetMaskBits int
 
@@ -477,13 +474,18 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
-	var instanceResource resource.Interface
+	var workerMigrationResource resource.Interface
 	{
-		c := instance.Config{
-			Config: nodesConfig,
+		c := workermigration.Config{
+			CertsSearcher: certsSearcher,
+			ClientFactory: clientFactory,
+			CtrlClient:    config.K8sClient.CtrlClient(),
+			Logger:        config.Logger,
+
+			Location: config.Azure.Location,
 		}
 
-		instanceResource, err = instance.New(c)
+		workerMigrationResource, err = workermigration.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -653,7 +655,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		blobObjectResource,
 		dnsrecordResource,
 		mastersResource,
-		instanceResource,
+		workerMigrationResource,
 		endpointsResource,
 		vpnResource,
 		vpnconnectionResource,

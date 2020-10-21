@@ -1,13 +1,15 @@
 apiVersion: provider.giantswarm.io/v1alpha1
 kind: AzureConfig
 metadata:
+  annotations:
+    cluster.giantswarm.io/description: "dummy cluster"
   finalizers:
   - operatorkit.giantswarm.io/azure-operator
   - operatorkit.giantswarm.io/legacy-controller
   labels:
+    giantswarm.io/organization: giantswarm
     azure-operator.giantswarm.io/version: 4.2.0
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: "giantswarm"
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: default
@@ -41,6 +43,14 @@ spec:
     - dockerVolumeSizeGB: 50
       kubeletVolumeSizeGB: 100
       vmSize: Standard_A2_v2
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_A2_v2
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_A2_v2
+  cluster:
+  cluster:
   cluster:
     calico:
       cidr: 16
@@ -94,11 +104,13 @@ spec:
     masters:
     - id: 9x5qt
     scaling:
-      max: 1
-      min: 1
+      max: 3
+      min: 3
     version: ""
     workers:
     - id: z028u
+    - id: ab28u
+    - id: cdb8u
   versionBundle:
     version: 4.2.0
 status:

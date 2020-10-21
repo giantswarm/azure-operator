@@ -1,0 +1,30 @@
+apiVersion: exp.cluster.x-k8s.io/v1alpha3
+kind: MachinePool
+metadata:
+  annotations:
+    machine-pool.giantswarm.io/name: migrated built-in workers
+  labels:
+    azure-operator.giantswarm.io/version: 4.2.0
+    cluster.x-k8s.io/cluster-name: c6fme
+    giantswarm.io/cluster: c6fme
+    giantswarm.io/machine-pool: c6fme
+    giantswarm.io/organization: giantswarm
+    release.giantswarm.io/version: 12.0.0
+  name: c6fme
+  namespace: org-giantswarm
+spec:
+  clusterName: c6fme
+  failureDomains:
+  - "1"
+  replicas: 3
+  template:
+    metadata: {}
+    spec:
+      bootstrap: {}
+      clusterName: c6fme
+      infrastructureRef:
+        apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
+        kind: AzureMachinePool
+        name: c6fme
+        namespace: default
+status: {}

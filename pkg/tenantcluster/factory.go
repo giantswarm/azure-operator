@@ -20,7 +20,7 @@ type tenantClientFactory struct {
 	tenantRestConfigProvider tenantcluster.Interface
 }
 
-func NewFactory(certsSearcher *certs.Searcher, logger micrologger.Logger) (Factory, error) {
+func NewFactory(certsSearcher certs.Interface, logger micrologger.Logger) (Factory, error) {
 	c := tenantcluster.Config{
 		CertsSearcher: certsSearcher,
 		Logger:        logger,

@@ -107,7 +107,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterName(&cluster),
-			Namespace: azureCluster.Namespace,
+			Namespace: metav1.NamespaceDefault,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if errors.IsNotFound(err) {
@@ -166,7 +166,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterName(&azureCluster),
-			Namespace: azureCluster.Namespace,
+			Namespace: metav1.NamespaceDefault,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if err != nil {
@@ -217,7 +217,7 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 
 	{
 		azureConfig.ObjectMeta.Name = key.ClusterName(&cluster)
-		azureConfig.ObjectMeta.Namespace = cluster.Namespace
+		azureConfig.ObjectMeta.Namespace = metav1.NamespaceDefault
 	}
 
 	{
@@ -249,18 +249,6 @@ func (r *Resource) buildAzureConfig(ctx context.Context, cluster capiv1alpha3.Cl
 			return providerv1alpha1.AzureConfig{}, microerror.Mask(err)
 		}
 	}
-
-	/*
-			XXX: Let's see if we can live without this. -tuommaki
-		{
-			clusterStatus, err := r.newClusterStatus(ctx, request, azureConfig.Labels[label.OperatorVersion])
-			if err != nil {
-				return nil, microerror.Mask(err)
-			}
-
-			azureConfig.Status.Cluster = clusterStatus
-		}
-	*/
 
 	var (
 		// hostDNSZone is created by stripping 3 first components from
