@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Set cluster-autoscaler-enabled tag to false when min replicas and max replicas are the same for a node pool.
+
 ### Removed
 
 - Removed instance watchdog to save on VMSS API calls.
