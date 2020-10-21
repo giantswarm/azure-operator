@@ -10,6 +10,7 @@ metadata:
     azure-operator.giantswarm.io/version: 4.3.0
     giantswarm.io/cluster: c6fme
     release.giantswarm.io/version: 12.1.0
+    giantswarm.io/organization: "giantswarm"
   name: c6fme
   namespace: default
   resourceVersion: "176010431"

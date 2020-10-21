@@ -8,6 +8,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/normalize"
 )
 
 const (
@@ -48,6 +49,10 @@ func OperatorVersion(getter LabelsGetter) string {
 
 func OrganizationID(getter LabelsGetter) string {
 	return getter.GetLabels()[label.Organization]
+}
+
+func OrganizationNamespace(getter LabelsGetter) string {
+	return normalize.AsDNSLabelName(fmt.Sprintf("org-%s", getter.GetLabels()[label.Organization]))
 }
 
 func ReleaseVersion(getter LabelsGetter) string {

@@ -40,7 +40,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/dnsrecord"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/encryptionkey"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/endpoints"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/instance"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/namespace"
@@ -51,6 +50,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/tenantclients"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpn"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpnconnection"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
@@ -474,13 +474,18 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 	}
 
-	var instanceResource resource.Interface
+	var workerMigrationResource resource.Interface
 	{
-		c := instance.Config{
-			Config: nodesConfig,
+		c := workermigration.Config{
+			CertsSearcher: certsSearcher,
+			ClientFactory: clientFactory,
+			CtrlClient:    config.K8sClient.CtrlClient(),
+			Logger:        config.Logger,
+
+			Location: config.Azure.Location,
 		}
 
-		instanceResource, err = instance.New(c)
+		workerMigrationResource, err = workermigration.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -650,7 +655,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		blobObjectResource,
 		dnsrecordResource,
 		mastersResource,
-		instanceResource,
+		workerMigrationResource,
 		endpointsResource,
 		vpnResource,
 		vpnconnectionResource,

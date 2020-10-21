@@ -28,6 +28,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
+
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 var update = flag.Bool("update", false, "update .golden reference files")
@@ -110,9 +112,9 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 				t.Fatal(err)
 			}
 
-			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: azureConfig.Name, Namespace: azureConfig.Namespace})
-			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", azureConfig.Name), Namespace: azureConfig.Namespace})
+			verifyCR(t, client, tc.name, new(capiv1alpha3.Cluster), types.NamespacedName{Name: azureConfig.Name, Namespace: key.OrganizationNamespace(azureConfig)})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureCluster), types.NamespacedName{Name: azureConfig.Name, Namespace: key.OrganizationNamespace(azureConfig)})
+			verifyCR(t, client, tc.name, new(capzv1alpha3.AzureMachine), types.NamespacedName{Name: fmt.Sprintf("%s-master-0", azureConfig.Name), Namespace: key.OrganizationNamespace(azureConfig)})
 
 			switch {
 			case err == nil && tc.errorMatcher == nil:
