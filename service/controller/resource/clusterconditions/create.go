@@ -15,16 +15,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	// ensure condition Ready
 	err = r.ensureReadyCondition(ctx, &cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
+	// ensure condition Creating
 	err = r.ensureCreatingCondition(ctx, &cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
+	// ensure condition Upgrading
 	err = r.ensureUpgradingCondition(ctx, &cluster)
 	if err != nil {
 		return microerror.Mask(err)
