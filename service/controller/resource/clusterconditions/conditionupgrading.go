@@ -47,13 +47,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 		return nil
 	}
 
-	// Case 2: Upgrading condition is not known, which cannot be possible, as
-	// API must set it when starting the upgrade.
-	if capiconditions.IsUnknown(cluster, aeconditions.UpgradingCondition) {
-		return microerror.Maskf(invalidConditionError, "expected that Cluster Upgrading condition is True or False, got Unknown or not set at all")
-	}
-
-	// Case 3: Upgrading=False, cluster is currently not in upgrading state,
+	// Case 2: Upgrading=False, cluster is currently not in upgrading state,
 	// let's check if it should be.
 	if capiconditions.IsFalse(cluster, aeconditions.UpgradingCondition) {
 		err := r.checkIfUpgradingHasBeenStarted(ctx, cluster)
@@ -64,7 +58,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 		return nil
 	}
 
-	// Case 4: Upgrading=True, upgrading is currently in progress, here we
+	// Case 3: Upgrading=True, upgrading is currently in progress, here we
 	// check if it has been completed.
 	if capiconditions.IsTrue(cluster, aeconditions.UpgradingCondition) {
 		err := r.checkInProgressUpgrading(ctx, cluster)
@@ -74,6 +68,12 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 
 		// Cluster still not Ready, Upgrading remains to be true.
 		return nil
+	}
+
+	// Case 4: Upgrading condition is not known, which cannot be possible, as
+	// API must set it when starting the upgrade.
+	if capiconditions.IsUnknown(cluster, aeconditions.UpgradingCondition) {
+		return microerror.Maskf(invalidConditionError, "expected that Cluster Upgrading condition is True or False, got Unknown or not set at all")
 	}
 
 	// Case 5: New condition status value that we do not support and should not be set.
