@@ -98,7 +98,7 @@ func (r *Resource) updateCreatingCondition(ctx context.Context, cluster *capi.Cl
 	// Cluster creation has been completed! :)
 
 	// Let's see how long it took.
-	clusterCreationDuration := time.Now().Sub(cluster.CreationTimestamp.Time)
+	clusterCreationDuration := time.Since(cluster.CreationTimestamp.Time)
 
 	// Declaring this cluster officially created!
 	capiconditions.MarkFalse(

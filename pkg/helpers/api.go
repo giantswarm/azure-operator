@@ -3,7 +3,6 @@ package helpers
 import (
 	"context"
 
-	apieconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -74,119 +73,42 @@ func GetAzureMachinePoolsByClusterID(ctx context.Context, c client.Client, clust
 
 func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger micrologger.Logger, azureCluster *capzV1alpha3.AzureCluster) error {
 	logger.LogCtx(ctx, "level", "debug", "type", "AzureCluster", "message", "setting Status.Condition", "conditionType", capiV1alpha3.ReadyCondition)
-	// Note: This is alpha implementation that checks only VPN and node pool VMSS. Final
-	// implementation should include checking of other Azure resources as well.
-	var isAzureClusterReady bool
-	var isVpnGatewayReadyCondition bool
+	// Note: This is an incomplete implementation that checks only resource
+	// group, because it's created in the beginning, and the VPN Gateway,
+	// because it's created at the end. Final implementation should include
+	// checking of other Azure resources as well. and it will be done in
+	// AzureCluster controller.
 
-	// Check if VPN gateway is ready
-	isVpnGatewayReadyCondition = conditions.IsTrue(azureCluster, azureconditions.VPNGatewayReadyCondition)
-	isAzureClusterReady = isVpnGatewayReadyCondition
+	// List of conditions that all need to be True for the Ready condition to be True
+	conditionsToSummarize := conditions.WithConditions(
+		azureconditions.ResourceGroupReadyCondition,
+		azureconditions.VPNGatewayReadyCondition)
 
-	if isAzureClusterReady {
-		conditions.MarkTrue(azureCluster, capiV1alpha3.ReadyCondition)
-	} else {
-		var conditionReason string
-		var conditionMessage string
-
-		if !isVpnGatewayReadyCondition {
-			conditionReason = "VPNGatewayNotReady"
-			conditionMessage = "VPN Gateway is not ready"
-		} else {
-			conditionReason = "UnknownReason"
-			conditionMessage = "Cluster is not ready for an unexpected reason"
-		}
-
-		conditions.MarkFalse(
-			azureCluster,
-			capiV1alpha3.ReadyCondition,
-			conditionReason,
-			capiV1alpha3.ConditionSeverityWarning,
-			conditionMessage)
-	}
+	conditions.SetSummary(
+		azureCluster,
+		conditionsToSummarize,
+		conditions.AddSourceRef())
 
 	err := c.Status().Update(ctx, azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	logger.LogCtx(ctx,
-		"level", "debug",
-		"type", "AzureCluster",
-		"message", "set Status.Condition",
-		"conditionType", capiV1alpha3.ReadyCondition,
-		"conditionStatus", isAzureClusterReady)
+	readyCondition := conditions.Get(azureCluster, capiV1alpha3.ReadyCondition)
 
-	return nil
-}
-
-func UpdateClusterConditions(ctx context.Context, c client.Client, logger micrologger.Logger, cluster *capiV1alpha3.Cluster, azureCluster *capzV1alpha3.AzureCluster) error {
-	// Note: This is alpha implementation. Final implementation should include checking of
-	// MachinePool CRs (worker nodes).
-	logger.LogCtx(ctx, "level", "debug", "type", "Cluster", "message", "setting Status.Condition", "conditionType", capiV1alpha3.ReadyCondition)
-
-	if conditions.IsTrue(azureCluster, capiV1alpha3.ReadyCondition) {
-		conditions.MarkTrue(cluster, capiV1alpha3.ReadyCondition)
+	if readyCondition != nil {
+		logger.LogCtx(ctx,
+			"level", "debug",
+			"type", "AzureCluster",
+			"message", "set Status.Condition",
+			"conditionType", capiV1alpha3.ReadyCondition,
+			"conditionStatus", readyCondition.Status)
 	} else {
-		conditions.MarkFalse(
-			cluster,
-			capiV1alpha3.ReadyCondition,
-			"AzureClusterNotReady",
-			capiV1alpha3.ConditionSeverityWarning,
-			"AzureCluster is not yet ready")
-	}
-
-	creatingCompleted := false
-	if conditions.IsTrue(cluster, apieconditions.CreatingCondition) && conditions.IsTrue(cluster, capiV1alpha3.ReadyCondition) {
-		conditions.MarkFalse(
-			cluster,
-			apieconditions.CreatingCondition,
-			"CreationCompleted",
-			capiV1alpha3.ConditionSeverityInfo,
-			"Cluster creation is completed")
-		creatingCompleted = true
-	}
-
-	upgradingCompleted := false
-	if conditions.IsTrue(cluster, apieconditions.UpgradingCondition) && conditions.IsTrue(cluster, capiV1alpha3.ReadyCondition) {
-		// TODO: check Ready.LastUpdateTime > Upgrading.LastUpdateTime before setting Upgrading to False
-		conditions.MarkFalse(
-			cluster,
-			apieconditions.UpgradingCondition,
-			"UpgradeCompleted",
-			capiV1alpha3.ConditionSeverityInfo,
-			"Cluster upgrade is completed")
-		upgradingCompleted = true
-	}
-
-	err := c.Status().Update(ctx, cluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	logger.LogCtx(ctx,
-		"level", "debug",
-		"type", "Cluster",
-		"message", "set Status.Condition",
-		"conditionType", capiV1alpha3.ReadyCondition,
-		"conditionStatus", conditions.IsTrue(cluster, capiV1alpha3.ReadyCondition))
-
-	if creatingCompleted {
 		logger.LogCtx(ctx,
 			"level", "debug",
-			"type", "Cluster",
-			"message", "set Status.Condition",
-			"conditionType", apieconditions.CreatingCondition,
-			"conditionStatus", metav1.ConditionTrue)
-	}
-
-	if upgradingCompleted {
-		logger.LogCtx(ctx,
-			"level", "debug",
-			"type", "Cluster",
-			"message", "set Status.Condition",
-			"conditionType", apieconditions.UpgradingCondition,
-			"conditionStatus", metav1.ConditionTrue)
+			"type", "AzureCluster",
+			"message", "Ready condition not set",
+			"conditionType", capiV1alpha3.ReadyCondition)
 	}
 
 	return nil
