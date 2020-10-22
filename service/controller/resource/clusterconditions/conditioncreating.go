@@ -14,7 +14,7 @@ import (
 
 const (
 	CreationCompletedReason = "CreationCompleted"
-	ExistingClusterReason = "ExistingCluster"
+	ExistingClusterReason   = "ExistingCluster"
 )
 
 // ensureCreatingCondition ensures that the Cluster CR has Creation condition
