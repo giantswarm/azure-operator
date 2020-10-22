@@ -12,11 +12,6 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 )
 
-const (
-	CreationCompletedReason = "CreationCompleted"
-	ExistingClusterReason   = "ExistingCluster"
-)
-
 // ensureCreatingCondition ensures that the Cluster CR has Creation condition
 // set. There are 3 cases for Creation condition status:
 // (1) Unknown (or not yet set), when Cluster controller has not yet reconciled
@@ -104,7 +99,7 @@ func (r *Resource) updateCreatingCondition(ctx context.Context, cluster *capi.Cl
 	capiconditions.MarkFalse(
 		cluster,
 		aeconditions.CreatingCondition,
-		CreationCompletedReason,
+		aeconditions.CreationCompletedReason,
 		capi.ConditionSeverityInfo,
 		fmt.Sprintf("Cluster creation has been completed in %s", clusterCreationDuration))
 
