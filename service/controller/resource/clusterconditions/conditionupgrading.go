@@ -41,94 +41,73 @@ func DeserializeUpgradingConditionMessage(message string) UpgradingConditionMess
 }
 
 func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.Cluster) error {
-	var err error
-
+	// Case 1: new cluster just being created, no upgrade yet.
 	if capiconditions.IsTrue(cluster, aeconditions.CreatingCondition) {
-		// Cluster is just being created, no upgrade yet.
 		markUpgradingNotStarted(cluster)
 		return nil
 	}
 
-	upgradingCondition := capiconditions.Get(cluster, aeconditions.UpgradingCondition)
+	// Case 2: Upgrading condition is not known, which cannot be possible, as
+	// API must set it when starting the upgrade.
+	if capiconditions.IsUnknown(cluster, aeconditions.UpgradingCondition) {
+		return microerror.Maskf(invalidConditionError, "expected that Cluster Upgrading condition is True or False, got Unknown or not set at all")
+	}
 
-	// Upgrading is in progress, here we check if it has been completed.
-	if upgradingCondition != nil && upgradingCondition.Status == corev1.ConditionTrue {
-		// Don't check if Upgrading has been completed for the first 5 minutes,
-		// give other controllers time to start reconciling their CRs.
-		if time.Now().Before(upgradingCondition.LastTransitionTime.Add(5 * time.Minute)) {
-			return nil
+	// Case 3: Upgrading=False, cluster is currently not in upgrading state,
+	// let's check if it should be.
+	if capiconditions.IsFalse(cluster, aeconditions.UpgradingCondition) {
+		err := r.checkIfUpgradingHasBeenStarted(ctx, cluster)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 
-		// Cluster has been in Upgrading state for at least 5 minutes now, so
-		// let's check if it is Ready.
-		readyCondition := capiconditions.Get(cluster, capi.ReadyCondition)
-		clusterIsReady := readyCondition != nil && readyCondition.Status == corev1.ConditionTrue
+		return nil
+	}
 
-		// In addition to cluster being ready, here we check that it actually
-		// became ready during the upgrade, which would mean that the upgrade
-		// has been completed.
-		becameReadyWhileUpgrading := clusterIsReady && readyCondition.LastTransitionTime.After(upgradingCondition.LastTransitionTime.Time)
-
-		// Or we declare Upgrading to be completed if nothing happened for 15
-		// minutes, which could currently happen if we were upgrading some
-		// component which is not covered by any Ready status condition.
-		const upgradingWithoutReadyUpdateThreshold = 15 * time.Minute
-		upgradingWithoutReadyUpdateThresholdReached := clusterIsReady && time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingWithoutReadyUpdateThreshold))
-
-		if becameReadyWhileUpgrading || upgradingWithoutReadyUpdateThresholdReached {
-			// Cluster was in Upgrading state, but now it's ready, upgrade has
-			// been completed.
-			markUpgradingCompleted(cluster)
-			return nil
+	// Case 4: Upgrading=True, upgrading is currently in progress, here we
+	// check if it has been completed.
+	if capiconditions.IsTrue(cluster, aeconditions.UpgradingCondition) {
+		err := r.checkInProgressUpgrading(ctx, cluster)
+		if err != nil {
+			return microerror.Mask(err)
 		}
 
 		// Cluster still not Ready, Upgrading remains to be true.
 		return nil
 	}
 
-	// Here we expect that the Cluster Upgrading state is False
-	if !capiconditions.IsFalse(cluster, aeconditions.UpgradingCondition) {
-		return microerror.Maskf(invalidConditionError, "expected that Cluster Upgrading condition is False, got %s", upgradingCondition.Status)
-	}
+	// Case 5: New condition status value that we do not support and should not be set.
+	upgradingCondition := capiconditions.Get(cluster, aeconditions.UpgradingCondition)
+	return microerror.Maskf(invalidConditionError, "unexpected Cluster Upgrading condition status %s", upgradingCondition.Status)
+}
 
-	// Cluster is currently not in upgrading state, let's check if it should
-	// be.
-	isUpgrading, err := r.checkIfUpgradingHasBeenStarted(ctx, cluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	if isUpgrading {
-		markUpgradingTrue(cluster)
-	} else {
+func (r *Resource) checkIfUpgradingHasBeenStarted(ctx context.Context, cluster *capi.Cluster) error {
+	// (1) Cluster is currently not in the Creating state (we checked that before getting here).
+	upgradingCondition := capiconditions.Get(cluster, aeconditions.UpgradingCondition)
+	if capiconditions.IsUnknown(cluster, aeconditions.UpgradingCondition) {
 		markUpgradingNotStarted(cluster)
 	}
 
-	return nil
-}
-
-func (r *Resource) checkIfUpgradingHasBeenStarted(ctx context.Context, cluster *capi.Cluster) (bool, error) {
-	// (1) Cluster is currently not in the Creating state (we checked that before getting here).
-	upgradingCondition := capiconditions.Get(cluster, aeconditions.UpgradingCondition)
 	clusterNotUpgrading := upgradingCondition != nil && upgradingCondition.Status == corev1.ConditionFalse
-	clusterCreatedOrUpgraded :=
-		upgradingCondition.Reason == CreationCompletedReason ||
+
+	clusterUpgradingReasonSet :=
+		upgradingCondition.Reason == UpgradeNotStartedReason ||
 			upgradingCondition.Reason == UpgradeCompletedReason
 
 	// Let's try to get the current release from the last successful upgrade we
 	// did.
-	if clusterNotUpgrading && clusterCreatedOrUpgraded {
+	if clusterNotUpgrading && clusterUpgradingReasonSet {
 		// (2) Cluster is currently not in the Upgrading state.
 		// (3) This cluster has already been created or upgraded successfully
 		// to some release, let's check what was the latest version.
 		message := DeserializeUpgradingConditionMessage(upgradingCondition.Message)
 		latestReleaseVersion, err := semver.ParseTolerant(message.ReleaseVersion)
 		if err != nil {
-			return false, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 		desiredReleaseVersion, err := semver.ParseTolerant(key.ReleaseVersion(cluster))
 		if err != nil {
-			return false, microerror.Mask(err)
+			return microerror.Mask(err)
 		}
 
 		// Upgrade has been started! :)
@@ -139,11 +118,65 @@ func (r *Resource) checkIfUpgradingHasBeenStarted(ctx context.Context, cluster *
 			//
 			// Based on (1), (2), (3) and (4), we can conclude that the cluster
 			// should be in the Upgrading state
-			return true, nil
+			markUpgradingTrue(cluster)
+			return nil
 		}
 	}
 
-	return false, nil
+	// Upgrade has not been started
+	markUpgradingNotStarted(cluster)
+	return nil
+}
+
+func (r *Resource) checkInProgressUpgrading(ctx context.Context, cluster *capi.Cluster) error {
+	upgradingCondition := capiconditions.Get(cluster, aeconditions.UpgradingCondition)
+
+	// We expect that the Upgrading is in progress here.
+	if upgradingCondition == nil {
+		return microerror.Maskf(invalidConditionError, "expected that Cluster Upgrading condition is True, but the condition is nil")
+	} else if upgradingCondition.Status != corev1.ConditionTrue {
+		return microerror.Maskf(invalidConditionError, "expected that Cluster Upgrading condition is True, got %s", upgradingCondition.Status)
+	}
+
+	// Upgrading is in progress, now let's check if it has been completed.
+
+	// But don't check if Upgrading has been completed for the first 5 minutes,
+	// give other controllers time to start reconciling their CRs.
+	if time.Now().Before(upgradingCondition.LastTransitionTime.Add(5 * time.Minute)) {
+		return nil
+	}
+
+	// Cluster has been in Upgrading state for at least 5 minutes now, so
+	// let's check if it is Ready.
+	readyCondition := capiconditions.Get(cluster, capi.ReadyCondition)
+	clusterIsReady := readyCondition != nil && readyCondition.Status == corev1.ConditionTrue
+
+	if !clusterIsReady {
+		// Cluster still not Ready, Upgrading remains to be true.
+		return nil
+	}
+
+	// (1) In addition to cluster being ready, here we check that it actually
+	// became ready during the upgrade, which would mean that the upgrade has
+	// been completed.
+	becameReadyWhileUpgrading := readyCondition.LastTransitionTime.After(upgradingCondition.LastTransitionTime.Time)
+
+	// (2) Or we declare Upgrading to be completed if nothing happened for 15
+	// minutes, which could currently happen if we were upgrading some
+	// component which is not covered by any Ready status condition.
+	const upgradingWithoutReadyUpdateThreshold = 15 * time.Minute
+	upgradingWithoutReadyUpdateThresholdReached := clusterIsReady && time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingWithoutReadyUpdateThreshold))
+
+	if becameReadyWhileUpgrading || upgradingWithoutReadyUpdateThresholdReached {
+		// Cluster is ready, and either (1) or (2) is true, so we mark upgrade
+		// as completed.
+		markUpgradingCompleted(cluster)
+		return nil
+	}
+
+	// Cluster is Ready, but we wait more before marking the upgrade as
+	// completed, since neither (1) nor (2) was satisfied.
+	return nil
 }
 
 func markUpgradingNotStarted(cluster *capi.Cluster) {
