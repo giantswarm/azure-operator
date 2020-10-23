@@ -249,7 +249,7 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 // getLegacyCredentialSecret tries to find a Secret in the default credentials namespace but labeled with the organization name.
 // This is needed while we migrate everything to the org namespace and org credentials are created in the org namespace instead of the default namespace.
 func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta)))
+	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", credentialDefaultNamespace, key.OrganizationID(&objectMeta)))
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
