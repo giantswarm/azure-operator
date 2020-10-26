@@ -13,14 +13,13 @@ import (
 
 func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.AzureCluster) error {
 	r.logDebug(ctx, "setting condition Ready")
-	var err error
 
 	// Note: This is an incomplete implementation that checks only resource
 	// group, because it's created in the beginning, and the VPN Gateway,
 	// because it's created at the end. Final implementation should include
 	// checking of other Azure resources as well. and it will be done in
 	// AzureCluster controller.
-	err = r.ensureVPNGatewayReadyCondition(ctx, azureCluster)
+	err := r.ensureVPNGatewayReadyCondition(ctx, azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
