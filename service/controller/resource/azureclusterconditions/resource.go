@@ -8,6 +8,8 @@ import (
 	"github.com/giantswarm/micrologger"
 
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	azureclient "github.com/giantswarm/azure-operator/v5/client"
 )
 
 const (
@@ -16,17 +18,22 @@ const (
 )
 
 type Config struct {
-	CtrlClient client.Client
-	Logger     micrologger.Logger
+	AzureClientsFactory *azureclient.OrganizationFactory
+	CtrlClient          client.Client
+	Logger              micrologger.Logger
 }
 
 // Resource ensures that AzureCluster Status Conditions are set.
 type Resource struct {
-	ctrlClient client.Client
-	logger     micrologger.Logger
+	azureClientsFactory *azureclient.OrganizationFactory
+	ctrlClient          client.Client
+	logger              micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
+	if config.AzureClientsFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientsFactory must not be empty", config)
+	}
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
@@ -35,8 +42,9 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		ctrlClient: config.CtrlClient,
-		logger:     config.Logger,
+		azureClientsFactory: config.AzureClientsFactory,
+		ctrlClient:          config.CtrlClient,
+		logger:              config.Logger,
 	}
 
 	return r, nil

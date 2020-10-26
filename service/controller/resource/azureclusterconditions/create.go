@@ -16,7 +16,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 	}
 
 	// ensure Ready condition
-	r.ensureReadyCondition(ctx, &azureCluster)
+	err = r.ensureReadyCondition(ctx, &azureCluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	err = r.ctrlClient.Status().Update(ctx, &azureCluster)
 	if err != nil {

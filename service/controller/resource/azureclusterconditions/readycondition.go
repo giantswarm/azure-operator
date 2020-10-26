@@ -4,20 +4,26 @@ import (
 	"context"
 
 	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
+	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 )
 
-func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.AzureCluster) {
+func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.AzureCluster) error {
 	r.logDebug(ctx, "setting condition Ready")
+	var err error
 
 	// Note: This is an incomplete implementation that checks only resource
 	// group, because it's created in the beginning, and the VPN Gateway,
 	// because it's created at the end. Final implementation should include
 	// checking of other Azure resources as well. and it will be done in
 	// AzureCluster controller.
+	err = r.ensureVPNGatewayReadyCondition(ctx, azureCluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	// List of conditions that all need to be True for the Ready condition to
 	// be True.
@@ -45,4 +51,6 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.
 		}
 		r.logDebug(ctx, messageFormat, messageArgs...)
 	}
+
+	return nil
 }

@@ -113,11 +113,37 @@ func NewAzureCluster(config AzureClusterConfig) (*controller.Controller, error) 
 func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
 
+	var clientFactory *client.Factory
+	{
+		c := client.FactoryConfig{
+			AzureAPIMetrics:    config.AzureMetricsCollector,
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
+		}
+
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var organizationClientFactory client.OrganizationFactory
+	{
+		c := client.OrganizationFactoryConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Factory:    clientFactory,
+			Logger:     config.Logger,
+		}
+		organizationClientFactory = client.NewOrganizationFactory(c)
+	}
+
 	var azureClusterConditionsResource resource.Interface
 	{
 		c := azureclusterconditions.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			AzureClientsFactory: &organizationClientFactory,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
 		}
 
 		azureClusterConditionsResource, err = azureclusterconditions.New(c)
@@ -173,31 +199,6 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-	}
-
-	var clientFactory *client.Factory
-	{
-		c := client.FactoryConfig{
-			AzureAPIMetrics:    config.AzureMetricsCollector,
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
-			Logger:     config.Logger,
-		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
 	}
 
 	var newDebugger *debugger.Debugger
