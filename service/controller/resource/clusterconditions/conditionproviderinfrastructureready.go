@@ -2,7 +2,6 @@ package clusterconditions
 
 import (
 	"context"
-	"fmt"
 
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/microerror"
@@ -18,7 +17,7 @@ func (r *Resource) ensureProviderInfrastructureReadyCondition(ctx context.Contex
 	if apierrors.IsNotFound(err) {
 		warningMessage := "AzureCluster CR %s in namespace %s is not found"
 		warningMessageArgs := []interface{}{cluster.Name, cluster.Namespace}
-		r.logger.LogCtx(ctx, "level", "warning", fmt.Sprintf(warningMessage, warningMessageArgs...))
+		r.logWarning(ctx, warningMessage, warningMessageArgs...)
 
 		capiconditions.MarkFalse(
 			cluster,

@@ -2,7 +2,6 @@ package clusterconditions
 
 import (
 	"context"
-	"fmt"
 
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/microerror"
@@ -61,7 +60,7 @@ func (r *Resource) setMachinePoolCRsNotFound(ctx context.Context, cluster *capi.
 	const notFoundWarningMessage = "MachinePool CRs %s in namespace %s are not found"
 	notFoundWarningMessageArgs := []interface{}{cluster.Name, cluster.Namespace}
 
-	r.logger.LogCtx(ctx, "level", "info", fmt.Sprintf(notFoundWarningMessage, notFoundWarningMessageArgs...))
+	r.logWarning(ctx, notFoundWarningMessage, notFoundWarningMessageArgs...)
 	capiconditions.MarkFalse(
 		cluster,
 		aeconditions.NodePoolsReadyCondition,
