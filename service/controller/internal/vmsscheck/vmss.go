@@ -33,12 +33,6 @@ const (
 	// Header example:
 	// Microsoft.Compute/HighCostGetVMScaleSet3Min;107,Microsoft.Compute/HighCostGetVMScaleSet30Min;827
 	remainingCallsHeaderName = "X-Ms-Ratelimit-Remaining-Resource"
-
-	// If the number of remaining calls for 30min drops below this threshold, we do not proceed
-	remainingCallsThreshold30m = remainingCallsMax30m * 0.5
-
-	// If the number of remaining calls for 3min drops below this threshold, we do not proceed
-	remainingCallsThreshold3m = remainingCallsMax3m * 0.5
 )
 
 // Find out provisioning state of all VMSS instances and return true if all are
@@ -51,7 +45,6 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, virtual
 	}
 
 	allSucceeded := true
-	response := iterator.Response().Response
 
 	for iterator.NotDone() {
 		instance := iterator.Value()
@@ -68,16 +61,6 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, virtual
 
 		if err := iterator.NextWithContext(ctx); err != nil {
 			return false, microerror.Mask(err)
-		}
-	}
-
-	if allSucceeded {
-		// All instances are succeeded, let's check the VMSS rate is safe.
-		// If current remaining API calls are less than the desired threshold, we don't proceed.
-		rl3m, rl30m := rateLimitThresholdsFromResponse(response)
-		if rl3m < remainingCallsThreshold3m || rl30m < remainingCallsThreshold30m {
-			logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("The VMSS API remaining calls are not safe to continue (3m %d/%d, 30m %d/%d)", rl3m, remainingCallsMax3m, rl30m, remainingCallsMax30m)) // nolint: errcheck
-			return false, vmssUnsafeError
 		}
 	}
 
