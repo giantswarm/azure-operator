@@ -1,6 +1,9 @@
-package clusterconditions
+package azureclusterconditions
 
 import (
+	"context"
+	"fmt"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -9,7 +12,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "clusterconditions"
+	Name = "azureclusterconditions"
 )
 
 type Config struct {
@@ -17,7 +20,7 @@ type Config struct {
 	Logger     micrologger.Logger
 }
 
-// Resource ensures that Cluster Status Conditions are set.
+// Resource ensures that AzureCluster Status Conditions are set.
 type Resource struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
@@ -42,4 +45,12 @@ func New(config Config) (*Resource, error) {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
+}
+
+func (r *Resource) logDebug(ctx context.Context, message string, messageArgs ...interface{}) {
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf(message, messageArgs...))
+}
+
+func (r *Resource) logWarning(ctx context.Context, message string, messageArgs ...interface{}) {
+	r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf(message, messageArgs...))
 }

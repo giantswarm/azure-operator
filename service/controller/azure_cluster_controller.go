@@ -25,6 +25,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureclusterconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/release"
@@ -111,6 +112,19 @@ func NewAzureCluster(config AzureClusterConfig) (*controller.Controller, error) 
 
 func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
+
+	var azureClusterConditionsResource resource.Interface
+	{
+		c := azureclusterconditions.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		azureClusterConditionsResource, err = azureclusterconditions.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var azureClusterConfigResource *azureclusterconfig.Resource
 	{
@@ -214,6 +228,7 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	}
 
 	resources := []resource.Interface{
+		azureClusterConditionsResource,
 		releaseResource,
 		azureClusterConfigResource,
 		azureConfigResource,

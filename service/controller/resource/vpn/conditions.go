@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/cluster-api/util/conditions"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 const (
@@ -25,7 +26,8 @@ func (r *Resource) UpdateVPNGatewayReadyCondition(ctx context.Context, azureConf
 	logger := r.logger.With("level", "debug", "type", "AzureCluster", "message", "setting Status.Condition", "conditionType", conditionType)
 
 	// Update AzureCluster conditions
-	azureCluster, err := helpers.GetAzureClusterByName(ctx, r.ctrlClient, azureConfig.Namespace, azureConfig.Name)
+	organizationNamespace := key.OrganizationNamespace(&azureConfig)
+	azureCluster, err := helpers.GetAzureClusterByName(ctx, r.ctrlClient, organizationNamespace, azureConfig.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -71,9 +73,7 @@ func (r *Resource) UpdateVPNGatewayReadyCondition(ctx context.Context, azureConf
 
 	// Note: Updating of AzureCluster conditions should not be done here synchronously, but
 	// probably in a separate handler. This is an alpha implementation.
-
-	// Update AzureCluster conditions
-	err = helpers.UpdateAzureClusterConditions(ctx, r.ctrlClient, r.logger, azureCluster)
+	err = r.ctrlClient.Status().Update(ctx, azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
