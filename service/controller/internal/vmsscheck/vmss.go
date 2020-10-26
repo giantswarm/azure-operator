@@ -13,17 +13,6 @@ const (
 	// Provisioning States.
 	provisioningStateFailed    = "Failed"
 	provisioningStateSucceeded = "Succeeded"
-
-	// Key used to extract remaining number of calls for 30 minutes from remainingCallsHeaderName
-	remainingCallsHeaderKey30m = "Microsoft.Compute/HighCostGetVMScaleSet30Min"
-
-	// Key used to extract remaining number of calls for 3 minutes from remainingCallsHeaderName
-	remainingCallsHeaderKey3m = "Microsoft.Compute/HighCostGetVMScaleSet3Min"
-
-	// Response header name that has info about remaining number of HighCostGetVMScaleSet calls.
-	// Header example:
-	// Microsoft.Compute/HighCostGetVMScaleSet3Min;107,Microsoft.Compute/HighCostGetVMScaleSet30Min;827
-	remainingCallsHeaderName = "X-Ms-Ratelimit-Remaining-Resource"
 )
 
 // Find out provisioning state of all VMSS instances and return true if all are
