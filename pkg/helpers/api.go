@@ -5,26 +5,58 @@ import (
 
 	"github.com/giantswarm/microerror"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	capiV1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-// GetAzureClusterFromMetadata returns the AzureCluster object (if present) using the object metadata.
-func GetAzureClusterFromMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*capzV1alpha3.AzureCluster, error) {
-	// Check if "cluster.x-k8s.io/cluster-name" label is set.
-	if obj.Labels[capiV1alpha3.ClusterLabelName] == "" {
-		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capiV1alpha3.ClusterLabelName, obj.GetSelfLink())
+func GetMachinePoolsByMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*capiexp.MachinePoolList, error) {
+	if obj.Labels[capi.ClusterLabelName] == "" {
+		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capi.ClusterLabelName, obj.GetSelfLink())
+		return nil, err
+	}
+
+	machinePools, err := GetMachinePoolsByClusterID(ctx, c, obj.Namespace, obj.Labels[capi.ClusterLabelName])
+	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	return GetAzureClusterByName(ctx, c, obj.Namespace, obj.Labels[capiV1alpha3.ClusterLabelName])
+	return machinePools, nil
+}
+
+func GetMachinePoolsByClusterID(ctx context.Context, c client.Client, clusterNamespace, clusterID string) (*capiexp.MachinePoolList, error) {
+	machinePools := &capiexp.MachinePoolList{}
+	var labelSelector client.MatchingLabels
+	{
+		labelSelector = map[string]string{
+			capi.ClusterLabelName: clusterID,
+		}
+	}
+
+	err := c.List(ctx, machinePools, labelSelector, client.InNamespace(clusterNamespace))
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return machinePools, nil
+}
+
+// GetAzureClusterFromMetadata returns the AzureCluster object (if present) using the object metadata.
+func GetAzureClusterFromMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*capz.AzureCluster, error) {
+	// Check if "cluster.x-k8s.io/cluster-name" label is set.
+	if obj.Labels[capi.ClusterLabelName] == "" {
+		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capi.ClusterLabelName, obj.GetSelfLink())
+		return nil, microerror.Mask(err)
+	}
+
+	return GetAzureClusterByName(ctx, c, obj.Namespace, obj.Labels[capi.ClusterLabelName])
 }
 
 // GetAzureClusterByName finds and return a AzureCluster object using the specified params.
-func GetAzureClusterByName(ctx context.Context, c client.Client, namespace, name string) (*capzV1alpha3.AzureCluster, error) {
-	azureCluster := &capzV1alpha3.AzureCluster{}
+func GetAzureClusterByName(ctx context.Context, c client.Client, namespace, name string) (*capz.AzureCluster, error) {
+	azureCluster := &capz.AzureCluster{}
 	key := client.ObjectKey{
 		Namespace: namespace,
 		Name:      name,
@@ -37,13 +69,28 @@ func GetAzureClusterByName(ctx context.Context, c client.Client, namespace, name
 	return azureCluster, nil
 }
 
-func GetAzureMachinePoolsByMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*capzexp.AzureMachinePoolList, error) {
-	if obj.Labels[capiV1alpha3.ClusterLabelName] == "" {
-		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capiV1alpha3.ClusterLabelName, obj.GetSelfLink())
+// GetAzureMachinePoolByName finds and return a AzureMachinePool object using the specified params.
+func GetAzureMachinePoolByName(ctx context.Context, c client.Client, namespace, name string) (*capzexp.AzureMachinePool, error) {
+	azureMachinePool := &capzexp.AzureMachinePool{}
+	key := client.ObjectKey{
+		Namespace: namespace,
+		Name:      name,
+	}
+
+	if err := c.Get(ctx, key, azureMachinePool); err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	azureMachinePools, err := GetAzureMachinePoolsByClusterID(ctx, c, obj.Namespace, obj.Labels[capiV1alpha3.ClusterLabelName])
+	return azureMachinePool, nil
+}
+
+func GetAzureMachinePoolsByMetadata(ctx context.Context, c client.Client, obj metav1.ObjectMeta) (*capzexp.AzureMachinePoolList, error) {
+	if obj.Labels[capi.ClusterLabelName] == "" {
+		err := microerror.Maskf(invalidObjectError, "Label %q must not be empty for object %q", capi.ClusterLabelName, obj.GetSelfLink())
+		return nil, err
+	}
+
+	azureMachinePools, err := GetAzureMachinePoolsByClusterID(ctx, c, obj.Namespace, obj.Labels[capi.ClusterLabelName])
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -56,7 +103,7 @@ func GetAzureMachinePoolsByClusterID(ctx context.Context, c client.Client, clust
 	var labelSelector client.MatchingLabels
 	{
 		labelSelector = map[string]string{
-			capiV1alpha3.ClusterLabelName: clusterID,
+			capi.ClusterLabelName: clusterID,
 		}
 	}
 

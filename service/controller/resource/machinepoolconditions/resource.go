@@ -1,4 +1,4 @@
-package clusterconditions
+package machinepoolconditions
 
 import (
 	"context"
@@ -12,7 +12,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "clusterconditions"
+	Name = "machinepoolconditions"
 )
 
 type Config struct {
@@ -20,7 +20,7 @@ type Config struct {
 	Logger     micrologger.Logger
 }
 
-// Resource ensures that Cluster Status Conditions are set.
+// Resource ensures that AzureCluster Status Conditions are set.
 type Resource struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
