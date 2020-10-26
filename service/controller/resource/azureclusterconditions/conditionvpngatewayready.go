@@ -121,7 +121,7 @@ func (r *Resource) setProvisioningStateWarning(ctx context.Context, azureCluster
 		message,
 		messageArgs)
 
-	r.logDebug(ctx, message, messageArgs)
+	r.logDebug(ctx, message, messageArgs...)
 }
 
 func (r *Resource) setProvisioningStateUnknown(ctx context.Context, azureCluster *capz.AzureCluster) {
