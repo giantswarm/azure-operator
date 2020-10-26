@@ -3,14 +3,11 @@ package helpers
 import (
 	"context"
 
-	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/micrologger"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiV1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
@@ -69,47 +66,4 @@ func GetAzureMachinePoolsByClusterID(ctx context.Context, c client.Client, clust
 	}
 
 	return azureMachinePools, nil
-}
-
-func UpdateAzureClusterConditions(ctx context.Context, c client.Client, logger micrologger.Logger, azureCluster *capzV1alpha3.AzureCluster) error {
-	logger.LogCtx(ctx, "level", "debug", "type", "AzureCluster", "message", "setting Status.Condition", "conditionType", capiV1alpha3.ReadyCondition)
-	// Note: This is an incomplete implementation that checks only resource
-	// group, because it's created in the beginning, and the VPN Gateway,
-	// because it's created at the end. Final implementation should include
-	// checking of other Azure resources as well. and it will be done in
-	// AzureCluster controller.
-
-	// List of conditions that all need to be True for the Ready condition to be True
-	conditionsToSummarize := conditions.WithConditions(
-		azureconditions.ResourceGroupReadyCondition,
-		azureconditions.VPNGatewayReadyCondition)
-
-	conditions.SetSummary(
-		azureCluster,
-		conditionsToSummarize,
-		conditions.AddSourceRef())
-
-	err := c.Status().Update(ctx, azureCluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	readyCondition := conditions.Get(azureCluster, capiV1alpha3.ReadyCondition)
-
-	if readyCondition != nil {
-		logger.LogCtx(ctx,
-			"level", "debug",
-			"type", "AzureCluster",
-			"message", "set Status.Condition",
-			"conditionType", capiV1alpha3.ReadyCondition,
-			"conditionStatus", readyCondition.Status)
-	} else {
-		logger.LogCtx(ctx,
-			"level", "debug",
-			"type", "AzureCluster",
-			"message", "Ready condition not set",
-			"conditionType", capiV1alpha3.ReadyCondition)
-	}
-
-	return nil
 }
