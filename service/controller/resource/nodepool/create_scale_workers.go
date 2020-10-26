@@ -53,10 +53,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 
 	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
-	if vmsscheck.IsVMSSUnsafeError(err) {
-		// VMSS rate limits are not safe, let's wait for next reconciliation loop.
-		return currentState, nil
-	} else if err != nil {
+	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 	// Not all workers are Running in Azure, wait for next reconciliation loop.

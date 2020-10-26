@@ -14,6 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Removed
 
 - Removed instance watchdog to save on VMSS API calls.
+- Removed 50% VMSS calls remaining check that stopped node operations to prevent 429 error from happening.
 
 ## [5.0.0-alpha3] - 2020-10-16
 

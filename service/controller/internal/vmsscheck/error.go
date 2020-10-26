@@ -23,12 +23,3 @@ func IsNotFound(err error) bool {
 	return strings.Contains(microerror.Cause(err).Error(), "ResourceNotFound") ||
 		strings.Contains(microerror.Cause(err).Error(), "ResourceGroupNotFound")
 }
-
-var vmssUnsafeError = &microerror.Error{
-	Kind: "vmssUnsafeError",
-}
-
-// IsVMSSUnsafeError asserts vmssUnsafeError.
-func IsVMSSUnsafeError(err error) bool {
-	return microerror.Cause(err) == vmssUnsafeError
-}
