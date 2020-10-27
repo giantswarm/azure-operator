@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0-alpha4] - 2020-10-27
+
 ### Changed
 
 - Set cluster-autoscaler-enabled tag to false when min replicas and max replicas are the same for a node pool.
@@ -186,7 +188,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha3...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha4...HEAD
+[5.0.0-alpha4]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha3...v5.0.0-alpha4
 [5.0.0-alpha3]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha2...v5.0.0-alpha3
 [5.0.0-alpha2]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha1...v5.0.0-alpha2
 [5.0.0-alpha1]: https://github.com/giantswarm/azure-operator/compare/v4.2.0...v5.0.0-alpha1
