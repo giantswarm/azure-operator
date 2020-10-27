@@ -6,7 +6,6 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	azureclient "github.com/giantswarm/azure-operator/v5/client"
