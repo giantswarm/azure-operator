@@ -9,8 +9,6 @@ import (
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	conditions "sigs.k8s.io/cluster-api/util/conditions"
-
-	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 )
 
 const (
@@ -88,19 +86,5 @@ func (r *Resource) UpdateDeploymentSucceededCondition(ctx context.Context, azure
 		return microerror.Mask(err)
 	}
 
-	// Note: Updating of AzureCluster conditions should not be done here synchronously, but
-	// probably in a separate handler. This is an alpha implementation.
-
-	// Update AzureCluster conditions
-	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	err = helpers.UpdateAzureClusterConditions(ctx, r.CtrlClient, r.Logger, azureCluster)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	// in MachinePool: use conditions.SetSummary
 	return nil
 }

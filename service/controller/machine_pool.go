@@ -19,6 +19,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodestatus"
@@ -80,6 +81,19 @@ func NewMachinePool(config MachinePoolConfig) (*controller.Controller, error) {
 
 func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
 	var err error
+
+	var machinePoolConditionsResource resource.Interface
+	{
+		c := machinepoolconditions.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		machinePoolConditionsResource, err = machinepoolconditions.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 
 	var machinepoolDependentsResource resource.Interface
 	{
@@ -146,6 +160,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	}
 
 	resources := []resource.Interface{
+		machinePoolConditionsResource,
 		machinepoolDependentsResource,
 		ownerReferencesResource,
 		nodestatusResource,

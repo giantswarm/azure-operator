@@ -25,6 +25,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureclusterconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/release"
@@ -112,6 +113,45 @@ func NewAzureCluster(config AzureClusterConfig) (*controller.Controller, error) 
 func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
 
+	var clientFactory *client.Factory
+	{
+		c := client.FactoryConfig{
+			AzureAPIMetrics:    config.AzureMetricsCollector,
+			CacheDuration:      30 * time.Minute,
+			CredentialProvider: config.CredentialProvider,
+			Logger:             config.Logger,
+		}
+
+		clientFactory, err = client.NewFactory(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var organizationClientFactory client.OrganizationFactory
+	{
+		c := client.OrganizationFactoryConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Factory:    clientFactory,
+			Logger:     config.Logger,
+		}
+		organizationClientFactory = client.NewOrganizationFactory(c)
+	}
+
+	var azureClusterConditionsResource resource.Interface
+	{
+		c := azureclusterconditions.Config{
+			AzureClientsFactory: &organizationClientFactory,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
+		}
+
+		azureClusterConditionsResource, err = azureclusterconditions.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var azureClusterConfigResource *azureclusterconfig.Resource
 	{
 		c := azureclusterconfig.Config{
@@ -161,31 +201,6 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 		}
 	}
 
-	var clientFactory *client.Factory
-	{
-		c := client.FactoryConfig{
-			AzureAPIMetrics:    config.AzureMetricsCollector,
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
-			Logger:     config.Logger,
-		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
-	}
-
 	var newDebugger *debugger.Debugger
 	{
 		c := debugger.Config{
@@ -214,6 +229,7 @@ func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Int
 	}
 
 	resources := []resource.Interface{
+		azureClusterConditionsResource,
 		releaseResource,
 		azureClusterConfigResource,
 		azureConfigResource,
