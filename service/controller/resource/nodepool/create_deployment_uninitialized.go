@@ -3,6 +3,7 @@ package nodepool
 import (
 	"context"
 	"fmt"
+	"net/http"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -122,7 +123,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}()
 
 	// Figure out if we need to submit the ARM Deployment.
-	deploymentNeedsToBeSubmitted := currentDeployment.IsHTTPStatus(404)
+	deploymentNeedsToBeSubmitted := currentDeployment.IsHTTPStatus(http.StatusNotFound)
 	nodesNeedToBeRolled := false
 	if !deploymentNeedsToBeSubmitted {
 		changes, err := template.Diff(currentDeployment, desiredDeployment)
@@ -195,6 +196,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 }
 
 func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, azureMachinePool *capzexpv1alpha3.AzureMachinePool, vmss compute.VirtualMachineScaleSet) error {
+	if vmss.IsHTTPStatus(http.StatusNotFound) {
+		return nil
+	}
+
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "saving provider status info in CR")
 
 	instances, err := r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
