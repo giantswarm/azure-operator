@@ -39,7 +39,7 @@ func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deployment
 		}
 
 		currentProvisioningState := *deployment.Properties.ProvisioningState
-		r.setProvisioningStateWarning(ctx, cr, currentProvisioningState, deploymentName, conditionType)
+		r.setProvisioningStateWarning(ctx, cr, deploymentName, currentProvisioningState, conditionType)
 		return false, nil
 	}
 
@@ -62,7 +62,7 @@ func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deployment
 		r.setProvisioningStateWarningFailed(ctx, cr, deploymentName, conditionType)
 	default:
 		// Subnet deployment is probably still running.
-		r.setProvisioningStateWarning(ctx, cr, currentProvisioningState, deploymentName, conditionType)
+		r.setProvisioningStateWarning(ctx, cr, deploymentName, currentProvisioningState, conditionType)
 	}
 
 	return false, nil
