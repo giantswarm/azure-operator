@@ -147,7 +147,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 
 		azureMachinePoolConditionsResource, err = azuremachinepoolconditions.New(c)
 		if err != nil {
-			microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 	}
 
