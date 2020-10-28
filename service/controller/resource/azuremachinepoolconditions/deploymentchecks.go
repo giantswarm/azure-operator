@@ -65,9 +65,7 @@ func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deployment
 		r.setProvisioningStateWarning(ctx, cr, currentProvisioningState, deploymentName, conditionType)
 	}
 
-	r.logDebug(ctx, "finished ensuring condition %s", conditionType)
-
-	return true, nil
+	return false, nil
 }
 
 func isProvisioningStateSet(deployment *resources.DeploymentExtended) bool {
@@ -108,9 +106,9 @@ func (r *Resource) setProvisioningStateWarning(ctx context.Context, cr capicondi
 		reason,
 		capi.ConditionSeverityWarning,
 		message,
-		messageArgs)
+		messageArgs...)
 
-	r.logDebug(ctx, message, messageArgs...)
+	r.logWarning(ctx, message, messageArgs...)
 }
 
 func (r *Resource) setProvisioningStateUnknown(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
@@ -124,7 +122,7 @@ func (r *Resource) setProvisioningStateUnknown(ctx context.Context, cr capicondi
 		message,
 		messageArgs)
 
-	r.logDebug(ctx, message, messageArgs)
+	r.logWarning(ctx, message, messageArgs)
 }
 
 func (r *Resource) setDeploymentNotFound(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
@@ -138,5 +136,5 @@ func (r *Resource) setDeploymentNotFound(ctx context.Context, cr capiconditions.
 		message,
 		messageArgs)
 
-	r.logDebug(ctx, message, messageArgs)
+	r.logWarning(ctx, message, messageArgs)
 }

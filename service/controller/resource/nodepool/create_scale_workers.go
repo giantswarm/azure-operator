@@ -66,23 +66,11 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	// Ensure the deployment is successful before we move on with scaling.
 	currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolDeploymentName(&azureMachinePool))
 	if IsDeploymentNotFound(err) {
-		// Update DeploymentSucceeded Condition for this AzureMachinePool
-		_ = r.UpdateDeploymentSucceededCondition(ctx, &azureMachinePool, nil)
-
 		// Deployment not found, we need to apply it again.
 		return DeploymentUninitialized, microerror.Mask(err)
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-
-	defer func() {
-		var currentProvisioningState *string
-		if currentDeployment.Properties != nil && currentDeployment.Properties.ProvisioningState != nil {
-			currentProvisioningState = currentDeployment.Properties.ProvisioningState
-		}
-		// Update DeploymentSucceeded Condition for this AzureMachinePool
-		_ = r.UpdateDeploymentSucceededCondition(ctx, &azureMachinePool, currentProvisioningState)
-	}()
 
 	switch *currentDeployment.Properties.ProvisioningState {
 	case "Failed", "Canceled":
