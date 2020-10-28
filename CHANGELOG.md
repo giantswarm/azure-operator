@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Only try to save Azure VMSS IDs in Custom Resources if VMSS exists.
+
 ## [5.0.0-alpha4] - 2020-10-27
 
 ### Changed
