@@ -25,9 +25,5 @@ func IsNotFound(err error) bool {
 
 	c := microerror.Cause(err)
 
-	if c == notFoundError {
-		return true
-	}
-
-	return false
+	return c == notFoundError
 }
