@@ -5,11 +5,11 @@ metadata:
     cluster.giantswarm.io/description: ""
   creationTimestamp: null
   labels:
-    azure-operator.giantswarm.io/version: 4.3.0
+    azure-operator.giantswarm.io/version: 4.2.0
     cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
     giantswarm.io/organization: giantswarm
-    release.giantswarm.io/version: 12.1.0
+    release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: org-giantswarm
   resourceVersion: "2"

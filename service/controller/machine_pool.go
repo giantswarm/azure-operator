@@ -22,6 +22,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolownerreference"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolupgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodestatus"
 )
 
@@ -159,11 +160,25 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
+	var machinepoolUpgradeResource resource.Interface
+	{
+		c := machinepoolupgrade.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		machinepoolUpgradeResource, err = machinepoolupgrade.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	resources := []resource.Interface{
 		machinePoolConditionsResource,
 		machinepoolDependentsResource,
 		ownerReferencesResource,
 		nodestatusResource,
+		machinepoolUpgradeResource,
 	}
 
 	{
