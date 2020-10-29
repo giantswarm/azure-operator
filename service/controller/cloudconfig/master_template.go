@@ -63,6 +63,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
 		params.DisableIngressControllerService = true
+		params.DockerhubToken = c.dockerhubToken
 		params.Etcd.ClientPort = defaultEtcdPort
 		params.Kubernetes = k8scloudconfig.Kubernetes{
 			Apiserver: k8scloudconfig.KubernetesPodOptions{

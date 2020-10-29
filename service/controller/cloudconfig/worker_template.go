@@ -51,6 +51,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 			LogsPrefix: c.ignition.LogsPrefix,
 			LogsToken:  c.ignition.LogsToken,
 		}
+		params.DockerhubToken = c.dockerhubToken
 		params.Images = data.Images
 		params.RegistryMirrors = c.registryMirrors
 		params.Versions = data.Versions

@@ -30,6 +30,7 @@ type Config struct {
 	Azure                  setting.Azure
 	AzureClientCredentials auth.ClientCredentialsConfig
 	Ignition               setting.Ignition
+	DockerhubToken         string
 	OIDC                   setting.OIDC
 	RegistryMirrors        []string
 	SSOPublicKey           string
@@ -42,6 +43,7 @@ type CloudConfig struct {
 
 	azure                  setting.Azure
 	azureClientCredentials auth.ClientCredentialsConfig
+	dockerhubToken         string
 	ignition               setting.Ignition
 	OIDC                   setting.OIDC
 	registryMirrors        []string
@@ -78,6 +80,7 @@ func New(config Config) (*CloudConfig, error) {
 
 		azure:                  config.Azure,
 		azureClientCredentials: config.AzureClientCredentials,
+		dockerhubToken:         config.DockerhubToken,
 		ignition:               config.Ignition,
 		OIDC:                   config.OIDC,
 		registryMirrors:        config.RegistryMirrors,

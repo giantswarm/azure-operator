@@ -66,8 +66,6 @@ type ClusterConfig struct {
 	// Azure credentials used to create Azure client set for tenant clusters
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	ProjectName               string
-	RegistryDomain            string
-	RegistryMirrors           []string
 
 	GuestSubnetMaskBits int
 
@@ -77,6 +75,10 @@ type ClusterConfig struct {
 	SSOPublicKey     string
 	TemplateVersion  string
 	VMSSCheckWorkers int
+
+	DockerhubToken  string
+	RegistryDomain  string
+	RegistryMirrors []string
 
 	SentryDSN string
 }
@@ -152,6 +154,7 @@ func NewCluster(config ClusterConfig) (*Cluster, error) {
 
 						Azure:                  config.Azure,
 						AzureClientCredentials: organizationAzureClientCredentialsConfig,
+						DockerhubToken:         config.DockerhubToken,
 						Ignition:               config.Ignition,
 						OIDC:                   config.OIDC,
 						RegistryMirrors:        config.RegistryMirrors,
