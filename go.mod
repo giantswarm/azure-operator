@@ -26,7 +26,7 @@ require (
 	github.com/giantswarm/k8sclient v0.2.0
 	github.com/giantswarm/k8sclient/v2 v2.0.0
 	github.com/giantswarm/k8sclient/v3 v3.1.1
-	github.com/giantswarm/k8scloudconfig/v7 v7.0.6-0.20200917132432-1fd020610950
+	github.com/giantswarm/k8scloudconfig/v7 v7.1.3-0.20201029140718-f9b74bc34d43
 	github.com/giantswarm/kubelock v0.2.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.0
@@ -46,13 +46,13 @@ require (
 	github.com/spf13/viper v1.6.3
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	gopkg.in/yaml.v2 v2.3.0
-	k8s.io/api v0.18.5
-	k8s.io/apiextensions-apiserver v0.18.5
-	k8s.io/apimachinery v0.18.5
-	k8s.io/client-go v0.18.5
-	sigs.k8s.io/cluster-api v0.3.7
+	k8s.io/api v0.17.7
+	k8s.io/apiextensions-apiserver v0.17.7
+	k8s.io/apimachinery v0.17.7
+	k8s.io/client-go v0.17.7
+	sigs.k8s.io/cluster-api v0.3.7-rc.1
 	sigs.k8s.io/cluster-api-provider-azure v0.4.5
-	sigs.k8s.io/controller-runtime v0.5.8
+	sigs.k8s.io/controller-runtime v0.5.7
 )
 
 replace (
