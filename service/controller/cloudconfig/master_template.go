@@ -53,6 +53,7 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 		params.APIServerEncryptionKey = apiserverEncryptionKey
 		params.Cluster = data.CustomObject.Spec.Cluster
 		params.CalicoPolicyOnly = true
+		params.DockerhubToken = c.dockerhubToken
 		params.ImagePullProgressDeadline = defaultImagePullProgressDeadline
 		params.DisableIngressControllerService = true
 		params.Etcd.ClientPort = defaultEtcdPort
