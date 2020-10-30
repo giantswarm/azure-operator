@@ -22,7 +22,6 @@ const (
 func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
 	r.logDebug(ctx, "ensuring condition %s", azureconditions.SubnetReadyCondition)
 
-	// Get Azure deployments client
 	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)

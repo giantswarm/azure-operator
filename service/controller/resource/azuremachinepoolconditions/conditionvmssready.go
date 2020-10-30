@@ -24,7 +24,6 @@ const (
 func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
 	r.logDebug(ctx, "ensuring condition %s", azureconditions.VMSSReadyCondition)
 
-	// Get Azure deployments client
 	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
@@ -36,18 +35,19 @@ func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePoo
 	if err != nil {
 		return microerror.Mask(err)
 	} else if !isDeploymentSuccessful {
-		// in the deployment is not yet successful, the check method has set
-		// appropriate condition value.
+		// Function checkIfDeploymentIsSuccessful that is called above, if it
+		// sees that the deployment is not succeeded, for whatever reason, it
+		// will also set appropriate condition value, so our job here is done.
 		return nil
 	}
 
-	// Deployment is successful, now let's check the actual resource.
+	// Deployment is successful, we proceed with checking the actual Azure
+	// VMSS.
 	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// Get VMSS from Azure API.
 	resourceGroupName := key.ClusterName(azureMachinePool)
 	vmssName := key.NodePoolVMSSName(azureMachinePool)
 
@@ -65,7 +65,9 @@ func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePoo
 	// throttling limits, so we will add that later, once throttling situation
 	// is better.
 
-	// Check if VMSS provisioning state is set.
+	// Check if VMSS provisioning state is set. We expect that it is, since we
+	// already checked the deployment, but it's not impossible that the VMSS
+	// resource got changed for some reason.
 	if vmss.ProvisioningState == nil {
 		r.setVMSSProvisioningStateUnknown(ctx, azureMachinePool, deploymentName, azureconditions.VMSSReadyCondition)
 		return nil
