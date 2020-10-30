@@ -276,6 +276,7 @@ func New(config Config) (*Service, error) {
 			Azure:                     azure,
 			CredentialProvider:        credentialProvider,
 			CPAzureClientSet:          cpAzureClientSet,
+			DockerhubToken:            config.Viper.GetString(config.Flag.Service.Registry.DockerhubToken),
 			GSClientCredentialsConfig: gsClientCredentialsConfig,
 			GuestSubnetMaskBits:       config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			Ignition:                  Ignition,

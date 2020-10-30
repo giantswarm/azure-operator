@@ -37,6 +37,9 @@ Installation:
     Secret:
       AzureOperator:
         SecretYaml: ""
+      Registry:
+        Dockerhub:
+          Token: ""
     Provider:
       Azure:
         Cloud: ""
