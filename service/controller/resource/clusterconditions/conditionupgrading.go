@@ -11,13 +11,14 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.Cluster) error {
 	// Case 1: new cluster just being created, no upgrade yet.
 	if capiconditions.IsTrue(cluster, aeconditions.CreatingCondition) {
-		err := markUpgradingNotStarted(cluster)
+		err := conditions.MarkUpgradingNotStarted(cluster)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -95,13 +96,13 @@ func (r *Resource) checkIfUpgradingHasBeenStarted(ctx context.Context, cluster *
 			//
 			// Based on (1), (2) and (3), we can conclude that the cluster
 			// should be in the Upgrading state.
-			markUpgradingTrue(cluster)
+			conditions.MarkUpgradingStarted(cluster)
 			return nil
 		}
 	}
 
 	// Upgrade has not been started
-	err := markUpgradingNotStarted(cluster)
+	err := conditions.MarkUpgradingNotStarted(cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -151,7 +152,7 @@ func (r *Resource) checkInProgressUpgrading(ctx context.Context, cluster *capi.C
 	if becameReadyWhileUpgrading || upgradingWithoutReadyUpdateThresholdReached {
 		// Cluster is ready, and either (1) or (2) is true, so we mark upgrade
 		// as completed.
-		err := markUpgradingCompleted(cluster)
+		err := conditions.MarkUpgradingCompleted(cluster)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -161,50 +162,5 @@ func (r *Resource) checkInProgressUpgrading(ctx context.Context, cluster *capi.C
 
 	// Cluster is Ready, but we wait more before marking the upgrade as
 	// completed, since neither (1) nor (2) were satisfied.
-	return nil
-}
-
-func markUpgradingNotStarted(cluster *capi.Cluster) error {
-	// Cluster is just being created, no upgrade yet.
-	message := aeconditions.UpgradingConditionMessage{
-		Message:        "Upgrade not started",
-		ReleaseVersion: key.ReleaseVersion(cluster),
-	}
-	messageString, err := aeconditions.SerializeUpgradingConditionMessage(message)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	capiconditions.MarkFalse(
-		cluster,
-		aeconditions.UpgradingCondition,
-		aeconditions.UpgradeNotStartedReason,
-		capi.ConditionSeverityInfo,
-		messageString)
-
-	return nil
-}
-
-func markUpgradingTrue(cluster *capi.Cluster) {
-	capiconditions.MarkTrue(cluster, aeconditions.UpgradingCondition)
-}
-
-func markUpgradingCompleted(cluster *capi.Cluster) error {
-	message := aeconditions.UpgradingConditionMessage{
-		Message:        "Upgrade has been completed",
-		ReleaseVersion: key.ReleaseVersion(cluster),
-	}
-	messageString, err := aeconditions.SerializeUpgradingConditionMessage(message)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	capiconditions.MarkFalse(
-		cluster,
-		aeconditions.UpgradingCondition,
-		aeconditions.UpgradeCompletedReason,
-		capi.ConditionSeverityInfo,
-		messageString)
-
 	return nil
 }

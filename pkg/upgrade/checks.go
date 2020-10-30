@@ -4,13 +4,13 @@ import (
 	"context"
 
 	"github.com/coreos/go-semver/semver"
-	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
-	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 )
 
 func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
@@ -26,32 +26,29 @@ func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePoo
 		return false, nil
 	}
 
-	// Check MachinePool Upgrading condition
-	isUpgrading := capiconditions.IsTrue(machinePool, aeconditions.UpgradingCondition)
-
 	// Node pool is still being upgraded
-	if isUpgrading {
+	if conditions.IsUpgradingTrue(machinePool) {
 		return false, nil
 	}
 
 	// And finally check the actual nodes
-	anyNodePoolNodeOutOfDate, err := AnyNodePoolNodeOutOfDate(ctx, c, machinePool.Name, desiredAzureOperatorVersion)
+	allNodePoolNodesUpToDate, err := AllNodePoolNodesUpToDate(ctx, c, machinePool, desiredAzureOperatorVersion)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
 	// When all nodes are up-to-date, the upgrade has been completed
-	upgradeCompleted := !anyNodePoolNodeOutOfDate
+	upgradeCompleted := allNodePoolNodesUpToDate
 
 	return upgradeCompleted, nil
 }
 
-func AnyNodePoolNodeOutOfDate(ctx context.Context, c client.Client, nodepoolID string, desiredAzureOperatorVersion string) (bool, error) {
+func AllNodePoolNodesUpToDate(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredAzureOperatorVersion string) (bool, error) {
 	nodes := &corev1.NodeList{}
 	var labelSelector client.MatchingLabels
 	{
 		labelSelector = map[string]string{
-			label.MachinePool: nodepoolID,
+			label.MachinePool: machinePool.Name,
 		}
 	}
 
@@ -61,19 +58,27 @@ func AnyNodePoolNodeOutOfDate(ctx context.Context, c client.Client, nodepoolID s
 	}
 
 	desiredVersion := semver.New(desiredAzureOperatorVersion)
+	var upToDateNodesCount int32
 
 	for _, node := range nodes.Items {
 		operatorVersionLabel, exists := node.GetLabels()[label.AzureOperatorVersion]
 		if !exists {
-			return true, nil
+			return false, nil
 		}
 
 		operatorVersion := semver.New(operatorVersionLabel)
 
 		if operatorVersion.LessThan(*desiredVersion) {
-			return true, nil
+			return false, nil
 		}
+
+		upToDateNodesCount++
 	}
 
-	return false, nil
+	// azure-admission-controller ensures that machinePool.Spec.Replicas is
+	// always set
+	requiredReplicas := *machinePool.Spec.Replicas
+	requiredReplicasAreUpToDate := upToDateNodesCount >= requiredReplicas
+
+	return requiredReplicasAreUpToDate, nil
 }
