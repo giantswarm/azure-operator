@@ -335,6 +335,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 			Logger:                 r.logger,
 			Ignition:               r.ignition,
 			OIDC:                   r.oidc,
+			RegistryMirrors:        r.registryMirrors,
 			SSOPublicKey:           r.ssoPublicKey,
 			SubscriptionID:         subscriptionID,
 		}
