@@ -66,8 +66,6 @@ type AzureConfigConfig struct {
 	// Azure client set used when managing control plane resources
 	CPAzureClientSet *client.AzureClientSet
 	ProjectName      string
-	RegistryDomain   string
-	RegistryMirrors  []string
 
 	ClusterVNetMaskBits int
 
@@ -77,6 +75,10 @@ type AzureConfigConfig struct {
 	SSHUserList      employees.SSHUserList
 	SSOPublicKey     string
 	TemplateVersion  string
+
+	DockerhubToken  string
+	RegistryDomain  string
+	RegistryMirrors []string
 
 	Debug     setting.Debug
 	SentryDSN string
@@ -144,6 +146,7 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 						Azure:                  config.Azure,
 						AzureClientCredentials: organizationAzureClientCredentialsConfig,
 						CtrlClient:             config.K8sClient.CtrlClient(),
+						DockerhubToken:         config.DockerhubToken,
 						Ignition:               config.Ignition,
 						Logger:                 config.Logger,
 						OIDC:                   config.OIDC,

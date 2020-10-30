@@ -46,6 +46,7 @@ const (
 	masterNatGatewayName      = "masters-nat-gw"
 	prefixMaster              = "master"
 	prefixWorker              = "worker"
+	subnetDeploymentPrefix    = "subnet"
 	virtualNetworkSuffix      = "VirtualNetwork"
 	vpnGatewaySubnet          = "GatewaySubnet"
 	vpnGatewaySuffix          = "VPNGateway"
@@ -627,6 +628,10 @@ func WorkerInstanceName(clusterID, instanceID string) string {
 
 func NodePoolDeploymentName(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
 	return NodePoolVMSSName(azureMachinePool)
+}
+
+func SubnetDeploymentName(subnetName string) string {
+	return fmt.Sprintf("%s-%s", subnetDeploymentPrefix, subnetName)
 }
 
 func MachinePoolID(getter LabelsGetter) (string, error) {

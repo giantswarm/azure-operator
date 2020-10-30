@@ -332,6 +332,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 			Azure:                  r.azure,
 			AzureClientCredentials: organizationAzureClientCredentialsConfig,
 			CtrlClient:             r.ctrlClient,
+			DockerhubToken:         r.dockerhubToken,
 			Logger:                 r.logger,
 			Ignition:               r.ignition,
 			OIDC:                   r.oidc,

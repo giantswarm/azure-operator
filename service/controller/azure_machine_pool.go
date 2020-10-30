@@ -27,6 +27,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azuremachinepoolconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/cloudconfigblob"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool"
@@ -43,6 +44,7 @@ type AzureMachinePoolConfig struct {
 	ClusterIPRange        string
 	CPAzureClientSet      *client.AzureClientSet
 	CredentialProvider    credential.Provider
+	DockerhubToken        string
 	EtcdPrefix            string
 	Ignition              setting.Ignition
 	InstallationName      string
@@ -134,6 +136,20 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			Logger:     config.Logger,
 		}
 		organizationClientFactory = client.NewOrganizationFactory(c)
+	}
+
+	var azureMachinePoolConditionsResource resource.Interface
+	{
+		c := azuremachinepoolconditions.Config{
+			AzureClientsFactory: &organizationClientFactory,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
+		}
+
+		azureMachinePoolConditionsResource, err = azuremachinepoolconditions.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	var newDebugger *debugger.Debugger
@@ -291,6 +307,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			EtcdPrefix:          config.EtcdPrefix,
 			CredentialProvider:  config.CredentialProvider,
 			CtrlClient:          config.K8sClient.CtrlClient(),
+			DockerhubToken:      config.DockerhubToken,
 			Ignition:            config.Ignition,
 			Logger:              config.Logger,
 			OIDC:                config.OIDC,
@@ -320,6 +337,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	}
 
 	resources := []resource.Interface{
+		azureMachinePoolConditionsResource,
 		sparkResource,
 		cloudconfigblobResource,
 		ipamResource,

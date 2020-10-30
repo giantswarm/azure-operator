@@ -24,7 +24,6 @@ import (
 )
 
 const (
-	mainDeploymentName = "subnet"
 	// Name is the identifier of the resource.
 	Name = "subnet"
 )
@@ -119,10 +118,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func getSubnetARMDeploymentName(subnetName string) string {
-	return fmt.Sprintf("%s-%s", mainDeploymentName, subnetName)
-}
-
 func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, natGatewaysClient *network.NatGatewaysClient, azureCluster capzv1alpha3.AzureCluster) error {
 	armTemplate, err := subnet.GetARMTemplate()
 	if err != nil {
@@ -141,7 +136,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 	}
 
 	for i := 0; i < len(azureCluster.Spec.NetworkSpec.Subnets); i++ {
-		deploymentName := getSubnetARMDeploymentName(azureCluster.Spec.NetworkSpec.Subnets[i].Name)
+		deploymentName := key.SubnetDeploymentName(azureCluster.Spec.NetworkSpec.Subnets[i].Name)
 		currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureCluster), deploymentName)
 		if IsNotFound(err) {
 			// fallthrough
@@ -266,7 +261,7 @@ func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient 
 				return microerror.Mask(err)
 			}
 
-			err = r.deleteARMDeployment(ctx, deploymentsClient, key.ClusterID(&azureCluster), getSubnetARMDeploymentName(*subnetInAzure.Name))
+			err = r.deleteARMDeployment(ctx, deploymentsClient, key.ClusterID(&azureCluster), key.SubnetDeploymentName(*subnetInAzure.Name))
 			if err != nil {
 				return microerror.Mask(err)
 			}
