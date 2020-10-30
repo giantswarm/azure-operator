@@ -12,7 +12,7 @@ metadata:
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: org-giantswarm
-  resourceVersion: "2"
+  resourceVersion: "1"
 spec:
   controlPlaneEndpoint:
     host: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
@@ -30,7 +30,6 @@ spec:
       cidrBlock: 10.10.0.0/16
       name: c6fme-VirtualNetwork
       resourceGroup: c6fme
-  resourceGroup: c6fme
 status:
   network:
     apiServerIp: {}

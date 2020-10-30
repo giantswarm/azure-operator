@@ -10,8 +10,6 @@ import (
 	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/to"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -325,11 +323,12 @@ func detectAzureClusterUpdate(orig, desired runtime.Object) (bool, error) {
 	o := orig.(*capzv1alpha3.AzureCluster)
 	d := desired.(*capzv1alpha3.AzureCluster)
 
-	if !cmp.Equal(d, o, cmpopts.IgnoreTypes(&metav1.ObjectMeta{}), cmpopts.IgnoreTypes(&metav1.TypeMeta{}, cmpopts.IgnoreTypes(&capzv1alpha3.Subnets{}))) {
-		return true, nil
-	}
-
-	return false, nil
+	return (o.Spec.NetworkSpec.Vnet.CidrBlock != d.Spec.NetworkSpec.Vnet.CidrBlock ||
+		o.Spec.NetworkSpec.Vnet.Name != d.Spec.NetworkSpec.Vnet.Name ||
+		o.Spec.NetworkSpec.Vnet.ResourceGroup != d.Spec.NetworkSpec.Vnet.ResourceGroup ||
+		o.Spec.ResourceGroup != d.Spec.ResourceGroup ||
+		o.Spec.Location != d.Spec.Location ||
+		o.Spec.ControlPlaneEndpoint != d.Spec.ControlPlaneEndpoint), nil
 }
 
 func mergeAzureCluster(orig, desired runtime.Object) (runtime.Object, error) {
@@ -337,7 +336,9 @@ func mergeAzureCluster(orig, desired runtime.Object) (runtime.Object, error) {
 	d := desired.(*capzv1alpha3.AzureCluster)
 
 	// Only copy specific parts of desired opbject
-	o.Spec.NetworkSpec.Vnet = d.Spec.NetworkSpec.Vnet
+	o.Spec.NetworkSpec.Vnet.CidrBlock = d.Spec.NetworkSpec.Vnet.CidrBlock
+	o.Spec.NetworkSpec.Vnet.Name = d.Spec.NetworkSpec.Vnet.Name
+	o.Spec.NetworkSpec.Vnet.ResourceGroup = d.Spec.NetworkSpec.Vnet.ResourceGroup
 	o.Spec.ResourceGroup = d.Spec.ResourceGroup
 	o.Spec.Location = d.Spec.Location
 	o.Spec.ControlPlaneEndpoint = d.Spec.ControlPlaneEndpoint
