@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Pass dockerhub token for kubelet authorized image pulling. 
+
 ### Fixed
 
 - Only try to save Azure VMSS IDs in Custom Resources if VMSS exists.
