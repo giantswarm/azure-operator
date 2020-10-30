@@ -325,6 +325,7 @@ func New(config Config) (*Service, error) {
 			ClusterVNetMaskBits:   config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
 			CredentialProvider:    credentialProvider,
 			CPAzureClientSet:      cpAzureClientSet,
+			DockerhubToken:        config.Viper.GetString(config.Flag.Service.Registry.DockerhubToken),
 			Ignition:              Ignition,
 			InstallationName:      config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:      ipamNetworkRange,

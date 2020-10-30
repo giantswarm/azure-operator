@@ -31,8 +31,10 @@ spec:
         secret:
           secretName: {{ include "resource.default.name"  . }}
           items:
-          - key: secret.yaml
-            path: secret.yaml
+          - key: azure-secret.yaml
+            path: azure-secret.yaml
+          - key: dockerhub-secret.yaml
+            path: dockerhub-secret.yaml
       - name: certs
         hostPath:
           path: /etc/ssl/certs/ca-certificates.crt
@@ -65,7 +67,7 @@ spec:
         - --config.dirs=/var/run/{{ .Chart.Name }}/configmap/
         - --config.dirs=/var/run/{{ .Chart.Name }}/secret/
         - --config.files=config
-        - --config.files=secret
+        - --config.files=azure-secret,dockerhub-secret
         livenessProbe:
           httpGet:
             path: /healthz
