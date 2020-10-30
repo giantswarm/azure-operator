@@ -43,6 +43,7 @@ type Config struct {
 	Logger              micrologger.Logger
 	OIDC                setting.OIDC
 	RegistryDomain      string
+	RegistryMirrors     []string
 	SSHUserList         employees.SSHUserList
 	SSOPublicKey        string
 }
@@ -61,6 +62,7 @@ type Resource struct {
 	logger              micrologger.Logger
 	oidc                setting.OIDC
 	registryDomain      string
+	registryMirrors     []string
 	sshUserList         employees.SSHUserList
 	ssoPublicKey        string
 }
@@ -128,6 +130,7 @@ func New(config Config) (*Resource, error) {
 		logger:              config.Logger,
 		oidc:                config.OIDC,
 		registryDomain:      config.RegistryDomain,
+		registryMirrors:     config.RegistryMirrors,
 		sshUserList:         config.SSHUserList,
 		ssoPublicKey:        config.SSOPublicKey,
 	}
