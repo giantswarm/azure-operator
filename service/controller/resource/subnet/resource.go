@@ -24,7 +24,6 @@ import (
 )
 
 const (
-	mainDeploymentName = "subnet"
 	// Name is the identifier of the resource.
 	Name = "subnet"
 )
