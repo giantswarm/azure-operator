@@ -26,7 +26,7 @@ require (
 	github.com/giantswarm/k8sclient v0.2.0
 	github.com/giantswarm/k8sclient/v2 v2.0.0
 	github.com/giantswarm/k8sclient/v3 v3.1.1
-	github.com/giantswarm/k8scloudconfig/v7 v7.1.3-0.20201029220533-f69b5378ddc1
+	github.com/giantswarm/k8scloudconfig/v7 v7.2.0
 	github.com/giantswarm/kubelock v0.2.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.0
