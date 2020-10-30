@@ -14,6 +14,7 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -33,6 +34,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that azurecluster has same release label")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that machinepools has same release label")
+
+	masterUpgraded, err := r.ensureMasterHasUpgraded(ctx, cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if !masterUpgraded {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "master node hasn't upgraded yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	}
 
 	err = r.propagateReleaseToMachinePools(ctx, cr)
 	if err != nil {
@@ -72,6 +84,30 @@ func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi
 	}
 
 	return nil
+}
+
+func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1alpha3.Cluster) (bool, error) {
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, &cluster)
+	if err != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
+		return false, nil
+	}
+
+	nodeList := &corev1.NodeList{}
+	err = tenantClusterK8sClient.List(ctx, nodeList, client.MatchingLabels{"kubernetes.io/role": "master"})
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	for _, n := range nodeList.Items {
+		nodeVer, labelExists := n.Labels[label.AzureOperatorVersion]
+
+		if !labelExists || nodeVer != project.Version() {
+			return false, nil
+		}
+	}
+
+	return true, nil
 }
 
 func (r *Resource) propagateReleaseToMachinePools(ctx context.Context, cr capiv1alpha3.Cluster) error {

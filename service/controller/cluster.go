@@ -2,7 +2,9 @@ package controller
 
 import (
 	"context"
+	"time"
 
+	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -16,6 +18,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterdependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterownerreference"
@@ -120,11 +123,35 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 		}
 	}
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tenantClientFactory tenantcluster.Factory
+	{
+		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var clusterUpgradeResource resource.Interface
 	{
 		c := clusterupgrade.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
+			TenantClientFactory: tenantClientFactory,
 		}
 
 		clusterUpgradeResource, err = clusterupgrade.New(c)
