@@ -2,7 +2,6 @@ package azuremachinepoolconditions
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
@@ -12,12 +11,10 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 const (
-	subnetDeploymentPrefix     = "subnet"
-	provisioningStateSucceeded = "Succeeded"
-
 	SubnetNotFoundReason          = "SubnetNotFound"
 	SubnetProvisioningStatePrefix = "SubnetProvisioningState"
 )
@@ -32,17 +29,19 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachineP
 	}
 
 	// Now let's first check ARM deployment state
-	subnetDeploymentName := getSubnetDeploymentName(azureMachinePool.Name)
+	subnetDeploymentName := key.SubnetDeploymentName(azureMachinePool.Name)
 	isSubnetDeploymentSuccessful, err := r.checkIfDeploymentIsSuccessful(ctx, deploymentsClient, azureMachinePool, subnetDeploymentName, azureconditions.SubnetReadyCondition)
 	if err != nil {
 		return microerror.Mask(err)
 	} else if !isSubnetDeploymentSuccessful {
-		// in the deployment is not yet successful, the check method will set
-		// appropriate condition value.
+		// Function checkIfDeploymentIsSuccessful that is called above, if it
+		// sees that the deployment is not succeeded, for whatever reason, it
+		// will also set appropriate condition value, so our job here is done.
 		return nil
 	}
 
-	// Deployment is successful, now let's check the actual resource.
+	// Deployment is successful, we proceed with checking the actual Azure
+	// subnet.
 	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
@@ -65,7 +64,7 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachineP
 	// Note: Here we check if the subnet exists and that its provisioning state
 	// is succeeded. It would be good to also check network security group,
 	// routing table and service endpoints.
-	if subnet.ProvisioningState == provisioningStateSucceeded {
+	if subnet.ProvisioningState == network.Succeeded {
 		capiconditions.MarkTrue(azureMachinePool, azureconditions.SubnetReadyCondition)
 	} else {
 		r.setSubnetProvisioningStateNotSuccessful(ctx, azureMachinePool, subnetName, subnet.ProvisioningState, azureconditions.SubnetReadyCondition)
@@ -74,10 +73,6 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachineP
 	r.logConditionStatus(ctx, azureMachinePool, azureconditions.SubnetReadyCondition)
 	r.logDebug(ctx, "ensured condition %s", azureconditions.SubnetReadyCondition)
 	return nil
-}
-
-func getSubnetDeploymentName(subnetName string) string {
-	return fmt.Sprintf("%s-%s", subnetDeploymentPrefix, subnetName)
 }
 
 func (r *Resource) setSubnetNotFound(ctx context.Context, cr capiconditions.Setter, subnetName string, condition capi.ConditionType) {
