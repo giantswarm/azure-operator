@@ -41,6 +41,7 @@ type Config struct {
 	Azure                  setting.Azure
 	AzureClientCredentials auth.ClientCredentialsConfig
 	CtrlClient             ctrl.Client
+	DockerhubToken         string
 	Ignition               setting.Ignition
 	Logger                 micrologger.Logger
 	OIDC                   setting.OIDC
@@ -53,6 +54,7 @@ type CloudConfig struct {
 	azure                  setting.Azure
 	azureClientCredentials auth.ClientCredentialsConfig
 	ctrlClient             ctrl.Client
+	dockerhubToken         string
 	ignition               setting.Ignition
 	logger                 micrologger.Logger
 	OIDC                   setting.OIDC
@@ -62,6 +64,9 @@ type CloudConfig struct {
 }
 
 func New(config Config) (*CloudConfig, error) {
+	if config.DockerhubToken == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.DockerhubToken must not be empty", config)
+	}
 	if config.Ignition.Path == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.IgnitionPath must not be empty", config)
 	}
@@ -85,6 +90,7 @@ func New(config Config) (*CloudConfig, error) {
 		azure:                  config.Azure,
 		azureClientCredentials: config.AzureClientCredentials,
 		ctrlClient:             config.CtrlClient,
+		dockerhubToken:         config.DockerhubToken,
 		ignition:               config.Ignition,
 		logger:                 config.Logger,
 		OIDC:                   config.OIDC,

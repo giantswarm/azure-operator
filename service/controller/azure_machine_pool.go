@@ -43,6 +43,7 @@ type AzureMachinePoolConfig struct {
 	ClusterIPRange        string
 	CPAzureClientSet      *client.AzureClientSet
 	CredentialProvider    credential.Provider
+	DockerhubToken        string
 	EtcdPrefix            string
 	Ignition              setting.Ignition
 	InstallationName      string
@@ -291,6 +292,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			EtcdPrefix:          config.EtcdPrefix,
 			CredentialProvider:  config.CredentialProvider,
 			CtrlClient:          config.K8sClient.CtrlClient(),
+			DockerhubToken:      config.DockerhubToken,
 			Ignition:            config.Ignition,
 			Logger:              config.Logger,
 			OIDC:                config.OIDC,
