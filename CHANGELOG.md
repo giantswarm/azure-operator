@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Pass dockerhub token for kubelet authorized image pulling. 
+- Add missing registry mirrors in `spark` resource.
 
 ### Fixed
 
