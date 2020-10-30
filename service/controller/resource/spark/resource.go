@@ -38,6 +38,7 @@ type Config struct {
 	ClusterIPRange      string
 	CredentialProvider  credential.Provider
 	CtrlClient          client.Client
+	DockerhubToken      string
 	EtcdPrefix          string
 	Ignition            setting.Ignition
 	Logger              micrologger.Logger
@@ -56,6 +57,7 @@ type Resource struct {
 	clusterIPRange      string
 	credentialProvider  credential.Provider
 	ctrlClient          client.Client
+	dockerhubToken      string
 	etcdPrefix          string
 	ignition            setting.Ignition
 	logger              micrologger.Logger
@@ -95,6 +97,10 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
 
+	if config.DockerhubToken == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.DockerhubToken must not be empty", config)
+	}
+
 	if config.EtcdPrefix == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.EtcdPrefix must not be empty", config)
 	}
@@ -123,6 +129,7 @@ func New(config Config) (*Resource, error) {
 		clusterIPRange:      config.ClusterIPRange,
 		credentialProvider:  config.CredentialProvider,
 		ctrlClient:          config.CtrlClient,
+		dockerhubToken:      config.DockerhubToken,
 		etcdPrefix:          config.EtcdPrefix,
 		ignition:            config.Ignition,
 		logger:              config.Logger,
