@@ -2,8 +2,8 @@ package azuremachinepoolconditions
 
 import (
 	"context"
-	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -14,13 +14,11 @@ import (
 )
 
 const (
-	vmssDeploymentPrefix               = "nodepool-"
 	VMSSNotFoundReason                 = "VMSSNotFound"
-	VMSSIDNotSetReason                 = "VMSSIDNotSet"
 	VMSSProvisioningStatePrefix        = "VMSSProvisioningState"
 	VMSSProvisioningStateUnknownReason = "VMSSProvisioningStateUnknown"
-	VmssProvisioningStateSucceeded     = "Succeeded"
-	VmssProvisioningStateFailed        = "Failed"
+	VmssProvisioningStateSucceeded     = string(compute.ProvisioningStateSucceeded)
+	VmssProvisioningStateFailed        = string(compute.ProvisioningStateFailed)
 )
 
 func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
@@ -33,7 +31,7 @@ func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePoo
 	}
 
 	// Now let's first check ARM deployment state
-	deploymentName := getVMSSDeploymentName(azureMachinePool.Name)
+	deploymentName := key.NodePoolDeploymentName(azureMachinePool)
 	isDeploymentSuccessful, err := r.checkIfDeploymentIsSuccessful(ctx, deploymentsClient, azureMachinePool, deploymentName, azureconditions.VMSSReadyCondition)
 	if err != nil {
 		return microerror.Mask(err)
@@ -89,10 +87,6 @@ func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePoo
 	r.logConditionStatus(ctx, azureMachinePool, azureconditions.VMSSReadyCondition)
 	r.logDebug(ctx, "ensured condition %s", azureconditions.VMSSReadyCondition)
 	return nil
-}
-
-func getVMSSDeploymentName(nodepoolID string) string {
-	return fmt.Sprintf("%s%s", vmssDeploymentPrefix, nodepoolID)
 }
 
 func (r *Resource) setVMSSNotFound(ctx context.Context, cr capiconditions.Setter, vmssName string, condition capi.ConditionType) {
