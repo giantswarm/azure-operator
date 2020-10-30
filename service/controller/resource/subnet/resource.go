@@ -119,10 +119,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func getSubnetARMDeploymentName(subnetName string) string {
-	return fmt.Sprintf("%s-%s", mainDeploymentName, subnetName)
-}
-
 func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, natGatewaysClient *network.NatGatewaysClient, azureCluster capzv1alpha3.AzureCluster) error {
 	armTemplate, err := subnet.GetARMTemplate()
 	if err != nil {
