@@ -70,6 +70,10 @@ func New(config Config) (*CloudConfig, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.azureClientCredentials must not be empty", config)
 	}
 
+	if config.DockerhubToken == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.DockerhubToken must not be empty", config)
+	}
+
 	if config.SubscriptionID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.SubscriptionID must not be empty", config)
 	}
