@@ -364,6 +364,7 @@ func New(config Config) (*Service, error) {
 			ClusterIPRange:     config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
 			CredentialProvider: credentialProvider,
 			CPAzureClientSet:   cpAzureClientSet,
+			DockerhubToken:     config.Viper.GetString(config.Flag.Service.Registry.DockerhubToken),
 			EtcdPrefix:         config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
 			Ignition:           Ignition,
 			InstallationName:   config.Viper.GetString(config.Flag.Service.Installation.Name),
