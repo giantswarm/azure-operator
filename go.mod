@@ -14,7 +14,6 @@ require (
 	github.com/giantswarm/apiextensions/v3 v3.4.0
 	github.com/giantswarm/appcatalog v0.2.7
 	github.com/giantswarm/apprclient/v2 v2.0.0
-	github.com/giantswarm/azure-operator/v4 v4.2.0 // indirect
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/certs/v3 v3.1.0
 	github.com/giantswarm/e2e-harness/v2 v2.0.0
