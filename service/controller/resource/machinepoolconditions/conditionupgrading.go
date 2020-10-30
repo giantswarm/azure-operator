@@ -26,6 +26,10 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, machinePool *ca
 	// is just created.
 	if capiconditions.IsUnknown(machinePool, aeconditions.UpgradingCondition) {
 		err = conditions.MarkUpgradingNotStarted(machinePool)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		return nil
 	}
 
 	// Let's now check if desired versions are set and deployed.

@@ -9,8 +9,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 )
 
 func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
@@ -23,11 +21,6 @@ func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePoo
 	// Check desired azure-operator version
 	currentAzureOperatorVersion := machinePool.GetLabels()[label.AzureOperatorVersion]
 	if currentAzureOperatorVersion != desiredAzureOperatorVersion {
-		return false, nil
-	}
-
-	// Node pool is still being upgraded
-	if conditions.IsUpgradingTrue(machinePool) {
 		return false, nil
 	}
 
@@ -59,26 +52,32 @@ func AllNodePoolNodesUpToDate(ctx context.Context, c client.Client, machinePool 
 
 	desiredVersion := semver.New(desiredAzureOperatorVersion)
 	var upToDateNodesCount int32
+	var outdatedNodes int32
 
 	for _, node := range nodes.Items {
-		operatorVersionLabel, exists := node.GetLabels()[label.AzureOperatorVersion]
+		nodeOperatorVersionLabel, exists := node.GetLabels()[label.AzureOperatorVersion]
 		if !exists {
 			return false, nil
 		}
 
-		operatorVersion := semver.New(operatorVersionLabel)
+		nodeOperatorVersion := semver.New(nodeOperatorVersionLabel)
 
-		if operatorVersion.LessThan(*desiredVersion) {
-			return false, nil
+		if nodeOperatorVersion.LessThan(*desiredVersion) {
+			outdatedNodes++
+		} else {
+			upToDateNodesCount++
 		}
-
-		upToDateNodesCount++
 	}
 
 	// azure-admission-controller ensures that machinePool.Spec.Replicas is
 	// always set
 	requiredReplicas := *machinePool.Spec.Replicas
+
+	// We want that all required replicas are up-to-date.
 	requiredReplicasAreUpToDate := upToDateNodesCount >= requiredReplicas
 
-	return requiredReplicasAreUpToDate, nil
+	// We also want that old nodes are removed.
+	oldNodesAreRemoved := outdatedNodes == 0
+
+	return requiredReplicasAreUpToDate && oldNodesAreRemoved, nil
 }
