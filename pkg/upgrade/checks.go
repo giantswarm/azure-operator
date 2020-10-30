@@ -9,7 +9,27 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 )
+
+func IsNodePoolUpgradeInProgressOrPending(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
+	if conditions.IsUpgradingTrue(machinePool) {
+		// Upgrade is in progress.
+		return true, nil
+	}
+
+	isNodePoolUpgradeCompleted, err := IsNodePoolUpgradeCompleted(ctx, c, machinePool, desiredReleaseVersion, desiredAzureOperatorVersion)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	// If the upgrade has not been completed for the desired release, then we
+	// have a pending upgrade to do.
+	upgradeIsPending := !isNodePoolUpgradeCompleted
+
+	return upgradeIsPending, nil
+}
 
 func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
 	// Check desired release version

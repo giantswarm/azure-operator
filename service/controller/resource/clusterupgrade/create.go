@@ -10,11 +10,11 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
-	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/pkg/upgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -111,18 +111,37 @@ func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1al
 }
 
 func (r *Resource) propagateReleaseToMachinePools(ctx context.Context, cr capiv1alpha3.Cluster) error {
-	lst := expcapiv1alpha3.MachinePoolList{}
-	err := r.ctrlClient.List(ctx, &lst, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterName(&cr)})
+	lst, err := helpers.GetMachinePoolsByMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	if !hasMachinePoolsUpgradeCompleted(lst.Items, cr.Labels[label.ReleaseVersion]) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "machinepool still upgrading; skipping release propagation")
-		return nil
-	}
+	for i, mp := range lst.Items {
+		if cr.Labels[label.ReleaseVersion] == mp.Labels[label.ReleaseVersion] &&
+			cr.Labels[label.AzureOperatorVersion] == mp.Labels[label.AzureOperatorVersion] {
+			continue
+		}
 
-	for _, mp := range lst.Items {
+		if i > 0 {
+			previousMachinePool := &lst.Items[i-1]
+			isPreviousNodePoolUpgradeInProgressOrPending, err := upgrade.IsNodePoolUpgradeInProgressOrPending(
+				ctx,
+				r.ctrlClient,
+				previousMachinePool,
+				cr.Labels[label.ReleaseVersion],
+				cr.Labels[label.AzureOperatorVersion])
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			if isPreviousNodePoolUpgradeInProgressOrPending {
+				// Previous node pool is still being upgraded, and as we only
+				// update one node pool at a time, we wait for previous upgrade
+				// to be completed.
+				break
+			}
+		}
+
 		if cr.Labels[label.ReleaseVersion] != mp.Labels[label.ReleaseVersion] ||
 			cr.Labels[label.AzureOperatorVersion] != mp.Labels[label.AzureOperatorVersion] {
 
@@ -148,20 +167,4 @@ func (r *Resource) propagateReleaseToMachinePools(ctx context.Context, cr capiv1
 	}
 
 	return nil
-}
-
-func hasMachinePoolsUpgradeCompleted(mps []expcapiv1alpha3.MachinePool, desiredRelease string) bool {
-	for _, mp := range mps {
-		if !IsUpgradeCompleted(mp, desiredRelease) {
-			return false
-		}
-	}
-
-	return true
-}
-
-// XXX: This is just a placeholder for proper IsUpgradeCompleted implementation.
-func IsUpgradeCompleted(mp expcapiv1alpha3.MachinePool, desiredRelease string) bool {
-	condition := capiconditions.Get(&mp, capiv1alpha3.ReadyCondition)
-	return condition.Status == corev1.ConditionTrue
 }
