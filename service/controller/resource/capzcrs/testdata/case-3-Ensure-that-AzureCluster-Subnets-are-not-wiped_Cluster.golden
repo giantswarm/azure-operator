@@ -11,7 +11,7 @@ metadata:
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: org-giantswarm
-  resourceVersion: "2"
+  resourceVersion: "1"
 spec:
   clusterNetwork:
     apiServerPort: 443
