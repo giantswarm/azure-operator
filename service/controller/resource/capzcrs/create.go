@@ -324,9 +324,6 @@ func detectAzureClusterUpdate(orig, desired runtime.Object) (bool, error) {
 	o := orig.(*capzv1alpha3.AzureCluster)
 	d := desired.(*capzv1alpha3.AzureCluster)
 
-	fmt.Println("Original cidrblock: ", o.Spec.NetworkSpec.Vnet.CidrBlock)
-	fmt.Println("Desired  cidrblock: ", d.Spec.NetworkSpec.Vnet.CidrBlock)
-
 	return (o.Spec.NetworkSpec.Vnet.CidrBlock != d.Spec.NetworkSpec.Vnet.CidrBlock ||
 		o.Spec.NetworkSpec.Vnet.Name != d.Spec.NetworkSpec.Vnet.Name ||
 		o.Spec.NetworkSpec.Vnet.ResourceGroup != d.Spec.NetworkSpec.Vnet.ResourceGroup ||
