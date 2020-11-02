@@ -3,15 +3,15 @@ kind: AzureMachine
 metadata:
   creationTimestamp: null
   labels:
-    azure-operator.giantswarm.io/version: 4.3.0
+    azure-operator.giantswarm.io/version: 4.2.0
     cluster.x-k8s.io/cluster-name: c6fme
     cluster.x-k8s.io/control-plane: "true"
     giantswarm.io/cluster: c6fme
     giantswarm.io/organization: giantswarm
-    release.giantswarm.io/version: 12.1.0
+    release.giantswarm.io/version: 12.0.0
   name: c6fme-master-0
   namespace: org-giantswarm
-  resourceVersion: "2"
+  resourceVersion: "1"
 spec:
   availabilityZone: {}
   failureDomain: "1"
@@ -28,7 +28,7 @@ spec:
     managedDisk:
       storageAccountType: Premium_LRS
     osType: Linux
-  sshPublicKey: ""
+  sshPublicKey: ssh-rsa foobarbaz== foobar
   vmSize: Standard_D4s_v3
 status:
   ready: false

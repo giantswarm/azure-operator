@@ -3,6 +3,7 @@ package capzcrs
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strconv"
 
 	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
@@ -10,8 +11,6 @@ import (
 	"github.com/giantswarm/apiextensions/v2/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/to"
-	"github.com/google/go-cmp/cmp"
-	"github.com/google/go-cmp/cmp/cmpopts"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/api/meta"
@@ -80,8 +79,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		mappedCRs = append(mappedCRs, crmapping{
 			obj:            o,
-			needUpdateFunc: genericUpdateDetection,
-			mergeFunc:      genericObjectMerge,
+			needUpdateFunc: nil,
+			mergeFunc:      nil,
 		})
 
 		o, err = r.mapAzureConfigToAzureMachine(ctx, cr)
@@ -90,8 +89,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		mappedCRs = append(mappedCRs, crmapping{
 			obj:            o,
-			needUpdateFunc: genericUpdateDetection,
-			mergeFunc:      genericObjectMerge,
+			needUpdateFunc: nil,
+			mergeFunc:      nil,
 		})
 	}
 
@@ -238,8 +237,8 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 
 func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error {
 	for _, m := range crmappings {
-		// Construct new instance by creating deep copy of desired object.
-		readCR := m.obj.DeepCopyObject()
+		// Construct new instance via reflection to ensure clean zero value object.
+		readCR := reflect.New(reflect.TypeOf(m.obj).Elem()).Interface().(runtime.Object)
 
 		// Acquire accessors for ObjectMeta and TypeMeta fields of CR.
 		desiredMeta, err := meta.Accessor(m.obj)
@@ -272,6 +271,13 @@ func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error 
 			continue
 		} else if err != nil {
 			return microerror.Mask(err)
+		}
+
+		// If needUpdateFunc or mergeFunc are nil, it means that given CR is
+		// not intended to be updated. Only created when it doesn't already
+		// exist.
+		if m.needUpdateFunc == nil || m.mergeFunc == nil {
+			return nil
 		}
 
 		updateNeeded, err := m.needUpdateFunc(readCR, m.obj)
@@ -318,103 +324,30 @@ func detectAzureClusterUpdate(orig, desired runtime.Object) (bool, error) {
 	o := orig.(*capzv1alpha3.AzureCluster)
 	d := desired.(*capzv1alpha3.AzureCluster)
 
-	if !cmp.Equal(d.GetLabels(), o.GetLabels()) {
-		return true, nil
-	}
+	fmt.Println("Original cidrblock: ", o.Spec.NetworkSpec.Vnet.CidrBlock)
+	fmt.Println("Desired  cidrblock: ", d.Spec.NetworkSpec.Vnet.CidrBlock)
 
-	if !cmp.Equal(d.GetAnnotations(), o.GetAnnotations()) {
-		return true, nil
-	}
-
-	if !cmp.Equal(d, o, cmpopts.IgnoreTypes(&metav1.ObjectMeta{}), cmpopts.IgnoreTypes(&metav1.TypeMeta{}, cmpopts.IgnoreTypes(&capzv1alpha3.Subnets{}))) {
-		return true, nil
-	}
-
-	return false, nil
+	return (o.Spec.NetworkSpec.Vnet.CidrBlock != d.Spec.NetworkSpec.Vnet.CidrBlock ||
+		o.Spec.NetworkSpec.Vnet.Name != d.Spec.NetworkSpec.Vnet.Name ||
+		o.Spec.NetworkSpec.Vnet.ResourceGroup != d.Spec.NetworkSpec.Vnet.ResourceGroup ||
+		o.Spec.ResourceGroup != d.Spec.ResourceGroup ||
+		o.Spec.Location != d.Spec.Location ||
+		o.Spec.ControlPlaneEndpoint != d.Spec.ControlPlaneEndpoint), nil
 }
 
 func mergeAzureCluster(orig, desired runtime.Object) (runtime.Object, error) {
 	o := orig.(*capzv1alpha3.AzureCluster)
 	d := desired.(*capzv1alpha3.AzureCluster)
 
-	labels := o.GetLabels()
-	for k, v := range d.GetLabels() {
-		labels[k] = v
-	}
-	// Set merged labels on desired object as that's the one we write
-	// in update.
-	d.SetLabels(labels)
+	// Only copy specific parts of desired opbject
+	o.Spec.NetworkSpec.Vnet.CidrBlock = d.Spec.NetworkSpec.Vnet.CidrBlock
+	o.Spec.NetworkSpec.Vnet.Name = d.Spec.NetworkSpec.Vnet.Name
+	o.Spec.NetworkSpec.Vnet.ResourceGroup = d.Spec.NetworkSpec.Vnet.ResourceGroup
+	o.Spec.ResourceGroup = d.Spec.ResourceGroup
+	o.Spec.Location = d.Spec.Location
+	o.Spec.ControlPlaneEndpoint = d.Spec.ControlPlaneEndpoint
 
-	annotations := o.GetAnnotations()
-	for k, v := range d.GetAnnotations() {
-		annotations[k] = v
-	}
-	// Set merged labels on desired object as that's the one we write
-	// in update.
-	d.SetAnnotations(annotations)
-
-	// Maintain existing subnets.
-	d.Spec.NetworkSpec.Subnets = o.Spec.NetworkSpec.Subnets
-
-	return d, nil
-}
-
-func genericUpdateDetection(orig, desired runtime.Object) (bool, error) {
-	// Acquire accessors for ObjectMeta fields of CR.
-	desiredMeta, err := meta.Accessor(desired)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	readMeta, err := meta.Accessor(orig)
-	if err != nil {
-		return false, microerror.Mask(err)
-	}
-
-	if !cmp.Equal(desiredMeta.GetLabels(), readMeta.GetLabels()) {
-		return true, nil
-	}
-
-	if !cmp.Equal(desiredMeta.GetAnnotations(), readMeta.GetAnnotations()) {
-		return true, nil
-	}
-
-	if !cmp.Equal(desired, orig, cmpopts.IgnoreTypes(&metav1.ObjectMeta{}), cmpopts.IgnoreTypes(&metav1.TypeMeta{})) {
-		return true, nil
-	}
-
-	return false, nil
-}
-
-func genericObjectMerge(orig, desired runtime.Object) (runtime.Object, error) {
-	// Acquire accessors for ObjectMeta fields of CR.
-	desiredMeta, err := meta.Accessor(desired)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	readMeta, err := meta.Accessor(orig)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	labels := readMeta.GetLabels()
-	for k, v := range desiredMeta.GetLabels() {
-		labels[k] = v
-	}
-	// Set merged labels on desired object as that's the one we write
-	// in update.
-	desiredMeta.SetLabels(labels)
-
-	annotations := readMeta.GetAnnotations()
-	for k, v := range desiredMeta.GetAnnotations() {
-		annotations[k] = v
-	}
-	// Set merged labels on desired object as that's the one we write
-	// in update.
-	desiredMeta.SetAnnotations(annotations)
-
-	return desired, nil
+	return o, nil
 }
 
 func toInt32P(v int32) *int32 {
