@@ -15,6 +15,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Only try to save Azure VMSS IDs in Custom Resources if VMSS exists.
+- Fix firewall rules to allow traffic between nodes in all node pools.
 
 ## [5.0.0-alpha4] - 2020-10-27
 
