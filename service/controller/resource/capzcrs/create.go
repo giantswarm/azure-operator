@@ -238,7 +238,25 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error {
 	for _, m := range crmappings {
 		// Construct new instance via reflection to ensure clean zero value object.
-		readCR := reflect.New(reflect.TypeOf(m.obj).Elem()).Interface().(runtime.Object)
+		var readCR runtime.Object
+		{
+			// Get the underlying type of desired runtime.Object.
+			t := reflect.TypeOf(m.obj)
+
+			// We know that underlying type is a pointer so let's dereference
+			// it before cloning so that we get the actual object instance
+			// instead of just an instance of a pointer.
+			e := t.Elem()
+
+			// Construct a new instance of that type and receive
+			// `reflect.Value` object containing pointer to that instance.
+			v := reflect.New(e)
+
+			// Finally, extract the encapsulated `interface{}` from the
+			// `reflect.Value` and cast it to instance of `runtime.Object`
+			// interface.
+			readCR = v.Interface().(runtime.Object)
+		}
 
 		// Acquire accessors for ObjectMeta and TypeMeta fields of CR.
 		desiredMeta, err := meta.Accessor(m.obj)
