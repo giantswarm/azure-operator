@@ -13,6 +13,10 @@ import (
 
 func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
 	c := capiconditions.Get(cr, aeconditions.UpgradingCondition)
+	if c == nil {
+		return false, nil
+	}
+
 	if c.Status == corev1.ConditionTrue {
 		// When Upgrading == True => Upgrading is still in progress.
 		return false, nil
@@ -44,6 +48,10 @@ func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
 
 func IsUpgraded(cr CR, desiredRelease string) (bool, error) {
 	c := capiconditions.Get(cr, aeconditions.UpgradingCondition)
+	if c == nil {
+		return false, nil
+	}
+
 	if c.Status == corev1.ConditionTrue {
 		// When Upgrading == True => Upgrading is still in progress.
 		return false, nil
