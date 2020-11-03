@@ -14,7 +14,6 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool/template"
@@ -117,15 +116,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	// Figure out if we need to submit the ARM Deployment.
 	deploymentNeedsToBeSubmitted := currentDeployment.IsHTTPStatus(http.StatusNotFound)
 	nodesNeedToBeRolled := false
-	thisIsUpgrade := false
 	if !deploymentNeedsToBeSubmitted {
 		changes, err := template.Diff(currentDeployment, desiredDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
-		}
-
-		if contains(changes, "azureOperatorVersion") {
-			thisIsUpgrade = true
 		}
 
 		// When customer is only scaling the cluster,
@@ -138,13 +132,6 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 	if deploymentNeedsToBeSubmitted {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
-
-		if thisIsUpgrade && !conditions.IsUpgradingTrue(machinePool) {
-			// We want to upgrade node pool, but MachinePool upgrade is not
-			// started yet, so this AzureMachinePool has to wait for its turn,
-			// as we are upgrading nodes one by one.
-			return currentState, nil
-		}
 
 		_, err = r.ensureDeployment(ctx, deploymentsClient, desiredDeployment, &azureMachinePool)
 		if err != nil {
