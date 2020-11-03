@@ -58,14 +58,7 @@ func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePoo
 
 func AllNodePoolNodesUpToDate(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredAzureOperatorVersion string) (bool, error) {
 	nodes := &corev1.NodeList{}
-	var labelSelector client.MatchingLabels
-	{
-		labelSelector = map[string]string{
-			label.MachinePool: machinePool.Name,
-		}
-	}
-
-	err := c.List(ctx, nodes, labelSelector)
+	err := c.List(ctx, nodes, client.MatchingLabels{label.MachinePool: machinePool.Name})
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
