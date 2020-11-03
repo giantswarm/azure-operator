@@ -10,6 +10,7 @@ import (
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capiv1alpha3exp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
@@ -116,54 +117,64 @@ func (r *Resource) propagateReleaseToMachinePools(ctx context.Context, cr capiv1
 		return microerror.Mask(err)
 	}
 
-	for i, mp := range lst.Items {
-		if cr.Labels[label.ReleaseVersion] == mp.Labels[label.ReleaseVersion] &&
-			cr.Labels[label.AzureOperatorVersion] == mp.Labels[label.AzureOperatorVersion] {
-			continue
-		}
+	allStartedNodePoolUpgradesAreCompleted := true
+	var machinePoolUpgradeCandidate *capiv1alpha3exp.MachinePool
 
-		if i > 0 {
-			previousMachinePool := &lst.Items[i-1]
-			isPreviousNodePoolUpgradeInProgressOrPending, err := upgrade.IsNodePoolUpgradeInProgressOrPending(
+	for _, mp := range lst.Items {
+		machinePool := mp
+
+		if cr.Labels[label.ReleaseVersion] == machinePool.Labels[label.ReleaseVersion] &&
+			cr.Labels[label.AzureOperatorVersion] == machinePool.Labels[label.AzureOperatorVersion] {
+			// Upgrade was initiated for this node pool, let's check if it has
+			// been completed.
+			nodePoolUpgradeInProgressOrPending, err := upgrade.IsNodePoolUpgradeInProgressOrPending(
 				ctx,
 				r.ctrlClient,
-				previousMachinePool,
+				&machinePool,
 				cr.Labels[label.ReleaseVersion],
 				cr.Labels[label.AzureOperatorVersion])
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			if isPreviousNodePoolUpgradeInProgressOrPending {
-				// Previous node pool is still being upgraded, and as we only
-				// update one node pool at a time, we wait for previous upgrade
-				// to be completed.
+			if nodePoolUpgradeInProgressOrPending {
+				// This node pool is still being upgraded, so we want to wait
+				// for this upgrade to be completed.
+				allStartedNodePoolUpgradesAreCompleted = false
 				break
 			}
 		}
 
-		if cr.Labels[label.ReleaseVersion] != mp.Labels[label.ReleaseVersion] ||
-			cr.Labels[label.AzureOperatorVersion] != mp.Labels[label.AzureOperatorVersion] {
+		if machinePoolUpgradeCandidate == nil &&
+			(cr.Labels[label.ReleaseVersion] != machinePool.Labels[label.ReleaseVersion] ||
+				cr.Labels[label.AzureOperatorVersion] != machinePool.Labels[label.AzureOperatorVersion]) {
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating release to machinepool %q", mp.Name))
-
-			mp.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
-			mp.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
-
-			err = r.ctrlClient.Update(ctx, &mp)
-			if apierrors.IsConflict(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-				r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
-				return nil
-			} else if err != nil {
-				return microerror.Mask(err)
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated release to machinepool %q", mp.Name))
+			// We did not already find next node pool to be upgraded, and this
+			// one does not have version labels updated, so this node pool will
+			// be upgraded next.
+			machinePoolUpgradeCandidate = &machinePool
 
 			// Only update one MachinePool CR at a time.
 			break
 		}
+	}
+
+	if allStartedNodePoolUpgradesAreCompleted && machinePoolUpgradeCandidate != nil {
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating release to machinepool %q", machinePoolUpgradeCandidate.Name))
+
+		machinePoolUpgradeCandidate.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
+		machinePoolUpgradeCandidate.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
+
+		err = r.ctrlClient.Update(ctx, machinePoolUpgradeCandidate)
+		if apierrors.IsConflict(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated release to machinepool %q", machinePoolUpgradeCandidate.Name))
 	}
 
 	return nil
