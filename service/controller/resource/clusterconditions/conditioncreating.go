@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"time"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
@@ -24,7 +25,7 @@ func (r *Resource) ensureCreatingCondition(ctx context.Context, cluster *capi.Cl
 	// Creating condition is not set or it has Unknown status, let's set it for
 	// the first time.
 	if capiconditions.IsUnknown(cluster, aeconditions.CreatingCondition) {
-		err = r.setCreatingCondition(ctx, cluster)
+		err = r.initializeCreatingCondition(ctx, cluster)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -48,10 +49,32 @@ func (r *Resource) ensureCreatingCondition(ctx context.Context, cluster *capi.Cl
 	return nil
 }
 
-// setCreatingCondition sets Creating condition to its initial status True.
-func (r *Resource) setCreatingCondition(ctx context.Context, cluster *capi.Cluster) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster creation started, setting Creating condition to True")
-	capiconditions.MarkTrue(cluster, aeconditions.CreatingCondition)
+// initializeCreatingCondition sets Creating condition to its initial status,
+// which should happen in 3 cases, (1) when the cluster is just created, (2)
+// when the pre-nodepools cluster is upgraded to a nodepools cluster, and (3)
+// when a Cluster CR is restored from a backup.
+func (r *Resource) initializeCreatingCondition(ctx context.Context, cluster *capi.Cluster) error {
+	lastDeployedReleaseVersion, isSet := cluster.GetAnnotations()[annotation.LastDeployedReleaseVersion]
+	if isSet {
+		// release.giantswarm.io/last-deployed-version annotation is set, which
+		// means that the cluster is already created
+		message := fmt.Sprintf("Cluster was already create with or upgraded to release version %s", lastDeployedReleaseVersion)
+		capiconditions.MarkFalse(
+			cluster,
+			aeconditions.CreatingCondition,
+			aeconditions.ExistingClusterReason,
+			capi.ConditionSeverityInfo,
+			message)
+
+		logMessage := fmt.Sprintf("%s, setting Creating condition to False", message)
+		r.logger.LogCtx(ctx, "level", "debug", "message", logMessage)
+	} else {
+		// release.giantswarm.io/last-deployed-version annotation is not set,
+		// which means that the cluster is just being created.
+		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is just being created, setting Creating condition to True")
+		capiconditions.MarkTrue(cluster, aeconditions.CreatingCondition)
+	}
+
 	return nil
 }
 
