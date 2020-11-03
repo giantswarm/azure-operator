@@ -1,24 +1,23 @@
 package conditions
 
 import (
+	"fmt"
+
 	"github.com/giantswarm/microerror"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 )
 
-var unexpectedConditionStatusError = &microerror.Error{
+var UnexpectedConditionStatusError = &microerror.Error{
 	Kind: "UnexpectedConditionStatus",
 }
 
-func UnexpectedConditionStatusError(cr CR, t capi.ConditionType) error {
+func UnexpectedConditionStatusErrorMessage(cr CR, t capi.ConditionType) string {
 	c := capiconditions.Get(cr, t)
-
-	return microerror.Maskf(
-		unexpectedConditionStatusError,
-		"Unexpected status for condition %s, got %s", t, c.Status)
+	return fmt.Sprintf("Unexpected status for condition %s, got %s", t, c.Status)
 }
 
 // IsInvalidCondition asserts invalidConditionError.
 func IsUnexpectedConditionStatus(err error) bool {
-	return microerror.Cause(err) == unexpectedConditionStatusError
+	return microerror.Cause(err) == UnexpectedConditionStatusError
 }

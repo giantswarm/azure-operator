@@ -19,7 +19,9 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, machinePool *ca
 
 	// Let's make sure that the condition status is set to a supported value.
 	if conditions.IsUnexpected(machinePool, aeconditions.UpgradingCondition) {
-		return conditions.UnexpectedConditionStatusError(machinePool, aeconditions.UpgradingCondition)
+		return microerror.Maskf(
+			conditions.UnexpectedConditionStatusError,
+			conditions.UnexpectedConditionStatusErrorMessage(machinePool, aeconditions.UpgradingCondition))
 	}
 
 	// Set initial Upgrading condition status to false, since the MachinePool
