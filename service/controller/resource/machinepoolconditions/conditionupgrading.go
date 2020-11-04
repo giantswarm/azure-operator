@@ -6,6 +6,7 @@ import (
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
@@ -38,7 +39,17 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, machinePool *ca
 	desiredReleaseVersion := key.ReleaseVersion(machinePool)
 	desiredAzureOperatorVersion := key.OperatorVersion(machinePool)
 
-	upgradeIsCompletedForDesiredVersion, err := upgrade.IsNodePoolUpgradeCompleted(ctx, r.ctrlClient, machinePool, desiredReleaseVersion, desiredAzureOperatorVersion)
+	cluster, err := util.GetClusterFromMetadata(ctx, r.ctrlClient, machinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	tenantClusterClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	upgradeIsCompletedForDesiredVersion, err := upgrade.IsNodePoolUpgradeCompleted(ctx, tenantClusterClient, machinePool, desiredReleaseVersion, desiredAzureOperatorVersion)
 	if err != nil {
 		return microerror.Mask(err)
 	}
