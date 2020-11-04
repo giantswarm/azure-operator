@@ -36,16 +36,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that all machinepools has the same release label")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "checking if master has been upgraded already")
 	masterUpgraded, err := r.ensureMasterHasUpgraded(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	if !masterUpgraded {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "master node hasn't upgraded yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "master hasn't upgraded yet")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
 		return nil
 	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "master has been upgraded already")
 
 	machinePoolLst, err := helpers.GetMachinePoolsByMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
 	if err != nil {

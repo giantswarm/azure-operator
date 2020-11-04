@@ -86,6 +86,29 @@ func Test_AzureConfigCRMapping(t *testing.T) {
 			},
 			errorMatcher: nil,
 		},
+		{
+
+			name:            "case 4: Ensure that AzureCluster VNET gets updated",
+			location:        "westeurope",
+			azureConfigFile: "simple_azureconfig.yaml",
+			preTestFiles: []string{
+				"azurecluster_without_vnet.yaml",
+				"simple_azuremachine.yaml",
+				"simple_cluster.yaml",
+			},
+			errorMatcher: nil,
+		},
+		{
+			name:            "case 5: Ensure that AzureCluster partial VNET gets updated",
+			location:        "westeurope",
+			azureConfigFile: "simple_azureconfig.yaml",
+			preTestFiles: []string{
+				"azurecluster_with_partial_vnet.yaml",
+				"simple_azuremachine.yaml",
+				"simple_cluster.yaml",
+			},
+			errorMatcher: nil,
+		},
 	}
 
 	for i, tc := range testCases {
