@@ -78,6 +78,8 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 					continue
 				}
 
+				masterUpgradeInProgress = true
+
 				// Ensure that VM has latest VMSS configuration (includes ignition template etc.).
 				if !*vm.VirtualMachineScaleSetVMProperties.LatestModelApplied {
 					err = r.updateInstance(ctx, cr, &vm, key.MasterVMSSName, key.MasterInstanceName)
@@ -94,8 +96,6 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 				if err != nil {
 					return "", microerror.Mask(err)
 				}
-
-				masterUpgradeInProgress = true
 
 				// Reimage only one instance at a time.
 				break
