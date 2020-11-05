@@ -303,6 +303,7 @@ github.com/giantswarm/apiextensions/v2 v2.6.2 h1:ECdw6G5QCr5TN95SIFtD63PfNVS7vBn
 github.com/giantswarm/apiextensions/v2 v2.6.2/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+rJqsPZewzz4jjMXkXYFw=
 github.com/giantswarm/apiextensions/v3 v3.4.0 h1:uP4OUuahuuZyI56jmgXPwBbMpJ1xEHMhh0DcNNcnAik=
 github.com/giantswarm/apiextensions/v3 v3.4.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
+github.com/giantswarm/apiextensions/v3 v3.4.1/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
 github.com/giantswarm/appcatalog v0.2.7 h1:SVD1OH/C5zEP8TaeS3L9t8+lVcfaRZhwY98sn8v9lYs=
 github.com/giantswarm/appcatalog v0.2.7/go.mod h1:WHO5lJvcuwzToxxHPdiX9CVxvMsmP8YZfjoo4E/NTLs=
 github.com/giantswarm/apprclient/v2 v2.0.0 h1:LJeBJAqBvezoAMSx4c3j4N+NnIOIj2zEQPHIY5NYXHs=
@@ -337,6 +338,8 @@ github.com/giantswarm/k8sclient/v4 v4.0.0 h1:K18A0FomGjxTMElcGrjO3uLkYobUtcNh8e8
 github.com/giantswarm/k8sclient/v4 v4.0.0/go.mod h1:jTwQ8q0YbJJu3ZxbjoI6hkXeuvKm15xyI/c+zwxnUH0=
 github.com/giantswarm/k8scloudconfig/v8 v8.1.1 h1:XhtB+n9zzBBSWQwKmrxg7oRWItwyCplCOvmw5sDkJUw=
 github.com/giantswarm/k8scloudconfig/v8 v8.1.1/go.mod h1:J7PbLvfxEq9ZFQTsOL6N9QKnG5sPQUwpdbpRUfPBhek=
+github.com/giantswarm/k8scloudconfig/v9 v9.1.1-0.20201105121444-b81b50011ed3 h1:jcpqdEmPNk1t0wQWYQcSz2JRqyMVy0ehylbhTz6Ei+k=
+github.com/giantswarm/k8scloudconfig/v9 v9.1.1-0.20201105121444-b81b50011ed3/go.mod h1:7PHCfkSxinzrrRFVHHca1sajGpLuzFaWeQsziNhyXbg=
 github.com/giantswarm/k8sportforward/v2 v2.0.0/go.mod h1:YfTaZsgLH1K9BX2zOy+QvvvUTdc744BvRlKrEfVwYfM=
 github.com/giantswarm/kubeconfig/v2 v2.0.0 h1:FC6SsWZN6LXy2D6drTz2W1ULWxYHJECB6O/oYY2oK6s=
 github.com/giantswarm/kubeconfig/v2 v2.0.0/go.mod h1:E+MGiYtmgjjHXeQcECZU5s5qVRbi1z0VoUTxspAWeR8=

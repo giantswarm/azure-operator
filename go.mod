@@ -11,7 +11,7 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
-	github.com/giantswarm/apiextensions/v3 v3.4.0
+	github.com/giantswarm/apiextensions/v3 v3.4.1
 	github.com/giantswarm/appcatalog v0.2.7
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
@@ -26,6 +26,7 @@ require (
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient/v4 v4.0.0
 	github.com/giantswarm/k8scloudconfig/v8 v8.1.1
+	github.com/giantswarm/k8scloudconfig/v9 v9.1.1-0.20201105121444-b81b50011ed3 // indirect
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.1
