@@ -7,9 +7,9 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	apiextensionsannotations "github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
-	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v9/pkg/template"
 	"github.com/giantswarm/microerror"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
