@@ -78,6 +78,18 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 					continue
 				}
 
+				// Ensure that VM has latest VMSS configuration (includes ignition template etc.).
+				if !*vm.VirtualMachineScaleSetVMProperties.LatestModelApplied {
+					err = r.updateInstance(ctx, cr, &vm, key.MasterVMSSName, key.MasterInstanceName)
+					if err != nil {
+						return "", microerror.Mask(err)
+					}
+
+					// Update only one instance at at time.
+					break
+				}
+
+				// Once the VM instance configuration has been updated, it can be reimaged.
 				err = r.reimageInstance(ctx, cr, &vm, key.MasterVMSSName, key.MasterInstanceName)
 				if err != nil {
 					return "", microerror.Mask(err)
@@ -85,7 +97,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 				masterUpgradeInProgress = true
 
-				// Reimage only once instance at-a-time.
+				// Reimage only one instance at a time.
 				break
 			}
 
@@ -100,6 +112,41 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	// Upgrade still in progress. Keep current state.
 	return currentState, nil
+}
+
+func (r *Resource) areNodesReadyForUpgrading(ctx context.Context) (bool, error) {
+	cc, err := controllercontext.FromContext(ctx)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	if cc.Client.TenantCluster.K8s == nil {
+		return false, clientNotFoundError
+	}
+
+	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	var numNodes int
+	for _, n := range nodeList.Items {
+		if isMaster(n) {
+			numNodes++
+
+			if !isReady(n) {
+				// If there's even one node that is not ready, then wait.
+				return false, nil
+			}
+		}
+	}
+
+	// There must be at least one node registered for the cluster.
+	if numNodes < 1 {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
@@ -137,39 +184,39 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 	return nil
 }
 
-func (r *Resource) areNodesReadyForUpgrading(ctx context.Context) (bool, error) {
-	cc, err := controllercontext.FromContext(ctx)
+func (r *Resource) updateInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
+	if instance == nil {
+		return nil
+	}
+
+	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
+
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
+
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
 	if err != nil {
-		return false, microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 
-	if cc.Client.TenantCluster.K8s == nil {
-		return false, clientNotFoundError
+	resourceGroupName := key.ResourceGroupName(customObject)
+	vmssName := deploymentNameFunc(customObject)
+	ids := compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
+		InstanceIds: to.StringSlicePtr([]string{
+			*instance.InstanceID,
+		}),
 	}
-
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	res, err := c.UpdateInstances(ctx, resourceGroupName, vmssName, ids)
 	if err != nil {
-		return false, microerror.Mask(err)
+		return microerror.Mask(err)
+	}
+	_, err = c.UpdateInstancesResponder(res.Response())
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
-	var numNodes int
-	for _, n := range nodeList.Items {
-		if isMaster(n) {
-			numNodes++
+	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
 
-			if !isReady(n) {
-				// If there's even one node that is not ready, then wait.
-				return false, nil
-			}
-		}
-	}
-
-	// There must be at least one node registered for the cluster.
-	if numNodes < 1 {
-		return false, nil
-	}
-
-	return true, nil
+	return nil
 }
 
 func isMaster(n corev1.Node) bool {
