@@ -320,8 +320,6 @@ github.com/giantswarm/cluster-api v0.3.10-gs h1:l2LpZlN97t7RRwKf4OBfNA2h1oVnZXWC
 github.com/giantswarm/cluster-api v0.3.10-gs/go.mod h1:878STePVJcBNDYFY2eCsLuHXWs6qiH3INFItEwdfWaE=
 github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2 h1:rkmGkanOvFi/Q7WRdqSkWm6M321q4yqavNtw+witIM0=
 github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2/go.mod h1:iD4hxYobC6/eAlBOcrE6NAIwEDHcD174Uck5FmZZx8U=
-github.com/giantswarm/e2e-harness/v2 v2.0.0 h1:6pWWMBvsejVDxz0OZ54Hi7uNkUvh8anWcYjW49rbWe4=
-github.com/giantswarm/e2e-harness/v2 v2.0.0/go.mod h1:P23MUQx+PtY3WoWvQORtIV+oRiEcJ9piNBkzDHq55bw=
 github.com/giantswarm/e2e-harness/v2 v2.0.1-0.20201105124938-04fb4b181f2b h1:9nslC5qp88UpZfqVYJHP/u2q7cxw22TS/IRLvhuSrj0=
 github.com/giantswarm/e2e-harness/v2 v2.0.1-0.20201105124938-04fb4b181f2b/go.mod h1:DIgr3MQv+smWfzRifUq3RUKpk7Id3F9d9XKlVX24XZk=
 github.com/giantswarm/e2eclients v0.2.0 h1:fk3/dU1tAt9NHgSZwz4C9Bm15E9lFuNfYYneLjkw5Sg=
@@ -335,8 +333,6 @@ github.com/giantswarm/errors v0.2.3/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LD
 github.com/giantswarm/exporterkit v0.2.0 h1:+HTGl4fmT/1OkTox8HbV3JXeavmsZv94+2CDW8cSrq0=
 github.com/giantswarm/exporterkit v0.2.0/go.mod h1:b4fuHVjsvZgznC9OEPfn0y5zvN8SnEKTiI5zTTfck94=
 github.com/giantswarm/helmclient/v2 v2.0.0/go.mod h1:JFmKbWPCsLbjD87grYnt6d7x+pjAVF2MUI/lGSt/qFk=
-github.com/giantswarm/helmclient/v2 v2.1.4 h1:DaU8Z0hFDLeOpSjSnGiNcGcptkcPR8V+HtbwbH2xWuQ=
-github.com/giantswarm/helmclient/v2 v2.1.4/go.mod h1:egqSLa/FlfQFeEQjmGHM2216G5Iy7gXTPia0tkrQB+0=
 github.com/giantswarm/helmclient/v3 v3.0.1 h1:qjVou8WX5UIoT5bbpZ0Sm6j0fQuUZmvWc5iLiYyfYgI=
 github.com/giantswarm/helmclient/v3 v3.0.1/go.mod h1:LmHB1OMsvKjKL4M3UxzxeGz9jep53SHgR8DWjqLb7Mc=
 github.com/giantswarm/ipam v0.2.0 h1:nLNmDTfYUlflQsUUlouFzXfE+WaZM843BJGPsHLbgyw=
@@ -950,8 +946,6 @@ github.com/spaolacci/murmur3 v0.0.0-20180118202830-f09979ecbc72/go.mod h1:JwIasO
 github.com/spf13/afero v1.1.2/go.mod h1:j4pytiNVoe2o6bmDsKpLACNPDBIoEAkihy7loJ1B0CQ=
 github.com/spf13/afero v1.2.2/go.mod h1:9ZxEEn6pIJ8Rxe320qSDBk6AsU0r9pR7Q4OcevTdifk=
 github.com/spf13/afero v1.3.4/go.mod h1:Ai8FlHk4v/PARR026UzYexafAt9roJ7LcLMAmO6Z93I=
-github.com/spf13/afero v1.4.0 h1:jsLTaI1zwYO3vjrzHalkVcIHXTNmdQFepW4OI8H3+x8=
-github.com/spf13/afero v1.4.0/go.mod h1:Ai8FlHk4v/PARR026UzYexafAt9roJ7LcLMAmO6Z93I=
 github.com/spf13/afero v1.4.1 h1:asw9sl74539yqavKaglDM5hFpdJVK0Y5Dr/JOgQ89nQ=
 github.com/spf13/afero v1.4.1/go.mod h1:Ai8FlHk4v/PARR026UzYexafAt9roJ7LcLMAmO6Z93I=
 github.com/spf13/cast v1.3.0/go.mod h1:Qx5cxh0v+4UWYiBimWS+eyWzqEqokIECu5etghLkUJE=
