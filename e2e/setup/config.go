@@ -1,16 +1,16 @@
 package setup
 
 import (
-	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
-	releasev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/release/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/apprclient/v2"
 	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
 	"github.com/giantswarm/e2e-harness/v2/pkg/release"
 	e2eclientsazure "github.com/giantswarm/e2eclients/azure"
 	e2esetupenv "github.com/giantswarm/e2esetup/v2/chart/env"
-	"github.com/giantswarm/helmclient/v2/pkg/helmclient"
-	"github.com/giantswarm/k8sclient/v4/pkg/k8sclient"
+	"github.com/giantswarm/helmclient/v3/pkg/helmclient"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"

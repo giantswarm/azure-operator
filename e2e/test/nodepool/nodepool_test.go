@@ -7,7 +7,7 @@ import (
 	"fmt"
 	"testing"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/label"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
 	"github.com/giantswarm/microerror"
