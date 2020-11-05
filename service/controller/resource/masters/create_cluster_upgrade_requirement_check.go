@@ -32,5 +32,5 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	}
 
 	// Skip instance rolling by default.
-	return WaitForMastersToBecomeReady, nil
+	return DeploymentCompleted, nil
 }
