@@ -99,8 +99,8 @@ Installation:
                 uri:
                   version: %s
       Registry:
-	    Dockerhub:
-		  Token: ""
+        Dockerhub:
+          Token: ""
 `
 )
 
