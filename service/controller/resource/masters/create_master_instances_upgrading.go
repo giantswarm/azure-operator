@@ -35,7 +35,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 		}
 
 		if !allMasterNodesAreReady {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are not Ready")
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that at least one master node is not ready")
 			return currentState, nil
 		}
 	}
