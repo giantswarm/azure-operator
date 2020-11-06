@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
+	azopannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -35,6 +36,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 
 	if updateReleaseVersion {
 		cluster.Annotations[annotation.LastDeployedReleaseVersion] = key.ReleaseVersion(&cluster)
+		if _, isUpgradingToNodePoolsSet := cluster.GetAnnotations()[azopannotation.UpgradingToNodePools]; isUpgradingToNodePoolsSet {
+			delete(cluster.Annotations, azopannotation.UpgradingToNodePools)
+		}
+
 		err = r.ctrlClient.Update(ctx, &cluster)
 		if err != nil {
 			return microerror.Mask(err)

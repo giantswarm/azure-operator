@@ -12,6 +12,7 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
+	"github.com/giantswarm/azure-operator/v5/pkg/upgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -62,11 +63,16 @@ func (r *Resource) ensureCreatingCondition(ctx context.Context, cluster *capi.Cl
 // when the pre-nodepools cluster is upgraded to a nodepools cluster, and (3)
 // when a Cluster CR is restored from a backup.
 func (r *Resource) initializeCreatingCondition(ctx context.Context, cluster *capi.Cluster) error {
-	lastDeployedReleaseVersion, isSet := cluster.GetAnnotations()[annotation.LastDeployedReleaseVersion]
-	if isSet {
-		// release.giantswarm.io/last-deployed-version annotation is set, which
-		// means that the cluster is already created
-		message := fmt.Sprintf("Cluster was already created with or upgraded to release version %s", lastDeployedReleaseVersion)
+	lastDeployedReleaseVersion, isLastDeployedReleaseVersionSet := cluster.GetAnnotations()[annotation.LastDeployedReleaseVersion]
+
+	if isLastDeployedReleaseVersionSet || upgrade.IsFirstNodePoolUpgradeInProgress(cluster) {
+		message := "Cluster was already created or upgraded"
+		if isLastDeployedReleaseVersionSet {
+			// release.giantswarm.io/last-deployed-version annotation is set, which
+			// means that the cluster is already created
+			message += fmt.Sprintf("with release version %s", lastDeployedReleaseVersion)
+		}
+
 		capiconditions.MarkFalse(
 			cluster,
 			aeconditions.CreatingCondition,

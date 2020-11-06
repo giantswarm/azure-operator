@@ -11,6 +11,7 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
+	"github.com/giantswarm/azure-operator/v5/pkg/upgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -27,9 +28,18 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 		return nil
 	}
 
+	// Case 2: first upgrade to node pools release, a bit of an edgecase,
+	// albeit an important one :)
+	if upgrade.IsFirstNodePoolUpgradeInProgress(cluster) {
+		if !capiconditions.IsTrue(cluster, aeconditions.UpgradingCondition) {
+			conditions.MarkUpgradingStarted(cluster)
+		}
+		return nil
+	}
+
 	// Let's check what was the last release version that we successfully deployed.
-	lastDeployedReleaseVersionString, isSet := cluster.GetAnnotations()[annotation.LastDeployedReleaseVersion]
-	if !isSet {
+	lastDeployedReleaseVersionString, isLastDeployedReleaseVersionSet := cluster.GetAnnotations()[annotation.LastDeployedReleaseVersion]
+	if !isLastDeployedReleaseVersionSet {
 		// Last deployed release version annotation is not set at all, which
 		// means that cluster creation has not completed, so no upgrades yet.
 		// This case should be already processed by Creating condition handler,
@@ -53,7 +63,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 	}
 
 	if capiconditions.IsTrue(cluster, aeconditions.UpgradingCondition) {
-		// Case 2: Upgrading=True, upgrade is currently in progress, here
+		// Case 3: Upgrading=True, upgrade is currently in progress, here
 		// we check if it has been completed.
 
 		if latestDeployedReleaseVersion.EQ(desiredReleaseVersion) {
@@ -63,7 +73,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 			conditions.MarkUpgradingCompleted(cluster)
 		}
 	} else {
-		// Case 3: Upgrading is Unknown or False, let's check if the cluster is
+		// Case 4: Upgrading is Unknown or False, let's check if the cluster is
 		// being upgraded.
 		if desiredReleaseVersion.GT(latestDeployedReleaseVersion) {
 			// Desired release for this cluster is newer than the release to
