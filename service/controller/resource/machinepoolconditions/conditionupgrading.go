@@ -28,10 +28,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, machinePool *ca
 	// Set initial Upgrading condition status to false, since the MachinePool
 	// is just created.
 	if capiconditions.IsUnknown(machinePool, aeconditions.UpgradingCondition) {
-		err = conditions.MarkUpgradingNotStarted(machinePool)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		conditions.MarkUpgradingNotStarted(machinePool)
 		return nil
 	}
 
@@ -56,10 +53,7 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, machinePool *ca
 
 	if conditions.IsUpgradingTrue(machinePool) && upgradeIsCompletedForDesiredVersion {
 		// MachinePool was being upgraded, and the upgrade has been completed.
-		err = conditions.MarkUpgradingCompleted(machinePool)
-		if err != nil {
-			return microerror.Mask(err)
-		}
+		conditions.MarkUpgradingCompleted(machinePool)
 	} else if conditions.IsUpgradingFalse(machinePool) && !upgradeIsCompletedForDesiredVersion {
 		// Machine pool was not being upgraded, but upgrade is needed to reach
 		// the desired version.

@@ -8,7 +8,6 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
@@ -72,47 +71,24 @@ func IsUpgraded(cr CR, desiredRelease string) (bool, error) {
 	return false, nil
 }
 
-func MarkUpgradingNotStarted(cr CR) error {
-	// Cluster is just being created, no upgrade yet.
-	message := aeconditions.UpgradingConditionMessage{
-		Message:        "Upgrade not started",
-		ReleaseVersion: key.ReleaseVersion(cr),
-	}
-	messageString, err := aeconditions.SerializeUpgradingConditionMessage(message)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
+func MarkUpgradingNotStarted(cr CR) {
 	capiconditions.MarkFalse(
 		cr,
 		aeconditions.UpgradingCondition,
 		aeconditions.UpgradeNotStartedReason,
 		capi.ConditionSeverityInfo,
-		messageString)
-
-	return nil
+		"Upgrade not started")
 }
 
 func MarkUpgradingStarted(cr CR) {
 	capiconditions.MarkTrue(cr, aeconditions.UpgradingCondition)
 }
 
-func MarkUpgradingCompleted(cr CR) error {
-	message := aeconditions.UpgradingConditionMessage{
-		Message:        "Upgrade has been completed",
-		ReleaseVersion: key.ReleaseVersion(cr),
-	}
-	messageString, err := aeconditions.SerializeUpgradingConditionMessage(message)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
+func MarkUpgradingCompleted(cr CR) {
 	capiconditions.MarkFalse(
 		cr,
 		aeconditions.UpgradingCondition,
 		aeconditions.UpgradeCompletedReason,
 		capi.ConditionSeverityInfo,
-		messageString)
-
-	return nil
+		"Upgrade has been completed")
 }
