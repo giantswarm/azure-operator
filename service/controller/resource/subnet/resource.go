@@ -393,7 +393,7 @@ func (r *Resource) getDeploymentParameters(ctx context.Context, clusterID, azure
 		"nodepoolName":        allocatedSubnet.Name,
 		"routeTableName":      fmt.Sprintf("%s-%s", clusterID, "RouteTable"),
 		"securityGroupName":   fmt.Sprintf("%s-%s", clusterID, "WorkerSecurityGroup"),
-		"subnetCidr":          allocatedSubnet.CidrBlock,
+		"subnetCidr":          allocatedSubnet.CIDRBlocks[0],
 		"virtualNetworkName":  virtualNetworkName,
 	}, nil
 }

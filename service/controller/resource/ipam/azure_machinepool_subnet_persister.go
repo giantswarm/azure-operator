@@ -72,9 +72,9 @@ func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Co
 	}
 
 	azureMachinePoolSubnet := &capzv1alpha3.SubnetSpec{
-		Role:      capzv1alpha3.SubnetNode,
-		Name:      azureMachinePool.Name,
-		CidrBlock: subnet.String(),
+		Role:       capzv1alpha3.SubnetNode,
+		Name:       azureMachinePool.Name,
+		CIDRBlocks: []string{subnet.String()},
 	}
 	azureCluster.Spec.NetworkSpec.Subnets = append(azureCluster.Spec.NetworkSpec.Subnets, azureMachinePoolSubnet)
 

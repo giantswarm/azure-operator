@@ -70,3 +70,12 @@ var credentialsNotFoundError = &microerror.Error{
 func IsCredentialsNotFoundError(err error) bool {
 	return microerror.Cause(err) == credentialsNotFoundError
 }
+
+var vnetCidrNotSetError = &microerror.Error{
+	Kind: "vnetCidrNotSetError",
+}
+
+// IsCredentialsNotFoundError asserts credentialsNotFoundError.
+func IsVnetCidrNotSetError(err error) bool {
+	return microerror.Cause(err) == vnetCidrNotSetError
+}
