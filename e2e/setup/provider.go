@@ -98,6 +98,9 @@ Installation:
               template:
                 uri:
                   version: %s
+      Registry:
+	    Dockerhub:
+		  Token: ""
 `
 )
 
