@@ -46,7 +46,7 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 	// been completed.
 	becameReadyWhileUpgrading := readyCondition.LastTransitionTime.After(upgradingCondition.LastTransitionTime.Time)
 
-	// (2) Or we declare Upgrading to be completed if nothing happened for 15
+	// (2) Or we declare Upgrading to be completed if nothing happened for 20
 	// minutes, which could currently happen if we were upgrading some
 	// component which is not covered by any Ready status condition.
 	const upgradingWithoutReadyUpdateThreshold = 20 * time.Minute
