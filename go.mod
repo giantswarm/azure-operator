@@ -16,7 +16,7 @@ require (
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/certs/v3 v3.1.0
-	github.com/giantswarm/e2e-harness/v2 v2.0.1-0.20201105124938-04fb4b181f2b
+	github.com/giantswarm/e2e-harness/v3 v3.0.0
 	github.com/giantswarm/e2eclients v0.2.0
 	github.com/giantswarm/e2esetup/v2 v2.1.0
 	github.com/giantswarm/e2etemplates v0.2.0

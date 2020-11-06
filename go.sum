@@ -320,8 +320,8 @@ github.com/giantswarm/cluster-api v0.3.10-gs h1:l2LpZlN97t7RRwKf4OBfNA2h1oVnZXWC
 github.com/giantswarm/cluster-api v0.3.10-gs/go.mod h1:878STePVJcBNDYFY2eCsLuHXWs6qiH3INFItEwdfWaE=
 github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2 h1:rkmGkanOvFi/Q7WRdqSkWm6M321q4yqavNtw+witIM0=
 github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2/go.mod h1:iD4hxYobC6/eAlBOcrE6NAIwEDHcD174Uck5FmZZx8U=
-github.com/giantswarm/e2e-harness/v2 v2.0.1-0.20201105124938-04fb4b181f2b h1:9nslC5qp88UpZfqVYJHP/u2q7cxw22TS/IRLvhuSrj0=
-github.com/giantswarm/e2e-harness/v2 v2.0.1-0.20201105124938-04fb4b181f2b/go.mod h1:DIgr3MQv+smWfzRifUq3RUKpk7Id3F9d9XKlVX24XZk=
+github.com/giantswarm/e2e-harness/v3 v3.0.0 h1:o9lQRIqrOOkJIgMSsN2pjSM7XeXm3PODNCD7H4Wi3V8=
+github.com/giantswarm/e2e-harness/v3 v3.0.0/go.mod h1:NjvAx1Ad357m77SFS0+VOD9Qecp2x7vFTMSLwyAyS5U=
 github.com/giantswarm/e2eclients v0.2.0 h1:fk3/dU1tAt9NHgSZwz4C9Bm15E9lFuNfYYneLjkw5Sg=
 github.com/giantswarm/e2eclients v0.2.0/go.mod h1:HOsP2xBW2ivFgBb3CNkhckjMNGokj1RDWz+03pIdgv0=
 github.com/giantswarm/e2esetup/v2 v2.1.0 h1:aKqijYGYFDn5AATpDmNxbWpqLhC3AX7QYc/oKptLSio=
