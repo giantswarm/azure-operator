@@ -66,7 +66,7 @@ func (r *Resource) initializeCreatingCondition(ctx context.Context, cluster *cap
 	if isSet {
 		// release.giantswarm.io/last-deployed-version annotation is set, which
 		// means that the cluster is already created
-		message := fmt.Sprintf("Cluster was already create with or upgraded to release version %s", lastDeployedReleaseVersion)
+		message := fmt.Sprintf("Cluster was already created with or upgraded to release version %s", lastDeployedReleaseVersion)
 		capiconditions.MarkFalse(
 			cluster,
 			aeconditions.CreatingCondition,
