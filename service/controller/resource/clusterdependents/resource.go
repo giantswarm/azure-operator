@@ -6,7 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/finalizerskeptcontext"
+	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/finalizerskeptcontext"
 	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"

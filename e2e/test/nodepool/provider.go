@@ -7,8 +7,8 @@ import (
 	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/to"
-	apiextensionsannotations "github.com/giantswarm/apiextensions/v2/pkg/annotation"
-	"github.com/giantswarm/apiextensions/v2/pkg/label"
+	apiextensionsannotations "github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	v1alpha32 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
