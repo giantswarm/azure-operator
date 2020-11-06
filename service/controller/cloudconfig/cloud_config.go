@@ -5,9 +5,9 @@ import (
 	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v9/pkg/template"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
