@@ -1,9 +1,8 @@
 package conditions
 
 import (
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
-	"github.com/giantswarm/microerror"
-	corev1 "k8s.io/api/core/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
@@ -11,14 +10,9 @@ import (
 )
 
 func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
-	c := capiconditions.Get(cr, aeconditions.UpgradingCondition)
-	if c == nil {
-		return false, nil
-	}
-
-	if c.Status == corev1.ConditionTrue {
+	if IsUpgradingTrue(cr) {
 		// When Upgrading == True => Upgrading is still in progress.
-		return false, nil
+		return true, nil
 	}
 
 	// If release label isn't updated yet, it means that upgrade hasn't been
@@ -27,15 +21,21 @@ func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
 		return false, nil
 	}
 
-	msg, err := aeconditions.DeserializeUpgradingConditionMessage(c.Message)
-	if err != nil {
-		return false, microerror.Mask(err)
+	// release.giantswarm.io/version is updated, which means that the node pool
+	// upgrade has been started, let's see if it is still in progress.
+
+	lastDeployedReleaseVersion, isSet := cr.GetAnnotations()[annotation.LastDeployedReleaseVersion]
+	if !isSet {
+		// If release.giantswarm.io/last-deployed-version is not set, that
+		// means that the node pool is still being created, so no upgrade in
+		// progress.
+		return false, nil
 	}
 
-	// If release version in condition metadata contains desired release
-	// version while condition status is not True, it means that upgrade has
+	// If last deployed release version is equal to the desired release version
+	// while Upgrading condition status is not True, it means that upgrade has
 	// been completed already.
-	if msg.ReleaseVersion == desiredRelease {
+	if lastDeployedReleaseVersion == desiredRelease {
 		return false, nil
 	}
 
@@ -46,25 +46,23 @@ func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
 }
 
 func IsUpgraded(cr CR, desiredRelease string) (bool, error) {
-	c := capiconditions.Get(cr, aeconditions.UpgradingCondition)
-	if c == nil {
-		return false, nil
-	}
-
-	if c.Status == corev1.ConditionTrue {
+	if IsUpgradingTrue(cr) {
 		// When Upgrading == True => Upgrading is still in progress.
 		return false, nil
 	}
 
-	msg, err := aeconditions.DeserializeUpgradingConditionMessage(c.Message)
-	if err != nil {
-		return false, microerror.Mask(err)
+	lastDeployedReleaseVersion, isSet := cr.GetAnnotations()[annotation.LastDeployedReleaseVersion]
+	if !isSet {
+		// if release.giantswarm.io/last-deployed-version is not set, that
+		// means that the node pool is still being created, so upgrade is not
+		// completed.
+		return false, nil
 	}
 
-	// When CR release label matches desired version & upgrading condition's
-	// metadata also contains desired release version we know that the upgrade
-	// has completed.
-	if cr.GetLabels()[label.ReleaseVersion] == desiredRelease && msg.ReleaseVersion == desiredRelease {
+	// When CR release label matches desired version & last deployed release
+	// version also matches the desired release version, we know that the
+	// upgrade has completed.
+	if cr.GetLabels()[label.ReleaseVersion] == desiredRelease && lastDeployedReleaseVersion == desiredRelease {
 		return true, nil
 	}
 

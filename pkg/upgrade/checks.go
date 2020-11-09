@@ -41,7 +41,7 @@ func IsNodePoolUpgradeInProgressOrPending(ctx context.Context, c client.Client, 
 	return upgradeIsPending, nil
 }
 
-func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
+func IsNodePoolUpgradeCompleted(ctx context.Context, tenantClusterClient client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
 	// Check desired release version
 	currentReleaseVersion := machinePool.GetLabels()[label.ReleaseVersion]
 	if currentReleaseVersion != desiredReleaseVersion {
@@ -55,7 +55,7 @@ func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePoo
 	}
 
 	// And finally check the actual nodes
-	allNodePoolNodesUpToDate, err := AllNodePoolNodesUpToDate(ctx, c, machinePool, desiredAzureOperatorVersion)
+	allNodePoolNodesUpToDate, err := AllNodePoolNodesUpToDate(ctx, tenantClusterClient, machinePool, desiredAzureOperatorVersion)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -66,9 +66,9 @@ func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePoo
 	return upgradeCompleted, nil
 }
 
-func AllNodePoolNodesUpToDate(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredAzureOperatorVersion string) (bool, error) {
+func AllNodePoolNodesUpToDate(ctx context.Context, tenantClusterClient client.Client, machinePool *capiexp.MachinePool, desiredAzureOperatorVersion string) (bool, error) {
 	nodes := &corev1.NodeList{}
-	err := c.List(ctx, nodes, client.MatchingLabels{label.MachinePool: machinePool.Name})
+	err := tenantClusterClient.List(ctx, nodes, client.MatchingLabels{label.MachinePool: machinePool.Name})
 	if err != nil {
 		return false, microerror.Mask(err)
 	}

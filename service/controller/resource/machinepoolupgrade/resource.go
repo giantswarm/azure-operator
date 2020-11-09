@@ -11,6 +11,7 @@ import (
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -20,14 +21,16 @@ const (
 )
 
 type Config struct {
-	CtrlClient client.Client
-	Logger     micrologger.Logger
+	CtrlClient          client.Client
+	Logger              micrologger.Logger
+	TenantClientFactory tenantcluster.Factory
 }
 
 // Resource ensures that corresponding AzureMachinePool has same release label as reconciled MachinePool.
 type Resource struct {
-	ctrlClient client.Client
-	logger     micrologger.Logger
+	ctrlClient          client.Client
+	logger              micrologger.Logger
+	tenantClientFactory tenantcluster.Factory
 }
 
 func New(config Config) (*Resource, error) {
@@ -37,10 +40,14 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.TenantClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.TenantClientFactory must not be empty", config)
+	}
 
 	r := &Resource{
-		ctrlClient: config.CtrlClient,
-		logger:     config.Logger,
+		ctrlClient:          config.CtrlClient,
+		logger:              config.Logger,
+		tenantClientFactory: config.TenantClientFactory,
 	}
 
 	return r, nil
@@ -84,8 +91,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 	}
-
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured release labels are set on respective AzureMachinePool")
+
+	err = r.ensureLastDeployedReleaseVersion(ctx, &cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	return nil
 }
