@@ -7,6 +7,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Simplified master node's upgrade process.
+- Upgraded `apiextensions` to `3.7.0`.
+- Upgraded `e2e-harness` to `3.0.0`.
+- Upgraded `helmclient` to `3.0.1`.
+- Upgraded `k8sclient` to `5.0.0`.
+- Upgraded `k8scloudconfig` to `9.1.1`.
+- Upgraded `operatorkit` to `4.0.0`.
+- Upgraded `statusresource` to `3.0.0`.
+
 ### Added
 
 - Pass dockerhub token for kubelet authorized image pulling. 

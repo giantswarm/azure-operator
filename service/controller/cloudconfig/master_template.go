@@ -5,8 +5,8 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/annotation"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v9/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"

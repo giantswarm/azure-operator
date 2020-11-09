@@ -14,5 +14,4 @@ const (
 	Empty                          = ""
 	MasterInstancesUpgrading       = "MasterInstancesUpgrading"
 	ProvisioningSuccessful         = "ProvisioningSuccessful"
-	WaitForMastersToBecomeReady    = "WaitForMastersToBecomeReady"
 )

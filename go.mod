@@ -11,28 +11,29 @@ require (
 	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
-	github.com/giantswarm/apiextensions/v3 v3.6.0
+	github.com/giantswarm/apiextensions/v3 v3.7.0
 	github.com/giantswarm/appcatalog v0.2.7
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/certs/v3 v3.1.0
-	github.com/giantswarm/e2e-harness/v2 v2.0.0
+	github.com/giantswarm/e2e-harness/v3 v3.0.0
 	github.com/giantswarm/e2eclients v0.2.0
 	github.com/giantswarm/e2esetup/v2 v2.1.0
 	github.com/giantswarm/e2etemplates v0.2.0
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/exporterkit v0.2.0
-	github.com/giantswarm/helmclient/v2 v2.1.4
+	github.com/giantswarm/helmclient/v3 v3.0.1
 	github.com/giantswarm/ipam v0.2.0
-	github.com/giantswarm/k8sclient/v4 v4.0.0
-	github.com/giantswarm/k8scloudconfig/v8 v8.1.1
+	github.com/giantswarm/k8sclient/v5 v5.0.0
+	github.com/giantswarm/k8scloudconfig/v9 v9.1.1
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v0.2.0
 	github.com/giantswarm/microerror v0.2.1
 	github.com/giantswarm/microkit v0.2.2
 	github.com/giantswarm/micrologger v0.3.3
 	github.com/giantswarm/operatorkit/v2 v2.0.2
-	github.com/giantswarm/statusresource/v2 v2.0.0
+	github.com/giantswarm/operatorkit/v4 v4.0.0
+	github.com/giantswarm/statusresource/v3 v3.0.0
 	github.com/giantswarm/tenantcluster/v3 v3.0.0
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
@@ -41,8 +42,8 @@ require (
 	github.com/markbates/pkger v0.17.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
-	github.com/prometheus/client_golang v1.7.1
-	github.com/spf13/afero v1.4.0
+	github.com/prometheus/client_golang v1.8.0
+	github.com/spf13/afero v1.4.1
 	github.com/spf13/viper v1.7.1
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.18.9
