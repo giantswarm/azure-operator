@@ -109,9 +109,8 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var machinePoolConditionsResource resource.Interface
 	{
 		c := machinepoolconditions.Config{
-			CtrlClient:          config.K8sClient.CtrlClient(),
-			Logger:              config.Logger,
-			TenantClientFactory: tenantClientFactory,
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
 		}
 
 		machinePoolConditionsResource, err = machinepoolconditions.New(c)
@@ -164,8 +163,9 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var machinepoolUpgradeResource resource.Interface
 	{
 		c := machinepoolupgrade.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
+			TenantClientFactory: tenantClientFactory,
 		}
 
 		machinepoolUpgradeResource, err = machinepoolupgrade.New(c)
