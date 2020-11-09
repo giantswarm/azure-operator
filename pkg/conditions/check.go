@@ -7,6 +7,18 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 )
 
+func IsTrue(condition *capi.Condition) bool {
+	return condition != nil && condition.Status == corev1.ConditionTrue
+}
+
+func IsFalse(condition *capi.Condition) bool {
+	return condition != nil && condition.Status == corev1.ConditionFalse
+}
+
+func IsUnknown(condition *capi.Condition) bool {
+	return condition == nil || condition.Status == corev1.ConditionUnknown
+}
+
 func IsUpgradingTrue(from capiconditions.Getter) bool {
 	return capiconditions.IsTrue(from, aeconditions.UpgradingCondition)
 }

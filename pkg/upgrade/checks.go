@@ -2,16 +2,26 @@ package upgrade
 
 import (
 	"context"
+	"strings"
 
 	"github.com/coreos/go-semver/semver"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
+	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	azopannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 )
+
+// IsFirstNodePoolUpgradeInProgress checks if the cluster is being upgraded
+// from an old/legacy release to the node pools release.
+func IsFirstNodePoolUpgradeInProgress(cluster *capi.Cluster) bool {
+	upgradingToNodePools, isUpgradingToNodePoolsSet := cluster.GetAnnotations()[azopannotation.UpgradingToNodePools]
+	return isUpgradingToNodePoolsSet && strings.ToLower(upgradingToNodePools) == "true"
+}
 
 func IsNodePoolUpgradeInProgressOrPending(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
 	if conditions.IsUpgradingTrue(machinePool) {
@@ -31,7 +41,7 @@ func IsNodePoolUpgradeInProgressOrPending(ctx context.Context, c client.Client, 
 	return upgradeIsPending, nil
 }
 
-func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
+func IsNodePoolUpgradeCompleted(ctx context.Context, tenantClusterClient client.Client, machinePool *capiexp.MachinePool, desiredReleaseVersion, desiredAzureOperatorVersion string) (bool, error) {
 	// Check desired release version
 	currentReleaseVersion := machinePool.GetLabels()[label.ReleaseVersion]
 	if currentReleaseVersion != desiredReleaseVersion {
@@ -45,7 +55,7 @@ func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePoo
 	}
 
 	// And finally check the actual nodes
-	allNodePoolNodesUpToDate, err := AllNodePoolNodesUpToDate(ctx, c, machinePool, desiredAzureOperatorVersion)
+	allNodePoolNodesUpToDate, err := AllNodePoolNodesUpToDate(ctx, tenantClusterClient, machinePool, desiredAzureOperatorVersion)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
@@ -56,9 +66,9 @@ func IsNodePoolUpgradeCompleted(ctx context.Context, c client.Client, machinePoo
 	return upgradeCompleted, nil
 }
 
-func AllNodePoolNodesUpToDate(ctx context.Context, c client.Client, machinePool *capiexp.MachinePool, desiredAzureOperatorVersion string) (bool, error) {
+func AllNodePoolNodesUpToDate(ctx context.Context, tenantClusterClient client.Client, machinePool *capiexp.MachinePool, desiredAzureOperatorVersion string) (bool, error) {
 	nodes := &corev1.NodeList{}
-	err := c.List(ctx, nodes, client.MatchingLabels{label.MachinePool: machinePool.Name})
+	err := tenantClusterClient.List(ctx, nodes, client.MatchingLabels{label.MachinePool: machinePool.Name})
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
