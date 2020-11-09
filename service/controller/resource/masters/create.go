@@ -23,7 +23,6 @@ func (r *Resource) createStateMachine() state.Machine {
 			ProvisioningSuccessful:         r.provisioningSuccessfulTransition,
 			ClusterUpgradeRequirementCheck: r.clusterUpgradeRequirementCheckTransition,
 			MasterInstancesUpgrading:       r.masterInstancesUpgradingTransition,
-			WaitForMastersToBecomeReady:    r.waitForMastersToBecomeReadyTransition,
 			DeploymentCompleted:            r.deploymentCompletedTransition,
 		},
 	}
