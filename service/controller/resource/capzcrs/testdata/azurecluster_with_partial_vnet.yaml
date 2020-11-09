@@ -21,7 +21,8 @@ spec:
     - role: node
       id: nodepool-np201
       name: nodepool-np201
-      cidrblock: 10.100.2.0/24
+      cidrBlocks:
+      - 10.100.2.0/24
       internallbipaddress: ""
       securitygroup:
         id: ""

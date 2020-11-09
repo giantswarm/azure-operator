@@ -62,16 +62,16 @@ func (g *AzureMachinePoolNetworkRangeGetter) GetParentNetworkRange(ctx context.C
 		return net.IPNet{}, microerror.Mask(err)
 	}
 
-	if azureCluster.Spec.NetworkSpec.Vnet.CidrBlock == "" {
+	if len(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks) == 0 {
 		// This can happen when AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is still not set,
 		// because VNet for the tenant cluster is still not allocated (e.g. when cluster is still
 		// being created).
-		errorMessage := "AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock is not set yet"
+		errorMessage := "AzureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks is not set yet"
 		g.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return net.IPNet{}, microerror.Maskf(parentNetworkRangeStillNotKnown, errorMessage)
 	}
 
-	_, ipNet, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)
+	_, ipNet, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0])
 	if err != nil {
 		return net.IPNet{}, microerror.Mask(err)
 	}
