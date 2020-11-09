@@ -4,7 +4,7 @@ import (
 	"context"
 	"fmt"
 
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -44,7 +44,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	}
 
 	// Skip instance rolling by default.
-	return WaitForMastersToBecomeReady, nil
+	return DeploymentCompleted, nil
 }
 
 func (r *Resource) isClusterCreating(ctx context.Context, cr *providerv1alpha1.AzureConfig) (bool, error) {

@@ -3,7 +3,7 @@ package setup
 import (
 	"context"
 
-	"github.com/giantswarm/e2e-harness/v2/pkg/release"
+	"github.com/giantswarm/e2e-harness/v3/pkg/release"
 	"github.com/giantswarm/e2etemplates/pkg/chartvalues"
 	"github.com/giantswarm/microerror"
 	rbacv1 "k8s.io/api/rbac/v1"

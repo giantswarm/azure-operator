@@ -5,7 +5,7 @@ import (
 	"encoding/base64"
 	"fmt"
 
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v9/pkg/template"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"

@@ -5,9 +5,9 @@ import (
 	"sync"
 
 	"github.com/giantswarm/certs/v3/pkg/certs"
-	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v8/pkg/template"
+	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v9/pkg/template"
 	"github.com/giantswarm/microerror"
-	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/resourcecanceledcontext"
+	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/resourcecanceledcontext"
 	"golang.org/x/sync/errgroup"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
