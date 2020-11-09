@@ -8,7 +8,7 @@ import (
 	"testing"
 
 	"github.com/giantswarm/backoff"
-	"github.com/giantswarm/e2e-harness/v2/pkg/framework"
+	"github.com/giantswarm/e2e-harness/v3/pkg/framework"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	appsv1 "k8s.io/api/apps/v1"

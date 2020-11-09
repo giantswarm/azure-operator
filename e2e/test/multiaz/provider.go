@@ -6,7 +6,7 @@ import (
 	"context"
 	"fmt"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/clientset/versioned"
+	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
 	azureclient "github.com/giantswarm/e2eclients/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"

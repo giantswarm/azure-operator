@@ -4,9 +4,9 @@ import (
 	"context"
 	"time"
 
-	"github.com/giantswarm/apiextensions/v2/pkg/apis/application/v1alpha1"
-	corev1alpha1 "github.com/giantswarm/apiextensions/v2/pkg/apis/core/v1alpha1"
-	"github.com/giantswarm/apiextensions/v2/pkg/crd"
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/application/v1alpha1"
+	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
+	"github.com/giantswarm/apiextensions/v3/pkg/crd"
 	"github.com/giantswarm/backoff"
 	"github.com/giantswarm/microerror"
 )
