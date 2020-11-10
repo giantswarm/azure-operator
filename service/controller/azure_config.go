@@ -15,7 +15,6 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/crud"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
-	"github.com/giantswarm/statusresource/v3"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -282,25 +281,6 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 
 		capzcrsResource, err = capzcrs.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var statusResource resource.Interface
-	{
-		c := statusresource.ResourceConfig{
-			ClusterEndpointFunc:      key.ToClusterEndpoint,
-			ClusterIDFunc:            key.ToClusterID,
-			ClusterStatusFunc:        key.ToClusterStatus,
-			NodeCountFunc:            key.ToNodeCount,
-			Logger:                   config.Logger,
-			RESTClient:               config.K8sClient.G8sClient().ProviderV1alpha1().RESTClient(),
-			TenantCluster:            tenantCluster,
-			VersionBundleVersionFunc: key.ToOperatorVersion,
-		}
-
-		statusResource, err = statusresource.NewResource(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -647,7 +627,6 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		capzcrsResource,
 		namespaceResource,
 		ipamResource,
-		statusResource,
 		releaseResource,
 		tenantClientsResource,
 		serviceResource,
