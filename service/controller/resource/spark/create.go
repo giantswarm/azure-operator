@@ -512,7 +512,11 @@ func (r *Resource) buildAzureConfig(cluster *capiv1alpha3.Cluster, azureCluster 
 	)
 
 	{
-		azureConfig.Spec.Azure.VirtualNetwork.CIDR = azureCluster.Spec.NetworkSpec.Vnet.CidrBlock
+		if len(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks) < 1 {
+			return providerv1alpha1.AzureConfig{}, microerror.Mask(vnetCidrNotSetError)
+		}
+
+		azureConfig.Spec.Azure.VirtualNetwork.CIDR = azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0]
 	}
 
 	azureConfig.Spec.Azure.DNSZones.API.Name = hostDNSZone
@@ -557,7 +561,11 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 	commonCluster := providerv1alpha1.Cluster{}
 
 	{
-		_, networkCIDR, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CidrBlock)
+		if len(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks) < 1 {
+			return providerv1alpha1.Cluster{}, microerror.Mask(vnetCidrNotSetError)
+		}
+
+		_, networkCIDR, err := net.ParseCIDR(azureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks[0])
 		if err != nil {
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}

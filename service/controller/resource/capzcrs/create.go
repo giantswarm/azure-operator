@@ -174,7 +174,7 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 			ResourceGroup: key.ClusterID(&cr),
 			NetworkSpec: capzv1alpha3.NetworkSpec{
 				Vnet: capzv1alpha3.VnetSpec{
-					CidrBlock:     key.VnetCIDR(cr),
+					CIDRBlocks:    []string{key.VnetCIDR(cr)},
 					Name:          key.VnetName(cr),
 					ResourceGroup: key.ResourceGroupName(cr),
 				},
@@ -344,12 +344,13 @@ func detectAzureClusterUpdate(orig, desired runtime.Object) (bool, error) {
 	o := orig.(*capzv1alpha3.AzureCluster)
 	d := desired.(*capzv1alpha3.AzureCluster)
 
-	return (o.Spec.NetworkSpec.Vnet.CidrBlock != d.Spec.NetworkSpec.Vnet.CidrBlock ||
+	return len(o.Spec.NetworkSpec.Vnet.CIDRBlocks) != len(d.Spec.NetworkSpec.Vnet.CIDRBlocks) ||
+		o.Spec.NetworkSpec.Vnet.CIDRBlocks[0] != d.Spec.NetworkSpec.Vnet.CIDRBlocks[0] ||
 		o.Spec.NetworkSpec.Vnet.Name != d.Spec.NetworkSpec.Vnet.Name ||
 		o.Spec.NetworkSpec.Vnet.ResourceGroup != d.Spec.NetworkSpec.Vnet.ResourceGroup ||
 		o.Spec.ResourceGroup != d.Spec.ResourceGroup ||
 		o.Spec.Location != d.Spec.Location ||
-		o.Spec.ControlPlaneEndpoint != d.Spec.ControlPlaneEndpoint), nil
+		o.Spec.ControlPlaneEndpoint != d.Spec.ControlPlaneEndpoint, nil
 }
 
 func mergeAzureCluster(orig, desired runtime.Object) (runtime.Object, error) {
@@ -357,7 +358,7 @@ func mergeAzureCluster(orig, desired runtime.Object) (runtime.Object, error) {
 	d := desired.(*capzv1alpha3.AzureCluster)
 
 	// Only copy specific parts of desired opbject
-	o.Spec.NetworkSpec.Vnet.CidrBlock = d.Spec.NetworkSpec.Vnet.CidrBlock
+	o.Spec.NetworkSpec.Vnet.CIDRBlocks = d.Spec.NetworkSpec.Vnet.CIDRBlocks
 	o.Spec.NetworkSpec.Vnet.Name = d.Spec.NetworkSpec.Vnet.Name
 	o.Spec.NetworkSpec.Vnet.ResourceGroup = d.Spec.NetworkSpec.Vnet.ResourceGroup
 	o.Spec.ResourceGroup = d.Spec.ResourceGroup

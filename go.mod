@@ -4,7 +4,7 @@ go 1.15
 
 require (
 	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
-	github.com/Azure/azure-storage-blob-go v0.10.0
+	github.com/Azure/azure-storage-blob-go v0.11.0
 	github.com/Azure/go-autorest/autorest v0.11.10
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.2
 	github.com/Azure/go-autorest/autorest/to v0.4.0
@@ -33,7 +33,6 @@ require (
 	github.com/giantswarm/micrologger v0.3.4
 	github.com/giantswarm/operatorkit/v2 v2.0.2
 	github.com/giantswarm/operatorkit/v4 v4.0.0
-	github.com/giantswarm/statusresource/v3 v3.0.0
 	github.com/giantswarm/tenantcluster/v3 v3.0.0
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
