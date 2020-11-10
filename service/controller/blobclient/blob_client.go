@@ -38,6 +38,8 @@ func PutBlockBlob(ctx context.Context, blobName string, payload string, containe
 		},
 		azblob.Metadata{},
 		azblob.BlobAccessConditions{},
+		azblob.DefaultAccessTier,
+		nil,
 	)
 	if err != nil {
 		return azblob.BlockBlobURL{}, microerror.Mask(err)
