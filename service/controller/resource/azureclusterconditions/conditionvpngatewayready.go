@@ -119,7 +119,7 @@ func (r *Resource) setProvisioningStateWarning(ctx context.Context, azureCluster
 		reason,
 		capi.ConditionSeverityWarning,
 		message,
-		messageArgs)
+		messageArgs...)
 
 	r.logDebug(ctx, message, messageArgs...)
 }

@@ -11,9 +11,10 @@ import (
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
-	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -33,7 +34,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that azurecluster has same release label")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that machinepools has same release label")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that all machinepools has the same release label")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "checking if master has been upgraded already")
 	masterUpgraded, err := r.ensureMasterHasUpgraded(ctx, cr)
@@ -49,11 +50,53 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "master has been upgraded already")
 
-	err = r.propagateReleaseToMachinePools(ctx, cr)
+	machinePoolLst, err := helpers.GetMachinePoolsByMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that machinepools has same release label")
+
+	machinePoolUpgrading, err := isAnyMachinePoolUpgrading(cr, machinePoolLst.Items)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if machinePoolUpgrading {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "there is machinepool upgrading")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "finding machinepool that has not been upgraded yet")
+
+	machinePoolsNotUpgradedYet, err := machinePoolsNotUpgradedYet(cr, machinePoolLst.Items)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if len(machinePoolsNotUpgradedYet) > 0 {
+		machinePool := machinePoolsNotUpgradedYet[0]
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found machinepool that has not been upgraded yet: %#q", machinePool.Name))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "updating release & operator version labels")
+
+		machinePool.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
+		machinePool.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
+		err = r.ctrlClient.Update(ctx, &machinePool)
+		if apierrors.IsConflict(err) {
+			r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated release & operator version labels of machinepool %#q", machinePool.Name))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		return nil
+	}
+
+	r.logger.LogCtx(ctx, "level", "debug", "message", "did not find any machinepool that has not been upgraded yet")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that all machinepools has the same release label")
 
 	return nil
 }
@@ -113,58 +156,43 @@ func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1al
 	return true, nil
 }
 
-func (r *Resource) propagateReleaseToMachinePools(ctx context.Context, cr capiv1alpha3.Cluster) error {
-	lst := expcapiv1alpha3.MachinePoolList{}
-	err := r.ctrlClient.List(ctx, &lst, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterName(&cr)})
-	if err != nil {
-		return microerror.Mask(err)
-	}
+func isAnyMachinePoolUpgrading(cr capiv1alpha3.Cluster, machinePools []expcapiv1alpha3.MachinePool) (bool, error) {
+	desiredRelease := cr.Labels[label.ReleaseVersion]
 
-	if !hasMachinePoolsUpgradeCompleted(lst.Items, cr.Labels[label.ReleaseVersion]) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "machinepool still upgrading; skipping release propagation")
-		return nil
-	}
+	for _, machinePool := range machinePools {
+		isUpgrading, err := conditions.IsUpgradingInProgress(&machinePool, desiredRelease)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
 
-	for _, mp := range lst.Items {
-		if cr.Labels[label.ReleaseVersion] != mp.Labels[label.ReleaseVersion] ||
-			cr.Labels[label.AzureOperatorVersion] != mp.Labels[label.AzureOperatorVersion] {
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updating release to machinepool %q", mp.Name))
-
-			mp.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
-			mp.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
-
-			err = r.ctrlClient.Update(ctx, &mp)
-			if apierrors.IsConflict(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-				r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
-				return nil
-			} else if err != nil {
-				return microerror.Mask(err)
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated release to machinepool %q", mp.Name))
-
-			// Only update one MachinePool CR at a time.
-			break
+		if isUpgrading {
+			return true, nil
 		}
 	}
 
-	return nil
+	return false, nil
 }
 
-func hasMachinePoolsUpgradeCompleted(mps []expcapiv1alpha3.MachinePool, desiredRelease string) bool {
-	for _, mp := range mps {
-		if !IsUpgradeCompleted(mp, desiredRelease) {
-			return false
+func machinePoolsNotUpgradedYet(cr capiv1alpha3.Cluster, machinePools []expcapiv1alpha3.MachinePool) ([]expcapiv1alpha3.MachinePool, error) {
+	desiredRelease := cr.Labels[label.ReleaseVersion]
+
+	var pendingUpgrade []expcapiv1alpha3.MachinePool
+
+	for _, machinePool := range machinePools {
+		isUpgrading, err := conditions.IsUpgradingInProgress(&machinePool, desiredRelease)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		hasUpgraded, err := conditions.IsUpgraded(&machinePool, desiredRelease)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		if !isUpgrading && !hasUpgraded {
+			pendingUpgrade = append(pendingUpgrade, machinePool)
 		}
 	}
 
-	return true
-}
-
-// XXX: This is just a placeholder for proper IsUpgradeCompleted implementation.
-func IsUpgradeCompleted(mp expcapiv1alpha3.MachinePool, desiredRelease string) bool {
-	condition := capiconditions.Get(&mp, capiv1alpha3.ReadyCondition)
-	return condition.Status == corev1.ConditionTrue
+	return pendingUpgrade, nil
 }

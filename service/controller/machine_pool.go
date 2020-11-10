@@ -83,6 +83,29 @@ func NewMachinePool(config MachinePoolConfig) (*controller.Controller, error) {
 func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
 	var err error
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 5 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var tenantClientFactory tenantcluster.Factory
+	{
+		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var machinePoolConditionsResource resource.Interface
 	{
 		c := machinepoolconditions.Config{
@@ -123,29 +146,6 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var certsSearcher *certs.Searcher
-	{
-		c := certs.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
-
-			WatchTimeout: 5 * time.Second,
-		}
-
-		certsSearcher, err = certs.NewSearcher(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var tenantClientFactory tenantcluster.Factory
-	{
-		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
 	var nodestatusResource resource.Interface
 	{
 		c := nodestatus.Config{
@@ -163,8 +163,9 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 	var machinepoolUpgradeResource resource.Interface
 	{
 		c := machinepoolupgrade.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
+			TenantClientFactory: tenantClientFactory,
 		}
 
 		machinepoolUpgradeResource, err = machinepoolupgrade.New(c)

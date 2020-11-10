@@ -338,9 +338,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 
 	resources := []resource.Interface{
 		azureMachinePoolConditionsResource,
+		ipamResource,
 		sparkResource,
 		cloudconfigblobResource,
-		ipamResource,
 		nodepoolResource,
 	}
 
