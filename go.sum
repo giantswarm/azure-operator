@@ -367,12 +367,8 @@ github.com/giantswarm/operatorkit/v2 v2.0.2 h1:S2O5lZBT1yeGFfR+/so5TSIXgbgCSrVce
 github.com/giantswarm/operatorkit/v2 v2.0.2/go.mod h1:Bl8gK7hYhvRQP0Ds26rwYdoSXbbr+NKRZmWtwqI7HFI=
 github.com/giantswarm/operatorkit/v4 v4.0.0 h1:rC3MZGA6Rg2HeEbn5poPH/EWHpJk6NpnbpBWc6t7w7Y=
 github.com/giantswarm/operatorkit/v4 v4.0.0/go.mod h1:9VLDXCofhooOPbRt3XCZQmMZJ0tW7X3x7G/2Sz3kb5o=
-github.com/giantswarm/statusresource/v3 v3.0.0 h1:8D5y7d0xtaaNWGiwmQKHiMSaSC6OwxImU/5drYMqx94=
-github.com/giantswarm/statusresource/v3 v3.0.0/go.mod h1:66HvGv5raokenNE3b4uVok4tv6TTLiF+CZ1wQs8LeQg=
 github.com/giantswarm/tenantcluster/v3 v3.0.0 h1:Vrx0LnItmvIUjvkJ10bkz+M8cEFOjrWl5HQv04VmJKg=
 github.com/giantswarm/tenantcluster/v3 v3.0.0/go.mod h1:gTVnGDFVG+lHzoD1ATDJtQ3zgoYcgFbFlJ8go3jvxeM=
-github.com/giantswarm/tenantcluster/v4 v4.0.0 h1:7QX1892Gx5Eza9UBwdCVhkEvMCoX23h9WAXjn2ILueA=
-github.com/giantswarm/tenantcluster/v4 v4.0.0/go.mod h1:9ASonrZOisdzr3+165qptuUfmCovu8u9rQtyebpcKYk=
 github.com/giantswarm/to v0.3.0 h1:cEzMYkWLGI3cI8x3a0L3nPCQYJTb/cAaqcIPvxnDmpQ=
 github.com/giantswarm/to v0.3.0/go.mod h1:RTRtw+Dyk6YqoiNBOGLO981BqhibtVwogdaFIMO1y/A=
 github.com/giantswarm/valuemodifier v0.2.0/go.mod h1:GYMylCMZIu9XrSXD8LE5U0bn1KA1z7U533jTRlN7CEM=
