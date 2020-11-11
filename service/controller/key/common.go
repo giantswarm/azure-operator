@@ -2,6 +2,7 @@ package key
 
 import (
 	"fmt"
+	"strings"
 
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -60,6 +61,9 @@ func ReleaseVersion(getter LabelsGetter) string {
 }
 
 func ReleaseName(releaseVersion string) string {
+	if strings.HasPrefix(releaseVersion, "v") {
+		return releaseVersion
+	}
 	return fmt.Sprintf("v%s", releaseVersion)
 }
 

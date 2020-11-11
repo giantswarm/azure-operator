@@ -33,6 +33,12 @@
         "provider": "F80D01C0-7AAC-4440-98F6-5061511962AD"
       }
     },
+    "kubernetesVersion": {
+      "type": "string",
+      "metadata": {
+        "description": "Kubernetes version that is configured in the deployment."
+      }
+    },
     "nodepoolName": {
       "type": "string",
       "metadata": {
@@ -177,6 +183,7 @@
         "cluster-autoscaler-enabled": "[if(equals(parameters('minReplicas'),parameters('maxReplicas')), 'false', 'true')]",
         "cluster-autoscaler-name": "[parameters('clusterID')]",
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
+        "kubernetes-version": "[parameters('kubernetesVersion')]",
         "min": "[int(parameters('minReplicas'))]",
         "max": "[int(parameters('maxReplicas'))]"
       },

@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -29,7 +30,17 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 		return "", microerror.Mask(err)
 	}
 
-	anyOldNodes, err := nodes.AnyOutOfDate(ctx)
+	var releases []releasev1alpha1.Release
+	{
+		var rels releasev1alpha1.ReleaseList
+		err := r.ctrlClient.List(ctx, &rels)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+		releases = rels.Items
+	}
+
+	anyOldNodes, err := nodes.AnyOutOfDate(ctx, key.ReleaseVersion(&cr), releases)
 	if nodes.IsClientNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not found")
 		return currentState, nil

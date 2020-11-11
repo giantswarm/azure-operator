@@ -12,6 +12,7 @@ type Parameters struct {
 	ClusterID                   string
 	DataDisks                   []v1alpha3.DataDisk
 	EnableAcceleratedNetworking bool
+	KubernetesVersion           string
 	NodepoolName                string
 	OSImage                     OSImage
 	Scaling                     Scaling
@@ -72,6 +73,7 @@ func (p Parameters) ToDeployParams() map[string]interface{} {
 	armDeploymentParameters["clusterID"] = toARMParam(p.ClusterID)
 	armDeploymentParameters["dataDisks"] = toARMParam(dataDisks)
 	armDeploymentParameters["enableAcceleratedNetworking"] = toARMParam(p.EnableAcceleratedNetworking)
+	armDeploymentParameters["kubernetesVersion"] = toARMParam(p.KubernetesVersion)
 	armDeploymentParameters["nodepoolName"] = toARMParam(p.NodepoolName)
 	armDeploymentParameters["osImagePublisher"] = toARMParam(p.OSImage.Publisher)
 	armDeploymentParameters["osImageOffer"] = toARMParam(p.OSImage.Offer)
