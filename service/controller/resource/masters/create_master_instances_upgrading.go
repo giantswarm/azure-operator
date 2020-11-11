@@ -144,11 +144,7 @@ func areNodesReadyForUpgrading(nodes []corev1.Node) bool {
 	}
 
 	// There must be at least one node registered for the cluster.
-	if numNodes < 1 {
-		return false
-	}
-
-	return true
+	return numNodes >= 1
 }
 
 func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
