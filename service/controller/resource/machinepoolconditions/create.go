@@ -15,8 +15,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	// ensure Ready condition
 	err = r.ensureReadyCondition(ctx, &machinePool)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.ensureUpgradingCondition(ctx, &machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -5,7 +5,6 @@ import (
 
 	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/microerror"
-	corev1 "k8s.io/api/core/v1"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
@@ -35,22 +34,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, machinePool *capiex
 		capiconditions.AddSourceRef())
 
 	// Log condition change
-	readyCondition := capiconditions.Get(machinePool, capi.ReadyCondition)
-
-	if readyCondition == nil {
-		r.logWarning(ctx, "condition Ready not set")
-	} else {
-		messageFormat := "condition Ready set to %s"
-		messageArgs := []interface{}{readyCondition.Status}
-		if readyCondition.Status != corev1.ConditionTrue {
-			messageFormat += ", Reason=%s, Severity=%s, Message=%s"
-			messageArgs = append(messageArgs, readyCondition.Reason)
-			messageArgs = append(messageArgs, readyCondition.Severity)
-			messageArgs = append(messageArgs, readyCondition.Message)
-		}
-		r.logDebug(ctx, messageFormat, messageArgs...)
-	}
-
+	r.logConditionStatus(ctx, machinePool, capi.ReadyCondition)
 	r.logDebug(ctx, "ensured condition Ready")
 	return nil
 }

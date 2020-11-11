@@ -21,6 +21,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	azopannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -115,12 +116,13 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
-				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
-				label.ClusterOperatorVersion:  cr.Labels[label.ClusterOperatorVersion],
-				label.Cluster:                 cr.Name,
-				capiv1alpha3.ClusterLabelName: cr.Name,
-				label.Organization:            key.OrganizationID(&cr),
-				label.ReleaseVersion:          key.ReleaseVersion(&cr),
+				label.AzureOperatorVersion:          key.OperatorVersion(&cr),
+				label.ClusterOperatorVersion:        cr.Labels[label.ClusterOperatorVersion],
+				label.Cluster:                       cr.Name,
+				capiv1alpha3.ClusterLabelName:       cr.Name,
+				label.Organization:                  key.OrganizationID(&cr),
+				label.ReleaseVersion:                key.ReleaseVersion(&cr),
+				azopannotation.UpgradingToNodePools: "True",
 			},
 		},
 		Spec: capiv1alpha3.ClusterSpec{

@@ -8,6 +8,7 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -19,12 +20,7 @@ const (
 	DeploymentProvisioningStateFailed        = "Failed"
 )
 
-type CRWithConditions interface {
-	key.LabelsGetter
-	capiconditions.Setter
-}
-
-func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deploymentsClient *resources.DeploymentsClient, cr CRWithConditions, deploymentName string, conditionType capi.ConditionType) (bool, error) {
+func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deploymentsClient *resources.DeploymentsClient, cr conditions.CR, deploymentName string, conditionType capi.ConditionType) (bool, error) {
 	deployment, err := deploymentsClient.Get(ctx, key.ClusterName(cr), deploymentName)
 	if IsNotFound(err) {
 		// Deployment has not been found, which means that we still
