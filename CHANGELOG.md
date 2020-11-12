@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Roll nodes on release upgrade if major components involved in node creation changes (k8s, flatcar, etcd...).
+
 ## [5.0.0-beta1] - 2020-11-11
 
 ### Changed
