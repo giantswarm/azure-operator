@@ -34,7 +34,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 		return "", microerror.Mask(err)
 	}
 
-	if areNodesReadyForUpgrading(tenantNodes) {
+	if !areNodesReadyForUpgrading(tenantNodes) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that at least one master node is not ready")
 		return currentState, nil
 	}
@@ -144,7 +144,7 @@ func areNodesReadyForUpgrading(nodes []corev1.Node) bool {
 	}
 
 	// There must be at least one node registered for the cluster.
-	return numNodes >= 1
+	return numNodes > 0
 }
 
 func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {
