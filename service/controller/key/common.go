@@ -2,6 +2,7 @@ package key
 
 import (
 	"fmt"
+	"strings"
 
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -12,6 +13,11 @@ import (
 )
 
 const (
+	// ComponentKubernetes is the name of the component specified in a Release
+	// CR which determines the version of the Kubernetes to be used for tenant
+	// cluster nodes.
+	ComponentKubernetes = "kubernetes"
+
 	// ComponentOS is the name of the component specified in a Release CR which
 	// determines the version of the OS to be used for tenant cluster nodes and
 	// is ultimately transformed into an AMI based on TC region.
@@ -60,6 +66,9 @@ func ReleaseVersion(getter LabelsGetter) string {
 }
 
 func ReleaseName(releaseVersion string) string {
+	if strings.HasPrefix(releaseVersion, "v") {
+		return releaseVersion
+	}
 	return fmt.Sprintf("v%s", releaseVersion)
 }
 
@@ -70,6 +79,10 @@ func ComponentVersion(release releasev1alpha1.Release, componentName string) (st
 		}
 	}
 	return "", microerror.Maskf(notFoundError, "version for component %#v not found on release %#v", componentName, release.Name)
+}
+
+func KubernetesVersion(release releasev1alpha1.Release) (string, error) {
+	return ComponentVersion(release, ComponentKubernetes)
 }
 
 func OSVersion(release releasev1alpha1.Release) (string, error) {

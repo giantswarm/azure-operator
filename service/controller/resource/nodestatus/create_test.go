@@ -48,10 +48,10 @@ func Test_NodeStatusIsSaved(t *testing.T) {
 	}
 
 	nodes := []corev1.Node{
-		givenReadyNode("worker1"),
-		givenReadyNode("worker2"),
-		givenReadyNode("worker3"),
-		givenReadyNode("worker4"),
+		givenReadyNode("worker1", "my-machine-pool"),
+		givenReadyNode("worker2", "my-machine-pool"),
+		givenReadyNode("worker3", "my-machine-pool"),
+		givenReadyNode("worker4", "my-machine-pool"),
 	}
 	err = givenNodes(ctx, ctrlClientTenant, nodes)
 	if err != nil {
@@ -113,11 +113,11 @@ func Test_NodeStatusIsSavedWhenThereIsOneNodeNotReady(t *testing.T) {
 	}
 
 	readyNodes := []corev1.Node{
-		givenReadyNode("worker1"),
-		givenReadyNode("worker2"),
+		givenReadyNode("worker1", "my-machine-pool"),
+		givenReadyNode("worker2", "my-machine-pool"),
 	}
 	notReadyNodes := []corev1.Node{
-		givenNotReadyNode("worker3"),
+		givenNotReadyNode("worker3", "my-machine-pool"),
 	}
 	var nodes []corev1.Node
 	nodes = append(nodes, readyNodes...)
@@ -241,10 +241,13 @@ func givenNodes(ctx context.Context, ctrlClient client.Client, nodes []corev1.No
 	return nil
 }
 
-func givenReadyNode(name string) corev1.Node {
+func givenReadyNode(name, machinePoolName string) corev1.Node {
 	return corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+			Labels: map[string]string{
+				label.MachinePool: machinePoolName,
+			},
 		},
 		Spec: corev1.NodeSpec{
 			ProviderID:    fmt.Sprintf("azure://%s", name),
@@ -261,10 +264,13 @@ func givenReadyNode(name string) corev1.Node {
 	}
 }
 
-func givenNotReadyNode(name string) corev1.Node {
+func givenNotReadyNode(name, machinePoolName string) corev1.Node {
 	return corev1.Node{
 		ObjectMeta: metav1.ObjectMeta{
 			Name: name,
+			Labels: map[string]string{
+				label.MachinePool: machinePoolName,
+			},
 		},
 		Spec: corev1.NodeSpec{
 			ProviderID:    fmt.Sprintf("azure://%s", name),
