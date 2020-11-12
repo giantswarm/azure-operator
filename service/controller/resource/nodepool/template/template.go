@@ -63,6 +63,9 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	if currentParameters.ClusterID != desiredParameters.ClusterID {
 		changes = append(changes, "clusterID")
 	}
+	if currentParameters.KubernetesVersion != desiredParameters.KubernetesVersion {
+		changes = append(changes, "kubernetesVersion")
+	}
 	if currentParameters.NodepoolName != desiredParameters.NodepoolName {
 		changes = append(changes, "nodepoolName")
 	}

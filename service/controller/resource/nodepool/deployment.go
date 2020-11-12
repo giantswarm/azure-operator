@@ -46,6 +46,10 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
+	kubernetesVersion, err := key.KubernetesVersion(*release)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
 
 	vnetName, subnetName, err := r.getSubnetName(azureMachinePool, azureCluster)
 	if err != nil {
@@ -92,6 +96,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 		DataDisks:                   azureMachinePool.Spec.Template.DataDisks,
 		EnableAcceleratedNetworking: enableAcceleratedNetworking,
 		NodepoolName:                key.NodePoolVMSSName(azureMachinePool),
+		KubernetesVersion:           kubernetesVersion,
 		OSImage: template.OSImage{
 			Publisher: "kinvolk",
 			Offer:     "flatcar-container-linux-free",
