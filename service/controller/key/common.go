@@ -13,6 +13,11 @@ import (
 )
 
 const (
+	// ComponentKubernetes is the name of the component specified in a Release
+	// CR which determines the version of the Kubernetes to be used for tenant
+	// cluster nodes.
+	ComponentKubernetes = "kubernetes"
+
 	// ComponentOS is the name of the component specified in a Release CR which
 	// determines the version of the OS to be used for tenant cluster nodes and
 	// is ultimately transformed into an AMI based on TC region.
@@ -74,6 +79,10 @@ func ComponentVersion(release releasev1alpha1.Release, componentName string) (st
 		}
 	}
 	return "", microerror.Maskf(notFoundError, "version for component %#v not found on release %#v", componentName, release.Name)
+}
+
+func KubernetesVersion(release releasev1alpha1.Release) (string, error) {
+	return ComponentVersion(release, ComponentKubernetes)
 }
 
 func OSVersion(release releasev1alpha1.Release) (string, error) {
