@@ -347,6 +347,7 @@ func KubeletLabelsNodePool(getter LabelsGetter) (string, error) {
 
 	labels = ensureLabel(labels, label.Provider, "azure")
 	labels = ensureLabel(labels, label.OperatorVersion, OperatorVersion(getter))
+	labels = ensureLabel(labels, label.ReleaseVersion, ReleaseVersion(getter))
 
 	machinePoolID, err := MachinePoolID(getter)
 	if err != nil || machinePoolID == "" {

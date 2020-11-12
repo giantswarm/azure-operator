@@ -57,6 +57,7 @@ rules:
       - releases
     verbs:
       - get
+      - list
   # The operator uses a distributed locking mechanism called kubelock https://github.com/giantswarm/kubelock.
   # It operates based on namespaces in order to achieve a distributed locking mechanism.
   # The locking is used for IPAM subnet allocation.

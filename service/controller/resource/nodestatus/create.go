@@ -3,6 +3,7 @@ package nodestatus
 import (
 	"context"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	apicorev1 "k8s.io/api/core/v1"
@@ -76,12 +77,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	err = r.deleteRetiredNodes(ctx, tenantClusterK8sClient, machinePool.Status.NodeRefs, machinePool.Spec.ProviderIDList)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Spec.ProviderIDList)
+	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Name, machinePool.Spec.ProviderIDList)
 	if err != nil {
 		if IsErrNoAvailableNodes(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "Cannot assign NodeRefs to MachinePool, no matching Nodes")
@@ -113,50 +109,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-// deleteRetiredNodes deletes nodes that don't have a corresponding ProviderID in Spec.ProviderIDList.
-// A MachinePool infrastucture provider indicates an instance in the set has been deleted by
-// removing its ProviderID from the slice.
-func (r *Resource) deleteRetiredNodes(ctx context.Context, c ctrlclient.Client, nodeRefs []apicorev1.ObjectReference, providerIDList []string) error {
-	nodeRefsMap := make(map[string]*apicorev1.Node, len(nodeRefs))
-	for _, nodeRef := range nodeRefs {
-		node := &apicorev1.Node{}
-		if err := c.Get(ctx, ctrlclient.ObjectKey{Name: nodeRef.Name}, node); err != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "Failed to get Node, skipping", "stack", microerror.JSON(microerror.Mask(err)))
-			continue
-		}
-
-		nodeProviderID, err := noderefutil.NewProviderID(node.Spec.ProviderID)
-		if err != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "Failed to parse ProviderID, skipping", "providerID", node.Spec.ProviderID, "stack", microerror.JSON(microerror.Mask(err)))
-			continue
-		}
-
-		nodeRefsMap[nodeProviderID.ID()] = node
-	}
-	for _, providerID := range providerIDList {
-		pid, err := noderefutil.NewProviderID(providerID)
-		if err != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "Failed to parse ProviderID, skipping", "providerID", providerID, "stack", microerror.JSON(microerror.Mask(err)))
-			continue
-		}
-		delete(nodeRefsMap, pid.ID())
-	}
-	for _, node := range nodeRefsMap {
-		if err := c.Delete(ctx, node); err != nil {
-			return microerror.Mask(err)
-		}
-	}
-	return nil
-}
-
 // getNodeReferences will return an slice containing the k8s nodes whose Azure ID is inside the given providerIDList.
 // This is useful when we want the nodes that belong to a certain MachinePool.
-func (r *Resource) getNodeReferences(ctx context.Context, c ctrlclient.Client, providerIDList []string) (getNodeReferencesResult, error) {
+func (r *Resource) getNodeReferences(ctx context.Context, c ctrlclient.Client, machinePoolName string, providerIDList []string) (getNodeReferencesResult, error) {
 	var ready, available int
 	nodeRefsMap := make(map[string]apicorev1.Node)
 	nodeList := apicorev1.NodeList{}
 	for {
-		if err := c.List(ctx, &nodeList, ctrlclient.Continue(nodeList.Continue)); err != nil {
+		if err := c.List(ctx, &nodeList, ctrlclient.MatchingLabels{label.MachinePool: machinePoolName}, ctrlclient.Continue(nodeList.Continue)); err != nil {
 			return getNodeReferencesResult{}, microerror.Mask(err)
 		}
 
