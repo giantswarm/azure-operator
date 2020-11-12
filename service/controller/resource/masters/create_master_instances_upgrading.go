@@ -11,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -43,7 +42,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	versionValue := map[string]string{}
 	for _, node := range tenantNodes {
-		versionValue[node.Name] = key.OperatorVersion(&node)
+		versionValue[node.Name] = key.ReleaseVersion(&node)
 	}
 
 	var masterUpgradeInProgress bool
@@ -65,7 +64,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 				}
 			}
 
-			desiredVersion := project.Version()
+			desiredVersion := key.ReleaseVersion(&cr)
 			for _, vm := range allMasterInstances {
 				instanceName := key.MasterInstanceName(cr, *vm.InstanceID)
 				instanceVersion, ok := versionValue[instanceName]
