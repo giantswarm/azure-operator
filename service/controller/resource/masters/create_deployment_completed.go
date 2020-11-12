@@ -4,12 +4,14 @@ import (
 	"context"
 	"fmt"
 
+	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
@@ -44,6 +46,30 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 	}
 
 	if key.IsSucceededProvisioningState(s) {
+		// Check if any of the nodes is out of date.
+		var releases []releasev1alpha1.Release
+		{
+			var rels releasev1alpha1.ReleaseList
+			err := r.ctrlClient.List(ctx, &rels)
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+			releases = rels.Items
+		}
+
+		anyOldNodes, err := nodes.AnyOutOfDate(ctx, key.ReleaseVersion(&cr), releases, map[string]string{"role": "master"})
+		if nodes.IsClientNotFound(err) {
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not found")
+			return currentState, nil
+		} else if err != nil {
+			return "", microerror.Mask(err)
+		}
+
+		if anyOldNodes {
+			r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster has master node[s] out of date")
+			return Empty, nil
+		}
+
 		computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
 		if blobclient.IsBlobNotFound(err) {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")

@@ -7,6 +7,7 @@ import (
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"k8s.io/apimachinery/pkg/labels"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -16,7 +17,7 @@ import (
 // corresponding azure-operator version from node labels. If node doesn't have
 // this label or was created with older version than currently reconciling one,
 // then this function returns true. Otherwise (including on error) false.
-func AnyOutOfDate(ctx context.Context, destinationRelease string, releases []releasev1alpha1.Release) (bool, error) {
+func AnyOutOfDate(ctx context.Context, destinationRelease string, releases []releasev1alpha1.Release, nodeLabels map[string]string) (bool, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
 		return false, microerror.Mask(err)
@@ -26,7 +27,9 @@ func AnyOutOfDate(ctx context.Context, destinationRelease string, releases []rel
 		return false, clientNotFoundError
 	}
 
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{
+		LabelSelector: labels.Set(nodeLabels).String(),
+	})
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
