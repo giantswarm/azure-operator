@@ -114,6 +114,9 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
+			Annotations: map[string]string{
+				annotation.ClusterDescription: cr.Annotations[annotation.ClusterDescription],
+			},
 			Labels: map[string]string{
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
 				label.AzureOperatorVersion:          key.OperatorVersion(&cr),

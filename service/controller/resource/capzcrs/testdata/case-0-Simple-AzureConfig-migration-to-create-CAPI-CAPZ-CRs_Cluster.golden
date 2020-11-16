@@ -1,6 +1,8 @@
 apiVersion: cluster.x-k8s.io/v1alpha3
 kind: Cluster
 metadata:
+  annotations:
+    cluster.giantswarm.io/description: my-test-cluster
   creationTimestamp: null
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
