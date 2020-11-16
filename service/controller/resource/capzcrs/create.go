@@ -136,7 +136,7 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 						key.ClusterIPRange(cr),
 					},
 				},
-				ServiceDomain: key.ClusterBaseDomain(cr),
+				ServiceDomain: cr.Spec.Cluster.Kubernetes.Domain,
 			},
 			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
 				Host: key.ClusterAPIEndpoint(cr),
