@@ -3,6 +3,7 @@ kind: Cluster
 metadata:
   annotations:
     cluster.giantswarm.io/description: my-test-cluster
+    release.giantswarm.io/upgrading-to-node-pools: "True"
   creationTimestamp: null
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
@@ -10,7 +11,6 @@ metadata:
     cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
     giantswarm.io/organization: giantswarm
-    release.giantswarm.io/upgrading-to-node-pools: "True"
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: org-giantswarm
