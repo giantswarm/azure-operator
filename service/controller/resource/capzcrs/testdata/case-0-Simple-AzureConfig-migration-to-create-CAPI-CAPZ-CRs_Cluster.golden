@@ -18,7 +18,7 @@ metadata:
 spec:
   clusterNetwork:
     apiServerPort: 443
-    serviceDomain: c6fme.k8s.ghost.westeurope.azure.gigantic.io
+    serviceDomain: cluster.local
     services:
       cidrBlocks:
       - 172.31.0.0/16
