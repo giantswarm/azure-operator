@@ -5,7 +5,7 @@ go 1.15
 require (
 	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.11.0
-	github.com/Azure/go-autorest/autorest v0.11.10
+	github.com/Azure/go-autorest/autorest v0.11.11
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.2
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/blang/semver v3.5.1+incompatible
@@ -37,7 +37,7 @@ require (
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/mock v1.4.4
-	github.com/google/go-cmp v0.5.2
+	github.com/google/go-cmp v0.5.3
 	github.com/markbates/pkger v0.17.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
