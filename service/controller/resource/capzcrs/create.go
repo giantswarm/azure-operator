@@ -115,17 +115,17 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
 			Annotations: map[string]string{
-				annotation.ClusterDescription: cr.Annotations[annotation.ClusterDescription],
+				annotation.ClusterDescription:       cr.Annotations[annotation.ClusterDescription],
+				azopannotation.UpgradingToNodePools: "True",
 			},
 			Labels: map[string]string{
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
-				label.AzureOperatorVersion:          key.OperatorVersion(&cr),
-				label.ClusterOperatorVersion:        cr.Labels[label.ClusterOperatorVersion],
-				label.Cluster:                       cr.Name,
-				capiv1alpha3.ClusterLabelName:       cr.Name,
-				label.Organization:                  key.OrganizationID(&cr),
-				label.ReleaseVersion:                key.ReleaseVersion(&cr),
-				azopannotation.UpgradingToNodePools: "True",
+				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
+				label.ClusterOperatorVersion:  cr.Labels[label.ClusterOperatorVersion],
+				label.Cluster:                 cr.Name,
+				capiv1alpha3.ClusterLabelName: cr.Name,
+				label.Organization:            key.OrganizationID(&cr),
+				label.ReleaseVersion:          key.ReleaseVersion(&cr),
 			},
 		},
 		Spec: capiv1alpha3.ClusterSpec{
