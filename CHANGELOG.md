@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0-beta2] - 2020-11-16
+
 ### Changed
 
 - Roll nodes on release upgrade if major components involved in node creation changes (k8s, flatcar, etcd...).
@@ -220,7 +222,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta2...HEAD
+[5.0.0-beta2]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta1...v5.0.0-beta2
 [5.0.0-beta1]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha4...v5.0.0-beta1
 [5.0.0-alpha4]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha3...v5.0.0-alpha4
 [5.0.0-alpha3]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha2...v5.0.0-alpha3
