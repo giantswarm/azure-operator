@@ -4,6 +4,8 @@ metadata:
   finalizers:
   - operatorkit.giantswarm.io/azure-operator
   - operatorkit.giantswarm.io/legacy-controller
+  annotations:
+    cluster.giantswarm.io/description: "my-test-cluster"
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
     giantswarm.io/cluster: c6fme
