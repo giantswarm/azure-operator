@@ -11,7 +11,6 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -25,27 +24,25 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
-	{
-		allMasterNodesAreReady, err := r.areNodesReadyForUpgrading(ctx)
-		if IsClientNotFound(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
-			return currentState, nil
-		} else if err != nil {
-			return "", microerror.Mask(err)
-		}
 
-		if !allMasterNodesAreReady {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that at least one master node is not ready")
-			return currentState, nil
-		}
+	tenantNodes, err := r.getTenantClusterNodes(ctx)
+	if IsClientNotFound(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		return currentState, nil
+	} else if err != nil {
+		return "", microerror.Mask(err)
 	}
+
+	if !areNodesReadyForUpgrading(tenantNodes) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that at least one master node is not ready")
+		return currentState, nil
+	}
+
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
 
 	versionValue := map[string]string{}
-	{
-		for _, node := range cr.Status.Cluster.Nodes {
-			versionValue[node.Name] = node.Version
-		}
+	for _, node := range tenantNodes {
+		versionValue[node.Name] = key.ReleaseVersion(&node)
 	}
 
 	var masterUpgradeInProgress bool
@@ -67,7 +64,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 				}
 			}
 
-			desiredVersion := project.Version()
+			desiredVersion := key.ReleaseVersion(&cr)
 			for _, vm := range allMasterInstances {
 				instanceName := key.MasterInstanceName(cr, *vm.InstanceID)
 				instanceVersion, ok := versionValue[instanceName]
@@ -114,39 +111,39 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	return currentState, nil
 }
 
-func (r *Resource) areNodesReadyForUpgrading(ctx context.Context) (bool, error) {
+func (r *Resource) getTenantClusterNodes(ctx context.Context) ([]corev1.Node, error) {
 	cc, err := controllercontext.FromContext(ctx)
 	if err != nil {
-		return false, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
 	if cc.Client.TenantCluster.K8s == nil {
-		return false, clientNotFoundError
+		return nil, clientNotFoundError
 	}
 
 	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
 	if err != nil {
-		return false, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
+	return nodeList.Items, nil
+}
+
+func areNodesReadyForUpgrading(nodes []corev1.Node) bool {
 	var numNodes int
-	for _, n := range nodeList.Items {
+	for _, n := range nodes {
 		if isMaster(n) {
 			numNodes++
 
 			if !isReady(n) {
 				// If there's even one node that is not ready, then wait.
-				return false, nil
+				return false
 			}
 		}
 	}
 
 	// There must be at least one node registered for the cluster.
-	if numNodes < 1 {
-		return false, nil
-	}
-
-	return true, nil
+	return numNodes > 0
 }
 
 func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1alpha1.AzureConfig, instance *compute.VirtualMachineScaleSetVM, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string, instanceNameFunc func(customObject providerv1alpha1.AzureConfig, instanceID string) string) error {

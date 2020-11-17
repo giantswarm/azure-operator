@@ -21,6 +21,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	azopannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -113,6 +114,10 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      cr.Name,
 			Namespace: key.OrganizationNamespace(&cr),
+			Annotations: map[string]string{
+				annotation.ClusterDescription:       cr.Annotations[annotation.ClusterDescription],
+				azopannotation.UpgradingToNodePools: "True",
+			},
 			Labels: map[string]string{
 				// XXX: azure-operator reconciles Cluster & MachinePool to set OwnerReferences (for now).
 				label.AzureOperatorVersion:    key.OperatorVersion(&cr),
@@ -131,7 +136,7 @@ func (r *Resource) mapAzureConfigToCluster(ctx context.Context, cr providerv1alp
 						key.ClusterIPRange(cr),
 					},
 				},
-				ServiceDomain: key.ClusterBaseDomain(cr),
+				ServiceDomain: cr.Spec.Cluster.Kubernetes.Domain,
 			},
 			ControlPlaneEndpoint: capiv1alpha3.APIEndpoint{
 				Host: key.ClusterAPIEndpoint(cr),
