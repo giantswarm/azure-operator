@@ -38,5 +38,8 @@ func (r *Resource) ensureProviderInfrastructureReadyCondition(ctx context.Contex
 		capi.ConditionSeverityWarning,
 		"AzureCluster Ready condition is not yet set, check again in few minutes")
 	capiconditions.SetMirror(cluster, aeconditions.ProviderInfrastructureReadyCondition, azureCluster, fallbackToFalse)
+
+	cluster.Status.InfrastructureReady = capiconditions.IsTrue(azureCluster, capi.ReadyCondition)
+
 	return nil
 }
