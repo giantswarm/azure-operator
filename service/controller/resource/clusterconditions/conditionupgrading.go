@@ -83,12 +83,22 @@ func (r *Resource) ensureUpgradingCondition(ctx context.Context, cluster *capi.C
 		} else {
 			// Desired release for this cluster is equal to the release to
 			// which it was previously upgraded or with which was created, so
-			// we can conclude that the cluster upgrade has not started.
+			// the cluster upgrade either has not started or the cluster
+			// upgrade has finished.
+			//
+			// Upgrading will be False and will contain the reason
+			// `UpgradingCompleted` when the cluster upgrade is finished.
+			// We don't need to overwrite the condition in this case.
+			//
+			// Upgrading will be unknown when the cluster just got created, so
+			// we need to set a valid reason like `UpgradingNotStarted`.
 			//
 			// Note: desired release version cannot be less than last deployed
 			// release version, since we don't allow release version downgrades,
 			// which is validated by azure-admission-controller.
-			conditions.MarkUpgradingNotStarted(cluster)
+			if capiconditions.IsUnknown(cluster, aeconditions.UpgradingCondition) {
+				conditions.MarkUpgradingNotStarted(cluster)
+			}
 		}
 	}
 
