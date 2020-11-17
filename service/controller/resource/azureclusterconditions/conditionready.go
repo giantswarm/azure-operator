@@ -49,6 +49,8 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.
 			messageArgs = append(messageArgs, readyCondition.Message)
 		}
 		r.logDebug(ctx, messageFormat, messageArgs...)
+
+		azureCluster.Status.Ready = capiconditions.IsTrue(azureCluster, capi.ReadyCondition)
 	}
 
 	return nil
