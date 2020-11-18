@@ -2,12 +2,6 @@
   "$schema": "https://schema.management.azure.com/schemas/2015-01-01/deploymentTemplate.json#",
   "contentVersion": "1.0.0.0",
   "parameters": {
-    "azureClusterVersion": {
-      "type": "string",
-      "metadata": {
-        "description": "CR revision field used for this deployment"
-      }
-    },
     "natGatewayId": {
       "type": "string",
       "metadata": {
