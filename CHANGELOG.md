@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0-beta5] - 2020-11-18
+
 ### Fixed
 
 - Don't set `Upgrading` condition `Reason` when it's `False` and already contains a `Reason`.
@@ -226,7 +228,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta4...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta5...HEAD
+[5.0.0-beta5]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta4...v5.0.0-beta5
 [5.0.0-beta4]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta2...v5.0.0-beta4
 [5.0.0-beta2]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta1...v5.0.0-beta2
 [5.0.0-beta1]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-alpha4...v5.0.0-beta1
