@@ -10,13 +10,11 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
-	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/util/conditions"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
@@ -109,11 +107,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.ensureSubnets(ctx, deploymentsClient, storageAccountsClient, natGatewaysClient, &azureCluster)
-	if IsVPNNotReadyError(err) {
-		r.logger.LogCtx(ctx, "level", "warning", "message", "VPN needs to be in state 'Succeeded' before subnets can be created")
-		r.logger.LogCtx(ctx, "message", "cancelling resource")
-		return nil
-	} else if IsStorageAccountNotFound(err) {
+	if IsStorageAccountNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "warning", "message", "Storage Account needs to be in state 'Succeeded' before subnets can be created")
 		r.logger.LogCtx(ctx, "message", "cancelling resource")
 		return nil
@@ -129,12 +123,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, natGatewaysClient *network.NatGatewaysClient, azureCluster *capzv1alpha3.AzureCluster) error {
-	// Trying to create a Subnet while the VPN is not Ready will keep the Subnet ARM Template as `Running` and
-	// showing error code 429.
-	if !conditions.IsTrue(azureCluster, azureconditions.VPNGatewayReadyCondition) {
-		return microerror.Mask(vpnNotReadyError)
-	}
-
 	natGw, err := natGatewaysClient.Get(ctx, key.ClusterID(azureCluster), "workers-nat-gw", "")
 	if IsNotFound(err) {
 		return microerror.Mask(natGatewayNotReadyError)
