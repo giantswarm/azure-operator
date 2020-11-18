@@ -99,6 +99,15 @@ func IsNatGatewayNotReadyError(err error) bool {
 	return microerror.Cause(err) == natGatewayNotReadyError
 }
 
+var vpnNotReadyError = &microerror.Error{
+	Kind: "vpnNotReadyError",
+}
+
+// IsVPNNotReadyError asserts vpnNotReadyError.
+func IsVPNNotReadyError(err error) bool {
+	return microerror.Cause(err) == vpnNotReadyError
+}
+
 // IsStorageAccountNotFound asserts storage account not found error from Azure API message.
 func IsStorageAccountNotFound(err error) bool {
 	if err == nil {

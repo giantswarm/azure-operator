@@ -10,10 +10,13 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/go-autorest/autorest/to"
+	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/util/conditions"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
@@ -106,12 +109,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.ensureSubnets(ctx, deploymentsClient, storageAccountsClient, natGatewaysClient, &azureCluster)
-	if IsNatGatewayNotReadyError(err) {
-		r.logger.LogCtx(ctx, "level", "warning", "message", "Nat Gateway needs to be in state 'Succeeded' before subnets can be created")
+	if IsVPNNotReadyError(err) {
+		r.logger.LogCtx(ctx, "level", "warning", "message", "VPN needs to be in state 'Succeeded' before subnets can be created")
 		r.logger.LogCtx(ctx, "message", "cancelling resource")
 		return nil
 	} else if IsStorageAccountNotFound(err) {
 		r.logger.LogCtx(ctx, "level", "warning", "message", "Storage Account needs to be in state 'Succeeded' before subnets can be created")
+		r.logger.LogCtx(ctx, "message", "cancelling resource")
+		return nil
+	} else if IsNatGatewayNotReadyError(err) {
+		r.logger.LogCtx(ctx, "level", "warning", "message", "Nat Gateway needs to be in state 'Succeeded' before subnets can be created")
 		r.logger.LogCtx(ctx, "message", "cancelling resource")
 		return nil
 	} else if err != nil {
@@ -122,9 +129,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 }
 
 func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, storageAccountsClient *storage.AccountsClient, natGatewaysClient *network.NatGatewaysClient, azureCluster *capzv1alpha3.AzureCluster) error {
-	armTemplate, err := subnet.GetARMTemplate()
-	if err != nil {
-		return microerror.Mask(err)
+	// Trying to create a Subnet while the VPN is not Ready will keep the Subnet ARM Template as `Running` and
+	// showing error code 429.
+	if !conditions.IsTrue(azureCluster, azureconditions.VPNGatewayReadyCondition) {
+		return microerror.Mask(vpnNotReadyError)
 	}
 
 	natGw, err := natGatewaysClient.Get(ctx, key.ClusterID(azureCluster), "workers-nat-gw", "")
@@ -136,6 +144,11 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 
 	if natGw.ProvisioningState != network.Succeeded {
 		return microerror.Mask(natGatewayNotReadyError)
+	}
+
+	subnetARMTemplate, err := subnet.GetARMTemplate()
+	if err != nil {
+		return microerror.Mask(err)
 	}
 
 	for i := 0; i < len(azureCluster.Spec.NetworkSpec.Subnets); i++ {
@@ -156,7 +169,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 			Properties: &azureresource.DeploymentProperties{
 				Mode:       azureresource.Incremental,
 				Parameters: key.ToParameters(parameters),
-				Template:   armTemplate,
+				Template:   subnetARMTemplate,
 			},
 		}
 
@@ -176,8 +189,13 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 				return microerror.Mask(err)
 			}
 
-			// We just submitted the ARM deployment to create this subnet so let's continue with the next Subnet.
-			continue
+			// We just submitted the ARM deployment to create this subnet so we could `continue` with the next Subnet
+			// in the slice but Azure doesn't allow the creation of several subnets at the same time.
+			// Let's return and keep creating subnets on the next reconciliation loop, one by one.
+			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			reconciliationcanceledcontext.SetCanceled(ctx)
+
+			return nil
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("template and parameters unchanged for deployment %#q", deploymentName), "subnet", azureCluster.Spec.NetworkSpec.Subnets[i].Name)
