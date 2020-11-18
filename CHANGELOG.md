@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Don't set `Upgrading` condition `Reason` when it's `False` and already contains a `Reason`.
+
 ## [5.0.0-beta4] - 2020-11-17
 
 ## [5.0.0-beta2] - 2020-11-16
@@ -16,17 +20,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Roll nodes on release upgrade if major components involved in node creation changes (k8s, flatcar, etcd...).
 
 ## [5.0.0-beta1] - 2020-11-11
-
-### Changed
-
-- Simplified master node's upgrade process.
-- Upgraded `apiextensions` to `3.7.0`.
-- Upgraded `e2e-harness` to `3.0.0`.
-- Upgraded `helmclient` to `3.0.1`.
-- Upgraded `k8sclient` to `5.0.0`.
-- Upgraded `k8scloudconfig` to `9.1.1`.
-- Upgraded `operatorkit` to `4.0.0`.
-- Upgraded `statusresource` to `3.0.0`.
 
 ### Added
 
@@ -43,6 +36,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Use `AzureCluster.Spec.NetworkSpec.Vnet.CIDRBlocks` field instead of deprecated `AzureCluster.Spec.NetworkSpec.Vnet.CidrBlock`.
 - Use `Subnet.CIDRBlocks` field instead of deprecated `Subnet.CidrBlock`.
+- Simplified master node's upgrade process.
+- Upgraded `apiextensions` to `3.7.0`.
+- Upgraded `e2e-harness` to `3.0.0`.
+- Upgraded `helmclient` to `3.0.1`.
+- Upgraded `k8sclient` to `5.0.0`.
+- Upgraded `k8scloudconfig` to `9.1.1`.
+- Upgraded `operatorkit` to `4.0.0`.
+- Upgraded `statusresource` to `3.0.0`.
 
 ## [5.0.0-alpha4] - 2020-10-27
 
