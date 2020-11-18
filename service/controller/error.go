@@ -4,11 +4,11 @@ import (
 	"github.com/giantswarm/microerror"
 )
 
-var invalidConfigError = &microerror.Error{
+var InvalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }
 
-// IsInvalidConfig asserts invalidConfigError.
+// IsInvalidConfig asserts InvalidConfigError.
 func IsInvalidConfig(err error) bool {
-	return microerror.Cause(err) == invalidConfigError
+	return microerror.Cause(err) == InvalidConfigError
 }

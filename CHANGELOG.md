@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Create package for every controller and move each controller's handlers there.
+
 ## [5.0.0-beta5] - 2020-11-18
 
 ### Fixed

@@ -26,8 +26,8 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/capzcrs"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/azureconfig"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/capzcrs"
 )
 
 var update = flag.Bool("update", false, "update .golden reference files")
