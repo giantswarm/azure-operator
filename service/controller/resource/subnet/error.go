@@ -98,3 +98,11 @@ var natGatewayNotReadyError = &microerror.Error{
 func IsNatGatewayNotReadyError(err error) bool {
 	return microerror.Cause(err) == natGatewayNotReadyError
 }
+
+// IsStorageAccountNotFound asserts storage account not found error from Azure API message.
+func IsStorageAccountNotFound(err error) bool {
+	if err == nil {
+		return false
+	}
+	return strings.Contains(microerror.Cause(err).Error(), "StorageAccountNotFound")
+}
