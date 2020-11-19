@@ -47,7 +47,7 @@ func (c *AzureConfigChecker) Check(ctx context.Context, namespace string, name s
 
 	// We check the subnet we want to ensure in the CR status. In case there is no
 	// subnet tracked so far, we want to proceed with the allocation process. Thus
-	// we return true.
+	// we return nil.
 	if key.AzureConfigNetworkCIDR(*azureCluster) == "" {
 		return nil, nil
 	}
