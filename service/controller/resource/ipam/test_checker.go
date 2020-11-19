@@ -2,20 +2,21 @@ package ipam
 
 import (
 	"context"
+	"net"
 )
 
 type TestChecker struct {
-	proceed bool
+	subnet *net.IPNet
 }
 
-func NewTestChecker(proceed bool) *TestChecker {
+func NewTestChecker(subnet *net.IPNet) *TestChecker {
 	a := &TestChecker{
-		proceed: proceed,
+		subnet: subnet,
 	}
 
 	return a
 }
 
-func (c *TestChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
-	return c.proceed, nil
+func (c *TestChecker) Check(ctx context.Context, namespace string, name string) (*net.IPNet, error) {
+	return c.subnet, nil
 }

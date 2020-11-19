@@ -5,11 +5,12 @@ import (
 	"net"
 )
 
-// Checker determines whether a subnet has to be allocated. This decision is
+// Checker determines whether a subnet has been allocated. This decision is
 // being made based on the status of the Kubernetes runtime object defined by
-// namespace and name.
+// namespace and name. If subnet has been allocated, it's returned. Otherwise
+// return value is nil.
 type Checker interface {
-	Check(ctx context.Context, namespace string, name string) (bool, error)
+	Check(ctx context.Context, namespace string, name string) (*net.IPNet, error)
 }
 
 // Collector implementation must return all networks that are allocated on any
