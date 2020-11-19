@@ -5,11 +5,12 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 )
 
 type AzureMachinePoolSubnetReleaserConfig struct {

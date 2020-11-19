@@ -5,9 +5,10 @@ import (
 	"fmt"
 	"net"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/microerror"
 	"k8s.io/apimachinery/pkg/api/meta"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 )
 
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
