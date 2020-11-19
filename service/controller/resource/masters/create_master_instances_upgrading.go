@@ -9,9 +9,8 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
@@ -23,9 +22,17 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 		return "", microerror.Mask(err)
 	}
 
+	var tenantClusterK8sClient client.Client
+	{
+		tenantClusterK8sClient, err = r.getTenantClusterClient(ctx, &cr)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+	}
+
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
 
-	tenantNodes, err := r.getTenantClusterNodes(ctx)
+	tenantNodes, err := r.getTenantClusterNodes(ctx, tenantClusterK8sClient)
 	if IsClientNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
 		return currentState, nil
@@ -111,17 +118,9 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	return currentState, nil
 }
 
-func (r *Resource) getTenantClusterNodes(ctx context.Context) ([]corev1.Node, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	if cc.Client.TenantCluster.K8s == nil {
-		return nil, clientNotFoundError
-	}
-
-	nodeList, err := cc.Client.TenantCluster.K8s.CoreV1().Nodes().List(ctx, metav1.ListOptions{})
+func (r *Resource) getTenantClusterNodes(ctx context.Context, tenantClusterK8sClient client.Client) ([]corev1.Node, error) {
+	nodeList := &corev1.NodeList{}
+	err := tenantClusterK8sClient.List(ctx, nodeList)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -9,6 +9,7 @@ import (
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api/util"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
@@ -60,20 +61,19 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
 
 	drainerConfigs := make(map[string]corev1alpha1.DrainerConfig)
+	var labelSelector client.MatchingLabels
 	{
-		n := metav1.NamespaceAll
-		o := metav1.ListOptions{
-			LabelSelector: fmt.Sprintf("%s=%s", label.Cluster, key.ClusterID(&azureMachinePool)),
-		}
+		labelSelector = make(map[string]string)
+		labelSelector[label.Cluster] = key.ClusterID(&azureMachinePool)
+	}
 
-		list, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(n).List(ctx, o)
-		if err != nil {
-			return "", microerror.Mask(err)
-		}
-
-		for _, dc := range list.Items {
-			drainerConfigs[dc.Name] = dc
-		}
+	drainerConfigList := &corev1alpha1.DrainerConfigList{}
+	err = r.CtrlClient.List(ctx, drainerConfigList, labelSelector, client.InNamespace(metav1.NamespaceAll))
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+	for _, dc := range drainerConfigList.Items {
+		drainerConfigs[dc.Name] = dc
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d drainerconfigs", len(drainerConfigs)))
@@ -116,7 +116,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("drainerconfig for %s already exists but has timed out", n))
 			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting drainerconfig for %s", n))
 
-			err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(ctx, dc.Name, metav1.DeleteOptions{})
+			err = r.CtrlClient.Delete(ctx, &dc)
 			if errors.IsNotFound(err) {
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "did not delete drainer config for tenant cluster node")
 				r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does not exist")
@@ -149,7 +149,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 
 	// Delete DrainerConfigs now that all nodes have been DRAINED.
 	for _, dc := range drainerConfigs {
-		err = r.G8sClient.CoreV1alpha1().DrainerConfigs(dc.Namespace).Delete(ctx, dc.Name, metav1.DeleteOptions{})
+		err = r.CtrlClient.Delete(ctx, &dc)
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}

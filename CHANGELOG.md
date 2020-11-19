@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Only submit Subnet ARM deployment when Subnet name or Subnet CIDR change.
+- Use controller-runtime instead of typed clients.
 
 ### Added
 

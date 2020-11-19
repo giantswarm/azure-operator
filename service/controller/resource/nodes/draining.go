@@ -19,7 +19,8 @@ func (r *Resource) CreateDrainerConfig(ctx context.Context, clusterID, clusterAP
 			Labels: map[string]string{
 				label.Cluster: clusterID,
 			},
-			Name: nodeName,
+			Name:      nodeName,
+			Namespace: clusterID,
 		},
 		Spec: corev1alpha1.DrainerConfigSpec{
 			Guest: corev1alpha1.DrainerConfigSpecGuest{
@@ -39,7 +40,7 @@ func (r *Resource) CreateDrainerConfig(ctx context.Context, clusterID, clusterAP
 		},
 	}
 
-	_, err := r.G8sClient.CoreV1alpha1().DrainerConfigs(clusterID).Create(ctx, c, metav1.CreateOptions{})
+	err := r.CtrlClient.Create(ctx, c)
 	if errors.IsAlreadyExists(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")

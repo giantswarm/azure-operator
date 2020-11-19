@@ -5,12 +5,13 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 )
 
 func (r *Resource) GetResourceStatus(ctx context.Context, customObject providerv1alpha1.AzureConfig, t string) (string, error) {
 	{
-		c, err := r.G8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(ctx, customObject.Name, metav1.GetOptions{})
+		c := &providerv1alpha1.AzureConfig{}
+		err := r.CtrlClient.Get(ctx, client.ObjectKey{Namespace: customObject.Namespace, Name: customObject.Name}, c)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
@@ -40,7 +41,8 @@ func (r *Resource) SetResourceStatus(ctx context.Context, customObject providerv
 	//	 latest version and try again
 	//
 	{
-		c, err := r.G8sClient.ProviderV1alpha1().AzureConfigs(customObject.Namespace).Get(ctx, customObject.Name, metav1.GetOptions{})
+		c := &providerv1alpha1.AzureConfig{}
+		err := r.CtrlClient.Get(ctx, client.ObjectKey{Namespace: customObject.Namespace, Name: customObject.Name}, c)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -80,8 +82,7 @@ func (r *Resource) SetResourceStatus(ctx context.Context, customObject providerv
 	}
 
 	{
-		n := customObject.GetNamespace()
-		_, err := r.G8sClient.ProviderV1alpha1().AzureConfigs(n).UpdateStatus(ctx, &customObject, metav1.UpdateOptions{})
+		err := r.CtrlClient.Status().Update(ctx, &customObject)
 		if err != nil {
 			return microerror.Mask(err)
 		}

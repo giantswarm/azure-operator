@@ -6,6 +6,7 @@ import (
 
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
@@ -57,7 +58,15 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 			releases = rels.Items
 		}
 
-		anyOldNodes, err := nodes.AnyOutOfDate(ctx, key.ReleaseVersion(&cr), releases, map[string]string{"role": "master"})
+		var tenantClusterK8sClient client.Client
+		{
+			tenantClusterK8sClient, err = r.getTenantClusterClient(ctx, &cr)
+			if err != nil {
+				return "", microerror.Mask(err)
+			}
+		}
+
+		anyOldNodes, err := nodes.AnyOutOfDate(ctx, tenantClusterK8sClient, key.ReleaseVersion(&cr), releases, map[string]string{"role": "master"})
 		if nodes.IsClientNotFound(err) {
 			r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not found")
 			return currentState, nil

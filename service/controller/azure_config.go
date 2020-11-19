@@ -46,7 +46,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/resourcegroup"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/service"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/tenantclients"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpn"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpnconnection"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration"
@@ -193,6 +192,20 @@ func NewAzureConfig(config AzureConfigConfig) (*controller.Controller, error) {
 func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
 
+	var tenantRestConfigProvider *tenantcluster.TenantCluster
+	{
+		c := tenantcluster.Config{
+			CertID:        certs.APICert,
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+		}
+
+		tenantRestConfigProvider, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var clientFactory *client.Factory
 	{
 		c := client.FactoryConfig{
@@ -225,21 +238,6 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 
 		newDebugger, err = debugger.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var tenantCluster tenantcluster.Interface
-	{
-		c := tenantcluster.Config{
-			CertsSearcher: certsSearcher,
-			Logger:        config.Logger,
-
-			CertID: certs.APICert,
-		}
-
-		tenantCluster, err = tenantcluster.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -281,19 +279,6 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		}
 
 		capzcrsResource, err = capzcrs.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var tenantClientsResource resource.Interface
-	{
-		c := tenantclients.Config{
-			Logger: config.Logger,
-			Tenant: tenantCluster,
-		}
-
-		tenantClientsResource, err = tenantclients.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -436,8 +421,6 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	nodesConfig := nodes.Config{
 		CtrlClient: config.K8sClient.CtrlClient(),
 		Debugger:   newDebugger,
-		G8sClient:  config.K8sClient.G8sClient(),
-		K8sClient:  config.K8sClient.K8sClient(),
 		Logger:     config.Logger,
 
 		Azure:         config.Azure,
@@ -447,8 +430,9 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var mastersResource resource.Interface
 	{
 		c := masters.Config{
-			Config:     nodesConfig,
-			CtrlClient: config.K8sClient.CtrlClient(),
+			Config:                   nodesConfig,
+			CtrlClient:               config.K8sClient.CtrlClient(),
+			TenantRestConfigProvider: tenantRestConfigProvider,
 		}
 
 		mastersResource, err = masters.New(c)
@@ -628,7 +612,6 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 		namespaceResource,
 		ipamResource,
 		releaseResource,
-		tenantClientsResource,
 		serviceResource,
 		resourceGroupResource,
 		encryptionkeyResource,

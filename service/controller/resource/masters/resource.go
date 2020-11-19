@@ -1,9 +1,16 @@
 package masters
 
 import (
+	"context"
+
+	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
 )
 
@@ -12,18 +19,23 @@ const (
 )
 
 type Config struct {
-	CtrlClient client.Client
 	nodes.Config
+	CtrlClient               client.Client
+	TenantRestConfigProvider *tenantcluster.TenantCluster
 }
 
 type Resource struct {
-	ctrlClient client.Client
 	nodes.Resource
+	ctrlClient               client.Client
+	tenantRestConfigProvider *tenantcluster.TenantCluster
 }
 
 func New(config Config) (*Resource, error) {
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
+	}
+	if config.TenantRestConfigProvider == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.TenantRestConfigProvider must not be empty", config)
 	}
 
 	config.Name = Name
@@ -33,8 +45,9 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		ctrlClient: config.CtrlClient,
-		Resource:   *nodes,
+		Resource:                 *nodes,
+		ctrlClient:               config.CtrlClient,
+		tenantRestConfigProvider: config.TenantRestConfigProvider,
 	}
 	stateMachine := r.createStateMachine()
 	r.SetStateMachine(stateMachine)
@@ -44,4 +57,24 @@ func New(config Config) (*Resource, error) {
 
 func (r *Resource) Name() string {
 	return r.Resource.Name()
+}
+
+func (r *Resource) getTenantClusterClient(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig) (client.Client, error) {
+	var k8sClient k8sclient.Interface
+	{
+		restConfig, err := r.tenantRestConfigProvider.NewRestConfig(ctx, key.ClusterID(azureConfig), key.ClusterAPIEndpoint(*azureConfig))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		k8sClient, err = k8sclient.NewClients(k8sclient.ClientsConfig{
+			Logger:     r.Logger,
+			RestConfig: rest.CopyConfig(restConfig),
+		})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return k8sClient.CtrlClient(), nil
 }
