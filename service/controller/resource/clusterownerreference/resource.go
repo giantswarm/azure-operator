@@ -91,7 +91,7 @@ func (r *Resource) Name() string {
 
 func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.Cluster) error {
 	var err error
-	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name))
+	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name))
 
 	azureCluster := v1alpha3.AzureCluster{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: cluster.Spec.InfrastructureRef.Name}, &azureCluster)
