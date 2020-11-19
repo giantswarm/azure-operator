@@ -541,6 +541,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			NetworkRangeGetter: networkRangeGetter,
 			NetworkRangeType:   ipam.VirtualNetworkRange,
 			Persister:          azureConfigPersister,
+			Releaser:           ipam.NewNOPReleaser(),
 		}
 
 		ipamResource, err = ipam.New(c)
