@@ -2,6 +2,7 @@ package tenantcluster
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/errors/tenant"
@@ -50,7 +51,7 @@ func NewFactory(certsSearcher certs.Interface, logger micrologger.Logger) (Facto
 }
 
 func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
-	tcf.logger.LogCtx(ctx, "level", "debug", "message", "Creating tenant cluster k8s client for cluster %#q", key.ClusterID(cr))
+	tcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Creating tenant cluster k8s client for cluster %#q", key.ClusterID(cr)))
 	var k8sClient k8sclient.Interface
 	{
 		restConfig, err := tcf.tenantRestConfigProvider.NewRestConfig(ctx, key.ClusterID(cr), cr.Spec.ControlPlaneEndpoint.String())
@@ -64,7 +65,9 @@ func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.
 			Logger:     tcf.logger,
 			RestConfig: rest.CopyConfig(restConfig),
 		})
-		if err != nil {
+		if tenant.IsAPINotAvailable(err) {
+			return nil, microerror.Mask(apiNotAvailableError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
