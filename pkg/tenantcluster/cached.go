@@ -40,10 +40,10 @@ func NewCachedFactory(tenantClientFactory Factory, logger micrologger.Logger) (F
 }
 
 func (ctcf *cachedTenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
-	ctcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Fetching tenant cluster k8s client for cluster %#q from cache", key.ClusterID(cr)))
+	ctcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("trying to fetch tenant cluster %#q k8s client from cache before creating it", key.ClusterID(cr)))
 	tenantClusterClient, inCache := ctcf.cache.Get(key.ClusterID(cr))
 	if inCache {
-		ctcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Tenant cluster k8s client for cluster %#q found in cache", key.ClusterID(cr)))
+		ctcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tenant cluster k8s client for cluster %#q found in cache", key.ClusterID(cr)))
 		return tenantClusterClient.(client.Client), nil
 	}
 
@@ -53,7 +53,7 @@ func (ctcf *cachedTenantClientFactory) GetClient(ctx context.Context, cr *capiv1
 	}
 
 	ctcf.cache.SetDefault(key.ClusterID(cr), tenantClusterClient)
-	ctcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Saved tenant cluster k8s client for cluster %#q in cache", key.ClusterID(cr)))
+	ctcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("saved tenant cluster k8s client for cluster %#q in cache", key.ClusterID(cr)))
 
 	return tenantClusterClient.(client.Client), nil
 }

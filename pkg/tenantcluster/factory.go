@@ -51,11 +51,11 @@ func NewFactory(certsSearcher certs.Interface, logger micrologger.Logger) (Facto
 }
 
 func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
-	tcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Creating tenant cluster k8s client for cluster %#q", key.ClusterID(cr)))
+	tcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating tenant cluster k8s client for cluster %#q", key.ClusterID(cr)))
 	var k8sClient k8sclient.Interface
 	{
 		restConfig, err := tcf.tenantRestConfigProvider.NewRestConfig(ctx, key.ClusterID(cr), cr.Spec.ControlPlaneEndpoint.String())
-		if tenant.IsAPINotAvailable(err) {
+		if tenant.IsAPINotAvailable(err) || tenantcluster.IsTimeout(err) {
 			return nil, microerror.Mask(apiNotAvailableError)
 		} else if err != nil {
 			return nil, microerror.Mask(err)
