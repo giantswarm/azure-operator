@@ -93,7 +93,3 @@ func mustParseCIDR(val string) net.IPNet {
 
 	return *n
 }
-
-func toIPNetP(v net.IPNet) *net.IPNet {
-	return &v
-}
