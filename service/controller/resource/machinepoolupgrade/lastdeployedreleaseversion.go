@@ -5,11 +5,11 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/pkg/upgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -36,7 +36,7 @@ func (r *Resource) ensureLastDeployedReleaseVersion(ctx context.Context, machine
 	}
 
 	tenantClusterClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if tenant.IsAPINotAvailable(err) {
+	if tenantcluster.IsAPINotAvailableError(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 

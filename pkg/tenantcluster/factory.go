@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -45,7 +46,9 @@ func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.
 	var k8sClient k8sclient.Interface
 	{
 		restConfig, err := tcf.tenantRestConfigProvider.NewRestConfig(ctx, key.ClusterID(cr), cr.Spec.ControlPlaneEndpoint.String())
-		if err != nil {
+		if tenant.IsAPINotAvailable(err) {
+			return nil, microerror.Mask(APINotAvailableError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
