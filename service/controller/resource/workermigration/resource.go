@@ -54,11 +54,16 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	cachedTenantClientFactory, err := tenantcluster.NewCachedFactory(tenantClientFactory, config.Logger)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	newResource := &Resource{
 		clientFactory:       config.ClientFactory,
 		ctrlClient:          config.CtrlClient,
 		logger:              config.Logger,
-		tenantClientFactory: tenantClientFactory,
+		tenantClientFactory: cachedTenantClientFactory,
 		wrapAzureAPI:        azure.GetAPI,
 
 		location: config.Location,

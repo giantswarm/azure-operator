@@ -23,17 +23,26 @@ type cachedTenantClientFactory struct {
 	factory Factory
 }
 
-func NewCachedFactory(tenantClientFactory Factory, logger micrologger.Logger) Factory {
+func NewCachedFactory(tenantClientFactory Factory, logger micrologger.Logger) (Factory, error) {
+	if tenantClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "tenantClientFactory must not be empty")
+	}
+	if logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "logger must not be empty")
+	}
+
 	return &cachedTenantClientFactory{
 		cache:   gocache.New(expiration, expiration/2),
 		logger:  logger,
 		factory: tenantClientFactory,
-	}
+	}, nil
 }
 
 func (ctcf *cachedTenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
+	ctcf.logger.LogCtx(ctx, "level", "debug", "message", "Fetching tenant cluster k8s client for cluster %#q from cache", key.ClusterID(cr))
 	tenantClusterClient, inCache := ctcf.cache.Get(key.ClusterID(cr))
 	if inCache {
+		ctcf.logger.LogCtx(ctx, "level", "debug", "message", "Tenant cluster k8s client for cluster %#q found in cache", key.ClusterID(cr))
 		return tenantClusterClient.(client.Client), nil
 	}
 
@@ -43,6 +52,7 @@ func (ctcf *cachedTenantClientFactory) GetClient(ctx context.Context, cr *capiv1
 	}
 
 	ctcf.cache.SetDefault(key.ClusterID(cr), tenantClusterClient)
+	ctcf.logger.LogCtx(ctx, "level", "debug", "message", "Saved tenant cluster k8s client for cluster %#q in cache", key.ClusterID(cr))
 
 	return tenantClusterClient.(client.Client), nil
 }

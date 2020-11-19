@@ -186,7 +186,10 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			return nil, microerror.Mask(err)
 		}
 
-		cachedTenantClientFactory = tenantcluster.NewCachedFactory(tenantClientFactory, config.Logger)
+		cachedTenantClientFactory, err = tenantcluster.NewCachedFactory(tenantClientFactory, config.Logger)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	nodesConfig := nodes.Config{

@@ -13,11 +13,11 @@ func IsInvalidConfig(err error) bool {
 	return microerror.Cause(err) == invalidConfigError
 }
 
-var APINotAvailableError = &microerror.Error{
-	Kind: "APINotAvailableError",
+var apiNotAvailableError = &microerror.Error{
+	Kind: "apiNotAvailableError",
 }
 
-// IsAPINotAvailableError asserts APINotAvailableError.
+// IsAPINotAvailableError asserts apiNotAvailableError.
 func IsAPINotAvailableError(err error) bool {
-	return microerror.Cause(err) == APINotAvailableError
+	return microerror.Cause(err) == apiNotAvailableError
 }
