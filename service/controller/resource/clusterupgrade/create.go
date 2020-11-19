@@ -5,6 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -134,9 +135,13 @@ func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi
 
 func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1alpha3.Cluster) (bool, error) {
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, &cluster)
-	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
+	if tenant.IsAPINotAvailable(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 		return false, nil
+	} else if err != nil {
+		return false, microerror.Mask(err)
 	}
 
 	nodeList := &corev1.NodeList{}
