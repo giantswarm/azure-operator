@@ -23,6 +23,7 @@ type Config struct {
 	NetworkRangeGetter NetworkRangeGetter
 	NetworkRangeType   NetworkRangeType
 	Persister          Persister
+	Releaser           Releaser
 }
 
 // Resource finds free IP ranges:
@@ -36,6 +37,7 @@ type Resource struct {
 	networkRangeGetter NetworkRangeGetter
 	networkRangeType   NetworkRangeType
 	persister          Persister
+	releaser           Releaser
 }
 
 func New(config Config) (*Resource, error) {
@@ -60,6 +62,9 @@ func New(config Config) (*Resource, error) {
 	if config.Persister == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Persister must not be empty", config)
 	}
+	if config.Releaser == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Releaser must not be empty", config)
+	}
 
 	r := &Resource{
 		checker:            config.Checker,
@@ -69,6 +74,7 @@ func New(config Config) (*Resource, error) {
 		networkRangeGetter: config.NetworkRangeGetter,
 		networkRangeType:   config.NetworkRangeType,
 		persister:          config.Persister,
+		releaser:           config.Releaser,
 	}
 
 	return r, nil

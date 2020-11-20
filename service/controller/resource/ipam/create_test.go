@@ -69,6 +69,7 @@ func Test_SubnetAllocator(t *testing.T) {
 					NetworkRangeGetter: tc.networkRangeGetter,
 					NetworkRangeType:   "unit-test-network-range",
 					Persister:          tc.persister,
+					Releaser:           NewNOPReleaser(),
 				}
 
 				newResource, err = New(c)

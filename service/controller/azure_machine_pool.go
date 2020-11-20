@@ -251,6 +251,19 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
+	var subnetReleaser *ipam.AzureMachinePoolSubnetReleaser
+	{
+		c := ipam.AzureMachinePoolSubnetReleaserConfig{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		subnetReleaser, err = ipam.NewAzureMachinePoolSubnetReleaser(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
 	{
 		c := ipam.AzureMachinePoolSubnetCollectorConfig{
@@ -288,6 +301,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			NetworkRangeGetter: networkRangeGetter,
 			NetworkRangeType:   ipam.SubnetRange,
 			Persister:          subnetPersister,
+			Releaser:           subnetReleaser,
 		}
 
 		ipamResource, err = ipam.New(c)
