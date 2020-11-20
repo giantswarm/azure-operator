@@ -48,12 +48,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// 1/4 Check if a vnet/subnet is already allocated.
 	{
-		proceed, err := r.checker.Check(ctx, m.GetNamespace(), m.GetName())
+		subnet, err := r.checker.Check(ctx, m.GetNamespace(), m.GetName())
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		if !proceed {
+		if subnet != nil {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%s already allocated", r.networkRangeType))
 			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 			return nil
