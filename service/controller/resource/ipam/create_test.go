@@ -24,7 +24,7 @@ func Test_SubnetAllocator(t *testing.T) {
 		{
 			name: "case 0 allocate first subnet",
 
-			checker:            NewTestChecker(true),
+			checker:            NewTestChecker(nil),
 			collector:          NewTestCollector([]net.IPNet{}),
 			networkRangeGetter: NewTestNetworkRangeGetter(mustParseCIDR("10.100.0.0/16"), 24),
 			persister:          NewTestPersister(mustParseCIDR("10.100.0.0/24")),
@@ -32,7 +32,7 @@ func Test_SubnetAllocator(t *testing.T) {
 		{
 			name: "case 1 allocate fourth subnet",
 
-			checker: NewTestChecker(true),
+			checker: NewTestChecker(nil),
 			collector: NewTestCollector([]net.IPNet{
 				mustParseCIDR("10.100.0.0/24"),
 				mustParseCIDR("10.100.1.0/24"),
@@ -69,6 +69,7 @@ func Test_SubnetAllocator(t *testing.T) {
 					NetworkRangeGetter: tc.networkRangeGetter,
 					NetworkRangeType:   "unit-test-network-range",
 					Persister:          tc.persister,
+					Releaser:           NewNOPReleaser(),
 				}
 
 				newResource, err = New(c)

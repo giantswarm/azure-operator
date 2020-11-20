@@ -2,12 +2,12 @@ package ipam
 
 import (
 	"context"
+	"net"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
-	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
@@ -43,8 +43,8 @@ func NewAzureMachinePoolSubnetChecker(config AzureMachinePoolSubnetCheckerConfig
 
 // Check function checks if a subnet is allocated for the specified AzureMachinePool. It is
 // checking if the allocated subnet is set in the corresponding Cluster CR that owns specified
-// AzureMachinePool.
-func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace string, name string) (bool, error) {
+// AzureMachinePool. Returns allocated subnet or nil.
+func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace string, name string) (*net.IPNet, error) {
 	c.logger.LogCtx(ctx, "level", "debug", "message", "checking if node pool subnet has to be allocated")
 	var err error
 
@@ -58,25 +58,7 @@ func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace str
 		azureMachinePool = &expcapzv1alpha3.AzureMachinePool{}
 		err = c.ctrlClient.Get(ctx, objectKey, azureMachinePool)
 		if err != nil {
-			return false, microerror.Mask(err)
-		}
-
-		if !azureMachinePool.GetDeletionTimestamp().IsZero() {
-			c.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping subnet allocation")
-			return false, nil
-		}
-	}
-
-	// Check if Cluster is being deleted. In that case we are skipping subnet allocation.
-	{
-		cluster, err := util.GetClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
-		if err != nil {
-			return false, microerror.Mask(err)
-		}
-
-		if !cluster.GetDeletionTimestamp().IsZero() {
-			c.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping subnet allocation")
-			return false, nil
+			return nil, microerror.Mask(err)
 		}
 	}
 
@@ -84,18 +66,23 @@ func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace str
 	{
 		azureCluster, err = helpers.GetAzureClusterFromMetadata(ctx, c.ctrlClient, azureMachinePool.ObjectMeta)
 		if err != nil {
-			return false, microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 	}
 
 	// In case there is no subnet tracked so far, we want to proceed with the allocation process.
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
-		if subnet.Name == azureMachinePool.Name {
+		if subnet.Name == azureMachinePool.Name && len(subnet.CIDRBlocks) > 0 {
+			_, subnet, err := net.ParseCIDR(subnet.CIDRBlocks[0])
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
 			c.logger.LogCtx(ctx, "level", "debug", "message", "found existing node pool subnet")
-			return false, nil
+			return subnet, nil
 		}
 	}
 
 	c.logger.LogCtx(ctx, "level", "debug", "message", "node pool subnet not found, new subnet has to be allocated")
-	return true, nil
+	return nil, nil
 }

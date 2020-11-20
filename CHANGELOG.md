@@ -19,6 +19,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Avoid returning errors when still waiting for tenant cluster k8s API to be ready.
+- Release allocated subnet when deleting node pool.
 
 ## [5.0.0-beta5] - 2020-11-18
 
