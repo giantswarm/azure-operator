@@ -2,7 +2,6 @@ package nodepool
 
 import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	"k8s.io/client-go/kubernetes"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
@@ -29,7 +28,6 @@ type Resource struct {
 	nodes.Resource
 	CredentialProvider  credential.Provider
 	CtrlClient          ctrlclient.Client
-	k8sClient           kubernetes.Interface
 	tenantClientFactory tenantcluster.Factory
 	vmsku               *vmsku.VMSKUs
 }
@@ -39,13 +37,11 @@ func New(config Config) (*Resource, error) {
 		Resource: nodes.Resource{
 			Logger:        config.Logger,
 			Debugger:      config.Debugger,
-			G8sClient:     config.G8sClient,
 			Azure:         config.Azure,
 			ClientFactory: config.ClientFactory,
 		},
 		CredentialProvider:  config.CredentialProvider,
 		CtrlClient:          config.CtrlClient,
-		k8sClient:           config.K8sClient,
 		tenantClientFactory: config.TenantClientFactory,
 		vmsku:               config.VMSKU,
 	}

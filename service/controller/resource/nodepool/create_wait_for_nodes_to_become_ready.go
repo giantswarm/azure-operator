@@ -63,12 +63,7 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 
 func countReadyNodes(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *v1alpha3.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
 	nodeList := &corev1.NodeList{}
-	var labelSelector ctrlclient.MatchingLabels
-	{
-		labelSelector = make(map[string]string)
-		labelSelector[apiextensionslabels.MachinePool] = azureMachinePool.Name
-	}
-
+	labelSelector := ctrlclient.MatchingLabels{apiextensionslabels.MachinePool: azureMachinePool.Name}
 	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
 	if err != nil {
 		return 0, microerror.Mask(err)

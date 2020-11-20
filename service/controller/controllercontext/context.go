@@ -18,7 +18,6 @@ const controllerKey contextKey = "controller"
 type Context struct {
 	MasterLBBackendPoolID string
 	AzureClientSet        *client.AzureClientSet
-	Client                ContextClient
 	CloudConfig           cloudconfig.Interface
 	ContainerURL          *azblob.ContainerURL
 	MasterSubnetID        string

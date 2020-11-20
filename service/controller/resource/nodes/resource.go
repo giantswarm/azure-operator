@@ -3,11 +3,9 @@ package nodes
 import (
 	"context"
 
-	"github.com/giantswarm/apiextensions/v3/pkg/clientset/versioned"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
-	"k8s.io/client-go/kubernetes"
+	v1 "k8s.io/api/core/v1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
@@ -22,8 +20,6 @@ import (
 type Config struct {
 	CtrlClient ctrlclient.Client
 	Debugger   *debugger.Debugger
-	G8sClient  versioned.Interface
-	K8sClient  kubernetes.Interface
 	Logger     micrologger.Logger
 
 	Azure         setting.Azure
@@ -34,8 +30,6 @@ type Config struct {
 type Resource struct {
 	CtrlClient   ctrlclient.Client
 	Debugger     *debugger.Debugger
-	G8sClient    versioned.Interface
-	k8sClient    kubernetes.Interface
 	Logger       micrologger.Logger
 	StateMachine state.Machine
 
@@ -50,12 +44,6 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
-	}
-	if config.G8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.G8sClient must not be empty", config)
-	}
-	if config.K8sClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
@@ -72,8 +60,6 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		CtrlClient: config.CtrlClient,
 		Debugger:   config.Debugger,
-		G8sClient:  config.G8sClient,
-		k8sClient:  config.K8sClient,
 		Logger:     config.Logger,
 
 		Azure:         config.Azure,
@@ -95,7 +81,8 @@ func (r *Resource) SetStateMachine(stateMachine state.Machine) {
 func (r *Resource) GetEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
 
-	secret, err := r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Get(ctx, secretName, metav1.GetOptions{})
+	secret := &v1.Secret{}
+	err := r.CtrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: key.CertificateEncryptionNamespace, Name: secretName}, secret)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -40,7 +40,15 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 		releases = rels.Items
 	}
 
-	anyOldNodes, err := nodes.AnyOutOfDate(ctx, key.ReleaseVersion(&cr), releases, map[string]string{"role": "master"})
+	var tenantClusterK8sClient client.Client
+	{
+		tenantClusterK8sClient, err = r.getTenantClusterClient(ctx, &cr)
+		if err != nil {
+			return "", microerror.Mask(err)
+		}
+	}
+
+	anyOldNodes, err := nodes.AnyOutOfDate(ctx, tenantClusterK8sClient, key.ReleaseVersion(&cr), releases, map[string]string{"role": "master"})
 	if nodes.IsClientNotFound(err) {
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not found")
 		return currentState, nil

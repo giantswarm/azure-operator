@@ -193,10 +193,8 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	}
 
 	nodesConfig := nodes.Config{
-		Debugger:  newDebugger,
-		G8sClient: config.K8sClient.G8sClient(),
-		K8sClient: config.K8sClient.K8sClient(),
-		Logger:    config.Logger,
+		Debugger: newDebugger,
+		Logger:   config.Logger,
 
 		Azure:         config.Azure,
 		ClientFactory: organizationClientFactory,
