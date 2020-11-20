@@ -55,18 +55,19 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 		if subnet == nil {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find allocated subnet")
-		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnet")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "releasing allocated subnet")
-
-			// Release allocated subnet.
-			err = r.releaser.Release(ctx, *subnet, m.GetNamespace(), m.GetName())
-			if err != nil {
-				return microerror.Mask(err)
-			}
-
-			r.logger.LogCtx(ctx, "level", "debug", "message", "released allocated subnet")
+			return nil
 		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "releasing allocated subnet")
+
+		// Release allocated subnet.
+		err = r.releaser.Release(ctx, *subnet, m.GetNamespace(), m.GetName())
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.LogCtx(ctx, "level", "debug", "message", "released allocated subnet")
 	}
 
 	return nil
