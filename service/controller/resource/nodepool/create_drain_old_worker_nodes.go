@@ -11,6 +11,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -42,11 +43,13 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if err != nil {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
+	if tenantcluster.IsAPINotAvailableError(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 		return currentState, nil
+	} else if err != nil {
+		return currentState, microerror.Mask(err)
 	}
 
 	vmss, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))

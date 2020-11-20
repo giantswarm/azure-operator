@@ -2,8 +2,10 @@ package tenantcluster
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -21,6 +23,13 @@ type tenantClientFactory struct {
 }
 
 func NewFactory(certsSearcher certs.Interface, logger micrologger.Logger) (Factory, error) {
+	if certsSearcher == nil {
+		return nil, microerror.Maskf(invalidConfigError, "certsSearcher must not be empty")
+	}
+	if logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "logger must not be empty")
+	}
+
 	c := tenantcluster.Config{
 		CertsSearcher: certsSearcher,
 		Logger:        logger,
@@ -42,10 +51,13 @@ func NewFactory(certsSearcher certs.Interface, logger micrologger.Logger) (Facto
 }
 
 func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.Cluster) (client.Client, error) {
+	tcf.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating tenant cluster k8s client for cluster %#q", key.ClusterID(cr)))
 	var k8sClient k8sclient.Interface
 	{
 		restConfig, err := tcf.tenantRestConfigProvider.NewRestConfig(ctx, key.ClusterID(cr), cr.Spec.ControlPlaneEndpoint.String())
-		if err != nil {
+		if tenant.IsAPINotAvailable(err) || tenantcluster.IsTimeout(err) {
+			return nil, microerror.Mask(apiNotAvailableError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
@@ -53,7 +65,9 @@ func (tcf *tenantClientFactory) GetClient(ctx context.Context, cr *capiv1alpha3.
 			Logger:     tcf.logger,
 			RestConfig: rest.CopyConfig(restConfig),
 		})
-		if err != nil {
+		if tenant.IsAPINotAvailable(err) {
+			return nil, microerror.Mask(apiNotAvailableError)
+		} else if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}

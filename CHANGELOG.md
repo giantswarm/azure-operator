@@ -11,6 +11,14 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Only submit Subnet ARM deployment when Subnet name or Subnet CIDR change.
 
+### Added
+
+- Tenant cluster k8s client lookup is cached.
+
+### Fixed
+
+- Avoid returning errors when still waiting for tenant cluster k8s API to be ready.
+
 ## [5.0.0-beta5] - 2020-11-18
 
 ### Fixed

@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -34,11 +35,13 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if err != nil {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
+	if tenantcluster.IsAPINotAvailableError(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
 	}
 
 	err = r.removeNodesFromK8s(ctx, tenantClusterK8sClient, &azureMachinePool)

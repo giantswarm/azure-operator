@@ -179,9 +179,14 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		}
 	}
 
-	var tenantClientFactory tenantcluster.Factory
+	var cachedTenantClientFactory tenantcluster.Factory
 	{
-		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
+		tenantClientFactory, err := tenantcluster.NewFactory(certsSearcher, config.Logger)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		cachedTenantClientFactory, err = tenantcluster.NewCachedFactory(tenantClientFactory, config.Logger)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -215,7 +220,7 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 			Config:              nodesConfig,
 			CredentialProvider:  config.CredentialProvider,
 			CtrlClient:          config.K8sClient.CtrlClient(),
-			TenantClientFactory: tenantClientFactory,
+			TenantClientFactory: cachedTenantClientFactory,
 			VMSKU:               vmSKU,
 		}
 

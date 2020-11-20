@@ -98,9 +98,14 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		}
 	}
 
-	var tenantClientFactory tenantcluster.Factory
+	var cachedTenantClientFactory tenantcluster.Factory
 	{
-		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
+		tenantClientFactory, err := tenantcluster.NewFactory(certsSearcher, config.Logger)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		cachedTenantClientFactory, err = tenantcluster.NewCachedFactory(tenantClientFactory, config.Logger)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -151,7 +156,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		c := nodestatus.Config{
 			CtrlClient:          config.K8sClient.CtrlClient(),
 			Logger:              config.Logger,
-			TenantClientFactory: tenantClientFactory,
+			TenantClientFactory: cachedTenantClientFactory,
 		}
 
 		nodestatusResource, err = nodestatus.New(c)
@@ -165,7 +170,7 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 		c := machinepoolupgrade.Config{
 			CtrlClient:          config.K8sClient.CtrlClient(),
 			Logger:              config.Logger,
-			TenantClientFactory: tenantClientFactory,
+			TenantClientFactory: cachedTenantClientFactory,
 		}
 
 		machinepoolUpgradeResource, err = machinepoolupgrade.New(c)

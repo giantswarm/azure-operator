@@ -152,9 +152,14 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 		}
 	}
 
-	var tenantClientFactory tenantcluster.Factory
+	var cachedTenantClientFactory tenantcluster.Factory
 	{
-		tenantClientFactory, err = tenantcluster.NewFactory(certsSearcher, config.Logger)
+		tenantClientFactory, err := tenantcluster.NewFactory(certsSearcher, config.Logger)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		cachedTenantClientFactory, err = tenantcluster.NewCachedFactory(tenantClientFactory, config.Logger)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -165,7 +170,7 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 		c := clusterupgrade.Config{
 			CtrlClient:          config.K8sClient.CtrlClient(),
 			Logger:              config.Logger,
-			TenantClientFactory: tenantClientFactory,
+			TenantClientFactory: cachedTenantClientFactory,
 		}
 
 		clusterUpgradeResource, err = clusterupgrade.New(c)

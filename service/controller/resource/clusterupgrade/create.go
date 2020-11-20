@@ -16,6 +16,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -134,9 +135,13 @@ func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi
 
 func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1alpha3.Cluster) (bool, error) {
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, &cluster)
-	if err != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
+	if tenantcluster.IsAPINotAvailableError(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+
 		return false, nil
+	} else if err != nil {
+		return false, microerror.Mask(err)
 	}
 
 	nodeList := &corev1.NodeList{}

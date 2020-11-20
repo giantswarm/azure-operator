@@ -10,6 +10,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -31,11 +32,13 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if err != nil {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet", "stack", microerror.JSON(err))
+	if tenantcluster.IsAPINotAvailableError(err) {
+		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
 		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 
 		return currentState, nil
+	} else if err != nil {
+		return currentState, microerror.Mask(err)
 	}
 
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
