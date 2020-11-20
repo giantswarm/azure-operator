@@ -131,12 +131,8 @@ func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8
 	var nodeList *corev1.NodeList
 	{
 		nodeList = &corev1.NodeList{}
-		var labelSelector ctrlclient.MatchingLabels
-		{
-			labelSelector = make(map[string]string)
-			labelSelector[apiextensionslabels.MachinePool] = azureMachinePool.Name
-		}
 
+		labelSelector := ctrlclient.MatchingLabels{apiextensionslabels.MachinePool: azureMachinePool.Name}
 		err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
@@ -191,12 +187,7 @@ func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantCluste
 	name := key.NodePoolInstanceName(nodePoolId, *instance.InstanceID)
 
 	nodeList := &corev1.NodeList{}
-	var labelSelector ctrlclient.MatchingLabels
-	{
-		labelSelector = make(map[string]string)
-		labelSelector[apiextensionslabels.MachinePool] = nodePoolId
-	}
-
+	labelSelector := ctrlclient.MatchingLabels{apiextensionslabels.MachinePool: nodePoolId}
 	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
 	if err != nil {
 		return nil, microerror.Mask(err)

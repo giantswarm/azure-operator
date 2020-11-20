@@ -101,14 +101,7 @@ func (p *Provider) ChangeVmSize(ctx context.Context, clusterID, nodepoolID, vmSi
 
 func (p *Provider) findMachinePool(ctx context.Context, clusterID, nodepoolID string) (*v1alpha3.MachinePool, error) {
 	crs := &v1alpha3.MachinePoolList{}
-
-	var labelSelector client.MatchingLabels
-	{
-		labelSelector = make(map[string]string)
-		labelSelector[capiv1alpha3.ClusterLabelName] = clusterID
-		labelSelector[label.MachinePool] = nodepoolID
-	}
-
+	labelSelector := client.MatchingLabels{capiv1alpha3.ClusterLabelName: clusterID, label.MachinePool: nodepoolID}
 	err := p.ctrlClient.List(ctx, crs, labelSelector, client.InNamespace(setup.OrganizationNamespace))
 	if err != nil {
 		return &v1alpha3.MachinePool{}, microerror.Mask(err)

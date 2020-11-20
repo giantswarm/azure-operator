@@ -61,11 +61,7 @@ func (r *Resource) drainOldWorkerNodesTransition(ctx context.Context, obj interf
 	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all drainerconfigs")
 
 	drainerConfigs := make(map[string]corev1alpha1.DrainerConfig)
-	var labelSelector client.MatchingLabels
-	{
-		labelSelector = make(map[string]string)
-		labelSelector[label.Cluster] = key.ClusterID(&azureMachinePool)
-	}
+	labelSelector := client.MatchingLabels{label.Cluster: key.ClusterID(&azureMachinePool)}
 
 	drainerConfigList := &corev1alpha1.DrainerConfigList{}
 	err = r.CtrlClient.List(ctx, drainerConfigList, labelSelector, client.InNamespace(metav1.NamespaceAll))
