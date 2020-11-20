@@ -7,6 +7,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
@@ -70,11 +71,15 @@ func (r *AzureMachinePoolSubnetReleaser) removeSubnetFromAzureCluster(ctx contex
 	for i, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
 		if subnet.Name == azureMachinePool.Name {
 			azureCluster.Spec.NetworkSpec.Subnets = append(azureCluster.Spec.NetworkSpec.Subnets[:i], azureCluster.Spec.NetworkSpec.Subnets[i+1:]...)
+			break
 		}
 	}
 
 	err = r.ctrlClient.Update(ctx, azureCluster)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
