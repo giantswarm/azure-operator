@@ -13,7 +13,7 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
-	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	"sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
@@ -72,7 +72,7 @@ func NewTerminateUnhealthyNode(config TerminateUnhealthyNodeConfig) (*controller
 			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
 			Name: project.Name() + "-machine-pool-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
-				return new(expcapiv1alpha3.MachinePool)
+				return new(v1alpha3.Cluster)
 			},
 			Resources: resources,
 			Selector: labels.SelectorFromSet(map[string]string{
