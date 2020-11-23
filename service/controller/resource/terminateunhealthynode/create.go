@@ -7,8 +7,10 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/badnodedetector/pkg/detector"
+	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
+	"k8s.io/client-go/rest"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -34,10 +36,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
+	var tenantClusterK8sClient client.Client
+	{
+		tenantClusterK8sClient, err = r.getTenantClusterClient(ctx, &cr)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
 	var detectorService *detector.Detector
 	{
 		detectorConfig := detector.Config{
-			K8sClient: r.ctrlClient,
+			K8sClient: tenantClusterK8sClient,
 			Logger:    r.logger,
 
 			NotReadyTickThreshold: nodeTerminationTickThreshold,
@@ -56,7 +66,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	if len(nodesToTerminate) > 0 {
 		for _, n := range nodesToTerminate {
-			err := r.terminateNode(ctx, n, cr)
+			err := r.terminateNode(ctx, n, cr, tenantClusterK8sClient)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -73,7 +83,27 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster capiv1alpha3.Cluster) error {
+func (r *Resource) getTenantClusterClient(ctx context.Context, cluster *capiv1alpha3.Cluster) (client.Client, error) {
+	var k8sClient k8sclient.Interface
+	{
+		restConfig, err := r.tenantRestConfigProvider.NewRestConfig(ctx, key.ClusterID(cluster), cluster.Spec.ControlPlaneEndpoint.Host)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		k8sClient, err = k8sclient.NewClients(k8sclient.ClientsConfig{
+			Logger:     r.logger,
+			RestConfig: rest.CopyConfig(restConfig),
+		})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return k8sClient.CtrlClient(), nil
+}
+
+func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster capiv1alpha3.Cluster, ctrlClient client.Client) error {
 	if node.Labels["role"] != "worker" {
 		return microerror.Maskf(unsupportedOperationError, "Termination of master nodes is not supported on Azure")
 	}
@@ -88,7 +118,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Retrieving AzureMachinePool CR")
 		amp := v1alpha3.AzureMachinePool{}
-		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: node.Labels[label.MachinePool]}, &amp)
+		err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: node.Labels[label.MachinePool]}, &amp)
 		if err != nil {
 			return microerror.Mask(err)
 		}

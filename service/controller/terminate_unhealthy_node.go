@@ -4,6 +4,7 @@ import (
 	"context"
 	"time"
 
+	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -11,6 +12,7 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/resource"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
+	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -52,9 +54,24 @@ func NewTerminateUnhealthyNode(config TerminateUnhealthyNodeConfig) (*controller
 		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
 	}
 
+	var certsSearcher *certs.Searcher
+	{
+		c := certs.Config{
+			K8sClient: config.K8sClient.K8sClient(),
+			Logger:    config.Logger,
+
+			WatchTimeout: 30 * time.Second,
+		}
+
+		certsSearcher, err = certs.NewSearcher(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var resources []resource.Interface
 	{
-		resources, err = newTerminateUnhealthyNodeResources(config)
+		resources, err = newTerminateUnhealthyNodeResources(config, certsSearcher)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -90,7 +107,7 @@ func NewTerminateUnhealthyNode(config TerminateUnhealthyNodeConfig) (*controller
 	return operatorkitController, nil
 }
 
-func newTerminateUnhealthyNodeResources(config TerminateUnhealthyNodeConfig) ([]resource.Interface, error) {
+func newTerminateUnhealthyNodeResources(config TerminateUnhealthyNodeConfig, certsSearcher *certs.Searcher) ([]resource.Interface, error) {
 	var err error
 
 	var clientFactory *client.Factory
@@ -118,12 +135,26 @@ func newTerminateUnhealthyNodeResources(config TerminateUnhealthyNodeConfig) ([]
 		organizationClientFactory = client.NewOrganizationFactory(c)
 	}
 
+	var tenantRestConfigProvider *tenantcluster.TenantCluster
+	{
+		c := tenantcluster.Config{
+			CertID:        certs.APICert,
+			CertsSearcher: certsSearcher,
+			Logger:        config.Logger,
+		}
+
+		tenantRestConfigProvider, err = tenantcluster.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var terminateUnhealthyNodeResource resource.Interface
 	{
 		c := terminateunhealthynode.Config{
-			AzureClientsFactory: &organizationClientFactory,
-			CtrlClient:          config.K8sClient.CtrlClient(),
-			Logger:              config.Logger,
+			AzureClientsFactory:      &organizationClientFactory,
+			Logger:                   config.Logger,
+			TenantRestConfigProvider: tenantRestConfigProvider,
 		}
 
 		terminateUnhealthyNodeResource, err = terminateunhealthynode.New(c)
