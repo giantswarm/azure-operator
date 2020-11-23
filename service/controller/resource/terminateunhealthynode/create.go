@@ -5,17 +5,17 @@ import (
 	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/badnodedetector/pkg/detector"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -94,6 +94,9 @@ func (r *Resource) getTenantClusterClient(ctx context.Context, cluster *capiv1al
 		k8sClient, err = k8sclient.NewClients(k8sclient.ClientsConfig{
 			Logger:     r.logger,
 			RestConfig: rest.CopyConfig(restConfig),
+			SchemeBuilder: k8sclient.SchemeBuilder{
+				capzexpv1alpha3.AddToScheme,
+			},
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -117,7 +120,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 	var vmssName string
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Retrieving AzureMachinePool CR")
-		amp := v1alpha3.AzureMachinePool{}
+		amp := capzexpv1alpha3.AzureMachinePool{}
 		err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: node.Labels[label.MachinePool]}, &amp)
 		if err != nil {
 			return microerror.Mask(err)
