@@ -11,7 +11,7 @@ const (
 var (
 	nodeAutoRepairTermination = prometheus.NewGaugeVec(
 		prometheus.GaugeOpts{
-			Name: "azure_operator_node_auto_repair_termination",
+			Name: "azure_operator_unhealthy_node_termination",
 			Help: "Gauge representing node termination due to node auto repair feature.",
 		},
 		[]string{"cluster_id", "terminated_node", "terminated_instance_id"},

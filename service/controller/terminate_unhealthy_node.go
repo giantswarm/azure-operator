@@ -87,7 +87,7 @@ func NewTerminateUnhealthyNode(config TerminateUnhealthyNodeConfig) (*controller
 			Logger:    config.Logger,
 			// Name is used to compute finalizer names. This results in something
 			// like operatorkit.giantswarm.io/azure-operator-machine-pool-controller.
-			Name: project.Name() + "-machine-pool-controller",
+			Name: project.Name() + "-terminate-unhealthy-node-controller",
 			NewRuntimeObjectFunc: func() runtime.Object {
 				return new(v1alpha3.Cluster)
 			},
