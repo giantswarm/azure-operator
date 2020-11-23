@@ -153,6 +153,7 @@ func newTerminateUnhealthyNodeResources(config TerminateUnhealthyNodeConfig, cer
 	{
 		c := terminateunhealthynode.Config{
 			AzureClientsFactory:      &organizationClientFactory,
+			CtrlClient:               config.K8sClient.CtrlClient(),
 			Logger:                   config.Logger,
 			TenantRestConfigProvider: tenantRestConfigProvider,
 		}
