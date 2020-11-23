@@ -66,7 +66,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	if len(nodesToTerminate) > 0 {
 		for _, n := range nodesToTerminate {
-			err := r.terminateNode(ctx, n, cr, tenantClusterK8sClient)
+			err := r.terminateNode(ctx, n, cr)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -94,9 +94,6 @@ func (r *Resource) getTenantClusterClient(ctx context.Context, cluster *capiv1al
 		k8sClient, err = k8sclient.NewClients(k8sclient.ClientsConfig{
 			Logger:     r.logger,
 			RestConfig: rest.CopyConfig(restConfig),
-			SchemeBuilder: k8sclient.SchemeBuilder{
-				capzexpv1alpha3.AddToScheme,
-			},
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -106,7 +103,7 @@ func (r *Resource) getTenantClusterClient(ctx context.Context, cluster *capiv1al
 	return k8sClient.CtrlClient(), nil
 }
 
-func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster capiv1alpha3.Cluster, ctrlClient client.Client) error {
+func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster capiv1alpha3.Cluster) error {
 	if node.Labels["role"] != "worker" {
 		return microerror.Maskf(unsupportedOperationError, "Termination of master nodes is not supported on Azure")
 	}
@@ -121,7 +118,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Retrieving AzureMachinePool CR")
 		amp := capzexpv1alpha3.AzureMachinePool{}
-		err := ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: node.Labels[label.MachinePool]}, &amp)
+		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: node.Labels[label.MachinePool]}, &amp)
 		if err != nil {
 			return microerror.Mask(err)
 		}
