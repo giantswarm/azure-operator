@@ -2,6 +2,7 @@ package key
 
 import (
 	"fmt"
+	"regexp"
 	"strconv"
 	"strings"
 
@@ -12,6 +13,7 @@ import (
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v9/pkg/template"
 	"github.com/giantswarm/microerror"
+	v1 "k8s.io/api/core/v1"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -306,6 +308,26 @@ func DNSZoneResourceGroupIngress(customObject providerv1alpha1.AzureConfig) stri
 
 func DNSZones(customObject providerv1alpha1.AzureConfig) providerv1alpha1.AzureConfigSpecAzureDNSZones {
 	return customObject.Spec.Azure.DNSZones
+}
+
+func InstanceIDFromNode(node v1.Node) (string, error) {
+	// Extract "000001" from "nodepool-w8kjg-000001".
+	var base36 string
+	{
+		m := regexp.MustCompile(`-[^-]{6}$`)
+		base36 = m.FindString(node.Name)
+		if base36 == "" {
+			return "", microerror.Maskf(executionFailedError, "Unable to extract instance ID from node name")
+		}
+		base36 = strings.TrimPrefix(base36, "-")
+	}
+
+	i, err := strconv.ParseUint(base36, 36, 64)
+	if err != nil {
+		return "", microerror.Maskf(executionFailedError, "expected VMSS instanceID to be a positive integer number but got %#q", i)
+	}
+
+	return strconv.FormatUint(i, 10), nil
 }
 
 // IsClusterCreating check if the cluster is being created.

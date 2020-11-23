@@ -419,6 +419,24 @@ func New(config Config) (*Service, error) {
 		controllers = append(controllers, machinePoolController)
 	}
 
+	var terminateUnhealthyNodeController *operatorkitcontroller.Controller
+	{
+		c := controller.TerminateUnhealthyNodeConfig{
+			AzureMetricsCollector: azureCollector,
+			CredentialProvider:    credentialProvider,
+			K8sClient:             k8sClient,
+			Logger:                config.Logger,
+			SentryDSN:             sentryDSN,
+		}
+
+		terminateUnhealthyNodeController, err = controller.NewTerminateUnhealthyNode(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		controllers = append(controllers, terminateUnhealthyNodeController)
+	}
+
 	var versionService *version.Service
 	{
 		c := version.Config{

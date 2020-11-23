@@ -7,6 +7,7 @@ import (
 
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
+	v1 "k8s.io/api/core/v1"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
@@ -314,6 +315,68 @@ func Test_NodePoolInstanceName(t *testing.T) {
 
 		if effective != tc.desired {
 			t.Fatalf("Expected node pool instance name %s but was %s", tc.desired, effective)
+		}
+	}
+}
+
+func Test_InstanceIDFromNode(t *testing.T) {
+	type testCase struct {
+		node         v1.Node
+		desired      string
+		errorMatcher func(error) bool
+	}
+
+	getNode := func(name string) v1.Node {
+		return v1.Node{
+			ObjectMeta: metav1.ObjectMeta{
+				Name: name,
+			},
+		}
+	}
+
+	testCases := []testCase{
+		{
+			node:         getNode("nodepool-123ab-000001"),
+			desired:      "1",
+			errorMatcher: nil,
+		},
+		{
+			node:         getNode("nodepool-123ab-00000a"),
+			desired:      "10",
+			errorMatcher: nil,
+		},
+		{
+			node:         getNode("nodepool-123ab-ffffff"),
+			desired:      "932906715",
+			errorMatcher: nil,
+		},
+		{
+			node:         getNode("nodepool-123ab-0000a"), // Too short suffix.
+			desired:      "10",
+			errorMatcher: IsExecutionFailed,
+		},
+		{
+			node:         getNode("nonsense"), // Nonsense name.
+			desired:      "10",
+			errorMatcher: IsExecutionFailed,
+		},
+	}
+
+	for _, tc := range testCases {
+		effective, err := InstanceIDFromNode(tc.node)
+
+		if tc.errorMatcher != nil {
+			if !tc.errorMatcher(err) {
+				t.Fatalf("expected %#v got %#v", true, false)
+			}
+		} else {
+			if err != nil {
+				t.Fatalf("expected %#v got %#v", nil, err)
+			}
+
+			if effective != tc.desired {
+				t.Fatalf("Expected instance ID %s but got %s", tc.desired, effective)
+			}
 		}
 	}
 }

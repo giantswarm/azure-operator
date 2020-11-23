@@ -3,6 +3,7 @@ package key
 import (
 	"fmt"
 	"strings"
+	"time"
 
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -22,6 +23,9 @@ const (
 	// determines the version of the OS to be used for tenant cluster nodes and
 	// is ultimately transformed into an AMI based on TC region.
 	ComponentOS = "containerlinux"
+
+	// TerminateUnhealthyNodeResyncPeriod defines resync period for the terminateunhealthynode controller
+	TerminateUnhealthyNodeResyncPeriod = time.Minute * 3
 )
 
 func ClusterCloudProviderTag(getter LabelsGetter) string {
