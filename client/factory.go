@@ -222,6 +222,17 @@ func (f *Factory) GetNatGatewaysClient(credentialNamespace, credentialName strin
 	return toNatGatewaysClient(client), nil
 }
 
+// GetNetworkSecurityGroupsClient returns *network.SecurityGroupsClient that is used for management of Network Security Groups.
+// The created client is cached for the time period specified in the factory config.
+func (f *Factory) GetNetworkSecurityGroupsClient(credentialNamespace, credentialName string) (*network.SecurityGroupsClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "NetworkSecurityGroupsClient", newNetworkSecurityGroupsClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toNetworkSecurityGroupsClient(client), nil
+}
+
 // GetResourceSkusClient returns *compute.ResourceSkusClient that is used for reading VM instance types.
 // The created client is cached for the time period specified in the factory config.
 func (f *Factory) GetResourceSkusClient(credentialNamespace, credentialName string) (*compute.ResourceSkusClient, error) {

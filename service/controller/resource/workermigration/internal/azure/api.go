@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
@@ -86,4 +87,42 @@ func (a *api) ListVMSSNodes(ctx context.Context, resourceGroupName, vmssName str
 	}
 
 	return vms, nil
+}
+
+func (a *api) ListNetworkSecurityGroups(ctx context.Context, resourceGroupName string) (SecurityGroups, error) {
+	client, err := a.clientFactory.GetNetworkSecurityGroupsClient(a.credentials.Namespace, a.credentials.Name)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	result, err := client.List(ctx, resourceGroupName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var nsgs []network.SecurityGroup
+	for result.NotDone() {
+		nsgs = append(nsgs, result.Values()...)
+
+		err = result.NextWithContext(ctx)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return nsgs, nil
+}
+
+func (a *api) CreateOrUpdateNetworkSecurityGroup(ctx context.Context, resourceGroupName, networkSecurityGroupName string, securityGroup network.SecurityGroup) error {
+	client, err := a.clientFactory.GetNetworkSecurityGroupsClient(a.credentials.Namespace, a.credentials.Name)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	_, err = client.CreateOrUpdate(ctx, resourceGroupName, networkSecurityGroupName, securityGroup)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	return nil
 }
