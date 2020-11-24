@@ -610,7 +610,7 @@ func TestFinishedMigration(t *testing.T) {
 		EXPECT().
 		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
 		Return(nil, nil).
-		Times(0)
+		Times(1)
 
 	m.
 		EXPECT().

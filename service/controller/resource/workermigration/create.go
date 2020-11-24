@@ -63,6 +63,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers are migrated to node pool")
 
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure worker security group rules are updated")
+	err = r.ensureSecurityGroupRulesUpdated(ctx, cr, azureAPI)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured worker security group rules are updated")
+
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding legacy workers VMSS")
 	var legacyVMSS azure.VMSS
 	{
@@ -88,13 +95,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "found legacy workers VMSS")
-
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure worker security group rules are updated")
-	err = r.ensureSecurityGroupRulesUpdated(ctx, cr, azureAPI)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured worker security group rules are updated")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachinePool CR exists for legacy workers VMSS")
 	azureMachinePool, err := r.ensureAzureMachinePoolExists(ctx, cr, *legacyVMSS.Sku.Name)
