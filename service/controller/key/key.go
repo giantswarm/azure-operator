@@ -89,6 +89,7 @@ const (
 )
 
 var (
+	instanceIDRegexp            = regexp.MustCompile(`-[^-]{6}$`)
 	LocationsThatDontSupportAZs = []string{
 		"germanywestcentral",
 	}
@@ -314,8 +315,7 @@ func InstanceIDFromNode(node v1.Node) (string, error) {
 	// Extract "000001" from "nodepool-w8kjg-000001".
 	var base36 string
 	{
-		m := regexp.MustCompile(`-[^-]{6}$`)
-		base36 = m.FindString(node.Name)
+		base36 = instanceIDRegexp.FindString(node.Name)
 		if base36 == "" {
 			return "", microerror.Maskf(executionFailedError, "Unable to extract instance ID from node name")
 		}
