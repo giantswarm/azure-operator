@@ -12,11 +12,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
 )
 
-// Security group rules that are obsolete and needs to be GC'd.
-var workerSecurityGroupRulesToDelete = []string{
-	"defaultInClusterRule",
-}
-
 // Security group rules that need destination CIDR update from built-in worker subnet to VNET CIDR.
 var workerSecurityGroupRulesToUpdate = []string{
 	"allowCadvisor",
@@ -38,7 +33,7 @@ func (r *Resource) ensureSecurityGroupRulesUpdated(ctx context.Context, cr provi
 
 	for _, sg := range securityGroups {
 		if sg.Name != nil && *sg.Name == key.WorkerSecurityGroupName(cr) {
-			err := r.ensureSecurityGroupUpdated(ctx, cr, azureAPI, sg, workerSecurityGroupRulesToDelete, workerSecurityGroupRulesToUpdate)
+			err := r.ensureDestinationCIDRUpdated(ctx, cr, azureAPI, sg, workerSecurityGroupRulesToUpdate)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -48,23 +43,13 @@ func (r *Resource) ensureSecurityGroupRulesUpdated(ctx context.Context, cr provi
 	return nil
 }
 
-func (r *Resource) ensureSecurityGroupUpdated(ctx context.Context, cr providerv1alpha1.AzureConfig, azureAPI azure.API, securityGroup network.SecurityGroup, rulesToDelete, rulesToUpdate []string) error {
+func (r *Resource) ensureDestinationCIDRUpdated(ctx context.Context, cr providerv1alpha1.AzureConfig, azureAPI azure.API, securityGroup network.SecurityGroup, rulesToUpdate []string) error {
 	if securityGroup.SecurityGroupPropertiesFormat == nil || securityGroup.SecurityGroupPropertiesFormat.SecurityRules == nil {
 		return microerror.Maskf(executionFailedError, "security group rules are missing from Azure API response")
 	}
 
 	var needUpdate bool
-	rules := *securityGroup.SecurityRules
-	for i := 0; i < len(rules); i++ {
-		rule := rules[i]
-
-		if rule.Name != nil && contains(rulesToDelete, *rule.Name) {
-			rules = append(rules[:i], rules[i+1:]...)
-			needUpdate = true
-			i--
-			continue
-		}
-
+	for _, rule := range *securityGroup.SecurityRules {
 		if rule.Name != nil && contains(rulesToUpdate, *rule.Name) {
 			if rule.DestinationAddressPrefix == nil || *rule.DestinationAddressPrefix != key.VnetCIDR(cr) {
 				rule.DestinationAddressPrefix = to.StringPtr(key.VnetCIDR(cr))
@@ -72,7 +57,6 @@ func (r *Resource) ensureSecurityGroupUpdated(ctx context.Context, cr providerv1
 			}
 		}
 	}
-	*securityGroup.SecurityRules = rules
 
 	if needUpdate {
 		err := azureAPI.CreateOrUpdateNetworkSecurityGroup(ctx, key.ResourceGroupName(cr), *securityGroup.Name, securityGroup)
