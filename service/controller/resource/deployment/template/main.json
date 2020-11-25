@@ -81,6 +81,12 @@
     "insecureStorageAccount":{
       "type":"bool",
       "defaultValue": false
+    },
+    "hostPublicIPs": {
+      "type":"array",
+      "metadata": {
+        "description": "List of the public IPs of the control plane nodes (both masters and workers)"
+      }
     }
   },
   "variables":{
@@ -103,7 +109,7 @@
           "parameters":{
             "networkSecurityGroupsAPIVersion":{
               "type":"string",
-              "defaultValue":"2016-09-01",
+              "defaultValue":"2017-06-01",
               "metadata":{
                 "description":"API version used by the Microsoft.Network/networkSecurityGroups resource."
               }
@@ -144,6 +150,9 @@
             },
             "mastersNatGWPublicIP":{
               "type":"string"
+            },
+            "hostPublicIPs": {
+              "type":"array"
             }
           },
           "variables":{
@@ -255,11 +264,11 @@
                   {
                     "name":"etcdLoadBalancerRuleHost",
                     "properties":{
-                      "description":"Allow host cluster to reach the etcd loadbalancer.",
+                      "description":"Allow control plane nodes to reach the etcd loadbalancer.",
                       "protocol":"tcp",
                       "sourcePortRange":"*",
                       "destinationPortRange":"[variables('etcdPort')]",
-                      "sourceAddressPrefix":"[parameters('hostClusterCidr')]",
+                      "sourceAddressPrefixes":"[parameters('hostPublicIPs')]",
                       "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
                       "access":"Allow",
                       "direction":"Inbound",
@@ -568,6 +577,9 @@
           },
           "hostClusterCidr":{
             "value":"[parameters('hostClusterCidr')]"
+          },
+          "hostPublicIPs": {
+            "value":"[parameters('hostPublicIPs')]"
           },
           "kubernetesAPISecurePort":{
             "value":"[parameters('kubernetesAPISecurePort')]"

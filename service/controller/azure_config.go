@@ -386,6 +386,7 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			Logger:           config.Logger,
 
 			Azure:                      config.Azure,
+			AzureClientSet:             config.CPAzureClientSet,
 			ClientFactory:              organizationClientFactory,
 			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
 			Debug:                      config.Debug,
