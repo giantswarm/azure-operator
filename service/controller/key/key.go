@@ -200,13 +200,7 @@ func ClusterDNSDomain(customObject providerv1alpha1.AzureConfig) string {
 }
 
 func ClusterEtcdDomain(customObject providerv1alpha1.AzureConfig) string {
-	// Port might be empty (0) in the AzureConfig.
-	// 0 doesn't make sense, so, even if that's ugly, we default it here.
-	port := 2379
-	if customObject.Spec.Cluster.Etcd.Port != 0 {
-		port = customObject.Spec.Cluster.Etcd.Port
-	}
-	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, port)
+	return fmt.Sprintf("%s:%d", customObject.Spec.Cluster.Etcd.Domain, customObject.Spec.Cluster.Etcd.Port)
 }
 
 func ClusterIPRange(customObject providerv1alpha1.AzureConfig) string {
