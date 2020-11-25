@@ -83,7 +83,7 @@
       "defaultValue": false
     },
     "hostPublicIPs": {
-      "type":"array",
+      "type":"string",
       "metadata": {
         "description": "Comma separated list of the public IPs of the control plane nodes (both masters and workers)"
       }
@@ -149,6 +149,9 @@
               "type":"int"
             },
             "mastersNatGWPublicIP":{
+              "type":"string"
+            },
+            "hostPublicIPs": {
               "type":"string"
             }
           },
