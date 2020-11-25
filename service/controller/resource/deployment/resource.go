@@ -38,6 +38,7 @@ type Config struct {
 	Logger           micrologger.Logger
 
 	Azure                      setting.Azure
+	AzureClientSet             *client.AzureClientSet
 	ClientFactory              client.OrganizationFactory
 	ControlPlaneSubscriptionID string
 	Debug                      setting.Debug
@@ -50,6 +51,7 @@ type Resource struct {
 	logger           micrologger.Logger
 
 	azure                      setting.Azure
+	azureClientSet             *client.AzureClientSet
 	clientFactory              client.OrganizationFactory
 	controlPlaneSubscriptionID string
 	debug                      setting.Debug
@@ -61,6 +63,9 @@ type StorageAccountIpRule struct {
 }
 
 func New(config Config) (*Resource, error) {
+	if config.AzureClientSet == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientSet must not be empty", config)
+	}
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
 	}
@@ -87,6 +92,7 @@ func New(config Config) (*Resource, error) {
 		logger:           config.Logger,
 
 		azure:                      config.Azure,
+		azureClientSet:             config.AzureClientSet,
 		clientFactory:              config.ClientFactory,
 		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
 		debug:                      config.Debug,
