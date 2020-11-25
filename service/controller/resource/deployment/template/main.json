@@ -109,7 +109,7 @@
           "parameters":{
             "networkSecurityGroupsAPIVersion":{
               "type":"string",
-              "defaultValue":"2016-09-01",
+              "defaultValue":"2017-06-01",
               "metadata":{
                 "description":"API version used by the Microsoft.Network/networkSecurityGroups resource."
               }
