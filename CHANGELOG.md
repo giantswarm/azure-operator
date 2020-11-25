@@ -21,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Avoid returning errors when still waiting for tenant cluster k8s API to be ready.
 - Release allocated subnet when deleting node pool.
+- Allow the control plane nodes to access the ETCD cluster for monitoring and backup purposes.
 
 ## [5.0.0-beta5] - 2020-11-18
 
