@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Re-configure workers' network security group rules when upgrading from pre-NP cluster.
 - Release allocated subnet when deleting node pool.
 
 ## [5.0.0-beta5] - 2020-11-18
