@@ -83,9 +83,9 @@
       "defaultValue": false
     },
     "hostPublicIPs": {
-      "type":"string",
+      "type":"array",
       "metadata": {
-        "description": "Comma separated list of the public IPs of the control plane nodes (both masters and workers)"
+        "description": "List of the public IPs of the control plane nodes (both masters and workers)"
       }
     }
   },
@@ -152,7 +152,7 @@
               "type":"string"
             },
             "hostPublicIPs": {
-              "type":"string"
+              "type":"array"
             }
           },
           "variables":{
@@ -268,7 +268,7 @@
                       "protocol":"tcp",
                       "sourcePortRange":"*",
                       "destinationPortRange":"[variables('etcdPort')]",
-                      "sourceAddressPrefix":"[parameters('hostPublicIPs')]",
+                      "sourceAddressPrefixes":"[parameters('hostPublicIPs')]",
                       "destinationAddressPrefix":"[parameters('masterSubnetCidr')]",
                       "access":"Allow",
                       "direction":"Inbound",

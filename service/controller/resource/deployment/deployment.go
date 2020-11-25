@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"net"
-	"strings"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
@@ -73,10 +72,10 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 }
 
 // This function retrieves the public IP address for CP masters and workers, as a comma separated list.
-func (r Resource) getControlPlanePublicIPs(ctx context.Context) (string, error) {
+func (r Resource) getControlPlanePublicIPs(ctx context.Context) ([]string, error) {
 	allPublicIPs, err := r.azureClientSet.PublicIpAddressesClient.ListComplete(ctx, r.installationName)
 	if err != nil {
-		return "", microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
 	var ips []string
@@ -88,11 +87,11 @@ func (r Resource) getControlPlanePublicIPs(ctx context.Context) (string, error) 
 		}
 		err := allPublicIPs.NextWithContext(ctx)
 		if err != nil {
-			return "", microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 	}
 
-	return strings.Join(ips, ","), nil
+	return ips, nil
 }
 
 func getVPNSubnet(customObject providerv1alpha1.AzureConfig) (*net.IPNet, error) {
