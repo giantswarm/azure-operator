@@ -18,6 +18,7 @@ var workerSecurityGroupRulesToUpdate = []string{
 	"allowKubelet",
 	"allowNodeExporter",
 	"allowKubeStateMetrics",
+	"defaultInClusterRule",
 	"sshHostClusterToWorkerSubnetRule",
 }
 
@@ -33,7 +34,7 @@ func (r *Resource) ensureSecurityGroupRulesUpdated(ctx context.Context, cr provi
 
 	for _, sg := range securityGroups {
 		if sg.Name != nil && *sg.Name == key.WorkerSecurityGroupName(cr) {
-			err := r.ensureDestinationCIDRUpdated(ctx, cr, azureAPI, sg, workerSecurityGroupRulesToUpdate)
+			err := r.ensureNetworkRuleCIDRUpdated(ctx, cr, azureAPI, sg, workerSecurityGroupRulesToUpdate)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -43,16 +44,21 @@ func (r *Resource) ensureSecurityGroupRulesUpdated(ctx context.Context, cr provi
 	return nil
 }
 
-func (r *Resource) ensureDestinationCIDRUpdated(ctx context.Context, cr providerv1alpha1.AzureConfig, azureAPI azure.API, securityGroup network.SecurityGroup, rulesToUpdate []string) error {
+func (r *Resource) ensureNetworkRuleCIDRUpdated(ctx context.Context, cr providerv1alpha1.AzureConfig, azureAPI azure.API, securityGroup network.SecurityGroup, rulesToUpdate []string) error {
 	if securityGroup.SecurityGroupPropertiesFormat == nil || securityGroup.SecurityGroupPropertiesFormat.SecurityRules == nil {
 		return microerror.Maskf(executionFailedError, "security group rules are missing from Azure API response")
 	}
 
 	var needUpdate bool
-	for _, rule := range *securityGroup.SecurityRules {
+	for i, rule := range *securityGroup.SecurityRules {
 		if rule.Name != nil && contains(rulesToUpdate, *rule.Name) {
-			if rule.DestinationAddressPrefix == nil || *rule.DestinationAddressPrefix != key.VnetCIDR(cr) {
-				rule.DestinationAddressPrefix = to.StringPtr(key.VnetCIDR(cr))
+			if rule.SourceAddressPrefix == nil || *rule.SourceAddressPrefix == key.WorkersSubnetCIDR(cr) {
+				(*securityGroup.SecurityRules)[i].SourceAddressPrefix = to.StringPtr(key.VnetCIDR(cr))
+				needUpdate = true
+			}
+
+			if rule.DestinationAddressPrefix == nil || *rule.DestinationAddressPrefix == key.WorkersSubnetCIDR(cr) {
+				(*securityGroup.SecurityRules)[i].DestinationAddressPrefix = to.StringPtr(key.VnetCIDR(cr))
 				needUpdate = true
 			}
 		}
