@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Avoid returning errors when still waiting for tenant cluster k8s API to be ready.
+- Re-configure workers' network security group rules when upgrading from pre-NP cluster.
 - Release allocated subnet when deleting node pool.
 - Allow the control plane nodes to access the ETCD cluster for monitoring and backup purposes.
 
