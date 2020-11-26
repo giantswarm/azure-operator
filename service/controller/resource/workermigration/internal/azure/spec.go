@@ -29,4 +29,7 @@ type API interface {
 
 	// CreateOrUpdateNetworkSecurityGroup creates or updates existing network security group via Azure API.
 	CreateOrUpdateNetworkSecurityGroup(ctx context.Context, resourceGroupName, networkSecurityGroupName string, securityGroup network.SecurityGroup) error
+
+	// List all Public IPs from a given resource group via Azure API.
+	ListPublicIPs(ctx context.Context, resourceGroupName string) ([]string, error)
 }

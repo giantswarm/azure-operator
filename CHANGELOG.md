@@ -19,6 +19,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Fixed
 
+- Re-configure masters network security group to allow CP's public IPs to etcd LB ingress.
+
+## [5.0.0-beta6] - 2020-11-26
+
+### Fixed
+
 - Avoid returning errors when still waiting for tenant cluster k8s API to be ready.
 - Re-configure workers' network security group rules when upgrading from pre-NP cluster.
 - Release allocated subnet when deleting node pool.

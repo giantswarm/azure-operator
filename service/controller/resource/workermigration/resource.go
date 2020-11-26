@@ -22,7 +22,8 @@ type Config struct {
 	CtrlClient    client.Client
 	Logger        micrologger.Logger
 
-	Location string
+	InstallationName string
+	Location         string
 }
 
 type Resource struct {
@@ -32,7 +33,8 @@ type Resource struct {
 	tenantClientFactory tenantcluster.Factory
 	wrapAzureAPI        func(cf *azureclient.Factory, credentials *providerv1alpha1.CredentialSecret) azure.API
 
-	location string
+	installationName string
+	location         string
 }
 
 func New(config Config) (*Resource, error) {
@@ -44,6 +46,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
 	}
 	if config.Location == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Location must not be empty", config)
@@ -66,7 +71,8 @@ func New(config Config) (*Resource, error) {
 		tenantClientFactory: cachedTenantClientFactory,
 		wrapAzureAPI:        azure.GetAPI,
 
-		location: config.Location,
+		installationName: config.InstallationName,
+		location:         config.Location,
 	}
 
 	return newResource, nil

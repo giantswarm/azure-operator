@@ -450,7 +450,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			CtrlClient:    config.K8sClient.CtrlClient(),
 			Logger:        config.Logger,
 
-			Location: config.Azure.Location,
+			InstallationName: config.InstallationName,
+			Location:         config.Azure.Location,
 		}
 
 		workerMigrationResource, err = workermigration.New(c)
