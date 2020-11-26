@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.0-beta7] - 2020-11-26
+
 ### Fixed
 
 - Re-configure masters network security group to allow CP's public IPs to etcd LB ingress.
@@ -240,7 +242,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta6...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta7...HEAD
+[5.0.0-beta7]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta6...v5.0.0-beta7
 [5.0.0-beta6]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta5...v5.0.0-beta6
 [5.0.0-beta5]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta4...v5.0.0-beta5
 [5.0.0-beta4]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta2...v5.0.0-beta4
