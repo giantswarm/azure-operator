@@ -115,6 +115,12 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 
 	m.
 		EXPECT().
+		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
+		Return(nil, nil).
+		Times(1)
+
+	m.
+		EXPECT().
 		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
 		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
 		Times(1)
@@ -216,6 +222,12 @@ func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
 
 	mockAzureAPI.
 		EXPECT().
+		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
+		Return(nil, nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
 		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
 		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
 		Times(1)
@@ -289,6 +301,12 @@ func TestVMSSIsNotDeletedBeforeDrainingIsDone(t *testing.T) {
 	cr := o.(*providerv1alpha1.AzureConfig)
 
 	ensureNodePoolIsReady(t, ctrlClient, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
+		Return(nil, nil).
+		Times(1)
 
 	mockAzureAPI.
 		EXPECT().
@@ -366,6 +384,12 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 
 	ensureNodePoolIsReady(t, ctrlClient, cr)
 	setDrainerConfigsAsDrained(t, ctrlClient, cr)
+
+	mockAzureAPI.
+		EXPECT().
+		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
+		Return(nil, nil).
+		Times(1)
 
 	mockAzureAPI.
 		EXPECT().
@@ -451,6 +475,12 @@ func TestLegacyWorkerDeploymentIsDeleted(t *testing.T) {
 
 	mockAzureAPI.
 		EXPECT().
+		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
+		Return(nil, nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
 		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
 		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
 		Times(1)
@@ -517,6 +547,12 @@ func TestLegacyWorkerDeploymentDeletionDoesntErrorInNotFoundCase(t *testing.T) {
 
 	mockAzureAPI.
 		EXPECT().
+		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
+		Return(nil, nil).
+		Times(1)
+
+	mockAzureAPI.
+		EXPECT().
 		GetVMSS(gomock.Any(), key.ResourceGroupName(*cr), key.WorkerVMSSName(*cr)).
 		Return(newBuiltinVMSS(3, key.WorkerVMSSName(*cr)), nil).
 		Times(1)
@@ -569,6 +605,12 @@ func TestFinishedMigration(t *testing.T) {
 		t.Fatal(err)
 	}
 	cr := o.(*providerv1alpha1.AzureConfig)
+
+	m.
+		EXPECT().
+		ListNetworkSecurityGroups(gomock.Any(), key.ResourceGroupName(*cr)).
+		Return(nil, nil).
+		Times(1)
 
 	m.
 		EXPECT().

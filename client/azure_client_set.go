@@ -251,6 +251,13 @@ func newNatGatewaysClient(authorizer autorest.Authorizer, metricsCollector colle
 	return &client, nil
 }
 
+func newNetworkSecurityGroupsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
+	client := network.NewSecurityGroupsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "network_security_groups", subscriptionID, partnerID)
+
+	return &client, nil
+}
+
 func newPublicIPAddressesClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.PublicIPAddressesClient, error) {
 	client := network.NewPublicIPAddressesClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, metricsCollector, "public_ip_addresses", subscriptionID, partnerID)
@@ -388,6 +395,10 @@ func toSubnetsClient(client interface{}) *network.SubnetsClient {
 
 func toNatGatewaysClient(client interface{}) *network.NatGatewaysClient {
 	return client.(*network.NatGatewaysClient)
+}
+
+func toNetworkSecurityGroupsClient(client interface{}) *network.SecurityGroupsClient {
+	return client.(*network.SecurityGroupsClient)
 }
 
 func toResourceSkusClient(client interface{}) *compute.ResourceSkusClient {

@@ -8,6 +8,7 @@ import (
 	context "context"
 	reflect "reflect"
 
+	network "github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	gomock "github.com/golang/mock/gomock"
 
 	azure "github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
@@ -92,4 +93,33 @@ func (m *MockAPI) ListVMSSNodes(ctx context.Context, resourceGroupName, vmssName
 func (mr *MockAPIMockRecorder) ListVMSSNodes(ctx, resourceGroupName, vmssName interface{}) *gomock.Call {
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListVMSSNodes", reflect.TypeOf((*MockAPI)(nil).ListVMSSNodes), ctx, resourceGroupName, vmssName)
+}
+
+// ListNetworkSecurityGroups mocks base method
+func (m *MockAPI) ListNetworkSecurityGroups(ctx context.Context, resourceGroupName string) (azure.SecurityGroups, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListNetworkSecurityGroups", ctx, resourceGroupName)
+	ret0, _ := ret[0].(azure.SecurityGroups)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListNetworkSecurityGroups indicates an expected call of ListNetworkSecurityGroups
+func (mr *MockAPIMockRecorder) ListNetworkSecurityGroups(ctx, resourceGroupName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListNetworkSecurityGroups", reflect.TypeOf((*MockAPI)(nil).ListNetworkSecurityGroups), ctx, resourceGroupName)
+}
+
+// CreateOrUpdateNetworkSecurityGroup mocks base method
+func (m *MockAPI) CreateOrUpdateNetworkSecurityGroup(ctx context.Context, resourceGroupName, networkSecurityGroupName string, securityGroup network.SecurityGroup) error {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "CreateOrUpdateNetworkSecurityGroup", ctx, resourceGroupName, networkSecurityGroupName, securityGroup)
+	ret0, _ := ret[0].(error)
+	return ret0
+}
+
+// CreateOrUpdateNetworkSecurityGroup indicates an expected call of CreateOrUpdateNetworkSecurityGroup
+func (mr *MockAPIMockRecorder) CreateOrUpdateNetworkSecurityGroup(ctx, resourceGroupName, networkSecurityGroupName, securityGroup interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateNetworkSecurityGroup", reflect.TypeOf((*MockAPI)(nil).CreateOrUpdateNetworkSecurityGroup), ctx, resourceGroupName, networkSecurityGroupName, securityGroup)
 }
