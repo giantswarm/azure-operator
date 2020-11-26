@@ -123,3 +123,18 @@ func (mr *MockAPIMockRecorder) CreateOrUpdateNetworkSecurityGroup(ctx, resourceG
 	mr.mock.ctrl.T.Helper()
 	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "CreateOrUpdateNetworkSecurityGroup", reflect.TypeOf((*MockAPI)(nil).CreateOrUpdateNetworkSecurityGroup), ctx, resourceGroupName, networkSecurityGroupName, securityGroup)
 }
+
+// ListPublicIPs mocks base method
+func (m *MockAPI) ListPublicIPs(ctx context.Context, resourceGroupName string) ([]string, error) {
+	m.ctrl.T.Helper()
+	ret := m.ctrl.Call(m, "ListPublicIPs", ctx, resourceGroupName)
+	ret0, _ := ret[0].([]string)
+	ret1, _ := ret[1].(error)
+	return ret0, ret1
+}
+
+// ListPublicIPs indicates an expected call of ListPublicIPs
+func (mr *MockAPIMockRecorder) ListPublicIPs(ctx, resourceGroupName interface{}) *gomock.Call {
+	mr.mock.ctrl.T.Helper()
+	return mr.mock.ctrl.RecordCallWithMethodType(mr.mock, "ListPublicIPs", reflect.TypeOf((*MockAPI)(nil).ListPublicIPs), ctx, resourceGroupName)
+}
