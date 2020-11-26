@@ -33,8 +33,15 @@ func (r *Resource) ensureSecurityGroupRulesUpdated(ctx context.Context, cr provi
 	}
 
 	for _, sg := range securityGroups {
+		if sg.Name != nil && *sg.Name == key.MasterSecurityGroupName(cr) {
+			err := r.ensureMasterEtcdLBSourcePrefixesUpdated(ctx, cr, azureAPI, sg)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+
 		if sg.Name != nil && *sg.Name == key.WorkerSecurityGroupName(cr) {
-			err := r.ensureNetworkRuleCIDRUpdated(ctx, cr, azureAPI, sg, workerSecurityGroupRulesToUpdate)
+			err := r.ensureWorkerNetworkRuleCIDRUpdated(ctx, cr, azureAPI, sg, workerSecurityGroupRulesToUpdate)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -44,7 +51,42 @@ func (r *Resource) ensureSecurityGroupRulesUpdated(ctx context.Context, cr provi
 	return nil
 }
 
-func (r *Resource) ensureNetworkRuleCIDRUpdated(ctx context.Context, cr providerv1alpha1.AzureConfig, azureAPI azure.API, securityGroup network.SecurityGroup, rulesToUpdate []string) error {
+func (r *Resource) ensureMasterEtcdLBSourcePrefixesUpdated(ctx context.Context, cr providerv1alpha1.AzureConfig, azureAPI azure.API, securityGroup network.SecurityGroup) error {
+	if securityGroup.SecurityGroupPropertiesFormat == nil || securityGroup.SecurityGroupPropertiesFormat.SecurityRules == nil {
+		return microerror.Maskf(executionFailedError, "security group rules are missing from Azure API response")
+	}
+
+	var err error
+	var publicIPs []string
+	{
+		publicIPs, err = azureAPI.ListPublicIPs(ctx, r.installationName)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	var needUpdate bool
+	for i, rule := range *securityGroup.SecurityRules {
+		if rule.Name != nil && *rule.Name == "etcdLoadBalancerRuleHost" {
+			if rule.SourceAddressPrefix == nil || len(*rule.SourceAddressPrefix) > 0 {
+				(*securityGroup.SecurityRules)[i].SourceAddressPrefix = nil
+				(*securityGroup.SecurityRules)[i].SourceAddressPrefixes = &publicIPs
+				needUpdate = true
+			}
+		}
+	}
+
+	if needUpdate {
+		err := azureAPI.CreateOrUpdateNetworkSecurityGroup(ctx, key.ResourceGroupName(cr), *securityGroup.Name, securityGroup)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+
+	return nil
+}
+
+func (r *Resource) ensureWorkerNetworkRuleCIDRUpdated(ctx context.Context, cr providerv1alpha1.AzureConfig, azureAPI azure.API, securityGroup network.SecurityGroup, rulesToUpdate []string) error {
 	if securityGroup.SecurityGroupPropertiesFormat == nil || securityGroup.SecurityGroupPropertiesFormat.SecurityRules == nil {
 		return microerror.Maskf(executionFailedError, "security group rules are missing from Azure API response")
 	}

@@ -233,6 +233,15 @@ func (f *Factory) GetNetworkSecurityGroupsClient(credentialNamespace, credential
 	return toNetworkSecurityGroupsClient(client), nil
 }
 
+func (f *Factory) GetPublicIPAddressesClient(credentialNamespace, credentialName string) (*network.PublicIPAddressesClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "PublicIPAddressesClient", newPublicIPAddressesClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toPublicIPAddressesClient(client), nil
+}
+
 // GetResourceSkusClient returns *compute.ResourceSkusClient that is used for reading VM instance types.
 // The created client is cached for the time period specified in the factory config.
 func (f *Factory) GetResourceSkusClient(credentialNamespace, credentialName string) (*compute.ResourceSkusClient, error) {
