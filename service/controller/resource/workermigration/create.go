@@ -63,12 +63,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers are migrated to node pool")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure worker security group rules are updated")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure security group rules are updated")
 	err = r.ensureSecurityGroupRulesUpdated(ctx, cr, azureAPI)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured worker security group rules are updated")
+	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured security group rules are updated")
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "finding legacy workers VMSS")
 	var legacyVMSS azure.VMSS
