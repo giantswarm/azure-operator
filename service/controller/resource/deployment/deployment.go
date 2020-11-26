@@ -31,6 +31,11 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		r.installationName,
 	)
 
+	controlPlanePublicIPs, err := r.getControlPlanePublicIPs(ctx)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
 	defaultParams := map[string]interface{}{
 		"blobContainerName":          key.BlobContainerName(),
 		"calicoSubnetCidr":           key.CalicoCIDR(customObject),
@@ -38,6 +43,7 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		"clusterID":                  key.ClusterID(&customObject),
 		"dnsZones":                   key.DNSZones(customObject),
 		"hostClusterCidr":            r.azure.HostCluster.CIDR,
+		"hostPublicIPs":              controlPlanePublicIPs,
 		"insecureStorageAccount":     r.debug.InsecureStorageAccount,
 		"kubernetesAPISecurePort":    key.APISecurePort(customObject),
 		"masterSubnetCidr":           key.MastersSubnetCIDR(customObject),
@@ -63,6 +69,29 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 	}
 
 	return d, nil
+}
+
+// This function retrieves the public IP address for CP masters and workers, as a comma separated list.
+func (r Resource) getControlPlanePublicIPs(ctx context.Context) ([]string, error) {
+	allPublicIPs, err := r.azureClientSet.PublicIpAddressesClient.ListComplete(ctx, r.installationName)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	var ips []string
+	for allPublicIPs.NotDone() {
+		ip := allPublicIPs.Value()
+		// Masters use the API LB as egress gateway, the workers use the ingress LB.
+		if ip.Name != nil && *ip.Name == fmt.Sprintf("%s_ingress_ip", r.installationName) || *ip.Name == fmt.Sprintf("%s_api_ip", r.installationName) {
+			ips = append(ips, *ip.IPAddress)
+		}
+		err := allPublicIPs.NextWithContext(ctx)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	return ips, nil
 }
 
 func getVPNSubnet(customObject providerv1alpha1.AzureConfig) (*net.IPNet, error) {
