@@ -8,7 +8,6 @@ require (
 	github.com/Azure/go-autorest/autorest v0.11.12
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.2
 	github.com/Azure/go-autorest/autorest/to v0.4.0
-	github.com/blang/semver v3.5.1+incompatible
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
 	github.com/giantswarm/apiextensions/v3 v3.9.0
@@ -17,6 +16,8 @@ require (
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v3 v3.1.0
+	github.com/giantswarm/conditions v0.1.0 // indirect
+	github.com/giantswarm/conditions-handler v0.0.0-20201130154741-42344075abca
 	github.com/giantswarm/e2e-harness/v3 v3.0.0
 	github.com/giantswarm/e2eclients v0.2.0
 	github.com/giantswarm/e2esetup/v2 v2.1.0

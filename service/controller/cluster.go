@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/conditions-handler/pkg/factory"
+	conditionshandler "github.com/giantswarm/conditions-handler/pkg/handler"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -19,7 +21,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterdependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterreleaseversion"
@@ -99,12 +100,13 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 
 	var clusterConditionsResource resource.Interface
 	{
-		c := clusterconditions.Config{
+		c := conditionshandler.Config{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
+			Name:       "clusterconditions",
 		}
 
-		clusterConditionsResource, err = clusterconditions.New(c)
+		clusterConditionsResource, err = factory.NewClusterConditionsHandler(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
