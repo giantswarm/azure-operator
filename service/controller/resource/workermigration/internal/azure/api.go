@@ -2,7 +2,6 @@ package azure
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
@@ -126,31 +125,4 @@ func (a *api) CreateOrUpdateNetworkSecurityGroup(ctx context.Context, resourceGr
 	}
 
 	return nil
-}
-
-func (a *api) ListPublicIPs(ctx context.Context, resourceGroupName string) ([]string, error) {
-	client, err := a.clientFactory.GetPublicIPAddressesClient(a.credentials.Namespace, a.credentials.Name)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	allPublicIPs, err := client.ListComplete(ctx, resourceGroupName)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var ips []string
-	for allPublicIPs.NotDone() {
-		ip := allPublicIPs.Value()
-		// Masters use the API LB as egress gateway, the workers use the ingress LB.
-		if ip.Name != nil && *ip.Name == fmt.Sprintf("%s_ingress_ip", resourceGroupName) || *ip.Name == fmt.Sprintf("%s_api_ip", resourceGroupName) {
-			ips = append(ips, *ip.IPAddress)
-		}
-		err := allPublicIPs.NextWithContext(ctx)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	return ips, nil
 }
