@@ -13,7 +13,6 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
@@ -161,35 +160,18 @@ func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1al
 	return true, nil
 }
 
-func isAnyMachinePoolUpgrading(cr capiv1alpha3.Cluster, machinePools []expcapiv1alpha3.MachinePool) (bool, error) {
-	desiredRelease := cr.Labels[label.ReleaseVersion]
-
-	for _, machinePool := range machinePools {
-		isUpgrading, err := conditions.IsUpgradingInProgress(&machinePool, desiredRelease)
-		if err != nil {
-			return false, microerror.Mask(err)
-		}
-
-		if isUpgrading {
-			return true, nil
-		}
-	}
-
-	return false, nil
-}
-
 func machinePoolsNotUpgradedYet(cr capiv1alpha3.Cluster, machinePools []expcapiv1alpha3.MachinePool) ([]expcapiv1alpha3.MachinePool, error) {
 	desiredRelease := cr.Labels[label.ReleaseVersion]
 
 	var pendingUpgrade []expcapiv1alpha3.MachinePool
 
 	for _, machinePool := range machinePools {
-		isUpgrading, err := conditions.IsUpgradingInProgress(&machinePool, desiredRelease)
+		isUpgrading, err := isMachinePoolUpgradingInProgress(&machinePool, desiredRelease)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
-		hasUpgraded, err := conditions.IsUpgraded(&machinePool, desiredRelease)
+		hasUpgraded, err := isMachinePoolUpgraded(&machinePool, desiredRelease)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

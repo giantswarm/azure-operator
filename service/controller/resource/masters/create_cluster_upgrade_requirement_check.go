@@ -6,11 +6,10 @@ import (
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
-	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
-	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/normalize"
@@ -75,15 +74,13 @@ func (r *Resource) isClusterCreating(ctx context.Context, cr *providerv1alpha1.A
 		return false, microerror.Mask(err)
 	}
 
-	// Missing CreatingCondition means that initial reconciliation hasn't
+	creatingCondition, creatingConditionSet := conditions.GetCreating(cluster)
+
+	// Missing Creating condition means that initial reconciliation hasn't
 	// properly kicked in yet. This means the cluster is in very early phase of
 	// creation.
-	if capiconditions.IsUnknown(cluster, aeconditions.CreatingCondition) {
-		return true, nil
-	}
-
-	// Creating == true.
-	if capiconditions.IsTrue(cluster, aeconditions.CreatingCondition) {
+	// Or Creating == true, which means that creation is in progress.
+	if !creatingConditionSet || conditions.IsTrue(&creatingCondition) {
 		return true, nil
 	}
 

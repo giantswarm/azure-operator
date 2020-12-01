@@ -1,16 +1,33 @@
-package conditions
+package clusterupgrade
 
 import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
+	"github.com/giantswarm/apiextensions/v3/pkg/label"
+	"github.com/giantswarm/conditions/pkg/conditions"
+	"github.com/giantswarm/microerror"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
-	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
-
-	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 )
 
-func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
-	if IsUpgradingTrue(cr) {
+func isAnyMachinePoolUpgrading(cr capi.Cluster, machinePools []capiexp.MachinePool) (bool, error) {
+	desiredRelease := cr.Labels[label.ReleaseVersion]
+
+	for _, machinePool := range machinePools {
+		isUpgrading, err := isMachinePoolUpgradingInProgress(&machinePool, desiredRelease)
+		if err != nil {
+			return false, microerror.Mask(err)
+		}
+
+		if isUpgrading {
+			return true, nil
+		}
+	}
+
+	return false, nil
+}
+
+func isMachinePoolUpgradingInProgress(cr conditions.Object, desiredRelease string) (bool, error) {
+	if conditions.IsUpgradingTrue(cr) {
 		// When Upgrading == True => Upgrading is still in progress.
 		return true, nil
 	}
@@ -45,8 +62,8 @@ func IsUpgradingInProgress(cr CR, desiredRelease string) (bool, error) {
 	return true, nil
 }
 
-func IsUpgraded(cr CR, desiredRelease string) (bool, error) {
-	if IsUpgradingTrue(cr) {
+func isMachinePoolUpgraded(cr conditions.Object, desiredRelease string) (bool, error) {
+	if conditions.IsUpgradingTrue(cr) {
 		// When Upgrading == True => Upgrading is still in progress.
 		return false, nil
 	}
@@ -67,26 +84,4 @@ func IsUpgraded(cr CR, desiredRelease string) (bool, error) {
 	}
 
 	return false, nil
-}
-
-func MarkUpgradingNotStarted(cr CR) {
-	capiconditions.MarkFalse(
-		cr,
-		aeconditions.UpgradingCondition,
-		aeconditions.UpgradeNotStartedReason,
-		capi.ConditionSeverityInfo,
-		"Upgrade not started")
-}
-
-func MarkUpgradingStarted(cr CR) {
-	capiconditions.MarkTrue(cr, aeconditions.UpgradingCondition)
-}
-
-func MarkUpgradingCompleted(cr CR) {
-	capiconditions.MarkFalse(
-		cr,
-		aeconditions.UpgradingCondition,
-		aeconditions.UpgradeCompletedReason,
-		capi.ConditionSeverityInfo,
-		"Upgrade has been completed")
 }
