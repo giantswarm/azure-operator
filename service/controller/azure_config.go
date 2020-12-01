@@ -445,10 +445,11 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 	var workerMigrationResource resource.Interface
 	{
 		c := workermigration.Config{
-			CertsSearcher: certsSearcher,
-			ClientFactory: clientFactory,
-			CtrlClient:    config.K8sClient.CtrlClient(),
-			Logger:        config.Logger,
+			CertsSearcher:             certsSearcher,
+			ClientFactory:             clientFactory,
+			CPPublicIPAddressesClient: config.CPAzureClientSet.PublicIpAddressesClient,
+			CtrlClient:                config.K8sClient.CtrlClient(),
+			Logger:                    config.Logger,
 
 			InstallationName: config.InstallationName,
 			Location:         config.Azure.Location,
