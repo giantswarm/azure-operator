@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.0.0] - 2020-12-01
 
+### Fixed
+
+- Use CP public IP's instead of TC public IP's to re-configure masters network security group.
+
 ## [5.0.0-beta7] - 2020-11-26
 
 ### Fixed
@@ -30,6 +34,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't set `Upgrading` condition `Reason` when it's `False` and already contains a `Reason`.
 
 ## [5.0.0-beta4] - 2020-11-17
+
+- No changes.
 
 ## [5.0.0-beta2] - 2020-11-16
 
