@@ -2,17 +2,14 @@ package masters
 
 import (
 	"context"
-	"fmt"
 
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
-	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/normalize"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
@@ -20,11 +17,6 @@ import (
 
 func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
 	cr, err := key.ToCustomResource(obj)
-	if err != nil {
-		return "", microerror.Mask(err)
-	}
-
-	isCreating, err := r.isClusterCreating(ctx, &cr)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
@@ -55,7 +47,12 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 		return "", microerror.Mask(err)
 	}
 
-	if !isCreating && anyOldNodes {
+	cluster, err := r.getCluster(ctx, &cr)
+	if err != nil {
+		return "", microerror.Mask(err)
+	}
+
+	if conditions.IsCreatingFalse(cluster) && anyOldNodes {
 		// Only continue rolling nodes when cluster is not creating and there
 		// are old nodes in tenant cluster.
 		return MasterInstancesUpgrading, nil
@@ -65,25 +62,14 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 	return DeploymentCompleted, nil
 }
 
-func (r *Resource) isClusterCreating(ctx context.Context, cr *providerv1alpha1.AzureConfig) (bool, error) {
-	orgNs := normalize.AsDNSLabelName(fmt.Sprintf("org-%s", cr.Labels[label.Organization]))
+func (r *Resource) getCluster(ctx context.Context, cr *providerv1alpha1.AzureConfig) (*capiv1alpha3.Cluster, error) {
+	orgNs := key.OrganizationNamespace(cr)
 
 	cluster := &capiv1alpha3.Cluster{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Name: cr.Labels[capiv1alpha3.ClusterLabelName], Namespace: orgNs}, cluster)
 	if err != nil {
-		return false, microerror.Mask(err)
+		return nil, microerror.Mask(err)
 	}
 
-	creatingCondition, creatingConditionSet := conditions.GetCreating(cluster)
-
-	// Missing Creating condition means that initial reconciliation hasn't
-	// properly kicked in yet. This means the cluster is in very early phase of
-	// creation.
-	// Or Creating == true, which means that creation is in progress.
-	if !creatingConditionSet || conditions.IsTrue(&creatingCondition) {
-		return true, nil
-	}
-
-	// Creation work is done for now.
-	return false, nil
+	return cluster, nil
 }
