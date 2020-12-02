@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -104,7 +104,7 @@ func isNodePoolUpgradeCompleted(ctx context.Context, tenantClusterClient client.
 }
 
 func allNodePoolNodesUpToDate(ctx context.Context, tenantClusterClient client.Client, machinePool *capiexp.MachinePool, desiredAzureOperatorVersion string) (bool, error) {
-	nodes := &v1.NodeList{}
+	nodes := &corev1.NodeList{}
 	err := tenantClusterClient.List(ctx, nodes, client.MatchingLabels{label.MachinePool: machinePool.Name})
 	if err != nil {
 		return false, microerror.Mask(err)
