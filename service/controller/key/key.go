@@ -103,6 +103,11 @@ func AzureConfigNetworkCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.CIDR
 }
 
+func AzureMachineName(getter LabelsGetter) string {
+	clusterID := ClusterID(getter)
+	return fmt.Sprintf("%s-master-0", clusterID)
+}
+
 func ToCluster(v interface{}) (capiv1alpha3.Cluster, error) {
 	if v == nil {
 		return capiv1alpha3.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiv1alpha3.Cluster{}, v)
@@ -111,6 +116,20 @@ func ToCluster(v interface{}) (capiv1alpha3.Cluster, error) {
 	customObjectPointer, ok := v.(*capiv1alpha3.Cluster)
 	if !ok {
 		return capiv1alpha3.Cluster{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capiv1alpha3.Cluster{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
+}
+
+func ToAzureMachine(v interface{}) (capzv1alpha3.AzureMachine, error) {
+	if v == nil {
+		return capzv1alpha3.AzureMachine{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureMachine{}, v)
+	}
+
+	customObjectPointer, ok := v.(*capzv1alpha3.AzureMachine)
+	if !ok {
+		return capzv1alpha3.AzureMachine{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &capzv1alpha3.AzureMachine{}, v)
 	}
 	customObject := *customObjectPointer
 
@@ -333,7 +352,7 @@ func InstanceIDFromNode(node v1.Node) (string, error) {
 // IsClusterCreating check if the cluster is being created.
 func IsClusterCreating(cr providerv1alpha1.AzureConfig) bool {
 	// When cluster creation is in the beginning, it doesn't necessarily have
-	// any status conditions yet.
+	// any status azureconditions yet.
 	if len(cr.Status.Cluster.Conditions) == 0 {
 		return true
 	}
@@ -402,6 +421,10 @@ func MasterSubnetName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s-%s", ClusterID(&customObject), virtualNetworkSuffix, masterSubnetSuffix)
 }
 
+func MasterSubnetNameFromClusterAPIObject(getter LabelsGetter) string {
+	return fmt.Sprintf("%s-%s-%s", ClusterName(getter), virtualNetworkSuffix, masterSubnetSuffix)
+}
+
 func MastersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.MasterSubnetCIDR
 }
@@ -431,6 +454,10 @@ func MasterNICName(customObject providerv1alpha1.AzureConfig) string {
 
 func MasterVMSSName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-master-%s", ClusterID(&customObject), ClusterID(&customObject))
+}
+
+func MasterVMSSNameFromClusterAPIObject(getter LabelsGetter) string {
+	return fmt.Sprintf("%s-master-%s", ClusterName(getter), ClusterName(getter))
 }
 
 func PrefixMaster() string {

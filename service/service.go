@@ -387,6 +387,24 @@ func New(config Config) (*Service, error) {
 		controllers = append(controllers, azureMachinePoolController)
 	}
 
+	var azureMachineController *operatorkitcontroller.Controller
+	{
+		c := controller.AzureMachineConfig{
+			AzureMetricsCollector: azureCollector,
+			CredentialProvider:    credentialProvider,
+			K8sClient:             k8sClient,
+			Logger:                config.Logger,
+			SentryDSN:             sentryDSN,
+		}
+
+		azureMachineController, err = controller.NewAzureMachine(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		controllers = append(controllers, azureMachineController)
+	}
+
 	var clusterController *operatorkitcontroller.Controller
 	{
 		c := controller.ClusterConfig{

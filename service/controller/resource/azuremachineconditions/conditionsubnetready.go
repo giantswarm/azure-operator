@@ -1,4 +1,4 @@
-package azuremachinepoolconditions
+package azuremachineconditions
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
@@ -19,17 +19,20 @@ const (
 	SubnetProvisioningStatePrefix = "SubnetProvisioningState"
 )
 
-func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
+func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachine *capz.AzureMachine) error {
 	r.logDebug(ctx, "ensuring condition %s", azureconditions.SubnetReadyCondition)
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachine.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// Now let's first check ARM deployment state
-	subnetDeploymentName := key.SubnetDeploymentName(azureMachinePool.Name)
-	isSubnetDeploymentSuccessful, err := r.deploymentChecker.CheckIfDeploymentIsSuccessful(ctx, deploymentsClient, azureMachinePool, subnetDeploymentName, azureconditions.SubnetReadyCondition)
+	// Now let's first check ARM deployment state (master subnet is currently
+	// deployed as a part of VNet deployment, we can remove this once we have
+	// a separate VirtualNetworkReady conditions, or separate master subnet
+	// deployment).
+	vnetDeploymentName := "virtual_network_setup"
+	isSubnetDeploymentSuccessful, err := r.deploymentChecker.CheckIfDeploymentIsSuccessful(ctx, deploymentsClient, azureMachine, vnetDeploymentName, azureconditions.SubnetReadyCondition)
 	if err != nil {
 		return microerror.Mask(err)
 	} else if !isSubnetDeploymentSuccessful {
@@ -41,20 +44,20 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachineP
 
 	// Deployment is successful, we proceed with checking the actual Azure
 	// subnet.
-	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureMachinePool.ObjectMeta)
+	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureMachine.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, azureMachine.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	subnetName := azureMachinePool.Name
+	subnetName := key.MasterSubnetNameFromClusterAPIObject(azureMachine)
 	subnet, err := subnetsClient.Get(ctx, azureCluster.Name, azureCluster.Spec.NetworkSpec.Vnet.Name, subnetName, "")
 	if IsNotFound(err) {
-		r.setSubnetNotFound(ctx, azureMachinePool, subnetName, azureconditions.SubnetReadyCondition)
+		r.setSubnetNotFound(ctx, azureMachine, subnetName, azureconditions.SubnetReadyCondition)
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -64,12 +67,12 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachineP
 	// is succeeded. It would be good to also check network security group,
 	// routing table and service endpoints.
 	if subnet.ProvisioningState == network.Succeeded {
-		capiconditions.MarkTrue(azureMachinePool, azureconditions.SubnetReadyCondition)
+		capiconditions.MarkTrue(azureMachine, azureconditions.SubnetReadyCondition)
 	} else {
-		r.setSubnetProvisioningStateNotSuccessful(ctx, azureMachinePool, subnetName, subnet.ProvisioningState, azureconditions.SubnetReadyCondition)
+		r.setSubnetProvisioningStateNotSuccessful(ctx, azureMachine, subnetName, subnet.ProvisioningState, azureconditions.SubnetReadyCondition)
 	}
 
-	r.logConditionStatus(ctx, azureMachinePool, azureconditions.SubnetReadyCondition)
+	r.logConditionStatus(ctx, azureMachine, azureconditions.SubnetReadyCondition)
 	r.logDebug(ctx, "ensured condition %s", azureconditions.SubnetReadyCondition)
 	return nil
 }

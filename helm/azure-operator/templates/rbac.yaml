@@ -20,6 +20,7 @@ rules:
       - azureclusters
       - azureclusters/status
       - azuremachines
+      - azuremachines/status
     verbs:
       - "*"
   - apiGroups:
