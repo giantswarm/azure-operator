@@ -184,7 +184,10 @@ func (r *Resource) ensureAzureMachine(ctx context.Context, cluster capiv1alpha3.
 
 	azureMachine := v1alpha3.AzureMachine{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: key.AzureMachineName(&cluster)}, &azureMachine)
-	if err != nil {
+	if apierrors.IsNotFound(err) {
+		// Waiting for AzureMachine to be created.
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
