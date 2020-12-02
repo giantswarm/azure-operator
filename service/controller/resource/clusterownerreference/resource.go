@@ -6,6 +6,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -72,6 +73,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.ensureMachinePools(ctx, cluster)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.ensureAzureMachine(ctx, cluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -170,5 +176,64 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 		r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
 	}
 
+	return nil
+}
+
+func (r *Resource) ensureAzureMachine(ctx context.Context, cluster capiv1alpha3.Cluster) error {
+	var err error
+
+	azureMachine := v1alpha3.AzureMachine{}
+	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: key.AzureMachineName(&cluster)}, &azureMachine)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if !azureMachine.GetDeletionTimestamp().IsZero() {
+		return microerror.Mask(crBeingDeletedError)
+	}
+
+	if azureMachine.Labels == nil {
+		azureMachine.Labels = make(map[string]string)
+	}
+	azureMachine.Labels[capiv1alpha3.ClusterLabelName] = cluster.Name
+
+	// Set Cluster as owner of AzureMachine
+	err = controllerutil.SetControllerReference(&cluster, &azureMachine, r.scheme)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = r.ctrlClient.Update(ctx, &azureMachine)
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureMachine '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name))
+
+	if cluster.Spec.ControlPlaneRef != nil {
+		return nil
+	}
+
+	controlPlaneRef := &corev1.ObjectReference{
+		Kind:      "AzureMachine",
+		Name:      azureMachine.Name,
+		Namespace: key.OrganizationNamespace(&azureMachine),
+	}
+
+	cluster.Spec.ControlPlaneRef = controlPlaneRef
+	err = r.ctrlClient.Update(ctx, &cluster)
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured 'Spec.ControlPlaneRef' fields on Cluster '%s/%s'", cluster.Namespace, cluster.Name))
 	return nil
 }
