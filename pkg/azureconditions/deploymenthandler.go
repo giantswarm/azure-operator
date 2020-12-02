@@ -49,10 +49,6 @@ func NewDeploymentChecker(config DeploymentCheckerConfig) (*DeploymentChecker, e
 	return r, nil
 }
 
-func (r *DeploymentChecker) logDebug(ctx context.Context, message string, messageArgs ...interface{}) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf(message, messageArgs...))
-}
-
 func (r *DeploymentChecker) logWarning(ctx context.Context, message string, messageArgs ...interface{}) {
 	r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf(message, messageArgs...))
 }
