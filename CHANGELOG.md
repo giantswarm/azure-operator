@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Re-configure masters network security group to allow CP's public IPs to etcd LB ingress.
+- Use CP public IP's instead of TC public IP's to re-configure masters network security group.
 
 ## [5.0.0-beta6] - 2020-11-26
 
