@@ -6,7 +6,8 @@ import (
 
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"k8s.io/client-go/tools/reference"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -20,7 +21,7 @@ func (r *Resource) ensureControlPlane(ctx context.Context, cluster *capi.Cluster
 
 	azureMachine := capz.AzureMachine{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: key.AzureMachineName(cluster)}, &azureMachine)
-	if errors.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		// Waiting for AzureMachine to be created.
 		return nil
 	} else if err != nil {
@@ -57,7 +58,7 @@ func (r *Resource) updateControlPlaneObject(ctx context.Context, cluster *capi.C
 	azureMachine.Labels[capi.ClusterLabelName] = cluster.Name
 
 	err = r.ctrlClient.Update(ctx, azureMachine)
-	if errors.IsConflict(err) {
+	if apierrors.IsConflict(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil
@@ -74,16 +75,18 @@ func (r *Resource) updateControlPlaneRef(ctx context.Context, cluster *capi.Clus
 		return nil
 	}
 
-	controlPlaneRef := &corev1.ObjectReference{
-		APIVersion: capz.GroupVersion.Version,
-		Kind:       "AzureMachine",
-		Name:       azureMachine.Name,
-		Namespace:  key.OrganizationNamespace(azureMachine),
+	var err error
+	var controlPlaneRef *corev1.ObjectReference
+	{
+		controlPlaneRef, err = reference.GetReference(r.scheme, azureMachine)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
 	cluster.Spec.ControlPlaneRef = controlPlaneRef
-	err := r.ctrlClient.Update(ctx, cluster)
-	if errors.IsConflict(err) {
+	err = r.ctrlClient.Update(ctx, cluster)
+	if apierrors.IsConflict(err) {
 		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
 		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
 		return nil

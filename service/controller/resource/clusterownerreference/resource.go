@@ -6,8 +6,10 @@ import (
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	"k8s.io/apimachinery/pkg/runtime"
+	"k8s.io/client-go/tools/reference"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
@@ -129,6 +131,31 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 	}
 
 	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name))
+
+	if cluster.Spec.InfrastructureRef != nil && cluster.Spec.InfrastructureRef.APIVersion != "" {
+		// Correct Cluster.Spec.InfrastructureRef with APIVersion is already set
+		return nil
+	}
+
+	var infrastructureCRRef *corev1.ObjectReference
+	{
+		infrastructureCRRef, err = reference.GetReference(r.scheme, &azureCluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+	}
+	cluster.Spec.InfrastructureRef = infrastructureCRRef
+
+	err = r.ctrlClient.Update(ctx, &cluster)
+	if apierrors.IsConflict(err) {
+		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured 'Spec.InfrastructureRef' fields on Cluster '%s/%s'", cluster.Namespace, cluster.Name))
 	return nil
 }
 
