@@ -5,7 +5,7 @@ import (
 	"fmt"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/api/core/v1"
+	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -74,7 +74,7 @@ func (r *Resource) updateControlPlaneRef(ctx context.Context, cluster *capi.Clus
 		return nil
 	}
 
-	controlPlaneRef := &v1.ObjectReference{
+	controlPlaneRef := &corev1.ObjectReference{
 		APIVersion: capz.GroupVersion.Version,
 		Kind:       "AzureMachine",
 		Name:       azureMachine.Name,
