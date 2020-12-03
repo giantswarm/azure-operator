@@ -182,10 +182,10 @@ func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
 	}
 
 	resources := []resource.Interface{
-		clusterReleaseVersionResource,
-		clusterConditionsResource,
 		clusterDependentsResource,
 		ownerReferencesResource,
+		clusterReleaseVersionResource,
+		clusterConditionsResource,
 		clusterUpgradeResource,
 	}
 
