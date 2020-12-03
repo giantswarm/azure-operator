@@ -325,8 +325,8 @@ github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2/go.mod h1:iD4hx
 github.com/giantswarm/conditions v0.0.0-20201127113941-a1124cf43f0a/go.mod h1:Bp0zSox1MdFV20MTvjXOr8li+v11OLX/8kponaIGVrw=
 github.com/giantswarm/conditions v0.1.0 h1:piCoVF8K5ScWkNmJ4AC80Zb/tB4ocOdq0bxThfAMOlU=
 github.com/giantswarm/conditions v0.1.0/go.mod h1:Bp0zSox1MdFV20MTvjXOr8li+v11OLX/8kponaIGVrw=
-github.com/giantswarm/conditions-handler v0.0.0-20201202153744-b210783361eb h1:h855/ROpgYAa5IinDpsrJm6UXjvxhZTDUXkonG8kq98=
-github.com/giantswarm/conditions-handler v0.0.0-20201202153744-b210783361eb/go.mod h1:zVDffD+IG5vCE9mVGB5v/QGqiAiRtkj0l+zvHDdvI1A=
+github.com/giantswarm/conditions-handler v0.0.0-20201203161900-5f356b233fc5 h1:qJaNeYYRkE4Gu+hrJSyYzVJ3hTLW6XmbaQD+hVPwWcY=
+github.com/giantswarm/conditions-handler v0.0.0-20201203161900-5f356b233fc5/go.mod h1:zVDffD+IG5vCE9mVGB5v/QGqiAiRtkj0l+zvHDdvI1A=
 github.com/giantswarm/e2e-harness/v3 v3.0.0 h1:o9lQRIqrOOkJIgMSsN2pjSM7XeXm3PODNCD7H4Wi3V8=
 github.com/giantswarm/e2e-harness/v3 v3.0.0/go.mod h1:NjvAx1Ad357m77SFS0+VOD9Qecp2x7vFTMSLwyAyS5U=
 github.com/giantswarm/e2eclients v0.2.0 h1:fk3/dU1tAt9NHgSZwz4C9Bm15E9lFuNfYYneLjkw5Sg=
