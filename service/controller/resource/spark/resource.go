@@ -2,7 +2,6 @@ package spark
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
@@ -150,7 +149,7 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) toEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+	r.logger.Debugf(ctx, "retrieving encryptionkey")
 
 	secret := &corev1.Secret{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: key.CertificateEncryptionNamespace, Name: secretName}, secret)
@@ -178,7 +177,7 @@ func (r *Resource) toEncrypterObject(ctx context.Context, secretName string) (en
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey found")
+	r.logger.Debugf(ctx, "encryptionkey found")
 
 	return enc, nil
 }
@@ -188,7 +187,7 @@ func secretName(base string) string {
 }
 
 func (r *Resource) getCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
+	r.logger.Debugf(ctx, "finding credential secret")
 
 	var err error
 	var credentialSecret *v1alpha1.CredentialSecret
@@ -197,7 +196,7 @@ func (r *Resource) getCredentialSecret(ctx context.Context, objectMeta v1.Object
 	if IsCredentialsNotFoundError(err) {
 		credentialSecret, err = r.getLegacyCredentialSecret(ctx, objectMeta)
 		if IsCredentialsNotFoundError(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find credential secret, using default '%s/%s'", credentialDefaultNamespace, credentialDefaultName))
+			r.logger.Debugf(ctx, "did not find credential secret, using default '%s/%s'", credentialDefaultNamespace, credentialDefaultName)
 			return &v1alpha1.CredentialSecret{
 				Namespace: credentialDefaultNamespace,
 				Name:      credentialDefaultName,
@@ -214,7 +213,7 @@ func (r *Resource) getCredentialSecret(ctx context.Context, objectMeta v1.Object
 
 // getOrganizationCredentialSecret tries to find a Secret in the organization namespace.
 func (r *Resource) getOrganizationCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta)))
+	r.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta))
 	secretList := &corev1.SecretList{}
 	{
 		err := r.ctrlClient.List(
@@ -249,7 +248,7 @@ func (r *Resource) getOrganizationCredentialSecret(ctx context.Context, objectMe
 		Name:      secret.Name,
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
+	r.logger.Debugf(ctx, "found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name)
 
 	return credentialSecret, nil
 }
@@ -257,7 +256,7 @@ func (r *Resource) getOrganizationCredentialSecret(ctx context.Context, objectMe
 // getLegacyCredentialSecret tries to find a Secret in the default credentials namespace but labeled with the organization name.
 // This is needed while we migrate everything to the org namespace and org credentials are created in the org namespace instead of the default namespace.
 func (r *Resource) getLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta)))
+	r.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta))
 	secretList := &corev1.SecretList{}
 	{
 		err := r.ctrlClient.List(
@@ -292,7 +291,7 @@ func (r *Resource) getLegacyCredentialSecret(ctx context.Context, objectMeta v1.
 		Name:      secret.Name,
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
+	r.logger.Debugf(ctx, "found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name)
 
 	return credentialSecret, nil
 }

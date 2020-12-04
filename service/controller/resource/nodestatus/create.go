@@ -41,22 +41,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// Check that the MachinePool or AzureMachinePool haven't been deleted or in the process.
 	if !machinePool.DeletionTimestamp.IsZero() || !azureMachinePool.DeletionTimestamp.IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "object is being deleted")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "object is being deleted")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	}
 
 	machinePool.Spec.ProviderIDList = azureMachinePool.Spec.ProviderIDList
 	if len(azureMachinePool.Spec.ProviderIDList) == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool.Spec.ProviderIDList haven't been set yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "AzureMachinePool.Spec.ProviderIDList haven't been set yet")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	}
 
 	err = r.ctrlClient.Update(ctx, &machinePool)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -69,8 +69,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenant.IsAPINotAvailable(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "tenant API not available yet")
+		r.logger.Debugf(ctx, "canceling resource")
 
 		return nil
 	} else if err != nil {
@@ -80,8 +80,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	nodeRefsResult, err := r.getNodeReferences(ctx, tenantClusterK8sClient, machinePool.Name, machinePool.Spec.ProviderIDList)
 	if err != nil {
 		if IsErrNoAvailableNodes(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "Cannot assign NodeRefs to MachinePool, no matching Nodes")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "Cannot assign NodeRefs to MachinePool, no matching Nodes")
+			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		}
 
@@ -97,14 +97,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	err = r.ctrlClient.Status().Update(ctx, &machinePool)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Set MachinePool's NodeRefs")
+	r.logger.Debugf(ctx, "Set MachinePool's NodeRefs")
 
 	return nil
 }
@@ -123,7 +123,7 @@ func (r *Resource) getNodeReferences(ctx context.Context, c ctrlclient.Client, m
 		for _, node := range nodeList.Items {
 			nodeProviderID, err := noderefutil.NewProviderID(node.Spec.ProviderID)
 			if err != nil {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "Failed to parse ProviderID, skipping", "providerID", node.Spec.ProviderID, "stack", microerror.JSON(microerror.Mask(err)))
+				r.logger.Debugf(ctx, "Failed to parse ProviderID, skipping", "providerID", node.Spec.ProviderID, "stack", microerror.JSON(microerror.Mask(err)))
 				continue
 			}
 
@@ -139,7 +139,7 @@ func (r *Resource) getNodeReferences(ctx context.Context, c ctrlclient.Client, m
 	for _, providerID := range providerIDList {
 		pid, err := noderefutil.NewProviderID(providerID)
 		if err != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "Failed to parse ProviderID, skipping", "providerID", providerID, "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "Failed to parse ProviderID, skipping", "providerID", providerID, "stack", microerror.JSON(microerror.Mask(err)))
 			continue
 		}
 		if node, ok := nodeRefsMap[pid.ID()]; ok {

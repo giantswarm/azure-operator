@@ -23,25 +23,25 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "acquiring lock for IPAM")
+		r.logger.Debugf(ctx, "acquiring lock for IPAM")
 		err := r.locker.Lock(ctx)
 		if locker.IsAlreadyExists(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "lock for IPAM is already acquired")
+			r.logger.Debugf(ctx, "lock for IPAM is already acquired")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "acquired lock for IPAM")
+			r.logger.Debugf(ctx, "acquired lock for IPAM")
 		}
 
 		defer func() {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "releasing lock for IPAM")
+			r.logger.Debugf(ctx, "releasing lock for IPAM")
 			err := r.locker.Unlock(ctx)
 			if locker.IsNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "lock for IPAM is already released")
+				r.logger.Debugf(ctx, "lock for IPAM is already released")
 			} else if err != nil {
-				r.logger.LogCtx(ctx, "level", "error", "message", "failed to release lock for IPAM", "stack", fmt.Sprintf("%#v", err))
+				r.logger.Errorf(ctx, err, "failed to release lock for IPAM")
 			} else {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "released lock for IPAM")
+				r.logger.Debugf(ctx, "released lock for IPAM")
 			}
 		}()
 	}
@@ -54,8 +54,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if subnet != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%s already allocated", r.networkRangeType))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "%s already allocated", r.networkRangeType)
+			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		}
 	}
@@ -63,7 +63,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// 2/4 Since we need to allocate a new vnet/subnet, first let's get all already allocated vnets/subnets.
 	var allocatedNetworkRanges []net.IPNet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding allocated %ss", r.networkRangeType))
+		r.logger.Debugf(ctx, "finding allocated %ss", r.networkRangeType)
 
 		allocatedNetworkRanges, err = r.collector.Collect(ctx, obj)
 		if IsParentNetworkRangeStillNotKnown(err) {
@@ -83,13 +83,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found allocated %ss %#q", r.networkRangeType, allocatedNetworkRanges))
+		r.logger.Debugf(ctx, "found allocated %ss %#q", r.networkRangeType, allocatedNetworkRanges)
 	}
 
 	// 3/4 Now let when we know what vnets/subnets are allocated, let's get one that's available.
 	var freeNetworkRange net.IPNet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("finding free %s", r.networkRangeType))
+		r.logger.Debugf(ctx, "finding free %s", r.networkRangeType)
 
 		parentNetworkRange, err := r.networkRangeGetter.GetParentNetworkRange(ctx, obj)
 		if IsParentNetworkRangeStillNotKnown(err) {
@@ -111,19 +111,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found free %s %#q", r.networkRangeType, freeNetworkRange))
+		r.logger.Debugf(ctx, "found free %s %#q", r.networkRangeType, freeNetworkRange)
 	}
 
 	// 4/4 And finally, let's save newly allocated network range (vnet range for cluster or subnet range node pool).
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocating free %s %#q", r.networkRangeType, freeNetworkRange))
+		r.logger.Debugf(ctx, "allocating free %s %#q", r.networkRangeType, freeNetworkRange)
 
 		err = r.persister.Persist(ctx, freeNetworkRange, m.GetNamespace(), m.GetName())
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("allocated free %s %#q", r.networkRangeType, freeNetworkRange))
+		r.logger.Debugf(ctx, "allocated free %s %#q", r.networkRangeType, freeNetworkRange)
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package masters
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/microerror"
 
@@ -46,7 +45,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		currentState = state.State(s)
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("current state: %s", currentState))
+		r.Logger.Debugf(ctx, "current state: %s", currentState)
 		newState, err = r.StateMachine.Execute(ctx, obj, currentState)
 		if err != nil {
 			return microerror.Mask(err)
@@ -54,16 +53,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if newState != currentState {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("new state: %s", newState))
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("setting resource status to '%s/%s'", Stage, newState))
+		r.Logger.Debugf(ctx, "new state: %s", newState)
+		r.Logger.Debugf(ctx, "setting resource status to '%s/%s'", Stage, newState)
 		err = r.SetResourceStatus(ctx, cr, Stage, string(newState))
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set resource status to '%s/%s'", Stage, newState))
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger.Debugf(ctx, "set resource status to '%s/%s'", Stage, newState)
+		r.Logger.Debugf(ctx, "canceling reconciliation")
 	} else {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "no state change")
+		r.Logger.Debugf(ctx, "no state change")
 	}
 
 	return nil

@@ -24,9 +24,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 
 	// Deleting the K8s namespace will take care of cleaning the endpoints.
 	if key.IsDeleted(&cr) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "redirecting deletion to namespace termination")
+		r.logger.Debugf(ctx, "redirecting deletion to namespace termination")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "canceling resource")
 
 		return nil, nil
 	}
@@ -47,9 +47,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		s := key.MasterVMSSName(cr)
 		_, err = interfacesClient.ListVirtualMachineScaleSetNetworkInterfaces(ctx, g, s)
 		if IsNetworkInterfacesNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the network interfaces in the Azure API")
+			r.logger.Debugf(ctx, "did not find the network interfaces in the Azure API")
 			resourcecanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "canceling resource")
 
 			return nil, nil
 		} else if err != nil {
@@ -60,18 +60,18 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// Lookup the current state of the endpoints.
 	var endpoints *corev1.Endpoints
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "looking for the master endpoints in the Kubernetes API")
+		r.logger.Debugf(ctx, "looking for the master endpoints in the Kubernetes API")
 
 		n := key.ClusterNamespace(cr)
 		manifest, err := r.k8sClient.CoreV1().Endpoints(n).Get(ctx, masterEndpointsName, apismetav1.GetOptions{})
 		if apierrors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find the master endpoints in the Kubernetes API")
+			r.logger.Debugf(ctx, "did not find the master endpoints in the Kubernetes API")
 
 			return nil, nil
 		} else if err != nil {
 			return nil, microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "found the master endpoints in the Kubernetes API")
+			r.logger.Debugf(ctx, "found the master endpoints in the Kubernetes API")
 			endpoints = manifest
 		}
 	}

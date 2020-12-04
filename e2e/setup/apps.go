@@ -104,7 +104,7 @@ func installReleaseOperator(ctx context.Context, config Config, version string) 
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for %#q release is %#q", chartName, chartPackagePath))
+		config.Logger.Debugf(ctx, "tarball path for %#q release is %#q", chartName, chartPackagePath)
 		err = installChart(ctx, config, fmt.Sprintf("%s-%s", chartName, version), "", chartPackagePath)
 		if err != nil {
 			return microerror.Mask(err)

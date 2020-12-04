@@ -2,7 +2,6 @@ package masters
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/reconciliationcanceledcontext"
@@ -29,7 +28,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
+	r.Logger.Debugf(ctx, "ensuring deployment")
 
 	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
@@ -38,15 +37,15 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 	computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
 	if controllercontext.IsInvalidContext(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", err.Error())
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "missing dispatched output values in controller context")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "did not ensure deployment")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, err.Error())
+		r.Logger.Debugf(ctx, "missing dispatched output values in controller context")
+		r.Logger.Debugf(ctx, "did not ensure deployment")
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if blobclient.IsBlobNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
+		r.Logger.Debugf(ctx, "ignition blob not found")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
@@ -61,7 +60,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			return currentState, microerror.Mask(err)
 		}
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+		r.Logger.Debugf(ctx, "ensured deployment")
 
 		deploymentTemplateChk, err := checksum.GetDeploymentTemplateChecksum(computedDeployment)
 		if err != nil {
@@ -74,9 +73,9 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 				return currentState, microerror.Mask(err)
 			}
 
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, deploymentTemplateChk))
+			r.Logger.Debugf(ctx, "set %s to '%s'", DeploymentTemplateChecksum, deploymentTemplateChk)
 		} else {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
+			r.Logger.Debugf(ctx, "Unable to get a valid Checksum for %s", DeploymentTemplateChecksum)
 		}
 
 		deploymentParametersChk, err := checksum.GetDeploymentParametersChecksum(computedDeployment)
@@ -90,12 +89,12 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 				return currentState, microerror.Mask(err)
 			}
 
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, deploymentParametersChk))
+			r.Logger.Debugf(ctx, "set %s to '%s'", DeploymentParametersChecksum, deploymentParametersChk)
 		} else {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
+			r.Logger.Debugf(ctx, "Unable to get a valid Checksum for %s", DeploymentParametersChecksum)
 		}
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger.Debugf(ctx, "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 
 		return DeploymentInitialized, nil

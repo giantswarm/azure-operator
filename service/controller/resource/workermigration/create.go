@@ -50,8 +50,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if masterUpgrading {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "master is upgrading")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "master is upgrading")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	}
 
@@ -61,22 +61,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	azureAPI := r.wrapAzureAPI(r.clientFactory, credentialSecret)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers are migrated to node pool")
+	r.logger.Debugf(ctx, "ensuring that legacy workers are migrated to node pool")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensure security group rules are updated")
+	r.logger.Debugf(ctx, "ensure security group rules are updated")
 	err = r.ensureSecurityGroupRulesUpdated(ctx, cr, azureAPI)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured security group rules are updated")
+	r.logger.Debugf(ctx, "ensured security group rules are updated")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding legacy workers VMSS")
+	r.logger.Debugf(ctx, "finding legacy workers VMSS")
 	var legacyVMSS azure.VMSS
 	{
 		legacyVMSS, err = azureAPI.GetVMSS(ctx, key.ResourceGroupName(cr), key.WorkerVMSSName(cr))
 		if azure.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find legacy workers VMSS")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "did not find legacy workers VMSS")
+			r.logger.Debugf(ctx, "canceling resource")
 
 			return nil
 		} else if err != nil {
@@ -94,54 +94,54 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found legacy workers VMSS")
+	r.logger.Debugf(ctx, "found legacy workers VMSS")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachinePool CR exists for legacy workers VMSS")
+	r.logger.Debugf(ctx, "ensuring AzureMachinePool CR exists for legacy workers VMSS")
 	azureMachinePool, err := r.ensureAzureMachinePoolExists(ctx, cr, *legacyVMSS.Sku.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachinePool CR exists for legacy workers VMSS")
+	r.logger.Debugf(ctx, "ensured AzureMachinePool CR exists for legacy workers VMSS")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring MachinePool CR exists for legacy workers VMSS")
+	r.logger.Debugf(ctx, "ensuring MachinePool CR exists for legacy workers VMSS")
 	machinePool, err := r.ensureMachinePoolExists(ctx, cr, azureMachinePool, int(*legacyVMSS.Sku.Capacity))
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured MachinePool CR exists for legacy workers VMSS")
+	r.logger.Debugf(ctx, "ensured MachinePool CR exists for legacy workers VMSS")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring Spark CR exists for legacy workers VMSS")
+	r.logger.Debugf(ctx, "ensuring Spark CR exists for legacy workers VMSS")
 	_, err = r.ensureSparkExists(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured Spark CR exists for legacy workers VMSS")
+	r.logger.Debugf(ctx, "ensured Spark CR exists for legacy workers VMSS")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if node pool workers are ready")
+	r.logger.Debugf(ctx, "finding if node pool workers are ready")
 	if !machinePool.Status.InfrastructureReady || (machinePool.Status.Replicas != machinePool.Status.ReadyReplicas) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "node pool workers are not ready yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "node pool workers are not ready yet")
+		r.logger.Debugf(ctx, "canceling resource")
 
 		return nil
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found that node pool workers are ready")
+	r.logger.Debugf(ctx, "found that node pool workers are ready")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers have drainerconfig cr")
+	r.logger.Debugf(ctx, "ensuring that legacy workers have drainerconfig cr")
 	err = r.ensureDrainerConfigsExists(ctx, azureAPI, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that legacy workers have drainerconfig cr")
+	r.logger.Debugf(ctx, "ensured that legacy workers have drainerconfig cr")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that legacy workers are drained")
+	r.logger.Debugf(ctx, "ensuring that legacy workers are drained")
 	allNodesDrained, err := r.allDrainerConfigsWithDrainedState(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	if !allNodesDrained {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "some old worker nodes are still draining")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting timed out drainerconfigs")
+		r.logger.Debugf(ctx, "some old worker nodes are still draining")
+		r.logger.Debugf(ctx, "deleting timed out drainerconfigs")
 
 		// In case some draining operations timed out, delete CRs so that they
 		// are recreated on next reconciliation.
@@ -150,35 +150,35 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted timed out drainerconfigs")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "deleted timed out drainerconfigs")
+		r.logger.Debugf(ctx, "canceling resource")
 
 		return nil
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that legacy workers are drained")
+	r.logger.Debugf(ctx, "ensured that legacy workers are drained")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting drainerconfigs")
+	r.logger.Debugf(ctx, "deleting drainerconfigs")
 	err = r.deleteDrainerConfigs(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted drainerconfigs")
+	r.logger.Debugf(ctx, "deleted drainerconfigs")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting legacy workers' deployment")
+	r.logger.Debugf(ctx, "deleting legacy workers' deployment")
 	err = azureAPI.DeleteDeployment(ctx, key.ResourceGroupName(cr), key.WorkersVmssDeploymentName)
 	if azure.IsNotFound(err) {
 		// It's ok. We would have deleted it anyway ¯\_(ツ)_/¯
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted legacy workers' deployment")
+	r.logger.Debugf(ctx, "deleted legacy workers' deployment")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleting legacy workers' VMSS")
+	r.logger.Debugf(ctx, "deleting legacy workers' VMSS")
 	err = azureAPI.DeleteVMSS(ctx, key.ResourceGroupName(cr), *legacyVMSS.Name)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "deleted legacy workers' VMSS")
+	r.logger.Debugf(ctx, "deleted legacy workers' VMSS")
 
 	return nil
 }
@@ -320,7 +320,7 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 	for _, n := range nodes {
 		name := nodeName(key.ClusterID(&cr), *n.InstanceID)
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating drainer config for tenant cluster node %q", name))
+		r.logger.Debugf(ctx, "creating drainer config for tenant cluster node %q", name)
 
 		c := &corev1alpha1.DrainerConfig{
 			ObjectMeta: metav1.ObjectMeta{
@@ -351,12 +351,12 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 
 		err := r.ctrlClient.Create(ctx, c)
 		if errors.IsAlreadyExists(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not create drainer config for tenant cluster node %q", name))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
+			r.logger.Debugf(ctx, "did not create drainer config for tenant cluster node %q", name)
+			r.logger.Debugf(ctx, "drainer config for tenant cluster node does already exist")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created drainer config for tenant cluster node %q", name))
+			r.logger.Debugf(ctx, "created drainer config for tenant cluster node %q", name)
 		}
 	}
 

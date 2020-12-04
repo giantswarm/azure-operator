@@ -62,14 +62,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if machinePool == nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool Owner Reference hasn't been set yet, so we don't know parent MachinePool")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.logger.Debugf(ctx, "AzureMachinePool Owner Reference hasn't been set yet, so we don't know parent MachinePool")
+		r.logger.Debugf(ctx, "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return nil
 	}
 
 	if !machinePool.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping rendering cloud config")
+		r.logger.Debugf(ctx, "MachinePool is being deleted, skipping rendering cloud config")
 		return nil
 	}
 
@@ -79,7 +79,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if !cluster.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping rendering cloud config")
+		r.logger.Debugf(ctx, "Cluster is being deleted, skipping rendering cloud config")
 		return nil
 	}
 
@@ -89,7 +89,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if !azureCluster.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureCluster is being deleted, skipping rendering cloud config")
+		r.logger.Debugf(ctx, "AzureCluster is being deleted, skipping rendering cloud config")
 		return nil
 	}
 
@@ -97,8 +97,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: azureMachinePool.Name}, &sparkCR)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR not found")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			r.logger.Debugf(ctx, "bootstrap CR not found")
+			r.logger.Debugf(ctx, "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if err != nil {
@@ -109,17 +109,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var ignitionBlob []byte
 	var dataHash string
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "trying to render ignition cloud config for this node pool")
+		r.logger.Debugf(ctx, "trying to render ignition cloud config for this node pool")
 
 		ignitionBlob, err = r.createIgnitionBlob(ctx, cluster, azureCluster, machinePool, &azureMachinePool)
 		if IsRequirementsNotMet(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "ignition blob rendering requirements not met")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			r.logger.Debugf(ctx, "ignition blob rendering requirements not met")
+			r.logger.Debugf(ctx, "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if certs.IsTimeout(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "waited too long for certificates")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			r.logger.Debugf(ctx, "waited too long for certificates")
+			r.logger.Debugf(ctx, "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if err != nil {
@@ -129,18 +129,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		h := sha512.New()
 		dataHash = fmt.Sprintf("%x", h.Sum(ignitionBlob))
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "rendered ignition cloud config for this node pool")
+		r.logger.Debugf(ctx, "rendered ignition cloud config for this node pool")
 	}
 
 	var dataSecret *corev1.Secret
 	{
 		if sparkCR.Status.DataSecretName != "" {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Spark CR status already references a Secret %#q", sparkCR.Status.DataSecretName))
+			r.logger.Debugf(ctx, "Spark CR status already references a Secret %#q", sparkCR.Status.DataSecretName)
 			var s corev1.Secret
 			err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureMachinePool.Namespace, Name: sparkCR.Status.DataSecretName}, &s)
 			if errors.IsNotFound(err) {
 				// This is ok. We'll create it then.
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Secret %#q was not found, it will be created", sparkCR.Status.DataSecretName))
+				r.logger.Debugf(ctx, "Secret %#q was not found, it will be created", sparkCR.Status.DataSecretName)
 			} else if err != nil {
 				return microerror.Mask(err)
 			} else {
@@ -173,13 +173,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Secret %#q created with ignition cloud config", secretName(sparkCR.Name)))
+			r.logger.Debugf(ctx, "Secret %#q created with ignition cloud config", secretName(sparkCR.Name))
 		}
 	}
 
 	{
 		if !bytes.Equal(ignitionBlob, dataSecret.Data[key.CloudConfigSecretKey]) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ignition cloud config in Secret %#q is out of date, updating it", dataSecret.Name))
+			r.logger.Debugf(ctx, "Ignition cloud config in Secret %#q is out of date, updating it", dataSecret.Name)
 
 			dataSecret.Data[key.CloudConfigSecretKey] = ignitionBlob
 
@@ -210,7 +210,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if sparkStatusUpdateNeeded {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Updating Spark CR %#q", sparkCR.Name))
+			r.logger.Debugf(ctx, "Updating Spark CR %#q", sparkCR.Name)
 			err = r.ctrlClient.Status().Update(ctx, &sparkCR)
 			if err != nil {
 				return microerror.Mask(err)
@@ -352,7 +352,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 
 		encrypterObject, err = r.toEncrypterObject(ctx, certificateEncryptionSecretName)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey resource is not ready")
+			r.logger.Debugf(ctx, "encryptionkey resource is not ready")
 			return nil, microerror.Mask(requirementsNotMetError)
 		} else if err != nil {
 			return nil, microerror.Mask(err)

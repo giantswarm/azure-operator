@@ -46,7 +46,7 @@ func NewAzureMachinePoolSubnetPersister(config AzureMachinePoolSubnetPersisterCo
 // AzureMachinePool (namespace/ name) and adds it to Subnets array in the
 // corresponding AzureCluster CR that owns the specified AzureMachinePool.
 func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, subnet net.IPNet, namespace string, name string) error {
-	p.logger.LogCtx(ctx, "level", "debug", "message", "persisting allocated subnet in AzureCluster CR")
+	p.logger.Debugf(ctx, "persisting allocated subnet in AzureCluster CR")
 
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
 	err := p.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
@@ -59,7 +59,7 @@ func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, subnet ne
 		return microerror.Mask(err)
 	}
 
-	p.logger.LogCtx(ctx, "level", "debug", "message", "persisted allocated subnet in AzureCluster CR")
+	p.logger.Debugf(ctx, "persisted allocated subnet in AzureCluster CR")
 	return nil
 }
 

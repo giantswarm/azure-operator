@@ -23,9 +23,9 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	}
 
 	if cc.ContainerURL == nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "containerurl resource is not ready")
+		r.logger.Debugf(ctx, "containerurl resource is not ready")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil, nil
 	}
 
@@ -33,24 +33,24 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	containerName := key.BlobContainerName()
 	storageAccountName := key.StorageAccountName(&cr)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding blob object's container")
+	r.logger.Debugf(ctx, "finding blob object's container")
 	// if here is no container account - return and wait for deployment to finish container operation.
 	containerExists, err := blobclient.ContainerExists(ctx, containerURL)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 	if !containerExists {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "did not find blob object's container")
+		r.logger.Debugf(ctx, "did not find blob object's container")
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil, nil
 	} else if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found blob object's container")
+	r.logger.Debugf(ctx, "found blob object's container")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding container objects")
+	r.logger.Debugf(ctx, "finding container objects")
 
 	listBlobs, err := blobclient.ListBlobs(ctx, containerURL)
 	if err != nil {
@@ -75,7 +75,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		output = append(output, containerObjectState)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found container objects")
+	r.logger.Debugf(ctx, "found container objects")
 
 	return output, nil
 }

@@ -27,36 +27,36 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 	}
 
 	if !cluster.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
+		r.Logger.Debugf(ctx, "Cluster is being deleted, skipping reconciling node pool")
 		return currentState, nil
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "tenant API not available yet")
+		r.Logger.Debugf(ctx, "canceling resource")
 
 		return currentState, nil
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster worker nodes are Ready")
+	r.Logger.Debugf(ctx, "finding out if all tenant cluster worker nodes are Ready")
 
 	readyForTransitioning, err := areNodesReadyForTransitioning(ctx, tenantClusterK8sClient, &azureMachinePool, isWorker)
 	if IsClientNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.Logger.Debugf(ctx, "tenant cluster client not available yet")
 		return currentState, nil
 	} else if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
 	if !readyForTransitioning {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are not Ready")
+		r.Logger.Debugf(ctx, "found out that all tenant cluster worker nodes are not Ready")
 		return currentState, nil
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster worker nodes are Ready")
+	r.Logger.Debugf(ctx, "found out that all tenant cluster worker nodes are Ready")
 
 	return DrainOldWorkerNodes, nil
 }

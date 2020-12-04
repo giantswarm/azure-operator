@@ -19,7 +19,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig deletion")
+	r.logger.Debugf(ctx, "ensuring AzureConfig deletion")
 
 	var azureConfig providerv1alpha1.AzureConfig
 	{
@@ -30,7 +30,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		err = r.ctrlClient.Get(ctx, nsName, &azureConfig)
 		if errors.IsNotFound(err) {
 			// Done. AzureConfig is gone and finalizer can be released.
-			r.logger.LogCtx(ctx, "level", "debug", "message", "AzureConfig deleted")
+			r.logger.Debugf(ctx, "AzureConfig deleted")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
@@ -41,8 +41,8 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	finalizerskeptcontext.SetKept(ctx)
 
 	if key.IsDeleted(&azureConfig) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureConfig deletion in progress")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "AzureConfig deletion in progress")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	}
 
@@ -51,7 +51,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig deletion")
+	r.logger.Debugf(ctx, "ensured AzureConfig deletion")
 
 	return nil
 }

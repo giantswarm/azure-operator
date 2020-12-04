@@ -2,7 +2,6 @@ package nodes
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -14,7 +13,7 @@ import (
 )
 
 func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set '%s'", deploymentNameFunc(customObject)))
+	r.Logger.Debugf(ctx, "looking for the scale set '%s'", deploymentNameFunc(customObject))
 
 	c, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, customObject.ObjectMeta)
 	if err != nil {
@@ -41,13 +40,13 @@ func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alph
 		}
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found the scale set '%s'", deploymentNameFunc(customObject)))
+	r.Logger.Debugf(ctx, "found the scale set '%s'", deploymentNameFunc(customObject))
 
 	return instances, nil
 }
 
 func (r *Resource) GetVMSSInstances(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("looking for the scale set %#q", vmssName))
+	r.Logger.Debugf(ctx, "looking for the scale set %#q", vmssName)
 
 	result, err := virtualMachineScaleSetVMsClient.List(ctx, resourceGroupName, vmssName, "", "", "")
 	if err != nil {
@@ -65,7 +64,7 @@ func (r *Resource) GetVMSSInstances(ctx context.Context, virtualMachineScaleSetV
 		}
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d instances in the scale set %#q", len(instances), vmssName))
+	r.Logger.Debugf(ctx, "found %d instances in the scale set %#q", len(instances), vmssName)
 
 	return instances, nil
 }

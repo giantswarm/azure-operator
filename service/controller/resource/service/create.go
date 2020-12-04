@@ -22,7 +22,7 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 	}
 
 	if serviceToCreate != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes service")
+		r.logger.Debugf(ctx, "creating Kubernetes service")
 
 		namespace := key.ClusterNamespace(cr)
 		_, err = r.k8sClient.CoreV1().Services(namespace).Create(ctx, serviceToCreate, metav1.CreateOptions{})
@@ -32,9 +32,9 @@ func (r *Resource) ApplyCreateChange(ctx context.Context, obj, createChange inte
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes service: created")
+		r.logger.Debugf(ctx, "creating Kubernetes service: created")
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "creating Kubernetes service: already created")
+		r.logger.Debugf(ctx, "creating Kubernetes service: already created")
 	}
 
 	return nil

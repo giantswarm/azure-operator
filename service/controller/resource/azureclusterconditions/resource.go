@@ -56,7 +56,7 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) logDebug(ctx context.Context, message string, messageArgs ...interface{}) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf(message, messageArgs...))
+	r.logger.Debugf(ctx, message, messageArgs...)
 }
 
 func (r *Resource) logWarning(ctx context.Context, message string, messageArgs ...interface{}) {

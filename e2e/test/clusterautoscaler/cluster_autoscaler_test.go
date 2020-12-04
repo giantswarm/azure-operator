@@ -63,7 +63,7 @@ func (s *ClusterAutoscaler) Test(ctx context.Context) error {
 	}
 
 	// Install deployment with expectedNodes + 1 replicas and node anti affinity.
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring deployment with %d replicas", expectedNodes+1))
+	s.logger.Debugf(ctx, "Ensuring deployment with %d replicas", expectedNodes+1)
 	err = s.ensureDeployment(ctx, expectedNodes+1)
 	if err != nil {
 		return microerror.Mask(err)
@@ -76,12 +76,12 @@ func (s *ClusterAutoscaler) Test(ctx context.Context) error {
 	}
 
 	// Delete deployment.
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleting deployment %s", deploymentName))
+	s.logger.Debugf(ctx, "Deleting deployment %s", deploymentName)
 	err = s.deleteDeployment(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleted deployment %s", deploymentName))
+	s.logger.Debugf(ctx, "Deleted deployment %s", deploymentName)
 
 	// Expect for expectedNodes nodes to be ready.
 	err = s.WaitForNodesReady(ctx, expectedNodes)
@@ -174,7 +174,7 @@ func getWorkerNodes(ctx context.Context, k8sclient kubernetes.Interface) (*v1.No
 }
 
 func (s *ClusterAutoscaler) WaitForNodesReady(ctx context.Context, expectedNodes int) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waiting for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady))
+	s.logger.Debugf(ctx, "waiting for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady)
 
 	o := func() error {
 		nodes, err := getWorkerNodes(ctx, s.guest.K8sClient())
@@ -205,6 +205,6 @@ func (s *ClusterAutoscaler) WaitForNodesReady(ctx context.Context, expectedNodes
 		return microerror.Mask(err)
 	}
 
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waited for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady))
+	s.logger.Debugf(ctx, "waited for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady)
 	return nil
 }

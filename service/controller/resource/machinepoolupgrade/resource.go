@@ -2,7 +2,6 @@ package machinepoolupgrade
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -60,13 +59,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring release labels are set on respective AzureMachinePool")
+	r.logger.Debugf(ctx, "ensuring release labels are set on respective AzureMachinePool")
 
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cr.Namespace, Name: cr.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if apierrors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", cr.Namespace, cr.Spec.Template.Spec.InfrastructureRef.Name, cr.Name))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", cr.Namespace, cr.Spec.Template.Spec.InfrastructureRef.Name, cr.Name)
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -84,14 +83,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		err = r.ctrlClient.Update(ctx, &azureMachinePool)
 		if apierrors.IsConflict(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "cancelling resource")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured release labels are set on respective AzureMachinePool")
+	r.logger.Debugf(ctx, "ensured release labels are set on respective AzureMachinePool")
 
 	err = r.ensureLastDeployedReleaseVersion(ctx, &cr)
 	if err != nil {

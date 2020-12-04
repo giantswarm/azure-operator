@@ -122,10 +122,10 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, azureConfig, change in
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1alpha1.AzureConfig, change connections) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring vpn gateway connections are created")
+	r.logger.Debugf(ctx, "ensuring vpn gateway connections are created")
 
 	if change.isEmpty() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured vpn gateway connections are created")
+		r.logger.Debugf(ctx, "ensured vpn gateway connections are created")
 		return nil
 	}
 
@@ -162,7 +162,7 @@ func (r *Resource) applyUpdateChange(ctx context.Context, azureConfig providerv1
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured vpn gateway connections are created")
+	r.logger.Debugf(ctx, "ensured vpn gateway connections are created")
 
 	return nil
 }

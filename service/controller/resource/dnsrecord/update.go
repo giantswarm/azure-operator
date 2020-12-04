@@ -2,7 +2,6 @@ package dnsrecord
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -20,15 +19,15 @@ func (r *Resource) ApplyUpdateChange(ctx context.Context, obj, change interface{
 }
 
 func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records")
+	r.logger.Debugf(ctx, "ensuring host cluster DNS records")
 
 	if len(change) == 0 {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: already ensured")
+		r.logger.Debugf(ctx, "ensuring host cluster DNS records: already ensured")
 		return nil
 	}
 
 	for _, record := range change {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v", record))
+		r.logger.Debugf(ctx, "ensuring host cluster DNS record=%#v", record)
 
 		var params dns.RecordSet
 		{
@@ -47,10 +46,10 @@ func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) err
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring host cluster DNS record=%#v: ensured", record))
+		r.logger.Debugf(ctx, "ensuring host cluster DNS record=%#v: ensured", record)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring host cluster DNS records: ensured")
+	r.logger.Debugf(ctx, "ensuring host cluster DNS records: ensured")
 	return nil
 }
 

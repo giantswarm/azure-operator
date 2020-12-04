@@ -35,7 +35,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	if !machinePool.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping reconciling node pool")
+		r.Logger.Debugf(ctx, "MachinePool is being deleted, skipping reconciling node pool")
 		return currentState, nil
 	}
 
@@ -45,7 +45,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	if !cluster.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
+		r.Logger.Debugf(ctx, "Cluster is being deleted, skipping reconciling node pool")
 		return currentState, nil
 	}
 
@@ -55,7 +55,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	}
 
 	if !azureCluster.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "AzureCluster is being deleted, skipping reconciling node pool")
+		r.Logger.Debugf(ctx, "AzureCluster is being deleted, skipping reconciling node pool")
 		return currentState, nil
 	}
 
@@ -94,12 +94,12 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	// Compute desired state for Azure ARM Deployment.
 	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, machinePool, &azureMachinePool, azureCluster, vmss)
 	if IsNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Azure resource not found", "stack", microerror.JSON(err))
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "Azure resource not found", "stack", microerror.JSON(err))
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if IsSubnetNotReadyError(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "subnet is not Ready, it's probably still being created", "stack", microerror.JSON(err))
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "subnet is not Ready, it's probably still being created", "stack", microerror.JSON(err))
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
@@ -127,11 +127,11 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		numberOfChangedParameters := len(changes)
 		deploymentNeedsToBeSubmitted = numberOfChangedParameters > 0
 		nodesNeedToBeRolled = numberOfChangedParameters > 1 || numberOfChangedParameters == 1 && !contains(changes, "scaling")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Checking if deployment is out of date and needs to be re-submitted", "deploymentNeedsToBeSubmitted", deploymentNeedsToBeSubmitted, "nodesNeedToBeRolled", nodesNeedToBeRolled, "changedParameters", changes)
+		r.Logger.Debugf(ctx, "Checking if deployment is out of date and needs to be re-submitted", "deploymentNeedsToBeSubmitted", deploymentNeedsToBeSubmitted, "nodesNeedToBeRolled", nodesNeedToBeRolled, "changedParameters", changes)
 	}
 
 	if deploymentNeedsToBeSubmitted {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+		r.Logger.Debugf(ctx, "template or parameters changed")
 
 		_, err = r.ensureDeployment(ctx, deploymentsClient, desiredDeployment, &azureMachinePool)
 		if err != nil {
@@ -149,13 +149,13 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	// https://docs.microsoft.com/en-us/azure/azure-resource-manager/management/async-operations#provisioningstate-values
 	switch *currentDeployment.Properties.ProvisioningState {
 	case "Failed", "Canceled":
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "ARM deployment has failed, re-applying")
+		r.Logger.Debugf(ctx, "ARM deployment has failed, re-applying")
 		r.Debugger.LogFailedDeployment(ctx, currentDeployment, err)
 
 		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
 		if err != nil {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.Logger.Debugf(ctx, "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
+			r.Logger.Debugf(ctx, "canceling resource")
 			return currentState, nil
 		}
 
@@ -168,20 +168,20 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			return currentState, microerror.Mask(err)
 		}
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.Logger.Debugf(ctx, "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return currentState, nil
 	default:
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+		r.Logger.Debugf(ctx, "template and parameters unchanged")
 
 		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
 		if err != nil {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.Logger.Debugf(ctx, "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
+			r.Logger.Debugf(ctx, "canceling resource")
 			return currentState, nil
 		}
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	}
 }
@@ -191,7 +191,7 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetV
 		return nil
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "saving provider status info in CR")
+	r.Logger.Debugf(ctx, "saving provider status info in CR")
 
 	instances, err := r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 	if err != nil {
@@ -225,7 +225,7 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetV
 		return microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "saved provider status info in CR")
+	r.Logger.Debugf(ctx, "saved provider status info in CR")
 
 	return nil
 }
@@ -240,14 +240,14 @@ func contains(s []string, e string) bool {
 }
 
 func (r *Resource) ensureDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, desiredDeployment azureresource.Deployment, azureMachinePool *capzexpv1alpha3.AzureMachinePool) (azureresource.Deployment, error) {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
+	r.Logger.Debugf(ctx, "ensuring deployment")
 
 	err := r.CreateARMDeployment(ctx, deploymentsClient, desiredDeployment, key.ClusterID(azureMachinePool), key.NodePoolDeploymentName(azureMachinePool))
 	if err != nil {
 		return desiredDeployment, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+	r.Logger.Debugf(ctx, "ensured deployment")
 
 	return desiredDeployment, nil
 }

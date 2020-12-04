@@ -61,7 +61,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring Cluster CR is deleted")
+	r.logger.Debugf(ctx, "ensuring Cluster CR is deleted")
 
 	deleted, err := r.ensureMachinePoolCRsDeleted(ctx, cr)
 	if err != nil {
@@ -83,7 +83,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured Cluster CR is deleted")
+	r.logger.Debugf(ctx, "ensured Cluster CR is deleted")
 	return nil
 }
 
@@ -93,7 +93,7 @@ func (r *Resource) Name() string {
 }
 
 func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureCluster CR is deleted")
+	r.logger.Debugf(ctx, "ensuring AzureCluster CR is deleted")
 	objKey := client.ObjectKey{
 		Namespace: cr.Namespace,
 		Name:      cr.Spec.InfrastructureRef.Name,
@@ -101,7 +101,7 @@ func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiv1a
 	azureCluster := new(v1alpha3.AzureCluster)
 	err := r.ctrlClient.Get(ctx, objKey, azureCluster)
 	if errors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureCluster CR is deleted")
+		r.logger.Debugf(ctx, "ensured AzureCluster CR is deleted")
 		return true, nil
 	} else if err != nil {
 		r.logger.LogCtx(ctx, "level", "warning", "message", "an error occurred while ensuring AzureCluster CR is deleted")
@@ -110,19 +110,19 @@ func (r *Resource) ensureInfrastructureCRDeleted(ctx context.Context, cr capiv1a
 
 	err = r.ctrlClient.Delete(ctx, azureCluster)
 	if errors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureCluster CR is deleted")
+		r.logger.Debugf(ctx, "ensured AzureCluster CR is deleted")
 		return true, nil
 	} else if err != nil {
 		r.logger.LogCtx(ctx, "level", "warning", "message", "an error occurred while ensuring AzureCluster CR is deleted")
 		return false, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "AzureCluster CR is still not deleted")
+	r.logger.Debugf(ctx, "AzureCluster CR is still not deleted")
 	return false, nil
 }
 
 func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alpha3.Cluster) (bool, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring MachinePool CRs are deleted")
+	r.logger.Debugf(ctx, "ensuring MachinePool CRs are deleted")
 	o := client.MatchingLabels{
 		capiv1alpha3.ClusterLabelName: key.ClusterName(&cr),
 	}
@@ -141,7 +141,7 @@ func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alp
 
 		err = r.ctrlClient.Delete(ctx, &mp)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured MachinePool CR %q is deleted", mp.Name))
+			r.logger.Debugf(ctx, "ensured MachinePool CR %q is deleted", mp.Name)
 			continue
 		} else if err != nil {
 			r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("error while ensuring MachinePool CR %q is deleted", mp.Name))
@@ -151,9 +151,9 @@ func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alp
 
 	allMachinePoolCRsDeleted := len(mpList.Items) == 0
 	if allMachinePoolCRsDeleted {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "ensured MachinePool CRs are deleted")
+		r.logger.Debugf(ctx, "ensured MachinePool CRs are deleted")
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "MachinePool CRs are still not deleted")
+		r.logger.Debugf(ctx, "MachinePool CRs are still not deleted")
 	}
 
 	return allMachinePoolCRsDeleted, nil

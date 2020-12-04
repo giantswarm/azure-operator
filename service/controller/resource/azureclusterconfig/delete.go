@@ -19,7 +19,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig deletion")
+	r.logger.Debugf(ctx, "ensuring AzureClusterConfig deletion")
 
 	var azureClusterConfig corev1alpha1.AzureClusterConfig
 	{
@@ -30,7 +30,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		err = r.ctrlClient.Get(ctx, nsName, &azureClusterConfig)
 		if errors.IsNotFound(err) {
 			// Done. AzureClusterConfig is gone and finalizer can be released.
-			r.logger.LogCtx(ctx, "level", "debug", "message", "AzureClusterConfig deleted")
+			r.logger.Debugf(ctx, "AzureClusterConfig deleted")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
@@ -41,8 +41,8 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	finalizerskeptcontext.SetKept(ctx)
 
 	if key.IsDeleted(&azureClusterConfig) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureClusterConfig deletion in progress")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "AzureClusterConfig deletion in progress")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	}
 
@@ -51,7 +51,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureClusterConfig deletion")
+	r.logger.Debugf(ctx, "ensured AzureClusterConfig deletion")
 
 	return nil
 }

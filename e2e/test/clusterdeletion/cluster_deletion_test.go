@@ -59,7 +59,7 @@ func New(config Config) (*ClusterDeletion, error) {
 }
 
 func (s *ClusterDeletion) Test(ctx context.Context) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting Cluster CR %#q", s.provider.clusterID))
+	s.logger.Debugf(ctx, "deleting Cluster CR %#q", s.provider.clusterID)
 	cluster := &capiv1alpha3.Cluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Namespace: setup.OrganizationNamespace,
@@ -72,7 +72,7 @@ func (s *ClusterDeletion) Test(ctx context.Context) error {
 		return microerror.Mask(err)
 	}
 
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring deletion of Azure Resource Group %#q", s.provider.clusterID))
+	s.logger.Debugf(ctx, "ensuring deletion of Azure Resource Group %#q", s.provider.clusterID)
 	o := func() error {
 		_, err := s.provider.azureClient.ResourceGroupsClient.Get(ctx, s.provider.clusterID)
 		if err != nil {
@@ -92,7 +92,7 @@ func (s *ClusterDeletion) Test(ctx context.Context) error {
 	n := backoff.NewNotifier(s.logger, ctx)
 	err = backoff.RetryNotify(o, b, n)
 	if err != nil {
-		s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not ensure deletion of Azure Resource Group %#q", s.provider.clusterID))
+		s.logger.Debugf(ctx, "did not ensure deletion of Azure Resource Group %#q", s.provider.clusterID)
 		return microerror.Mask(err)
 	}
 

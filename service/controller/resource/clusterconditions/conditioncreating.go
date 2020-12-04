@@ -81,11 +81,11 @@ func (r *Resource) initializeCreatingCondition(ctx context.Context, cluster *cap
 			message)
 
 		logMessage := fmt.Sprintf("%s, setting Creating condition to False", message)
-		r.logger.LogCtx(ctx, "level", "debug", "message", logMessage)
+		r.logger.Debugf(ctx, logMessage)
 	} else {
 		// release.giantswarm.io/last-deployed-version annotation is not set,
 		// which means that the cluster is just being created.
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is just being created, setting Creating condition to True")
+		r.logger.Debugf(ctx, "Cluster is just being created, setting Creating condition to True")
 		capiconditions.MarkTrue(cluster, aeconditions.CreatingCondition)
 	}
 
@@ -126,7 +126,7 @@ func (r *Resource) updateCreatingCondition(ctx context.Context, cluster *capi.Cl
 			capi.ConditionSeverityInfo,
 			fmt.Sprintf("Cluster creation has been completed in %s", clusterCreationDuration))
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Cluster condition Creating set to False, creation has been completed after %s", clusterCreationDuration))
+		r.logger.Debugf(ctx, "Cluster condition Creating set to False, creation has been completed after %s", clusterCreationDuration)
 	}
 
 	return nil

@@ -2,7 +2,6 @@ package cloudconfigblob
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
@@ -32,7 +31,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	blobName := key.BootstrapBlobName(azureMachinePool)
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting container object %#q", blobName))
+	r.logger.Debugf(ctx, "deleting container object %#q", blobName)
 
 	var containerURL azblob.ContainerURL
 	{
@@ -48,13 +47,13 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	blob := containerURL.NewBlockBlobURL(blobName)
 	_, err = blob.Delete(ctx, azblob.DeleteSnapshotsOptionInclude, azblob.BlobAccessConditions{})
 	if blobclient.IsNotFound(err) || blobclient.IsBlobNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Bootstrap blob not found when trying to delete it")
+		r.logger.Debugf(ctx, "Bootstrap blob not found when trying to delete it")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted container object %#q", blobName))
+	r.logger.Debugf(ctx, "deleted container object %#q", blobName)
 
 	return nil
 }
