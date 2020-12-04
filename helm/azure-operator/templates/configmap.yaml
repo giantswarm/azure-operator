@@ -89,7 +89,5 @@ data:
       tenant:
         ssh:
           ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
-      {{- if .Values.Installation.V1.Sentry }}
       sentry:
-        dsn: '{{ .Values.Installation.V1.Sentry.DSN }}'
-      {{- end }}
+        dsn: 'https://632f9667d01c47719beb5b405962de53@o346224.ingest.sentry.io/5544796'
