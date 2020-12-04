@@ -4,7 +4,6 @@ package clusterdeletion
 
 import (
 	"context"
-	"fmt"
 	"net/http"
 	"testing"
 	"time"
