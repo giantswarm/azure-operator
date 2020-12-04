@@ -2,7 +2,6 @@ package masters
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -30,22 +29,22 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 		}
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding out if all tenant cluster master nodes are Ready")
+	r.Logger.Debugf(ctx, "finding out if all tenant cluster master nodes are Ready")
 
 	tenantNodes, err := r.getTenantClusterNodes(ctx, tenantClusterK8sClient)
 	if IsClientNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not available yet")
+		r.Logger.Debugf(ctx, "tenant cluster client not available yet")
 		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)
 	}
 
 	if !areNodesReadyForUpgrading(tenantNodes) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that at least one master node is not ready")
+		r.Logger.Debugf(ctx, "found out that at least one master node is not ready")
 		return currentState, nil
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "found out that all tenant cluster master nodes are Ready")
+	r.Logger.Debugf(ctx, "found out that all tenant cluster master nodes are Ready")
 
 	versionValue := map[string]string{}
 	for _, node := range tenantNodes {
@@ -56,17 +55,17 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	{
 		allMasterInstances, err := r.AllInstances(ctx, cr, key.MasterVMSSName)
 		if nodes.IsScaleSetNotFound(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find the scale set '%s'", key.MasterVMSSName(cr)))
+			r.Logger.Debugf(ctx, "did not find the scale set '%s'", key.MasterVMSSName(cr))
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		} else {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "processing master VMSSs")
+			r.Logger.Debugf(ctx, "processing master VMSSs")
 
 			// Ensure that all VM instances are in Successful state before proceeding with reimaging.
 			for _, vm := range allMasterInstances {
 				if vm.ProvisioningState != nil && !key.IsSucceededProvisioningState(*vm.ProvisioningState) {
-					r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("master instance %#q is not in successful provisioning state: %#q", key.MasterInstanceName(cr, *vm.InstanceID), *vm.ProvisioningState))
-					r.Logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+					r.Logger.Debugf(ctx, "master instance %#q is not in successful provisioning state: %#q", key.MasterInstanceName(cr, *vm.InstanceID), *vm.ProvisioningState)
+					r.Logger.Debugf(ctx, "cancelling resource")
 					return currentState, nil
 				}
 			}
@@ -105,7 +104,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 				break
 			}
 
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "processed master VMSSs")
+			r.Logger.Debugf(ctx, "processed master VMSSs")
 		}
 	}
 
@@ -152,7 +151,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be reimaged", instanceName))
+	r.Logger.Debugf(ctx, "ensuring instance '%s' to be reimaged", instanceName)
 
 	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
 	if err != nil {
@@ -175,7 +174,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 		return microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be reimaged", instanceName))
+	r.Logger.Debugf(ctx, "ensured instance '%s' to be reimaged", instanceName)
 
 	return nil
 }
@@ -187,7 +186,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	instanceName := instanceNameFunc(customObject, *instance.InstanceID)
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring instance '%s' to be updated", instanceName))
+	r.Logger.Debugf(ctx, "ensuring instance '%s' to be updated", instanceName)
 
 	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
 	if err != nil {
@@ -210,7 +209,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 		return microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured instance '%s' to be updated", instanceName))
+	r.Logger.Debugf(ctx, "ensured instance '%s' to be updated", instanceName)
 
 	return nil
 }

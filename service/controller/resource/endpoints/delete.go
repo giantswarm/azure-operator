@@ -23,7 +23,7 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange inte
 	}
 
 	if endpointsToDelete != nil {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes endpoints")
+		r.logger.Debugf(ctx, "deleting Kubernetes endpoints")
 
 		namespace := key.ClusterNamespace(cr)
 		err := r.k8sClient.CoreV1().Endpoints(namespace).Delete(ctx, endpointsToDelete.Name, apismetav1.DeleteOptions{})
@@ -33,9 +33,9 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, deleteChange inte
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes endpoints: deleted")
+		r.logger.Debugf(ctx, "deleting Kubernetes endpoints: deleted")
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting Kubernetes endpoints: already deleted")
+		r.logger.Debugf(ctx, "deleting Kubernetes endpoints: already deleted")
 	}
 
 	return nil
@@ -63,14 +63,14 @@ func (r *Resource) newDeleteChange(ctx context.Context, currentState, desiredSta
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding out if the endpoints has to be deleted")
+	r.logger.Debugf(ctx, "finding out if the endpoints has to be deleted")
 
 	var endpointsToDelete *corev1.Endpoints
 	if currentEndpoints != nil && desiredEndpoints.Name == currentEndpoints.Name {
 		endpointsToDelete = desiredEndpoints
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found out if the endpoints has to be deleted")
+	r.logger.Debugf(ctx, "found out if the endpoints has to be deleted")
 
 	return endpointsToDelete, nil
 }

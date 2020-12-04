@@ -108,80 +108,80 @@ Installation:
 func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alpha1.Release) error {
 	renderedAzureOperatorChartValues := fmt.Sprintf(azureOperatorChartValues, env.AzureClientID(), env.AzureTenantID(), env.SSHPublicKey(), env.AzureLocation(), env.AzureClientID(), env.AzureClientSecret(), env.AzureSubscriptionID(), env.AzureTenantID(), env.CircleSHA())
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureConfig CRD exists")
+		config.Logger.Debugf(ctx, "ensuring AzureConfig CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("provider.giantswarm.io", "AzureConfig"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureConfig CRD exists")
+		config.Logger.Debugf(ctx, "ensured AzureConfig CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureClusterConfig CRD exists")
+		config.Logger.Debugf(ctx, "ensuring AzureClusterConfig CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("core.giantswarm.io", "AzureClusterConfig"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureClusterConfig CRD exists")
+		config.Logger.Debugf(ctx, "ensured AzureClusterConfig CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureCluster CRD exists")
+		config.Logger.Debugf(ctx, "ensuring AzureCluster CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("infrastructure.cluster.x-k8s.io", "AzureCluster"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureCluster CRD exists")
+		config.Logger.Debugf(ctx, "ensured AzureCluster CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachine CRD exists")
+		config.Logger.Debugf(ctx, "ensuring AzureMachine CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("infrastructure.cluster.x-k8s.io", "AzureMachine"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachine CRD exists")
+		config.Logger.Debugf(ctx, "ensured AzureMachine CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring AzureMachinePool CRD exists")
+		config.Logger.Debugf(ctx, "ensuring AzureMachinePool CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("exp.infrastructure.cluster.x-k8s.io", "AzureMachinePool"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured AzureMachinePool CRD exists")
+		config.Logger.Debugf(ctx, "ensured AzureMachinePool CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring MachinePool CRD exists")
+		config.Logger.Debugf(ctx, "ensuring MachinePool CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("exp.cluster.x-k8s.io", "MachinePool"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured MachinePool CRD exists")
+		config.Logger.Debugf(ctx, "ensured MachinePool CRD exists")
 	}
 
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Cluster CRD exists")
+		config.Logger.Debugf(ctx, "ensuring Cluster CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("cluster.x-k8s.io", "Cluster"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Cluster CRD exists")
+		config.Logger.Debugf(ctx, "ensured Cluster CRD exists")
 	}
 
 	{
@@ -415,7 +415,7 @@ func provider(ctx context.Context, config Config, giantSwarmRelease releasev1alp
 }
 
 func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient client.Client, giantSwarmRelease releasev1alpha1.Release, nodepoolID string, minReplicas int32, maxReplicas int32, vmSize string) error {
-	logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, minReplicas))
+	logger.Debugf(ctx, "creating new node pool %#q with vmsize %#q and %d replicas", nodepoolID, vmSize, minReplicas)
 
 	clusterOperatorVersion, err := key.ComponentVersion(giantSwarmRelease, "cluster-operator")
 	if err != nil {
@@ -553,7 +553,7 @@ func createNodePool(ctx context.Context, logger micrologger.Logger, ctrlClient c
 		}
 	}
 
-	logger.LogCtx(ctx, "level", "debug", "message", "created new nodepool")
+	logger.Debugf(ctx, "created new nodepool")
 
 	return nil
 }

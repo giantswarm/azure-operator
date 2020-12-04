@@ -48,12 +48,12 @@ func New(config Config) (*MultiAZ, error) {
 }
 
 func (s *MultiAZ) Test(ctx context.Context) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", "getting current availability zones")
+	s.logger.Debugf(ctx, "getting current availability zones")
 	zones, err := s.provider.GetClusterAZs(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	s.logger.LogCtx(ctx, "level", "debug", "message", "found availability zones", "azs", zones)
+	s.logger.Debugf(ctx, "found availability zones", "azs", zones)
 	expectedZonesCount := env.AzureAvailabilityZonesCount()
 
 	if len(zones) != expectedZonesCount {

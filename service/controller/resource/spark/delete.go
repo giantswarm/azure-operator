@@ -2,7 +2,6 @@ package spark
 
 import (
 	"context"
-	"fmt"
 
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -50,13 +49,13 @@ func (r *Resource) deleteBootstrapCR(ctx context.Context, namespace, bootstrapCR
 	}
 	err := r.ctrlClient.Delete(ctx, sparkCR, deletePropagationForeground)
 	if errors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR not found when trying to delete it")
+		r.logger.Debugf(ctx, "bootstrap CR not found when trying to delete it")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("bootstrap CR %#q deleted", bootstrapCRName))
+	r.logger.Debugf(ctx, "bootstrap CR %#q deleted", bootstrapCRName)
 
 	return nil
 }
@@ -69,13 +68,13 @@ func (r *Resource) deleteBootstrapSecret(ctx context.Context, namespace, bootstr
 		},
 	})
 	if errors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap Secret not found when trying to delete it")
+		r.logger.Debugf(ctx, "bootstrap Secret not found when trying to delete it")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("bootstrap Secret %#q deleted", secretName(bootstrapCRName)))
+	r.logger.Debugf(ctx, "bootstrap Secret %#q deleted", secretName(bootstrapCRName))
 
 	return nil
 }

@@ -141,36 +141,36 @@ func (s *Nodepool) assertRightNumberOfNodes(ctx context.Context, setupNodePoolID
 
 		// Check node pool created during setup.
 		{
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool %#q has %d nodes", setupNodePoolID, setupNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserting node pool %#q has %d nodes", setupNodePoolID, setupNodePoolReplicas)
 			err = assertRightNumberOfNodesByNodePool(nodes, setupNodePoolID, setupNodePoolReplicas)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool %#q has %d nodes", setupNodePoolID, setupNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserted node pool %#q has %d nodes", setupNodePoolID, setupNodePoolReplicas)
 
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool with VM Size %#q has %d nodes", setupNodePoolVMSize, setupNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserting node pool with VM Size %#q has %d nodes", setupNodePoolVMSize, setupNodePoolReplicas)
 			err = assertRightNumberOfNodesByVmSize(nodes, setupNodePoolVMSize, setupNodePoolReplicas)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool with VM Size %#q has %d nodes", setupNodePoolVMSize, setupNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserted node pool with VM Size %#q has %d nodes", setupNodePoolVMSize, setupNodePoolReplicas)
 		}
 
 		// Check node pool created in test.
 		{
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool %#q has %d nodes", newNodePoolID, newNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserting node pool %#q has %d nodes", newNodePoolID, newNodePoolReplicas)
 			err = assertRightNumberOfNodesByNodePool(nodes, newNodePoolID, newNodePoolReplicas)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool %#q has %d nodes", newNodePoolID, newNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserted node pool %#q has %d nodes", newNodePoolID, newNodePoolReplicas)
 
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserting node pool with VM Size %#q has %d nodes", newNodePoolVMSize, newNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserting node pool with VM Size %#q has %d nodes", newNodePoolVMSize, newNodePoolReplicas)
 			err = assertRightNumberOfNodesByVmSize(nodes, newNodePoolVMSize, newNodePoolReplicas)
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("asserted node pool with VM Size %#q has %d nodes", newNodePoolVMSize, newNodePoolReplicas))
+			s.logger.Debugf(ctx, "asserted node pool with VM Size %#q has %d nodes", newNodePoolVMSize, newNodePoolReplicas)
 		}
 
 		return nil
@@ -245,7 +245,7 @@ func getWorkerNodes(ctx context.Context, k8sclient kubernetes.Interface) (*v1.No
 }
 
 func (s *Nodepool) WaitForNodesReady(ctx context.Context, expectedNodes int) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waiting for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady))
+	s.logger.Debugf(ctx, "waiting for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady)
 
 	o := func() error {
 		nodes, err := getWorkerNodes(ctx, s.guest.K8sClient())
@@ -276,6 +276,6 @@ func (s *Nodepool) WaitForNodesReady(ctx context.Context, expectedNodes int) err
 		return microerror.Mask(err)
 	}
 
-	s.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("waited for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady))
+	s.logger.Debugf(ctx, "waited for %d k8s nodes to be in %#q state", expectedNodes, v1.NodeReady)
 	return nil
 }

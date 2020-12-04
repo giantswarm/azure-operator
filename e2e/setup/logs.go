@@ -8,7 +8,7 @@ import (
 // common installs components required to run the operator.
 func logs(ctx context.Context, config Config) error {
 	if config.LogAnalyticsConfig.SharedKey == "" || config.LogAnalyticsConfig.WorkspaceID == "" {
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "Log shipper not configured.")
+		config.Logger.Debugf(ctx, "Log shipper not configured.")
 		return nil
 	}
 	values := fmt.Sprintf(`fluentd:

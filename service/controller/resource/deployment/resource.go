@@ -109,8 +109,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// Pre-condition check: VNet CIDR must be set.
 	if cr.Spec.Azure.VirtualNetwork.CIDR == "" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "vnet cidr not set")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "vnet cidr not set")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	}
 
@@ -119,7 +119,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring deployment")
+	r.logger.Debugf(ctx, "ensuring deployment")
 
 	var deployment azureresource.Deployment
 
@@ -139,7 +139,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	} else {
 		s := *d.Properties.ProvisioningState
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+		r.logger.Debugf(ctx, "deployment is in state '%s'", s)
 
 		if !key.IsSucceededProvisioningState(s) {
 			r.debugger.LogFailedDeployment(ctx, d, err)
@@ -147,7 +147,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		if !key.IsFinalProvisioningState(s) {
 			reconciliationcanceledcontext.SetCanceled(ctx)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			r.logger.Debugf(ctx, "canceling reconciliation")
 			return nil
 		}
 
@@ -185,7 +185,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if failed {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "the main deployment is failed")
+		r.logger.Debugf(ctx, "the main deployment is failed")
 	} else {
 		currentDeploymentTemplateChk, err := r.getResourceStatus(ctx, cr, DeploymentTemplateChecksum)
 		if err != nil {
@@ -198,7 +198,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if currentDeploymentTemplateChk == desiredDeploymentTemplateChk && currentDeploymentParametersChk == desiredDeploymentParametersChk {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+			r.logger.Debugf(ctx, "template and parameters unchanged")
 
 			// Deployment is now stable, ensure the NAT gateway is enabled for the master subnet.
 			err := r.ensureNatGatewayForMasterSubnet(ctx, cr)
@@ -210,7 +210,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		// As current and desired state differs, start process from the beginning.
-		r.logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+		r.logger.Debugf(ctx, "template or parameters changed")
 	}
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, key.ClusterID(&cr), mainDeploymentName, deployment)
@@ -227,7 +227,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured deployment")
+	r.logger.Debugf(ctx, "ensured deployment")
 
 	if desiredDeploymentTemplateChk != "" {
 		err = r.setResourceStatus(ctx, cr, DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
@@ -235,9 +235,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentTemplateChecksum, desiredDeploymentTemplateChk))
+		r.logger.Debugf(ctx, "set %s to '%s'", DeploymentTemplateChecksum, desiredDeploymentTemplateChk)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentTemplateChecksum))
+		r.logger.Debugf(ctx, "Unable to get a valid Checksum for %s", DeploymentTemplateChecksum)
 	}
 
 	if desiredDeploymentParametersChk != "" {
@@ -246,12 +246,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("set %s to '%s'", DeploymentParametersChecksum, desiredDeploymentParametersChk))
+		r.logger.Debugf(ctx, "set %s to '%s'", DeploymentParametersChecksum, desiredDeploymentParametersChk)
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Unable to get a valid Checksum for %s", DeploymentParametersChecksum))
+		r.logger.Debugf(ctx, "Unable to get a valid Checksum for %s", DeploymentParametersChecksum)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+	r.logger.Debugf(ctx, "canceling reconciliation")
 	reconciliationcanceledcontext.SetCanceled(ctx)
 
 	return nil

@@ -172,7 +172,7 @@ func ensureDraughtsman(ctx context.Context, config Config) error {
 
 	// Create the draughtsman configmap.
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring draughtsman configmap")
+		config.Logger.Debugf(ctx, "ensuring draughtsman configmap")
 		configMap := corev1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      DraughtsmanConfigMapName,
@@ -186,12 +186,12 @@ func ensureDraughtsman(ctx context.Context, config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured draughtsman configmap")
+		config.Logger.Debugf(ctx, "ensured draughtsman configmap")
 	}
 
 	// Create the draughtsman secret.
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring draughtsman secret")
+		config.Logger.Debugf(ctx, "ensuring draughtsman secret")
 		secret := corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      DraughtsmanSecretName,
@@ -205,7 +205,7 @@ func ensureDraughtsman(ctx context.Context, config Config) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured draughtsman secret")
+		config.Logger.Debugf(ctx, "ensured draughtsman secret")
 	}
 
 	return nil

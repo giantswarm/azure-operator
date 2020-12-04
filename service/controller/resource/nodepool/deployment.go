@@ -178,7 +178,7 @@ func (r *Resource) getWorkerCloudConfig(ctx context.Context, storageAccountsClie
 }
 
 func (r *Resource) getEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+	r.Logger.Debugf(ctx, "retrieving encryptionkey")
 
 	secret := &corev1.Secret{}
 	err := r.CtrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: key.CertificateEncryptionNamespace, Name: secretName}, secret)

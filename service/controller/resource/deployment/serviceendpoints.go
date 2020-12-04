@@ -52,6 +52,6 @@ func (r *Resource) ensureServiceEndpoints(ctx context.Context, cr providerv1alph
 	r.logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("service '%s' was added to subnet %s", storageServiceEndpoint, *subnet.Name))
 
 	reconciliationcanceledcontext.SetCanceled(ctx)
-	r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+	r.logger.Debugf(ctx, "canceling reconciliation")
 	return nil
 }

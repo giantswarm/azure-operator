@@ -79,7 +79,7 @@ func (r *Resource) SetStateMachine(stateMachine state.Machine) {
 }
 
 func (r *Resource) GetEncrypterObject(ctx context.Context, secretName string) (encrypter.Interface, error) {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "retrieving encryptionkey")
+	r.Logger.Debugf(ctx, "retrieving encryptionkey")
 
 	secret := &v1.Secret{}
 	err := r.CtrlClient.Get(ctx, ctrlclient.ObjectKey{Namespace: key.CertificateEncryptionNamespace, Name: secretName}, secret)

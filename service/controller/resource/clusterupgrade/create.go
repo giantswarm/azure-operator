@@ -2,7 +2,6 @@ package clusterupgrade
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -26,30 +25,30 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that azurecluster has same release label")
+	r.logger.Debugf(ctx, "ensuring that azurecluster has same release label")
 
 	err = r.ensureAzureClusterHasSameRelease(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that azurecluster has same release label")
+	r.logger.Debugf(ctx, "ensured that azurecluster has same release label")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring that all machinepools has the same release label")
+	r.logger.Debugf(ctx, "ensuring that all machinepools has the same release label")
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "checking if master has been upgraded already")
+	r.logger.Debugf(ctx, "checking if master has been upgraded already")
 	masterUpgraded, err := r.ensureMasterHasUpgraded(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	if !masterUpgraded {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "master hasn't upgraded yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "master hasn't upgraded yet")
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "master has been upgraded already")
+	r.logger.Debugf(ctx, "master has been upgraded already")
 
 	machinePoolLst, err := helpers.GetMachinePoolsByMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
 	if err != nil {
@@ -62,12 +61,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if machinePoolUpgrading {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "there is machinepool upgrading")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "there is machinepool upgrading")
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding machinepool that has not been upgraded yet")
+	r.logger.Debugf(ctx, "finding machinepool that has not been upgraded yet")
 
 	machinePoolsNotUpgradedYet, err := machinePoolsNotUpgradedYet(cr, machinePoolLst.Items)
 	if err != nil {
@@ -77,27 +76,27 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if len(machinePoolsNotUpgradedYet) > 0 {
 		machinePool := machinePoolsNotUpgradedYet[0]
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found machinepool that has not been upgraded yet: %#q", machinePool.Name))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updating release & operator version labels")
+		r.logger.Debugf(ctx, "found machinepool that has not been upgraded yet: %#q", machinePool.Name)
+		r.logger.Debugf(ctx, "updating release & operator version labels")
 
 		machinePool.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
 		machinePool.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
 		err = r.ctrlClient.Update(ctx, &machinePool)
 		if apierrors.IsConflict(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "cancelling resource")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated release & operator version labels of machinepool %#q", machinePool.Name))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "updated release & operator version labels of machinepool %#q", machinePool.Name)
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "did not find any machinepool that has not been upgraded yet")
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured that all machinepools has the same release label")
+	r.logger.Debugf(ctx, "did not find any machinepool that has not been upgraded yet")
+	r.logger.Debugf(ctx, "ensured that all machinepools has the same release label")
 
 	return nil
 }
@@ -123,8 +122,8 @@ func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi
 	azureCluster.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
 	err = r.ctrlClient.Update(ctx, &azureCluster)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -136,8 +135,8 @@ func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi
 func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1alpha3.Cluster) (bool, error) {
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, &cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "tenant API not available yet")
+		r.logger.Debugf(ctx, "canceling resource")
 
 		return false, nil
 	} else if err != nil {

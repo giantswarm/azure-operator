@@ -2,7 +2,6 @@ package nodepool
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -26,7 +25,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	}
 
 	if !cluster.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
+		r.Logger.Debugf(ctx, "Cluster is being deleted, skipping reconciling node pool")
 		return currentState, nil
 	}
 
@@ -42,8 +41,8 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "tenant API not available yet")
+		r.Logger.Debugf(ctx, "canceling resource")
 
 		return currentState, nil
 	} else if err != nil {
@@ -52,14 +51,14 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+		r.Logger.Debugf(ctx, "finding all worker VMSS instances")
 
 		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+		r.Logger.Debugf(ctx, "found %d worker VMSS instances", len(allWorkerInstances))
 	}
 
 	resourceGroupName := key.ClusterID(&azureMachinePool)
@@ -69,7 +68,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return currentState, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtering instance IDs for old instances")
+	r.Logger.Debugf(ctx, "filtering instance IDs for old instances")
 
 	var ids compute.VirtualMachineScaleSetVMInstanceRequiredIDs
 	{
@@ -90,8 +89,8 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		}
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "filtered instance IDs for old instances")
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminating %d old worker instances", len(*ids.InstanceIds)))
+	r.Logger.Debugf(ctx, "filtered instance IDs for old instances")
+	r.Logger.Debugf(ctx, "terminating %d old worker instances", len(*ids.InstanceIds))
 
 	res, err := virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroupName, nodePoolVMSSName, ids)
 	if err != nil {
@@ -102,7 +101,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("terminated %d old worker instances", len(*ids.InstanceIds)))
+	r.Logger.Debugf(ctx, "terminated %d old worker instances", len(*ids.InstanceIds))
 
 	return ScaleDownWorkerVMSS, nil
 }

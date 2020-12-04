@@ -27,7 +27,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding required cluster api types")
+	r.logger.Debugf(ctx, "finding required cluster api types")
 
 	var cluster capiv1alpha3.Cluster
 	{
@@ -37,8 +37,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &cluster)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("referenced Cluster CR (%q) not found", nsName.String()))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			r.logger.Debugf(ctx, "referenced Cluster CR (%q) not found", nsName.String())
+			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if err != nil {
@@ -71,15 +71,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if len(masterMachines) < 1 {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no control plane AzureMachines found for cluster %q", key.ClusterName(&cluster)))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			r.logger.Debugf(ctx, "no control plane AzureMachines found for cluster %q", key.ClusterName(&cluster))
+			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found required cluster api types")
-	r.logger.LogCtx(ctx, "level", "debug", "message", "building azureclusterconfig from cluster api crs")
+	r.logger.Debugf(ctx, "found required cluster api types")
+	r.logger.Debugf(ctx, "building azureclusterconfig from cluster api crs")
 
 	var mappedAzureClusterConfig corev1alpha1.AzureClusterConfig
 	{
@@ -89,8 +89,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "built azureclusterconfig from cluster api crs")
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding existing azureclusterconfig")
+	r.logger.Debugf(ctx, "built azureclusterconfig from cluster api crs")
+	r.logger.Debugf(ctx, "finding existing azureclusterconfig")
 
 	var presentAzureClusterConfig corev1alpha1.AzureClusterConfig
 	{
@@ -100,22 +100,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureClusterConfig)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not found existing azureclusterconfig")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "creating azureclusterconfig")
+			r.logger.Debugf(ctx, "did not found existing azureclusterconfig")
+			r.logger.Debugf(ctx, "creating azureclusterconfig")
 			err = r.ctrlClient.Create(ctx, &mappedAzureClusterConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "created azureclusterconfig")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "created azureclusterconfig")
+			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureclusterconfig needs update")
+	r.logger.Debugf(ctx, "finding if existing azureclusterconfig needs update")
 	{
 		// Were there any changes that requires CR update?
 		changed := false
@@ -137,19 +137,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		// Were there any changes that requires CR update?
 		if !changed {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "no update for existing azureclusterconfig needed")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "no update for existing azureclusterconfig needed")
+			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureclusterconfig needs update")
+		r.logger.Debugf(ctx, "existing azureclusterconfig needs update")
 
 		err = r.ctrlClient.Update(ctx, &presentAzureClusterConfig)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureclusterconfig updated")
+		r.logger.Debugf(ctx, "existing azureclusterconfig updated")
 	}
 
 	return nil

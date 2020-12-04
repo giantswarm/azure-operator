@@ -36,8 +36,8 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "tenant API not available yet")
+		r.Logger.Debugf(ctx, "canceling resource")
 
 		return nil
 	} else if err != nil {
@@ -120,7 +120,7 @@ func (r *Resource) removeNodesFromK8s(ctx context.Context, ctrlClient client.Cli
 
 // deleteARMDeployment deletes the ARM deployment from Azure.
 func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, deploymentName string) error {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "Deleting machine pool ARM deployment")
+	r.Logger.Debugf(ctx, "Deleting machine pool ARM deployment")
 
 	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
@@ -129,13 +129,13 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *ca
 
 	_, err = deploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
 	if IsDeploymentNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Machine pool ARM deployment was already deleted")
+		r.Logger.Debugf(ctx, "Machine pool ARM deployment was already deleted")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "Deleted machine pool ARM deployment")
+	r.Logger.Debugf(ctx, "Deleted machine pool ARM deployment")
 
 	return nil
 }

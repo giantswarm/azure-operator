@@ -2,7 +2,6 @@ package vmsscheck
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/microerror"
@@ -28,7 +27,7 @@ func InstancesAreRunning(ctx context.Context, logger micrologger.Logger, virtual
 
 	for iterator.NotDone() {
 		instance := iterator.Value()
-		logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Instance %s has state %s", *instance.Name, *instance.ProvisioningState))
+		logger.Debugf(ctx, "Instance %s has state %s", *instance.Name, *instance.ProvisioningState)
 
 		switch *instance.ProvisioningState {
 		case provisioningStateFailed:

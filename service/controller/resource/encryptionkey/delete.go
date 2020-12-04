@@ -17,15 +17,15 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting encryptionkey secret upon delete event")
+		r.logger.Debugf(ctx, "deleting encryptionkey secret upon delete event")
 
 		err = r.k8sClient.CoreV1().Secrets(key.CertificateEncryptionNamespace).Delete(ctx, key.CertificateEncryptionSecretName(&cr), metav1.DeleteOptions{})
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret already deleted")
+			r.logger.Debugf(ctx, "encryptionkey secret already deleted")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "deleted encryptionkey secret upon delete event")
+			r.logger.Debugf(ctx, "deleted encryptionkey secret upon delete event")
 		}
 	}
 

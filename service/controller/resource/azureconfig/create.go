@@ -38,7 +38,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding required cluster api types")
+	r.logger.Debugf(ctx, "finding required cluster api types")
 
 	var cluster capiv1alpha3.Cluster
 	{
@@ -48,8 +48,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &cluster)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("referenced Cluster CR (%q) not found", nsName.String()))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			r.logger.Debugf(ctx, "referenced Cluster CR (%q) not found", nsName.String())
+			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if err != nil {
@@ -82,15 +82,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if len(masterMachines) < 1 {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no control plane AzureMachines found for cluster %q", key.ClusterName(&cluster)))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			r.logger.Debugf(ctx, "no control plane AzureMachines found for cluster %q", key.ClusterName(&cluster))
+			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "found required cluster api types")
-	r.logger.LogCtx(ctx, "level", "debug", "message", "building azureconfig from cluster api crs")
+	r.logger.Debugf(ctx, "found required cluster api types")
+	r.logger.Debugf(ctx, "building azureconfig from cluster api crs")
 
 	var mappedAzureConfig providerv1alpha1.AzureConfig
 	{
@@ -100,8 +100,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "built azureconfig from cluster api crs")
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding existing azureconfig")
+	r.logger.Debugf(ctx, "built azureconfig from cluster api crs")
+	r.logger.Debugf(ctx, "finding existing azureconfig")
 
 	var presentAzureConfig providerv1alpha1.AzureConfig
 	{
@@ -111,21 +111,21 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not found existing azureconfig")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "creating azureconfig")
+			r.logger.Debugf(ctx, "did not found existing azureconfig")
+			r.logger.Debugf(ctx, "creating azureconfig")
 			err = r.ctrlClient.Create(ctx, &mappedAzureConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "created azureconfig")
+			r.logger.Debugf(ctx, "created azureconfig")
 			presentAzureConfig = mappedAzureConfig
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureconfig needs update")
+	r.logger.Debugf(ctx, "finding if existing azureconfig needs update")
 	{
 		// Ensure that present network allocations are kept as-is.
 		mappedAzureConfig.Spec.Azure.VirtualNetwork = presentAzureConfig.Spec.Azure.VirtualNetwork
@@ -149,20 +149,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if changed {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig needs update")
+			r.logger.Debugf(ctx, "existing azureconfig needs update")
 
 			err = r.ctrlClient.Update(ctx, &presentAzureConfig)
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", "existing azureconfig updated")
+			r.logger.Debugf(ctx, "existing azureconfig updated")
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "no update for existing azureconfig needed")
+			r.logger.Debugf(ctx, "no update for existing azureconfig needed")
 		}
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "finding if existing azureconfig needs status update")
+	r.logger.Debugf(ctx, "finding if existing azureconfig needs status update")
 	{
 		nsName := types.NamespacedName{
 			Name:      key.ClusterName(&azureCluster),
@@ -180,7 +180,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				Type:   "Creating",
 			}
 			presentAzureConfig.Status.Cluster.Conditions = append(presentAzureConfig.Status.Cluster.Conditions, c)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cluster condition status needs update")
+			r.logger.Debugf(ctx, "cluster condition status needs update")
 			updateStatus = true
 		}
 
@@ -190,7 +190,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 				Semver:             key.OperatorVersion(&presentAzureConfig),
 			}
 			presentAzureConfig.Status.Cluster.Versions = append(presentAzureConfig.Status.Cluster.Versions, v)
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cluster version status needs update")
+			r.logger.Debugf(ctx, "cluster version status needs update")
 			updateStatus = true
 		}
 
@@ -199,9 +199,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			if err != nil {
 				return microerror.Mask(err)
 			}
-			r.logger.LogCtx(ctx, "level", "debug", "message", "status updated")
+			r.logger.Debugf(ctx, "status updated")
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "no status update for existing azureconfig needed")
+			r.logger.Debugf(ctx, "no status update for existing azureconfig needed")
 		}
 	}
 

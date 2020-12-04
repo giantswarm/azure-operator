@@ -2,7 +2,6 @@ package vpn
 
 import (
 	"context"
-	"fmt"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
@@ -31,15 +30,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring vpn gateway")
+	r.logger.Debugf(ctx, "ensuring vpn gateway")
 
 	// Wait for virtual network subnet.
 	{
 		vnetName := key.VnetName(cr)
 		vnet, err := vnetClient.Get(ctx, key.ClusterID(&cr), vnetName, "")
 		if err != nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("virtual network %#q not ready", vnetName))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "virtual network %#q not ready", vnetName)
+			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		}
 
@@ -51,8 +50,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 		}
 		if !found {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("subnet %#q not ready", subnetName))
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "subnet %#q not ready", subnetName)
+			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		}
 
@@ -69,13 +68,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else {
 			s := *d.Properties.ProvisioningState
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("vpn gateway deployment is in state '%s'", s))
+			r.logger.Debugf(ctx, "vpn gateway deployment is in state '%s'", s)
 
 			if !key.IsSucceededProvisioningState(s) {
 				r.debugger.LogFailedDeployment(ctx, d, err)
 			}
 			if !key.IsFinalProvisioningState(s) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.Debugf(ctx, "canceling resource")
 				return nil
 			}
 		}
@@ -97,7 +96,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured vpn gateway")
+	r.logger.Debugf(ctx, "ensured vpn gateway")
 
 	return nil
 }

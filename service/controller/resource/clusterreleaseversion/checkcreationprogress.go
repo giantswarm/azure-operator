@@ -14,7 +14,7 @@ import (
 
 // isCreationCompleted checks if the cluster creation has been completed.
 func (r *Resource) isCreationCompleted(ctx context.Context, cluster *capi.Cluster) (bool, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "checking if cluster creation has been completed")
+	r.logger.Debugf(ctx, "checking if cluster creation has been completed")
 
 	// Here we expect that Cluster Creating conditions is set to True.
 	creatingCondition := capiconditions.Get(cluster, aeconditions.CreatingCondition)
@@ -30,12 +30,12 @@ func (r *Resource) isCreationCompleted(ctx context.Context, cluster *capi.Cluste
 	readyCondition := capiconditions.Get(cluster, capi.ReadyCondition)
 
 	if !conditions.IsTrue(readyCondition) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster not ready, condition Ready!=True, creation is still in progress")
+		r.logger.Debugf(ctx, "Cluster not ready, condition Ready!=True, creation is still in progress")
 		return false, nil
 	}
 
 	// Cluster is Ready, this should mean that the creation has been completed.
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster condition Ready=True, creation should be completed")
+	r.logger.Debugf(ctx, "Cluster condition Ready=True, creation should be completed")
 
 	// Just a quick sanity check before we call it a win, cluster can become
 	// ready only after the creation has been initiated.
@@ -53,6 +53,6 @@ func (r *Resource) isCreationCompleted(ctx context.Context, cluster *capi.Cluste
 	}
 
 	// Cluster creation has been completed! :)
-	r.logger.LogCtx(ctx, "level", "debug", "message", "cluster creation has been completed")
+	r.logger.Debugf(ctx, "cluster creation has been completed")
 	return true, nil
 }

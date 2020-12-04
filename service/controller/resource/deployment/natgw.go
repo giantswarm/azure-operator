@@ -30,7 +30,7 @@ func (r *Resource) ensureNatGatewayForMasterSubnet(ctx context.Context, cr provi
 	}
 
 	if subnet.ProvisioningState != "Succeeded" {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Subnet %s is not provisioned yet. Waiting.", key.MasterSubnetName(cr)))
+		r.logger.Debugf(ctx, "Subnet %s is not provisioned yet. Waiting.", key.MasterSubnetName(cr))
 		return nil
 	}
 

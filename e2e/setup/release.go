@@ -19,19 +19,19 @@ const (
 
 func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config) (*releasev1alpha1.Release, error) {
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release CRD exists")
+		config.Logger.Debugf(ctx, "ensuring Release CRD exists")
 
 		err := config.K8sClients.CRDClient().EnsureCreated(ctx, crd.LoadV1("release.giantswarm.io", "Release"), backoff.NewMaxRetries(7, 1*time.Second))
 		if err != nil {
 			return &releasev1alpha1.Release{}, microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release CRD exists")
+		config.Logger.Debugf(ctx, "ensured Release CRD exists")
 	}
 
 	var release *releasev1alpha1.Release
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring Release exists", "release", ReleaseName)
+		config.Logger.Debugf(ctx, "ensuring Release exists", "release", ReleaseName)
 		release = &releasev1alpha1.Release{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      ReleaseName,
@@ -108,7 +108,7 @@ func createGSReleaseContainingOperatorVersion(ctx context.Context, config Config
 		if err != nil {
 			return &releasev1alpha1.Release{}, microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", "ensured Release exists", "release", ReleaseName)
+		config.Logger.Debugf(ctx, "ensured Release exists", "release", ReleaseName)
 	}
 
 	return release, nil

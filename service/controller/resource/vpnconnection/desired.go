@@ -2,7 +2,6 @@ package vpnconnection
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/Azure/go-autorest/autorest/to"
@@ -39,9 +38,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 
 			guestVPNGateway, err = r.getGuestVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "tenant vpn gateway was not found")
+				r.logger.Debugf(ctx, "tenant vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.Debugf(ctx, "canceling resource")
 
 				return connections{}, nil
 			} else if err != nil {
@@ -50,9 +49,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 
 			provisioningState := guestVPNGateway.ProvisioningState
 			if provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tenant vpn gateway is in state '%s'", provisioningState))
+				r.logger.Debugf(ctx, "tenant vpn gateway is in state '%s'", provisioningState)
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.Debugf(ctx, "canceling resource")
 
 				return connections{}, nil
 			}
@@ -64,9 +63,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 
 			hostVPNGateway, err = r.getHostVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "host vpn gateway was not found")
+				r.logger.Debugf(ctx, "host vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.Debugf(ctx, "canceling resource")
 
 				return connections{}, nil
 			} else if err != nil {
@@ -74,9 +73,9 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			}
 
 			if provisioningState := string(hostVPNGateway.ProvisioningState); provisioningState != "Succeeded" {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("host vpn gateway is in state '%s'", provisioningState))
+				r.logger.Debugf(ctx, "host vpn gateway is in state '%s'", provisioningState)
 				resourcecanceledcontext.SetCanceled(ctx)
-				r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+				r.logger.Debugf(ctx, "canceling resource")
 
 				return connections{}, nil
 			}

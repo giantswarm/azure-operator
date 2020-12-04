@@ -37,7 +37,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if !machinePool.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping saving cloud config in Azure blob")
+		r.logger.Debugf(ctx, "MachinePool is being deleted, skipping saving cloud config in Azure blob")
 		return nil
 	}
 
@@ -47,13 +47,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		payload, err = r.getCloudConfigFromBootstrapSecret(ctx, machinePool)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR or cloudconfig secret were not found")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			r.logger.Debugf(ctx, "bootstrap CR or cloudconfig secret were not found")
+			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if IsBootstrapCRNotReady(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "bootstrap CR is not ready")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling reconciliation")
+			r.logger.Debugf(ctx, "bootstrap CR is not ready")
+			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 			return nil
 		} else if err != nil {
@@ -65,8 +65,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		containerURL, err = r.getContainerURL(ctx, &azureMachinePool, key.ClusterID(&azureMachinePool), key.StorageAccountName(&azureMachinePool))
 		if IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find storage account")
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+			r.logger.Debugf(ctx, "did not find storage account")
+			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
@@ -74,14 +74,14 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring container object %#q contains bootstrap config", blobName))
+		r.logger.Debugf(ctx, "ensuring container object %#q contains bootstrap config", blobName)
 
 		_, err = blobclient.PutBlockBlob(ctx, blobName, payload, &containerURL)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured container object %#q contains bootstrap config", blobName))
+		r.logger.Debugf(ctx, "ensured container object %#q contains bootstrap config", blobName)
 	}
 
 	return nil
@@ -100,7 +100,7 @@ func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, machin
 
 	var cloudconfigSecret corev1.Secret
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Secret containing bootstrap config %#q", bootstrapSecretName))
+		r.logger.Debugf(ctx, "Trying to find Secret containing bootstrap config %#q", bootstrapSecretName)
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: bootstrapSecretName}, &cloudconfigSecret)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -115,7 +115,7 @@ func (r *Resource) getCloudConfigFromBootstrapSecret(ctx context.Context, machin
 func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expcapiv1alpha3.MachinePool) (string, error) {
 	var sparkCR corev1alpha1.Spark
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Trying to find Bootstrap CR %#q", machinePool.Name))
+		r.logger.Debugf(ctx, "Trying to find Bootstrap CR %#q", machinePool.Name)
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Name}, &sparkCR)
 		if err != nil {
 			return "", microerror.Mask(err)
@@ -130,7 +130,7 @@ func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expc
 }
 
 func (r *Resource) getContainerURL(ctx context.Context, azureMachinePool *v1alpha3.AzureMachinePool, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Finding ContainerURL to upload bootstrap config")
+	r.logger.Debugf(ctx, "Finding ContainerURL to upload bootstrap config")
 
 	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
@@ -154,7 +154,7 @@ func (r *Resource) getContainerURL(ctx context.Context, azureMachinePool *v1alph
 }
 
 func (r *Resource) getPrimaryKey(ctx context.Context, storageAccountsClient *storage.AccountsClient, resourceGroupName, storageAccountName string) (string, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "Finding PrimaryKey for encryption in Storage Account")
+	r.logger.Debugf(ctx, "Finding PrimaryKey for encryption in Storage Account")
 
 	_, err := storageAccountsClient.GetProperties(ctx, resourceGroupName, storageAccountName, storage.AccountExpandGeoReplicationStats)
 	if err != nil {
@@ -163,8 +163,8 @@ func (r *Resource) getPrimaryKey(ctx context.Context, storageAccountsClient *sto
 
 	keys, err := storageAccountsClient.ListKeys(ctx, resourceGroupName, storageAccountName, "")
 	if IsStorageAccountNotProvisioned(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found storage account is not provisioned")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "found storage account is not provisioned")
+		r.logger.Debugf(ctx, "canceling resource")
 		return "", nil
 	} else if err != nil {
 		return "", microerror.Mask(err)

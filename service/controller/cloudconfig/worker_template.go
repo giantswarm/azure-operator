@@ -3,7 +3,6 @@ package cloudconfig
 import (
 	"context"
 	"encoding/base64"
-	"fmt"
 
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v9/pkg/template"
 	"github.com/giantswarm/microerror"
@@ -65,7 +64,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 		}
 	}
 
-	c.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("rendering cloudconfig with kubelet labels %v", params.Cluster.Kubernetes.Kubelet.Labels))
+	c.logger.Debugf(ctx, "rendering cloudconfig with kubelet labels %v", params.Cluster.Kubernetes.Kubelet.Labels)
 
 	return newCloudConfig(k8scloudconfig.WorkerTemplate, params)
 }
