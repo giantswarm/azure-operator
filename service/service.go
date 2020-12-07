@@ -150,6 +150,8 @@ func New(config Config) (*Service, error) {
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
+
+		restConfig.UserAgent = fmt.Sprintf("%s/%s", project.Name(), project.Version())
 	}
 
 	var k8sClient *k8sclient.Clients
