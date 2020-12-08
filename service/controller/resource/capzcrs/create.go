@@ -38,7 +38,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "mapping AzureConfig CR to CAPI & CAPZ CRs")
+	r.logger.Debugf(ctx, "mapping AzureConfig CR to CAPI & CAPZ CRs")
 
 	{
 		objKey := client.ObjectKey{
@@ -52,7 +52,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else if !cluster.GetDeletionTimestamp().IsZero() {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping mapping AzureConfig CR to CAPI & CAPZ CRs")
+			r.logger.Debugf(ctx, "Cluster is being deleted, skipping mapping AzureConfig CR to CAPI & CAPZ CRs")
 			return nil
 		}
 	}
@@ -100,7 +100,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "mapped AzureConfig CR to CAPI & CAPZ CRs")
+	r.logger.Debugf(ctx, "mapped AzureConfig CR to CAPI & CAPZ CRs")
 
 	return nil
 }
@@ -278,11 +278,11 @@ func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error 
 			Namespace: desiredMeta.GetNamespace(),
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("reading present %s %s", desiredType.GetKind(), nsName.String()))
+		r.logger.Debugf(ctx, "reading present %s %s", desiredType.GetKind(), nsName.String())
 
 		err = r.ctrlClient.Get(ctx, nsName, readCR)
 		if errors.IsNotFound(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("%s %s did not exist. creating", desiredType.GetKind(), nsName.String()))
+			r.logger.Debugf(ctx, "%s %s did not exist. creating", desiredType.GetKind(), nsName.String())
 
 			// It's ok. Let's create it.
 			err = r.ctrlClient.Create(ctx, m.obj)
@@ -290,7 +290,7 @@ func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error 
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("created %s %s", desiredType.GetKind(), nsName.String()))
+			r.logger.Debugf(ctx, "created %s %s", desiredType.GetKind(), nsName.String())
 			continue
 		} else if err != nil {
 			return microerror.Mask(err)
@@ -309,7 +309,7 @@ func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error 
 		}
 
 		if updateNeeded {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found that %s %s needs updating", desiredType.GetKind(), nsName.String()))
+			r.logger.Debugf(ctx, "found that %s %s needs updating", desiredType.GetKind(), nsName.String())
 
 			merged, err := m.mergeFunc(readCR, m.obj)
 			if err != nil {
@@ -334,9 +334,9 @@ func (r *Resource) updateCRs(ctx context.Context, crmappings []crmapping) error 
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("updated %s %s", desiredType.GetKind(), nsName.String()))
+			r.logger.Debugf(ctx, "updated %s %s", desiredType.GetKind(), nsName.String())
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("no need to %s %s", desiredType.GetKind(), nsName.String()))
+			r.logger.Debugf(ctx, "no need to %s %s", desiredType.GetKind(), nsName.String())
 		}
 	}
 

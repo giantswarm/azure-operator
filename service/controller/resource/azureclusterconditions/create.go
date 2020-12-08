@@ -24,8 +24,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 
 	err = r.ctrlClient.Status().Update(ctx, &azureCluster)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)

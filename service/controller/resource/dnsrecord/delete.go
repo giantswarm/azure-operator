@@ -2,7 +2,6 @@ package dnsrecord
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
@@ -25,17 +24,17 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 
 	if len(dnsRecords) != 0 {
 		for _, record := range dnsRecords {
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting host cluster DNS record '%s'", record.RelativeName))
+			r.logger.Debugf(ctx, "deleting host cluster DNS record '%s'", record.RelativeName)
 
 			_, err := r.cpRecordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}
 
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted host cluster DNS record '%s'", record.RelativeName))
+			r.logger.Debugf(ctx, "deleted host cluster DNS record '%s'", record.RelativeName)
 		}
 	} else {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "not deleting host cluster DNS records")
+		r.logger.Debugf(ctx, "not deleting host cluster DNS records")
 	}
 
 	return nil

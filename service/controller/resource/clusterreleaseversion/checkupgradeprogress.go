@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster) (bool, error) {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "checking if cluster upgrade has been completed")
+	r.logger.Debugf(ctx, "checking if cluster upgrade has been completed")
 	// Here we expect that Cluster Upgrading conditions is set to True.
 	upgradingCondition, upgradingConditionSet := conditions.GetUpgrading(cluster)
 	if !upgradingConditionSet || !conditions.IsTrue(&upgradingCondition) {
@@ -26,7 +26,7 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 	// But don't check if Upgrading has been completed for the first 5 minutes,
 	// give other controllers time to start reconciling their CRs.
 	if time.Now().Before(upgradingCondition.LastTransitionTime.Add(5 * time.Minute)) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "upgrade is in progress for less than 5 minutes, check back later")
+		r.logger.Debugf(ctx, "upgrade is in progress for less than 5 minutes, check back later")
 		return false, nil
 	}
 
@@ -35,7 +35,7 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 	readyCondition := capiconditions.Get(cluster, capi.ReadyCondition)
 
 	if !conditions.IsTrue(readyCondition) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cluster not ready, upgrade is still in progress")
+		r.logger.Debugf(ctx, "cluster not ready, upgrade is still in progress")
 		return false, nil
 	}
 
@@ -52,12 +52,12 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 
 	if becameReadyWhileUpgrading || isReadyDuringEntireUpgradeProcess {
 		// Cluster is ready, and either (1) or (2) is true, so we consider the upgrade to be completed
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cluster upgrade has been completed")
+		r.logger.Debugf(ctx, "cluster upgrade has been completed")
 		return true, nil
 	}
 
 	// Cluster is Ready, but since neither (1) nor (2) were satisfied, we wait
 	// more before considering the upgrade to be completed
-	r.logger.LogCtx(ctx, "level", "debug", "message", "cluster is ready, but it's too soon to tell if the upgrade has been completed")
+	r.logger.Debugf(ctx, "cluster is ready, but it's too soon to tell if the upgrade has been completed")
 	return false, nil
 }

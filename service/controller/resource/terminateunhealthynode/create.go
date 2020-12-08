@@ -2,7 +2,6 @@ package terminateunhealthynode
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
@@ -32,7 +31,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	// check for annotation enabling the node auto repair feature
 	if _, ok := cr.Annotations[annotation.NodeTerminateUnhealthy]; !ok {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "terminate unhealthy node is not enabled for this cluster, cancelling")
+		r.logger.Debugf(ctx, "terminate unhealthy node is not enabled for this cluster, cancelling")
 		return nil
 	}
 
@@ -77,7 +76,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", "resetting tick node counters on all nodes in tenant cluster")
+		r.logger.Debugf(ctx, "resetting tick node counters on all nodes in tenant cluster")
 	}
 
 	return nil
@@ -106,7 +105,7 @@ func (r *Resource) getTenantClusterClient(ctx context.Context, cluster *capiv1al
 func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster capiv1alpha3.Cluster) error {
 	if node.Labels["role"] != "worker" {
 		// We can only terminate workers in azure.
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Termination of master nodes is not supported on Azure")
+		r.logger.Debugf(ctx, "Termination of master nodes is not supported on Azure")
 		return nil
 	}
 
@@ -118,24 +117,24 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 	// Scale VMSS up by one.
 	var vmssName string
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Retrieving AzureMachinePool CR")
+		r.logger.Debugf(ctx, "Retrieving AzureMachinePool CR")
 		amp := capzexpv1alpha3.AzureMachinePool{}
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: node.Labels[label.MachinePool]}, &amp)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Retrieved AzureMachinePool CR")
+		r.logger.Debugf(ctx, "Retrieved AzureMachinePool CR")
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Retrieving VMSS")
+		r.logger.Debugf(ctx, "Retrieving VMSS")
 		vmssName = key.NodePoolVMSSName(&amp)
 		vmss, err := vmssClient.Get(ctx, cluster.Name, vmssName)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Retrieved VMSS")
+		r.logger.Debugf(ctx, "Retrieved VMSS")
 
 		newCapacity := *vmss.Sku.Capacity + 1
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Scaling up VMSS %q to %d replicas", vmssName, newCapacity))
+		r.logger.Debugf(ctx, "Scaling up VMSS %q to %d replicas", vmssName, newCapacity)
 
 		update := compute.VirtualMachineScaleSetUpdate{
 			Sku: &compute.Sku{
@@ -148,7 +147,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Scaled up VMSS %q to %d replicas", vmssName, newCapacity))
+		r.logger.Debugf(ctx, "Scaled up VMSS %q to %d replicas", vmssName, newCapacity)
 	}
 
 	// Terminate faulty node.
@@ -159,7 +158,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleting instance with ID %q from vmss %q", instanceID, vmssName))
+		r.logger.Debugf(ctx, "Deleting instance with ID %q from vmss %q", instanceID, vmssName)
 		res, err := vmssClient.DeleteInstances(ctx, cluster.Name, vmssName, compute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIds: &[]string{instanceID}})
 		if err != nil {
 			return microerror.Mask(err)
@@ -168,7 +167,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleted instance with ID %q from vmss %q", instanceID, vmssName))
+		r.logger.Debugf(ctx, "Deleted instance with ID %q from vmss %q", instanceID, vmssName)
 	}
 
 	// expose metric about node termination

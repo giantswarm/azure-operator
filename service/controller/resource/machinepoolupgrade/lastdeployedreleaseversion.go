@@ -18,7 +18,7 @@ import (
 )
 
 func (r *Resource) ensureLastDeployedReleaseVersion(ctx context.Context, machinePool *capiexp.MachinePool) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring release.giantswarm.io/last-deployed-version on MachinePool CR")
+	r.logger.Debugf(ctx, "ensuring release.giantswarm.io/last-deployed-version on MachinePool CR")
 	desiredReleaseVersion := key.ReleaseVersion(machinePool)
 	lastDeployedReleaseVersion := machinePool.Annotations[annotation.LastDeployedReleaseVersion]
 
@@ -27,7 +27,7 @@ func (r *Resource) ensureLastDeployedReleaseVersion(ctx context.Context, machine
 		logMessage := fmt.Sprintf(
 			"ensured release.giantswarm.io/last-deployed-version annotation, value %s it's already up-to-date",
 			lastDeployedReleaseVersion)
-		r.logger.LogCtx(ctx, "level", "debug", "message", logMessage)
+		r.logger.Debugf(ctx, logMessage)
 		return nil
 	}
 
@@ -40,8 +40,8 @@ func (r *Resource) ensureLastDeployedReleaseVersion(ctx context.Context, machine
 
 	tenantClusterClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "tenant API not available yet")
+		r.logger.Debugf(ctx, "canceling resource")
 
 		return nil
 	} else if err != nil {
@@ -74,7 +74,7 @@ func (r *Resource) ensureLastDeployedReleaseVersion(ctx context.Context, machine
 			machinePool.Annotations[annotation.LastDeployedReleaseVersion])
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", logMessage)
+	r.logger.Debugf(ctx, logMessage)
 	return nil
 }
 

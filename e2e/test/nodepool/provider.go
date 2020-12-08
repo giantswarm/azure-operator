@@ -47,7 +47,7 @@ func NewProvider(config ProviderConfig) (*Provider, error) {
 }
 
 func (p *Provider) AddWorker(ctx context.Context, clusterID, nodepoolID string) error {
-	p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling up one worker in node pool %#q", nodepoolID))
+	p.logger.Debugf(ctx, "scaling up one worker in node pool %#q", nodepoolID)
 
 	machinePool, err := p.findMachinePool(ctx, clusterID, nodepoolID)
 	if err != nil {
@@ -64,13 +64,13 @@ func (p *Provider) AddWorker(ctx context.Context, clusterID, nodepoolID string) 
 		return microerror.Mask(err)
 	}
 
-	p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled up one worker in node pool %#q", nodepoolID))
+	p.logger.Debugf(ctx, "scaled up one worker in node pool %#q", nodepoolID)
 
 	return nil
 }
 
 func (p *Provider) ChangeVmSize(ctx context.Context, clusterID, nodepoolID, vmSize string) error {
-	p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("changing virtual machine size in node pool %#q to %s", nodepoolID, vmSize))
+	p.logger.Debugf(ctx, "changing virtual machine size in node pool %#q to %s", nodepoolID, vmSize)
 
 	machinePool, err := p.findMachinePool(ctx, clusterID, nodepoolID)
 	if err != nil {
@@ -94,7 +94,7 @@ func (p *Provider) ChangeVmSize(ctx context.Context, clusterID, nodepoolID, vmSi
 		return microerror.Mask(err)
 	}
 
-	p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("changed virtual machine size in node pool %#q to %s", nodepoolID, vmSize))
+	p.logger.Debugf(ctx, "changed virtual machine size in node pool %#q to %s", nodepoolID, vmSize)
 
 	return nil
 }
@@ -107,7 +107,7 @@ func (p *Provider) findMachinePool(ctx context.Context, clusterID, nodepoolID st
 		return &v1alpha3.MachinePool{}, microerror.Mask(err)
 	}
 	if len(crs.Items) < 1 {
-		p.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("MachinePool CR for cluster id %q not found", clusterID))
+		p.logger.Debugf(ctx, "MachinePool CR for cluster id %q not found", clusterID)
 		return &v1alpha3.MachinePool{}, microerror.Maskf(notFoundError, fmt.Sprintf("MachinePool CR for cluster id %q not found", clusterID))
 	}
 

@@ -5,13 +5,13 @@ go 1.15
 require (
 	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.11.0
-	github.com/Azure/go-autorest/autorest v0.11.12
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.2
+	github.com/Azure/go-autorest/autorest v0.11.13
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.5
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
-	github.com/giantswarm/apiextensions/v3 v3.9.0
-	github.com/giantswarm/appcatalog v0.3.1
+	github.com/giantswarm/apiextensions/v3 v3.13.0
+	github.com/giantswarm/appcatalog v0.3.2
 	github.com/giantswarm/apprclient/v2 v2.0.0
 	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/badnodedetector v1.0.1
@@ -27,12 +27,12 @@ require (
 	github.com/giantswarm/helmclient/v3 v3.0.1
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.0.0
-	github.com/giantswarm/k8scloudconfig/v9 v9.1.3
+	github.com/giantswarm/k8scloudconfig/v9 v9.3.0
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v0.2.0
-	github.com/giantswarm/microerror v0.2.1
+	github.com/giantswarm/microerror v0.3.0
 	github.com/giantswarm/microkit v0.2.2
-	github.com/giantswarm/micrologger v0.3.4
+	github.com/giantswarm/micrologger v0.4.0
 	github.com/giantswarm/operatorkit/v2 v2.0.2
 	github.com/giantswarm/operatorkit/v4 v4.0.0
 	github.com/giantswarm/tenantcluster/v3 v3.0.0

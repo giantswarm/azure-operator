@@ -25,7 +25,7 @@ func pullLatestChart(ctx context.Context, config Config, chartName string, catal
 
 	var latestRelease string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("calculating latest %#q release version", chartName))
+		config.Logger.Debugf(ctx, "calculating latest %#q release version", chartName)
 
 		o := func() error {
 			latestRelease, err = appcatalog.GetLatestVersion(ctx, catalogURL, chartName, "")
@@ -42,44 +42,44 @@ func pullLatestChart(ctx context.Context, config Config, chartName string, catal
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("latest %#q release is %#q", chartName, latestRelease))
+		config.Logger.Debugf(ctx, "latest %#q release is %#q", chartName, latestRelease)
 	}
 
 	var latestReleaseChartPackagePath string
 	{
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("getting tarball URL for latest %#q release", chartName))
+		config.Logger.Debugf(ctx, "getting tarball URL for latest %#q release", chartName)
 		latestReleaseTarballURL, err := appcatalog.NewTarballURL(catalogURL, chartName, latestRelease)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for latest %#q release is %#q", chartName, latestReleaseTarballURL))
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("pulling tarball for latest %#q release", chartName))
+		config.Logger.Debugf(ctx, "tarball URL for latest %#q release is %#q", chartName, latestReleaseTarballURL)
+		config.Logger.Debugf(ctx, "pulling tarball for latest %#q release", chartName)
 		latestReleaseChartPackagePath, err = config.HelmClient.PullChartTarball(ctx, latestReleaseTarballURL)
 		if err != nil {
 			return "", microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for latest %#q release is %#q", chartName, latestReleaseChartPackagePath))
+		config.Logger.Debugf(ctx, "tarball path for latest %#q release is %#q", chartName, latestReleaseChartPackagePath)
 	}
 
 	return latestReleaseChartPackagePath, err
 }
 
 func pullChartPackageUnderTest(ctx context.Context, config Config) (string, error) {
-	config.Logger.LogCtx(ctx, "level", "debug", "message", "getting tarball URL for azure-operator tested version")
+	config.Logger.Debugf(ctx, "getting tarball URL for azure-operator tested version")
 	operatorTarballURL, err := appcatalog.NewTarballURL(TestCatalogStorageURL, project.Name(), env.GetLatestOperatorRelease())
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball URL for azure-operator tested version is %#q", operatorTarballURL))
+	config.Logger.Debugf(ctx, "tarball URL for azure-operator tested version is %#q", operatorTarballURL)
 
-	config.Logger.LogCtx(ctx, "level", "debug", "message", "pulling tarball for azure-operator tested version")
+	config.Logger.Debugf(ctx, "pulling tarball for azure-operator tested version")
 	operatorTarballPath, err := config.HelmClient.PullChartTarball(ctx, operatorTarballURL)
 	if err != nil {
 		return "", microerror.Mask(err)
 	}
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("tarball path for azure-operator tested version is %#q", operatorTarballPath))
+	config.Logger.Debugf(ctx, "tarball path for azure-operator tested version is %#q", operatorTarballPath)
 
 	return operatorTarballPath, err
 }
@@ -111,11 +111,11 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 		fs := afero.NewOsFs()
 		err := fs.Remove(chartPackagePath)
 		if err != nil {
-			config.Logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("deletion of %#q failed", chartPackagePath), "stack", fmt.Sprintf("%#v", err))
+			config.Logger.Errorf(ctx, err, "deletion of %#q failed", chartPackagePath)
 		}
 	}()
 
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installing %#q", releaseName))
+	config.Logger.Debugf(ctx, "installing %#q", releaseName)
 
 	rawValues, err := valuesStrToMap(values)
 	if err != nil {
@@ -136,7 +136,7 @@ func installChart(ctx context.Context, config Config, releaseName, values, chart
 	if err != nil {
 		return microerror.Mask(err)
 	}
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("installed %#q", releaseName))
+	config.Logger.Debugf(ctx, "installed %#q", releaseName)
 
 	return err
 }

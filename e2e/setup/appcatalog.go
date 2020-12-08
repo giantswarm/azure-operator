@@ -55,7 +55,7 @@ func ensureAppCatalogs(ctx context.Context, config Config, version string) error
 		}
 
 		// Create the AppCatalog CR.
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring app catalog %s", def.Name))
+		config.Logger.Debugf(ctx, "ensuring app catalog %s", def.Name)
 		{
 			catalog := v1alpha1.AppCatalog{
 				ObjectMeta: metav1.ObjectMeta{
@@ -92,7 +92,7 @@ func ensureAppCatalogs(ctx context.Context, config Config, version string) error
 				return microerror.Mask(err)
 			}
 		}
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured app catalog %s", def.Name))
+		config.Logger.Debugf(ctx, "ensured app catalog %s", def.Name)
 	}
 
 	return nil
@@ -100,7 +100,7 @@ func ensureAppCatalogs(ctx context.Context, config Config, version string) error
 
 func ensureConfigmapForCatalog(ctx context.Context, config Config, def catalogDef) error {
 	if def.ConfigmapNamespace == "" || def.ConfigmapName == "" {
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("No configmap defined for catalog %s", def.Name))
+		config.Logger.Debugf(ctx, "No configmap defined for catalog %s", def.Name)
 		return nil
 	}
 
@@ -108,7 +108,7 @@ func ensureConfigmapForCatalog(ctx context.Context, config Config, def catalogDe
 	_, err := config.K8sClients.K8sClient().CoreV1().ConfigMaps(def.ConfigmapNamespace).Get(ctx, def.ConfigmapName, metav1.GetOptions{})
 	if errors.IsNotFound(err) {
 		// Config Map has to be created.
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Creating configmap for catalog %s", def.Name))
+		config.Logger.Debugf(ctx, "Creating configmap for catalog %s", def.Name)
 		cm := v1.ConfigMap{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      def.ConfigmapName,
@@ -140,7 +140,7 @@ func ensureConfigmapForCatalog(ctx context.Context, config Config, def catalogDe
 			return microerror.Mask(err)
 		}
 
-		config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Created configmap for catalog %s", def.Name))
+		config.Logger.Debugf(ctx, "Created configmap for catalog %s", def.Name)
 		return nil
 
 	} else if err != nil {
@@ -148,7 +148,7 @@ func ensureConfigmapForCatalog(ctx context.Context, config Config, def catalogDe
 	}
 
 	// Configmap exists.
-	config.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Configmap for catalog %s already exists", def.Name))
+	config.Logger.Debugf(ctx, "Configmap for catalog %s already exists", def.Name)
 
 	return nil
 }

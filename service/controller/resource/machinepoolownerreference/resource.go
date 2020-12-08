@@ -64,20 +64,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring %#q label and 'ownerReference' fields on MachinePool '%s/%s' and AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name))
+	r.logger.Debugf(ctx, "Ensuring %#q label and 'ownerReference' fields on MachinePool '%s/%s' and AzureMachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name, machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name)
 
 	azureMachinePool := expcapzv1alpha3.AzureMachinePool{}
 	err = r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: machinePool.Namespace, Name: machinePool.Spec.Template.Spec.InfrastructureRef.Name}, &azureMachinePool)
 	if apierrors.IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name, machinePool.Name))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "AzureMachinePool %s/%s was not found for MachinePool %#q, skipping setting owner reference", machinePool.Namespace, machinePool.Spec.Template.Spec.InfrastructureRef.Name, machinePool.Name)
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
 	if !azureMachinePool.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "AzureMachinePool is being deleted, skipping setting owner reference")
+		r.logger.Debugf(ctx, "AzureMachinePool is being deleted, skipping setting owner reference")
 		return nil
 	}
 
@@ -97,7 +97,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if !cluster.GetDeletionTimestamp().IsZero() {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping setting owner reference")
+		r.logger.Debugf(ctx, "Cluster is being deleted, skipping setting owner reference")
 		return nil
 	}
 
@@ -111,8 +111,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	err = r.ctrlClient.Update(ctx, &machinePool)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -128,8 +128,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	err = r.ctrlClient.Update(ctx, &azureMachinePool)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)

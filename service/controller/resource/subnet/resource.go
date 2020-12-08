@@ -180,18 +180,18 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 			// We just submitted the ARM deployment to create this subnet so we could `continue` with the next Subnet
 			// in the slice but Azure doesn't allow the creation of several subnets at the same time.
 			// Let's return and keep creating subnets on the next reconciliation loop, one by one.
-			r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+			r.logger.Debugf(ctx, "canceling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
 
 			return nil
 		}
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("template and parameters unchanged for deployment %#q", deploymentName), "subnet", azureCluster.Spec.NetworkSpec.Subnets[i].Name)
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment %#q is in state %#q", deploymentName, *currentDeployment.Properties.ProvisioningState))
+		r.logger.Debugf(ctx, "deployment %#q is in state %#q", deploymentName, *currentDeployment.Properties.ProvisioningState)
 
 		if key.IsFailedProvisioningState(*currentDeployment.Properties.ProvisioningState) {
 			r.debugger.LogFailedDeployment(ctx, currentDeployment, err)
-			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("removing failed deployment %#q", deploymentName))
+			r.logger.Debugf(ctx, "removing failed deployment %#q", deploymentName)
 			_, err = deploymentsClient.Delete(ctx, key.ClusterID(azureCluster), deploymentName)
 			if err != nil {
 				return microerror.Mask(err)
@@ -214,8 +214,8 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 	// Update AzureCluster so that subnet.ID is saved.
 	err = r.ctrlClient.Update(ctx, azureCluster)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -229,7 +229,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, subnetsClient *network.SubnetsClient, azureCluster capzv1alpha3.AzureCluster) error {
 	subnetsIterator, err := subnetsClient.ListComplete(ctx, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name)
 	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Vnet %#q not found, cancelling resource", azureCluster.Spec.NetworkSpec.Vnet.Name))
+		r.logger.Debugf(ctx, "Vnet %#q not found, cancelling resource", azureCluster.Spec.NetworkSpec.Vnet.Name)
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -241,7 +241,7 @@ func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient 
 		if !isSubnetInAzureClusterSpec(azureCluster, *subnetInAzure.Name) && !isProtectedSubnet(*subnetInAzure.Name) {
 			err = r.deleteSubnet(ctx, subnetsClient, key.ClusterID(&azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name, *subnetInAzure.Name)
 			if IsSubnetInUse(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("subnet %q in Azure still in use by VMSS", *subnetInAzure.Name))
+				r.logger.Debugf(ctx, "subnet %q in Azure still in use by VMSS", *subnetInAzure.Name)
 
 				err = subnetsIterator.NextWithContext(ctx)
 				if err != nil {
@@ -269,33 +269,33 @@ func (r *Resource) garbageCollectSubnets(ctx context.Context, deploymentsClient 
 }
 
 func (r *Resource) deleteARMDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroupName, deploymentName string) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleting subnet %#q ARM deployment", deploymentName))
+	r.logger.Debugf(ctx, "Deleting subnet %#q ARM deployment", deploymentName)
 
 	_, err := deploymentsClient.Delete(ctx, resourceGroupName, deploymentName)
 	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Subnet ARM deployment was already deleted")
+		r.logger.Debugf(ctx, "Subnet ARM deployment was already deleted")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Deleted subnet %#q ARM deployment", deploymentName))
+	r.logger.Debugf(ctx, "Deleted subnet %#q ARM deployment", deploymentName)
 
 	return nil
 }
 
 func (r *Resource) deleteSubnet(ctx context.Context, subnetsClient *network.SubnetsClient, resourceGroupName, virtualNetworkName, subnetName string) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleting subnet %q", subnetName))
+	r.logger.Debugf(ctx, "deleting subnet %q", subnetName)
 
 	_, err := subnetsClient.Delete(ctx, resourceGroupName, virtualNetworkName, subnetName)
 	if IsNotFound(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "Subnet was already deleted")
+		r.logger.Debugf(ctx, "Subnet was already deleted")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deleted subnet %q", subnetName))
+	r.logger.Debugf(ctx, "deleted subnet %q", subnetName)
 
 	return nil
 }
@@ -335,14 +335,14 @@ func (r *Resource) ensureSubnetIsAllowedToStorageAccount(ctx context.Context, st
 	}
 
 	if !isSubnetAllowedToStorageAccount(storageAccount, allocatedSubnet.ID) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring subnet %#q is allowed into storage account", allocatedSubnet.Name))
+		r.logger.Debugf(ctx, "Ensuring subnet %#q is allowed into storage account", allocatedSubnet.Name)
 
 		err = addSubnetToStoreAccountAllowedSubnets(ctx, storageAccountsClient, storageAccount, key.ClusterID(azureCluster), key.StorageAccountName(azureCluster), allocatedSubnet.ID)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensured subnet %#q is allowed into storage account", allocatedSubnet.Name))
+		r.logger.Debugf(ctx, "Ensured subnet %#q is allowed into storage account", allocatedSubnet.Name)
 	}
 
 	return nil
@@ -416,24 +416,24 @@ func (r *Resource) getDeploymentParameters(azureCluster *capzv1alpha3.AzureClust
 // EnsureDeleted is a noop since the deletion of deployments is redirected to
 // the deletion of resource groups because they garbage collect them.
 func (r *Resource) createDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, resourceGroup, deploymentName string, desiredDeployment azureresource.Deployment) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensuring subnet deployment %#q", deploymentName))
+	r.logger.Debugf(ctx, "ensuring subnet deployment %#q", deploymentName)
 
 	res, err := deploymentsClient.CreateOrUpdate(ctx, resourceGroup, deploymentName, desiredDeployment)
 	if err != nil {
 		maskedErr := microerror.Mask(err)
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", desiredDeployment), "stack", microerror.JSON(maskedErr))
+		r.logger.Errorf(ctx, err, "deployment failed; deployment: %#v", desiredDeployment)
 
 		return maskedErr
 	}
 	deploymentExtended, err := deploymentsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
 		maskedErr := microerror.Mask(err)
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment failed; deployment: %#v", deploymentExtended), "stack", microerror.JSON(maskedErr))
+		r.logger.Errorf(ctx, err, "deployment failed; deployment: %#v", deploymentExtended)
 
 		return maskedErr
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured subnet deployment %#q", deploymentName))
+	r.logger.Debugf(ctx, "ensured subnet deployment %#q", deploymentName)
 
 	return nil
 }

@@ -53,7 +53,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring release labels are set on AzureMachines")
+	r.logger.Debugf(ctx, "ensuring release labels are set on AzureMachines")
 
 	azureMachineList := capzv1alpha3.AzureMachineList{}
 	err = r.ctrlClient.List(ctx, &azureMachineList, client.MatchingLabels{capiv1alpha3.ClusterLabelName: key.ClusterName(&cr)})
@@ -76,15 +76,15 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			err = r.ctrlClient.Update(ctx, &m)
 			if apierrors.IsConflict(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-				r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+				r.logger.Debugf(ctx, "cancelling resource")
 				return nil
 			} else if err != nil {
 				return microerror.Mask(err)
 			}
 		}
 	}
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured release labels are set on respective AzureMachines")
+	r.logger.Debugf(ctx, "ensured release labels are set on respective AzureMachines")
 
 	return nil
 }

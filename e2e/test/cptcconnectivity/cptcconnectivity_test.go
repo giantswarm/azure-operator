@@ -65,7 +65,7 @@ func New(config Config) (*Connectivity, error) {
 }
 
 func (s *Connectivity) Test(ctx context.Context) error {
-	s.logger.LogCtx(ctx, "level", "debug", "message", "testing connectivity between control plane cluster and tenant cluster")
+	s.logger.Debugf(ctx, "testing connectivity between control plane cluster and tenant cluster")
 	podName := "e2e-connectivity"
 	podNamespace := setup.OrganizationNamespace
 	pod := &v1.Pod{

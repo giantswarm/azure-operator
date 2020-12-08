@@ -84,7 +84,7 @@ func (c *VirtualNetworkCollector) Collect(ctx context.Context, _ interface{}) ([
 	g := &errgroup.Group{}
 
 	g.Go(func() error {
-		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated virtual networks from AzureConfig CRs")
+		c.logger.Debugf(ctx, "finding allocated virtual networks from AzureConfig CRs")
 
 		virtualNetworks, err := c.getVirtualNetworksFromAzureConfigs(ctx)
 		if err != nil {
@@ -94,13 +94,13 @@ func (c *VirtualNetworkCollector) Collect(ctx context.Context, _ interface{}) ([
 		reservedVirtualNetworks = append(reservedVirtualNetworks, virtualNetworks...)
 		mutex.Unlock()
 
-		c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated virtual networks from AzureConfig CRs")
+		c.logger.Debugf(ctx, "found allocated virtual networks from AzureConfig CRs")
 
 		return nil
 	})
 
 	g.Go(func() error {
-		c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated virtual networks from all resource groups in the subscription")
+		c.logger.Debugf(ctx, "finding allocated virtual networks from all resource groups in the subscription")
 
 		virtualNetworks, err := c.getVirtualNetworksFromAllSubscriptions(ctx)
 		if err != nil {
@@ -110,7 +110,7 @@ func (c *VirtualNetworkCollector) Collect(ctx context.Context, _ interface{}) ([
 		reservedVirtualNetworks = append(reservedVirtualNetworks, virtualNetworks...)
 		mutex.Unlock()
 
-		c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated virtual networks from all resource groups in the subscription")
+		c.logger.Debugf(ctx, "found allocated virtual networks from all resource groups in the subscription")
 
 		return nil
 	})

@@ -2,7 +2,6 @@ package nodepool
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/microerror"
 
@@ -33,7 +32,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 
 	if !machinePool.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "MachinePool is being deleted, skipping reconciling node pool")
+		r.Logger.Debugf(ctx, "MachinePool is being deleted, skipping reconciling node pool")
 		return currentState, nil
 	}
 
@@ -75,25 +74,25 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	switch *currentDeployment.Properties.ProvisioningState {
 	case "Failed", "Canceled":
 		// Deployment is failed or canceled, I need to go back and re-apply it.
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Node Pool deployment is in state %s, we need to reapply it.", *currentDeployment.Properties.ProvisioningState))
+		r.Logger.Debugf(ctx, "Node Pool deployment is in state %s, we need to reapply it.", *currentDeployment.Properties.ProvisioningState)
 		return DeploymentUninitialized, nil
 	case "Succeeded":
 		// Deployment is succeeded, safe to go on.
 	default:
 		// Deployment is still running, we need to wait for another reconciliation loop.
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Node Pool deployment is in state %s, waiting for it to be succeeded.", *currentDeployment.Properties.ProvisioningState))
+		r.Logger.Debugf(ctx, "Node Pool deployment is in state %s, waiting for it to be succeeded.", *currentDeployment.Properties.ProvisioningState)
 		return currentState, nil
 	}
 
 	// All workers ready, we can scale up if needed.
 	desiredWorkerCount := int64(*machinePool.Spec.Replicas * 2)
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The desired number of workers is: %d", desiredWorkerCount))
+	r.Logger.Debugf(ctx, "The desired number of workers is: %d", desiredWorkerCount)
 
 	currentWorkerCount, err := r.GetInstancesCount(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("The current number of workers is: %d", currentWorkerCount))
+	r.Logger.Debugf(ctx, "The current number of workers is: %d", currentWorkerCount)
 
 	if desiredWorkerCount > currentWorkerCount {
 		// Disable cluster autoscaler for this nodepool.
@@ -107,7 +106,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
+		r.Logger.Debugf(ctx, "scaled worker VMSS to %d nodes", desiredWorkerCount)
 
 		// Let's stay in the current state.
 		return currentState, nil
@@ -135,7 +134,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 
 	// Scale down to the desired number of nodes in worker VMSS.
 	desiredWorkerCount := *machinePool.Spec.Replicas
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaling worker VMSS to %d nodes", desiredWorkerCount))
+	r.Logger.Debugf(ctx, "scaling worker VMSS to %d nodes", desiredWorkerCount)
 
 	strategy := scalestrategy.Quick{}
 	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), int64(desiredWorkerCount), strategy)
@@ -143,7 +142,7 @@ func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interf
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("scaled worker VMSS to %d nodes", desiredWorkerCount))
+	r.Logger.Debugf(ctx, "scaled worker VMSS to %d nodes", desiredWorkerCount)
 
 	// Enable cluster autoscaler for this nodepool.
 	err = r.enableClusterAutoscaler(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))

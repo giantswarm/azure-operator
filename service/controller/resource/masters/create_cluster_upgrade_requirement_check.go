@@ -41,7 +41,7 @@ func (r *Resource) clusterUpgradeRequirementCheckTransition(ctx context.Context,
 
 	anyOldNodes, err := nodes.AnyOutOfDate(ctx, tenantClusterK8sClient, key.ReleaseVersion(&cr), releases, map[string]string{"role": "master"})
 	if nodes.IsClientNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not found")
+		r.Logger.Debugf(ctx, "tenant cluster client not found")
 		return currentState, nil
 	} else if err != nil {
 		return "", microerror.Mask(err)

@@ -86,11 +86,11 @@ func (v *VMSKUs) ensureInitialized(ctx context.Context) error {
 }
 
 func (v *VMSKUs) initCache(ctx context.Context) error {
-	v.logger.LogCtx(ctx, "level", "debug", "message", "Initializing cache for VMSKU")
+	v.logger.Debugf(ctx, "Initializing cache for VMSKU")
 	cl := v.azureClientSet.ResourceSkusClient
 
 	filter := fmt.Sprintf("location eq '%s'", v.location)
-	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Filter is: '%s'", filter))
+	v.logger.Debugf(ctx, "Filter is: '%s'", filter)
 	iterator, err := cl.ListComplete(ctx, filter)
 	if err != nil {
 		return microerror.Mask(err)
@@ -111,7 +111,7 @@ func (v *VMSKUs) initCache(ctx context.Context) error {
 
 	v.skus = skus
 
-	v.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Number of SKUs in cache: '%d'", len(skus)))
+	v.logger.Debugf(ctx, "Number of SKUs in cache: '%d'", len(skus))
 
 	return nil
 }

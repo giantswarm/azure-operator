@@ -135,7 +135,7 @@ func (c *AzureMachinePoolSubnetCollector) Collect(ctx context.Context, obj inter
 
 // collectSubnetsFromAzureClusterCR returns all subnets specified in AzureCluster CR.
 func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx context.Context, azureCluster *capzV1alpha3.AzureCluster) ([]net.IPNet, error) {
-	c.logger.LogCtx(ctx, "level", "debug", "message", "finding allocated subnets in AzureCluster CR")
+	c.logger.Debugf(ctx, "finding allocated subnets in AzureCluster CR")
 	azureClusterCRSubnets := make([]net.IPNet, len(azureCluster.Spec.NetworkSpec.Subnets))
 
 	// Collect all the subnets from AzureCluster.Spec.NetworkSpec.Subnets field. If the Subnets
@@ -148,7 +148,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx c
 		azureClusterCRSubnets = append(azureClusterCRSubnets, *subnetIPNet)
 	}
 
-	c.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnets in AzureCluster CR")
+	c.logger.Debugf(ctx, "found allocated subnets in AzureCluster CR")
 	return azureClusterCRSubnets, nil
 }
 

@@ -45,7 +45,7 @@ func NewAzureMachinePoolSubnetChecker(config AzureMachinePoolSubnetCheckerConfig
 // checking if the allocated subnet is set in the corresponding Cluster CR that owns specified
 // AzureMachinePool. Returns allocated subnet or nil.
 func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace string, name string) (*net.IPNet, error) {
-	c.logger.LogCtx(ctx, "level", "debug", "message", "checking if node pool subnet has to be allocated")
+	c.logger.Debugf(ctx, "checking if node pool subnet has to be allocated")
 	var err error
 
 	var azureMachinePool *expcapzv1alpha3.AzureMachinePool
@@ -78,11 +78,11 @@ func (c *AzureMachinePoolSubnetChecker) Check(ctx context.Context, namespace str
 				return nil, microerror.Mask(err)
 			}
 
-			c.logger.LogCtx(ctx, "level", "debug", "message", "found existing node pool subnet")
+			c.logger.Debugf(ctx, "found existing node pool subnet")
 			return subnet, nil
 		}
 	}
 
-	c.logger.LogCtx(ctx, "level", "debug", "message", "node pool subnet not found, new subnet has to be allocated")
+	c.logger.Debugf(ctx, "node pool subnet not found, new subnet has to be allocated")
 	return nil, nil
 }

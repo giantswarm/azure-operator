@@ -2,7 +2,6 @@ package cloudconfig
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
@@ -105,7 +104,7 @@ func New(config Config) (*CloudConfig, error) {
 func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject providerv1alpha1.AzureConfig) (string, error) {
 	secretList := &corev1.SecretList{}
 	{
-		c.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try to find encryption secret in namespace %#q", customObject.Namespace))
+		c.logger.Debugf(ctx, "try to find encryption secret in namespace %#q", customObject.Namespace)
 		err := c.ctrlClient.List(
 			ctx,
 			secretList,
@@ -120,7 +119,7 @@ func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject provider
 		}
 
 		if secretList.Size() < 1 {
-			c.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try to find encryption secret in namespace %#q", corev1.NamespaceDefault))
+			c.logger.Debugf(ctx, "try to find encryption secret in namespace %#q", corev1.NamespaceDefault)
 			err := c.ctrlClient.List(
 				ctx,
 				secretList,
@@ -137,7 +136,7 @@ func (c CloudConfig) getEncryptionkey(ctx context.Context, customObject provider
 	}
 
 	if len(secretList.Items) > 0 {
-		c.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found encryption secret in namespace '%s/%s'", secretList.Items[0].Namespace, secretList.Items[0].Name))
+		c.logger.Debugf(ctx, "found encryption secret in namespace '%s/%s'", secretList.Items[0].Namespace, secretList.Items[0].Name)
 		randomkey, ok := secretList.Items[0].Data[secretKey]
 		if !ok {
 			return "", microerror.Maskf(invalidSecretError, "%q key missing", secretKey)

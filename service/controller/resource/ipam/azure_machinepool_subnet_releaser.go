@@ -43,7 +43,7 @@ func NewAzureMachinePoolSubnetReleaser(config AzureMachinePoolSubnetReleaserConf
 }
 
 func (r *AzureMachinePoolSubnetReleaser) Release(ctx context.Context, subnet net.IPNet, namespace, name string) error {
-	r.logger.LogCtx(ctx, "level", "debug", "message", "releasing allocated subnet from AzureCluster CR")
+	r.logger.Debugf(ctx, "releasing allocated subnet from AzureCluster CR")
 
 	azureMachinePool := &v1alpha3.AzureMachinePool{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: namespace, Name: name}, azureMachinePool)
@@ -56,7 +56,7 @@ func (r *AzureMachinePoolSubnetReleaser) Release(ctx context.Context, subnet net
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "released allocated subnet from AzureCluster CR")
+	r.logger.Debugf(ctx, "released allocated subnet from AzureCluster CR")
 	return nil
 }
 
@@ -77,8 +77,8 @@ func (r *AzureMachinePoolSubnetReleaser) removeSubnetFromAzureCluster(ctx contex
 
 	err = r.ctrlClient.Update(ctx, azureCluster)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "cancelling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
 	} else if err != nil {
 		return microerror.Mask(err)
 	}

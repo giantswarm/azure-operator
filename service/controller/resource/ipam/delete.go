@@ -2,7 +2,6 @@ package ipam
 
 import (
 	"context"
-	"fmt"
 	"net"
 
 	"github.com/giantswarm/microerror"
@@ -20,25 +19,25 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "acquiring lock for IPAM")
+		r.logger.Debugf(ctx, "acquiring lock for IPAM")
 		err := r.locker.Lock(ctx)
 		if locker.IsAlreadyExists(err) {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "lock for IPAM is already acquired")
+			r.logger.Debugf(ctx, "lock for IPAM is already acquired")
 		} else if err != nil {
 			return microerror.Mask(err)
 		} else {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "acquired lock for IPAM")
+			r.logger.Debugf(ctx, "acquired lock for IPAM")
 		}
 
 		defer func() {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "releasing lock for IPAM")
+			r.logger.Debugf(ctx, "releasing lock for IPAM")
 			err := r.locker.Unlock(ctx)
 			if locker.IsNotFound(err) {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "lock for IPAM is already released")
+				r.logger.Debugf(ctx, "lock for IPAM is already released")
 			} else if err != nil {
-				r.logger.LogCtx(ctx, "level", "error", "message", "failed to release lock for IPAM", "stack", fmt.Sprintf("%#v", err))
+				r.logger.Errorf(ctx, err, "failed to release lock for IPAM")
 			} else {
-				r.logger.LogCtx(ctx, "level", "debug", "message", "released lock for IPAM")
+				r.logger.Debugf(ctx, "released lock for IPAM")
 			}
 		}()
 	}
@@ -46,7 +45,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	// Check if subnet is still allocated.
 	var subnet *net.IPNet
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", "finding if subnet is still allocated")
+		r.logger.Debugf(ctx, "finding if subnet is still allocated")
 
 		subnet, err = r.checker.Check(ctx, m.GetNamespace(), m.GetName())
 		if err != nil {
@@ -54,12 +53,12 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		}
 
 		if subnet == nil {
-			r.logger.LogCtx(ctx, "level", "debug", "message", "did not find allocated subnet")
+			r.logger.Debugf(ctx, "did not find allocated subnet")
 			return nil
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "found allocated subnet")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "releasing allocated subnet")
+		r.logger.Debugf(ctx, "found allocated subnet")
+		r.logger.Debugf(ctx, "releasing allocated subnet")
 
 		// Release allocated subnet.
 		err = r.releaser.Release(ctx, *subnet, m.GetNamespace(), m.GetName())
@@ -67,7 +66,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "released allocated subnet")
+		r.logger.Debugf(ctx, "released allocated subnet")
 	}
 
 	return nil

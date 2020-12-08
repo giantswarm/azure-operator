@@ -2,7 +2,6 @@ package client
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
@@ -180,7 +179,7 @@ func (f *OrganizationFactory) GetResourceSkusClient(ctx context.Context, objectM
 }
 
 func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.LogCtx(ctx, "level", "debug", "message", "finding credential secret")
+	f.logger.Debugf(ctx, "finding credential secret")
 
 	var err error
 	var credentialSecret *v1alpha1.CredentialSecret
@@ -189,7 +188,7 @@ func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMet
 	if IsCredentialsNotFoundError(err) {
 		credentialSecret, err = f.getLegacyCredentialSecret(ctx, objectMeta)
 		if IsCredentialsNotFoundError(err) {
-			f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("did not find credential secret, using default '%s/%s'", credentialDefaultNamespace, credentialDefaultName))
+			f.logger.Debugf(ctx, "did not find credential secret, using default '%s/%s'", credentialDefaultNamespace, credentialDefaultName)
 			return &v1alpha1.CredentialSecret{
 				Namespace: credentialDefaultNamespace,
 				Name:      credentialDefaultName,
@@ -206,7 +205,7 @@ func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMet
 
 // getOrganizationCredentialSecret tries to find a Secret in the organization namespace.
 func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta)))
+	f.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta))
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
@@ -241,7 +240,7 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 		Name:      secret.Name,
 	}
 
-	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
+	f.logger.Debugf(ctx, "found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name)
 
 	return credentialSecret, nil
 }
@@ -249,7 +248,7 @@ func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Contex
 // getLegacyCredentialSecret tries to find a Secret in the default credentials namespace but labeled with the organization name.
 // This is needed while we migrate everything to the org namespace and org credentials are created in the org namespace instead of the default namespace.
 func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
-	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("try in namespace %#q filtering by organization %#q", credentialDefaultNamespace, key.OrganizationID(&objectMeta)))
+	f.logger.Debugf(ctx, "try in namespace %#q filtering by organization %#q", credentialDefaultNamespace, key.OrganizationID(&objectMeta))
 	secretList := &corev1.SecretList{}
 	{
 		err := f.ctrlClient.List(
@@ -284,7 +283,7 @@ func (f *OrganizationFactory) getLegacyCredentialSecret(ctx context.Context, obj
 		Name:      secret.Name,
 	}
 
-	f.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name))
+	f.logger.Debugf(ctx, "found credential secret %s/%s", credentialSecret.Namespace, credentialSecret.Name)
 
 	return credentialSecret, nil
 }

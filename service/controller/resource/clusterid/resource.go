@@ -52,7 +52,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring cluster id label is set")
+	r.logger.Debugf(ctx, "ensuring cluster id label is set")
 
 	{
 		// Refresh the CR object.
@@ -70,20 +70,20 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if !exists || v != cr.Spec.Cluster.ID {
 		cr.Labels[label.Cluster] = cr.Spec.Cluster.ID
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updating CR labels with cluster id")
+		r.logger.Debugf(ctx, "updating CR labels with cluster id")
 
 		err := r.ctrlClient.Update(ctx, &cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "updated CR labels with cluster id")
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling reconciliation")
+		r.logger.Debugf(ctx, "updated CR labels with cluster id")
+		r.logger.Debugf(ctx, "canceling reconciliation")
 		reconciliationcanceledcontext.SetCanceled(ctx)
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured cluster id label is set")
+	r.logger.Debugf(ctx, "ensured cluster id label is set")
 
 	return nil
 }

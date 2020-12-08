@@ -2,7 +2,6 @@ package masters
 
 import (
 	"context"
-	"fmt"
 
 	releasev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -31,15 +30,15 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment should be completed but is not found")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "going back to DeploymentUninitialized")
+		r.Logger.Debugf(ctx, "deployment should be completed but is not found")
+		r.Logger.Debugf(ctx, "going back to DeploymentUninitialized")
 		return Empty, nil
 	} else if err != nil {
 		return Empty, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+	r.Logger.Debugf(ctx, "deployment is in state '%s'", s)
 
 	group, err := groupsClient.Get(ctx, key.ClusterID(&cr))
 	if err != nil {
@@ -68,20 +67,20 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 
 		anyOldNodes, err := nodes.AnyOutOfDate(ctx, tenantClusterK8sClient, key.ReleaseVersion(&cr), releases, map[string]string{"role": "master"})
 		if nodes.IsClientNotFound(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster client not found")
+			r.Logger.Debugf(ctx, "tenant cluster client not found")
 			return currentState, nil
 		} else if err != nil {
 			return "", microerror.Mask(err)
 		}
 
 		if anyOldNodes {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant cluster has master node[s] out of date")
+			r.Logger.Debugf(ctx, "tenant cluster has master node[s] out of date")
 			return Empty, nil
 		}
 
 		computedDeployment, err := r.newDeployment(ctx, cr, nil, *group.Location)
 		if blobclient.IsBlobNotFound(err) {
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "ignition blob not found")
+			r.Logger.Debugf(ctx, "ignition blob not found")
 			return currentState, nil
 		} else if err != nil {
 			return "", microerror.Mask(err)
@@ -107,12 +106,12 @@ func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interf
 			}
 
 			if currentDeploymentTemplateChk != desiredDeploymentTemplateChk || currentDeploymentParametersChk != desiredDeploymentParametersChk {
-				r.Logger.LogCtx(ctx, "level", "debug", "message", "template or parameters changed")
+				r.Logger.Debugf(ctx, "template or parameters changed")
 				// As current and desired state differs, start process from the beginning.
 				return Empty, nil
 			}
 
-			r.Logger.LogCtx(ctx, "level", "debug", "message", "template and parameters unchanged")
+			r.Logger.Debugf(ctx, "template and parameters unchanged")
 
 			return currentState, nil
 		}

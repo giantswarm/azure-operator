@@ -2,7 +2,6 @@ package masters
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/microerror"
 
@@ -22,16 +21,16 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 
 	d, err := deploymentsClient.Get(ctx, key.ClusterID(&cr), key.MastersVmssDeploymentName)
 	if IsDeploymentNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "deployment not found")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "waiting for creation")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "deployment not found")
+		r.Logger.Debugf(ctx, "waiting for creation")
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if err != nil {
 		return Empty, microerror.Mask(err)
 	}
 
 	s := *d.Properties.ProvisioningState
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("deployment is in state '%s'", s))
+	r.Logger.Debugf(ctx, "deployment is in state '%s'", s)
 
 	if !key.IsSucceededProvisioningState(s) {
 		r.Debugger.LogFailedDeployment(ctx, d, err)

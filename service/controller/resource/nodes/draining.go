@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) CreateDrainerConfig(ctx context.Context, clusterID, clusterAPIEndpoint string, nodeName string) error {
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "creating drainer config for tenant cluster node")
+	r.Logger.Debugf(ctx, "creating drainer config for tenant cluster node")
 
 	c := &corev1alpha1.DrainerConfig{
 		ObjectMeta: metav1.ObjectMeta{
@@ -42,12 +42,12 @@ func (r *Resource) CreateDrainerConfig(ctx context.Context, clusterID, clusterAP
 
 	err := r.CtrlClient.Create(ctx, c)
 	if errors.IsAlreadyExists(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "did not create drainer config for tenant cluster node")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "drainer config for tenant cluster node does already exist")
+		r.Logger.Debugf(ctx, "did not create drainer config for tenant cluster node")
+		r.Logger.Debugf(ctx, "drainer config for tenant cluster node does already exist")
 	} else if err != nil {
 		return microerror.Mask(err)
 	} else {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "created drainer config for tenant cluster node")
+		r.Logger.Debugf(ctx, "created drainer config for tenant cluster node")
 	}
 
 	return nil

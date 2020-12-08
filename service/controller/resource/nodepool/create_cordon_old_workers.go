@@ -2,7 +2,6 @@ package nodepool
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
@@ -40,21 +39,21 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	if !cluster.GetDeletionTimestamp().IsZero() {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "Cluster is being deleted, skipping reconciling node pool")
+		r.Logger.Debugf(ctx, "Cluster is being deleted, skipping reconciling node pool")
 		return currentState, nil
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "tenant API not available yet")
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "tenant API not available yet")
+		r.Logger.Debugf(ctx, "canceling resource")
 
 		return currentState, nil
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all tenant cluster nodes")
+	r.Logger.Debugf(ctx, "finding all tenant cluster nodes")
 
 	oldNodes, newNodes, err := r.sortNodesByTenantVMState(ctx, tenantClusterK8sClient, &azureMachinePool, key.NodePoolInstanceName)
 	if err != nil {
@@ -62,13 +61,13 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 	if len(newNodes) < len(oldNodes) {
 		// Wait until there's enough new nodes up.
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes)))
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "number of new nodes (%d) is smaller than number of old nodes (%d)", len(newNodes), len(oldNodes))
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes)))
-	r.Logger.LogCtx(ctx, "level", "debug", "message", "ensuring old nodes are cordoned")
+	r.Logger.Debugf(ctx, "found %d old and %d new nodes from tenant cluster", len(oldNodes), len(newNodes))
+	r.Logger.Debugf(ctx, "ensuring old nodes are cordoned")
 
 	oldNodesCordoned, err := r.ensureNodesCordoned(ctx, tenantClusterK8sClient, oldNodes)
 	if err != nil {
@@ -76,12 +75,12 @@ func (r *Resource) cordonOldWorkersTransition(ctx context.Context, obj interface
 	}
 
 	if oldNodesCordoned < len(oldNodes) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("not all old nodes are still cordoned; %d pending", len(oldNodes)-oldNodesCordoned))
+		r.Logger.Debugf(ctx, "not all old nodes are still cordoned; %d pending", len(oldNodes)-oldNodesCordoned)
 
 		return currentState, nil
 	}
 
-	r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("ensured all old nodes (%d) are cordoned", oldNodesCordoned))
+	r.Logger.Debugf(ctx, "ensured all old nodes (%d) are cordoned", oldNodesCordoned)
 
 	return WaitForWorkersToBecomeReady, nil
 }
@@ -141,14 +140,14 @@ func (r *Resource) sortNodesByTenantVMState(ctx context.Context, tenantClusterK8
 
 	var allWorkerInstances []compute.VirtualMachineScaleSetVM
 	{
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "finding all worker VMSS instances")
+		r.Logger.Debugf(ctx, "finding all worker VMSS instances")
 
 		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
 		if err != nil {
 			return nil, nil, microerror.Mask(err)
 		}
 
-		r.Logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("found %d worker VMSS instances", len(allWorkerInstances)))
+		r.Logger.Debugf(ctx, "found %d worker VMSS instances", len(allWorkerInstances))
 	}
 
 	nodeMap := make(map[string]corev1.Node)

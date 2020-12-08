@@ -54,7 +54,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensuring azureconfig doesn't have orphaned azure-operator finalizer present")
+	r.logger.Debugf(ctx, "ensuring azureconfig doesn't have orphaned azure-operator finalizer present")
 
 	{
 		// Refresh the CR object.
@@ -76,18 +76,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if exists {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleting legacy finalizer from azureconfig")
+		r.logger.Debugf(ctx, "deleting legacy finalizer from azureconfig")
 
 		err := r.ctrlClient.Update(ctx, &cr)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.LogCtx(ctx, "level", "debug", "message", "deleted legacy finalizer from azureconfig")
+		r.logger.Debugf(ctx, "deleted legacy finalizer from azureconfig")
 		return nil
 	}
 
-	r.logger.LogCtx(ctx, "level", "debug", "message", "ensured azureconfig doesn't have orphaned azure-operator finalizer present")
+	r.logger.Debugf(ctx, "ensured azureconfig doesn't have orphaned azure-operator finalizer present")
 
 	return nil
 }

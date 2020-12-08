@@ -52,9 +52,9 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	certificateEncryptionSecretName := key.CertificateEncryptionSecretName(&obj)
 	encrypter, err := r.GetEncrypterObject(ctx, certificateEncryptionSecretName)
 	if apierrors.IsNotFound(err) {
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
+		r.Logger.Debugf(ctx, "encryptionkey secret is not found", "secretname", certificateEncryptionSecretName)
 		resourcecanceledcontext.SetCanceled(ctx)
-		r.Logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.Logger.Debugf(ctx, "canceling resource")
 		return azureresource.Deployment{}, nil
 	} else if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
