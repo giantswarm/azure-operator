@@ -352,7 +352,7 @@ func InstanceIDFromNode(node v1.Node) (string, error) {
 // IsClusterCreating check if the cluster is being created.
 func IsClusterCreating(cr providerv1alpha1.AzureConfig) bool {
 	// When cluster creation is in the beginning, it doesn't necessarily have
-	// any status azureconditions yet.
+	// any status conditions yet.
 	if len(cr.Status.Cluster.Conditions) == 0 {
 		return true
 	}
