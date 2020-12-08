@@ -22,7 +22,7 @@ const (
 )
 
 func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
-	r.logDebug(ctx, "ensuring condition %s", azureconditions.VMSSReadyCondition)
+	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.VMSSReadyCondition)
 
 	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
@@ -87,7 +87,7 @@ func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePoo
 
 	// Log current VMSSReady condition
 	r.logConditionStatus(ctx, azureMachinePool, azureconditions.VMSSReadyCondition)
-	r.logDebug(ctx, "ensured condition %s", azureconditions.VMSSReadyCondition)
+	r.logger.Debugf(ctx, "ensured condition %s", azureconditions.VMSSReadyCondition)
 	return nil
 }
 

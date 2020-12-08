@@ -25,7 +25,7 @@ const (
 )
 
 func (r *Resource) ensureVPNGatewayReadyCondition(ctx context.Context, azureCluster *capz.AzureCluster) error {
-	r.logDebug(ctx, "ensuring condition %s", azureconditions.VPNGatewayReadyCondition)
+	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.VPNGatewayReadyCondition)
 	var err error
 
 	// Get Azure Deployments client
@@ -76,7 +76,7 @@ func (r *Resource) ensureVPNGatewayReadyCondition(ctx context.Context, azureClus
 		r.setProvisioningStateWarning(ctx, azureCluster, currentProvisioningState)
 	}
 
-	r.logDebug(ctx, "finished ensuring condition %s", azureconditions.VPNGatewayReadyCondition)
+	r.logger.Debugf(ctx, "finished ensuring condition %s", azureconditions.VPNGatewayReadyCondition)
 
 	return nil
 }
@@ -121,7 +121,7 @@ func (r *Resource) setProvisioningStateWarning(ctx context.Context, azureCluster
 		message,
 		messageArgs...)
 
-	r.logDebug(ctx, message, messageArgs...)
+	r.logger.Debugf(ctx, message, messageArgs...)
 }
 
 func (r *Resource) setProvisioningStateUnknown(ctx context.Context, azureCluster *capz.AzureCluster) {
@@ -135,7 +135,7 @@ func (r *Resource) setProvisioningStateUnknown(ctx context.Context, azureCluster
 		message,
 		messageArgs)
 
-	r.logDebug(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *Resource) setVPNGatewayDeploymentNotFound(ctx context.Context, azureCluster *capz.AzureCluster) {
@@ -149,5 +149,5 @@ func (r *Resource) setVPNGatewayDeploymentNotFound(ctx context.Context, azureClu
 		message,
 		messageArgs)
 
-	r.logDebug(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }

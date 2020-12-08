@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) ensureReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
-	r.logDebug(ctx, "ensuring condition Ready")
+	r.logger.Debugf(ctx, "ensuring condition Ready")
 	var err error
 
 	// Ensure VMMSReady condition
@@ -43,7 +43,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureMachinePool *c
 
 	// Now check current Ready condition so we can log the value
 	r.logConditionStatus(ctx, azureMachinePool, capi.ReadyCondition)
-	r.logDebug(ctx, "ensured condition Ready")
+	r.logger.Debugf(ctx, "ensured condition Ready")
 	return nil
 }
 
@@ -61,6 +61,6 @@ func (r *Resource) logConditionStatus(ctx context.Context, azureMachinePool *cap
 			messageArgs = append(messageArgs, condition.Severity)
 			messageArgs = append(messageArgs, condition.Message)
 		}
-		r.logDebug(ctx, messageFormat, messageArgs...)
+		r.logger.Debugf(ctx, messageFormat, messageArgs...)
 	}
 }

@@ -12,7 +12,7 @@ import (
 )
 
 func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.AzureCluster) error {
-	r.logDebug(ctx, "setting condition Ready")
+	r.logger.Debugf(ctx, "setting condition Ready")
 
 	// Note: This is an incomplete implementation that checks only resource
 	// group, because it's created in the beginning, and the VPN Gateway,
@@ -48,7 +48,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.
 			messageArgs = append(messageArgs, readyCondition.Severity)
 			messageArgs = append(messageArgs, readyCondition.Message)
 		}
-		r.logDebug(ctx, messageFormat, messageArgs...)
+		r.logger.Debugf(ctx, messageFormat, messageArgs...)
 
 		azureCluster.Status.Ready = capiconditions.IsTrue(azureCluster, capi.ReadyCondition)
 	}

@@ -11,7 +11,7 @@ import (
 )
 
 func (r *Resource) ensureReadyCondition(ctx context.Context, azureMachine *capz.AzureMachine) error {
-	r.logDebug(ctx, "ensuring condition Ready")
+	r.logger.Debugf(ctx, "ensuring condition Ready")
 	var err error
 
 	// Ensure SubnetReady condition
@@ -42,6 +42,6 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureMachine *capz.
 
 	// Now check current Ready condition so we can log the value
 	r.logConditionStatus(ctx, azureMachine, capi.ReadyCondition)
-	r.logDebug(ctx, "ensured condition Ready")
+	r.logger.Debugf(ctx, "ensured condition Ready")
 	return nil
 }

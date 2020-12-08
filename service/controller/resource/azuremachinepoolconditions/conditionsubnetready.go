@@ -20,7 +20,7 @@ const (
 )
 
 func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
-	r.logDebug(ctx, "ensuring condition %s", azureconditions.SubnetReadyCondition)
+	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.SubnetReadyCondition)
 
 	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
@@ -70,7 +70,7 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachineP
 	}
 
 	r.logConditionStatus(ctx, azureMachinePool, azureconditions.SubnetReadyCondition)
-	r.logDebug(ctx, "ensured condition %s", azureconditions.SubnetReadyCondition)
+	r.logger.Debugf(ctx, "ensured condition %s", azureconditions.SubnetReadyCondition)
 	return nil
 }
 

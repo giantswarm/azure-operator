@@ -70,10 +70,6 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) logDebug(ctx context.Context, message string, messageArgs ...interface{}) {
-	r.logger.Debugf(ctx, message, messageArgs...)
-}
-
 func (r *Resource) logWarning(ctx context.Context, message string, messageArgs ...interface{}) {
 	r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf(message, messageArgs...))
 }
@@ -92,6 +88,6 @@ func (r *Resource) logConditionStatus(ctx context.Context, azureMachine *capz.Az
 			messageArgs = append(messageArgs, condition.Severity)
 			messageArgs = append(messageArgs, condition.Message)
 		}
-		r.logDebug(ctx, messageFormat, messageArgs...)
+		r.logger.Debugf(ctx, messageFormat, messageArgs...)
 	}
 }
