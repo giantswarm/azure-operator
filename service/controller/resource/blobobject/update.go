@@ -71,7 +71,7 @@ func (r *Resource) newUpdateChange(ctx context.Context, currentState, desiredSta
 		if objectInSliceByKeyAndBody(desiredContainerObject, currentContainerObjects) {
 			r.logger.Debugf(ctx, "container object %#q should not be updated", desiredContainerObject.Key)
 		} else {
-			r.logger.Debugf(ctx, "container object %#q should be updated", desiredContainerObject.Key)
+			r.logger.Debugf(ctx, "container object %#q should be updated, desired: %#q", desiredContainerObject.Key, desiredContainerObject.Body)
 			updateState = append(updateState, desiredContainerObject)
 		}
 	}
