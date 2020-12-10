@@ -1,4 +1,4 @@
-package machinepoolconditions
+package azuremachineconditions
 
 import (
 	"context"

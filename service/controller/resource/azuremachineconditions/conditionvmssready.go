@@ -1,4 +1,4 @@
-package azuremachinepoolconditions
+package azuremachineconditions
 
 import (
 	"context"
@@ -6,7 +6,7 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
-	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
@@ -21,17 +21,17 @@ const (
 	VMSSProvisioningStateFailed        = string(compute.ProvisioningStateFailed)
 )
 
-func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
+func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, cr *capz.AzureMachine) error {
 	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.VMSSReadyCondition)
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
 	// Now let's first check ARM deployment state
-	deploymentName := key.NodePoolDeploymentName(azureMachinePool)
-	isDeploymentSuccessful, err := r.deploymentChecker.CheckIfDeploymentIsSuccessful(ctx, deploymentsClient, azureMachinePool, deploymentName, azureconditions.VMSSReadyCondition)
+	deploymentName := key.MastersVmssDeploymentName
+	isDeploymentSuccessful, err := r.deploymentChecker.CheckIfDeploymentIsSuccessful(ctx, deploymentsClient, cr, deploymentName, azureconditions.VMSSReadyCondition)
 	if err != nil {
 		return microerror.Mask(err)
 	} else if !isDeploymentSuccessful {
@@ -43,17 +43,17 @@ func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, azureMachinePoo
 
 	// Deployment is successful, we proceed with checking the actual Azure
 	// VMSS.
-	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, cr.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	resourceGroupName := key.ClusterName(azureMachinePool)
-	vmssName := key.NodePoolVMSSName(azureMachinePool)
+	resourceGroupName := key.ClusterName(cr)
+	vmssName := key.MasterVMSSNameFromClusterAPIObject(cr)
 
 	vmss, err := vmssClient.Get(ctx, resourceGroupName, vmssName)
 	if IsNotFound(err) {
-		r.setVMSSNotFound(ctx, azureMachinePool, vmssName, azureconditions.VMSSReadyCondition)
+		r.setVMSSNotFound(ctx, cr, vmssName, azureconditions.VMSSReadyCondition)
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
@@ -69,24 +69,24 @@ func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, azureMachinePoo
 	// already checked the deployment, but it's not impossible that the VMSS
 	// resource got changed for some reason.
 	if vmss.ProvisioningState == nil {
-		r.setVMSSProvisioningStateUnknown(ctx, azureMachinePool, deploymentName, azureconditions.VMSSReadyCondition)
+		r.setVMSSProvisioningStateUnknown(ctx, cr, deploymentName, azureconditions.VMSSReadyCondition)
 		return nil
 	}
 
 	switch *vmss.ProvisioningState {
 	// VMSS provisioning state is Succeeded, all good.
 	case VMSSProvisioningStateSucceeded:
-		capiconditions.MarkTrue(azureMachinePool, azureconditions.VMSSReadyCondition)
+		capiconditions.MarkTrue(cr, azureconditions.VMSSReadyCondition)
 	// VMSS provisioning state is Failed, VMSS has some issues.
 	case VMSSProvisioningStateFailed:
-		r.setVMSSProvisioningStateFailed(ctx, azureMachinePool, vmssName, azureconditions.VMSSReadyCondition)
+		r.setVMSSProvisioningStateFailed(ctx, cr, vmssName, azureconditions.VMSSReadyCondition)
 	default:
 		// VMSS provisioning state not Succeeded, set current state to VMSSReady condition.
-		r.setVMSSProvisioningStateWarning(ctx, azureMachinePool, vmssName, *vmss.ProvisioningState, azureconditions.VMSSReadyCondition)
+		r.setVMSSProvisioningStateWarning(ctx, cr, vmssName, *vmss.ProvisioningState, azureconditions.VMSSReadyCondition)
 	}
 
 	// Log current VMSSReady condition
-	r.logConditionStatus(ctx, azureMachinePool, azureconditions.VMSSReadyCondition)
+	r.logConditionStatus(ctx, cr, azureconditions.VMSSReadyCondition)
 	r.logger.Debugf(ctx, "ensured condition %s", azureconditions.VMSSReadyCondition)
 	return nil
 }

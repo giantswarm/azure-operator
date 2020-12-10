@@ -4,12 +4,10 @@ import (
 	"context"
 	"fmt"
 
-	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
+	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
-
-	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 )
 
 // isCreationCompleted checks if the cluster creation has been completed.
@@ -17,11 +15,11 @@ func (r *Resource) isCreationCompleted(ctx context.Context, cluster *capi.Cluste
 	r.logger.Debugf(ctx, "checking if cluster creation has been completed")
 
 	// Here we expect that Cluster Creating conditions is set to True.
-	creatingCondition := capiconditions.Get(cluster, aeconditions.CreatingCondition)
-	if !conditions.IsTrue(creatingCondition) {
+	creatingCondition, creatingConditionSet := conditions.GetCreating(cluster)
+	if !creatingConditionSet || !conditions.IsTrue(&creatingCondition) {
 		err := microerror.Maskf(
 			conditions.UnexpectedConditionStatusError,
-			conditions.ExpectedTrueErrorMessage(cluster, aeconditions.CreatingCondition))
+			conditions.ExpectedTrueErrorMessage(cluster, conditions.Creating))
 		return false, err
 	}
 

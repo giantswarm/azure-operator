@@ -1,14 +1,15 @@
-package azuremachinepoolconditions
+package azureconditions
 
 import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/micrologger"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
+	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -20,7 +21,34 @@ const (
 	DeploymentProvisioningStateFailed        = "Failed"
 )
 
-func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deploymentsClient *resources.DeploymentsClient, cr conditions.CR, deploymentName string, conditionType capi.ConditionType) (bool, error) {
+type DeploymentCheckerConfig struct {
+	CtrlClient client.Client
+	Logger     micrologger.Logger
+}
+
+// Resource ensures that AzureMachinePool Status Conditions are set.
+type DeploymentChecker struct {
+	ctrlClient client.Client
+	logger     micrologger.Logger
+}
+
+func NewDeploymentChecker(config DeploymentCheckerConfig) (*DeploymentChecker, error) {
+	if config.CtrlClient == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
+	}
+	if config.Logger == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+
+	r := &DeploymentChecker{
+		ctrlClient: config.CtrlClient,
+		logger:     config.Logger,
+	}
+
+	return r, nil
+}
+
+func (r *DeploymentChecker) CheckIfDeploymentIsSuccessful(ctx context.Context, deploymentsClient *resources.DeploymentsClient, cr capiconditions.Setter, deploymentName string, conditionType capi.ConditionType) (bool, error) {
 	deployment, err := deploymentsClient.Get(ctx, key.ClusterName(cr), deploymentName)
 	if IsNotFound(err) {
 		// Deployment has not been found, which means that we still
@@ -28,8 +56,8 @@ func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deployment
 		r.setDeploymentNotFound(ctx, cr, deploymentName, conditionType)
 		return false, nil
 	} else if err != nil {
-		// Error while getting Subnet deployment, let's check if
-		// deployment provisioning state is set.
+		// Error while getting deployment, let's check if deployment provisioning
+		// state is set.
 		if !isProvisioningStateSet(&deployment) {
 			return false, microerror.Mask(err)
 		}
@@ -39,25 +67,24 @@ func (r *Resource) checkIfDeploymentIsSuccessful(ctx context.Context, deployment
 		return false, nil
 	}
 
-	// We got the Subnet deployment without errors, but for some reason the provisioning state is
-	// not set.
+	// We got the deployment without errors, but for some reason the provisioning
+	// state is not set.
 	if !isProvisioningStateSet(&deployment) {
 		r.setProvisioningStateUnknown(ctx, cr, deploymentName, conditionType)
 		return false, nil
 	}
 
-	// Now let's finally check what's the current subnet deployment
-	// provisioning state.
+	// Now let's finally check what's the current deployment provisioning state.
 	currentProvisioningState := *deployment.Properties.ProvisioningState
 
 	switch currentProvisioningState {
 	case DeploymentProvisioningStateSucceeded:
 		return true, nil
 	case DeploymentProvisioningStateFailed:
-		// Subnet deployment has failed.
+		// Deployment has failed.
 		r.setProvisioningStateWarningFailed(ctx, cr, deploymentName, conditionType)
 	default:
-		// Subnet deployment is probably still running.
+		// Deployment is probably still running.
 		r.setProvisioningStateWarning(ctx, cr, deploymentName, currentProvisioningState, conditionType)
 	}
 
@@ -74,7 +101,7 @@ func isProvisioningStateSet(deployment *resources.DeploymentExtended) bool {
 	return false
 }
 
-func (r *Resource) setProvisioningStateWarningFailed(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
+func (r *DeploymentChecker) setProvisioningStateWarningFailed(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
 	message := "Deployment %s failed, it might succeed after retrying, see Azure portal for more details"
 	messageArgs := deploymentName
 	reason := DeploymentProvisioningStatePrefix + DeploymentProvisioningStateFailed
@@ -87,10 +114,10 @@ func (r *Resource) setProvisioningStateWarningFailed(ctx context.Context, cr cap
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
-func (r *Resource) setProvisioningStateWarning(ctx context.Context, cr capiconditions.Setter, deploymentName string, currentProvisioningState string, condition capi.ConditionType) {
+func (r *DeploymentChecker) setProvisioningStateWarning(ctx context.Context, cr capiconditions.Setter, deploymentName string, currentProvisioningState string, condition capi.ConditionType) {
 	message := "Deployment %s has not succeeded yet, current state is %s, " +
 		"check back in few minutes, see Azure portal for more details"
 	messageArgs := []interface{}{deploymentName, currentProvisioningState}
@@ -104,10 +131,10 @@ func (r *Resource) setProvisioningStateWarning(ctx context.Context, cr capicondi
 		message,
 		messageArgs...)
 
-	r.logWarning(ctx, message, messageArgs...)
+	r.logger.Debugf(ctx, message, messageArgs...)
 }
 
-func (r *Resource) setProvisioningStateUnknown(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
+func (r *DeploymentChecker) setProvisioningStateUnknown(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
 	message := "Deployment %s provisioning state not returned by Azure API, check back in few minutes"
 	messageArgs := deploymentName
 	capiconditions.MarkFalse(
@@ -118,10 +145,10 @@ func (r *Resource) setProvisioningStateUnknown(ctx context.Context, cr capicondi
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
-func (r *Resource) setDeploymentNotFound(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
+func (r *DeploymentChecker) setDeploymentNotFound(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
 	message := "Deployment %s is not found, check back in few minutes"
 	messageArgs := deploymentName
 	capiconditions.MarkFalse(
@@ -132,5 +159,5 @@ func (r *Resource) setDeploymentNotFound(ctx context.Context, cr capiconditions.
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }

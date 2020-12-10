@@ -5,6 +5,8 @@ import (
 	"time"
 
 	"github.com/giantswarm/certs/v3/pkg/certs"
+	"github.com/giantswarm/conditions-handler/pkg/factory"
+	conditionshandler "github.com/giantswarm/conditions-handler/pkg/handler"
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -19,7 +21,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolupgrade"
@@ -113,12 +114,13 @@ func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, 
 
 	var machinePoolConditionsResource resource.Interface
 	{
-		c := machinepoolconditions.Config{
+		c := conditionshandler.Config{
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
+			Name:       "machinepoolconditions",
 		}
 
-		machinePoolConditionsResource, err = machinepoolconditions.New(c)
+		machinePoolConditionsResource, err = factory.NewMachinePoolConditionsHandler(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

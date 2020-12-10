@@ -1,4 +1,4 @@
-package machinepoolconditions
+package azuremachineconditions
 
 import (
 	"github.com/Azure/go-autorest/autorest"

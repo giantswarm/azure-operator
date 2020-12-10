@@ -2,7 +2,6 @@ package capzcrs
 
 import (
 	"context"
-	"fmt"
 	"reflect"
 	"strconv"
 
@@ -199,7 +198,7 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 			Kind:       "AzureMachine",
 		},
 		ObjectMeta: metav1.ObjectMeta{
-			Name:      fmt.Sprintf("%s-master-0", key.ClusterID(&cr)),
+			Name:      key.AzureMachineName(&cr),
 			Namespace: key.OrganizationNamespace(&cr),
 			Labels: map[string]string{
 				label.AzureOperatorVersion:                key.OperatorVersion(&cr),

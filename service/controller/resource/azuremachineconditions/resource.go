@@ -1,8 +1,14 @@
-package azuremachinepoolconditions
+package azuremachineconditions
 
 import (
+	"context"
+
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
+	corev1 "k8s.io/api/core/v1"
+	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
+	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
+	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	azureclient "github.com/giantswarm/azure-operator/v5/client"
@@ -11,7 +17,7 @@ import (
 
 const (
 	// Name is the identifier of the resource.
-	Name = "azuremachinepoolconditions"
+	Name = "azuremachineconditions"
 )
 
 type Config struct {
@@ -61,4 +67,22 @@ func New(config Config) (*Resource, error) {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
+}
+
+func (r *Resource) logConditionStatus(ctx context.Context, azureMachine *capz.AzureMachine, conditionType capi.ConditionType) {
+	condition := capiconditions.Get(azureMachine, conditionType)
+
+	if condition == nil {
+		r.logger.Debugf(ctx, "condition %s not set", conditionType)
+	} else {
+		messageFormat := "condition %s set to %s"
+		messageArgs := []interface{}{conditionType, condition.Status}
+		if condition.Status != corev1.ConditionTrue {
+			messageFormat += ", Reason=%s, Severity=%s, Message=%s"
+			messageArgs = append(messageArgs, condition.Reason)
+			messageArgs = append(messageArgs, condition.Severity)
+			messageArgs = append(messageArgs, condition.Message)
+		}
+		r.logger.Debugf(ctx, messageFormat, messageArgs...)
+	}
 }

@@ -4,22 +4,20 @@ import (
 	"context"
 	"time"
 
-	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
+	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
-
-	"github.com/giantswarm/azure-operator/v5/pkg/conditions"
 )
 
 func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster) (bool, error) {
 	r.logger.Debugf(ctx, "checking if cluster upgrade has been completed")
 	// Here we expect that Cluster Upgrading conditions is set to True.
-	upgradingCondition := capiconditions.Get(cluster, aeconditions.UpgradingCondition)
-	if !conditions.IsTrue(upgradingCondition) {
+	upgradingCondition, upgradingConditionSet := conditions.GetUpgrading(cluster)
+	if !upgradingConditionSet || !conditions.IsTrue(&upgradingCondition) {
 		err := microerror.Maskf(
 			conditions.UnexpectedConditionStatusError,
-			conditions.ExpectedTrueErrorMessage(cluster, aeconditions.UpgradingCondition))
+			conditions.ExpectedTrueErrorMessage(cluster, conditions.Upgrading))
 		return false, err
 	}
 

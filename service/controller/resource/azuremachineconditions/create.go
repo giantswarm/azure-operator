@@ -1,4 +1,4 @@
-package machinepoolconditions
+package azuremachineconditions
 
 import (
 	"context"
@@ -10,22 +10,18 @@ import (
 
 func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 	var err error
-	machinePool, err := key.ToMachinePool(cr)
+	azureMachine, err := key.ToAzureMachine(cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = r.ensureReadyCondition(ctx, &machinePool)
+	// ensure Ready condition
+	err = r.ensureReadyCondition(ctx, &azureMachine)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	err = r.ensureUpgradingCondition(ctx, &machinePool)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.ctrlClient.Status().Update(ctx, &machinePool)
+	err = r.ctrlClient.Status().Update(ctx, &azureMachine)
 	if err != nil {
 		return microerror.Mask(err)
 	}

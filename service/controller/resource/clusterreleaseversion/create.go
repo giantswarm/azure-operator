@@ -4,9 +4,8 @@ import (
 	"context"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
-	aeconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions"
+	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
-	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
 	azopannotation "github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -22,12 +21,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 
 	updateReleaseVersion := false
 
-	if capiconditions.IsTrue(&cluster, aeconditions.CreatingCondition) {
+	if conditions.IsCreatingTrue(&cluster) {
 		updateReleaseVersion, err = r.isCreationCompleted(ctx, &cluster)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-	} else if capiconditions.IsTrue(&cluster, aeconditions.UpgradingCondition) {
+	} else if conditions.IsUpgradingTrue(&cluster) {
 		updateReleaseVersion, err = r.isUpgradeCompleted(ctx, &cluster)
 		if err != nil {
 			return microerror.Mask(err)
