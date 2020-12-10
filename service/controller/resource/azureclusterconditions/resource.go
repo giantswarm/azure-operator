@@ -1,9 +1,6 @@
 package azureclusterconditions
 
 import (
-	"context"
-	"fmt"
-
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
@@ -53,8 +50,4 @@ func New(config Config) (*Resource, error) {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-func (r *Resource) logWarning(ctx context.Context, message string, messageArgs ...interface{}) {
-	r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf(message, messageArgs...))
 }

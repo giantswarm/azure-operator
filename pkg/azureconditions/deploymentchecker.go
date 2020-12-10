@@ -2,7 +2,6 @@ package azureconditions
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
@@ -47,10 +46,6 @@ func NewDeploymentChecker(config DeploymentCheckerConfig) (*DeploymentChecker, e
 	}
 
 	return r, nil
-}
-
-func (r *DeploymentChecker) logWarning(ctx context.Context, message string, messageArgs ...interface{}) {
-	r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf(message, messageArgs...))
 }
 
 func (r *DeploymentChecker) CheckIfDeploymentIsSuccessful(ctx context.Context, deploymentsClient *resources.DeploymentsClient, cr capiconditions.Setter, deploymentName string, conditionType capi.ConditionType) (bool, error) {
@@ -119,7 +114,7 @@ func (r *DeploymentChecker) setProvisioningStateWarningFailed(ctx context.Contex
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *DeploymentChecker) setProvisioningStateWarning(ctx context.Context, cr capiconditions.Setter, deploymentName string, currentProvisioningState string, condition capi.ConditionType) {
@@ -136,7 +131,7 @@ func (r *DeploymentChecker) setProvisioningStateWarning(ctx context.Context, cr 
 		message,
 		messageArgs...)
 
-	r.logWarning(ctx, message, messageArgs...)
+	r.logger.Debugf(ctx, message, messageArgs...)
 }
 
 func (r *DeploymentChecker) setProvisioningStateUnknown(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
@@ -150,7 +145,7 @@ func (r *DeploymentChecker) setProvisioningStateUnknown(ctx context.Context, cr 
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *DeploymentChecker) setDeploymentNotFound(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
@@ -164,5 +159,5 @@ func (r *DeploymentChecker) setDeploymentNotFound(ctx context.Context, cr capico
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }

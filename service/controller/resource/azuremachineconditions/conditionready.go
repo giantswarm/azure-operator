@@ -21,7 +21,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureMachine *capz.
 	}
 
 	// Ensure VMMSReady condition
-	err = r.ensureVmssReadyCondition(ctx, azureMachine)
+	err = r.ensureVMSSReadyCondition(ctx, azureMachine)
 	if err != nil {
 		return microerror.Mask(err)
 	}

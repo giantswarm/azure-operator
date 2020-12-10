@@ -104,7 +104,7 @@ func (r *Resource) setProvisioningStateWarningFailed(ctx context.Context, azureC
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *Resource) setProvisioningStateWarning(ctx context.Context, azureCluster *capz.AzureCluster, currentProvisioningState string) {

@@ -46,6 +46,8 @@ func (r *Resource) ensureControlPlane(ctx context.Context, cluster *capi.Cluster
 }
 
 func (r *Resource) updateControlPlaneObject(ctx context.Context, cluster *capi.Cluster, azureMachine *capz.AzureMachine) error {
+	r.logger.Debugf(ctx, "message", fmt.Sprintf("ensuring %s label and 'ownerReference' fields on AzureMachine '%s/%s'", capi.ClusterLabelName, azureMachine.Namespace, azureMachine.Name))
+
 	// Set Cluster as owner of AzureMachine
 	err := controllerutil.SetControllerReference(cluster, azureMachine, r.scheme)
 	if err != nil {
@@ -59,14 +61,14 @@ func (r *Resource) updateControlPlaneObject(ctx context.Context, cluster *capi.C
 
 	err = r.ctrlClient.Update(ctx, azureMachine)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "message", "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureMachine '%s/%s'", capi.ClusterLabelName, azureMachine.Namespace, azureMachine.Name))
+	r.logger.Debugf(ctx, "message", fmt.Sprintf("ensured %s label and 'ownerReference' fields on AzureMachine '%s/%s'", capi.ClusterLabelName, azureMachine.Namespace, azureMachine.Name))
 	return nil
 }
 
@@ -87,13 +89,13 @@ func (r *Resource) updateControlPlaneRef(ctx context.Context, cluster *capi.Clus
 	cluster.Spec.ControlPlaneRef = controlPlaneRef
 	err = r.ctrlClient.Update(ctx, cluster)
 	if apierrors.IsConflict(err) {
-		r.logger.LogCtx(ctx, "level", "debug", "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.LogCtx(ctx, "level", "debug", "message", "canceling resource")
+		r.logger.Debugf(ctx, "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "message", "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.LogCtx(ctx, "message", fmt.Sprintf("Ensured 'Spec.ControlPlaneRef' fields on Cluster '%s/%s'", cluster.Namespace, cluster.Name))
+	r.logger.Debugf(ctx, "message", fmt.Sprintf("ensured 'Spec.ControlPlaneRef' fields on Cluster '%s/%s'", cluster.Namespace, cluster.Name))
 	return nil
 }

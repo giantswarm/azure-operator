@@ -17,11 +17,11 @@ const (
 	VMSSNotFoundReason                 = "VMSSNotFound"
 	VMSSProvisioningStatePrefix        = "VMSSProvisioningState"
 	VMSSProvisioningStateUnknownReason = "VMSSProvisioningStateUnknown"
-	VmssProvisioningStateSucceeded     = string(compute.ProvisioningStateSucceeded)
-	VmssProvisioningStateFailed        = string(compute.ProvisioningStateFailed)
+	VMSSProvisioningStateSucceeded     = string(compute.ProvisioningStateSucceeded)
+	VMSSProvisioningStateFailed        = string(compute.ProvisioningStateFailed)
 )
 
-func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
+func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
 	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.VMSSReadyCondition)
 
 	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
@@ -75,10 +75,10 @@ func (r *Resource) ensureVmssReadyCondition(ctx context.Context, azureMachinePoo
 
 	switch *vmss.ProvisioningState {
 	// VMSS provisioning state is Succeeded, all good.
-	case VmssProvisioningStateSucceeded:
+	case VMSSProvisioningStateSucceeded:
 		capiconditions.MarkTrue(azureMachinePool, azureconditions.VMSSReadyCondition)
 	// VMSS provisioning state is Failed, VMSS has some issues.
-	case VmssProvisioningStateFailed:
+	case VMSSProvisioningStateFailed:
 		r.setVMSSProvisioningStateFailed(ctx, azureMachinePool, vmssName, azureconditions.VMSSReadyCondition)
 	default:
 		// VMSS provisioning state not Succeeded, set current state to VMSSReady condition.
@@ -102,7 +102,7 @@ func (r *Resource) setVMSSNotFound(ctx context.Context, cr capiconditions.Setter
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *Resource) setVMSSProvisioningStateUnknown(ctx context.Context, cr capiconditions.Setter, deploymentName string, condition capi.ConditionType) {
@@ -116,13 +116,13 @@ func (r *Resource) setVMSSProvisioningStateUnknown(ctx context.Context, cr capic
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *Resource) setVMSSProvisioningStateFailed(ctx context.Context, cr capiconditions.Setter, vmssName string, condition capi.ConditionType) {
 	message := "VMSS %s failed, it might succeed after retrying, see Azure portal for more details"
 	messageArgs := vmssName
-	reason := VMSSProvisioningStatePrefix + VmssProvisioningStateFailed
+	reason := VMSSProvisioningStatePrefix + VMSSProvisioningStateFailed
 
 	capiconditions.MarkFalse(
 		cr,
@@ -132,7 +132,7 @@ func (r *Resource) setVMSSProvisioningStateFailed(ctx context.Context, cr capico
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *Resource) setVMSSProvisioningStateWarning(ctx context.Context, cr capiconditions.Setter, vmssName string, currentProvisioningState string, condition capi.ConditionType) {
@@ -149,5 +149,5 @@ func (r *Resource) setVMSSProvisioningStateWarning(ctx context.Context, cr capic
 		message,
 		messageArgs...)
 
-	r.logWarning(ctx, message, messageArgs...)
+	r.logger.Debugf(ctx, message, messageArgs...)
 }

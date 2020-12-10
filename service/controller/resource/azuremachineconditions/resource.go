@@ -2,7 +2,6 @@ package azuremachineconditions
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -70,15 +69,11 @@ func (r *Resource) Name() string {
 	return Name
 }
 
-func (r *Resource) logWarning(ctx context.Context, message string, messageArgs ...interface{}) {
-	r.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf(message, messageArgs...))
-}
-
 func (r *Resource) logConditionStatus(ctx context.Context, azureMachine *capz.AzureMachine, conditionType capi.ConditionType) {
 	condition := capiconditions.Get(azureMachine, conditionType)
 
 	if condition == nil {
-		r.logWarning(ctx, "condition %s not set", conditionType)
+		r.logger.Debugf(ctx, "condition %s not set", conditionType)
 	} else {
 		messageFormat := "condition %s set to %s"
 		messageArgs := []interface{}{conditionType, condition.Status}

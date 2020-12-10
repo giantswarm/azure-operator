@@ -22,7 +22,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureMachinePool *c
 	}
 
 	// Ensure VMMSReady condition
-	err = r.ensureVmssReadyCondition(ctx, azureMachinePool)
+	err = r.ensureVMSSReadyCondition(ctx, azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -51,7 +51,7 @@ func (r *Resource) logConditionStatus(ctx context.Context, azureMachinePool *cap
 	condition := capiconditions.Get(azureMachinePool, conditionType)
 
 	if condition == nil {
-		r.logWarning(ctx, "condition %s not set", conditionType)
+		r.logger.Debugf(ctx, "condition %s not set", conditionType)
 	} else {
 		messageFormat := "condition %s set to %s"
 		messageArgs := []interface{}{conditionType, condition.Status}

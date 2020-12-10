@@ -38,7 +38,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.
 	readyCondition := capiconditions.Get(azureCluster, capi.ReadyCondition)
 
 	if readyCondition == nil {
-		r.logWarning(ctx, "condition Ready not set")
+		r.logger.Debugf(ctx, "condition Ready not set")
 	} else {
 		messageFormat := "condition Ready set to %s"
 		messageArgs := []interface{}{readyCondition.Status}

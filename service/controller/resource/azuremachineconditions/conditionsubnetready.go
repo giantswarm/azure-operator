@@ -88,7 +88,7 @@ func (r *Resource) setSubnetNotFound(ctx context.Context, cr capiconditions.Sett
 		message,
 		messageArgs)
 
-	r.logWarning(ctx, message, messageArgs)
+	r.logger.Debugf(ctx, message, messageArgs)
 }
 
 func (r *Resource) setSubnetProvisioningStateNotSuccessful(ctx context.Context, cr capiconditions.Setter, subnetName string, provisioningState network.ProvisioningState, condition capi.ConditionType) {
@@ -104,5 +104,5 @@ func (r *Resource) setSubnetProvisioningStateNotSuccessful(ctx context.Context, 
 		message,
 		messageArgs...)
 
-	r.logWarning(ctx, message, messageArgs...)
+	r.logger.Debugf(ctx, message, messageArgs...)
 }
