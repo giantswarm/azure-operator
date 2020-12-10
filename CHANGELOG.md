@@ -11,11 +11,17 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Only submit Subnet ARM deployment when Subnet name or Subnet CIDR change.
 - Use controller-runtime instead of typed clients.
+- Move provider-independent conditions implementation to external `giantswarm/conditions` and `giantswarm/conditions-handlers` modules.
+- Replaced Cluster `ProviderInfrastructureReady` with upstream `InfrastructureReady` condition.
+- Fix incorrect (too early) `Upgrading` condition transition from `True` to `False`.
 
 ### Added
 
 - Tenant cluster k8s client lookup is cached.
 - Add `terminate-unhealthy-node` feature to automaticaly terminate bad and unhealthy nodes in a Cluster.
+- Cluster `ControlPlaneReady` condition.
+- AzureMachine `Ready`, `SubnetReady` and `VMSSReady` conditions.
+- MachinePool `Creating` condition.
 
 ### Fixed
 
