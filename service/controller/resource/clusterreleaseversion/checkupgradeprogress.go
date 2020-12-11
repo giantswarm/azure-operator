@@ -121,21 +121,6 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 		return true, nil
 	}
 
-	// (3) Finally, if nothing happened for 2 hours and cluster is still not
-	// ready, we declare upgrading as completed, albeit unsuccessfully.
-	// If we left Upgrading to be stuck with status True, further cluster
-	// upgrades would be blocked by the admission controller, so this is a
-	// fail-safe.
-	const upgradingFinalTimeout = 120 * time.Minute
-	upgradingFinalTimeoutReached :=
-		time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingFinalTimeout))
-
-	if upgradingFinalTimeoutReached {
-		// Cluster upgrade is taking too long, declaring it as completed.
-		r.logger.Errorf(ctx, nil, "cluster upgrade is taking over %s, declaring upgrade completed", upgradingFinalTimeout)
-		return true, nil
-	}
-
 	// Cluster upgrade is still in progress.
 	r.logger.Debugf(ctx, "cluster upgrade is still in progress")
 	return false, nil
