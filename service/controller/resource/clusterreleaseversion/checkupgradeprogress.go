@@ -37,22 +37,23 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 	// Cluster has been in Upgrading state for at least 5 minutes now, so
 	// let's check if it is Ready.
 	readyCondition := capiconditions.Get(cluster, capi.ReadyCondition)
+	isClusterReady := conditions.IsTrue(readyCondition)
 
-	if !conditions.IsTrue(readyCondition) {
-		r.logger.Debugf(ctx, "cluster not ready, upgrade is still in progress")
-		return false, nil
-	}
+	// In addition to cluster being ready, here we check that it actually became
+	// ready during the upgrade, which would mean that the changes that were
+	// happening due to the upgrade has been completed.
+	becameReadyWhileUpgrading := isClusterReady && readyCondition.LastTransitionTime.After(upgradingCondition.LastTransitionTime.Time)
 
-	// (1) In addition to cluster being ready, here we check that it actually
-	// became ready during the upgrade, which would mean that the upgrade has
-	// been completed.
-	becameReadyWhileUpgrading := readyCondition.LastTransitionTime.After(upgradingCondition.LastTransitionTime.Time)
-
+	// Now let's check if machine pools are upgraded. Since the control plane
+	// is upgraded before the machine pools, when all machine pools are upgraded
+	// that means that all cluster descendants (CP and node pools) are upgraded.
 	machinePools, err := helpers.GetMachinePoolsByMetadata(ctx, r.ctrlClient, cluster.ObjectMeta)
 	if err != nil {
 		return false, microerror.Mask(err)
 	}
 
+	// This is the desired cluster release version. We will check if node pools
+	// are upgraded to this release version.
 	desiredClusterReleaseVersion := key.ReleaseVersion(cluster)
 
 	allNodePoolsUpgraded := true
@@ -93,20 +94,49 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 		}
 	}
 
-	// (2) Or we declare Upgrading to be completed if nothing happened for 20
-	// minutes, which could currently happen if we were upgrading some
-	// component which is not covered by any Ready status condition.
-	const upgradingWithoutReadyUpdateThreshold = 60 * time.Minute
-	isReadyDuringEntireUpgradeProcess := time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingWithoutReadyUpdateThreshold))
-
-	if (becameReadyWhileUpgrading && allNodePoolsUpgraded) || isReadyDuringEntireUpgradeProcess {
-		// Cluster is ready, and either (1) or (2) is true, so we consider the upgrade to be completed
-		r.logger.Debugf(ctx, "cluster upgrade has been completed")
+	// (1) Cluster became ready during the upgrade and the upgrade has been
+	// completed for all cluster descendants.
+	// This is basically upgrade happy path.
+	clusterIsReadyAndUpgraded := becameReadyWhileUpgrading && allNodePoolsUpgraded
+	if clusterIsReadyAndUpgraded {
+		r.logger.Debugf(ctx, "cluster became ready during the upgrade, all cluster descendants are upgraded, upgrade completed")
 		return true, nil
 	}
 
-	// Cluster is Ready, but since neither (1) nor (2) were satisfied, we wait
-	// more before considering the upgrade to be completed
-	r.logger.Debugf(ctx, "cluster is ready, but it's too soon to tell if the upgrade has been completed")
+	// (2) Or we declare Upgrading to be completed if:
+	// - cluster is ready,
+	// - all cluster descendants are upgraded and
+	// - nothing happened for 15 minutes,
+	// which could currently happen if we were upgrading some component which
+	// is probably not covered by Ready nor Upgrading condition.
+	// This is currently the case when we are upgrading an app and there are no
+	// changes where we need to roll the nodes.
+	const upgradingTimeoutWhenReadyAndUpgraded = 15 * time.Minute
+	readyAndUpgradedTimeoutReached :=
+		isClusterReady &&
+			allNodePoolsUpgraded &&
+			time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingTimeoutWhenReadyAndUpgraded))
+	if readyAndUpgradedTimeoutReached {
+		r.logger.Debugf(ctx, "cluster is ready, all cluster descendants are upgraded, upgrade completed")
+		return true, nil
+	}
+
+	// (3) Finally, if nothing happened for 2 hours and cluster is still not
+	// ready, we declare upgrading as completed, albeit unsuccessfully.
+	// If we left Upgrading to be stuck with status True, further cluster
+	// upgrades would be blocked by the admission controller, so this is a
+	// fail-safe.
+	const upgradingFinalTimeout = 120 * time.Minute
+	upgradingFinalTimeoutReached :=
+		time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingFinalTimeout))
+
+	if upgradingFinalTimeoutReached {
+		// Cluster upgrade is taking too long, declaring it as completed.
+		r.logger.Errorf(ctx, nil, "cluster upgrade is taking over %s, declaring upgrade completed", upgradingFinalTimeout)
+		return true, nil
+	}
+
+	// Cluster upgrade is still in progress.
+	r.logger.Debugf(ctx, "cluster upgrade is still in progress")
 	return false, nil
 }
