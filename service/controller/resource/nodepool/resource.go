@@ -2,7 +2,7 @@ package nodepool
 
 import (
 	"github.com/Azure/go-autorest/autorest/azure/auth"
-	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
+	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
@@ -17,7 +17,6 @@ const (
 type Config struct {
 	nodes.Config
 	CredentialProvider        credential.Provider
-	CtrlClient                ctrlclient.Client
 	GSClientCredentialsConfig auth.ClientCredentialsConfig
 	TenantClientFactory       tenantcluster.Factory
 	VMSKU                     *vmsku.VMSKUs
@@ -27,21 +26,20 @@ type Config struct {
 type Resource struct {
 	nodes.Resource
 	CredentialProvider  credential.Provider
-	CtrlClient          ctrlclient.Client
 	tenantClientFactory tenantcluster.Factory
 	vmsku               *vmsku.VMSKUs
 }
 
 func New(config Config) (*Resource, error) {
+	config.Name = Name
+	nodesResource, err := nodes.New(config.Config)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
 	r := &Resource{
-		Resource: nodes.Resource{
-			Logger:        config.Logger,
-			Debugger:      config.Debugger,
-			Azure:         config.Azure,
-			ClientFactory: config.ClientFactory,
-		},
+		Resource:            *nodesResource,
 		CredentialProvider:  config.CredentialProvider,
-		CtrlClient:          config.CtrlClient,
 		tenantClientFactory: config.TenantClientFactory,
 		vmsku:               config.VMSKU,
 	}

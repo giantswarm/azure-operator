@@ -193,8 +193,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 	}
 
 	nodesConfig := nodes.Config{
-		Debugger: newDebugger,
-		Logger:   config.Logger,
+		CtrlClient: config.K8sClient.CtrlClient(),
+		Debugger:   newDebugger,
+		Logger:     config.Logger,
 
 		Azure:         config.Azure,
 		ClientFactory: organizationClientFactory,
@@ -217,7 +218,6 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		c := nodepool.Config{
 			Config:              nodesConfig,
 			CredentialProvider:  config.CredentialProvider,
-			CtrlClient:          config.K8sClient.CtrlClient(),
 			TenantClientFactory: cachedTenantClientFactory,
 			VMSKU:               vmSKU,
 		}

@@ -4,10 +4,14 @@ import (
 	"context"
 	"time"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/conditions/pkg/conditions"
 	"github.com/giantswarm/microerror"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster) (bool, error) {
@@ -33,31 +37,91 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 	// Cluster has been in Upgrading state for at least 5 minutes now, so
 	// let's check if it is Ready.
 	readyCondition := capiconditions.Get(cluster, capi.ReadyCondition)
+	isClusterReady := conditions.IsTrue(readyCondition)
 
-	if !conditions.IsTrue(readyCondition) {
-		r.logger.Debugf(ctx, "cluster not ready, upgrade is still in progress")
-		return false, nil
+	// In addition to cluster being ready, here we check that it actually became
+	// ready during the upgrade, which would mean that the changes that were
+	// happening due to the upgrade has been completed.
+	becameReadyWhileUpgrading := isClusterReady && readyCondition.LastTransitionTime.After(upgradingCondition.LastTransitionTime.Time)
+
+	// Now let's check if machine pools are upgraded. Since the control plane
+	// is upgraded before the machine pools, when all machine pools are upgraded
+	// that means that all cluster descendants (CP and node pools) are upgraded.
+	machinePools, err := helpers.GetMachinePoolsByMetadata(ctx, r.ctrlClient, cluster.ObjectMeta)
+	if err != nil {
+		return false, microerror.Mask(err)
 	}
 
-	// (1) In addition to cluster being ready, here we check that it actually
-	// became ready during the upgrade, which would mean that the upgrade has
-	// been completed.
-	becameReadyWhileUpgrading := readyCondition.LastTransitionTime.After(upgradingCondition.LastTransitionTime.Time)
+	// This is the desired cluster release version. We will check if node pools
+	// are upgraded to this release version.
+	desiredClusterReleaseVersion := key.ReleaseVersion(cluster)
 
-	// (2) Or we declare Upgrading to be completed if nothing happened for 20
-	// minutes, which could currently happen if we were upgrading some
-	// component which is not covered by any Ready status condition.
-	const upgradingWithoutReadyUpdateThreshold = 45 * time.Minute
-	isReadyDuringEntireUpgradeProcess := time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingWithoutReadyUpdateThreshold))
+	allNodePoolsUpgraded := true
+	for _, machinePool := range machinePools.Items {
+		if conditions.IsCreatingTrue(&machinePool) {
+			// A node pool is being created, this is the case for first upgrade
+			// to node pools release, as cluster upgrade will trigger first node
+			// pool creation.
+			allNodePoolsUpgraded = false
+			break
+		}
 
-	if becameReadyWhileUpgrading || isReadyDuringEntireUpgradeProcess {
-		// Cluster is ready, and either (1) or (2) is true, so we consider the upgrade to be completed
-		r.logger.Debugf(ctx, "cluster upgrade has been completed")
+		if conditions.IsUpgradingTrue(&machinePool) {
+			// A node pool is being upgraded.
+			allNodePoolsUpgraded = false
+			break
+		}
+
+		desiredMachinePoolReleaseVersion := key.ReleaseVersion(&machinePool)
+		if desiredMachinePoolReleaseVersion != desiredClusterReleaseVersion {
+			// A node pool upgrade has not been started yet.
+			allNodePoolsUpgraded = false
+			break
+		}
+
+		machinePoolLastDeployedReleaseVersion, machinePoolLastDeployedReleaseVersionSet := machinePool.Annotations[annotation.LastDeployedReleaseVersion]
+		if !machinePoolLastDeployedReleaseVersionSet {
+			// A node pool is still not created. This should be caught above in
+			// Creating check, but let's err on the side of caution here.
+			allNodePoolsUpgraded = false
+			break
+		}
+
+		if machinePoolLastDeployedReleaseVersion != desiredClusterReleaseVersion {
+			// A node pool has not yet been upgraded to the desired release version.
+			allNodePoolsUpgraded = false
+			break
+		}
+	}
+
+	// (1) Cluster became ready during the upgrade and the upgrade has been
+	// completed for all cluster descendants.
+	// This is basically upgrade happy path.
+	clusterIsReadyAndUpgraded := becameReadyWhileUpgrading && allNodePoolsUpgraded
+	if clusterIsReadyAndUpgraded {
+		r.logger.Debugf(ctx, "cluster became ready during the upgrade, all cluster descendants are upgraded, upgrade completed")
 		return true, nil
 	}
 
-	// Cluster is Ready, but since neither (1) nor (2) were satisfied, we wait
-	// more before considering the upgrade to be completed
-	r.logger.Debugf(ctx, "cluster is ready, but it's too soon to tell if the upgrade has been completed")
+	// (2) Or we declare Upgrading to be completed if:
+	// - cluster is ready,
+	// - all cluster descendants are upgraded and
+	// - nothing happened for 15 minutes,
+	// which could currently happen if we were upgrading some component which
+	// is probably not covered by Ready nor Upgrading condition.
+	// This is currently the case when we are upgrading an app and there are no
+	// changes where we need to roll the nodes.
+	const upgradingTimeoutWhenReadyAndUpgraded = 15 * time.Minute
+	readyAndUpgradedTimeoutReached :=
+		isClusterReady &&
+			allNodePoolsUpgraded &&
+			time.Now().After(upgradingCondition.LastTransitionTime.Add(upgradingTimeoutWhenReadyAndUpgraded))
+	if readyAndUpgradedTimeoutReached {
+		r.logger.Debugf(ctx, "cluster is ready, all cluster descendants are upgraded, upgrade completed")
+		return true, nil
+	}
+
+	// Cluster upgrade is still in progress.
+	r.logger.Debugf(ctx, "cluster upgrade is still in progress")
 	return false, nil
 }
