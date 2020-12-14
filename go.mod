@@ -44,7 +44,7 @@ require (
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/prometheus/client_golang v1.8.0
-	github.com/spf13/afero v1.5.0
+	github.com/spf13/afero v1.5.1
 	github.com/spf13/viper v1.7.1
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.19.2
