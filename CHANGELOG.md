@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.1.0] - 2020-12-14
+
 ### Changed
 
 - Only submit Subnet ARM deployment when Subnet name or Subnet CIDR change.
@@ -258,7 +260,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta5...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.1.0...HEAD
+[5.1.0]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta5...v5.1.0
 [5.0.0-beta5]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta4...v5.0.0-beta5
 [5.0.0-beta4]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta2...v5.0.0-beta4
 [5.0.0-beta2]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta1...v5.0.0-beta2
