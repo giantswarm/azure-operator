@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.0.1] - 2020-12-16
+
 ### Fixed
 
 - Ensure that availability zones are kept unchanged during migration from 12.x to 13.x.
@@ -254,7 +256,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.0.1...HEAD
+[5.0.1]: https://github.com/giantswarm/azure-operator/compare/v5.0.0...v5.0.1
 [5.0.0]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta7...v5.0.0
 [5.0.0-beta7]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta6...v5.0.0-beta7
 [5.0.0-beta6]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta5...v5.0.0-beta6
