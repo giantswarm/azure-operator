@@ -127,6 +127,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.Debugf(ctx, "finding if existing azureconfig needs update")
 	{
+		// Ensure that availability zones are kept as-is.
+		mappedAzureConfig.Spec.Azure.AvailabilityZones = presentAzureConfig.Spec.Azure.AvailabilityZones
+
 		// Ensure that present network allocations are kept as-is.
 		mappedAzureConfig.Spec.Azure.VirtualNetwork = presentAzureConfig.Spec.Azure.VirtualNetwork
 

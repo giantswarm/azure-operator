@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure that availability zones are kept unchanged during migration from 12.x to 13.x.
+
 ## [5.1.0] - 2020-12-14
 
 ### Changed
