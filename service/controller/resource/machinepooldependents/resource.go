@@ -11,6 +11,7 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -48,6 +49,15 @@ func New(config Config) (*Resource, error) {
 
 // EnsureCreated is a no-op.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
+	cr, err := key.ToMachinePool(obj)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	err = helpers.LogMachinePoolObject(ctx, r.logger, cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	return nil
 }
 

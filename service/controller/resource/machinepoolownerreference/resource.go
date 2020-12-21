@@ -15,6 +15,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 	"sigs.k8s.io/controller-runtime/pkg/controller/controllerutil"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -60,6 +61,11 @@ func New(config Config) (*Resource, error) {
 // infrastructure CR.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	machinePool, err := key.ToMachinePool(obj)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	err = helpers.LogMachinePoolObject(ctx, r.logger, machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
