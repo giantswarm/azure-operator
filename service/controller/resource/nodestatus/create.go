@@ -13,7 +13,6 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -25,11 +24,6 @@ type getNodeReferencesResult struct {
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	machinePool, err := key.ToMachinePool(obj)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = helpers.LogMachinePoolObject(ctx, r.logger, machinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -10,7 +10,6 @@ import (
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -56,11 +55,6 @@ func New(config Config) (*Resource, error) {
 // EnsureCreated ensures corresponding AzureMachinePool has same release label as reconciled MachinePool CR.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	cr, err := key.ToMachinePool(obj)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = helpers.LogMachinePoolObject(ctx, r.logger, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
