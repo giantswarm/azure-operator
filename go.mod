@@ -17,7 +17,7 @@ require (
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v3 v3.1.0
 	github.com/giantswarm/conditions v0.2.0
-	github.com/giantswarm/conditions-handler v0.1.1
+	github.com/giantswarm/conditions-handler v0.1.2
 	github.com/giantswarm/e2e-harness/v3 v3.0.0
 	github.com/giantswarm/e2eclients v0.2.0
 	github.com/giantswarm/e2esetup/v2 v2.1.0

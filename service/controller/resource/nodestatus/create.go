@@ -88,7 +88,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	machinePool.Status.InfrastructureReady = azureMachinePool.Status.Ready
 	machinePool.Status.Replicas = azureMachinePool.Status.Replicas
 	machinePool.Status.ReadyReplicas = int32(nodeRefsResult.ready)
 	machinePool.Status.AvailableReplicas = int32(nodeRefsResult.available)
