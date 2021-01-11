@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Bump `conditions-handler` to v0.2.0 to get `MachinePool` `ReplicasReady` condition.
+
 ### Added
 
 - Enable node termination events on node pools. 
