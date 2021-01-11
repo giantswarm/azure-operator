@@ -408,6 +408,8 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 			},
 			Annotations: map[string]string{
 				apiextannotation.MachinePoolName: "migrated legacy workers",
+				apiextannotation.NodePoolMinSize: fmt.Sprintf("%d", replicas),
+				apiextannotation.NodePoolMaxSize: fmt.Sprintf("%d", replicas),
 			},
 		},
 		Spec: expcapiv1alpha3.MachinePoolSpec{
