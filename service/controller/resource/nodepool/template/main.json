@@ -277,12 +277,6 @@
           },
           "extensionProfile": {
             "extensions": "[variables('vmssExtensions')]"
-          },
-          "scheduledEventsProfile": {
-            "terminateNotificationProfile": {
-              "notBeforeTimeout": "PT5M",
-              "enable": true
-            }
           }
         }
       }
