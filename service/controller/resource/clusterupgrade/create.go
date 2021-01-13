@@ -144,7 +144,12 @@ func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1al
 
 	nodeList := &corev1.NodeList{}
 	err = tenantClusterK8sClient.List(ctx, nodeList, client.MatchingLabels{"kubernetes.io/role": "master"})
-	if err != nil {
+	if tenantcluster.IsAPINotAvailableError(err) {
+		r.logger.Debugf(ctx, "tenant API not available yet")
+		r.logger.Debugf(ctx, "canceling resource")
+
+		return false, nil
+	} else if err != nil {
 		return false, microerror.Mask(err)
 	}
 

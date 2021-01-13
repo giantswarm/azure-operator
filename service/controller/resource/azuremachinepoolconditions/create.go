@@ -4,6 +4,7 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -22,7 +23,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 	}
 
 	err = r.ctrlClient.Status().Update(ctx, &azureMachinePool)
-	if err != nil {
+	if apierrors.IsConflict(err) {
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "canceling resource")
+		return nil
+	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
