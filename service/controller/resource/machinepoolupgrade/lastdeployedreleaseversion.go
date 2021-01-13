@@ -9,6 +9,7 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capiexp "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -61,7 +62,11 @@ func (r *Resource) ensureLastDeployedReleaseVersion(ctx context.Context, machine
 	if upgradeIsCompletedForDesiredVersion {
 		machinePool.Annotations[annotation.LastDeployedReleaseVersion] = key.ReleaseVersion(machinePool)
 		err = r.ctrlClient.Update(ctx, machinePool)
-		if err != nil {
+		if apierrors.IsConflict(err) {
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "canceling resource")
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
