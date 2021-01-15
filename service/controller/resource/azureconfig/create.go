@@ -11,7 +11,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"k8s.io/apimachinery/pkg/types"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
@@ -47,7 +47,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Namespace: azureCluster.Namespace,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &cluster)
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			r.logger.Debugf(ctx, "referenced Cluster CR (%q) not found", nsName.String())
 			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
@@ -110,7 +110,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Namespace: metav1.NamespaceDefault,
 		}
 		err = r.ctrlClient.Get(ctx, nsName, &presentAzureConfig)
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			r.logger.Debugf(ctx, "did not found existing azureconfig")
 			r.logger.Debugf(ctx, "creating azureconfig")
 			err = r.ctrlClient.Create(ctx, &mappedAzureConfig)
@@ -155,7 +155,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			r.logger.Debugf(ctx, "existing azureconfig needs update")
 
 			err = r.ctrlClient.Update(ctx, &presentAzureConfig)
-			if err != nil {
+			if apierrors.IsConflict(err) {
+				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+				r.logger.Debugf(ctx, "canceling resource")
+				return nil
+			} else if err != nil {
 				return microerror.Mask(err)
 			}
 
@@ -199,7 +203,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		if updateStatus {
 			err = r.ctrlClient.Status().Update(ctx, &presentAzureConfig)
-			if err != nil {
+			if apierrors.IsConflict(err) {
+				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+				r.logger.Debugf(ctx, "canceling resource")
+				return nil
+			} else if err != nil {
 				return microerror.Mask(err)
 			}
 			r.logger.Debugf(ctx, "status updated")
