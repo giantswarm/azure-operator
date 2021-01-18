@@ -108,6 +108,10 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			MaxReplicas:     key.NodePoolMaxReplicas(machinePool),
 			CurrentReplicas: currentReplicas,
 		},
+		SpotInstanceConfig: template.SpotInstanceConfig{
+			//Enabled:  machinePool.Spec.Template.Spec.
+			//MaxPrice: fmt.Sprintf("%f", key.NodePoolSpotInstancesMaxPrice(azureMachinePool)),
+		},
 		StorageAccountType: azureMachinePool.Spec.Template.OSDisk.ManagedDisk.StorageAccountType,
 		SubnetName:         subnetName,
 		VMCustomData:       workerCloudConfig,

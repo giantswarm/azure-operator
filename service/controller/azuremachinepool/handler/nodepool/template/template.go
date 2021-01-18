@@ -84,6 +84,9 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	if !reflect.DeepEqual(currentParameters.Scaling, desiredParameters.Scaling) {
 		changes = append(changes, "scaling")
 	}
+	if currentParameters.SpotInstanceConfig.MaxPrice != desiredParameters.SpotInstanceConfig.MaxPrice {
+		changes = append(changes, "spotInstancesMaxPrice")
+	}
 	if !reflect.DeepEqual(currentParameters.OSImage, desiredParameters.OSImage) {
 		changes = append(changes, "osImage")
 	}
