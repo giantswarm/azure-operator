@@ -1,0 +1,191 @@
+apiVersion: provider.giantswarm.io/v1alpha1
+kind: AzureConfig
+metadata:
+  finalizers:
+  - operatorkit.giantswarm.io/azure-operator
+  - operatorkit.giantswarm.io/legacy-controller
+  labels:
+    azure-operator.giantswarm.io/version: 4.2.0
+    giantswarm.io/cluster: c6fme
+    giantswarm.io/organization: "giantswarm"
+    release.giantswarm.io/version: 12.0.0
+  name: c6fme
+  namespace: default
+spec:
+  azure:
+    availabilityZones:
+    - 1
+    credentialSecret:
+      name: credential-default
+      namespace: giantswarm
+    dnsZones:
+      api:
+        name: ghost.westeurope.azure.gigantic.io
+        resourceGroup: ghost
+      etcd:
+        name: ghost.westeurope.azure.gigantic.io
+        resourceGroup: ghost
+      ingress:
+        name: ghost.westeurope.azure.gigantic.io
+        resourceGroup: ghost
+    masters:
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_D4s_v3
+    virtualNetwork:
+      calicoSubnetCIDR: 10.10.128.0/17
+      cidr: 10.10.0.0/16
+      masterSubnetCIDR: 10.10.0.0/24
+      workerSubnetCIDR: 10.10.1.0/24
+    workers:
+    - dockerVolumeSizeGB: 50
+      kubeletVolumeSizeGB: 100
+      vmSize: Standard_A2_v2
+  cluster:
+    calico:
+      cidr: 16
+      mtu: 1430
+      subnet: 10.1.0.0/16
+    customer:
+      id: giantswarm
+    docker:
+      daemon:
+        cidr: 172.17.0.1/16
+    etcd:
+      altNames: ""
+      domain: etcd.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+      port: 2379
+      prefix: giantswarm.io
+    id: c6fme
+    kubernetes:
+      api:
+        clusterIPRange: 172.31.0.0/16
+        domain: api.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+        securePort: 443
+      cloudProvider: azure
+      dns:
+        ip: 172.31.0.10
+      domain: cluster.local
+      ingressController:
+        docker:
+          image: quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.11
+        domain: ingress.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+        insecurePort: 30010
+        securePort: 30011
+        wildcardDomain: '*.c6fme.k8s.ghost.westeurope.azure.gigantic.io'
+      kubelet:
+        altNames: kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local
+        domain: worker.c6fme.k8s.ghost.westeurope.azure.gigantic.io
+        labels: azure-operator.giantswarm.io/version=4.2.0,giantswarm.io/provider=azure
+        port: 10250
+      networkSetup:
+        docker:
+          image: quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9
+        kubeProxy:
+          conntrackMaxPerCore: 0
+      ssh:
+        userList: []
+    masters:
+    - id: 9x5qt
+    scaling:
+      max: 1
+      min: 1
+    version: ""
+    workers:
+    - id: z028u
+  versionBundle:
+    version: 4.2.0
+status:
+  cluster:
+    conditions:
+    - lastTransitionTime: "2020-08-10T11:19:43Z"
+      status: "True"
+      type: Created
+    network:
+      cidr: ""
+    nodes:
+    - labels:
+        azure-operator.giantswarm.io/version: 4.2.0
+        beta.kubernetes.io/arch: amd64
+        beta.kubernetes.io/instance-type: Standard_D4s_v3
+        beta.kubernetes.io/os: linux
+        failure-domain.beta.kubernetes.io/region: westeurope
+        failure-domain.beta.kubernetes.io/zone: westeurope-1
+        giantswarm.io/provider: azure
+        ip: 10.10.0.5
+        kubernetes.io/arch: amd64
+        kubernetes.io/hostname: c6fme-master-c6fme-000000
+        kubernetes.io/os: linux
+        kubernetes.io/role: master
+        node-role.kubernetes.io/master: ""
+        node.kubernetes.io/instance-type: Standard_D4s_v3
+        node.kubernetes.io/master: ""
+        role: master
+        topology.kubernetes.io/region: westeurope
+        topology.kubernetes.io/zone: westeurope-1
+      lastTransitionTime: "2020-08-10T11:19:38Z"
+      name: c6fme-master-c6fme-000000
+      version: 4.2.0
+    - labels:
+        azure-operator.giantswarm.io/version: 4.2.0
+        beta.kubernetes.io/arch: amd64
+        beta.kubernetes.io/instance-type: Standard_A2_v2
+        beta.kubernetes.io/os: linux
+        failure-domain.beta.kubernetes.io/region: westeurope
+        failure-domain.beta.kubernetes.io/zone: westeurope-1
+        giantswarm.io/provider: azure
+        ip: 10.10.1.4
+        kubernetes.io/arch: amd64
+        kubernetes.io/hostname: c6fme-worker-c6fme-000000
+        kubernetes.io/os: linux
+        kubernetes.io/role: worker
+        node-role.kubernetes.io/worker: ""
+        node.kubernetes.io/instance-type: Standard_A2_v2
+        node.kubernetes.io/worker: ""
+        role: worker
+        topology.kubernetes.io/region: westeurope
+        topology.kubernetes.io/zone: westeurope-1
+      lastTransitionTime: "2020-08-10T11:19:38Z"
+      name: c6fme-worker-c6fme-000000
+      version: 4.2.0
+    resources:
+    - conditions:
+      - lastTransitionTime: "2020-08-10T11:04:00Z"
+        status: ee623d05899176ae423b24ad9ddfa88ebd82e9ce14970713a621423b6304de14
+        type: ParametersChecksum
+      - lastTransitionTime: "2020-08-10T11:04:00Z"
+        status: d7121ae07c482ab7f837bc3af530d027569b6723a73c1af4f6b68293b1181e80
+        type: TemplateChecksum
+      name: deployment
+    - conditions:
+      - lastTransitionTime: null
+        status: DeploymentCompleted
+        type: Stage
+      - lastTransitionTime: null
+        status: 494dd2fb73ea4526c5577fa2ccf9b9d1b494be5ab075b067552738b95f3db776
+        type: ParametersChecksum
+      - lastTransitionTime: null
+        status: cfc12cda9e7af85f4b6e72307cf60dc2f9bc5acc6eed248e21af48342cdf5377
+        type: TemplateChecksum
+      name: masters
+    - conditions:
+      - lastTransitionTime: null
+        status: DeploymentCompleted
+        type: Stage
+      - lastTransitionTime: null
+        status: b8e5909ab04050da02fe19bac68dc984f0dc87a069f0819cbaaa59317197b7a6
+        type: ParametersChecksum
+      - lastTransitionTime: null
+        status: c291a31d883c2ecf00859382c030eb241c4a82d3292f09cdfff3aa799cd16675
+        type: TemplateChecksum
+      name: instance
+    scaling:
+      desiredCapacity: 0
+    versions:
+    - date: "2020-08-10T11:03:14Z"
+      lastTransitionTime: null
+      semver: 4.2.0
+  provider:
+    ingress:
+      loadBalancer:
+        publicIPName: ""
