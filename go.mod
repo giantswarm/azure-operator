@@ -5,26 +5,19 @@ go 1.15
 require (
 	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.11.0
-	github.com/Azure/go-autorest/autorest v0.11.16
-	github.com/Azure/go-autorest/autorest/azure/auth v0.5.5
+	github.com/Azure/go-autorest/autorest v0.11.17
+	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6
 	github.com/Azure/go-autorest/autorest/to v0.4.0
+	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
 	github.com/giantswarm/apiextensions/v3 v3.14.1
-	github.com/giantswarm/appcatalog v0.3.2
-	github.com/giantswarm/apprclient/v2 v2.0.0
-	github.com/giantswarm/backoff v0.2.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v3 v3.1.0
 	github.com/giantswarm/conditions v0.2.0
 	github.com/giantswarm/conditions-handler v0.2.0
-	github.com/giantswarm/e2e-harness/v3 v3.0.0
-	github.com/giantswarm/e2eclients v0.2.0
-	github.com/giantswarm/e2esetup/v2 v2.1.0
-	github.com/giantswarm/e2etemplates v0.2.0
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/exporterkit v0.2.0
-	github.com/giantswarm/helmclient/v3 v3.0.1
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.0.0
 	github.com/giantswarm/k8scloudconfig/v10 v10.0.0
@@ -40,11 +33,13 @@ require (
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/mock v1.4.4
 	github.com/google/go-cmp v0.5.4
+	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
 	github.com/pelletier/go-toml v1.7.0 // indirect
 	github.com/prometheus/client_golang v1.9.0
-	github.com/spf13/afero v1.5.1
+	github.com/spf13/afero v1.5.1 // indirect
+	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/viper v1.7.1
 	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
 	k8s.io/api v0.18.9
