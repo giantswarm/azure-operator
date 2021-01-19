@@ -29,7 +29,8 @@ type VirtualNetworkCollectorConfig struct {
 	K8sClient             k8sclient.Interface
 	Logger                micrologger.Logger
 
-	NetworkRange net.IPNet
+	NetworkRange  net.IPNet
+	ReservedCIDRs []net.IPNet
 }
 
 type VirtualNetworkCollector struct {
@@ -39,7 +40,8 @@ type VirtualNetworkCollector struct {
 	k8sclient             k8sclient.Interface
 	logger                micrologger.Logger
 
-	networkRange net.IPNet
+	networkRange  net.IPNet
+	reservedCIDRs []net.IPNet
 }
 
 func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualNetworkCollector, error) {
@@ -70,7 +72,8 @@ func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualN
 		installationName:      config.InstallationName,
 		logger:                config.Logger,
 
-		networkRange: config.NetworkRange,
+		networkRange:  config.NetworkRange,
+		reservedCIDRs: config.ReservedCIDRs,
 	}
 
 	return c, nil
@@ -79,7 +82,7 @@ func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualN
 func (c *VirtualNetworkCollector) Collect(ctx context.Context, _ interface{}) ([]net.IPNet, error) {
 	var err error
 	var mutex sync.Mutex
-	var reservedVirtualNetworks []net.IPNet
+	reservedVirtualNetworks := c.reservedCIDRs
 
 	g := &errgroup.Group{}
 
