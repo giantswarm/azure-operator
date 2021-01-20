@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.2.1] - 2021-01-20
+
 ### Fixed
 
 - Ensure the management cluster's network space is never used for workload clusters.
@@ -284,7 +286,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.2.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.2.1...HEAD
+[5.2.1]: https://github.com/giantswarm/azure-operator/compare/v5.2.0...v5.2.1
 [5.2.0]: https://github.com/giantswarm/azure-operator/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/giantswarm/azure-operator/compare/v5.0.0...v5.1.0
 [5.0.0]: https://github.com/giantswarm/azure-operator/compare/v5.0.0-beta7...v5.0.0
