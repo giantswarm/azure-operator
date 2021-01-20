@@ -67,12 +67,13 @@ type AzureConfigConfig struct {
 
 	ClusterVNetMaskBits int
 
-	Ignition         setting.Ignition
-	IPAMNetworkRange net.IPNet
-	OIDC             setting.OIDC
-	SSHUserList      employees.SSHUserList
-	SSOPublicKey     string
-	TemplateVersion  string
+	Ignition          setting.Ignition
+	IPAMNetworkRange  net.IPNet
+	IPAMReservedCIDRs []net.IPNet
+	OIDC              setting.OIDC
+	SSHUserList       employees.SSHUserList
+	SSOPublicKey      string
+	TemplateVersion   string
 
 	DockerhubToken  string
 	RegistryDomain  string
@@ -496,7 +497,8 @@ func newAzureConfigResources(config AzureConfigConfig, certsSearcher certs.Inter
 			InstallationName:      config.InstallationName,
 			Logger:                config.Logger,
 
-			NetworkRange: config.IPAMNetworkRange,
+			NetworkRange:  config.IPAMNetworkRange,
+			ReservedCIDRs: config.IPAMReservedCIDRs,
 		}
 
 		virtualNetworkCollector, err = ipam.NewVirtualNetworkCollector(c)
