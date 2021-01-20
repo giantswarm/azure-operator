@@ -237,6 +237,15 @@ func New(config Config) (*Service, error) {
 		ipamNetworkRange = *ipnet
 	}
 
+	var reservedCIDRs []net.IPNet
+	{
+		_, ipnet, err := net.ParseCIDR(config.Viper.GetString(config.Flag.Service.Azure.HostCluster.CIDR))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+		reservedCIDRs = append(reservedCIDRs, *ipnet)
+	}
+
 	// These credentials will be used when creating AzureClients for Control Plane clusters.
 	gsClientCredentialsConfig, err := credential.NewAzureCredentials(
 		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
@@ -331,6 +340,7 @@ func New(config Config) (*Service, error) {
 			Ignition:              Ignition,
 			InstallationName:      config.Viper.GetString(config.Flag.Service.Installation.Name),
 			IPAMNetworkRange:      ipamNetworkRange,
+			IPAMReservedCIDRs:     reservedCIDRs,
 			K8sClient:             k8sClient,
 			Locker:                kubeLockLocker,
 			Logger:                config.Logger,
