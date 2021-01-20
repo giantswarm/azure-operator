@@ -82,7 +82,8 @@ func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualN
 func (c *VirtualNetworkCollector) Collect(ctx context.Context, _ interface{}) ([]net.IPNet, error) {
 	var err error
 	var mutex sync.Mutex
-	reservedVirtualNetworks := c.reservedCIDRs
+	var reservedVirtualNetworks []net.IPNet
+	reservedVirtualNetworks = append(reservedVirtualNetworks, c.reservedCIDRs...)
 
 	g := &errgroup.Group{}
 
