@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Enable VMSS termination events.
+
 ## [5.2.1] - 2021-01-20
 
 ### Fixed
@@ -83,7 +87,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Pass dockerhub token for kubelet authorized image pulling. 
+- Pass dockerhub token for kubelet authorized image pulling.
 - Add missing registry mirrors in `spark` resource.
 - Set `Cluster` and `AzureCluster` Ready status fields.
 
