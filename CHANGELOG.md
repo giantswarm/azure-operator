@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Enable VMSS termination events.
+
 ### Fixed
 
 - When scaling up node pool VMSS during an upgrade, consider the real number of old workers running and not the value in the `MachinePool` CR to handle the case when the Autoscaler changed the size.
@@ -87,7 +91,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Pass dockerhub token for kubelet authorized image pulling. 
+- Pass dockerhub token for kubelet authorized image pulling.
 - Add missing registry mirrors in `spark` resource.
 - Set `Cluster` and `AzureCluster` Ready status fields.
 
