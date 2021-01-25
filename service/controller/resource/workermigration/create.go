@@ -25,7 +25,6 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
 )
 
@@ -489,7 +488,7 @@ func (r *Resource) isMasterUpgrading(obj providerv1alpha1.AzureConfig) (bool, er
 	var status string
 	{
 		for _, r := range cr.Status.Cluster.Resources {
-			if r.Name != masters.Name {
+			if r.Name != "masters" {
 				continue
 			}
 

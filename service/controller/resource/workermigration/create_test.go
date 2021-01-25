@@ -31,7 +31,6 @@ import (
 	azureclient "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/mock/mock_tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/masters"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/mock_azure"
 )
@@ -76,7 +75,7 @@ func TestMigrationWaitsForMasterUpgradeToFinish(t *testing.T) {
 			}
 			cr := o.(*providerv1alpha1.AzureConfig)
 
-			err = setStatusCondition(ctrlClient, cr, masters.Name, Stage, s)
+			err = setStatusCondition(ctrlClient, cr, "masters", Stage, s)
 			if err != nil {
 				t.Fatal(err)
 			}

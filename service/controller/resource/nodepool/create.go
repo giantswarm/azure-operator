@@ -10,7 +10,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/annotation"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/masters"
 )
 
 // createStateMachine configures and returns state machine that is driven by
@@ -89,5 +88,5 @@ func isMasterUpgrading(getter key.AnnotationsGetter) bool {
 		return false
 	}
 
-	return masterUpgrading != masters.DeploymentCompleted
+	return masterUpgrading != "DeploymentCompleted"
 }
