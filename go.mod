@@ -14,7 +14,7 @@ require (
 	github.com/giantswarm/apiextensions/v3 v3.15.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v3 v3.1.0
-	github.com/giantswarm/conditions v0.2.0
+	github.com/giantswarm/conditions v0.3.0
 	github.com/giantswarm/conditions-handler v0.2.0
 	github.com/giantswarm/errors v0.2.3
 	github.com/giantswarm/exporterkit v0.2.0
@@ -46,7 +46,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v0.18.9
-	sigs.k8s.io/cluster-api v0.3.12
+	sigs.k8s.io/cluster-api v0.3.13
 	sigs.k8s.io/cluster-api-provider-azure v0.4.9
 	sigs.k8s.io/controller-runtime v0.6.4
 	sigs.k8s.io/yaml v1.2.0
