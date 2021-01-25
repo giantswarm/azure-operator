@@ -1,4 +1,4 @@
-package controller
+package azuremachinepool
 
 import (
 	"context"
@@ -26,7 +26,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azuremachinepoolconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/cloudconfigblob"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/ipam"
@@ -36,11 +35,13 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
-type AzureMachinePoolConfig struct {
+type ControllerConfig struct {
 	APIServerSecurePort   int
 	Azure                 setting.Azure
 	AzureMetricsCollector collector.AzureAPIMetrics
-	Calico                azureconfig.CalicoConfig
+	CalicoCIDRSize        int
+	CalicoMTU             int
+	CalicoSubnet          string
 	ClusterIPRange        string
 	CPAzureClientSet      *client.AzureClientSet
 	CredentialProvider    credential.Provider
@@ -59,7 +60,7 @@ type AzureMachinePoolConfig struct {
 	VMSSMSIEnabled        bool
 }
 
-func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller, error) {
+func NewController(config ControllerConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -110,7 +111,7 @@ func NewAzureMachinePool(config AzureMachinePoolConfig) (*controller.Controller,
 	return operatorkitController, nil
 }
 
-func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.Interface, error) {
+func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interface, error) {
 	var err error
 
 	var clientFactory *client.Factory
@@ -318,7 +319,9 @@ func NewAzureMachinePoolResourceSet(config AzureMachinePoolConfig) ([]resource.I
 		c := spark.Config{
 			APIServerSecurePort: config.APIServerSecurePort,
 			Azure:               config.Azure,
-			Calico:              config.Calico,
+			CalicoCIDRSize:      config.CalicoCIDRSize,
+			CalicoMTU:           config.CalicoMTU,
+			CalicoSubnet:        config.CalicoSubnet,
 			CertsSearcher:       certsSearcher,
 			ClusterIPRange:      config.ClusterIPRange,
 			EtcdPrefix:          config.EtcdPrefix,

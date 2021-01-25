@@ -1,4 +1,4 @@
-package controller
+package azuremachine
 
 import (
 	"context"
@@ -21,7 +21,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azuremachineconditions"
 )
 
-type AzureMachineConfig struct {
+type ControllerConfig struct {
 	AzureMetricsCollector collector.AzureAPIMetrics
 	CredentialProvider    credential.Provider
 	K8sClient             k8sclient.Interface
@@ -29,7 +29,7 @@ type AzureMachineConfig struct {
 	SentryDSN             string
 }
 
-func NewAzureMachine(config AzureMachineConfig) (*controller.Controller, error) {
+func NewController(config ControllerConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -75,7 +75,7 @@ func NewAzureMachine(config AzureMachineConfig) (*controller.Controller, error) 
 	return operatorkitController, nil
 }
 
-func NewAzureMachineResourceSet(config AzureMachineConfig) ([]resource.Interface, error) {
+func NewAzureMachineResourceSet(config ControllerConfig) ([]resource.Interface, error) {
 	var err error
 
 	var clientFactory *client.Factory

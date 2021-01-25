@@ -575,8 +575,8 @@ func (r *Resource) newCluster(cluster *capiv1alpha3.Cluster, azureCluster *capzv
 			return providerv1alpha1.Cluster{}, microerror.Mask(err)
 		}
 
-		commonCluster.Calico.CIDR = r.calico.CIDRSize
-		commonCluster.Calico.MTU = r.calico.MTU
+		commonCluster.Calico.CIDR = r.calicoCIDRSize
+		commonCluster.Calico.MTU = r.calicoMTU
 		commonCluster.Calico.Subnet = azureNetwork.Calico.String()
 	}
 

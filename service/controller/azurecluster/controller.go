@@ -1,4 +1,4 @@
-package controller
+package azurecluster
 
 import (
 	"context"
@@ -34,7 +34,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
-type AzureClusterConfig struct {
+type ControllerConfig struct {
 	CredentialProvider credential.Provider
 	InstallationName   string
 	K8sClient          k8sclient.Interface
@@ -57,7 +57,7 @@ type AzureClusterConfig struct {
 	SentryDSN string
 }
 
-func NewAzureCluster(config AzureClusterConfig) (*controller.Controller, error) {
+func NewController(config ControllerConfig) (*controller.Controller, error) {
 	var err error
 
 	var certsSearcher *certs.Searcher
@@ -111,7 +111,7 @@ func NewAzureCluster(config AzureClusterConfig) (*controller.Controller, error) 
 	return operatorkitController, nil
 }
 
-func newAzureClusterResources(config AzureClusterConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
+func newAzureClusterResources(config ControllerConfig, certsSearcher certs.Interface) ([]resource.Interface, error) {
 	var err error
 
 	var clientFactory *client.Factory
