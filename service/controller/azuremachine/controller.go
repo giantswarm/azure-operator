@@ -18,7 +18,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azuremachineconditions"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachine/handler/azuremachineconditions"
 )
 
 type ControllerConfig struct {
