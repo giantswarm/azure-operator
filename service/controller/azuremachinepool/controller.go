@@ -25,13 +25,13 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/azuremachinepoolconditions"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/spark"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/cloudconfigblob"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/ipam"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/spark"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
