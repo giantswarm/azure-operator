@@ -32,9 +32,14 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
-	"github.com/giantswarm/azure-operator/v5/service/controller"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachine"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool"
+	"github.com/giantswarm/azure-operator/v5/service/controller/cluster"
+	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
+	"github.com/giantswarm/azure-operator/v5/service/controller/unhealthynode"
 )
 
 // Config represents the configuration used to create a new service.
@@ -285,7 +290,7 @@ func New(config Config) (*Service, error) {
 
 	var azureClusterController *operatorkitcontroller.Controller
 	{
-		c := controller.AzureClusterConfig{
+		c := azurecluster.ControllerConfig{
 			CredentialProvider: credentialProvider,
 			K8sClient:          k8sClient,
 			Logger:             config.Logger,
@@ -305,7 +310,7 @@ func New(config Config) (*Service, error) {
 			SentryDSN: sentryDSN,
 		}
 
-		azureClusterController, err = controller.NewAzureCluster(c)
+		azureClusterController, err = azurecluster.NewController(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -330,7 +335,7 @@ func New(config Config) (*Service, error) {
 
 	var azureConfigController *operatorkitcontroller.Controller
 	{
-		c := controller.AzureConfigConfig{
+		c := azureconfig.ControllerConfig{
 			Azure:                 azure,
 			AzureMetricsCollector: azureCollector,
 			ClusterVNetMaskBits:   config.Viper.GetInt(config.Flag.Service.Installation.Guest.IPAM.Network.SubnetMaskBits),
@@ -354,7 +359,7 @@ func New(config Config) (*Service, error) {
 			Debug:                 debugSettings,
 		}
 
-		azureConfigController, err = controller.NewAzureConfig(c)
+		azureConfigController, err = azureconfig.NewController(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -364,34 +369,32 @@ func New(config Config) (*Service, error) {
 
 	var azureMachinePoolController *operatorkitcontroller.Controller
 	{
-		c := controller.AzureMachinePoolConfig{
+		c := azuremachinepool.ControllerConfig{
 			APIServerSecurePort:   config.Viper.GetInt(config.Flag.Service.Cluster.Kubernetes.API.SecurePort),
 			Azure:                 azure,
 			AzureMetricsCollector: azureCollector,
-			Calico: azureconfig.CalicoConfig{
-				CIDRSize: config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
-				MTU:      config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
-				Subnet:   config.Viper.GetString(config.Flag.Service.Cluster.Calico.Subnet),
-			},
-			ClusterIPRange:     config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
-			CredentialProvider: credentialProvider,
-			CPAzureClientSet:   cpAzureClientSet,
-			DockerhubToken:     config.Viper.GetString(config.Flag.Service.Registry.DockerhubToken),
-			EtcdPrefix:         config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
-			Ignition:           Ignition,
-			InstallationName:   config.Viper.GetString(config.Flag.Service.Installation.Name),
-			K8sClient:          k8sClient,
-			Locker:             kubeLockLocker,
-			Logger:             config.Logger,
-			OIDC:               OIDC,
-			RegistryDomain:     config.Viper.GetString(config.Flag.Service.Registry.Domain),
-			SentryDSN:          sentryDSN,
-			SSHUserList:        sshUserList,
-			SSOPublicKey:       config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-			VMSSMSIEnabled:     config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
+			CalicoCIDRSize:        config.Viper.GetInt(config.Flag.Service.Cluster.Calico.CIDR),
+			CalicoMTU:             config.Viper.GetInt(config.Flag.Service.Cluster.Calico.MTU),
+			CalicoSubnet:          config.Viper.GetString(config.Flag.Service.Cluster.Calico.Subnet),
+			ClusterIPRange:        config.Viper.GetString(config.Flag.Service.Cluster.Kubernetes.API.ClusterIPRange),
+			CredentialProvider:    credentialProvider,
+			CPAzureClientSet:      cpAzureClientSet,
+			DockerhubToken:        config.Viper.GetString(config.Flag.Service.Registry.DockerhubToken),
+			EtcdPrefix:            config.Viper.GetString(config.Flag.Service.Cluster.Etcd.Prefix),
+			Ignition:              Ignition,
+			InstallationName:      config.Viper.GetString(config.Flag.Service.Installation.Name),
+			K8sClient:             k8sClient,
+			Locker:                kubeLockLocker,
+			Logger:                config.Logger,
+			OIDC:                  OIDC,
+			RegistryDomain:        config.Viper.GetString(config.Flag.Service.Registry.Domain),
+			SentryDSN:             sentryDSN,
+			SSHUserList:           sshUserList,
+			SSOPublicKey:          config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+			VMSSMSIEnabled:        config.Viper.GetBool(config.Flag.Service.Azure.MSI.Enabled),
 		}
 
-		azureMachinePoolController, err = controller.NewAzureMachinePool(c)
+		azureMachinePoolController, err = azuremachinepool.NewController(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -401,7 +404,7 @@ func New(config Config) (*Service, error) {
 
 	var azureMachineController *operatorkitcontroller.Controller
 	{
-		c := controller.AzureMachineConfig{
+		c := azuremachine.ControllerConfig{
 			AzureMetricsCollector: azureCollector,
 			CredentialProvider:    credentialProvider,
 			K8sClient:             k8sClient,
@@ -409,7 +412,7 @@ func New(config Config) (*Service, error) {
 			SentryDSN:             sentryDSN,
 		}
 
-		azureMachineController, err = controller.NewAzureMachine(c)
+		azureMachineController, err = azuremachine.NewController(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -419,13 +422,13 @@ func New(config Config) (*Service, error) {
 
 	var clusterController *operatorkitcontroller.Controller
 	{
-		c := controller.ClusterConfig{
+		c := cluster.ControllerConfig{
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 			SentryDSN: sentryDSN,
 		}
 
-		clusterController, err = controller.NewCluster(c)
+		clusterController, err = cluster.NewController(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -435,13 +438,13 @@ func New(config Config) (*Service, error) {
 
 	var machinePoolController *operatorkitcontroller.Controller
 	{
-		c := controller.MachinePoolConfig{
+		c := machinepool.ControllerConfig{
 			K8sClient: k8sClient,
 			Logger:    config.Logger,
 			SentryDSN: sentryDSN,
 		}
 
-		machinePoolController, err = controller.NewMachinePool(c)
+		machinePoolController, err = machinepool.NewController(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -451,7 +454,7 @@ func New(config Config) (*Service, error) {
 
 	var terminateUnhealthyNodeController *operatorkitcontroller.Controller
 	{
-		c := controller.TerminateUnhealthyNodeConfig{
+		c := unhealthynode.ControllerConfig{
 			AzureMetricsCollector: azureCollector,
 			CredentialProvider:    credentialProvider,
 			K8sClient:             k8sClient,
@@ -459,7 +462,7 @@ func New(config Config) (*Service, error) {
 			SentryDSN:             sentryDSN,
 		}
 
-		terminateUnhealthyNodeController, err = controller.NewTerminateUnhealthyNode(c)
+		terminateUnhealthyNodeController, err = unhealthynode.NewController(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

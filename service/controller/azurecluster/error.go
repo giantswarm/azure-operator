@@ -1,4 +1,4 @@
-package controller
+package azurecluster
 
 import (
 	"github.com/giantswarm/microerror"

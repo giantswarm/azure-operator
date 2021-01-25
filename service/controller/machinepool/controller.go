@@ -1,4 +1,4 @@
-package controller
+package machinepool
 
 import (
 	"context"
@@ -27,13 +27,13 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodestatus"
 )
 
-type MachinePoolConfig struct {
+type ControllerConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 	SentryDSN string
 }
 
-func NewMachinePool(config MachinePoolConfig) (*controller.Controller, error) {
+func NewController(config ControllerConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -81,7 +81,7 @@ func NewMachinePool(config MachinePoolConfig) (*controller.Controller, error) {
 	return operatorkitController, nil
 }
 
-func NewMachinePoolResourceSet(config MachinePoolConfig) ([]resource.Interface, error) {
+func NewMachinePoolResourceSet(config ControllerConfig) ([]resource.Interface, error) {
 	var err error
 
 	var certsSearcher *certs.Searcher

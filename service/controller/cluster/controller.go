@@ -1,4 +1,4 @@
-package controller
+package cluster
 
 import (
 	"context"
@@ -28,7 +28,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
-type ClusterConfig struct {
+type ControllerConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 	SentryDSN string
@@ -36,7 +36,7 @@ type ClusterConfig struct {
 	Debug setting.Debug
 }
 
-func NewCluster(config ClusterConfig) (*controller.Controller, error) {
+func NewController(config ControllerConfig) (*controller.Controller, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
@@ -82,7 +82,7 @@ func NewCluster(config ClusterConfig) (*controller.Controller, error) {
 	return operatorkitController, nil
 }
 
-func NewClusterResourceSet(config ClusterConfig) ([]resource.Interface, error) {
+func NewClusterResourceSet(config ControllerConfig) ([]resource.Interface, error) {
 	var err error
 
 	var clusterReleaseVersionResource resource.Interface

@@ -1,4 +1,4 @@
-package controller
+package unhealthynode
 
 import (
 	"context"
@@ -25,7 +25,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/terminateunhealthynode"
 )
 
-type TerminateUnhealthyNodeConfig struct {
+type ControllerConfig struct {
 	K8sClient k8sclient.Interface
 	Logger    micrologger.Logger
 
@@ -34,11 +34,11 @@ type TerminateUnhealthyNodeConfig struct {
 	SentryDSN             string
 }
 
-type TerminateUnhealthyNode struct {
+type Controller struct {
 	*controller.Controller
 }
 
-func NewTerminateUnhealthyNode(config TerminateUnhealthyNodeConfig) (*controller.Controller, error) {
+func NewController(config ControllerConfig) (*controller.Controller, error) {
 	var err error
 
 	if config.K8sClient == nil {
@@ -107,7 +107,7 @@ func NewTerminateUnhealthyNode(config TerminateUnhealthyNodeConfig) (*controller
 	return operatorkitController, nil
 }
 
-func newTerminateUnhealthyNodeResources(config TerminateUnhealthyNodeConfig, certsSearcher *certs.Searcher) ([]resource.Interface, error) {
+func newTerminateUnhealthyNodeResources(config ControllerConfig, certsSearcher *certs.Searcher) ([]resource.Interface, error) {
 	var err error
 
 	var clientFactory *client.Factory

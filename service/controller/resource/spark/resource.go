@@ -13,7 +13,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 
 	"github.com/giantswarm/microerror"
@@ -32,7 +31,9 @@ const (
 type Config struct {
 	APIServerSecurePort int
 	Azure               setting.Azure
-	Calico              azureconfig.CalicoConfig
+	CalicoCIDRSize      int
+	CalicoMTU           int
+	CalicoSubnet        string
 	CertsSearcher       certs.Interface
 	ClusterIPRange      string
 	CredentialProvider  credential.Provider
@@ -52,7 +53,9 @@ type Config struct {
 type Resource struct {
 	apiServerSecurePort int
 	azure               setting.Azure
-	calico              azureconfig.CalicoConfig
+	calicoCIDRSize      int
+	calicoMTU           int
+	calicoSubnet        string
 	certsSearcher       certs.Interface
 	clusterIPRange      string
 	credentialProvider  credential.Provider
@@ -78,8 +81,8 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	if config.Calico.MTU == 0 {
-		return nil, microerror.Maskf(invalidConfigError, "%T.Calico.MTU must not be empty", config)
+	if config.CalicoMTU == 0 {
+		return nil, microerror.Maskf(invalidConfigError, "%T.CalicoMTU must not be empty", config)
 	}
 
 	if config.CertsSearcher == nil {
@@ -125,7 +128,9 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		apiServerSecurePort: config.APIServerSecurePort,
 		azure:               config.Azure,
-		calico:              config.Calico,
+		calicoCIDRSize:      config.CalicoCIDRSize,
+		calicoMTU:           config.CalicoMTU,
+		calicoSubnet:        config.CalicoSubnet,
 		certsSearcher:       config.CertsSearcher,
 		clusterIPRange:      config.ClusterIPRange,
 		credentialProvider:  config.CredentialProvider,
