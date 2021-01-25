@@ -8,10 +8,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/checksum"
+	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
+	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
-	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
 )
 
 func (r *Resource) deploymentCompletedTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {

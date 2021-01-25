@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/ipam"
+	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -31,7 +32,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 

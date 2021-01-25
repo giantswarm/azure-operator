@@ -6,11 +6,11 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api/util"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/scalestrategy"
+	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodes/scalestrategy"
 )
 
 // The goal of scaleUpWorkerVMSSTransition is to double the desired number

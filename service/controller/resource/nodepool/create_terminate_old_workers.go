@@ -8,8 +8,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api/util"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/internal/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
