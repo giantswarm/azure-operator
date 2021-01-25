@@ -23,11 +23,11 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/nodepool/template"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool/template"
 )
 
 func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClient *storage.AccountsClient, release *releasev1alpha1.Release, machinePool *capiexpv1alpha3.MachinePool, azureMachinePool *capzexpv1alpha3.AzureMachinePool, azureCluster *capzv1alpha3.AzureCluster, vmss compute.VirtualMachineScaleSet) (azureresource.Deployment, error) {

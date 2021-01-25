@@ -28,10 +28,10 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/azuremachinepoolconditions"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/cloudconfigblob"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/nodepool"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/spark"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodepool"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
