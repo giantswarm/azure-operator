@@ -25,7 +25,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/cluster/handler/clusterownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cluster/handler/clusterreleaseversion"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cluster/handler/clusterupgrade"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/clusterupgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
