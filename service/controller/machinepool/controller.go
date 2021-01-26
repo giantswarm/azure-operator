@@ -22,7 +22,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepooldependents"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolownerreference"
+	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepoolownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/machinepoolupgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodestatus"
 )
