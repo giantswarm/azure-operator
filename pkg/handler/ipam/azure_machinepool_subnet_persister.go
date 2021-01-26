@@ -66,7 +66,7 @@ func (p *AzureMachinePoolSubnetPersister) Persist(ctx context.Context, subnet ne
 func (p *AzureMachinePoolSubnetPersister) addSubnetToAzureCluster(ctx context.Context, subnet net.IPNet, azureMachinePool *v1alpha3.AzureMachinePool) error {
 	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, p.ctrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
-		errorMessage := fmt.Sprintf("error while getting AzureCluster CR from AzureMachinePool CR metadata")
+		errorMessage := fmt.Sprint("error while getting AzureCluster CR from AzureMachinePool CR metadata")
 		p.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)
 		return microerror.Mask(err)
 	}
