@@ -60,7 +60,7 @@ func (r *Resource) updateControlPlaneObject(ctx context.Context, cluster *capi.C
 
 	err = r.ctrlClient.Update(ctx, azureMachine)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	} else if err != nil {
@@ -88,7 +88,7 @@ func (r *Resource) updateControlPlaneRef(ctx context.Context, cluster *capi.Clus
 	cluster.Spec.ControlPlaneRef = controlPlaneRef
 	err = r.ctrlClient.Update(ctx, cluster)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	} else if err != nil {
