@@ -89,10 +89,7 @@ const (
 )
 
 var (
-	instanceIDRegexp            = regexp.MustCompile(`-[^-]{6}$`)
-	LocationsThatDontSupportAZs = []string{
-		"germanywestcentral",
-	}
+	instanceIDRegexp = regexp.MustCompile(`-[^-]{6}$`)
 )
 
 func APISecurePort(customObject providerv1alpha1.AzureConfig) int {
@@ -480,12 +477,6 @@ func RouteTableName(customObject providerv1alpha1.AzureConfig) string {
 
 // AvailabilityZones returns the availability zones where the cluster will be created.
 func AvailabilityZones(customObject providerv1alpha1.AzureConfig, location string) []int {
-	for _, l := range LocationsThatDontSupportAZs {
-		if l == location {
-			return []int{}
-		}
-	}
-
 	if customObject.Spec.Azure.AvailabilityZones == nil {
 		return []int{}
 	}
