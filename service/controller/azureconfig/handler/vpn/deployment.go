@@ -5,8 +5,8 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/vpn/template"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpn/template"
 )
 
 func (r Resource) newDeployment(customObject providerv1alpha1.AzureConfig, overwrites map[string]interface{}) (azureresource.Deployment, error) {
