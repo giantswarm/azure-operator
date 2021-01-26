@@ -41,6 +41,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/namespace"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/resourcegroup"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/service"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
@@ -48,7 +49,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/endpoints"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpn"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/vpnconnection"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 

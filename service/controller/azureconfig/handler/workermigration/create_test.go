@@ -30,9 +30,9 @@ import (
 
 	azureclient "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/mock/mock_tenantcluster"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/mock_azure"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/mock_azure"
 )
 
 //go:generate mockgen -destination internal/mock_azure/api.go -source internal/azure/spec.go API
