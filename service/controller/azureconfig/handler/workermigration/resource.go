@@ -10,7 +10,7 @@ import (
 
 	azureclient "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/workermigration/internal/azure"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"
 )
 
 const (
