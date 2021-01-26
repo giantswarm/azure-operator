@@ -24,7 +24,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepooldependents"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepoolownerreference"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/machinepoolupgrade"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/nodestatus"
+	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool/handler/nodestatus"
 )
 
 type ControllerConfig struct {
