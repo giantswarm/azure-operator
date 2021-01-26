@@ -28,9 +28,9 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/handler/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/handler/azureclusterupgrade"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/handler/azureconfig"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/handler/subnet"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/subnet"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
