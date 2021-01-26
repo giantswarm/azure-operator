@@ -11,7 +11,7 @@ import (
 func GetARMTemplate() (map[string]interface{}, error) {
 	contents := make(map[string]interface{})
 
-	f, err := pkger.Open("/service/controller/resource/masters/template/main.json")
+	f, err := pkger.Open("/service/controller/azureconfig/handler/masters/template/main.json")
 	if err != nil {
 		return contents, microerror.Mask(err)
 	}

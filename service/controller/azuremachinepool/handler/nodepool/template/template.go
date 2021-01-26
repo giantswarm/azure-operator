@@ -13,7 +13,7 @@ import (
 func GetARMTemplate() (map[string]interface{}, error) {
 	contents := make(map[string]interface{})
 
-	f, err := pkger.Open("/service/controller/resource/nodepool/template/main.json")
+	f, err := pkger.Open("/service/controller/azuremachinepool/handler/nodepool/template/main.json")
 	if err != nil {
 		return contents, microerror.Mask(err)
 	}
