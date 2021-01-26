@@ -9,8 +9,8 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/deployment/template"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/deployment/template"
 	"github.com/giantswarm/azure-operator/v5/service/network"
 )
 
