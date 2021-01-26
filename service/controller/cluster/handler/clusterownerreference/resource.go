@@ -2,7 +2,6 @@ package clusterownerreference
 
 import (
 	"context"
-	"fmt"
 
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -123,14 +122,14 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 
 	err = r.ctrlClient.Update(ctx, &azureCluster)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name))
+	r.logger.Debugf(ctx, "Ensured %s label and 'ownerReference' fields on AzureCluster '%s/%s'", capiv1alpha3.ClusterLabelName, cluster.Namespace, cluster.Spec.InfrastructureRef.Name)
 
 	if cluster.Spec.InfrastructureRef != nil && cluster.Spec.InfrastructureRef.APIVersion != "" {
 		// Correct Cluster.Spec.InfrastructureRef with APIVersion is already set
@@ -148,14 +147,14 @@ func (r *Resource) ensureAzureCluster(ctx context.Context, cluster capiv1alpha3.
 
 	err = r.ctrlClient.Update(ctx, &cluster)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "message", "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.Debugf(ctx, "message", "canceling resource")
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
+		r.logger.Debugf(ctx, "canceling resource")
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "message", fmt.Sprintf("Ensured 'Spec.InfrastructureRef' fields on Cluster '%s/%s'", cluster.Namespace, cluster.Name))
+	r.logger.Debugf(ctx, "Ensured 'Spec.InfrastructureRef' fields on Cluster '%s/%s'", cluster.Namespace, cluster.Name)
 	return nil
 }
 
@@ -177,7 +176,7 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 			continue
 		}
 
-		r.logger.Debugf(ctx, "message", fmt.Sprintf("Ensuring %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
+		r.logger.Debugf(ctx, "Ensuring %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name)
 
 		if machinePool.Labels == nil {
 			machinePool.Labels = make(map[string]string)
@@ -192,14 +191,14 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 
 		err = r.ctrlClient.Update(ctx, &machinePool)
 		if apierrors.IsConflict(err) {
-			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.logger.Debugf(ctx, "cancelling resource")
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
-		r.logger.Debugf(ctx, "message", fmt.Sprintf("Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name))
+		r.logger.Debugf(ctx, "Ensured %s label and 'ownerReference' fields on MachinePool '%s/%s'", capiv1alpha3.ClusterLabelName, machinePool.Namespace, machinePool.Name)
 	}
 
 	return nil
