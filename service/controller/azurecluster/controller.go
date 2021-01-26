@@ -20,6 +20,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/flag"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/handler/release"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -29,7 +30,6 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureclusterconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/azureconfig"
-	"github.com/giantswarm/azure-operator/v5/service/controller/resource/release"
 	"github.com/giantswarm/azure-operator/v5/service/controller/resource/subnet"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
