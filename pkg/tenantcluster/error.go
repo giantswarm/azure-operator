@@ -1,6 +1,7 @@
 package tenantcluster
 
 import (
+	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 )
 
@@ -19,5 +20,9 @@ var apiNotAvailableError = &microerror.Error{
 
 // IsAPINotAvailableError asserts apiNotAvailableError.
 func IsAPINotAvailableError(err error) bool {
+	if tenant.IsAPINotAvailable(err) {
+		return true
+	}
+
 	return microerror.Cause(err) == apiNotAvailableError
 }

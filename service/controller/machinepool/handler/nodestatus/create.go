@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
-	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/microerror"
 	apicorev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
@@ -13,6 +12,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -68,7 +68,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if tenant.IsAPINotAvailable(err) {
+	if tenantcluster.IsAPINotAvailableError(err) {
 		r.logger.Debugf(ctx, "tenant API not available yet")
 		r.logger.Debugf(ctx, "canceling resource")
 
