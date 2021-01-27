@@ -244,6 +244,8 @@ github.com/giantswarm/conditions v0.3.0 h1:sv6b2dVXns2oT1VJ2UIuflJo24cC7EPXD7tdw
 github.com/giantswarm/conditions v0.3.0/go.mod h1:tFjYCLTT5NBJU+PYij0360yBHzETIpw3wnrettuzdsw=
 github.com/giantswarm/conditions-handler v0.2.0 h1:Ppaf3HaM0otfhnHLeL/64MsWDd6RMrv1tWlLycyBSHY=
 github.com/giantswarm/conditions-handler v0.2.0/go.mod h1:QXMJUNLZNwDCz60N4GxT39ETSw52idBfq65l0bx0tXg=
+github.com/giantswarm/conditions-handler v0.2.1-0.20210127132416-0ef62df886be h1:dt4eGOOBcAHUUpN4CHsuY2CcM/jHTyde06cNrom8LNA=
+github.com/giantswarm/conditions-handler v0.2.1-0.20210127132416-0ef62df886be/go.mod h1:QXMJUNLZNwDCz60N4GxT39ETSw52idBfq65l0bx0tXg=
 github.com/giantswarm/errors v0.2.3 h1:gE1dDSD0RNwYUah5hG6oUQh0unPyZ74tVwR1/PW3ZQ0=
 github.com/giantswarm/errors v0.2.3/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
 github.com/giantswarm/exporterkit v0.2.0 h1:+HTGl4fmT/1OkTox8HbV3JXeavmsZv94+2CDW8cSrq0=
