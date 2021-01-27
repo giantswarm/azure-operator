@@ -156,7 +156,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			err = r.ctrlClient.Update(ctx, &presentAzureConfig)
 			if apierrors.IsConflict(err) {
-				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 				r.logger.Debugf(ctx, "canceling resource")
 				return nil
 			} else if err != nil {
@@ -204,7 +204,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		if updateStatus {
 			err = r.ctrlClient.Status().Update(ctx, &presentAzureConfig)
 			if apierrors.IsConflict(err) {
-				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 				r.logger.Debugf(ctx, "canceling resource")
 				return nil
 			} else if err != nil {

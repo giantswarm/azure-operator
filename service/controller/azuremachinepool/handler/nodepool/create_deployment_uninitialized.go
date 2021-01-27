@@ -9,6 +9,7 @@ import (
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
@@ -94,12 +95,13 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	// Compute desired state for Azure ARM Deployment.
 	desiredDeployment, err := r.getDesiredDeployment(ctx, storageAccountsClient, release, machinePool, &azureMachinePool, azureCluster, vmss)
 	if IsNotFound(err) {
-		r.Logger.Debugf(ctx, "Azure resource not found", "stack", microerror.JSON(err))
+		r.Logger.Debugf(ctx, "Azure resource not found")
 		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if IsSubnetNotReadyError(err) {
-		r.Logger.Debugf(ctx, "subnet is not Ready, it's probably still being created", "stack", microerror.JSON(err))
+		r.Logger.Debugf(ctx, "subnet is not Ready, it's probably still being created")
 		r.Logger.Debugf(ctx, "canceling resource")
+		r.Logger.Debugf(ctx, microerror.JSON(err))
 		return currentState, nil
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
@@ -153,10 +155,12 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		r.Debugger.LogFailedDeployment(ctx, currentDeployment, err)
 
 		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
-		if err != nil {
-			r.Logger.Debugf(ctx, "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
+		if apierrors.IsConflict(err) {
+			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.Logger.Debugf(ctx, "canceling resource")
 			return currentState, nil
+		} else if err != nil {
+			return currentState, microerror.Mask(err)
 		}
 
 		// Deployment is not running and not succeeded (Failed?)
@@ -175,10 +179,12 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		r.Logger.Debugf(ctx, "template and parameters unchanged")
 
 		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
-		if err != nil {
-			r.Logger.Debugf(ctx, "error trying to save object in k8s API", "stack", microerror.JSON(microerror.Mask(err)))
+		if apierrors.IsConflict(err) {
+			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.Logger.Debugf(ctx, "canceling resource")
 			return currentState, nil
+		} else if err != nil {
+			return currentState, microerror.Mask(err)
 		}
 
 		r.Logger.Debugf(ctx, "canceling resource")
