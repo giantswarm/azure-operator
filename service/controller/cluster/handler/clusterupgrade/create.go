@@ -184,6 +184,10 @@ func (r *Resource) ensureAzureMachineLastReleaseDeployedAnnotation(ctx context.C
 		r.logger.Debugf(ctx, "ensured that AzureMachine has label %q set to desired release %s", label.ReleaseVersion, key.ReleaseVersion(cluster))
 	}
 
+	if azureMachine.Annotations == nil {
+		azureMachine.Annotations = map[string]string{}
+	}
+
 	azureMachine.Annotations[annotation.LastDeployedReleaseVersion] = azureMachine.Labels[label.ReleaseVersion]
 	err = r.ctrlClient.Update(ctx, azureMachine)
 	if apierrors.IsConflict(err) {
