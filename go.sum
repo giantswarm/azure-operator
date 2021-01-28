@@ -238,12 +238,10 @@ github.com/giantswarm/cluster-api v0.3.10-gs h1:l2LpZlN97t7RRwKf4OBfNA2h1oVnZXWC
 github.com/giantswarm/cluster-api v0.3.10-gs/go.mod h1:878STePVJcBNDYFY2eCsLuHXWs6qiH3INFItEwdfWaE=
 github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2 h1:rkmGkanOvFi/Q7WRdqSkWm6M321q4yqavNtw+witIM0=
 github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2/go.mod h1:iD4hxYobC6/eAlBOcrE6NAIwEDHcD174Uck5FmZZx8U=
-github.com/giantswarm/conditions v0.2.0 h1:sOS319rNgfRl/LuzeEmCcyjYa8V4GCtR4NtwyfNTAmo=
-github.com/giantswarm/conditions v0.2.0/go.mod h1:Bp0zSox1MdFV20MTvjXOr8li+v11OLX/8kponaIGVrw=
 github.com/giantswarm/conditions v0.3.0 h1:sv6b2dVXns2oT1VJ2UIuflJo24cC7EPXD7tdwPEYFkU=
 github.com/giantswarm/conditions v0.3.0/go.mod h1:tFjYCLTT5NBJU+PYij0360yBHzETIpw3wnrettuzdsw=
-github.com/giantswarm/conditions-handler v0.2.0 h1:Ppaf3HaM0otfhnHLeL/64MsWDd6RMrv1tWlLycyBSHY=
-github.com/giantswarm/conditions-handler v0.2.0/go.mod h1:QXMJUNLZNwDCz60N4GxT39ETSw52idBfq65l0bx0tXg=
+github.com/giantswarm/conditions-handler v0.2.1 h1:XUgJD0T+H+QsUN1oaPAlla+hL+qJqtNQF150snQSXy8=
+github.com/giantswarm/conditions-handler v0.2.1/go.mod h1:uEnndkR6svfI86fSu7LXVVhqHXqOB2speo6LVQ+rok8=
 github.com/giantswarm/errors v0.2.3 h1:gE1dDSD0RNwYUah5hG6oUQh0unPyZ74tVwR1/PW3ZQ0=
 github.com/giantswarm/errors v0.2.3/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
 github.com/giantswarm/exporterkit v0.2.0 h1:+HTGl4fmT/1OkTox8HbV3JXeavmsZv94+2CDW8cSrq0=

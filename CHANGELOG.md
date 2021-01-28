@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Enable VMSS termination events.
+- Bump `conditions-handler` to v0.2.1 to get `MachinePool` `ReplicasReady` fixes.
 
 ### Fixed
 
