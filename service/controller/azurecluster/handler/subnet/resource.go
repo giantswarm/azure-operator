@@ -214,7 +214,7 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 	// Update AzureCluster so that subnet.ID is saved.
 	err = r.ctrlClient.Update(ctx, azureCluster)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
