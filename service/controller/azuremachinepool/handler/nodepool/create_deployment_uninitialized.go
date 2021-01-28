@@ -100,8 +100,8 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, nil
 	} else if IsSubnetNotReadyError(err) {
 		r.Logger.Debugf(ctx, "subnet is not Ready, it's probably still being created")
-		r.Logger.Debugf(ctx, "canceling resource")
 		r.Logger.Debugf(ctx, microerror.JSON(err))
+		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if err != nil {
 		return currentState, microerror.Mask(err)
