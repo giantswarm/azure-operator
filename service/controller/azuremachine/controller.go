@@ -113,7 +113,7 @@ func NewAzureMachineResourceSet(config ControllerConfig) ([]resource.Interface, 
 
 		azureMachineMetadataResource, err = azuremachinemetadata.New(c)
 		if err != nil {
-			microerror.Mask(err)
+			return nil, microerror.Mask(err)
 		}
 	}
 	var azureMachineConditionsResource resource.Interface
