@@ -53,6 +53,16 @@ func (r *Resource) ensureAnnotations(ctx context.Context, azureMachine *capz.Azu
 		return microerror.Mask(err)
 	}
 
+	clusterLastDeployedReleaseVersion, ok := cluster.Annotations[annotation.LastDeployedReleaseVersion]
+	if !ok {
+		// Cluster CR does not have release.giantswarm.io/last-deployed-version
+		// annotation set, which means that the Cluster is probably being
+		// created, so we don't have to initialize that same annotation for
+		// AzureMachine CR, as it will be updated by Cluster controller
+		// clusterupgrade handler.
+		return nil
+	}
+
 	// Since this will be executed only once (during the first upgrade to the
 	// release that includes this change), we will ready the annotation value
 	// from the Cluster CR, as that will be the latest deployed release at that
@@ -62,7 +72,7 @@ func (r *Resource) ensureAnnotations(ctx context.Context, azureMachine *capz.Azu
 	//   cannot use that.
 	// - Also ,we cannot know if AzureMachine release label was already updated
 	//   or not, as that is done in Cluster controller.
-	azureMachine.Annotations[annotation.LastDeployedReleaseVersion] = cluster.Annotations[annotation.LastDeployedReleaseVersion]
+	azureMachine.Annotations[annotation.LastDeployedReleaseVersion] = clusterLastDeployedReleaseVersion
 
 	err = r.ctrlClient.Update(ctx, azureMachine)
 	if apierrors.IsConflict(err) {
