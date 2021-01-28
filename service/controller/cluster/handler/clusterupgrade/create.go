@@ -179,11 +179,6 @@ func (r *Resource) ensureAzureMachineLastReleaseDeployedAnnotation(ctx context.C
 		return microerror.Mask(err)
 	}
 
-	if azureMachine.Labels[label.ReleaseVersion] != cluster.Labels[label.ReleaseVersion] {
-		azureMachine.Labels[label.ReleaseVersion] = cluster.Labels[label.ReleaseVersion]
-		r.logger.Debugf(ctx, "ensured that AzureMachine has label %q set to desired release %s", label.ReleaseVersion, key.ReleaseVersion(cluster))
-	}
-
 	if azureMachine.Annotations == nil {
 		azureMachine.Annotations = map[string]string{}
 	}
