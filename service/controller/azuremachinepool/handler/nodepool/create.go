@@ -66,7 +66,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		r.Logger.Debugf(ctx, "setting resource status to %#q", newState)
 		err = r.saveCurrentState(ctx, azureMachinePool, string(newState))
 		if apierrors.IsConflict(err) {
-			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.Logger.Debugf(ctx, "no state change")
 			return nil
 		} else if err != nil {
