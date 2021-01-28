@@ -3,6 +3,7 @@ package azureclusterupgrade
 import (
 	"context"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -64,8 +65,24 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// All found AzureMachines belonging to same cluster are processed at once.
 	// This will change when HA masters story is implemented.
 	for _, m := range azureMachineList.Items {
+		changed := false
 		if m.Labels == nil {
 			m.Labels = make(map[string]string)
+		}
+
+		// First initialize release.giantswarm.io/last-deployed-version annotation
+		// and set it to the current release version.
+		if m.Annotations == nil {
+			m.Annotations = map[string]string{}
+		}
+
+		_, ok := m.Annotations[annotation.LastDeployedReleaseVersion]
+		if !ok {
+			// Initialize annotation for the CRs that do not have it set. This
+			// will ensure that Creating and Upgrading conditions are set
+			// properly for the first time.
+			m.Annotations[annotation.LastDeployedReleaseVersion] = m.Labels[label.ReleaseVersion]
+			changed = true
 		}
 
 		if m.Labels[label.AzureOperatorVersion] != cr.Labels[label.AzureOperatorVersion] ||
@@ -73,7 +90,10 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 			m.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
 			m.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
+			changed = true
+		}
 
+		if changed {
 			err = r.ctrlClient.Update(ctx, &m)
 			if apierrors.IsConflict(err) {
 				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
