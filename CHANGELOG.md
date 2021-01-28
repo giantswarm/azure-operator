@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
-- Enable VMSS termination events.
+- Enable VMSS termination events.h
+- Changed `StorageClasses` `volumeBindingMode` to `WaitForFirstConsumer`.
 
 ### Fixed
 
