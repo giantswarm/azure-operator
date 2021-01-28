@@ -6,12 +6,12 @@ metadata:
   creationTimestamp: null
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
-    cluster.x-k8s.io/cluster-name: ""
+    cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: ""
+    giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme
-  namespace: default
+  namespace: org-giantswarm
   resourceVersion: "1"
 spec:
   controlPlaneEndpoint:
@@ -19,22 +19,12 @@ spec:
     port: 443
   location: westeurope
   networkSpec:
+    apiServerLB: {}
     vnet:
-      cidrBlock: 10.10.0.0/16
+      cidrBlocks:
+      - 10.10.0.0/16
       name: c6fme-VirtualNetwork
       resourceGroup: c6fme
   resourceGroup: c6fme
 status:
-  bastion:
-    image: {}
-    osDisk:
-      diskSizeGB: 0
-      managedDisk:
-        storageAccountType: ""
-      osType: ""
-  network:
-    apiServerIp: {}
-    apiServerLb:
-      backendPool: {}
-      frontendIpConfig: {}
   ready: false

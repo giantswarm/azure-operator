@@ -4,13 +4,13 @@ metadata:
   creationTimestamp: null
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
-    cluster.x-k8s.io/cluster-name: ""
+    cluster.x-k8s.io/cluster-name: c6fme
     cluster.x-k8s.io/control-plane: "true"
     giantswarm.io/cluster: c6fme
-    giantswarm.io/organization: ""
+    giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme-master-0
-  namespace: default
+  namespace: org-giantswarm
   resourceVersion: "1"
 spec:
   availabilityZone: {}
@@ -20,6 +20,7 @@ spec:
       offer: flatcar-container-linux-free
       publisher: kinvolk
       sku: stable
+      thirdPartyImage: false
       version: 2345.3.1
   location: westeurope
   osDisk:
@@ -27,7 +28,7 @@ spec:
     managedDisk:
       storageAccountType: Premium_LRS
     osType: Linux
-  sshPublicKey: ssh-rsa foobarbaz== foobar
+  sshPublicKey: ""
   vmSize: Standard_D4s_v3
 status:
   ready: false
