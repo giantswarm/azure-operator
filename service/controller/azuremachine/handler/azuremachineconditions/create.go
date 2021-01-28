@@ -22,6 +22,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 		return microerror.Mask(err)
 	}
 
+	// ensure Creating condition
+	err = r.creatingConditionHandler.EnsureCreated(ctx, &azureMachine)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	// ensure Upgrading condition
+	err = r.upgradingConditionHandler.EnsureCreated(ctx, &azureMachine)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
 	err = r.ctrlClient.Status().Update(ctx, &azureMachine)
 	if apierrors.IsConflict(err) {
 		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
