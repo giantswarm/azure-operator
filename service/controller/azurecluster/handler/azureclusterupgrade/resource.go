@@ -12,6 +12,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -72,18 +73,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		// First initialize release.giantswarm.io/last-deployed-version annotation
 		// and set it to the current release version.
-		if m.Annotations == nil {
-			m.Annotations = map[string]string{}
+		// We need this for existing clusters, and we do it both in Cluster
+		// controller (clusterupgrade) and in AzureMachine controller, because
+		// we do not know which controller/handler will be executed first, and
+		// we need annotation set correctly in both places.
+		_, annotationWasSet := cr.Annotations[annotation.LastDeployedReleaseVersion]
+		err = helpers.InitAzureMachineAnnotations(ctx, r.ctrlClient, r.logger, &m)
+		if err != nil {
+			return microerror.Mask(err)
 		}
-
-		_, ok := m.Annotations[annotation.LastDeployedReleaseVersion]
-		if !ok {
-			// Initialize annotation for the CRs that do not have it set. This
-			// will ensure that Creating and Upgrading conditions are set
-			// properly for the first time.
-			m.Annotations[annotation.LastDeployedReleaseVersion] = m.Labels[label.ReleaseVersion]
-			changed = true
-		}
+		_, annotationIsSet := cr.Annotations[annotation.LastDeployedReleaseVersion]
+		changed = !annotationWasSet && annotationIsSet
 
 		if m.Labels[label.AzureOperatorVersion] != cr.Labels[label.AzureOperatorVersion] ||
 			m.Labels[label.ReleaseVersion] != cr.Labels[label.ReleaseVersion] {
