@@ -20,6 +20,14 @@ const (
 	Name = "volumebindingmigration"
 )
 
+var managedStorageClasses = map[string]struct{}{
+	"af-premium":       struct{}{},
+	"af-standard":      struct{}{},
+	"default":          struct{}{},
+	"managed-premium":  struct{}{},
+	"managed-standard": struct{}{},
+}
+
 type Config struct {
 	Logger                   micrologger.Logger
 	TenantRestConfigProvider *tenantcluster.TenantCluster
@@ -74,23 +82,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	// Iterate over StorageClasses and remove items that already have expected
-	// volume binding mode. Rest will be updated in one call.
-	for i := 0; i < len(storageClassList.Items); i++ {
-		sc := storageClassList.Items[i]
-
-		if sc.VolumeBindingMode != nil && *sc.VolumeBindingMode == storagev1.VolumeBindingWaitForFirstConsumer {
-			storageClassList.Items = append(storageClassList.Items[:i], storageClassList.Items[i+1:]...)
-			i--
-		} else {
-			storageClassList.Items[i].VolumeBindingMode = &desiredVolumeBindMode
+	for _, sc := range storageClassList.Items {
+		// Only process Giant Swarm managed StorageClasses.
+		if _, managed := managedStorageClasses[sc.Name]; !managed {
+			continue
 		}
-	}
 
-	if len(storageClassList.Items) > 0 {
-		err = tenantClusterK8sClient.Update(ctx, storageClassList)
-		if err != nil {
-			return microerror.Mask(err)
+		if sc.VolumeBindingMode == nil || *sc.VolumeBindingMode != desiredVolumeBindMode {
+			sc.VolumeBindingMode = &desiredVolumeBindMode
+			err = tenantClusterK8sClient.Update(ctx, &sc)
+			if err != nil {
+				return microerror.Mask(err)
+			}
 		}
 	}
 
