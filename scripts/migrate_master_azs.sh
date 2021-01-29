@@ -21,7 +21,7 @@ azure_operator_version="$(kubectl --context=giantswarm-$installation -n ${org_na
 # find subscription ID
 subscription="$(kubectl --context=giantswarm-$installation -n giantswarm get secret -l giantswarm.io/organization="${org}" -o yaml | yq -r '.items[0].data["azure.azureoperator.subscriptionid"]'| base64 -d)"
 
-master_ip="$(kubectl --context=giantswarm-$cluster get no $cluster-master-$cluster-000000 -o yaml| yq -r '.status.addresses[] | select(.type == "InternalIP").address')"
+master_ip="$(kubectl --context=giantswarm-$cluster get no -l role=master -o yaml| yq -r '.items[0].status.addresses[] | select(.type == "InternalIP").address')"
 
 bastion_name="$(opsctl show installation -i $installation| yq -r .Jumphosts.bastion1.Host)"
 
