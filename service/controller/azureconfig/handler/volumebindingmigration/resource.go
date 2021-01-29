@@ -70,7 +70,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	r.logger.Debugf(ctx, "ensuring storageclasses use desired volumeBindingMode")
 
-	for _, desiredObj := range defaultStorageClasses() {
+	defaultSCs, err := defaultStorageClasses()
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	for _, desiredObj := range defaultSCs {
 		r.logger.Debugf(ctx, "finding present storage class object %q", desiredObj.Name)
 
 		var presentObj storagev1.StorageClass
@@ -148,7 +153,7 @@ func (r *Resource) getTenantClusterClient(ctx context.Context, azureConfig *prov
 	return k8sClient.CtrlClient(), nil
 }
 
-func defaultStorageClasses() []storagev1.StorageClass {
+func defaultStorageClasses() ([]storagev1.StorageClass, error) {
 	var storageClasses []storagev1.StorageClass
 
 	objs := bytes.Split([]byte(ignition.DefaultStorageClass), []byte("---"))
@@ -157,7 +162,7 @@ func defaultStorageClasses() []storagev1.StorageClass {
 		sc := storagev1.StorageClass{}
 		err := yaml.Unmarshal(bs, &sc)
 		if err != nil {
-			panic(err)
+			return nil, microerror.Mask(err)
 		}
 
 		if sc.Kind != "StorageClass" {
@@ -167,5 +172,5 @@ func defaultStorageClasses() []storagev1.StorageClass {
 		storageClasses = append(storageClasses, sc)
 	}
 
-	return storageClasses
+	return storageClasses, nil
 }
