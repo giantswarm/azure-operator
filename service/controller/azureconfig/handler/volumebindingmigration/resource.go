@@ -24,14 +24,6 @@ const (
 	Name = "volumebindingmigration"
 )
 
-var managedStorageClasses = map[string]struct{}{
-	"af-premium":       struct{}{},
-	"af-standard":      struct{}{},
-	"default":          struct{}{},
-	"managed-premium":  struct{}{},
-	"managed-standard": struct{}{},
-}
-
 type Config struct {
 	Logger                   micrologger.Logger
 	TenantRestConfigProvider *tenantcluster.TenantCluster
