@@ -183,7 +183,13 @@
           "protectedSettings": {}
         }
       }
-    ]
+    ],
+    "scheduledEventsProfileEnabled": {
+      "terminateNotificationProfile": {
+        "notBeforeTimeout": "PT5M",
+        "enable": true
+      }
+    }
   },
   "resources": [
     {
@@ -222,10 +228,10 @@
         },
         "singlePlacementGroup": "[parameters('vmssSinglePlacementGroup')]",
         "virtualMachineProfile": {
-          "evictionPolicy": "Delete",
+          "evictionPolicy": "[if(parameters('spotInstancesEnabled'), 'Delete', json('null'))]",
           "priority": "[if(parameters('spotInstancesEnabled'), 'Spot', 'Regular')]",
           "billingProfile": {
-            "maxPrice": "[float(parameters('spotInstancesMaxPrice'))]"
+            "maxPrice": "[if(parameters('spotInstancesEnabled'), float(parameters('spotInstancesMaxPrice')), json('null'))]"
           },
           "osProfile": {
             "adminUsername": "[variables('sshUser')]",
@@ -298,12 +304,7 @@
           "extensionProfile": {
             "extensions": "[variables('vmssExtensions')]"
           },
-          "scheduledEventsProfile": {
-            "terminateNotificationProfile": {
-              "notBeforeTimeout": "PT5M",
-              "enable": "[not(parameters('spotInstancesEnabled'))]"
-            }
-          }
+          "scheduledEventsProfile": "[if(parameters('spotInstancesEnabled'), json('null'), variables('scheduledEventsProfileEnabled'))]"
         }
       }
     },
