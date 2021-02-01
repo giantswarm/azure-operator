@@ -54,7 +54,7 @@ func (r *Resource) isUpgradeCompleted(ctx context.Context, cluster *capi.Cluster
 	}
 
 	r.logger.Debugf(ctx, "cluster upgrade has been completed")
-	return false, nil
+	return true, nil
 }
 
 func (r *Resource) isControlPlaneUpgraded(ctx context.Context, cluster *capi.Cluster) (bool, error) {
