@@ -22,6 +22,8 @@ import (
 const (
 	// Name is the identifier of the resource.
 	Name = "volumebindingmigration"
+
+	provisionerAzureFile = "kubernetes.io/azure-file"
 )
 
 type Config struct {
@@ -76,6 +78,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	for _, desiredObj := range defaultSCs {
+		if desiredObj.Provisioner == provisionerAzureFile {
+			r.logger.Debugf(ctx, "storage class %q uses provisioner %q; skipping as unsupported", desiredObj.Name, desiredObj.Provisioner)
+			continue
+		}
+
 		r.logger.Debugf(ctx, "finding present storage class object %q", desiredObj.Name)
 
 		var presentObj storagev1.StorageClass
