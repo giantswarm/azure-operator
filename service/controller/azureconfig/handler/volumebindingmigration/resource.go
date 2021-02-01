@@ -90,7 +90,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		// If present object matches the desired one, continue to next one.
-		if presentObj.VolumeBindingMode != nil && *presentObj.VolumeBindingMode == *desiredObj.VolumeBindingMode {
+		if (desiredObj.VolumeBindingMode == presentObj.VolumeBindingMode) || (desiredObj.VolumeBindingMode != nil && presentObj.VolumeBindingMode != nil && *presentObj.VolumeBindingMode == *desiredObj.VolumeBindingMode) {
 			r.logger.Debugf(ctx, "present storage class object %q has desired volumeBindingMode: %q", presentObj.Name, desiredObj.VolumeBindingMode)
 			continue
 		}
