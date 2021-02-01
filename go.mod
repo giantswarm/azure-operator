@@ -3,7 +3,7 @@ module github.com/giantswarm/azure-operator/v5
 go 1.15
 
 require (
-	github.com/Azure/azure-sdk-for-go v46.4.0+incompatible
+	github.com/Azure/azure-sdk-for-go v48.2.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.11.0
 	github.com/Azure/go-autorest/autorest v0.11.17
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.6
@@ -41,7 +41,7 @@ require (
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/viper v1.7.1
-	golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e
+	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
 	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
@@ -55,6 +55,6 @@ require (
 replace (
 	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
 	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.24+incompatible
-	sigs.k8s.io/cluster-api => github.com/giantswarm/cluster-api v0.3.10-gs
-	sigs.k8s.io/cluster-api-provider-azure => github.com/giantswarm/cluster-api-provider-azure v0.4.9-gsalpha2
+	sigs.k8s.io/cluster-api => github.com/giantswarm/cluster-api v0.3.13-gs
+	sigs.k8s.io/cluster-api-provider-azure => github.com/giantswarm/cluster-api-provider-azure v0.4.11-gs
 )

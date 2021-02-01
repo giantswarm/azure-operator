@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Updated CAPI/CAPZ dependencies.
+
 ## [5.3.0] - 2021-02-01
 
 ### Changed
