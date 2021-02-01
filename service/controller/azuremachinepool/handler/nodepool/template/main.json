@@ -301,7 +301,7 @@
           "scheduledEventsProfile": {
             "terminateNotificationProfile": {
               "notBeforeTimeout": "PT5M",
-              "enable": true
+              "enable": "[not(parameters('spotInstancesEnabled'))]"
             }
           }
         }
