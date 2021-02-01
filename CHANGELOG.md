@@ -7,13 +7,16 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Changed `StorageClasses` `volumeBindingMode` to `WaitForFirstConsumer`.
+
 ## [5.3.0] - 2021-02-01
 
 ### Changed
 
 - Enable VMSS termination events.
 - Bump `conditions-handler` to v0.2.1 to get `MachinePool` `ReplicasReady` fixes.
-- Changed `StorageClasses` `volumeBindingMode` to `WaitForFirstConsumer`.
 
 ### Fixed
 
