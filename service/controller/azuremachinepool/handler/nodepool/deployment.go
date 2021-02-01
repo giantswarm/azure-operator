@@ -20,10 +20,11 @@ import (
 	capiexpv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/nodepool/template"
+
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
-	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool/handler/nodepool/template"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsku"

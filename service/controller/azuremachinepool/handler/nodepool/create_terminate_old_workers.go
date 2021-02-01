@@ -5,10 +5,16 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
+	"github.com/coreos/go-semver/semver"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
+	corev1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/cluster-api/util"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -103,5 +109,62 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	r.Logger.Debugf(ctx, "terminated %d old worker instances", len(*ids.InstanceIds))
 
-	return ScaleDownWorkerVMSS, nil
+	return WaitForOldWorkersToBeGone, nil
+}
+
+func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, nodePoolId string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
+	name := key.NodePoolInstanceName(nodePoolId, *instance.InstanceID)
+
+	nodeList := &corev1.NodeList{}
+	labelSelector := ctrlclient.MatchingLabels{apiextensionslabels.MachinePool: nodePoolId}
+	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	nodes := nodeList.Items
+	for _, n := range nodes {
+		if n.GetName() == name {
+			return &n, nil
+		}
+	}
+
+	// Node related to this instance was not found.
+	return nil, nil
+}
+
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, nodePoolId string, instance compute.VirtualMachineScaleSetVM, vmss compute.VirtualMachineScaleSet) (*bool, error) {
+	t := true
+	f := false
+
+	n, err := r.getK8sWorkerNodeForInstance(ctx, tenantClusterK8sClient, nodePoolId, instance)
+	if err != nil {
+		return nil, err
+	}
+
+	if n == nil {
+		// Kubernetes node related to this instance not found, we consider the node old.
+		return &t, nil
+	}
+
+	myVersion := semver.New(project.Version())
+
+	v, exists := n.GetLabels()[label.OperatorVersion]
+	if !exists {
+		// Label does not exist, this normally happens when a new node is coming up but did not finish
+		// its kubernetes bootstrap yet and thus doesn't have all the needed labels.
+		// We'll ignore this node for now and wait for it to bootstrap correctly.
+		return nil, nil
+	}
+
+	nodeVersion := semver.New(v)
+	if nodeVersion.LessThan(*myVersion) {
+		return &t, nil
+	} else {
+		// Check if instance type is up to date.
+		if *instance.Sku.Name != *vmss.Sku.Name {
+			return &t, nil
+		}
+		return &f, nil
+	}
 }

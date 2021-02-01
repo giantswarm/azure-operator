@@ -4,11 +4,9 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/scalestrategy"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -86,32 +84,8 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
-	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	if !cluster.GetDeletionTimestamp().IsZero() {
-		r.Logger.Debugf(ctx, "Cluster is being deleted, skipping reconciling node pool")
-		return currentState, nil
-	}
-
-	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if tenantcluster.IsAPINotAvailableError(err) {
-		r.Logger.Debugf(ctx, "tenant API not available yet")
-		r.Logger.Debugf(ctx, "canceling resource")
-
-		return currentState, nil
-	} else if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
 	// All workers ready, we can scale up if needed.
-	oldNodes, _, err := r.sortNodesByTenantVMState(ctx, tenantClusterK8sClient, &azureMachinePool, key.NodePoolInstanceName)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-	desiredWorkerCount := int64(len(oldNodes) * 2)
+	desiredWorkerCount := int64(*machinePool.Spec.Replicas * 2)
 	r.Logger.Debugf(ctx, "The desired number of workers is: %d", desiredWorkerCount)
 
 	currentWorkerCount, err := r.GetInstancesCount(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
@@ -139,42 +113,5 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 
 	// We didn't scale up the VMSS, ready to move to next step.
-	return CordonOldWorkers, nil
-}
-
-func (r *Resource) scaleDownWorkerVMSSTransition(ctx context.Context, obj interface{}, currentState state.State) (state.State, error) {
-	azureMachinePool, err := key.ToAzureMachinePool(obj)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	machinePool, err := r.getOwnerMachinePool(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	// Scale down to the desired number of nodes in worker VMSS.
-	desiredWorkerCount := *machinePool.Spec.Replicas
-	r.Logger.Debugf(ctx, "scaling worker VMSS to %d nodes", desiredWorkerCount)
-
-	strategy := scalestrategy.Quick{}
-	err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), int64(desiredWorkerCount), strategy)
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	r.Logger.Debugf(ctx, "scaled worker VMSS to %d nodes", desiredWorkerCount)
-
-	// Enable cluster autoscaler for this nodepool.
-	err = r.enableClusterAutoscaler(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-
-	return DeploymentUninitialized, nil
+	return WaitForWorkersToBecomeReady, nil
 }

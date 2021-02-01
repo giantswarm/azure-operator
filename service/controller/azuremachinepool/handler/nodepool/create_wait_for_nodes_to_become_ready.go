@@ -58,7 +58,7 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 
 	r.Logger.Debugf(ctx, "found out that all tenant cluster worker nodes are Ready")
 
-	return DrainOldWorkerNodes, nil
+	return TerminateOldWorkerInstances, nil
 }
 
 func countReadyNodes(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, azureMachinePool *v1alpha3.AzureMachinePool, nodeRoleMatchFunc func(corev1.Node) bool) (int, error) {
