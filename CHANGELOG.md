@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.3.0] - 2021-02-01
+
 ### Changed
 
 - Enable VMSS termination events.
@@ -301,7 +303,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.2.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.3.0...HEAD
+[5.3.0]: https://github.com/giantswarm/azure-operator/compare/v5.2.1...v5.3.0
 [5.2.1]: https://github.com/giantswarm/azure-operator/compare/v5.2.0...v5.2.1
 [5.2.0]: https://github.com/giantswarm/azure-operator/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/giantswarm/azure-operator/compare/v5.0.0...v5.1.0
