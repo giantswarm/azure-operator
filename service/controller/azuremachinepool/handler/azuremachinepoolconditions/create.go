@@ -23,7 +23,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	// TODO this temporary until we fix https://github.com/giantswarm/giantswarm/issues/15471
+	// TODO this is temporary, needed until we fix https://github.com/giantswarm/giantswarm/issues/15471 .
 	if azureMachinePool.Status.Instances == nil {
 		azureMachinePool.Status.Instances = make([]*v1alpha3.AzureMachinePoolInstanceStatus, 0)
 	}
