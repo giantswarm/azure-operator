@@ -13,6 +13,7 @@ parameters:
   kind: Managed
   storageaccounttype: Premium_LRS
 allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -26,6 +27,7 @@ parameters:
   kind: Managed
   storageaccounttype: Premium_LRS
 allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
 ---
 apiVersion: storage.k8s.io/v1
 kind: StorageClass
@@ -39,6 +41,7 @@ parameters:
   kind: Managed
   storageaccounttype: Standard_LRS
 allowVolumeExpansion: true
+volumeBindingMode: WaitForFirstConsumer
 ---
 apiVersion: rbac.authorization.k8s.io/v1
 kind: ClusterRole
@@ -76,7 +79,6 @@ parameters:
   skuName: Premium_LRS
 allowVolumeExpansion: true
 reclaimPolicy: Delete
-volumeBindingMode: Immediate
 ---
 kind: StorageClass
 apiVersion: storage.k8s.io/v1
@@ -92,5 +94,4 @@ parameters:
   skuName: Standard_LRS
 allowVolumeExpansion: true
 reclaimPolicy: Delete
-volumeBindingMode: Immediate
 `

@@ -88,7 +88,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		machinePool.Labels[label.AzureOperatorVersion] = cr.Labels[label.AzureOperatorVersion]
 		err = r.ctrlClient.Update(ctx, &machinePool)
 		if apierrors.IsConflict(err) {
-			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.logger.Debugf(ctx, "cancelling resource")
 			return nil
 		} else if err != nil {
@@ -127,7 +127,7 @@ func (r *Resource) ensureAzureClusterHasSameRelease(ctx context.Context, cr capi
 	azureCluster.Labels[label.ReleaseVersion] = cr.Labels[label.ReleaseVersion]
 	err = r.ctrlClient.Update(ctx, &azureCluster)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {

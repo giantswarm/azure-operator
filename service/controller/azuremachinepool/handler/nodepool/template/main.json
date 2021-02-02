@@ -112,6 +112,20 @@
         "description": "When turned on, the scale set actually spins up more VMs than you asked for, then deletes the extra VMs once the requested number of VMs are successfully provisioned."
       }
     },
+    "spotInstancesEnabled": {
+      "type": "bool",
+      "defaultValue": false,
+      "metadata": {
+        "description": "When turned on, the scale set will use spot instances rather than on demand ones."
+      }
+    },
+    "spotInstancesMaxPrice": {
+      "type": "string",
+      "defaultValue": "-1",
+      "metadata": {
+        "description": "The max price you are willing to pay to purchase a spot instance."
+      }
+    },
     "upgradePolicy": {
       "type": "string",
       "defaultValue": "Manual",
@@ -169,7 +183,13 @@
           "protectedSettings": {}
         }
       }
-    ]
+    ],
+    "scheduledEventsProfileEnabled": {
+      "terminateNotificationProfile": {
+        "notBeforeTimeout": "PT5M",
+        "enable": true
+      }
+    }
   },
   "resources": [
     {
@@ -185,7 +205,8 @@
         "gs-azure-operator.giantswarm.io-version": "[parameters('azureOperatorVersion')]",
         "kubernetes-version": "[parameters('kubernetesVersion')]",
         "min": "[int(parameters('minReplicas'))]",
-        "max": "[int(parameters('maxReplicas'))]"
+        "max": "[int(parameters('maxReplicas'))]",
+        "spot": "[if(parameters('spotInstancesEnabled'), 'true', 'false')]"
       },
       "sku": {
         "name": "[parameters('vmSize')]",
@@ -207,6 +228,11 @@
         },
         "singlePlacementGroup": "[parameters('vmssSinglePlacementGroup')]",
         "virtualMachineProfile": {
+          "evictionPolicy": "[if(parameters('spotInstancesEnabled'), 'Delete', json('null'))]",
+          "priority": "[if(parameters('spotInstancesEnabled'), 'Spot', 'Regular')]",
+          "billingProfile": {
+            "maxPrice": "[if(parameters('spotInstancesEnabled'), float(parameters('spotInstancesMaxPrice')), json('null'))]"
+          },
           "osProfile": {
             "adminUsername": "[variables('sshUser')]",
             "computerNamePrefix": "[concat(variables('vmssName'), '-')]",
@@ -278,12 +304,7 @@
           "extensionProfile": {
             "extensions": "[variables('vmssExtensions')]"
           },
-          "scheduledEventsProfile": {
-            "terminateNotificationProfile": {
-              "notBeforeTimeout": "PT5M",
-              "enable": true
-            }
-          }
+          "scheduledEventsProfile": "[if(parameters('spotInstancesEnabled'), json('null'), variables('scheduledEventsProfileEnabled'))]"
         }
       }
     },

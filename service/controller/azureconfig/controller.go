@@ -42,6 +42,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/namespace"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/resourcegroup"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/service"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/volumebindingmigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/vpn"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/vpnconnection"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration"
@@ -575,6 +576,19 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		}
 	}
 
+	var volumeBindingMigrationResource resource.Interface
+	{
+		c := volumebindingmigration.Config{
+			Logger:                   config.Logger,
+			TenantRestConfigProvider: tenantRestConfigProvider,
+		}
+
+		volumeBindingMigrationResource, err = volumebindingmigration.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	var vpnResource resource.Interface
 	{
 		c := vpn.Config{
@@ -628,6 +642,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		mastersResource,
 		workerMigrationResource,
 		endpointsResource,
+		volumeBindingMigrationResource,
 		vpnResource,
 		vpnconnectionResource,
 	}

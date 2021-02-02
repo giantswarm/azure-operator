@@ -55,7 +55,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	err = r.ctrlClient.Update(ctx, &machinePool)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
@@ -96,7 +96,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	err = r.ctrlClient.Status().Update(ctx, &machinePool)
 	if apierrors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 		r.logger.Debugf(ctx, "cancelling resource")
 		return nil
 	} else if err != nil {
@@ -122,7 +122,7 @@ func (r *Resource) getNodeReferences(ctx context.Context, c ctrlclient.Client, m
 		for _, node := range nodeList.Items {
 			nodeProviderID, err := noderefutil.NewProviderID(node.Spec.ProviderID)
 			if err != nil {
-				r.logger.Debugf(ctx, "Failed to parse ProviderID, skipping", "providerID", node.Spec.ProviderID, "stack", microerror.JSON(microerror.Mask(err)))
+				r.logger.Debugf(ctx, "Failed to parse ProviderID, skipping", "providerID", node.Spec.ProviderID)
 				continue
 			}
 
@@ -138,7 +138,7 @@ func (r *Resource) getNodeReferences(ctx context.Context, c ctrlclient.Client, m
 	for _, providerID := range providerIDList {
 		pid, err := noderefutil.NewProviderID(providerID)
 		if err != nil {
-			r.logger.Debugf(ctx, "Failed to parse ProviderID, skipping", "providerID", providerID, "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "Failed to parse ProviderID, skipping", "providerID", providerID)
 			continue
 		}
 		if node, ok := nodeRefsMap[pid.ID()]; ok {
