@@ -100,6 +100,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, nil
 	} else if IsSubnetNotReadyError(err) {
 		r.Logger.Debugf(ctx, "subnet is not Ready, it's probably still being created")
+		r.Logger.Debugf(ctx, microerror.JSON(err))
 		r.Logger.Debugf(ctx, "canceling resource")
 		return currentState, nil
 	} else if err != nil {
@@ -157,6 +158,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		if apierrors.IsConflict(err) {
 			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.Logger.Debugf(ctx, "canceling resource")
+			return currentState, nil
 		} else if err != nil {
 			return currentState, microerror.Mask(err)
 		}
@@ -180,6 +182,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		if apierrors.IsConflict(err) {
 			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.Logger.Debugf(ctx, "canceling resource")
+			return currentState, nil
 		} else if err != nil {
 			return currentState, microerror.Mask(err)
 		}
