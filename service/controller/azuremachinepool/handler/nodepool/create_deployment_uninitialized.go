@@ -158,7 +158,7 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.Logger.Debugf(ctx, "canceling resource")
 		} else if err != nil {
-			return currentState, nil
+			return currentState, microerror.Mask(err)
 		}
 
 		// Deployment is not running and not succeeded (Failed?)
@@ -178,10 +178,10 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 
 		err := r.saveAzureIDsInCR(ctx, virtualMachineScaleSetVMsClient, &azureMachinePool, vmss)
 		if apierrors.IsConflict(err) {
-			r.Logger.Debugf(ctx, "error trying to save object in k8s API")
+			r.Logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.Logger.Debugf(ctx, "canceling resource")
 		} else if err != nil {
-			return currentState, nil
+			return currentState, microerror.Mask(err)
 		}
 
 		r.Logger.Debugf(ctx, "canceling resource")
