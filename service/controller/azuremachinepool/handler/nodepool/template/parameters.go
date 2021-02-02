@@ -149,6 +149,11 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		bidPrice = cast(parameters["spotInstancesMaxPrice"]).(string)
 	}
 
+	spotEnabled := false
+	if parameters["spotInstancesEnabled"] != nil {
+		spotEnabled = cast(parameters["spotInstancesEnabled"]).(bool)
+	}
+
 	// Finally return typed parameters.
 	return Parameters{
 		AzureOperatorVersion:        cast(parameters["azureOperatorVersion"]).(string),
@@ -168,7 +173,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 			CurrentReplicas: int32(cast(parameters["currentReplicas"]).(float64)),
 		},
 		SpotInstanceConfig: SpotInstanceConfig{
-			Enabled:  cast(parameters["spotInstancesEnabled"]).(bool),
+			Enabled:  spotEnabled,
 			MaxPrice: bidPrice,
 		},
 		StorageAccountType: cast(parameters["storageAccountType"]).(string),
