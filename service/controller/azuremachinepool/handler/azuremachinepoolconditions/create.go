@@ -5,6 +5,7 @@ import (
 
 	"github.com/giantswarm/microerror"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -20,6 +21,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 	err = r.ensureReadyCondition(ctx, &azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
+	}
+
+	// TODO this is temporary, needed until we fix https://github.com/giantswarm/giantswarm/issues/15471 .
+	if azureMachinePool.Status.Instances == nil {
+		azureMachinePool.Status.Instances = make([]*v1alpha3.AzureMachinePoolInstanceStatus, 0)
 	}
 
 	err = r.ctrlClient.Status().Update(ctx, &azureMachinePool)

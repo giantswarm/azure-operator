@@ -727,6 +727,14 @@ func WorkersSubnetCIDR(customObject providerv1alpha1.AzureConfig) string {
 	return customObject.Spec.Azure.VirtualNetwork.WorkerSubnetCIDR
 }
 
+func NodePoolSpotInstancesMaxPrice(azureMachinePool *expcapzv1alpha3.AzureMachinePool) string {
+	if azureMachinePool.Spec.Template.SpotVMOptions == nil || azureMachinePool.Spec.Template.SpotVMOptions.MaxPrice == nil {
+		return ""
+	}
+
+	return *azureMachinePool.Spec.Template.SpotVMOptions.MaxPrice
+}
+
 func vmssInstanceIDBase36(instanceID string) (string, error) {
 	i, err := strconv.ParseUint(instanceID, 10, 64)
 	if err != nil {
