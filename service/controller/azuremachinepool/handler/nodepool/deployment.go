@@ -109,7 +109,7 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 			CurrentReplicas: currentReplicas,
 		},
 		SpotInstanceConfig: template.SpotInstanceConfig{
-			Enabled:  azureMachinePool.Spec.Template.SpotVMOptions != nil,
+			Enabled:  key.NodePoolSpotInstancesEnabled(azureMachinePool),
 			MaxPrice: key.NodePoolSpotInstancesMaxPrice(azureMachinePool),
 		},
 		StorageAccountType: azureMachinePool.Spec.Template.OSDisk.ManagedDisk.StorageAccountType,
