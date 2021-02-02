@@ -139,7 +139,7 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, tena
 
 	n, err := r.getK8sWorkerNodeForInstance(ctx, tenantClusterK8sClient, nodePoolId, instance)
 	if err != nil {
-		return nil, err
+		return nil, microerror.Mask(err)
 	}
 
 	if n == nil {
