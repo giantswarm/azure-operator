@@ -5,48 +5,23 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
+	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/scalestrategy"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
-func (r *Resource) AllInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger.Debugf(ctx, "looking for the scale set '%s'", deploymentNameFunc(customObject))
+func (r *Resource) GetVMSSInstances(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool) ([]compute.VirtualMachineScaleSetVM, error) {
+	resourceGroupName := key.ClusterID(&azureMachinePool)
+	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, customObject.ObjectMeta)
+	r.Logger.Debugf(ctx, "looking for the scale set %#q", vmssName)
+
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
-
-	g := key.ResourceGroupName(customObject)
-	s := deploymentNameFunc(customObject)
-	result, err := c.List(ctx, g, s, "", "", "")
-	if IsScaleSetNotFound(err) {
-		return nil, microerror.Mask(scaleSetNotFoundError)
-	} else if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	var instances []compute.VirtualMachineScaleSetVM
-
-	for result.NotDone() {
-		instances = append(instances, result.Values()...)
-
-		err := result.NextWithContext(ctx)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	r.Logger.Debugf(ctx, "found the scale set '%s'", deploymentNameFunc(customObject))
-
-	return instances, nil
-}
-
-func (r *Resource) GetVMSSInstances(ctx context.Context, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient, resourceGroupName, vmssName string) ([]compute.VirtualMachineScaleSetVM, error) {
-	r.Logger.Debugf(ctx, "looking for the scale set %#q", vmssName)
 
 	result, err := virtualMachineScaleSetVMsClient.List(ctx, resourceGroupName, vmssName, "", "", "")
 	if err != nil {

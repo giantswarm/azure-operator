@@ -28,21 +28,6 @@ func (r *Resource) waitForOldWorkersToBeGoneTransition(ctx context.Context, obj 
 		return currentState, nil
 	}
 
-	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if tenantcluster.IsAPINotAvailableError(err) {
-		r.Logger.Debugf(ctx, "tenant API not available yet")
-		r.Logger.Debugf(ctx, "canceling resource")
-
-		return currentState, nil
-	} else if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
 	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
@@ -53,7 +38,7 @@ func (r *Resource) waitForOldWorkersToBeGoneTransition(ctx context.Context, obj 
 	{
 		r.Logger.Debugf(ctx, "finding all worker VMSS instances")
 
-		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		allWorkerInstances, err = r.GetVMSSInstances(ctx, azureMachinePool)
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
@@ -71,13 +56,25 @@ func (r *Resource) waitForOldWorkersToBeGoneTransition(ctx context.Context, obj 
 	var oldWorkersCount int
 	{
 		for _, i := range allWorkerInstances {
-			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, azureMachinePool.Name, i, vmss)
-			if err != nil {
+			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cluster, azureMachinePool.Name, i, vmss)
+			if tenantcluster.IsAPINotAvailableError(err) {
+				r.Logger.Debugf(ctx, "tenant API not available yet")
+				r.Logger.Debugf(ctx, "canceling resource")
+
+				return currentState, nil
+			} else if err != nil {
 				return DeploymentUninitialized, nil
 			}
 
-			if old != nil && *old {
+			if old {
 				oldWorkersCount += 1
+				continue
+			}
+
+			// Check if instance type is changed.
+			if *i.Sku.Name != *vmss.Sku.Name {
+				oldWorkersCount += 1
+				continue
 			}
 		}
 	}

@@ -199,7 +199,7 @@ func (r *Resource) saveAzureIDsInCR(ctx context.Context, virtualMachineScaleSetV
 
 	r.Logger.Debugf(ctx, "saving provider status info in CR")
 
-	instances, err := r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(azureMachinePool), key.NodePoolVMSSName(azureMachinePool))
+	instances, err := r.GetVMSSInstances(ctx, *azureMachinePool)
 	if err != nil {
 		return microerror.Mask(err)
 	}
