@@ -149,6 +149,19 @@ func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachi
 		r.Logger.Debugf(ctx, "found %d worker VMSS instances", len(allWorkerInstances))
 	}
 
+	resourceGroup := key.ClusterID(&azureMachinePool)
+	vmssName := key.NodePoolVMSSName(&azureMachinePool)
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroup, vmssName)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
 	var oldInstances []compute.VirtualMachineScaleSetVM
 	var newInstances []compute.VirtualMachineScaleSetVM
 	{
@@ -158,7 +171,9 @@ func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachi
 				return nil, nil, microerror.Mask(err)
 			}
 
-			if old {
+			skuChanged := *i.Sku.Name != *vmss.Sku.Name
+
+			if old || skuChanged {
 				oldInstances = append(oldInstances, i)
 			} else {
 				newInstances = append(newInstances, i)
