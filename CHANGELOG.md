@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed `StorageClasses` `volumeBindingMode` to `WaitForFirstConsumer`.
+- When setting Cluster `release.giantswarm.io/last-deployed-version` annotation, Cluster `Ready` condition is not checked anymore, which effectively means that Cluster `Upgrading` condition does not depend on Cluster `Ready` condition.
 
 ### Added
 
