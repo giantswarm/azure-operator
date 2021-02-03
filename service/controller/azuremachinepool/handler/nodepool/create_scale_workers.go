@@ -4,12 +4,19 @@ import (
 	"context"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/coreos/go-semver/semver"
+	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
-	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	corev1 "k8s.io/api/core/v1"
+	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
+	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
+	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/scalestrategy"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/internal/vmsscheck"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -41,11 +48,6 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	}
 
 	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -88,7 +90,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
-	oldWorkersCount, err := r.countOldWorkers(ctx, azureMachinePool, virtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient)
+	oldInstances, newInstances, err := r.splitInstancesByUpdatedStatus(ctx, azureMachinePool)
 	if tenantcluster.IsAPINotAvailableError(err) {
 		r.Logger.Debugf(ctx, "tenant API not available yet")
 		r.Logger.Debugf(ctx, "canceling resource")
@@ -98,23 +100,17 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, microerror.Mask(err)
 	}
 
-	desiredWorkerCount := int64(oldWorkersCount * 2)
+	desiredWorkerCount := int64(len(oldInstances) * 2)
 	r.Logger.Debugf(ctx, "The desired number of workers is: %d", desiredWorkerCount)
 
-	currentWorkerCount, err := r.GetInstancesCount(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-	r.Logger.Debugf(ctx, "The current number of workers is: %d", currentWorkerCount)
-
-	if desiredWorkerCount > currentWorkerCount {
+	if desiredWorkerCount > int64(len(oldInstances)+len(newInstances)) {
 		// Disable cluster autoscaler for this nodepool.
-		err = r.disableClusterAutoscaler(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		err = r.disableClusterAutoscaler(ctx, azureMachinePool)
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		err = r.ScaleVMSS(ctx, virtualMachineScaleSetsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), desiredWorkerCount, strategy)
+		err = r.ScaleVMSS(ctx, azureMachinePool, desiredWorkerCount, strategy)
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
@@ -129,15 +125,15 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	return WaitForWorkersToBecomeReady, nil
 }
 
-func (r *Resource) countOldWorkers(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, virtualMachineScaleSetVMsClient *compute.VirtualMachineScaleSetVMsClient) (int32, error) {
+func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachinePool capzv1alpha3.AzureMachinePool) ([]compute.VirtualMachineScaleSetVM, []compute.VirtualMachineScaleSetVM, error) {
 	cluster, err := util.GetClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
-		return -1, microerror.Mask(err)
+		return nil, nil, microerror.Mask(err)
 	}
 
 	if !cluster.GetDeletionTimestamp().IsZero() {
 		r.Logger.Debugf(ctx, "Cluster is being deleted, skipping reconciling node pool")
-		return -1, nil
+		return nil, nil, nil
 	}
 
 	// All workers ready, we can scale up if needed.
@@ -147,32 +143,83 @@ func (r *Resource) countOldWorkers(ctx context.Context, azureMachinePool v1alpha
 
 		allWorkerInstances, err = r.GetVMSSInstances(ctx, azureMachinePool)
 		if err != nil {
-			return -1, microerror.Mask(err)
+			return nil, nil, microerror.Mask(err)
 		}
 
 		r.Logger.Debugf(ctx, "found %d worker VMSS instances", len(allWorkerInstances))
 	}
 
-	resourceGroupName := key.ClusterID(&azureMachinePool)
-	nodePoolVMSSName := key.NodePoolVMSSName(&azureMachinePool)
-	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroupName, nodePoolVMSSName)
-	if err != nil {
-		return -1, microerror.Mask(err)
-	}
-
-	var oldWorkersCount int32
+	var oldInstances []compute.VirtualMachineScaleSetVM
+	var newInstances []compute.VirtualMachineScaleSetVM
 	{
 		for _, i := range allWorkerInstances {
-			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cluster, azureMachinePool.Name, i, vmss)
+			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, cluster, azureMachinePool.Name, i)
 			if err != nil {
-				return -1, nil
+				return nil, nil, microerror.Mask(err)
 			}
 
 			if old {
-				oldWorkersCount += 1
+				oldInstances = append(oldInstances, i)
+			} else {
+				newInstances = append(newInstances, i)
 			}
 		}
 	}
 
-	return oldWorkersCount, nil
+	return oldInstances, newInstances, nil
+}
+
+func (r *Resource) getK8sWorkerNodeForInstance(ctx context.Context, tenantClusterK8sClient ctrlclient.Client, nodePoolId string, instance compute.VirtualMachineScaleSetVM) (*corev1.Node, error) {
+	name := key.NodePoolInstanceName(nodePoolId, *instance.InstanceID)
+
+	nodeList := &corev1.NodeList{}
+	labelSelector := ctrlclient.MatchingLabels{apiextensionslabels.MachinePool: nodePoolId}
+	err := tenantClusterK8sClient.List(ctx, nodeList, labelSelector)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	nodes := nodeList.Items
+	for _, n := range nodes {
+		if n.GetName() == name {
+			return &n, nil
+		}
+	}
+
+	// Node related to this instance was not found.
+	return nil, nil
+}
+
+func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, cluster *capiv1alpha3.Cluster, nodePoolId string, instance compute.VirtualMachineScaleSetVM) (bool, error) {
+	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	n, err := r.getK8sWorkerNodeForInstance(ctx, tenantClusterK8sClient, nodePoolId, instance)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	if n == nil {
+		// Kubernetes node related to this instance not found, we consider the node old.
+		return true, nil
+	}
+
+	myVersion := semver.New(project.Version())
+
+	v, exists := n.GetLabels()[label.OperatorVersion]
+	if !exists {
+		// Label does not exist, this normally happens when a new node is coming up but did not finish
+		// its kubernetes bootstrap yet and thus doesn't have all the needed labels.
+		// We'll ignore this node for now and wait for it to bootstrap correctly.
+		return false, nil
+	}
+
+	nodeVersion := semver.New(v)
+	if nodeVersion.LessThan(*myVersion) {
+		return true, nil
+	}
+
+	return false, nil
 }

@@ -44,16 +44,15 @@ func (r *Resource) GetVMSSInstances(ctx context.Context, azureMachinePool v1alph
 	return instances, nil
 }
 
-func (r *Resource) GetInstancesCount(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, resourceGroupName, vmssName string) (int64, error) {
-	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroupName, vmssName)
+func (r *Resource) ScaleVMSS(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
+	resourceGroup := key.ClusterID(&azureMachinePool)
+	vmssName := key.NodePoolVMSSName(&azureMachinePool)
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
-		return 0, microerror.Mask(err)
+		return microerror.Mask(err)
 	}
 
-	return *vmss.Sku.Capacity, nil
-}
-
-func (r *Resource) ScaleVMSS(ctx context.Context, virtualMachineScaleSetsClient *compute.VirtualMachineScaleSetsClient, resourceGroup, vmssName string, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
 	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroup, vmssName)
 	if err != nil {
 		return microerror.Mask(err)
