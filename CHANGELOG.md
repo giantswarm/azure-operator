@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Changed `StorageClasses` `volumeBindingMode` to `WaitForFirstConsumer`.
+- Use cluster-api-provider-azure v0.4.12-gsalpha1.
 
 ### Added
 
