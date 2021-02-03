@@ -19,6 +19,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachine/handler/azuremachineconditions"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachine/handler/azuremachinemetadata"
 )
 
 type ControllerConfig struct {
@@ -103,6 +104,18 @@ func NewAzureMachineResourceSet(config ControllerConfig) ([]resource.Interface, 
 		organizationClientFactory = client.NewOrganizationFactory(c)
 	}
 
+	var azureMachineMetadataResource resource.Interface
+	{
+		c := azuremachinemetadata.Config{
+			CtrlClient: config.K8sClient.CtrlClient(),
+			Logger:     config.Logger,
+		}
+
+		azureMachineMetadataResource, err = azuremachinemetadata.New(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
 	var azureMachineConditionsResource resource.Interface
 	{
 		c := azuremachineconditions.Config{
@@ -118,6 +131,7 @@ func NewAzureMachineResourceSet(config ControllerConfig) ([]resource.Interface, 
 	}
 
 	resources := []resource.Interface{
+		azureMachineMetadataResource,
 		azureMachineConditionsResource,
 	}
 
