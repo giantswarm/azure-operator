@@ -15,6 +15,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Added spot instances support for node pools.
+- Setting `release.giantswarm.io/last-deployed-version` on `AzureMachine` CR when the control plane creation or upgrade is done.
+- Setting AzureMachine `Creating` and `Upgrading` conditions. Existing condition handlers `Creating` and `Upgrading` are used.
 
 ## [5.3.0] - 2021-02-01
 

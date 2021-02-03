@@ -3,6 +3,7 @@ package clusterupgrade
 import (
 	"context"
 
+	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
@@ -48,6 +49,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	r.logger.Debugf(ctx, "master has been upgraded already")
+
+	err = r.ensureAzureMachineLastReleaseDeployedAnnotation(ctx, &cr)
+	if err != nil {
+		return microerror.Mask(err)
+	}
 
 	machinePoolLst, err := helpers.GetMachinePoolsByMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
 	if err != nil {
@@ -162,6 +168,33 @@ func (r *Resource) ensureMasterHasUpgraded(ctx context.Context, cluster capiv1al
 	}
 
 	return true, nil
+}
+
+func (r *Resource) ensureAzureMachineLastReleaseDeployedAnnotation(ctx context.Context, cluster *capiv1alpha3.Cluster) error {
+	r.logger.Debugf(ctx, "ensuring that AzureMachine has annotation %q set to desired release %s", annotation.LastDeployedReleaseVersion, key.ReleaseVersion(cluster))
+	azureMachineName := key.AzureMachineName(cluster)
+	azureMachine := &capzv1alpha3.AzureMachine{}
+	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: cluster.Namespace, Name: azureMachineName}, azureMachine)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	if azureMachine.Annotations == nil {
+		azureMachine.Annotations = map[string]string{}
+	}
+
+	azureMachine.Annotations[annotation.LastDeployedReleaseVersion] = azureMachine.Labels[label.ReleaseVersion]
+	err = r.ctrlClient.Update(ctx, azureMachine)
+	if apierrors.IsConflict(err) {
+		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+		r.logger.Debugf(ctx, "cancelling resource")
+		return nil
+	} else if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.logger.Debugf(ctx, "ensured that AzureMachine has annotation %s set to desired release %s", annotation.LastDeployedReleaseVersion, key.ReleaseVersion(cluster))
+	return nil
 }
 
 func machinePoolsNotUpgradedYet(cr capiv1alpha3.Cluster, machinePools []expcapiv1alpha3.MachinePool) ([]expcapiv1alpha3.MachinePool, error) {
