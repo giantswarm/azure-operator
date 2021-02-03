@@ -19,6 +19,7 @@ spec:
     port: 443
   location: westeurope
   networkSpec:
+    apiServerLB: {}
     subnets:
     - cidrBlocks:
       - 10.100.2.0/24
@@ -34,9 +35,4 @@ spec:
       resourceGroup: c6fme
   resourceGroup: c6fme
 status:
-  network:
-    apiServerIp: {}
-    apiServerLb:
-      backendPool: {}
-      frontendIpConfig: {}
   ready: false

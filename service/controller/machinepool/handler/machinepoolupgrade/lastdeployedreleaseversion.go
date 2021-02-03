@@ -63,7 +63,7 @@ func (r *Resource) ensureLastDeployedReleaseVersion(ctx context.Context, machine
 		machinePool.Annotations[annotation.LastDeployedReleaseVersion] = key.ReleaseVersion(machinePool)
 		err = r.ctrlClient.Update(ctx, machinePool)
 		if apierrors.IsConflict(err) {
-			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.logger.Debugf(ctx, "canceling resource")
 			return nil
 		} else if err != nil {

@@ -7,11 +7,13 @@ metadata:
   - operatorkit.giantswarm.io/legacy-controller
   labels:
     azure-operator.giantswarm.io/version: 4.2.0
+    cluster.x-k8s.io/cluster-name: c6fme
     giantswarm.io/cluster: c6fme
+    giantswarm.io/organization: giantswarm
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: default
-  resourceVersion: "1"
+  resourceVersion: "2"
 spec:
   azure:
     availabilityZones:
@@ -38,10 +40,7 @@ spec:
       cidr: 10.10.0.0/16
       masterSubnetCIDR: 10.10.0.0/24
       workerSubnetCIDR: 10.10.1.0/24
-    workers:
-    - dockerVolumeSizeGB: 50
-      kubeletVolumeSizeGB: 100
-      vmSize: Standard_A2_v2
+    workers: null
   cluster:
     calico:
       cidr: 16
@@ -51,7 +50,7 @@ spec:
       id: giantswarm
     docker:
       daemon:
-        cidr: 172.17.0.1/16
+        cidr: ""
     etcd:
       altNames: ""
       domain: etcd.c6fme.k8s.ghost.westeurope.azure.gigantic.io
@@ -69,33 +68,31 @@ spec:
       domain: cluster.local
       ingressController:
         docker:
-          image: quay.io/giantswarm/nginx-ingress-controller:0.9.0-beta.11
-        domain: ingress.c6fme.k8s.ghost.westeurope.azure.gigantic.io
-        insecurePort: 30010
-        securePort: 30011
-        wildcardDomain: '*.c6fme.k8s.ghost.westeurope.azure.gigantic.io'
+          image: ""
+        domain: ""
+        insecurePort: 0
+        securePort: 0
+        wildcardDomain: ""
       kubelet:
-        altNames: kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local
+        altNames: ""
         domain: worker.c6fme.k8s.ghost.westeurope.azure.gigantic.io
-        labels: azure-operator.giantswarm.io/version=4.2.0,giantswarm.io/provider=azure
-        port: 10250
+        labels: giantswarm.io/provider=azure,azure-operator.giantswarm.io/version=4.2.0,release.giantswarm.io/version=12.0.0
+        port: 0
       networkSetup:
         docker:
-          image: quay.io/giantswarm/k8s-setup-network-environment:1f4ffc52095ac368847ce3428ea99b257003d9b9
+          image: ""
         kubeProxy:
           conntrackMaxPerCore: 0
       ssh:
         userList: []
     masters:
-    - id: 9x5qt
+    - id: master-0
     scaling:
-      max: 1
-      min: 1
+      max: 0
+      min: 0
     version: ""
-    workers:
-    - id: z028u
   versionBundle:
-    version: 4.2.0
+    version: ""
 status:
   cluster:
     conditions:

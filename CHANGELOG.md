@@ -9,12 +9,26 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Changed `StorageClasses` `volumeBindingMode` to `WaitForFirstConsumer`.
+
+### Added
+
+- Added spot instances support for node pools.
+- Setting `release.giantswarm.io/last-deployed-version` on `AzureMachine` CR when the control plane creation or upgrade is done.
+- Setting AzureMachine `Creating` and `Upgrading` conditions. Existing condition handlers `Creating` and `Upgrading` are used.
+
+## [5.3.0] - 2021-02-01
+
+### Changed
+
 - Enable VMSS termination events.
+- Bump `conditions-handler` to v0.2.1 to get `MachinePool` `ReplicasReady` fixes.
 
 ### Fixed
 
 - When scaling up node pool VMSS during an upgrade, consider the real number of old workers running and not the value in the `MachinePool` CR to handle the case when the Autoscaler changed the size.
 - Handle WC API not available error in `nodestatus` handler.
+- Fix logging statements when using debug log level.
 
 ### Removed
 
@@ -299,7 +313,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.2.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.3.0...HEAD
+[5.3.0]: https://github.com/giantswarm/azure-operator/compare/v5.2.1...v5.3.0
 [5.2.1]: https://github.com/giantswarm/azure-operator/compare/v5.2.0...v5.2.1
 [5.2.0]: https://github.com/giantswarm/azure-operator/compare/v5.1.0...v5.2.0
 [5.1.0]: https://github.com/giantswarm/azure-operator/compare/v5.0.0...v5.1.0
