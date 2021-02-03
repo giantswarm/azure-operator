@@ -9,7 +9,6 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
-	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -29,7 +28,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return currentState, nil
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
+	oldInstances, _, err := r.splitInstancesByUpdatedStatus(ctx, azureMachinePool)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -39,49 +38,11 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return currentState, microerror.Mask(err)
 	}
 
-	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
-	if tenantcluster.IsAPINotAvailableError(err) {
-		r.Logger.Debugf(ctx, "tenant API not available yet")
-		r.Logger.Debugf(ctx, "canceling resource")
-
-		return currentState, nil
-	} else if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	var allWorkerInstances []compute.VirtualMachineScaleSetVM
-	{
-		r.Logger.Debugf(ctx, "finding all worker VMSS instances")
-
-		allWorkerInstances, err = r.GetVMSSInstances(ctx, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
-		if err != nil {
-			return DeploymentUninitialized, microerror.Mask(err)
-		}
-
-		r.Logger.Debugf(ctx, "found %d worker VMSS instances", len(allWorkerInstances))
-	}
-
-	resourceGroupName := key.ClusterID(&azureMachinePool)
-	nodePoolVMSSName := key.NodePoolVMSSName(&azureMachinePool)
-	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroupName, nodePoolVMSSName)
-	if err != nil {
-		return currentState, microerror.Mask(err)
-	}
-
-	r.Logger.Debugf(ctx, "filtering instance IDs for old instances")
-
 	var ids compute.VirtualMachineScaleSetVMInstanceRequiredIDs
 	{
 		var strIds []string
-		for _, i := range allWorkerInstances {
-			old, err := r.isWorkerInstanceFromPreviousRelease(ctx, tenantClusterK8sClient, azureMachinePool.Name, i, vmss)
-			if err != nil {
-				return DeploymentUninitialized, nil
-			}
-
-			if old != nil && *old {
-				strIds = append(strIds, *i.InstanceID)
-			}
+		for _, i := range oldInstances {
+			strIds = append(strIds, *i.InstanceID)
 		}
 
 		ids = compute.VirtualMachineScaleSetVMInstanceRequiredIDs{
@@ -92,7 +53,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	r.Logger.Debugf(ctx, "filtered instance IDs for old instances")
 	r.Logger.Debugf(ctx, "terminating %d old worker instances", len(*ids.InstanceIds))
 
-	res, err := virtualMachineScaleSetsClient.DeleteInstances(ctx, resourceGroupName, nodePoolVMSSName, ids)
+	res, err := virtualMachineScaleSetsClient.DeleteInstances(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), ids)
 	if err != nil {
 		return DeploymentUninitialized, microerror.Mask(err)
 	}
@@ -103,5 +64,5 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 	r.Logger.Debugf(ctx, "terminated %d old worker instances", len(*ids.InstanceIds))
 
-	return ScaleDownWorkerVMSS, nil
+	return WaitForOldWorkersToBeGone, nil
 }

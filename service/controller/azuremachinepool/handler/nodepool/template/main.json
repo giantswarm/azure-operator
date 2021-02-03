@@ -229,7 +229,7 @@
         "singlePlacementGroup": "[parameters('vmssSinglePlacementGroup')]",
         "virtualMachineProfile": {
           "evictionPolicy": "[if(parameters('spotInstancesEnabled'), 'Delete', json('null'))]",
-          "priority": "[if(parameters('spotInstancesEnabled'), 'Spot', 'Regular')]",
+          "priority": "[if(parameters('spotInstancesEnabled'), 'Spot', '')]",
           "billingProfile": {
             "maxPrice": "[if(parameters('spotInstancesEnabled'), float(parameters('spotInstancesMaxPrice')), json('null'))]"
           },

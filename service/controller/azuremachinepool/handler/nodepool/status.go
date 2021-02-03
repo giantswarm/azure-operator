@@ -15,12 +15,10 @@ const (
 	Stage = "Stage"
 
 	// States
-	CordonOldWorkers            = "CordonOldWorkers"
 	DeploymentUninitialized     = ""
-	DrainOldWorkerNodes         = "DrainOldWorkerNodes"
 	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
-	ScaleDownWorkerVMSS         = "ScaleDownWorkerVMSS"
 	TerminateOldWorkerInstances = "TerminateOldWorkerInstances"
+	WaitForOldWorkersToBeGone   = "WaitForOldWorkersToBeGone"
 	WaitForWorkersToBecomeReady = "WaitForWorkersToBecomeReady"
 )
 
