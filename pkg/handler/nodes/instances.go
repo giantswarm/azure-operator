@@ -8,7 +8,6 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/scalestrategy"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -42,35 +41,6 @@ func (r *Resource) GetVMSSInstances(ctx context.Context, azureMachinePool v1alph
 	r.Logger.Debugf(ctx, "found %d instances in the scale set %#q", len(instances), vmssName)
 
 	return instances, nil
-}
-
-func (r *Resource) ScaleVMSS(ctx context.Context, azureMachinePool v1alpha3.AzureMachinePool, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
-	resourceGroup := key.ClusterID(&azureMachinePool)
-	vmssName := key.NodePoolVMSSName(&azureMachinePool)
-
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroup, vmssName)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	computedCount := scaleStrategy.GetNodeCount(*vmss.Sku.Capacity, desiredNodeCount)
-	*vmss.Sku.Capacity = computedCount
-	res, err := virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, vmssName, vmss)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	_, err = virtualMachineScaleSetsClient.CreateOrUpdateResponder(res.Response())
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	return nil
 }
 
 func (r *Resource) CreateARMDeployment(ctx context.Context, deploymentsClient *azureresource.DeploymentsClient, computedDeployment azureresource.Deployment, resourceGroupName, deploymentName string) error {
