@@ -53,7 +53,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	var masterUpgradeInProgress bool
 	{
-		allMasterInstances, err := r.AllInstances(ctx, cr, key.MasterVMSSName)
+		allMasterInstances, err := r.allInstances(ctx, cr, key.MasterVMSSName)
 		if nodes.IsScaleSetNotFound(err) {
 			r.Logger.Debugf(ctx, "did not find the scale set '%s'", key.MasterVMSSName(cr))
 		} else if err != nil {
