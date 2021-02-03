@@ -3,6 +3,8 @@ package azuremachineconditions
 import (
 	"context"
 
+	creatingcondition "github.com/giantswarm/conditions-handler/pkg/conditions/creating"
+	upgradingcondition "github.com/giantswarm/conditions-handler/pkg/conditions/upgrading"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
@@ -31,7 +33,10 @@ type Resource struct {
 	azureClientsFactory *azureclient.OrganizationFactory
 	ctrlClient          client.Client
 	logger              micrologger.Logger
-	deploymentChecker   *azureconditions.DeploymentChecker
+
+	creatingConditionHandler  *creatingcondition.Handler
+	deploymentChecker         *azureconditions.DeploymentChecker
+	upgradingConditionHandler *upgradingcondition.Handler
 }
 
 func New(config Config) (*Resource, error) {
@@ -54,11 +59,41 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Mask(err)
 	}
 
+	var creatingConditionHandler *creatingcondition.Handler
+	{
+		c := creatingcondition.HandlerConfig{
+			CtrlClient:   config.CtrlClient,
+			Logger:       config.Logger,
+			Name:         "azureMachineCreatingHandler",
+			UpdateStatus: false, // azuremachineconditions handler will do the update
+		}
+		creatingConditionHandler, err = creatingcondition.NewHandler(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var upgradingConditionHandler *upgradingcondition.Handler
+	{
+		c := upgradingcondition.HandlerConfig{
+			CtrlClient:   config.CtrlClient,
+			Logger:       config.Logger,
+			Name:         "azureMachineUpgradingHandler",
+			UpdateStatus: false, // azuremachineconditions handler will do the update
+		}
+		upgradingConditionHandler, err = upgradingcondition.NewHandler(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
 	r := &Resource{
-		azureClientsFactory: config.AzureClientsFactory,
-		ctrlClient:          config.CtrlClient,
-		logger:              config.Logger,
-		deploymentChecker:   dc,
+		azureClientsFactory:       config.AzureClientsFactory,
+		ctrlClient:                config.CtrlClient,
+		logger:                    config.Logger,
+		deploymentChecker:         dc,
+		creatingConditionHandler:  creatingConditionHandler,
+		upgradingConditionHandler: upgradingConditionHandler,
 	}
 
 	return r, nil
