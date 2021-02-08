@@ -12,20 +12,20 @@ opsctl create kubeconfig -i $installation
 gsctl create kubeconfig --cluster=$cluster --certificate-organizations system:masters -e $installation
 
 # get org name
-org_namespace="$(kubectl --context=giantswarm-$installation -n org-giantswarm get cluster -l giantswarm.io/cluster=${cluster} -o yaml -A|yq -r '.items[0].metadata.namespace')"
-org="$(kubectl --context=giantswarm-$installation -n org-giantswarm get cluster -l giantswarm.io/cluster=${cluster} -o yaml -A|yq -r '.items[0].metadata.labels["giantswarm.io/organization"]')"
+org_namespace="$(kubectl --context=giantswarm-$installation -n org-giantswarm get cluster -l giantswarm.io/cluster=${cluster} -o json -A|jq -r '.items[0].metadata.namespace')"
+org="$(kubectl --context=giantswarm-$installation -n org-giantswarm get cluster -l giantswarm.io/cluster=${cluster} -o json -A|jq -r '.items[0].metadata.labels["giantswarm.io/organization"]')"
 
 # get azure operator version
-azure_operator_version="$(kubectl --context=giantswarm-$installation -n ${org_namespace} get cluster ${cluster} -o yaml| yq -r '.metadata.labels["azure-operator.giantswarm.io/version"]')"
+azure_operator_version="$(kubectl --context=giantswarm-$installation -n ${org_namespace} get cluster ${cluster} -o json| jq -r '.metadata.labels["azure-operator.giantswarm.io/version"]')"
 
 # find subscription ID
-subscription="$(kubectl --context=giantswarm-$installation -n giantswarm get secret -l giantswarm.io/organization="${org}" -o yaml | yq -r '.items[0].data["azure.azureoperator.subscriptionid"]'| base64 -d)"
+subscription="$(kubectl --context=giantswarm-$installation -n giantswarm get secret -l giantswarm.io/organization="${org}" -o json | jq -r '.items[0].data["azure.azureoperator.subscriptionid"]'| base64 -d)"
 
-master_ip="$(kubectl --context=giantswarm-$cluster get no -l role=master -o yaml| yq -r '.items[0].status.addresses[] | select(.type == "InternalIP").address')"
+master_ip="$(kubectl --context=giantswarm-$cluster get no -l role=master -o json| jq -r '.items[0].status.addresses[] | select(.type == "InternalIP").address')"
 
-bastion_name="$(opsctl show installation -i $installation| yq -r .Jumphosts.bastion1.Host)"
+bastion_name="$(opsctl show installation -i $installation| jq -r .Jumphosts.bastion1.Host)"
 
-api_url="$(kubectl config view |yq -r ".clusters[] | select(.name == \"giantswarm-${cluster}\").cluster.server")"
+api_url="$(kubectl config view |jq -r ".clusters[] | select(.name == \"giantswarm-${cluster}\").cluster.server")"
 
 echo "org: ${org}"
 echo "org namespace: ${org_namespace}"
