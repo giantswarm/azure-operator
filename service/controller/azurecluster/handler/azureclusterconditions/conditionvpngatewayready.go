@@ -17,6 +17,7 @@ const (
 	PeeringStateUnknown = "PeeringStateUnknown"
 	PeeringStateLabel   = "PeeringState"
 
+	// TODO move constant to apiextensions.
 	VNetPeeringReadyCondition = "VNetPeeringReady"
 )
 
