@@ -19,7 +19,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.
 	// because it's created at the end. Final implementation should include
 	// checking of other Azure resources as well. and it will be done in
 	// AzureCluster controller.
-	err := r.ensureVPNGatewayReadyCondition(ctx, azureCluster)
+	err := r.ensureVNetPeeringReadyCondition(ctx, azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -28,7 +28,7 @@ func (r *Resource) ensureReadyCondition(ctx context.Context, azureCluster *capz.
 	// be True.
 	conditionsToSummarize := capiconditions.WithConditions(
 		azureconditions.ResourceGroupReadyCondition,
-		azureconditions.VPNGatewayReadyCondition)
+		VNetPeeringReadyCondition)
 
 	capiconditions.SetSummary(
 		azureCluster,

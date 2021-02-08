@@ -3,9 +3,7 @@ package azureclusterconditions
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
-
-	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
+	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/giantswarm/microerror"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
@@ -15,107 +13,60 @@ import (
 )
 
 const (
-	vpnDeploymentName = "vpn-template"
+	PeeringNotFound     = "PeeringNotFound"
+	PeeringStateUnknown = "PeeringStateUnknown"
+	PeeringStateLabel   = "PeeringState"
 
-	DeploymentNotFoundReason                 = "DeploymentNotFound"
-	DeploymentProvisioningStateUnknownReason = "DeploymentProvisioningStateUnknown"
-	DeploymentProvisioningStatePrefix        = "DeploymentProvisioningState"
-	DeploymentProvisioningStateSucceeded     = "Succeeded"
-	DeploymentProvisioningStateFailed        = "Failed"
+	VNetPeeringReadyCondition = "VNetPeeringReady"
 )
 
-func (r *Resource) ensureVPNGatewayReadyCondition(ctx context.Context, azureCluster *capz.AzureCluster) error {
-	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.VPNGatewayReadyCondition)
+func (r *Resource) ensureVNetPeeringReadyCondition(ctx context.Context, azureCluster *capz.AzureCluster) error {
+	r.logger.Debugf(ctx, "ensuring condition %s", VNetPeeringReadyCondition)
 	var err error
 
 	// Get Azure Deployments client
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureCluster.ObjectMeta)
+	vnetPeeringsClient, err := r.azureClientsFactory.GetVnetPeeringsClient(ctx, azureCluster.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	// Get VPN Gateway deployment
-	deployment, err := deploymentsClient.Get(ctx, key.ClusterName(azureCluster), vpnDeploymentName)
+	// Get VNet peering
+	peering, err := vnetPeeringsClient.Get(ctx, key.ClusterName(azureCluster), azureCluster.Spec.NetworkSpec.Vnet.Name, r.installationName)
 	if IsNotFound(err) {
-		// VPN Gateway deployment has not been found, which means that we still
+		// VNet peering has not been found, which means that we still
 		// didn't start deploying it.
-		r.setVPNGatewayDeploymentNotFound(ctx, azureCluster)
+		r.setVnetPeeringNotFound(ctx, azureCluster)
 		return nil
 	} else if err != nil {
-		// Error while getting VPN Gateway deployment, let's check if
-		// deployment provisioning state is set.
-		if !isProvisioningStateSet(&deployment) {
-			return microerror.Mask(err)
-		}
-
-		currentProvisioningState := *deployment.Properties.ProvisioningState
-		r.setProvisioningStateWarning(ctx, azureCluster, currentProvisioningState)
-		return nil
-	}
-
-	// We got the VPN deployment without errors, but for some reason the provisioning state is
-	// not set.
-	if !isProvisioningStateSet(&deployment) {
 		r.setProvisioningStateUnknown(ctx, azureCluster)
 		return nil
 	}
 
-	// Now let's finally check what's the current VPN Gateway deployment
-	// provisioning state.
-	currentProvisioningState := *deployment.Properties.ProvisioningState
+	// Check the peering state.
 
-	switch currentProvisioningState {
-	case DeploymentProvisioningStateSucceeded:
-		// All good, VPN gateway deployment has been completed successfully! :)
-		capiconditions.MarkTrue(azureCluster, azureconditions.VPNGatewayReadyCondition)
-	case DeploymentProvisioningStateFailed:
-		// VPN gateway deployment has failed.
-		r.setProvisioningStateWarningFailed(ctx, azureCluster)
+	switch peering.PeeringState {
+	case network.VirtualNetworkPeeringStateConnected:
+		// All good, VNet peering is connected! :)
+		capiconditions.MarkTrue(azureCluster, VNetPeeringReadyCondition)
 	default:
-		// VPN gateway deployment is probably still running.
-		r.setProvisioningStateWarning(ctx, azureCluster, currentProvisioningState)
+		// VNet peering is still initializing.
+		r.setProvisioningStateWarning(ctx, azureCluster, string(peering.PeeringState))
 	}
 
-	r.logger.Debugf(ctx, "finished ensuring condition %s", azureconditions.VPNGatewayReadyCondition)
+	r.logger.Debugf(ctx, "finished ensuring condition %s", VNetPeeringReadyCondition)
 
 	return nil
 }
 
-func isProvisioningStateSet(deployment *resources.DeploymentExtended) bool {
-	if deployment.Properties != nil &&
-		deployment.Properties.ProvisioningState != nil &&
-		*deployment.Properties.ProvisioningState != "" {
-		return true
-	}
-
-	return false
-}
-
-func (r *Resource) setProvisioningStateWarningFailed(ctx context.Context, azureCluster *capz.AzureCluster) {
-	message := "VPN Gateway deployment %s failed, it might succeed after retrying, see Azure portal for more details"
-	messageArgs := vpnDeploymentName
-	reason := DeploymentProvisioningStatePrefix + DeploymentProvisioningStateFailed
-
-	capiconditions.MarkFalse(
-		azureCluster,
-		azureconditions.VPNGatewayReadyCondition,
-		reason,
-		capi.ConditionSeverityError,
-		message,
-		messageArgs)
-
-	r.logger.Debugf(ctx, message, messageArgs)
-}
-
 func (r *Resource) setProvisioningStateWarning(ctx context.Context, azureCluster *capz.AzureCluster, currentProvisioningState string) {
-	message := "VPN Gateway deployment %s has not succeeded yet, current state is %s, " +
+	message := "VNet peering %s is not connected yet. Current PeeringState is %s, " +
 		"check back in few minutes, see Azure portal for more details"
-	messageArgs := []interface{}{vpnDeploymentName, currentProvisioningState}
-	reason := DeploymentProvisioningStatePrefix + currentProvisioningState
+	messageArgs := []interface{}{r.installationName, currentProvisioningState}
+	reason := PeeringStateLabel + currentProvisioningState
 
 	capiconditions.MarkFalse(
 		azureCluster,
-		azureconditions.VPNGatewayReadyCondition,
+		VNetPeeringReadyCondition,
 		reason,
 		capi.ConditionSeverityWarning,
 		message,
@@ -125,12 +76,12 @@ func (r *Resource) setProvisioningStateWarning(ctx context.Context, azureCluster
 }
 
 func (r *Resource) setProvisioningStateUnknown(ctx context.Context, azureCluster *capz.AzureCluster) {
-	message := "VPN Gateway deployment %s provisioning state not returned by Azure API, check back in few minutes"
-	messageArgs := vpnDeploymentName
+	message := "VNet peering %s PeeringState is still unknown, check back in few minutes"
+	messageArgs := r.installationName
 	capiconditions.MarkFalse(
 		azureCluster,
-		azureconditions.VPNGatewayReadyCondition,
-		DeploymentProvisioningStateUnknownReason,
+		VNetPeeringReadyCondition,
+		PeeringStateUnknown,
 		capi.ConditionSeverityWarning,
 		message,
 		messageArgs)
@@ -138,13 +89,13 @@ func (r *Resource) setProvisioningStateUnknown(ctx context.Context, azureCluster
 	r.logger.Debugf(ctx, message, messageArgs)
 }
 
-func (r *Resource) setVPNGatewayDeploymentNotFound(ctx context.Context, azureCluster *capz.AzureCluster) {
-	message := "VPN Gateway deployment %s is not found, check back in few minutes"
-	messageArgs := vpnDeploymentName
+func (r *Resource) setVnetPeeringNotFound(ctx context.Context, azureCluster *capz.AzureCluster) {
+	message := "VNet peering %s is not found, check back in few minutes"
+	messageArgs := r.installationName
 	capiconditions.MarkFalse(
 		azureCluster,
-		azureconditions.VPNGatewayReadyCondition,
-		DeploymentNotFoundReason,
+		VNetPeeringReadyCondition,
+		PeeringNotFound,
 		capi.ConditionSeverityWarning,
 		message,
 		messageArgs)
