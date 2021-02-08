@@ -658,6 +658,10 @@ func VPNGatewayName(customObject providerv1alpha1.AzureConfig) string {
 	return fmt.Sprintf("%s-%s", ClusterID(&customObject), vpnGatewaySuffix)
 }
 
+func VPNGatewayPublicIPName(customObject providerv1alpha1.AzureConfig) string {
+	return fmt.Sprintf("%s-VPNGateway-PublicIP", ClusterID(&customObject))
+}
+
 func WorkerInstanceName(clusterID, instanceID string) string {
 	idB36, err := vmssInstanceIDBase36(instanceID)
 	if err != nil {

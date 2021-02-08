@@ -42,9 +42,8 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/namespace"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/resourcegroup"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/service"
+	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/vnetpeering"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/volumebindingmigration"
-	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/vpn"
-	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/vpnconnection"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
@@ -589,37 +588,17 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		}
 	}
 
-	var vpnResource resource.Interface
+	var vnetPeeringResource resource.Interface
 	{
-		c := vpn.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Debugger:   newDebugger,
-			Logger:     config.Logger,
-
-			Azure: config.Azure,
+		c := vnetpeering.Config{
+			TCAzureClientSet:       nil,
+			CPAzureClientSet:       config.CPAzureClientSet,
+			HostResourceGroup:      config.InstallationName,
+			HostVirtualNetworkName: config.InstallationName,
+			Logger:                 config.Logger,
 		}
 
-		vpnResource, err = vpn.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var vpnconnectionResource resource.Interface
-	{
-		c := vpnconnection.Config{
-			Azure:                                    config.Azure,
-			Logger:                                   config.Logger,
-			CPVirtualNetworkGatewaysClient:           *config.CPAzureClientSet.VirtualNetworkGatewaysClient,
-			CPVirtualNetworkGatewayConnectionsClient: *config.CPAzureClientSet.VirtualNetworkGatewayConnectionsClient,
-		}
-
-		ops, err := vpnconnection.New(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		vpnconnectionResource, err = toCRUDResource(config.Logger, ops)
+		vnetPeeringResource, err = vnetpeering.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -643,8 +622,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		workerMigrationResource,
 		endpointsResource,
 		volumeBindingMigrationResource,
-		vpnResource,
-		vpnconnectionResource,
+		vnetPeeringResource,
 	}
 
 	{
