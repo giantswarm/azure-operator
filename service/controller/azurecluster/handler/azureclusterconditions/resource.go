@@ -17,6 +17,7 @@ const (
 type Config struct {
 	AzureClientsFactory *azureclient.OrganizationFactory
 	CtrlClient          client.Client
+	InstallationName    string
 	Logger              micrologger.Logger
 }
 
@@ -24,10 +25,14 @@ type Config struct {
 type Resource struct {
 	azureClientsFactory *azureclient.OrganizationFactory
 	ctrlClient          client.Client
+	installationName    string
 	logger              micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
+	if config.InstallationName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.InstallationName must not be empty", config)
+	}
 	if config.AzureClientsFactory == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientsFactory must not be empty", config)
 	}
@@ -41,6 +46,7 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		azureClientsFactory: config.AzureClientsFactory,
 		ctrlClient:          config.CtrlClient,
+		installationName:    config.InstallationName,
 		logger:              config.Logger,
 	}
 

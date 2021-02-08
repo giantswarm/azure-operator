@@ -145,6 +145,7 @@ func newAzureClusterResources(config ControllerConfig, certsSearcher certs.Inter
 		c := azureclusterconditions.Config{
 			AzureClientsFactory: &organizationClientFactory,
 			CtrlClient:          config.K8sClient.CtrlClient(),
+			InstallationName:    config.InstallationName,
 			Logger:              config.Logger,
 		}
 
