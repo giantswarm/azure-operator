@@ -12,7 +12,7 @@ const (
 )
 
 type Config struct {
-	TCAzureClientSet       *client.AzureClientSet
+	ClientFactory          client.OrganizationFactory
 	CPAzureClientSet       *client.AzureClientSet
 	HostResourceGroup      string
 	HostVirtualNetworkName string
@@ -20,7 +20,7 @@ type Config struct {
 }
 
 type Resource struct {
-	tcAzureClientSet       *client.AzureClientSet
+	clientFactory          client.OrganizationFactory
 	cpAzureClientSet       *client.AzureClientSet
 	hostResourceGroup      string
 	hostVirtualNetworkName string
@@ -28,10 +28,6 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
-	if config.TCAzureClientSet == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TCAzureClientSet must not be empty", config)
-	}
-
 	if config.CPAzureClientSet == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CPAzureClientSet must not be empty", config)
 	}
@@ -49,7 +45,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		tcAzureClientSet:       config.TCAzureClientSet,
+		clientFactory:          config.ClientFactory,
 		cpAzureClientSet:       config.CPAzureClientSet,
 		hostResourceGroup:      config.HostResourceGroup,
 		hostVirtualNetworkName: config.HostVirtualNetworkName,

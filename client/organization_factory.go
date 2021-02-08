@@ -40,6 +40,10 @@ type Interface interface {
 	GetSubnetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.SubnetsClient, error)
 	GetNatGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.NatGatewaysClient, error)
 	GetResourceSkusClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.ResourceSkusClient, error)
+	GetVnetPeeringsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkPeeringsClient, error)
+	GetVirtualNetworkGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkGatewaysClient, error)
+	GetVirtualNetworkGatewayConnectionsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkGatewayConnectionsClient, error)
+	GetPublicIpAddressesClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.PublicIPAddressesClient, error)
 }
 
 type OrganizationFactoryConfig struct {
@@ -177,6 +181,42 @@ func (f *OrganizationFactory) GetResourceSkusClient(ctx context.Context, objectM
 	}
 
 	return f.factory.GetResourceSkusClient(credentialSecret.Namespace, credentialSecret.Name)
+}
+
+func (f *OrganizationFactory) GetVnetPeeringsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkPeeringsClient, error) {
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return f.factory.GetVirtualNetworkPeeringsClient(credentialSecret.Namespace, credentialSecret.Name)
+}
+
+func (f *OrganizationFactory) GetVirtualNetworkGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkGatewaysClient, error) {
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return f.factory.GetVirtualNetworkGatewaysClient(credentialSecret.Namespace, credentialSecret.Name)
+}
+
+func (f *OrganizationFactory) GetVirtualNetworkGatewayConnectionsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return f.factory.GetVirtualNetworkGatewayConnectionsClient(credentialSecret.Namespace, credentialSecret.Name)
+}
+
+func (f *OrganizationFactory) GetPublicIpAddressesClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.PublicIPAddressesClient, error) {
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return f.factory.GetPublicIPAddressesClient(credentialSecret.Namespace, credentialSecret.Name)
 }
 
 func (f *OrganizationFactory) GetCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {

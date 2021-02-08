@@ -28,7 +28,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if TC virtual network %#q exists in resource group %#q", key.VnetName(cr), key.ResourceGroupName(cr)))
 
-		tcVnet, err = r.tcAzureClientSet.VirtualNetworkClient.Get(ctx, key.ResourceGroupName(cr), key.VnetName(cr), "")
+		virtualNetworksClient, err := r.clientFactory.GetVirtualNetworksClient(ctx, cr.ObjectMeta)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		tcVnet, err = virtualNetworksClient.Get(ctx, key.ResourceGroupName(cr), key.VnetName(cr), "")
 		if IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "TC Virtual network does not exist in resource group")
 			reconciliationcanceledcontext.SetCanceled(ctx)
@@ -61,8 +66,13 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	{
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the tenant cluster vnet %#q in resource group %#q", r.hostVirtualNetworkName, key.VnetName(cr), key.ResourceGroupName(cr)))
 
+		vnetPeeringsClient, err := r.clientFactory.GetVnetPeeringsClient(ctx, cr.ObjectMeta)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
 		tcPeering := r.getTCVnetPeering(*cpVnet.ID)
-		_, err = r.tcAzureClientSet.VnetPeeringClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), key.VnetName(cr), r.hostVirtualNetworkName, tcPeering)
+		_, err = vnetPeeringsClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), key.VnetName(cr), r.hostVirtualNetworkName, tcPeering)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -90,14 +100,24 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 func (r *Resource) ensureVnetGatewayIsDeleted(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Checking if the VPN gateway still exists")
 
-	gw, err := r.tcAzureClientSet.VirtualNetworkGatewaysClient.Get(ctx, key.ResourceGroupName(cr), key.VPNGatewayName(cr))
+	vnetGatewaysClient, err := r.clientFactory.GetVirtualNetworkGatewaysClient(ctx, cr.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	gw, err := vnetGatewaysClient.Get(ctx, key.ResourceGroupName(cr), key.VPNGatewayName(cr))
 	if IsNotFound(err) {
 		// VPN gateway not found. That's our goal, all good.
 		// Let's check if the public IP address still exist and delete that as well.
 		r.logger.LogCtx(ctx, "level", "debug", "message", "VPN gateway does not exists")
 		r.logger.LogCtx(ctx, "level", "debug", "message", "Checking if the VPN gateway's public IP still exists")
 
-		_, err = r.tcAzureClientSet.PublicIpAddressesClient.Get(ctx, key.ResourceGroupName(cr), key.VPNGatewayPublicIPName(cr), "")
+		publicIPAddressesClient, err := r.clientFactory.GetPublicIpAddressesClient(ctx, cr.ObjectMeta)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		_, err = publicIPAddressesClient.Get(ctx, key.ResourceGroupName(cr), key.VPNGatewayPublicIPName(cr), "")
 		if IsNotFound(err) {
 			// That's the desired state, all good.
 			r.logger.LogCtx(ctx, "level", "debug", "message", "VPN gateway's public IP does not exists")
@@ -106,7 +126,7 @@ func (r *Resource) ensureVnetGatewayIsDeleted(ctx context.Context, cr providerv1
 
 		r.logger.LogCtx(ctx, "level", "debug", "message", "VPN gateway's public IP still exists, requesting deletion")
 
-		_, err = r.tcAzureClientSet.PublicIpAddressesClient.Delete(ctx, key.ResourceGroupName(cr), key.VPNGatewayPublicIPName(cr))
+		_, err = publicIPAddressesClient.Delete(ctx, key.ResourceGroupName(cr), key.VPNGatewayPublicIPName(cr))
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -127,7 +147,12 @@ func (r *Resource) ensureVnetGatewayIsDeleted(ctx context.Context, cr providerv1
 
 	r.logger.LogCtx(ctx, "level", "debug", "message", "Checking if there are existing connections")
 
-	results, err := r.tcAzureClientSet.VirtualNetworkGatewayConnectionsClient.ListComplete(ctx, key.ResourceGroupName(cr))
+	virtualNetworkGatewayConnectionsClient, err := r.clientFactory.GetVirtualNetworkGatewayConnectionsClient(ctx, cr.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	results, err := virtualNetworkGatewayConnectionsClient.ListComplete(ctx, key.ResourceGroupName(cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -139,7 +164,7 @@ func (r *Resource) ensureVnetGatewayIsDeleted(ctx context.Context, cr providerv1
 		if *c.VirtualNetworkGateway1.ID == *gw.ID || *c.VirtualNetworkGateway2.ID == *gw.ID {
 			r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Found VPN connection %s to be deleted", *c.Name))
 
-			_, err := r.tcAzureClientSet.VirtualNetworkGatewayConnectionsClient.Delete(ctx, key.ResourceGroupName(cr), *c.Name)
+			_, err := virtualNetworkGatewayConnectionsClient.Delete(ctx, key.ResourceGroupName(cr), *c.Name)
 			if err != nil {
 				return microerror.Mask(err)
 			}
@@ -157,7 +182,7 @@ func (r *Resource) ensureVnetGatewayIsDeleted(ctx context.Context, cr providerv1
 		// No connections have been found, safe to delete the VPN Gateway.
 		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("No connections found, deleting VPN Gateway %s", *gw.Name))
 
-		_, err := r.tcAzureClientSet.VirtualNetworkGatewaysClient.Delete(ctx, key.ResourceGroupName(cr), *gw.Name)
+		_, err := vnetGatewaysClient.Delete(ctx, key.ResourceGroupName(cr), *gw.Name)
 		if err != nil {
 			return microerror.Mask(err)
 		}

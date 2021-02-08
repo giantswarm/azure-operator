@@ -176,11 +176,11 @@ func NewAzureClientSet(clientCredentialsConfig auth.ClientCredentialsConfig, met
 		SubscriptionID:                         subscriptionID,
 		UsageClient:                            usageClient,
 		VirtualNetworkClient:                   toVirtualNetworksClient(virtualNetworkClient),
-		VirtualNetworkGatewayConnectionsClient: virtualNetworkGatewayConnectionsClient,
-		VirtualNetworkGatewaysClient:           virtualNetworkGatewaysClient,
+		VirtualNetworkGatewayConnectionsClient: toVirtualNetworkGatewayConnectionsClient(virtualNetworkGatewayConnectionsClient),
+		VirtualNetworkGatewaysClient:           toVirtualNetworkGatewaysClient(virtualNetworkGatewaysClient),
 		VirtualMachineScaleSetVMsClient:        toVirtualMachineScaleSetVMsClient(virtualMachineScaleSetVMsClient),
 		VirtualMachineScaleSetsClient:          toVirtualMachineScaleSetsClient(virtualMachineScaleSetsClient),
-		VnetPeeringClient:                      vnetPeeringClient,
+		VnetPeeringClient:                      toVirtualNetworkPeeringsClient(vnetPeeringClient),
 	}
 
 	return clientSet, nil
@@ -307,14 +307,14 @@ func newVirtualNetworksClient(authorizer autorest.Authorizer, metricsCollector c
 	return &client, nil
 }
 
-func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+func newVirtualNetworkGatewayConnectionsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewVirtualNetworkGatewayConnectionsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, metricsCollector, "virtual_network_gateway_connections", subscriptionID, partnerID)
 
 	return &client, nil
 }
 
-func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.VirtualNetworkGatewaysClient, error) {
+func newVirtualNetworkGatewaysClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewVirtualNetworkGatewaysClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, metricsCollector, "virtual_network_gateways", subscriptionID, partnerID)
 
@@ -335,7 +335,7 @@ func newVirtualMachineScaleSetVMsClient(authorizer autorest.Authorizer, metricsC
 	return &client, nil
 }
 
-func newVnetPeeringClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (*network.VirtualNetworkPeeringsClient, error) {
+func newVnetPeeringClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
 	client := network.NewVirtualNetworkPeeringsClient(subscriptionID)
 	prepareClient(&client.Client, authorizer, metricsCollector, "vnet_peering", subscriptionID, partnerID)
 
@@ -407,4 +407,16 @@ func toPublicIPAddressesClient(client interface{}) *network.PublicIPAddressesCli
 
 func toResourceSkusClient(client interface{}) *compute.ResourceSkusClient {
 	return client.(*compute.ResourceSkusClient)
+}
+
+func toVirtualNetworkPeeringsClient(client interface{}) *network.VirtualNetworkPeeringsClient {
+	return client.(*network.VirtualNetworkPeeringsClient)
+}
+
+func toVirtualNetworkGatewaysClient(client interface{}) *network.VirtualNetworkGatewaysClient {
+	return client.(*network.VirtualNetworkGatewaysClient)
+}
+
+func toVirtualNetworkGatewayConnectionsClient(client interface{}) *network.VirtualNetworkGatewayConnectionsClient {
+	return client.(*network.VirtualNetworkGatewayConnectionsClient)
 }
