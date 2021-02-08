@@ -70,7 +70,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// The kubernetes API is not reachable. This usually happens when a new cluster is being created.
 			// This makes the whole controller to fail and stops next handlers from being executed even if they are
 			// safe to run. We don't want that to happen so we just return and we'll try again during next loop.
-			r.logger.Debugf(ctx, "Kubernetes API is not available, can't proceed.")
+			r.logger.Debugf(ctx, "tenant API not available yet")
+			r.logger.Debugf(ctx, "canceling resource")
+
 			return nil
 		} else if err != nil {
 			return microerror.Mask(err)
