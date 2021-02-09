@@ -20,6 +20,8 @@ const (
 	secretDataFieldName = "clientSecret"
 )
 
+// EnsureCreated ensures there is an AzureClusterIdentity CR and a related Secret
+// with the same contents as the Giant Swarm credential secret.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	legacySecret, err := key.ToSecret(obj)
 	if err != nil {

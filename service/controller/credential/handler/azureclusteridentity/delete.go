@@ -12,6 +12,8 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
+// EnsureDeleted ensures the AzureClusterIdentity CR and the associated Secret
+// are deleted when the source Giant Swarm credential secret is deleted.
 func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 	legacySecret, err := key.ToSecret(obj)
 	if err != nil {
