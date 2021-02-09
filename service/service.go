@@ -37,6 +37,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachine"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azuremachinepool"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cluster"
+	credentialctrl "github.com/giantswarm/azure-operator/v5/service/controller/credential"
 	"github.com/giantswarm/azure-operator/v5/service/controller/machinepool"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 	"github.com/giantswarm/azure-operator/v5/service/controller/unhealthynode"
@@ -434,6 +435,36 @@ func New(config Config) (*Service, error) {
 		}
 
 		controllers = append(controllers, clusterController)
+	}
+
+	var credentialController *operatorkitcontroller.Controller
+	{
+		c := credentialctrl.ControllerConfig{
+			CredentialProvider: credentialProvider,
+			K8sClient:          k8sClient,
+			Logger:             config.Logger,
+
+			Flag:  config.Flag,
+			Viper: config.Viper,
+
+			Azure:                 azure,
+			AzureMetricsCollector: azureCollector,
+			Ignition:              Ignition,
+			OIDC:                  OIDC,
+			InstallationName:      config.Viper.GetString(config.Flag.Service.Installation.Name),
+			ProjectName:           config.ProjectName,
+			RegistryDomain:        config.Viper.GetString(config.Flag.Service.Registry.Domain),
+			SSOPublicKey:          config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
+
+			SentryDSN: sentryDSN,
+		}
+
+		credentialController, err = credentialctrl.NewController(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		controllers = append(controllers, credentialController)
 	}
 
 	var machinePoolController *operatorkitcontroller.Controller

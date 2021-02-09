@@ -161,6 +161,20 @@ func ToMachinePool(v interface{}) (expcapiv1alpha3.MachinePool, error) {
 	return customObject, nil
 }
 
+func ToSecret(v interface{}) (v1.Secret, error) {
+	if v == nil {
+		return v1.Secret{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &v1.Secret{}, v)
+	}
+
+	customObjectPointer, ok := v.(*v1.Secret)
+	if !ok {
+		return v1.Secret{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", &v1.Secret{}, v)
+	}
+	customObject := *customObjectPointer
+
+	return customObject, nil
+}
+
 func BlobContainerName() string {
 	return blobContainerName
 }
