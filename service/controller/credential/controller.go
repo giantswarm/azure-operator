@@ -11,7 +11,6 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/resource"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/metricsresource"
 	"github.com/giantswarm/operatorkit/v4/pkg/resource/wrapper/retryresource"
-	"github.com/spf13/viper"
 	v1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
@@ -19,35 +18,13 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/credential/handler/azureclusteridentity"
 
-	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/flag"
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
-	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
-	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
 type ControllerConfig struct {
-	CredentialProvider credential.Provider
-	InstallationName   string
-	K8sClient          k8sclient.Interface
-	Logger             micrologger.Logger
-
-	Flag  *flag.Flag
-	Viper *viper.Viper
-
-	Azure                 setting.Azure
-	AzureMetricsCollector collector.AzureAPIMetrics
-	CPAzureClientSet      client.AzureClientSet
-	ProjectName           string
-	RegistryDomain        string
-
-	Ignition        setting.Ignition
-	OIDC            setting.OIDC
-	SSOPublicKey    string
-	TemplateVersion string
-
+	K8sClient k8sclient.Interface
+	Logger    micrologger.Logger
 	SentryDSN string
 }
 

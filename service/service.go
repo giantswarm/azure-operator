@@ -440,22 +440,8 @@ func New(config Config) (*Service, error) {
 	var credentialController *operatorkitcontroller.Controller
 	{
 		c := credentialctrl.ControllerConfig{
-			CredentialProvider: credentialProvider,
-			K8sClient:          k8sClient,
-			Logger:             config.Logger,
-
-			Flag:  config.Flag,
-			Viper: config.Viper,
-
-			Azure:                 azure,
-			AzureMetricsCollector: azureCollector,
-			Ignition:              Ignition,
-			OIDC:                  OIDC,
-			InstallationName:      config.Viper.GetString(config.Flag.Service.Installation.Name),
-			ProjectName:           config.ProjectName,
-			RegistryDomain:        config.Viper.GetString(config.Flag.Service.Registry.Domain),
-			SSOPublicKey:          config.Viper.GetString(config.Flag.Service.Tenant.SSH.SSOPublicKey),
-
+			K8sClient: k8sClient,
+			Logger:    config.Logger,
 			SentryDSN: sentryDSN,
 		}
 
