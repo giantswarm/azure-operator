@@ -283,8 +283,8 @@ github.com/giantswarm/certs/v3 v3.1.0 h1:DV23PHNAFds9v1kHgvL6/gWZMTumu+60qdZ6NES
 github.com/giantswarm/certs/v3 v3.1.0/go.mod h1:fkmIW3moxlrldZhN99fnbBohsDJaki/WCHeNyIN2sr8=
 github.com/giantswarm/cluster-api v0.3.13-gs h1:ZgOMYkSuM1KnRmdDkPTfYj8G+Bdn6K1+sI0RnsPoBSc=
 github.com/giantswarm/cluster-api v0.3.13-gs/go.mod h1:BCtzLFd2R77eDAvZGd5P1OlG38exdHlQietjFA/7u+0=
-github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha1 h1:7Zu+/EKeexLnIrmoCQM9hGbbDC1FvwaCpKB+WAQqQ54=
-github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha1/go.mod h1:v/WBSPW45C0QHslLmrmg7YGGmaN70kT2XxjDKby8Yh4=
+github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha2 h1:g44mh4mNpvVemU65yFM6mQYc4CQVJAB6pOMCIBLeAiM=
+github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha2/go.mod h1:v/WBSPW45C0QHslLmrmg7YGGmaN70kT2XxjDKby8Yh4=
 github.com/giantswarm/conditions v0.3.0 h1:sv6b2dVXns2oT1VJ2UIuflJo24cC7EPXD7tdwPEYFkU=
 github.com/giantswarm/conditions v0.3.0/go.mod h1:tFjYCLTT5NBJU+PYij0360yBHzETIpw3wnrettuzdsw=
 github.com/giantswarm/conditions-handler v0.2.1 h1:XUgJD0T+H+QsUN1oaPAlla+hL+qJqtNQF150snQSXy8=
