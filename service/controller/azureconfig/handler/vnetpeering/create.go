@@ -199,9 +199,9 @@ func (r *Resource) getCPVnetPeering(vnetId string) network.VirtualNetworkPeering
 			AllowForwardedTraffic:     to.BoolP(false),
 			AllowGatewayTransit:       to.BoolP(false),
 			UseRemoteGateways:         to.BoolP(false),
-			//RemoteVirtualNetwork: &network.SubResource{
-			//	ID: &vnetId,
-			//},
+			RemoteVirtualNetwork: &network.SubResource{
+				ID: &vnetId,
+			},
 		},
 	}
 
@@ -215,9 +215,9 @@ func (r *Resource) getTCVnetPeering(vnetId string) network.VirtualNetworkPeering
 			AllowForwardedTraffic:     to.BoolP(false),
 			AllowGatewayTransit:       to.BoolP(false),
 			UseRemoteGateways:         to.BoolP(false),
-			//RemoteVirtualNetwork: &network.SubResource{
-			//	ID: &vnetId,
-			//},
+			RemoteVirtualNetwork: &network.SubResource{
+				ID: &vnetId,
+			},
 		},
 	}
 
