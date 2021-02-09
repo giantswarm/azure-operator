@@ -13,7 +13,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 )
 
 const (
@@ -23,24 +23,38 @@ const (
 // EnsureCreated ensures there is an AzureClusterIdentity CR and a related Secret
 // with the same contents as the Giant Swarm credential secret.
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
-	legacySecret, err := key.ToSecret(obj)
+	legacySecrets, err := r.listLegacySecrets(ctx)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "Found secret %q in namespace %q", legacySecret.Name, legacySecret.Namespace)
+	for _, legacySecret := range legacySecrets {
+		r.logger.Debugf(ctx, "Found secret %q in namespace %q", legacySecret.Name, legacySecret.Namespace)
 
-	err = r.ensureNewSecret(ctx, legacySecret)
-	if err != nil {
-		return microerror.Mask(err)
+		err = r.ensureNewSecret(ctx, legacySecret)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		err = r.ensureAzureClusterIdentity(ctx, legacySecret)
+		if err != nil {
+			return microerror.Mask(err)
+		}
 	}
 
-	err = r.ensureAzureClusterIdentity(ctx, legacySecret)
-	if err != nil {
-		return microerror.Mask(err)
-	}
+	// Cleanup any AzureClusterIdentities and Secret belonging to a legacy secret that doesn't exist any more.
 
 	return nil
+}
+
+func (r *Resource) listLegacySecrets(ctx context.Context) ([]corev1.Secret, error) {
+	secrets := &corev1.SecretList{}
+	err := r.ctrlClient.List(ctx, secrets, client.MatchingLabels{label.App: "credentiald"})
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return secrets.Items, nil
 }
 
 func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secret) error {
