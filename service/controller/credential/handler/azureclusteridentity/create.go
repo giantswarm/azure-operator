@@ -3,6 +3,7 @@ package azureclusteridentity
 import (
 	"context"
 	"fmt"
+	"reflect"
 	"strings"
 
 	"github.com/giantswarm/microerror"
@@ -13,6 +14,10 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
+)
+
+const (
+	secretDataFieldName = "clientSecret"
 )
 
 func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
@@ -58,7 +63,7 @@ func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secr
 				Annotations: nil,
 			},
 			StringData: map[string]string{
-				"clientSecret": clientSecret,
+				secretDataFieldName: clientSecret,
 			},
 		}
 
@@ -74,9 +79,24 @@ func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secr
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "Secret %q was found in namespace %q", newName, newNamespace)
+	r.logger.Debugf(ctx, "Secret %q found in namespace %q", newName, newNamespace)
 
-	// TODO check if Secret contents are up to date.
+	currentClientSecret := string(existing.Data[secretDataFieldName])
+	if currentClientSecret != clientSecret {
+		r.logger.Debugf(ctx, "Secret %q is outdated, updating", newName)
+
+		existing.StringData = map[string]string{
+			secretDataFieldName: clientSecret,
+		}
+		err := r.ctrlClient.Update(ctx, existing)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		r.logger.Debugf(ctx, "Secret %q updated successfully", newName)
+		return nil
+	}
+
+	r.logger.Debugf(ctx, "Secret %q is up to date", newName)
 
 	return nil
 }
@@ -87,6 +107,17 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 
 	clientID := string(legacySecret.Data["azure.azureoperator.clientid"])
 	tenantID := string(legacySecret.Data["azure.azureoperator.tenantid"])
+
+	desiredSpec := v1alpha3.AzureClusterIdentitySpec{
+		Type:     v1alpha3.ServicePrincipal,
+		ClientID: clientID,
+		ClientSecret: corev1.SecretReference{
+			Name:      newName,
+			Namespace: newNamespace,
+		},
+		TenantID:          tenantID,
+		AllowedNamespaces: make([]string, 0),
+	}
 
 	r.logger.Debugf(ctx, "Looking for AzureClusterIdentity %q in namespace %q", newName, newNamespace)
 
@@ -103,16 +134,7 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 				Labels:      nil,
 				Annotations: nil,
 			},
-			Spec: v1alpha3.AzureClusterIdentitySpec{
-				Type:     v1alpha3.ServicePrincipal,
-				ClientID: clientID,
-				ClientSecret: corev1.SecretReference{
-					Name:      newName,
-					Namespace: newNamespace,
-				},
-				TenantID:          tenantID,
-				AllowedNamespaces: make([]string, 0),
-			},
+			Spec: desiredSpec,
 		}
 
 		err := r.ctrlClient.Create(ctx, aci)
@@ -128,9 +150,23 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "AzureClusterIdentity %q was found in namespace %q", newName, newNamespace)
+	r.logger.Debugf(ctx, "AzureClusterIdentity %q found in namespace %q", newName, newNamespace)
 
-	// TODO check if AzureClusterIdentity contents are up to date.
+	if !reflect.DeepEqual(existing.Spec, desiredSpec) {
+		r.logger.Debugf(ctx, "AzureClusterIdentity %q is outdated, updating", newName)
+		existing.Spec = desiredSpec
+
+		err = r.ctrlClient.Update(ctx, existing)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.logger.Debugf(ctx, "AzureClusterIdentity %q updated successfully", newName)
+
+		return nil
+	}
+
+	r.logger.Debugf(ctx, "AzureClusterIdentity %q is up to date", newName)
 
 	return nil
 }
