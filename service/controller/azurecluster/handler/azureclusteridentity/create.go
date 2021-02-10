@@ -51,9 +51,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	if azureCluster.Spec.IdentityRef == nil {
-		r.logger.Debugf(ctx, "AzureCluster %q has no IdentityRef set, setting it", azureCluster.Name)
-
-		r.logger.Debugf(ctx, "Found secret %q in namespace %q", legacySecret.Name, legacySecret.Namespace)
+		r.logger.Debugf(ctx, "AzureCluster %q has no IdentityRef set, setting it from Secret %q in namespace %q", azureCluster.Name, legacySecret.Name, legacySecret.Namespace)
 
 		err = r.ensureNewSecret(ctx, legacySecret)
 		if err != nil {
