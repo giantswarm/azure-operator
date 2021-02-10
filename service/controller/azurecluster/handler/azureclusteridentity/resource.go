@@ -4,6 +4,8 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
+
+	"github.com/giantswarm/azure-operator/v5/client"
 )
 
 const (
@@ -12,13 +14,15 @@ const (
 )
 
 type Config struct {
-	CtrlClient ctrlclient.Client
-	Logger     micrologger.Logger
+	AzureClientsFactory client.OrganizationFactory
+	CtrlClient          ctrlclient.Client
+	Logger              micrologger.Logger
 }
 
 type Resource struct {
-	ctrlClient ctrlclient.Client
-	logger     micrologger.Logger
+	azureClientsFactory client.OrganizationFactory
+	ctrlClient          ctrlclient.Client
+	logger              micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
@@ -30,8 +34,9 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		ctrlClient: config.CtrlClient,
-		logger:     config.Logger,
+		azureClientsFactory: config.AzureClientsFactory,
+		ctrlClient:          config.CtrlClient,
+		logger:              config.Logger,
 	}
 
 	return r, nil

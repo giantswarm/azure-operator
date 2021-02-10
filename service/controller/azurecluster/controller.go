@@ -245,8 +245,9 @@ func newAzureClusterResources(config ControllerConfig, certsSearcher certs.Inter
 	var azureclusteridentityResource resource.Interface
 	{
 		c := azureclusteridentity.Config{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Logger:     config.Logger,
+			AzureClientsFactory: organizationClientFactory,
+			CtrlClient:          config.K8sClient.CtrlClient(),
+			Logger:              config.Logger,
 		}
 
 		azureclusteridentityResource, err = azureclusteridentity.New(c)
