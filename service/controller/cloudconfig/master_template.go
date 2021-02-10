@@ -200,6 +200,19 @@ func (me *masterExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			},
 			Permissions: FilePermission,
 		},
+		{
+			AssetContent: ignition.PythonPathProfile,
+			Path:         "/etc/profile.d/python.sh",
+			Owner: k8scloudconfig.Owner{
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
+			},
+			Permissions: ReadAllFilePermission,
+		},
 	}
 
 	data := me.templateData(me.certFiles)
