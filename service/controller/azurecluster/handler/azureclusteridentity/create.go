@@ -2,10 +2,9 @@ package azureclusteridentity
 
 import (
 	"context"
-	"fmt"
 	"reflect"
-	"strings"
 
+	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
@@ -14,6 +13,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
 )
 
 const (
@@ -42,7 +42,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	// TODO Cleanup any AzureClusterIdentities and Secret belonging to a legacy secret that doesn't exist any more.
+	// Cleanup any AzureClusterIdentities and Secret belonging to a legacy secret that doesn't exist any more
+	// and is not in use.
+	//err = r.cleanupUnusedAzureClusterIdentities(ctx)
+	//if err != nil {
+	//	return microerror.Mask(err)
+	//}
 
 	return nil
 }
@@ -73,10 +78,11 @@ func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secr
 		// We need to create the secret.
 		newSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:        newName,
-				Namespace:   newNamespace,
-				Labels:      nil,
-				Annotations: nil,
+				Name:      newName,
+				Namespace: newNamespace,
+				Labels: map[string]string{
+					apiextensionslabels.ManagedBy: project.Name(),
+				},
 			},
 			StringData: map[string]string{
 				secretDataFieldName: clientSecret,
@@ -145,10 +151,11 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 		// We need to create the AzureClusterIdentity.
 		aci := &v1alpha3.AzureClusterIdentity{
 			ObjectMeta: metav1.ObjectMeta{
-				Name:        newName,
-				Namespace:   newNamespace,
-				Labels:      nil,
-				Annotations: nil,
+				Name:      newName,
+				Namespace: newNamespace,
+				Labels: map[string]string{
+					apiextensionslabels.ManagedBy: project.Name(),
+				},
 			},
 			Spec: desiredSpec,
 		}
@@ -185,14 +192,4 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 	r.logger.Debugf(ctx, "AzureClusterIdentity %q is up to date", newName)
 
 	return nil
-}
-
-func newSecretName(legacySecret corev1.Secret) string {
-	name := strings.TrimPrefix(legacySecret.Name, "credential-")
-
-	return fmt.Sprintf("org-credential-%s", name)
-}
-
-func newSecretNamespace(legacySecret corev1.Secret) string {
-	return legacySecret.Namespace
 }
