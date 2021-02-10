@@ -21,13 +21,3 @@ func newSecretName(legacySecret corev1.Secret) string {
 func newSecretNamespace(legacySecret corev1.Secret) string {
 	return legacySecret.Namespace
 }
-
-//func legacySecretName(identity v1alpha3.AzureClusterIdentity) string {
-//	name := strings.TrimPrefix(identity.Name, newNamePrefix)
-//
-//	return fmt.Sprintf("%s%s", oldNamePrefix, name)
-//}
-//
-//func legacySecretNamespace(identity v1alpha3.AzureClusterIdentity) string {
-//	return identity.Namespace
-//}

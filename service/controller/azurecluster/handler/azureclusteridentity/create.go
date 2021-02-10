@@ -101,13 +101,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
-	// Cleanup any AzureClusterIdentities and Secret belonging to a legacy secret that doesn't exist any more
-	// and is not in use.
-	//err = r.cleanupUnusedAzureClusterIdentities(ctx)
-	//if err != nil {
-	//	return microerror.Mask(err)
-	//}
-
 	return nil
 }
 
