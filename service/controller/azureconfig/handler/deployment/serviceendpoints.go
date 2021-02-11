@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -18,7 +19,12 @@ const (
 )
 
 func (r *Resource) ensureServiceEndpoints(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	subnetsClient, err := r.clientFactory.GetSubnetsClient(ctx, cr.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	subnetsClient, err := r.clientFactory.GetSubnetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

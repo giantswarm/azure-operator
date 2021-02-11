@@ -7,13 +7,19 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 func (r *Resource) allInstances(ctx context.Context, customObject providerv1alpha1.AzureConfig, deploymentNameFunc func(customObject providerv1alpha1.AzureConfig) string) ([]compute.VirtualMachineScaleSetVM, error) {
 	r.Logger.Debugf(ctx, "looking for the scale set '%s'", deploymentNameFunc(customObject))
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, customObject.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, customObject.ObjectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, *azureCluster)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

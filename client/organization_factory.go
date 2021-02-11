@@ -9,14 +9,9 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/giantswarm/apiextensions/v2/pkg/apis/provider/v1alpha1"
-	apiextensionslabels "github.com/giantswarm/apiextensions/v2/pkg/label"
-	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 const (
@@ -25,20 +20,20 @@ const (
 )
 
 type Interface interface {
-	GetLegacyCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error)
-	GetDeploymentsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.DeploymentsClient, error)
-	GetDisksClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.DisksClient, error)
-	GetGroupsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.GroupsClient, error)
-	GetInterfacesClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.InterfacesClient, error)
-	GetDNSRecordSetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*dns.RecordSetsClient, error)
-	GetVirtualMachineScaleSetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.VirtualMachineScaleSetsClient, error)
-	GetVirtualMachineScaleSetVMsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.VirtualMachineScaleSetVMsClient, error)
-	GetVirtualNetworksClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworksClient, error)
-	GetSnapshotsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.SnapshotsClient, error)
-	GetStorageAccountsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*storage.AccountsClient, error)
-	GetSubnetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.SubnetsClient, error)
-	GetNatGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.NatGatewaysClient, error)
-	GetResourceSkusClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.ResourceSkusClient, error)
+	GetLegacyCredentialSecret(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*v1alpha1.CredentialSecret, error)
+	GetDeploymentsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*resources.DeploymentsClient, error)
+	GetDisksClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.DisksClient, error)
+	GetGroupsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*resources.GroupsClient, error)
+	GetInterfacesClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.InterfacesClient, error)
+	GetDNSRecordSetsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*dns.RecordSetsClient, error)
+	GetVirtualMachineScaleSetsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.VirtualMachineScaleSetsClient, error)
+	GetVirtualMachineScaleSetVMsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.VirtualMachineScaleSetVMsClient, error)
+	GetVirtualNetworksClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.VirtualNetworksClient, error)
+	GetSnapshotsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.SnapshotsClient, error)
+	GetStorageAccountsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*storage.AccountsClient, error)
+	GetSubnetsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.SubnetsClient, error)
+	GetNatGatewaysClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.NatGatewaysClient, error)
+	GetResourceSkusClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.ResourceSkusClient, error)
 }
 
 type OrganizationFactoryConfig struct {
@@ -61,165 +56,54 @@ func NewOrganizationFactory(c OrganizationFactoryConfig) OrganizationFactory {
 	}
 }
 
-func (f *OrganizationFactory) GetDeploymentsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.DeploymentsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetDeploymentsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetDeploymentsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*resources.DeploymentsClient, error) {
+	return f.factory.GetDeploymentsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetDisksClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.DisksClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetDisksClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetDisksClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.DisksClient, error) {
+	return f.factory.GetDisksClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetGroupsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.GroupsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetGroupsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetGroupsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*resources.GroupsClient, error) {
+	return f.factory.GetGroupsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetInterfacesClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.InterfacesClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetInterfacesClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetInterfacesClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.InterfacesClient, error) {
+	return f.factory.GetInterfacesClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetDNSRecordSetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*dns.RecordSetsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetDNSRecordSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetDNSRecordSetsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*dns.RecordSetsClient, error) {
+	return f.factory.GetDNSRecordSetsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetVirtualMachineScaleSetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.VirtualMachineScaleSetsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetVirtualMachineScaleSetsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetVirtualMachineScaleSetsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.VirtualMachineScaleSetsClient, error) {
+	return f.factory.GetVirtualMachineScaleSetsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetVirtualMachineScaleSetVMsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.VirtualMachineScaleSetVMsClient, error) {
+	return f.factory.GetVirtualMachineScaleSetVMsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetVirtualNetworksClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworksClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetVirtualNetworksClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetVirtualNetworksClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.VirtualNetworksClient, error) {
+	return f.factory.GetVirtualNetworksClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetSnapshotsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.SnapshotsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetSnapshotsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetSnapshotsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.SnapshotsClient, error) {
+	return f.factory.GetSnapshotsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetStorageAccountsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*storage.AccountsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetStorageAccountsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetStorageAccountsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*storage.AccountsClient, error) {
+	return f.factory.GetStorageAccountsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetSubnetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.SubnetsClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetSubnetsClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetSubnetsClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.SubnetsClient, error) {
+	return f.factory.GetSubnetsClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetNatGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.NatGatewaysClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetNatGatewaysClient(credentialSecret.Namespace, credentialSecret.Name)
+func (f *OrganizationFactory) GetNatGatewaysClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*network.NatGatewaysClient, error) {
+	return f.factory.GetNatGatewaysClient(azureCluster)
 }
 
-func (f *OrganizationFactory) GetResourceSkusClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.ResourceSkusClient, error) {
-	credentialSecret, err := f.getAzureClusterIdentity(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return f.factory.GetResourceSkusClient(credentialSecret.Namespace, credentialSecret.Name)
-}
-
-func (f *OrganizationFactory) getAzureClusterIdentity(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha3.AzureClusterIdentity, error) {
-	f.logger.Debugf(ctx, "finding credential secret")
-
-	azureClusterIdentity, err := f.getOrganizationCredentialSecret(ctx, objectMeta)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return azureClusterIdentity, nil
-}
-
-// getOrganizationCredentialSecret tries to find an AzureClusterIdentity labeled with the organization ID.
-func (f *OrganizationFactory) getOrganizationCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha3.AzureClusterIdentity, error) {
-	f.logger.Debugf(ctx, "try in all namespaces filtering by organization %#q", objectMeta.Namespace, key.OrganizationID(&objectMeta))
-	azureClusterIdentityList := &v1alpha3.AzureClusterIdentityList{}
-	{
-		err := f.ctrlClient.List(
-			ctx,
-			azureClusterIdentityList,
-			client.MatchingLabels{
-				apiextensionslabels.Organization: key.OrganizationID(&objectMeta),
-			},
-		)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	// We currently only support one credential azureClusterIdentity per organization.
-	// If there are more than one, return an error.
-	if len(azureClusterIdentityList.Items) > 1 {
-		return nil, microerror.Mask(tooManyCredentialsError)
-	}
-
-	if len(azureClusterIdentityList.Items) < 1 {
-		return nil, microerror.Mask(credentialsNotFoundError)
-	}
-
-	azureClusterIdentity := azureClusterIdentityList.Items[0]
-
-	f.logger.Debugf(ctx, "found azureClusterIdentity %s/%s", azureClusterIdentity.Namespace, azureClusterIdentity.Name)
-
-	// If one credential azureClusterIdentity is found, we use that.
-	return &azureClusterIdentity, nil
+func (f *OrganizationFactory) GetResourceSkusClient(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*compute.ResourceSkusClient, error) {
+	return f.factory.GetResourceSkusClient(azureCluster)
 }

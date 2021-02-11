@@ -317,7 +317,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 	var organizationAzureClientCredentialsConfig auth.ClientCredentialsConfig
 	var subscriptionID string
 	{
-		organizationAzureClientCredentialsConfig, subscriptionID, _, err = r.credentialProvider.GetOrganizationAzureCredentials(ctx, credentialSecret.Namespace, credentialSecret.Name)
+		organizationAzureClientCredentialsConfig, subscriptionID, _, err = r.credentialProvider.GetOrganizationAzureCredentials(ctx, *azureCluster)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

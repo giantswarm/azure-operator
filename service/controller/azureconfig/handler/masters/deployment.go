@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/operatorkit/v2/pkg/controller/context/resourcecanceledcontext"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers/vmss"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/masters/template"
@@ -63,7 +64,12 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	encryptionKey := encrypter.GetEncryptionKey()
 	initialVector := encrypter.GetInitialVector()
 
-	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, obj.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, obj.ObjectMeta)
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
+	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, *azureCluster)
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}

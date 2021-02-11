@@ -22,6 +22,15 @@ func IsCredentialsNotFoundError(err error) bool {
 	return microerror.Cause(err) == credentialsNotFoundError
 }
 
+var emptyIdentityRefError = &microerror.Error{
+	Kind: "emptyIdentityRefError",
+}
+
+// IsEmptyIdentityRef asserts emptyIdentityRefError.
+func IsEmptyIdentityRef(err error) bool {
+	return microerror.Cause(err) == emptyIdentityRefError
+}
+
 var tooManyCredentialsError = &microerror.Error{
 	Kind: "tooManyCredentialsError",
 }

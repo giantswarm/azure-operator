@@ -16,6 +16,7 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -132,7 +133,12 @@ func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expc
 func (r *Resource) getContainerURL(ctx context.Context, azureMachinePool *v1alpha3.AzureMachinePool, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
 	r.logger.Debugf(ctx, "Finding ContainerURL to upload bootstrap config")
 
-	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return azblob.ContainerURL{}, microerror.Mask(err)
+	}
+
+	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(ctx, *azureCluster)
 	if err != nil {
 		return azblob.ContainerURL{}, microerror.Mask(err)
 	}

@@ -15,6 +15,7 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -109,7 +110,12 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 		return nil
 	}
 
-	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, cluster.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, cluster.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -8,11 +8,11 @@ import (
 )
 
 type Provider interface {
-	GetOrganizationAzureCredentials(ctx context.Context, identity v1alpha3.AzureClusterIdentity) (auth.ClientCredentialsConfig, string, string, error)
+	GetOrganizationAzureCredentials(ctx context.Context, azureCluster v1alpha3.AzureCluster) (auth.ClientCredentialsConfig, string, string, error)
 }
 type EmptyProvider struct {
 }
 
-func (p EmptyProvider) GetOrganizationAzureCredentials(ctx context.Context, identity v1alpha3.AzureClusterIdentity) (auth.ClientCredentialsConfig, string, string, error) {
+func (p EmptyProvider) GetOrganizationAzureCredentials(ctx context.Context, azureCluster v1alpha3.AzureCluster) (auth.ClientCredentialsConfig, string, string, error) {
 	return auth.ClientCredentialsConfig{}, "", "", nil
 }

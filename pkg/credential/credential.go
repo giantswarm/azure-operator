@@ -10,17 +10,11 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/azure-operator/v5/pkg/label"
 )
 
 const (
-	clientIDKey       = "azure.azureoperator.clientid"
-	clientSecretKey   = "azure.azureoperator.clientsecret"
-	defaultAzureGUID  = "37f13270-5c7a-56ff-9211-8426baaeaabd"
-	partnerIDKey      = "azure.azureoperator.partnerid"
-	subscriptionIDKey = "azure.azureoperator.subscriptionid"
-	tenantIDKey       = "azure.azureoperator.tenantid"
+	clientSecretKey  = "clientSecret"
+	defaultAzureGUID = "37f13270-5c7a-56ff-9211-8426baaeaabd"
 )
 
 type K8SCredential struct {
@@ -40,15 +34,24 @@ func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string, 
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
 // The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
-func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, identity v1alpha3.AzureClusterIdentity) (auth.ClientCredentialsConfig, string, string, error) {
+func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, azureCluster v1alpha3.AzureCluster) (auth.ClientCredentialsConfig, string, string, error) {
+	if azureCluster.Spec.SubscriptionID == "" {
+		return auth.ClientCredentialsConfig{}, "", "", microerror.Maskf(emptySubscriptionIDError, "SubscriptionID not set in AzureCluster %s/%s", azureCluster.Namespace, azureCluster.Name)
+	}
 
-	secret := &v1.Secret{}
-	err := k.k8sclient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: credentialNamespace, Name: credentialName}, secret)
+	identity, err := k.getAzureClusterIdentity(ctx, azureCluster)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	clientID, err := valueFromSecret(secret, clientIDKey)
+	subscriptionID := azureCluster.Spec.SubscriptionID
+	clientID := identity.Spec.ClientID
+	tenantID := identity.Spec.TenantID
+	// TODO find a place to store the Partner ID
+	partnerID := defaultAzureGUID
+
+	secret := &v1.Secret{}
+	err = k.k8sclient.CtrlClient().Get(ctx, client.ObjectKey{Namespace: identity.Spec.ClientSecret.Namespace, Name: identity.Spec.ClientSecret.Name}, secret)
 	if err != nil {
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
@@ -58,26 +61,7 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, iden
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	tenantID, err := valueFromSecret(secret, tenantIDKey)
-	if err != nil {
-		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
-	}
-
-	subscriptionID, err := valueFromSecret(secret, subscriptionIDKey)
-	if err != nil {
-		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
-	}
-
-	partnerID, err := valueFromSecret(secret, partnerIDKey)
-	if err != nil {
-		// No having Partner ID in the secret means that customer has not
-		// upgraded yet to use the Azure Partner Program. In that case we set a
-		// constant random generated GUID that we haven't registered with Azure.
-		// When all customers have migrated, we should error out instead.
-		partnerID = defaultAzureGUID
-	}
-
-	if _, exists := secret.GetLabels()[label.SingleTenantSP]; exists || tenantID == k.gsTenantID {
+	if tenantID == k.gsTenantID {
 		// The tenant cluster resources will belong to a subscription that belongs to the same Tenant ID used for authentication.
 		k.logger.Debugf(ctx, "Azure subscription %#q belongs to the same tenant ID %#q that owns the service principal. Using single tenant authentication", subscriptionID, tenantID)
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
@@ -90,6 +74,22 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, iden
 	credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
 
 	return credentials, subscriptionID, partnerID, nil
+}
+
+func (k K8SCredential) getAzureClusterIdentity(ctx context.Context, azureCluster v1alpha3.AzureCluster) (*v1alpha3.AzureClusterIdentity, error) {
+	if azureCluster.Spec.IdentityRef == nil {
+		return nil, microerror.Maskf(identityRefNotSetError, "IdentityRef not set for AzureCluster %s/%s", azureCluster.Namespace, azureCluster.Name)
+	}
+
+	azureClusterIdentity := &v1alpha3.AzureClusterIdentity{}
+	err := k.k8sclient.CtrlClient().Get(ctx, client.ObjectKey{Name: azureCluster.Spec.IdentityRef.Name, Namespace: azureCluster.Spec.IdentityRef.Namespace}, azureClusterIdentity)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	k.logger.Debugf(ctx, "found azureClusterIdentity %s/%s", azureClusterIdentity.Namespace, azureClusterIdentity.Name)
+
+	return azureClusterIdentity, nil
 }
 
 func valueFromSecret(secret *v1.Secret, key string) (string, error) {

@@ -12,6 +12,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -122,7 +123,12 @@ func (r *Resource) removeNodesFromK8s(ctx context.Context, ctrlClient client.Cli
 func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, deploymentName string) error {
 	r.Logger.Debugf(ctx, "Deleting machine pool ARM deployment")
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -144,7 +150,12 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *ca
 func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, vmssName string) error {
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS")
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

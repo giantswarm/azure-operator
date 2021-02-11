@@ -10,6 +10,7 @@ import (
 	capi "sigs.k8s.io/cluster-api/api/v1alpha3"
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -24,7 +25,12 @@ const (
 func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, cr *capz.AzureMachine) error {
 	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.VMSSReadyCondition)
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -43,7 +49,7 @@ func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, cr *capz.AzureM
 
 	// Deployment is successful, we proceed with checking the actual Azure
 	// VMSS.
-	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, cr.ObjectMeta)
+	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

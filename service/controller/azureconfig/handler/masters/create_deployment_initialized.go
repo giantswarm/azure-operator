@@ -6,6 +6,7 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -14,7 +15,13 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, cr.ObjectMeta)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, *azureCluster)
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}

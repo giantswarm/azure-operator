@@ -29,7 +29,7 @@ func (r *Resource) ensureVPNGatewayReadyCondition(ctx context.Context, azureClus
 	var err error
 
 	// Get Azure Deployments client
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureCluster.ObjectMeta)
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

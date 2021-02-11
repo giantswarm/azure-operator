@@ -9,6 +9,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -17,7 +18,12 @@ import (
 // would not get the nat gateway attached to their masters without this function.
 // It can be deleted once all tenant clusters will have the nat gateway enabled.
 func (r *Resource) ensureNatGatewayForMasterSubnet(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	subnetsClient, err := r.clientFactory.GetSubnetsClient(ctx, cr.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	subnetsClient, err := r.clientFactory.GetSubnetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -18,6 +18,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -162,7 +163,12 @@ func (c *VirtualNetworkCollector) getVirtualNetworksFromAllSubscriptions(ctx con
 	var doneSubscriptions []string
 	var ret []net.IPNet
 	for _, cluster := range tenantClusterList.Items {
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := c.credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cluster), key.CredentialName(cluster))
+		azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, c.k8sclient.CtrlClient(), cluster.ObjectMeta)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := c.credentialProvider.GetOrganizationAzureCredentials(ctx, *azureCluster)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

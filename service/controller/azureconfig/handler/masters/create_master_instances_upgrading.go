@@ -12,6 +12,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -153,7 +154,12 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	r.Logger.Debugf(ctx, "ensuring instance '%s' to be reimaged", instanceName)
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, customObject.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -188,7 +194,12 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	r.Logger.Debugf(ctx, "ensuring instance '%s' to be updated", instanceName)
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, customObject.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, customObject.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

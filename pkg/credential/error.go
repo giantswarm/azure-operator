@@ -11,3 +11,11 @@ var missingValueError = &microerror.Error{
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }
+
+var emptySubscriptionIDError = &microerror.Error{
+	Kind: "emptySubscriptionIDError",
+}
+
+var identityRefNotSetError = &microerror.Error{
+	Kind: "identityRefNotSetError",
+}

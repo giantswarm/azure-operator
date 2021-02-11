@@ -10,6 +10,7 @@ metadata:
     giantswarm.io/organization: giantswarm
     azure-operator.giantswarm.io/version: 4.2.0
     giantswarm.io/cluster: c6fme
+    cluster.x-k8s.io/cluster-name: c6fme
     release.giantswarm.io/version: 12.0.0
   name: c6fme
   namespace: default

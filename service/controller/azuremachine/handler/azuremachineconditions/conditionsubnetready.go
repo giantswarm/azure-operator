@@ -22,7 +22,12 @@ const (
 func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachine *capz.AzureMachine) error {
 	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.SubnetReadyCondition)
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachine.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, azureMachine.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -44,12 +49,7 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachine 
 
 	// Deployment is successful, we proceed with checking the actual Azure
 	// subnet.
-	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureMachine.ObjectMeta)
-	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, azureMachine.ObjectMeta)
+	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

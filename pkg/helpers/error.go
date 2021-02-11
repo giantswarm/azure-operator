@@ -30,3 +30,7 @@ var missingOrganizationLabel = &microerror.Error{
 func IsMissingOrganizationLabel(err error) bool {
 	return microerror.Cause(err) == missingOrganizationLabel
 }
+
+var notFoundError = &microerror.Error{
+	Kind: "notFoundError",
+}

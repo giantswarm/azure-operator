@@ -8,6 +8,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -17,7 +18,12 @@ func (r *Resource) GetVMSSInstances(ctx context.Context, azureMachinePool v1alph
 
 	r.Logger.Debugf(ctx, "looking for the scale set %#q", vmssName)
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, *azureCluster)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -10,6 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -23,7 +24,12 @@ func (r *Resource) disableClusterAutoscaler(ctx context.Context, azureMachinePoo
 
 	r.Logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("Disabling cluster autoscaler for nodepool %s", vmssName))
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -44,7 +50,12 @@ func (r *Resource) enableClusterAutoscaler(ctx context.Context, azureMachinePool
 
 	r.Logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("Enabling cluster autoscaler for nodepool %s", vmssName))
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

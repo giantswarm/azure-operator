@@ -12,8 +12,10 @@ import (
 	"github.com/giantswarm/micrologger"
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -33,6 +35,7 @@ const (
 
 type Config struct {
 	Debugger         *debugger.Debugger
+	CtrlClient       ctrl.Client
 	G8sClient        versioned.Interface
 	InstallationName string
 	Logger           micrologger.Logger
@@ -46,6 +49,7 @@ type Config struct {
 
 type Resource struct {
 	debugger         *debugger.Debugger
+	ctrlClient       ctrl.Client
 	g8sClient        versioned.Interface
 	installationName string
 	logger           micrologger.Logger
@@ -87,6 +91,7 @@ func New(config Config) (*Resource, error) {
 
 	r := &Resource{
 		debugger:         config.Debugger,
+		ctrlClient:       config.CtrlClient,
 		g8sClient:        config.G8sClient,
 		installationName: config.InstallationName,
 		logger:           config.Logger,
@@ -114,7 +119,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -65,22 +65,22 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, *azureCluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, azureMachinePool.ObjectMeta)
+	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, *azureCluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, *azureCluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

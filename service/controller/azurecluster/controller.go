@@ -242,7 +242,7 @@ func newAzureClusterResources(config ControllerConfig, certsSearcher certs.Inter
 		}
 	}
 
-	var azureclusteridentityResource resource.Interface
+	var azureClusterIdentityResource resource.Interface
 	{
 		c := azureclusteridentity.Config{
 			AzureClientsFactory: organizationClientFactory,
@@ -250,17 +250,17 @@ func newAzureClusterResources(config ControllerConfig, certsSearcher certs.Inter
 			Logger:              config.Logger,
 		}
 
-		azureclusteridentityResource, err = azureclusteridentity.New(c)
+		azureClusterIdentityResource, err = azureclusteridentity.New(c)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	resources := []resource.Interface{
+		azureClusterIdentityResource,
 		azureClusterUpgradeResource,
 		azureClusterConditionsResource,
 		releaseResource,
-		azureclusteridentityResource,
 		azureClusterConfigResource,
 		azureConfigResource,
 		subnetResource,

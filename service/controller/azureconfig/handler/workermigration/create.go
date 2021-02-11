@@ -24,6 +24,7 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -54,11 +55,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	credentialSecret := &providerv1alpha1.CredentialSecret{
-		Name:      key.CredentialName(cr),
-		Namespace: key.CredentialNamespace(cr),
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.ctrlClient, cr.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
 	}
-	azureAPI := r.wrapAzureAPI(r.clientFactory, credentialSecret)
+	azureAPI := r.wrapAzureAPI(r.clientFactory, azureCluster)
 
 	r.logger.Debugf(ctx, "ensuring that legacy workers are migrated to node pool")
 

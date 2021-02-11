@@ -51,6 +51,22 @@ func GetAzureClusterFromMetadata(ctx context.Context, c client.Client, obj metav
 		return nil, microerror.Mask(err)
 	}
 
+	if obj.Namespace == "default" {
+		// We need to find the AzureCluster in all namespaces.
+
+		azureClusters := &capz.AzureClusterList{}
+		err := c.List(ctx, azureClusters, client.MatchingLabels{capi.ClusterLabelName: obj.Labels[capi.ClusterLabelName]})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		if len(azureClusters.Items) != 1 {
+			return nil, microerror.Maskf(notFoundError, "Expected 1 AzureCluster with label %q = %q, %d found", capi.ClusterLabelName, obj.Labels[capi.ClusterLabelName], len(azureClusters.Items))
+		}
+
+		return &azureClusters.Items[0], nil
+	}
+
 	return GetAzureClusterByName(ctx, c, obj.Namespace, obj.Labels[capi.ClusterLabelName])
 }
 

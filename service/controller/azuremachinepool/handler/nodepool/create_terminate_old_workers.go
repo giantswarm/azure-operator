@@ -9,6 +9,7 @@ import (
 	"sigs.k8s.io/cluster-api/util"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -33,7 +34,12 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

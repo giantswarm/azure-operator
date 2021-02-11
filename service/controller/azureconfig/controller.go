@@ -25,6 +25,7 @@ import (
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/ipam"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/release"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
@@ -130,7 +131,12 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 					return nil, microerror.Mask(err)
 				}
 
-				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(cr), key.CredentialName(cr))
+				azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, config.K8sClient.CtrlClient(), cr.ObjectMeta)
+				if err != nil {
+					return nil, microerror.Mask(err)
+				}
+
+				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, *azureCluster)
 				if err != nil {
 					return nil, microerror.Mask(err)
 				}
@@ -368,6 +374,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	{
 		c := deployment.Config{
 			Debugger:         newDebugger,
+			CtrlClient:       config.K8sClient.CtrlClient(),
 			G8sClient:        config.K8sClient.G8sClient(),
 			InstallationName: config.InstallationName,
 			Logger:           config.Logger,

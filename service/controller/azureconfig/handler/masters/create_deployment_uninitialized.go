@@ -9,6 +9,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/pkg/checksum"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/blobclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -19,11 +20,17 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, cr.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, cr.ObjectMeta)
+
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, *azureCluster)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, *azureCluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

@@ -15,6 +15,7 @@ import (
 
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/scalestrategy"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
+	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
@@ -47,12 +48,17 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, azureMachinePool.ObjectMeta)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, *azureCluster)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, *azureCluster)
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -152,7 +158,12 @@ func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachi
 	resourceGroup := key.ClusterID(&azureMachinePool)
 	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return nil, nil, microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
@@ -243,7 +254,12 @@ func (r *Resource) scaleVMSS(ctx context.Context, azureMachinePool capzv1alpha3.
 	resourceGroup := key.ClusterID(&azureMachinePool)
 	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	azureCluster, err := helpers.GetAzureClusterFromMetadata(ctx, r.CtrlClient, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, *azureCluster)
 	if err != nil {
 		return microerror.Mask(err)
 	}
