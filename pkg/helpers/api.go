@@ -51,6 +51,8 @@ func GetAzureClusterFromMetadata(ctx context.Context, c client.Client, obj metav
 		return nil, microerror.Mask(err)
 	}
 
+	// This is needed because `obj` can be an AzureConfig.
+	// TODO delete this whole "if" once AzureConfigs are not used any more.
 	if obj.Namespace == "default" {
 		// We need to find the AzureCluster in all namespaces.
 
