@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Added
+
+- Add new handler that creates `AzureClusterIdentity` CRs and the related `Secrets` out of Giant Swarm's credential secrets. 
+
 ### Fixed
 
 - Avoid blocking the whole `AzureConfig` handler on cluster creation because we can't update the `StorageClasses`.
