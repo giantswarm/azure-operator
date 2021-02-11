@@ -2,6 +2,7 @@ package capzcrs
 
 import (
 	"context"
+	"fmt"
 	"reflect"
 	"strconv"
 
@@ -175,6 +176,16 @@ func (r *Resource) mapAzureConfigToAzureCluster(ctx context.Context, cr provider
 			},
 			ResourceGroup: key.ClusterID(&cr),
 			NetworkSpec: capzv1alpha3.NetworkSpec{
+				APIServerLB: capzv1alpha3.LoadBalancerSpec{
+					Name: fmt.Sprintf("%s-%s-%s", cr.Name, "API", "PublicLoadBalancer"),
+					SKU:  "Standard",
+					Type: "Public",
+					FrontendIPs: []capzv1alpha3.FrontendIP{
+						{
+							Name: fmt.Sprintf("%s-%s-%s-%s", cr.Name, "API", "PublicLoadBalancer", "Frontend"),
+						},
+					},
+				},
 				Vnet: capzv1alpha3.VnetSpec{
 					CIDRBlocks:    []string{key.VnetCIDR(cr)},
 					Name:          key.VnetName(cr),
@@ -220,8 +231,9 @@ func (r *Resource) mapAzureConfigToAzureMachine(ctx context.Context, cr provider
 				},
 			},
 			OSDisk: capzv1alpha3.OSDisk{
-				OSType:     "Linux",
-				DiskSizeGB: int32(50),
+				OSType:      "Linux",
+				CachingType: "ReadWrite",
+				DiskSizeGB:  int32(50),
 				ManagedDisk: capzv1alpha3.ManagedDisk{
 					StorageAccountType: "Premium_LRS",
 				},

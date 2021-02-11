@@ -102,19 +102,19 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 	r.logger.Debugf(ctx, "ensured AzureMachinePool CR exists for legacy workers VMSS")
 
-	r.logger.Debugf(ctx, "ensuring MachinePool CR exists for legacy workers VMSS")
-	machinePool, err := r.ensureMachinePoolExists(ctx, cr, azureMachinePool, int(*legacyVMSS.Sku.Capacity))
-	if err != nil {
-		return microerror.Mask(err)
-	}
-	r.logger.Debugf(ctx, "ensured MachinePool CR exists for legacy workers VMSS")
-
 	r.logger.Debugf(ctx, "ensuring Spark CR exists for legacy workers VMSS")
-	_, err = r.ensureSparkExists(ctx, cr)
+	spark, err := r.ensureSparkExists(ctx, cr)
 	if err != nil {
 		return microerror.Mask(err)
 	}
 	r.logger.Debugf(ctx, "ensured Spark CR exists for legacy workers VMSS")
+
+	r.logger.Debugf(ctx, "ensuring MachinePool CR exists for legacy workers VMSS")
+	machinePool, err := r.ensureMachinePoolExists(ctx, spark, cr, azureMachinePool, int(*legacyVMSS.Sku.Capacity))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+	r.logger.Debugf(ctx, "ensured MachinePool CR exists for legacy workers VMSS")
 
 	r.logger.Debugf(ctx, "finding if node pool workers are ready")
 	if !machinePool.Status.InfrastructureReady || (machinePool.Status.Replicas != machinePool.Status.ReadyReplicas) {
@@ -362,7 +362,7 @@ func (r *Resource) ensureDrainerConfigsExists(ctx context.Context, azureAPI azur
 	return nil
 }
 
-func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
+func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alpha1.Spark, cr providerv1alpha1.AzureConfig, azureMachinePool expcapzv1alpha3.AzureMachinePool, replicas int) (expcapiv1alpha3.MachinePool, error) {
 	var machinePool expcapiv1alpha3.MachinePool
 
 	nsName := types.NamespacedName{
@@ -377,6 +377,20 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 		// This is ok. CR gets created in a bit.
 	} else if err != nil {
 		return expcapiv1alpha3.MachinePool{}, microerror.Mask(err)
+	}
+
+	var bootstrapCRRef *corev1.ObjectReference
+	{
+		s := runtime.NewScheme()
+		err := corev1alpha1.AddToScheme(s)
+		if err != nil {
+			panic(fmt.Sprintf("corev1alpha1.AddToScheme: %+v", err))
+		}
+
+		bootstrapCRRef, err = reference.GetReference(s, &spark)
+		if err != nil {
+			panic(fmt.Sprintf("cannot create reference to bootstrap CR: %q", err))
+		}
 	}
 
 	var infrastructureCRRef *corev1.ObjectReference
@@ -417,6 +431,9 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, cr providerv1alp
 			FailureDomains: intSliceToStringSlice(key.AvailabilityZones(cr, r.location)),
 			Template: capiv1alpha3.MachineTemplateSpec{
 				Spec: capiv1alpha3.MachineSpec{
+					Bootstrap: capiv1alpha3.Bootstrap{
+						ConfigRef: bootstrapCRRef,
+					},
 					ClusterName:       key.ClusterID(&cr),
 					InfrastructureRef: *infrastructureCRRef,
 				},
