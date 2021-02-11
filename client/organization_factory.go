@@ -26,6 +26,7 @@ const (
 )
 
 type Interface interface {
+	GetCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error)
 	GetDeploymentsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.DeploymentsClient, error)
 	GetDisksClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.DisksClient, error)
 	GetGroupsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.GroupsClient, error)
@@ -62,7 +63,7 @@ func NewOrganizationFactory(c OrganizationFactoryConfig) OrganizationFactory {
 }
 
 func (f *OrganizationFactory) GetDeploymentsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.DeploymentsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -71,7 +72,7 @@ func (f *OrganizationFactory) GetDeploymentsClient(ctx context.Context, objectMe
 }
 
 func (f *OrganizationFactory) GetDisksClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.DisksClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -80,7 +81,7 @@ func (f *OrganizationFactory) GetDisksClient(ctx context.Context, objectMeta v1.
 }
 
 func (f *OrganizationFactory) GetGroupsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*resources.GroupsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -89,7 +90,7 @@ func (f *OrganizationFactory) GetGroupsClient(ctx context.Context, objectMeta v1
 }
 
 func (f *OrganizationFactory) GetInterfacesClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.InterfacesClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -98,7 +99,7 @@ func (f *OrganizationFactory) GetInterfacesClient(ctx context.Context, objectMet
 }
 
 func (f *OrganizationFactory) GetDNSRecordSetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*dns.RecordSetsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -107,7 +108,7 @@ func (f *OrganizationFactory) GetDNSRecordSetsClient(ctx context.Context, object
 }
 
 func (f *OrganizationFactory) GetVirtualMachineScaleSetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.VirtualMachineScaleSetsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -116,7 +117,7 @@ func (f *OrganizationFactory) GetVirtualMachineScaleSetsClient(ctx context.Conte
 }
 
 func (f *OrganizationFactory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -125,7 +126,7 @@ func (f *OrganizationFactory) GetVirtualMachineScaleSetVMsClient(ctx context.Con
 }
 
 func (f *OrganizationFactory) GetVirtualNetworksClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworksClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -134,7 +135,7 @@ func (f *OrganizationFactory) GetVirtualNetworksClient(ctx context.Context, obje
 }
 
 func (f *OrganizationFactory) GetSnapshotsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.SnapshotsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -143,7 +144,7 @@ func (f *OrganizationFactory) GetSnapshotsClient(ctx context.Context, objectMeta
 }
 
 func (f *OrganizationFactory) GetStorageAccountsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*storage.AccountsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -152,7 +153,7 @@ func (f *OrganizationFactory) GetStorageAccountsClient(ctx context.Context, obje
 }
 
 func (f *OrganizationFactory) GetSubnetsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.SubnetsClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -161,7 +162,7 @@ func (f *OrganizationFactory) GetSubnetsClient(ctx context.Context, objectMeta v
 }
 
 func (f *OrganizationFactory) GetNatGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.NatGatewaysClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -170,7 +171,7 @@ func (f *OrganizationFactory) GetNatGatewaysClient(ctx context.Context, objectMe
 }
 
 func (f *OrganizationFactory) GetResourceSkusClient(ctx context.Context, objectMeta v1.ObjectMeta) (*compute.ResourceSkusClient, error) {
-	credentialSecret, err := f.getCredentialSecret(ctx, objectMeta)
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -178,7 +179,7 @@ func (f *OrganizationFactory) GetResourceSkusClient(ctx context.Context, objectM
 	return f.factory.GetResourceSkusClient(credentialSecret.Namespace, credentialSecret.Name)
 }
 
-func (f *OrganizationFactory) getCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
+func (f *OrganizationFactory) GetCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {
 	f.logger.Debugf(ctx, "finding credential secret")
 
 	var err error
