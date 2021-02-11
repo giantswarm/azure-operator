@@ -21,6 +21,7 @@ rules:
       - azureclusters/status
       - azuremachines
       - azuremachines/status
+      - azureclusteridentities
     verbs:
       - "*"
   - apiGroups:
