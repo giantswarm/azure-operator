@@ -16,6 +16,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 	gocache "github.com/patrickmn/go-cache"
+	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -84,8 +85,8 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 // GetDeploymentsClient returns DeploymentsClient that is used for management of deployments and
 // ARM templates. The client (for specified cluster) is cached after creation, so the same client
 // is returned every time.
-func (f *Factory) GetDeploymentsClient(credentialNamespace, credentialName string) (*resources.DeploymentsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "DeploymentsClient", newDeploymentsClient)
+func (f *Factory) GetDeploymentsClient(identity v1alpha3.AzureClusterIdentity) (*resources.DeploymentsClient, error) {
+	client, err := f.getClient(identity, "DeploymentsClient", newDeploymentsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -253,14 +254,14 @@ func (f *Factory) GetResourceSkusClient(credentialNamespace, credentialName stri
 	return toResourceSkusClient(client), nil
 }
 
-func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {
+func (f *Factory) getClient(identity v1alpha3.AzureClusterIdentity, clientType string, createClient clientCreatorFunc) (interface{}, error) {
 	l := f.logger.With(
 		logLevelLogKey, logLevelDebug,
 		messageLogKey, "get client",
-		credentialNameLogKey, credentialName,
+		credentialNameLogKey, identity.Name,
 		clientTypeLogKey, clientType)
 
-	clientKey := getClientKey(credentialName, clientType)
+	clientKey := getClientKey(identity.Name, clientType)
 	var client interface{}
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -272,7 +273,7 @@ func (f *Factory) getClient(credentialNamespace, credentialName string, clientTy
 	} else {
 		// client not found, create it, it will be saved in cache
 		l.Log(cacheHitLogKey, false)
-		newClient, err := f.createClient(credentialNamespace, credentialName, createClient)
+		newClient, err := f.createClient(identity, createClient)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -284,8 +285,8 @@ func (f *Factory) getClient(credentialNamespace, credentialName string, clientTy
 	return client, nil
 }
 
-func (f *Factory) createClient(credentialNamespace, credentialName string, createClient clientCreatorFunc) (interface{}, error) {
-	organizationCredentialsConfig, subscriptionID, partnerID, err := f.credentialProvider.GetOrganizationAzureCredentials(context.Background(), credentialNamespace, credentialName)
+func (f *Factory) createClient(identity v1alpha3.AzureClusterIdentity, createClient clientCreatorFunc) (interface{}, error) {
+	organizationCredentialsConfig, subscriptionID, partnerID, err := f.credentialProvider.GetOrganizationAzureCredentials(context.Background(), identity)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
