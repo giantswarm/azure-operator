@@ -23,7 +23,6 @@ const (
 	FileOwnerGroupName          = "root"
 	FileOwnerGroupIDNobody      = 65534
 	FilePermission              = 0700
-	ReadAllFilePermission       = 0444
 	// randomKeyLabel is the label used in the secret to identify a secret
 	// containing the random key.
 	randomKeyLabel      = "giantswarm.io/randomkey"
