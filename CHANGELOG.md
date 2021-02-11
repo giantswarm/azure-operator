@@ -9,7 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Added
 
-- Add new handler that creates `AzureClusterIdentity` CRs and the related `Secrets` out of Giant Swarm's credential secrets. 
+- Add new handler that creates `AzureClusterIdentity` CRs and the related `Secrets` out of Giant Swarm's credential secrets.
+- Added additional fields to the `MachinePool`/`AzureCluster`/`AzureMachine` resources created after upgrade, in order to pass CAPI/CAPZ validation.
 
 ### Fixed
 
