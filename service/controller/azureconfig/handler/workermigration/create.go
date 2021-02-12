@@ -379,14 +379,21 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alph
 		return expcapiv1alpha3.MachinePool{}, microerror.Mask(err)
 	}
 
-	var bootstrapCRRef *corev1.ObjectReference
+	s := runtime.NewScheme()
 	{
-		s := runtime.NewScheme()
-		err := corev1alpha1.AddToScheme(s)
+		err = corev1alpha1.AddToScheme(s)
 		if err != nil {
 			panic(fmt.Sprintf("corev1alpha1.AddToScheme: %+v", err))
 		}
 
+		err = expcapzv1alpha3.AddToScheme(s)
+		if err != nil {
+			panic(fmt.Sprintf("expcapzv1alpha3.AddToScheme: %+v", err))
+		}
+	}
+
+	var bootstrapCRRef *corev1.ObjectReference
+	{
 		bootstrapCRRef, err = reference.GetReference(s, &spark)
 		if err != nil {
 			panic(fmt.Sprintf("cannot create reference to bootstrap CR: %q", err))
@@ -395,12 +402,6 @@ func (r *Resource) ensureMachinePoolExists(ctx context.Context, spark corev1alph
 
 	var infrastructureCRRef *corev1.ObjectReference
 	{
-		s := runtime.NewScheme()
-		err := expcapzv1alpha3.AddToScheme(s)
-		if err != nil {
-			panic(fmt.Sprintf("expcapzv1alpha3.AddToScheme: %+v", err))
-		}
-
 		infrastructureCRRef, err = reference.GetReference(s, &azureMachinePool)
 		if err != nil {
 			panic(fmt.Sprintf("cannot create reference to infrastructure CR: %q", err))
