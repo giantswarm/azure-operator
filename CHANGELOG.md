@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Added
 
 - Add new handler that creates `AzureClusterIdentity` CRs and the related `Secrets` out of Giant Swarm's credential secrets.
+- Ensure `AzureCluster` CR has the `SubscriptionID` field set.
 - Reference `Spark` CR as bootstrap reference from the `MachinePool` CR.
 
 ### Fixed

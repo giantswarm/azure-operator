@@ -19,9 +19,10 @@ import (
 const (
 	secretDataFieldName = "clientSecret"
 
-	legacySecretClientIDFieldName     = "azure.azureoperator.clientid"
-	legacySecretClientSecretFieldName = "azure.azureoperator.clientsecret"
-	legacySecretTenantIDFieldName     = "azure.azureoperator.tenantid"
+	legacySecretClientIDFieldName       = "azure.azureoperator.clientid"
+	legacySecretClientSecretFieldName   = "azure.azureoperator.clientsecret"
+	legacySecretSubscriptionIDFieldName = "azure.azureoperator.subscriptionid"
+	legacySecretTenantIDFieldName       = "azure.azureoperator.tenantid"
 )
 
 // EnsureCreated ensures there is an AzureClusterIdentity CR and a related Secret
@@ -99,6 +100,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 	}
 
+	// Check if the AzureCluster CR has a SubscriptionID set.
+	if azureCluster.Spec.SubscriptionID == "" {
+		r.logger.Debugf(ctx, "AzureCluster doesn't have a Subscription ID set.")
+		azureCluster.Spec.SubscriptionID = string(legacySecret.Data[legacySecretSubscriptionIDFieldName])
+		err = r.ctrlClient.Update(ctx, &azureCluster)
+		if err != nil {
+			return microerror.Mask(err)
+		}
+		r.logger.Debugf(ctx, "Set Subscription ID %q in AzureCluster", string(legacySecret.Data[legacySecretSubscriptionIDFieldName]))
+	}
+
 	return nil
 }
 
@@ -121,7 +133,8 @@ func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secr
 				Name:      newName,
 				Namespace: newNamespace,
 				Labels: map[string]string{
-					apiextensionslabels.ManagedBy: project.Name(),
+					apiextensionslabels.ManagedBy:    project.Name(),
+					apiextensionslabels.Organization: legacySecret.GetLabels()[apiextensionslabels.Organization],
 				},
 			},
 			StringData: map[string]string{
@@ -188,7 +201,8 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 				Name:      newName,
 				Namespace: newNamespace,
 				Labels: map[string]string{
-					apiextensionslabels.ManagedBy: project.Name(),
+					apiextensionslabels.ManagedBy:    project.Name(),
+					apiextensionslabels.Organization: legacySecret.GetLabels()[apiextensionslabels.Organization],
 				},
 			},
 			Spec: desiredSpec,
