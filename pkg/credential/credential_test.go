@@ -182,38 +182,38 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 	}
 }
 
-//func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePrincipal(t *testing.T) {
-//	fakeK8sClient := unittest.FakeK8sClient()
-//	ctx := context.Background()
-//	expectedClientID := clientIDFromCredentialSecret
-//	expectedClientSecret := clientSecretFromCredentialSecret
-//	expectedTenantID := "giantswarmTenantID"
-//	organizationTenantID := "differentTenantID"
-//
-//	azureCluster,err := setupAuthCRs(ctx, fakeK8sClient, expectedClientID, expectedClientSecret, expectedTenantID, "random-subscription-id")
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, organizationTenantID, microloggertest.New())
-//	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, azureCluster.Name)
-//	if err != nil {
-//		t.Fatal(err)
-//	}
-//
-//	if clientCredentialsConfig.ClientID != expectedClientID {
-//		t.Fatalf("clientID has the wrong value: expected %#q, got %#q", expectedClientID, clientCredentialsConfig.ClientID)
-//	}
-//	if clientCredentialsConfig.ClientSecret != expectedClientSecret {
-//		t.Fatalf("clientSecret has the wrong value: expected %#q, got %#q", expectedClientSecret, clientCredentialsConfig.ClientSecret)
-//	}
-//	if clientCredentialsConfig.TenantID != expectedTenantID {
-//		t.Fatalf("tenantID has the wrong value: expected %#q, got %#q", expectedTenantID, clientCredentialsConfig.TenantID)
-//	}
-//	if len(clientCredentialsConfig.AuxTenants) != 1 {
-//		t.Fatalf("giantswarm tenant id should be an auxiliary tenant id for a multi tenant service principal: expected 1, got %#q auxiliary tenants", clientCredentialsConfig.AuxTenants)
-//	}
-//}
+func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePrincipal(t *testing.T) {
+	fakeK8sClient := unittest.FakeK8sClient()
+	ctx := context.Background()
+	expectedClientID := clientIDFromCredentialSecret
+	expectedClientSecret := clientSecretFromCredentialSecret
+	expectedTenantID := "giantswarmTenantID"
+	organizationTenantID := "differentTenantID"
+
+	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, expectedClientID, expectedClientSecret, expectedTenantID, "random-subscription-id")
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, organizationTenantID, microloggertest.New())
+	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, azureCluster.Name)
+	if err != nil {
+		t.Fatal(err)
+	}
+
+	if clientCredentialsConfig.ClientID != expectedClientID {
+		t.Fatalf("clientID has the wrong value: expected %#q, got %#q", expectedClientID, clientCredentialsConfig.ClientID)
+	}
+	if clientCredentialsConfig.ClientSecret != expectedClientSecret {
+		t.Fatalf("clientSecret has the wrong value: expected %#q, got %#q", expectedClientSecret, clientCredentialsConfig.ClientSecret)
+	}
+	if clientCredentialsConfig.TenantID != expectedTenantID {
+		t.Fatalf("tenantID has the wrong value: expected %#q, got %#q", expectedTenantID, clientCredentialsConfig.TenantID)
+	}
+	if len(clientCredentialsConfig.AuxTenants) != 1 {
+		t.Fatalf("giantswarm tenant id should be an auxiliary tenant id for a multi tenant service principal: expected 1, got %#q auxiliary tenants", clientCredentialsConfig.AuxTenants)
+	}
+}
 
 func TestWhenAzureClusterDoesNotExist(t *testing.T) {
 	fakeK8sClient := unittest.FakeK8sClient()
