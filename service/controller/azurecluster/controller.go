@@ -257,10 +257,10 @@ func newAzureClusterResources(config ControllerConfig, certsSearcher certs.Inter
 	}
 
 	resources := []resource.Interface{
+		azureclusteridentityResource,
 		azureClusterUpgradeResource,
 		azureClusterConditionsResource,
 		releaseResource,
-		azureclusteridentityResource,
 		azureClusterConfigResource,
 		azureConfigResource,
 		subnetResource,

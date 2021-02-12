@@ -23,10 +23,6 @@ const (
 	clientSecretFromCredentialSecret = "clientSecretFromCredentialSecret"
 )
 
-var (
-	noLabels = map[string]string{}
-)
-
 func TestParametersOverwriteCredentialsFromEnvironment(t *testing.T) {
 	expectedClientID := "parameterClientID"
 	expectedClientSecret := "parameterClientSecret"
