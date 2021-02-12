@@ -19,12 +19,7 @@ spec:
     port: 443
   location: westeurope
   networkSpec:
-    apiServerLB:
-      frontendIPs:
-      - name: c6fme-API-PublicLoadBalancer-Frontend
-      name: c6fme-API-PublicLoadBalancer
-      sku: Standard
-      type: Public
+    apiServerLB: {}
     vnet:
       cidrBlocks:
       - 10.10.0.0/16
