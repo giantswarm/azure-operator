@@ -16,6 +16,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Avoid blocking the whole `AzureConfig` handler on cluster creation because we can't update the `StorageClasses`.
 
+### Changed
+
+- Use the `AzureClusterIdentity` CR to create Azure API clients.
+
 ## [5.4.0] - 2021-02-05
 
 ### Changed

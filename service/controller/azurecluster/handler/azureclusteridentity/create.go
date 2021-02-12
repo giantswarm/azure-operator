@@ -6,6 +6,7 @@ import (
 
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
+	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -37,7 +38,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// Retrieve the legacy secret related to the organization this AzureCluster belongs to.
 	var legacySecret corev1.Secret
 	{
-		credentialSecret, err := r.azureClientsFactory.GetCredentialSecret(ctx, azureCluster.ObjectMeta)
+		credentialSecret, err := r.azureClientsFactory.GetLegacyCredentialSecret(ctx, azureCluster.ObjectMeta)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -75,6 +76,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		r.logger.Debugf(ctx, "Set IdentityRef for AzureCluster %q", azureCluster.Name)
+		r.logger.Debugf(ctx, "cancelling reconciliation")
+		reconciliationcanceledcontext.SetCanceled(ctx)
 	} else {
 		// Ensure AzureClusterIdentity is up to date.
 		azureClusterIdentity := v1alpha3.AzureClusterIdentity{}
@@ -109,6 +112,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 		r.logger.Debugf(ctx, "Set Subscription ID %q in AzureCluster", string(legacySecret.Data[legacySecretSubscriptionIDFieldName]))
+		r.logger.Debugf(ctx, "cancelling reconciliation")
+		reconciliationcanceledcontext.SetCanceled(ctx)
 	}
 
 	return nil

@@ -19,11 +19,11 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
-	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, cr.ObjectMeta)
+	groupsClient, err := r.ClientFactory.GetGroupsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

@@ -23,7 +23,7 @@ func (r *Resource) disableClusterAutoscaler(ctx context.Context, azureMachinePoo
 
 	r.Logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("Disabling cluster autoscaler for nodepool %s", vmssName))
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -44,7 +44,7 @@ func (r *Resource) enableClusterAutoscaler(ctx context.Context, azureMachinePool
 
 	r.Logger.LogCtx(ctx, "level", "info", "message", fmt.Sprintf("Enabling cluster autoscaler for nodepool %s", vmssName))
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}

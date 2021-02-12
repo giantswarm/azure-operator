@@ -114,7 +114,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

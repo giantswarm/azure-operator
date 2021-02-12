@@ -22,7 +22,7 @@ const (
 func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
 	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.SubnetReadyCondition)
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureMachinePool.ObjectMeta)
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, key.ClusterID(azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -41,7 +41,7 @@ func (r *Resource) ensureSubnetReadyCondition(ctx context.Context, azureMachineP
 
 	// Deployment is successful, we proceed with checking the actual Azure
 	// subnet.
-	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureMachinePool.ObjectMeta)
+	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, key.ClusterID(azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}

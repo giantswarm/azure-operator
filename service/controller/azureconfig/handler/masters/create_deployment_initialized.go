@@ -14,7 +14,7 @@ func (r *Resource) deploymentInitializedTransition(ctx context.Context, obj inte
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, cr.ObjectMeta)
+	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return Empty, microerror.Mask(err)
 	}

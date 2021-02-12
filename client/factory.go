@@ -84,8 +84,8 @@ func NewFactory(config FactoryConfig) (*Factory, error) {
 // GetDeploymentsClient returns DeploymentsClient that is used for management of deployments and
 // ARM templates. The client (for specified cluster) is cached after creation, so the same client
 // is returned every time.
-func (f *Factory) GetDeploymentsClient(credentialNamespace, credentialName string) (*resources.DeploymentsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "DeploymentsClient", newDeploymentsClient)
+func (f *Factory) GetDeploymentsClient(clusterID string) (*resources.DeploymentsClient, error) {
+	client, err := f.getClient(clusterID, "DeploymentsClient", newDeploymentsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -96,8 +96,8 @@ func (f *Factory) GetDeploymentsClient(credentialNamespace, credentialName strin
 // GetDisksClient returns DisksClient that is used for management of virtual disks.
 // The client (for specified cluster) is cached after creation, so the same client
 // is returned every time.
-func (f *Factory) GetDisksClient(credentialNamespace, credentialName string) (*compute.DisksClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "DisksClient", newDisksClient)
+func (f *Factory) GetDisksClient(clusterID string) (*compute.DisksClient, error) {
+	client, err := f.getClient(clusterID, "DisksClient", newDisksClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -108,8 +108,8 @@ func (f *Factory) GetDisksClient(credentialNamespace, credentialName string) (*c
 // GetGroupsClient returns GroupsClient that is used for management of resource groups for the
 // specified cluster. The created client is cached for the time period specified in the factory
 // config.
-func (f *Factory) GetGroupsClient(credentialNamespace, credentialName string) (*resources.GroupsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "GroupsClient", newGroupsClient)
+func (f *Factory) GetGroupsClient(clusterID string) (*resources.GroupsClient, error) {
+	client, err := f.getClient(clusterID, "GroupsClient", newGroupsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -120,8 +120,8 @@ func (f *Factory) GetGroupsClient(credentialNamespace, credentialName string) (*
 // GetInterfacesClient returns InterfacesClient that is used for management of network interfaces for the
 // specified cluster. The created client is cached for the time period specified in the factory
 // config.
-func (f *Factory) GetInterfacesClient(credentialNamespace, credentialName string) (*network.InterfacesClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "InterfacesClient", newInterfacesClient)
+func (f *Factory) GetInterfacesClient(clusterID string) (*network.InterfacesClient, error) {
+	client, err := f.getClient(clusterID, "InterfacesClient", newInterfacesClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -132,8 +132,8 @@ func (f *Factory) GetInterfacesClient(credentialNamespace, credentialName string
 // GetDNSRecordSetsClient returns RecordSetsClient that is used for management of DNS records.
 // The client (for specified cluster) is cached after creation, so the same client
 // is returned every time.
-func (f *Factory) GetDNSRecordSetsClient(credentialNamespace, credentialName string) (*dns.RecordSetsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "RecordSetsClient", newDNSRecordSetsClient)
+func (f *Factory) GetDNSRecordSetsClient(clusterID string) (*dns.RecordSetsClient, error) {
+	client, err := f.getClient(clusterID, "RecordSetsClient", newDNSRecordSetsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -144,8 +144,8 @@ func (f *Factory) GetDNSRecordSetsClient(credentialNamespace, credentialName str
 // GetVirtualMachineScaleSetsClient returns VirtualMachineScaleSetsClient that is used for
 // management of virtual machine scale sets for the specified cluster. The created client is cached
 // for the time period specified in the factory config.
-func (f *Factory) GetVirtualMachineScaleSetsClient(credentialNamespace, credentialName string) (*compute.VirtualMachineScaleSetsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "VirtualMachineScaleSetsClient", newVirtualMachineScaleSetsClient)
+func (f *Factory) GetVirtualMachineScaleSetsClient(clusterID string) (*compute.VirtualMachineScaleSetsClient, error) {
+	client, err := f.getClient(clusterID, "VirtualMachineScaleSetsClient", newVirtualMachineScaleSetsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -156,8 +156,8 @@ func (f *Factory) GetVirtualMachineScaleSetsClient(credentialNamespace, credenti
 // GetVirtualMachineScaleSetVMsClient returns GetVirtualMachineScaleSetVMsClient that is used for
 // management of virtual machine scale set instances for the specified cluster. The created client
 // is cached for the time period specified in the factory config.
-func (f *Factory) GetVirtualMachineScaleSetVMsClient(credentialNamespace, credentialName string) (*compute.VirtualMachineScaleSetVMsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "VirtualMachineScaleSetVMsClient", newVirtualMachineScaleSetVMsClient)
+func (f *Factory) GetVirtualMachineScaleSetVMsClient(clusterID string) (*compute.VirtualMachineScaleSetVMsClient, error) {
+	client, err := f.getClient(clusterID, "VirtualMachineScaleSetVMsClient", newVirtualMachineScaleSetVMsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -167,8 +167,8 @@ func (f *Factory) GetVirtualMachineScaleSetVMsClient(credentialNamespace, creden
 
 // GetVirtualNetworksClient returns *network.VirtualNetworksClient that is used for management of Azure
 // virtual networks. The created client is cached for the time period specified in the factory config.
-func (f *Factory) GetVirtualNetworksClient(credentialNamespace, credentialName string) (*network.VirtualNetworksClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworksClient", newVirtualNetworksClient)
+func (f *Factory) GetVirtualNetworksClient(clusterID string) (*network.VirtualNetworksClient, error) {
+	client, err := f.getClient(clusterID, "VirtualNetworksClient", newVirtualNetworksClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -179,8 +179,8 @@ func (f *Factory) GetVirtualNetworksClient(credentialNamespace, credentialName s
 // GetSnapshotsClient returns *compute.SnapshotsClient that is used for management of Azure
 // snapshots (both disks and VMs). The created client is cached for the time period
 // specified in the factory config.
-func (f *Factory) GetSnapshotsClient(credentialNamespace, credentialName string) (*compute.SnapshotsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "SnapshotsClient", newSnapshotsClient)
+func (f *Factory) GetSnapshotsClient(clusterID string) (*compute.SnapshotsClient, error) {
+	client, err := f.getClient(clusterID, "SnapshotsClient", newSnapshotsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -191,8 +191,8 @@ func (f *Factory) GetSnapshotsClient(credentialNamespace, credentialName string)
 // GetStorageAccountsClient returns *storage.AccountsClient that is used for management of Azure
 // storage accounts for the specified cluster. The created client is cached for the time period
 // specified in the factory config.
-func (f *Factory) GetStorageAccountsClient(credentialNamespace, credentialName string) (*storage.AccountsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "StorageAccountsClient", newStorageAccountsClient)
+func (f *Factory) GetStorageAccountsClient(clusterID string) (*storage.AccountsClient, error) {
+	client, err := f.getClient(clusterID, "StorageAccountsClient", newStorageAccountsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -202,8 +202,8 @@ func (f *Factory) GetStorageAccountsClient(credentialNamespace, credentialName s
 
 // GetSubnetsClient returns *network.SubnetsClient that is used for management of Azure subnets.
 // The created client is cached for the time period specified in the factory config.
-func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (*network.SubnetsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "SubnetsClient", newSubnetsClient)
+func (f *Factory) GetSubnetsClient(clusterID string) (*network.SubnetsClient, error) {
+	client, err := f.getClient(clusterID, "SubnetsClient", newSubnetsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -213,8 +213,8 @@ func (f *Factory) GetSubnetsClient(credentialNamespace, credentialName string) (
 
 // GetNatGatewaysClient returns *network.NatGatewaysClient that is used for management of Nat Gateways.
 // The created client is cached for the time period specified in the factory config.
-func (f *Factory) GetNatGatewaysClient(credentialNamespace, credentialName string) (*network.NatGatewaysClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "NatGatewaysClient", newNatGatewaysClient)
+func (f *Factory) GetNatGatewaysClient(clusterID string) (*network.NatGatewaysClient, error) {
+	client, err := f.getClient(clusterID, "NatGatewaysClient", newNatGatewaysClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -224,8 +224,8 @@ func (f *Factory) GetNatGatewaysClient(credentialNamespace, credentialName strin
 
 // GetNetworkSecurityGroupsClient returns *network.SecurityGroupsClient that is used for management of Network Security Groups.
 // The created client is cached for the time period specified in the factory config.
-func (f *Factory) GetNetworkSecurityGroupsClient(credentialNamespace, credentialName string) (*network.SecurityGroupsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "NetworkSecurityGroupsClient", newNetworkSecurityGroupsClient)
+func (f *Factory) GetNetworkSecurityGroupsClient(clusterID string) (*network.SecurityGroupsClient, error) {
+	client, err := f.getClient(clusterID, "NetworkSecurityGroupsClient", newNetworkSecurityGroupsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -233,8 +233,8 @@ func (f *Factory) GetNetworkSecurityGroupsClient(credentialNamespace, credential
 	return toNetworkSecurityGroupsClient(client), nil
 }
 
-func (f *Factory) GetPublicIPAddressesClient(credentialNamespace, credentialName string) (*network.PublicIPAddressesClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "PublicIPAddressesClient", newPublicIPAddressesClient)
+func (f *Factory) GetPublicIPAddressesClient(clusterID string) (*network.PublicIPAddressesClient, error) {
+	client, err := f.getClient(clusterID, "PublicIPAddressesClient", newPublicIPAddressesClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -244,8 +244,8 @@ func (f *Factory) GetPublicIPAddressesClient(credentialNamespace, credentialName
 
 // GetResourceSkusClient returns *compute.ResourceSkusClient that is used for reading VM instance types.
 // The created client is cached for the time period specified in the factory config.
-func (f *Factory) GetResourceSkusClient(credentialNamespace, credentialName string) (*compute.ResourceSkusClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "ResourceSkusClient", newResourceSkusClient)
+func (f *Factory) GetResourceSkusClient(clusterID string) (*compute.ResourceSkusClient, error) {
+	client, err := f.getClient(clusterID, "ResourceSkusClient", newResourceSkusClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -253,14 +253,14 @@ func (f *Factory) GetResourceSkusClient(credentialNamespace, credentialName stri
 	return toResourceSkusClient(client), nil
 }
 
-func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {
+func (f *Factory) getClient(clusterID string, clientType string, createClient clientCreatorFunc) (interface{}, error) {
 	l := f.logger.With(
 		logLevelLogKey, logLevelDebug,
 		messageLogKey, "get client",
-		credentialNameLogKey, credentialName,
+		credentialNameLogKey, clusterID,
 		clientTypeLogKey, clientType)
 
-	clientKey := getClientKey(credentialName, clientType)
+	clientKey := getClientKey(clusterID, clientType)
 	var client interface{}
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
@@ -272,7 +272,7 @@ func (f *Factory) getClient(credentialNamespace, credentialName string, clientTy
 	} else {
 		// client not found, create it, it will be saved in cache
 		l.Log(cacheHitLogKey, false)
-		newClient, err := f.createClient(credentialNamespace, credentialName, createClient)
+		newClient, err := f.createClient(clusterID, createClient)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
@@ -284,8 +284,8 @@ func (f *Factory) getClient(credentialNamespace, credentialName string, clientTy
 	return client, nil
 }
 
-func (f *Factory) createClient(credentialNamespace, credentialName string, createClient clientCreatorFunc) (interface{}, error) {
-	organizationCredentialsConfig, subscriptionID, partnerID, err := f.credentialProvider.GetOrganizationAzureCredentials(context.Background(), credentialNamespace, credentialName)
+func (f *Factory) createClient(clusterID string, createClient clientCreatorFunc) (interface{}, error) {
+	organizationCredentialsConfig, subscriptionID, partnerID, err := f.credentialProvider.GetOrganizationAzureCredentials(context.Background(), clusterID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

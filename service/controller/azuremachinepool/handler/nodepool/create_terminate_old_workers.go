@@ -33,7 +33,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

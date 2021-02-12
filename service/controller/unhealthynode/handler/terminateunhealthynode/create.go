@@ -109,7 +109,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 		return nil
 	}
 
-	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, cluster.ObjectMeta)
+	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&cluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}

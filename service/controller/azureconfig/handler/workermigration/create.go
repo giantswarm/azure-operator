@@ -54,11 +54,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	credentialSecret := &providerv1alpha1.CredentialSecret{
-		Name:      key.CredentialName(cr),
-		Namespace: key.CredentialNamespace(cr),
-	}
-	azureAPI := r.wrapAzureAPI(r.clientFactory, credentialSecret)
+	azureAPI := r.wrapAzureAPI(r.clientFactory, key.ClusterID(&cr))
 
 	r.logger.Debugf(ctx, "ensuring that legacy workers are migrated to node pool")
 

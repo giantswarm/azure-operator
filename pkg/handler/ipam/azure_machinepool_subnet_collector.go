@@ -167,7 +167,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 		"level", "debug",
 		"message", fmt.Sprintf("finding subnets created in Azure VNet %q", azureCluster.Spec.NetworkSpec.Vnet.Name))
 
-	subnetsClient, err := c.azureClientFactory.GetSubnetsClient(ctx, azureCluster.ObjectMeta)
+	subnetsClient, err := c.azureClientFactory.GetSubnetsClient(ctx, key.ClusterID(azureCluster))
 	if err != nil {
 		errorMessage := fmt.Sprintf("error while creating/getting Azure subnets client for cluster %q", azureCluster.Name)
 		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)

@@ -5,7 +5,6 @@ import (
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
-	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/client"
@@ -13,18 +12,18 @@ import (
 
 type api struct {
 	clientFactory *client.Factory
-	credentials   *providerv1alpha1.CredentialSecret
+	clusterID     string
 }
 
-func GetAPI(f *client.Factory, credentials *providerv1alpha1.CredentialSecret) API {
+func GetAPI(f *client.Factory, clusterID string) API {
 	return &api{
 		clientFactory: f,
-		credentials:   credentials,
+		clusterID:     clusterID,
 	}
 }
 
 func (a *api) GetVMSS(ctx context.Context, resourceGroupName, vmssName string) (VMSS, error) {
-	client, err := a.clientFactory.GetVirtualMachineScaleSetsClient(a.credentials.Namespace, a.credentials.Name)
+	client, err := a.clientFactory.GetVirtualMachineScaleSetsClient(a.clusterID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -38,7 +37,7 @@ func (a *api) GetVMSS(ctx context.Context, resourceGroupName, vmssName string) (
 }
 
 func (a *api) DeleteDeployment(ctx context.Context, resourceGroupName, deploymentName string) error {
-	client, err := a.clientFactory.GetDeploymentsClient(a.credentials.Namespace, a.credentials.Name)
+	client, err := a.clientFactory.GetDeploymentsClient(a.clusterID)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -52,7 +51,7 @@ func (a *api) DeleteDeployment(ctx context.Context, resourceGroupName, deploymen
 }
 
 func (a *api) DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string) error {
-	client, err := a.clientFactory.GetVirtualMachineScaleSetsClient(a.credentials.Namespace, a.credentials.Name)
+	client, err := a.clientFactory.GetVirtualMachineScaleSetsClient(a.clusterID)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -66,7 +65,7 @@ func (a *api) DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string
 }
 
 func (a *api) ListVMSSNodes(ctx context.Context, resourceGroupName, vmssName string) (VMSSNodes, error) {
-	client, err := a.clientFactory.GetVirtualMachineScaleSetVMsClient(a.credentials.Namespace, a.credentials.Name)
+	client, err := a.clientFactory.GetVirtualMachineScaleSetVMsClient(a.clusterID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -90,7 +89,7 @@ func (a *api) ListVMSSNodes(ctx context.Context, resourceGroupName, vmssName str
 }
 
 func (a *api) ListNetworkSecurityGroups(ctx context.Context, resourceGroupName string) (SecurityGroups, error) {
-	client, err := a.clientFactory.GetNetworkSecurityGroupsClient(a.credentials.Namespace, a.credentials.Name)
+	client, err := a.clientFactory.GetNetworkSecurityGroupsClient(a.clusterID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -114,7 +113,7 @@ func (a *api) ListNetworkSecurityGroups(ctx context.Context, resourceGroupName s
 }
 
 func (a *api) CreateOrUpdateNetworkSecurityGroup(ctx context.Context, resourceGroupName, networkSecurityGroupName string, securityGroup network.SecurityGroup) error {
-	client, err := a.clientFactory.GetNetworkSecurityGroupsClient(a.credentials.Namespace, a.credentials.Name)
+	client, err := a.clientFactory.GetNetworkSecurityGroupsClient(a.clusterID)
 	if err != nil {
 		return microerror.Mask(err)
 	}

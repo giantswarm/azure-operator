@@ -18,7 +18,7 @@ const (
 )
 
 func (r *Resource) ensureServiceEndpoints(ctx context.Context, cr providerv1alpha1.AzureConfig) error {
-	subnetsClient, err := r.clientFactory.GetSubnetsClient(ctx, cr.ObjectMeta)
+	subnetsClient, err := r.clientFactory.GetSubnetsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

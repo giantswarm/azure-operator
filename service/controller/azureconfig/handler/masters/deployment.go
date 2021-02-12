@@ -63,7 +63,7 @@ func (r Resource) newDeployment(ctx context.Context, obj providerv1alpha1.AzureC
 	encryptionKey := encrypter.GetEncryptionKey()
 	initialVector := encrypter.GetInitialVector()
 
-	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, obj.ObjectMeta)
+	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, key.ClusterID(&obj))
 	if err != nil {
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}

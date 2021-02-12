@@ -77,22 +77,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, azureCluster.ObjectMeta)
+	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	natGatewaysClient, err := r.azureClientsFactory.GetNatGatewaysClient(ctx, azureCluster.ObjectMeta)
+	natGatewaysClient, err := r.azureClientsFactory.GetNatGatewaysClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(ctx, azureCluster.ObjectMeta)
+	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, azureCluster.ObjectMeta)
+	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}
