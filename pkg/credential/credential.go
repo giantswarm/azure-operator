@@ -17,25 +17,24 @@ import (
 const (
 	clientSecretKey  = "clientSecret"
 	defaultAzureGUID = "37f13270-5c7a-56ff-9211-8426baaeaabd"
+
+	SubscriptionTenantIDAnnotation = "giantswarm.io/subscription-tenant-id"
 )
 
 type K8SCredential struct {
-	k8sclient  k8sclient.Interface
-	gsTenantID string
-	logger     micrologger.Logger
+	k8sclient k8sclient.Interface
+	logger    micrologger.Logger
 }
 
-func NewK8SCredentialProvider(k8sclient k8sclient.Interface, gsTenantID string, logger micrologger.Logger) Provider {
+func NewK8SCredentialProvider(k8sclient k8sclient.Interface, logger micrologger.Logger) Provider {
 	return K8SCredential{
-		k8sclient:  k8sclient,
-		gsTenantID: gsTenantID,
-		logger:     logger,
+		k8sclient: k8sclient,
+		logger:    logger,
 	}
 }
 
 // GetOrganizationAzureCredentials returns the organization's credentials.
 // This means a configured `ClientCredentialsConfig` together with the subscription ID and the partner ID.
-// The Service Principals in the organizations' secrets will always belong the the GiantSwarm Tenant ID in `gsTenantID`.
 func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, clusterID string) (auth.ClientCredentialsConfig, string, string, error) {
 	azureClusters := &v1alpha3.AzureClusterList{}
 	err := k.k8sclient.CtrlClient().List(ctx, azureClusters, client.MatchingLabels{label.Cluster: clusterID})
@@ -71,8 +70,13 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, clus
 
 	subscriptionID := azureCluster.Spec.SubscriptionID
 	clientID := azureClusterIdentity.Spec.ClientID
-	tenantID := azureClusterIdentity.Spec.TenantID
-	// TODO find a way to store the partnerID
+	servicePrincipalTenantID := azureClusterIdentity.Spec.TenantID
+	subscriptionTenantID := azureCluster.Annotations[SubscriptionTenantIDAnnotation]
+	if subscriptionTenantID == "" {
+		k.logger.Debugf(ctx, "AzureCluster %s/%s did not contain annotation %q. Assuming the service principal and the subscription belong to the same tenant", azureCluster.Namespace, azureCluster.Name, SubscriptionTenantIDAnnotation)
+		subscriptionTenantID = servicePrincipalTenantID
+	}
+	// TODO find a way to store the partnerID.
 	partnerID := defaultAzureGUID
 
 	clientSecret, err := valueFromSecret(secret, clientSecretKey)
@@ -80,11 +84,9 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, clus
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
-	// The tenant cluster resources will belong to a subscription that belongs to a different Tenant ID than the one used for authentication.
-	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
-	if tenantID != k.gsTenantID {
-		k.logger.Debugf(ctx, "Azure subscription %#q belongs to the tenant ID %#q which is different than the Tenant ID %#q that owns the Service Principal. Using multi tenant authentication", subscriptionID, tenantID, k.gsTenantID)
-		credentials.AuxTenants = append(credentials.AuxTenants, k.gsTenantID)
+	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
+	if subscriptionTenantID != servicePrincipalTenantID {
+		credentials.AuxTenants = append(credentials.AuxTenants, servicePrincipalTenantID)
 	}
 
 	return credentials, subscriptionID, partnerID, nil

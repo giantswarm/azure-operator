@@ -13,6 +13,7 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
@@ -107,6 +108,18 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if azureCluster.Spec.SubscriptionID == "" {
 		r.logger.Debugf(ctx, "AzureCluster doesn't have a Subscription ID set.")
 		azureCluster.Spec.SubscriptionID = string(legacySecret.Data[legacySecretSubscriptionIDFieldName])
+
+		// Set the subscription tenant ID annotation.
+		subscriptionTenantID := string(legacySecret.Data["azure.azureoperator.subscriptiontenantid"])
+		if subscriptionTenantID != "" {
+			ann := azureCluster.GetAnnotations()
+			if ann == nil {
+				ann = make(map[string]string)
+			}
+			ann[credential.SubscriptionTenantIDAnnotation] = subscriptionTenantID
+			azureCluster.SetAnnotations(ann)
+		}
+
 		err = r.ctrlClient.Update(ctx, &azureCluster)
 		if err != nil {
 			return microerror.Mask(err)

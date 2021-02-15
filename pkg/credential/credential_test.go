@@ -153,12 +153,12 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 	expectedClientSecret := clientSecretFromCredentialSecret
 	expectedTenantID := tenantID
 
-	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, expectedClientID, expectedClientSecret, expectedTenantID, "random-subscription-id")
+	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, expectedClientID, expectedClientSecret, expectedTenantID, "random-subscription-id", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, tenantID, microloggertest.New())
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, microloggertest.New())
 	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, azureCluster.Name)
 	if err != nil {
 		t.Fatal(err)
@@ -181,33 +181,38 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithSingleTenantServiceP
 func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePrincipal(t *testing.T) {
 	fakeK8sClient := unittest.FakeK8sClient()
 	ctx := context.Background()
-	expectedClientID := clientIDFromCredentialSecret
-	expectedClientSecret := clientSecretFromCredentialSecret
-	expectedTenantID := "giantswarmTenantID"
-	organizationTenantID := "differentTenantID"
+	clientID := clientIDFromCredentialSecret
+	clientSecret := clientSecretFromCredentialSecret
+	servicePrincipalTenantID := "servicePrincipalTenantID"
+	subscriptionID := "subscriptionID"
+	subscriptionTenantID := "subscriptionTenantID"
 
-	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, expectedClientID, expectedClientSecret, expectedTenantID, "random-subscription-id")
+	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, clientID, clientSecret, servicePrincipalTenantID, subscriptionID, subscriptionTenantID)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, organizationTenantID, microloggertest.New())
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, microloggertest.New())
 	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, azureCluster.Name)
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	if clientCredentialsConfig.ClientID != expectedClientID {
-		t.Fatalf("clientID has the wrong value: expected %#q, got %#q", expectedClientID, clientCredentialsConfig.ClientID)
+	if clientCredentialsConfig.ClientID != clientID {
+		t.Fatalf("clientID has the wrong value: expected %#q, got %#q", clientID, clientCredentialsConfig.ClientID)
 	}
-	if clientCredentialsConfig.ClientSecret != expectedClientSecret {
-		t.Fatalf("clientSecret has the wrong value: expected %#q, got %#q", expectedClientSecret, clientCredentialsConfig.ClientSecret)
+	if clientCredentialsConfig.ClientSecret != clientSecret {
+		t.Fatalf("clientSecret has the wrong value: expected %#q, got %#q", clientSecret, clientCredentialsConfig.ClientSecret)
 	}
-	if clientCredentialsConfig.TenantID != expectedTenantID {
-		t.Fatalf("tenantID has the wrong value: expected %#q, got %#q", expectedTenantID, clientCredentialsConfig.TenantID)
+	if clientCredentialsConfig.TenantID != subscriptionTenantID {
+		t.Fatalf("tenantID has the wrong value: expected %#q, got %#q", subscriptionTenantID, clientCredentialsConfig.TenantID)
 	}
 	if len(clientCredentialsConfig.AuxTenants) != 1 {
 		t.Fatalf("giantswarm tenant id should be an auxiliary tenant id for a multi tenant service principal: expected 1, got %#q auxiliary tenants", clientCredentialsConfig.AuxTenants)
+	}
+
+	if clientCredentialsConfig.AuxTenants[0] != servicePrincipalTenantID {
+		t.Fatalf("the auxiliary tenant id should have been %#q, got %#q", servicePrincipalTenantID, clientCredentialsConfig.AuxTenants)
 	}
 }
 
@@ -215,7 +220,7 @@ func TestWhenAzureClusterDoesNotExist(t *testing.T) {
 	fakeK8sClient := unittest.FakeK8sClient()
 	ctx := context.Background()
 
-	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "giantswarmTenantID", microloggertest.New())
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, microloggertest.New())
 	_, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, "ab123")
 	if err == nil {
 		t.Fatalf("it should fail when organization credential secret is missing")
@@ -227,12 +232,12 @@ func TestFailsToCreateCredentialsWhenSubscriptionIDIsNotSet(t *testing.T) {
 	ctx := context.Background()
 
 	// Missing subscription id
-	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, "client", "secret", "tenant", "")
+	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, "client", "secret", "tenant", "", "")
 	if err != nil {
 		t.Fatal(err)
 	}
 
-	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "organizationTenantID", microloggertest.New())
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, microloggertest.New())
 	_, _, _, err = credentialProvider.GetOrganizationAzureCredentials(ctx, azureCluster.Name)
 	if err == nil {
 		t.Fatalf("it should fail when key is missing from credential secret: client id is missing")
@@ -243,7 +248,7 @@ func TestFailsToCreateCredentialsWhenIdentityRefIsNotSet(t *testing.T) {
 	fakeK8sClient := unittest.FakeK8sClient()
 	ctx := context.Background()
 
-	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, "client", "secret", "tenant", "subscription")
+	azureCluster, err := setupAuthCRs(ctx, fakeK8sClient, "client", "secret", "tenant", "subscription", "")
 	if err != nil {
 		t.Fatal(err)
 	}
@@ -255,14 +260,14 @@ func TestFailsToCreateCredentialsWhenIdentityRefIsNotSet(t *testing.T) {
 		t.Fatal(err)
 	}
 
-	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "organizationTenantID", microloggertest.New())
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, microloggertest.New())
 	_, _, _, err = credentialProvider.GetOrganizationAzureCredentials(ctx, azureCluster.Name)
 	if err == nil {
 		t.Fatalf("it should fail when key is missing from credential secret: client id is missing")
 	}
 }
 
-func createAzureCluster(k8sclient k8sclient.Interface, ctx context.Context, clusterID, organization string, azureClusterIdentity v1alpha3.AzureClusterIdentity, expectedSubscriptionID string) (*v1alpha3.AzureCluster, error) {
+func createAzureCluster(k8sclient k8sclient.Interface, ctx context.Context, clusterID, organization string, azureClusterIdentity v1alpha3.AzureClusterIdentity, subscriptionID, subscriptionTenantID string) (*v1alpha3.AzureCluster, error) {
 	azureCluster := &v1alpha3.AzureCluster{
 		ObjectMeta: metav1.ObjectMeta{
 			Name:      clusterID,
@@ -270,9 +275,12 @@ func createAzureCluster(k8sclient k8sclient.Interface, ctx context.Context, clus
 			Labels: map[string]string{
 				"giantswarm.io/cluster": clusterID,
 			},
+			Annotations: map[string]string{
+				SubscriptionTenantIDAnnotation: subscriptionTenantID,
+			},
 		},
 		Spec: v1alpha3.AzureClusterSpec{
-			SubscriptionID: expectedSubscriptionID,
+			SubscriptionID: subscriptionID,
 			IdentityRef: &v1.ObjectReference{
 				Kind:      azureClusterIdentity.Kind,
 				Namespace: azureClusterIdentity.Namespace,
@@ -331,7 +339,7 @@ func createSecret(k8sclient k8sclient.Interface, ctx context.Context, name strin
 	return organizationCredentialSecret, nil
 }
 
-func setupAuthCRs(ctx context.Context, fakeK8sClient k8sclient.Interface, expectedClientID, expectedClientSecret, expectedTenantID, expectedSubscriptionID string) (*v1alpha3.AzureCluster, error) {
+func setupAuthCRs(ctx context.Context, fakeK8sClient k8sclient.Interface, clientID, clientSecret, spTenantID, subscriptionID, subscriptionTenantID string) (*v1alpha3.AzureCluster, error) {
 	// Create Secret.
 	organization := "giantswarm"
 	clusterID := "ab123"
@@ -344,7 +352,7 @@ func setupAuthCRs(ctx context.Context, fakeK8sClient k8sclient.Interface, expect
 			apiextensionslabels.Organization: organization,
 		},
 		map[string][]byte{
-			clientSecretKey: []byte(expectedClientSecret),
+			clientSecretKey: []byte(clientSecret),
 		},
 	)
 	if err != nil {
@@ -352,12 +360,12 @@ func setupAuthCRs(ctx context.Context, fakeK8sClient k8sclient.Interface, expect
 	}
 
 	// Create AzureClusterIdentity
-	azureClusterIdentity, err := createAzureClusterIdentity(fakeK8sClient, ctx, *secret, expectedClientID, expectedTenantID)
+	azureClusterIdentity, err := createAzureClusterIdentity(fakeK8sClient, ctx, *secret, clientID, spTenantID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	azureCluster, err := createAzureCluster(fakeK8sClient, ctx, clusterID, organization, *azureClusterIdentity, expectedSubscriptionID)
+	azureCluster, err := createAzureCluster(fakeK8sClient, ctx, clusterID, organization, *azureClusterIdentity, subscriptionID, subscriptionTenantID)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
