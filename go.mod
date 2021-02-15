@@ -17,7 +17,7 @@ require (
 	github.com/giantswarm/conditions v0.3.0
 	github.com/giantswarm/conditions-handler v0.2.1
 	github.com/giantswarm/errors v0.2.3
-	github.com/giantswarm/exporterkit v0.2.0
+	github.com/giantswarm/exporterkit v0.2.1
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.0.0
 	github.com/giantswarm/k8scloudconfig/v10 v10.0.0
@@ -41,7 +41,7 @@ require (
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/viper v1.7.1
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
