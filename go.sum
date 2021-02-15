@@ -56,6 +56,8 @@ github.com/Azure/go-autorest/autorest v0.11.9/go.mod h1:eipySxLmqSyC5s5k1CLupqet
 github.com/Azure/go-autorest/autorest v0.11.11/go.mod h1:eipySxLmqSyC5s5k1CLupqet0PSENBEDP93LQ9a8QYw=
 github.com/Azure/go-autorest/autorest v0.11.17 h1:2zCdHwNgRH+St1J+ZMf66xI8aLr/5KMy+wWLH97zwYM=
 github.com/Azure/go-autorest/autorest v0.11.17/go.mod h1:eipySxLmqSyC5s5k1CLupqet0PSENBEDP93LQ9a8QYw=
+github.com/Azure/go-autorest/autorest v0.11.18 h1:90Y4srNYrwOtAgVo3ndrQkTYn6kf1Eg/AjTFJ8Is2aM=
+github.com/Azure/go-autorest/autorest v0.11.18/go.mod h1:dSiJPy22c3u0OtOKDNttNgqpNFY/GeWa7GH/Pz56QRA=
 github.com/Azure/go-autorest/autorest/adal v0.1.0/go.mod h1:MeS4XhScH55IST095THyTxElntu7WqB7pNbZo8Q5G3E=
 github.com/Azure/go-autorest/autorest/adal v0.5.0/go.mod h1:8Z9fGy2MpX0PvDjB1pEgQTmVqjGhiHBW7RJJEciWzS0=
 github.com/Azure/go-autorest/autorest/adal v0.8.2/go.mod h1:ZjhuQClTqx435SRJ2iMlOxPYt3d2C/T/7TiQCVZSn3Q=
@@ -63,6 +65,8 @@ github.com/Azure/go-autorest/autorest/adal v0.9.2/go.mod h1:/3SMAM86bP6wC9Ev35pe
 github.com/Azure/go-autorest/autorest/adal v0.9.5/go.mod h1:B7KF7jKIeC9Mct5spmyCB/A8CG/sEz1vwIRGv/bbw7A=
 github.com/Azure/go-autorest/autorest/adal v0.9.11 h1:L4/pmq7poLdsy41Bj1FayKvBhayuWRYkx9HU5i4Ybl0=
 github.com/Azure/go-autorest/autorest/adal v0.9.11/go.mod h1:nBKAnTomx8gDtl+3ZCJv2v0KACFHWTB2drffI1B68Pk=
+github.com/Azure/go-autorest/autorest/adal v0.9.13 h1:Mp5hbtOePIzM8pJVRa3YLrWWmZtoxRXqUEzCfJt3+/Q=
+github.com/Azure/go-autorest/autorest/adal v0.9.13/go.mod h1:W/MM4U6nLxnIskrw4UwWzlHfGjwUS50aOsc/I3yuU8M=
 github.com/Azure/go-autorest/autorest/azure/auth v0.1.0/go.mod h1:Gf7/i2FUpyb/sGBLIFxTBzrNzBo7aPXXE3ZVeDRwdpM=
 github.com/Azure/go-autorest/autorest/azure/auth v0.5.3/go.mod h1:4bJZhUhcq8LB20TruwHbAQsmUs2Xh+QR7utuJpLXX3A=
 github.com/Azure/go-autorest/autorest/azure/auth v0.5.7 h1:8DQB8yl7aLQuP+nuR5e2RO6454OvFlSTXXaNHshc16s=
@@ -88,6 +92,8 @@ github.com/Azure/go-autorest/autorest/validation v0.3.0/go.mod h1:yhLgjC0Wda5DYX
 github.com/Azure/go-autorest/logger v0.1.0/go.mod h1:oExouG+K6PryycPJfVSxi/koC6LSNgds39diKLz7Vrc=
 github.com/Azure/go-autorest/logger v0.2.0 h1:e4RVHVZKC5p6UANLJHkM4OfR1UKZPj8Wt8Pcx+3oqrE=
 github.com/Azure/go-autorest/logger v0.2.0/go.mod h1:T9E3cAhj2VqvPOtCYAvby9aBXkZmbF5NWuPV8+WeEW8=
+github.com/Azure/go-autorest/logger v0.2.1 h1:IG7i4p/mDa2Ce4TRyAO8IHnVhAVF3RFU+ZtXWSmf4Tg=
+github.com/Azure/go-autorest/logger v0.2.1/go.mod h1:T9E3cAhj2VqvPOtCYAvby9aBXkZmbF5NWuPV8+WeEW8=
 github.com/Azure/go-autorest/tracing v0.1.0/go.mod h1:ROEEAFwXycQw7Sn3DXNtEedEvdeRAgDr0izn4z5Ij88=
 github.com/Azure/go-autorest/tracing v0.5.0/go.mod h1:r/s2XiOKccPW3HrqB+W0TQzfbtp2fGCgRFtBroKn4Dk=
 github.com/Azure/go-autorest/tracing v0.6.0 h1:TYi4+3m5t6K48TGI9AUdb+IzbnSxvnvUMfuitfgcfuo=
@@ -272,8 +278,9 @@ github.com/giantswarm/apiextensions/v2 v2.6.2/go.mod h1:/qSx5jA2F5um0ipvVDMZJz+r
 github.com/giantswarm/apiextensions/v3 v3.4.0/go.mod h1:MMLkRJta4mbTbrikP9LewADiCL+55LmsagyhdTU7XAY=
 github.com/giantswarm/apiextensions/v3 v3.9.0/go.mod h1:lV395r7N2gWIl4O8apVFMe0iFHoGjs0NJNxjqwhxBx4=
 github.com/giantswarm/apiextensions/v3 v3.13.0/go.mod h1:f+dFUDLroK50aCGzvpqPw/jCFCCgJqdEMf/xNSJBI+A=
-github.com/giantswarm/apiextensions/v3 v3.17.0 h1:gltezezid1WVIBaSJRyZieWUngcbYjml5nCIDpifOus=
 github.com/giantswarm/apiextensions/v3 v3.17.0/go.mod h1:N4SS083wjVR3GEL/pqWycva4yUtYrlU5lUKhRtZJ7EY=
+github.com/giantswarm/apiextensions/v3 v3.18.0 h1:8wPTEQjVXQPZmzbleDkTWwY+xUDBEMcz4tRZ3EVVIb0=
+github.com/giantswarm/apiextensions/v3 v3.18.0/go.mod h1:N4SS083wjVR3GEL/pqWycva4yUtYrlU5lUKhRtZJ7EY=
 github.com/giantswarm/backoff v0.2.0 h1:kdfAf83pZ/l8X0KiA2dJ2Wq19nS9hISijVn7ZRdFhfU=
 github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYasoY2OSfNOk=
 github.com/giantswarm/badnodedetector v1.0.1 h1:5rKD7SOErceMStnCkiop2nVj1PPiWVnuWE8v/6mE2tA=
@@ -293,12 +300,16 @@ github.com/giantswarm/errors v0.2.3 h1:gE1dDSD0RNwYUah5hG6oUQh0unPyZ74tVwR1/PW3Z
 github.com/giantswarm/errors v0.2.3/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
 github.com/giantswarm/exporterkit v0.2.0 h1:+HTGl4fmT/1OkTox8HbV3JXeavmsZv94+2CDW8cSrq0=
 github.com/giantswarm/exporterkit v0.2.0/go.mod h1:b4fuHVjsvZgznC9OEPfn0y5zvN8SnEKTiI5zTTfck94=
+github.com/giantswarm/exporterkit v0.2.1 h1:M/Avqdg6O+NdyGtY+LSy5cCpJzhG15WRHQRkhOY/dKs=
+github.com/giantswarm/exporterkit v0.2.1/go.mod h1:LkZNK+2qTcbHspbizA6JBBXpQW99u7u7UisUaWrSoVY=
 github.com/giantswarm/ipam v0.2.0 h1:nLNmDTfYUlflQsUUlouFzXfE+WaZM843BJGPsHLbgyw=
 github.com/giantswarm/ipam v0.2.0/go.mod h1:xG4cMEKwHlbE0aZ7x2H5j7o81U13LIStA73XCECdk+I=
 github.com/giantswarm/k8sclient/v4 v4.0.0 h1:K18A0FomGjxTMElcGrjO3uLkYobUtcNh8e8PhTgFr2w=
 github.com/giantswarm/k8sclient/v4 v4.0.0/go.mod h1:jTwQ8q0YbJJu3ZxbjoI6hkXeuvKm15xyI/c+zwxnUH0=
 github.com/giantswarm/k8sclient/v5 v5.0.0 h1:+Qs75jAphCC6ddlpjyGqXG9525rABUb160gVsJq2uHg=
 github.com/giantswarm/k8sclient/v5 v5.0.0/go.mod h1:OhlknCs1Wgc0ErjWBgeZDGe4Y6aThus21nQOXPAq4rQ=
+github.com/giantswarm/k8sclient/v5 v5.10.0 h1:ZgiteFkbU0yuSv/b+3rw/VQZIBE7mZsBJcT16bKEDhA=
+github.com/giantswarm/k8sclient/v5 v5.10.0/go.mod h1:HHSHvERGfLhNqTsqKBUQSQ5VXGhLfVRojplYwio6jDU=
 github.com/giantswarm/k8scloudconfig/v10 v10.0.0 h1:mUCtYbnJsELdq4GCKZejj/kWp3wXau2ZpnmDSxFOBSk=
 github.com/giantswarm/k8scloudconfig/v10 v10.0.0/go.mod h1:Gf4gR7MY+bo450vjPRZfr6pMSZaft288Za75nq3Ac7o=
 github.com/giantswarm/kubelock/v2 v2.0.0 h1:s5mJc32HD0cX7hRS3sZ+d0J7d7g9CZtz9uxyDv+24II=
@@ -1061,6 +1072,8 @@ golang.org/x/sync v0.0.0-20190911185100-cd5d95a43a6e/go.mod h1:RxMgew5VJxzue5/jJ
 golang.org/x/sync v0.0.0-20200317015054-43a5402ce75a/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208 h1:qwRHBd0NqMbJxfbotnDhm2ByMI1Shq4Y6oRJo21SGJA=
 golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
+golang.org/x/sync v0.0.0-20201207232520-09787c993a3a h1:DcqTD9SDLc+1P/r1EmRBwnVsrOwW+kk2vWf9n+1sGhs=
+golang.org/x/sync v0.0.0-20201207232520-09787c993a3a/go.mod h1:RxMgew5VJxzue5/jJTE5uejpjVlOe/izrB70Jof72aM=
 golang.org/x/sys v0.0.0-20170830134202-bb24a47a89ea/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20180823144017-11551d06cbcc/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=
 golang.org/x/sys v0.0.0-20180830151530-49385e6e1522/go.mod h1:STP8DvDyc/dI5b8T5hshtkjS+E42TnysNCUPdjciGhY=

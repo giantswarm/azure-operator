@@ -5,21 +5,21 @@ go 1.15
 require (
 	github.com/Azure/azure-sdk-for-go v48.2.2+incompatible
 	github.com/Azure/azure-storage-blob-go v0.11.0
-	github.com/Azure/go-autorest/autorest v0.11.17
+	github.com/Azure/go-autorest/autorest v0.11.18
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
 	github.com/Azure/go-autorest/autorest/to v0.4.0
 	github.com/asaskevich/govalidator v0.0.0-20200428143746-21a406dcc535 // indirect
 	github.com/coreos/go-semver v0.3.0
 	github.com/giantswarm/apiextensions/v2 v2.6.2
-	github.com/giantswarm/apiextensions/v3 v3.17.0
+	github.com/giantswarm/apiextensions/v3 v3.18.0
 	github.com/giantswarm/badnodedetector v1.0.1
 	github.com/giantswarm/certs/v3 v3.1.0
 	github.com/giantswarm/conditions v0.3.0
 	github.com/giantswarm/conditions-handler v0.2.1
 	github.com/giantswarm/errors v0.2.3
-	github.com/giantswarm/exporterkit v0.2.0
+	github.com/giantswarm/exporterkit v0.2.1
 	github.com/giantswarm/ipam v0.2.0
-	github.com/giantswarm/k8sclient/v5 v5.0.0
+	github.com/giantswarm/k8sclient/v5 v5.10.0
 	github.com/giantswarm/k8scloudconfig/v10 v10.0.0
 	github.com/giantswarm/kubelock/v2 v2.0.0
 	github.com/giantswarm/microendpoint v0.2.0
@@ -41,7 +41,7 @@ require (
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/viper v1.7.1
-	golang.org/x/sync v0.0.0-20200625203802-6e8e738ad208
+	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
 	k8s.io/api v0.18.9
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
