@@ -85,9 +85,9 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, clus
 	}
 
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
-	if subscriptionTenantID != servicePrincipalTenantID {
-		credentials.AuxTenants = append(credentials.AuxTenants, servicePrincipalTenantID)
-	}
+	//if subscriptionTenantID != servicePrincipalTenantID {
+	//	credentials.AuxTenants = append(credentials.AuxTenants, servicePrincipalTenantID)
+	//}
 
 	return credentials, subscriptionID, partnerID, nil
 }
