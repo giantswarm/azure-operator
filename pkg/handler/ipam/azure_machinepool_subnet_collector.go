@@ -141,6 +141,10 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx c
 	// Collect all the subnets from AzureCluster.Spec.NetworkSpec.Subnets field. If the Subnets
 	// field is not set, this function will simply return nil.
 	for _, subnet := range azureCluster.Spec.NetworkSpec.Subnets {
+		if len(subnet.CIDRBlocks) == 0 {
+			continue
+		}
+
 		_, subnetIPNet, err := net.ParseCIDR(subnet.CIDRBlocks[0])
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -148,7 +152,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureClusterCR(ctx c
 		azureClusterCRSubnets = append(azureClusterCRSubnets, *subnetIPNet)
 	}
 
-	c.logger.Debugf(ctx, "found allocated subnets in AzureCluster CR")
+	c.logger.Debugf(ctx, "found %d allocated subnets in AzureCluster CR", len(azureClusterCRSubnets))
 	return azureClusterCRSubnets, nil
 }
 
