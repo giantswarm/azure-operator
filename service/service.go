@@ -261,7 +261,7 @@ func New(config Config) (*Service, error) {
 		return nil, microerror.Mask(err)
 	}
 
-	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Logger)
+	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Logger, config.Viper.GetString(config.Flag.Service.Azure.TenantID))
 
 	var azureCollector collector.AzureAPIMetrics
 	var collectorSet *exporterkitcollector.Set

@@ -17,19 +17,21 @@ import (
 const (
 	clientSecretKey  = "clientSecret"
 	defaultAzureGUID = "37f13270-5c7a-56ff-9211-8426baaeaabd"
-
-	SubscriptionTenantIDAnnotation = "giantswarm.io/subscription-tenant-id"
 )
 
 type K8SCredential struct {
 	k8sclient k8sclient.Interface
 	logger    micrologger.Logger
+
+	managementClusterTenantID string
 }
 
-func NewK8SCredentialProvider(k8sclient k8sclient.Interface, logger micrologger.Logger) Provider {
+func NewK8SCredentialProvider(k8sclient k8sclient.Interface, logger micrologger.Logger, managementClusterTenantID string) Provider {
 	return K8SCredential{
 		k8sclient: k8sclient,
 		logger:    logger,
+
+		managementClusterTenantID: managementClusterTenantID,
 	}
 }
 
@@ -70,12 +72,8 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, clus
 
 	subscriptionID := azureCluster.Spec.SubscriptionID
 	clientID := azureClusterIdentity.Spec.ClientID
-	servicePrincipalTenantID := azureClusterIdentity.Spec.TenantID
-	subscriptionTenantID := azureCluster.Annotations[SubscriptionTenantIDAnnotation]
-	if subscriptionTenantID == "" {
-		k.logger.Debugf(ctx, "AzureCluster %s/%s did not contain annotation %q. Assuming the service principal and the subscription belong to the same tenant", azureCluster.Namespace, azureCluster.Name, SubscriptionTenantIDAnnotation)
-		subscriptionTenantID = servicePrincipalTenantID
-	}
+	subscriptionTenantID := azureClusterIdentity.Spec.TenantID
+	mcSubscriptionTenantID := k.managementClusterTenantID
 	// TODO find a way to store the partnerID.
 	partnerID := defaultAzureGUID
 
@@ -84,10 +82,13 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, clus
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Mask(err)
 	}
 
+	if mcSubscriptionTenantID != "" && subscriptionTenantID != mcSubscriptionTenantID {
+		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
+		credentials.AuxTenants = append(credentials.AuxTenants, mcSubscriptionTenantID)
+		return credentials, subscriptionID, partnerID, nil
+	}
+
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
-	//if subscriptionTenantID != servicePrincipalTenantID {
-	//	credentials.AuxTenants = append(credentials.AuxTenants, servicePrincipalTenantID)
-	//}
 
 	return credentials, subscriptionID, partnerID, nil
 }

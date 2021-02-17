@@ -112,13 +112,13 @@ func mainError() error {
 
 	daemonCommand := newCommand.DaemonCommand().CobraCommand()
 
-	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientID, "", "ID of the Active Directory Service Principal.")
-	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientSecret, "", "Secret of the Active Directory Service Principal.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientID, "", "ID of the Active Directory Service Principal that has access to the Management Cluster subscription.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.ClientSecret, "", "Secret of the Active Directory Service Principal that has access to the Management Cluster subscription.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.EnvironmentName, "AZUREPUBLICCLOUD", "Azure Cloud Environment identifier.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.Location, "westeurope", "Location of the host and guset clusters.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.PartnerID, "", "Partner id used in Azure for the attribution partner program.")
-	daemonCommand.PersistentFlags().String(f.Service.Azure.SubscriptionID, "", "ID of the Azure Subscription.")
-	daemonCommand.PersistentFlags().String(f.Service.Azure.TenantID, "", "ID of the Active Directory Tenant.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.SubscriptionID, "", "ID of the Azure Subscription where the Management Cluster is.")
+	daemonCommand.PersistentFlags().String(f.Service.Azure.TenantID, "", "ID of the Active Directory Tenant the Management Cluster subscription belongs to.")
 	daemonCommand.PersistentFlags().Bool(f.Service.Azure.MSI.Enabled, true, "Whether to enabled Managed Service Identity (MSI).")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.CIDR, "10.0.0.0/16", "CIDR of the host cluster virtual network used to create a peering.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.ResourceGroup, "", "Host cluster resource group name.")
