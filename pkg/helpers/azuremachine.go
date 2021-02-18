@@ -6,7 +6,6 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
-	"k8s.io/apimachinery/pkg/api/errors"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/cluster-api/util"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -60,15 +59,6 @@ func InitAzureMachineAnnotations(ctx context.Context, ctrlClient client.Client, 
 	// - Also ,we cannot know if AzureMachine release label was already updated
 	//   or not, as that is done in Cluster controller.
 	azureMachine.Annotations[annotation.LastDeployedReleaseVersion] = clusterLastDeployedReleaseVersion
-
-	err = ctrlClient.Update(ctx, azureMachine)
-	if errors.IsConflict(err) {
-		logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		logger.Debugf(ctx, "cancelling resource")
-		return nil
-	} else if err != nil {
-		return microerror.Mask(err)
-	}
 
 	return nil
 }
