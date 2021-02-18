@@ -29,18 +29,18 @@ const (
 )
 
 type Config struct {
-	AzureClientsFactory client.OrganizationFactory
-	CtrlClient          ctrlclient.Client
-	Debugger            *debugger.Debugger
-	Logger              micrologger.Logger
+	WCAzureClientsFactory client.CredentialsAwareClientFactoryInterface
+	CtrlClient            ctrlclient.Client
+	Debugger              *debugger.Debugger
+	Logger                micrologger.Logger
 }
 
 // Resource creates a different subnet for every node pool using ARM deployments.
 type Resource struct {
-	azureClientsFactory client.OrganizationFactory
-	ctrlClient          ctrlclient.Client
-	debugger            *debugger.Debugger
-	logger              micrologger.Logger
+	wcAzureClientsFactory client.CredentialsAwareClientFactoryInterface
+	ctrlClient            ctrlclient.Client
+	debugger              *debugger.Debugger
+	logger                micrologger.Logger
 }
 
 type StorageAccountIpRule struct {
@@ -60,10 +60,10 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		azureClientsFactory: config.AzureClientsFactory,
-		ctrlClient:          config.CtrlClient,
-		debugger:            config.Debugger,
-		logger:              config.Logger,
+		wcAzureClientsFactory: config.WCAzureClientsFactory,
+		ctrlClient:            config.CtrlClient,
+		debugger:              config.Debugger,
+		logger:                config.Logger,
 	}
 
 	return r, nil
@@ -77,22 +77,22 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, key.ClusterID(&azureCluster))
+	deploymentsClient, err := r.wcAzureClientsFactory.GetDeploymentsClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	natGatewaysClient, err := r.azureClientsFactory.GetNatGatewaysClient(ctx, key.ClusterID(&azureCluster))
+	natGatewaysClient, err := r.wcAzureClientsFactory.GetNatGatewaysClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	storageAccountsClient, err := r.azureClientsFactory.GetStorageAccountsClient(ctx, key.ClusterID(&azureCluster))
+	storageAccountsClient, err := r.wcAzureClientsFactory.GetStorageAccountsClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	subnetsClient, err := r.azureClientsFactory.GetSubnetsClient(ctx, key.ClusterID(&azureCluster))
+	subnetsClient, err := r.wcAzureClientsFactory.GetSubnetsClient(ctx, key.ClusterID(&azureCluster))
 	if err != nil {
 		return microerror.Mask(err)
 	}

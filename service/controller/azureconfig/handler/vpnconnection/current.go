@@ -24,7 +24,12 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		resourceGroup := r.azure.HostCluster.ResourceGroup
 		connectionName := key.ResourceGroupName(cr)
 
-		h, err := r.getHostVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)
+		connectionsClient, err := r.mcAzureClientFactory.GetVirtualNetworkGatewayConnectionsClient(ctx, key.ClusterID(&cr))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		h, err := connectionsClient.Get(ctx, resourceGroup, connectionName)
 		if IsVPNGatewayConnectionNotFound(err) {
 			r.logger.Debugf(ctx, "did not find host vpn gateway connection")
 			return connections{}, nil
@@ -40,7 +45,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			return connections{}, nil
 		}
 
-		c.Host = *h
+		c.Host = h
 
 		r.logger.Debugf(ctx, "found host vpn gateway connection")
 	}
@@ -51,7 +56,12 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 		resourceGroup := key.ResourceGroupName(cr)
 		connectionName := r.azure.HostCluster.ResourceGroup
 
-		g, err := r.getGuestVirtualNetworkGatewayConnection(ctx, resourceGroup, connectionName)
+		connectionsClient, err := r.wcAzureClientFactory.GetVirtualNetworkGatewayConnectionsClient(ctx, key.ClusterID(&cr))
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		g, err := connectionsClient.Get(ctx, resourceGroup, connectionName)
 		if IsVPNGatewayConnectionNotFound(err) {
 			r.logger.Debugf(ctx, "did not find tenant vpn gateway connection")
 			return c, nil
@@ -67,7 +77,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 			return c, nil
 		}
 
-		c.Guest = *g
+		c.Guest = g
 
 		r.logger.Debugf(ctx, "found tenant vpn gateway connection")
 	}

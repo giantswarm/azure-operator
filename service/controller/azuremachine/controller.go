@@ -2,7 +2,6 @@ package azuremachine
 
 import (
 	"context"
-	"time"
 
 	"github.com/giantswarm/k8sclient/v5/pkg/k8sclient"
 	"github.com/giantswarm/microerror"
@@ -14,7 +13,6 @@ import (
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -24,7 +22,8 @@ import (
 
 type ControllerConfig struct {
 	AzureMetricsCollector collector.AzureAPIMetrics
-	CredentialProvider    credential.Provider
+	MCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
 	K8sClient             k8sclient.Interface
 	Logger                micrologger.Logger
 	SentryDSN             string
@@ -36,6 +35,12 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
+	}
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
+	}
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 
 	var err error
@@ -79,31 +84,6 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 func NewAzureMachineResourceSet(config ControllerConfig) ([]resource.Interface, error) {
 	var err error
 
-	var clientFactory *client.Factory
-	{
-		c := client.FactoryConfig{
-			AzureAPIMetrics:    config.AzureMetricsCollector,
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
-			Logger:     config.Logger,
-		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
-	}
-
 	var azureMachineMetadataResource resource.Interface
 	{
 		c := azuremachinemetadata.Config{
@@ -119,9 +99,9 @@ func NewAzureMachineResourceSet(config ControllerConfig) ([]resource.Interface, 
 	var azureMachineConditionsResource resource.Interface
 	{
 		c := azuremachineconditions.Config{
-			AzureClientsFactory: &organizationClientFactory,
-			CtrlClient:          config.K8sClient.CtrlClient(),
-			Logger:              config.Logger,
+			WCAzureClientsFactory: config.WCAzureClientFactory,
+			CtrlClient:            config.K8sClient.CtrlClient(),
+			Logger:                config.Logger,
 		}
 
 		azureMachineConditionsResource, err = azuremachineconditions.New(c)

@@ -12,6 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	azureclient "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -31,16 +32,18 @@ type Config struct {
 	RegistryDomain        string
 	SSHUserList           employees.SSHUserList
 	StorageAccountsClient *storage.AccountsClient
+	WCAzureClientFactory  azureclient.CredentialsAwareClientFactoryInterface
 }
 
 type Resource struct {
-	certsSearcher  certs.Interface
-	ctrlClient     client.Client
-	g8sClient      versioned.Interface
-	k8sClient      kubernetes.Interface
-	logger         micrologger.Logger
-	registryDomain string
-	sshUserList    employees.SSHUserList
+	certsSearcher        certs.Interface
+	ctrlClient           client.Client
+	g8sClient            versioned.Interface
+	k8sClient            kubernetes.Interface
+	logger               micrologger.Logger
+	registryDomain       string
+	sshUserList          employees.SSHUserList
+	wcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
 }
 
 func New(config Config) (*Resource, error) {
@@ -62,15 +65,19 @@ func New(config Config) (*Resource, error) {
 	if config.RegistryDomain == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.RegistryDomain must not be empty", config)
 	}
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
+	}
 
 	r := &Resource{
-		certsSearcher:  config.CertsSearcher,
-		ctrlClient:     config.CtrlClient,
-		g8sClient:      config.G8sClient,
-		k8sClient:      config.K8sClient,
-		logger:         config.Logger,
-		registryDomain: config.RegistryDomain,
-		sshUserList:    config.SSHUserList,
+		certsSearcher:        config.CertsSearcher,
+		ctrlClient:           config.CtrlClient,
+		g8sClient:            config.G8sClient,
+		k8sClient:            config.K8sClient,
+		logger:               config.Logger,
+		registryDomain:       config.RegistryDomain,
+		sshUserList:          config.SSHUserList,
+		wcAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	return r, nil

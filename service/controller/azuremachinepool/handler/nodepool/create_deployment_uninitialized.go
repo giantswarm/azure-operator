@@ -65,22 +65,22 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 		return currentState, microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&azureMachinePool))
+	deploymentsClient, err := r.WCAzureClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	storageAccountsClient, err := r.ClientFactory.GetStorageAccountsClient(ctx, key.ClusterID(&azureMachinePool))
+	storageAccountsClient, err := r.WCAzureClientFactory.GetStorageAccountsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
+	virtualMachineScaleSetsClient, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, key.ClusterID(&azureMachinePool))
+	virtualMachineScaleSetVMsClient, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}

@@ -19,18 +19,18 @@ import (
 )
 
 type AzureMachinePoolSubnetCollectorConfig struct {
-	AzureClientFactory client.OrganizationFactory
-	CtrlClient         ctrl.Client
-	Logger             micrologger.Logger
+	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	CtrlClient           ctrl.Client
+	Logger               micrologger.Logger
 }
 
 // AzureMachinePoolSubnetCollector is a Collector implementation that collects all subnets that are
 // already allocated in tenant cluster virtual network. See Collect function implementation and
 // docs for more details.
 type AzureMachinePoolSubnetCollector struct {
-	azureClientFactory client.OrganizationFactory
-	ctrlClient         ctrl.Client
-	logger             micrologger.Logger
+	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	ctrlClient           ctrl.Client
+	logger               micrologger.Logger
 }
 
 func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig) (*AzureMachinePoolSubnetCollector, error) {
@@ -42,9 +42,9 @@ func NewAzureMachineSubnetCollector(config AzureMachinePoolSubnetCollectorConfig
 	}
 
 	c := &AzureMachinePoolSubnetCollector{
-		azureClientFactory: config.AzureClientFactory,
-		ctrlClient:         config.CtrlClient,
-		logger:             config.Logger,
+		wcAzureClientFactory: config.WCAzureClientFactory,
+		ctrlClient:           config.CtrlClient,
+		logger:               config.Logger,
 	}
 
 	return c, nil
@@ -167,7 +167,7 @@ func (c *AzureMachinePoolSubnetCollector) collectSubnetsFromAzureVNet(ctx contex
 		"level", "debug",
 		"message", fmt.Sprintf("finding subnets created in Azure VNet %q", azureCluster.Spec.NetworkSpec.Vnet.Name))
 
-	subnetsClient, err := c.azureClientFactory.GetSubnetsClient(ctx, key.ClusterID(azureCluster))
+	subnetsClient, err := c.wcAzureClientFactory.GetSubnetsClient(ctx, key.ClusterID(azureCluster))
 	if err != nil {
 		errorMessage := fmt.Sprintf("error while creating/getting Azure subnets client for cluster %q", azureCluster.Name)
 		c.logger.LogCtx(ctx, "level", "warning", "message", errorMessage)

@@ -21,9 +21,9 @@ type Config struct {
 	Debugger   *debugger.Debugger
 	Logger     micrologger.Logger
 
-	Azure         setting.Azure
-	ClientFactory client.OrganizationFactory
-	Name          string
+	Azure                setting.Azure
+	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	Name                 string
 }
 
 type Resource struct {
@@ -32,9 +32,9 @@ type Resource struct {
 	Logger       micrologger.Logger
 	StateMachine state.Machine
 
-	Azure         setting.Azure
-	ClientFactory client.OrganizationFactory
-	name          string
+	Azure                setting.Azure
+	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	name                 string
 }
 
 func New(config Config) (*Resource, error) {
@@ -61,9 +61,9 @@ func New(config Config) (*Resource, error) {
 		Debugger:   config.Debugger,
 		Logger:     config.Logger,
 
-		Azure:         config.Azure,
-		ClientFactory: config.ClientFactory,
-		name:          config.Name,
+		Azure:                config.Azure,
+		WCAzureClientFactory: config.WCAzureClientFactory,
+		name:                 config.Name,
 	}
 
 	return r, nil

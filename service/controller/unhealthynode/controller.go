@@ -18,7 +18,6 @@ import (
 	"sigs.k8s.io/cluster-api/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -30,7 +29,8 @@ type ControllerConfig struct {
 	Logger    micrologger.Logger
 
 	AzureMetricsCollector collector.AzureAPIMetrics
-	CredentialProvider    credential.Provider
+	MCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
 	SentryDSN             string
 }
 
@@ -50,8 +50,11 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 	if config.AzureMetricsCollector == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureMetricsCollector must not be empty", config)
 	}
-	if config.CredentialProvider == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
+	}
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 
 	var certsSearcher *certs.Searcher
@@ -110,31 +113,6 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 func newTerminateUnhealthyNodeResources(config ControllerConfig, certsSearcher *certs.Searcher) ([]resource.Interface, error) {
 	var err error
 
-	var clientFactory *client.Factory
-	{
-		c := client.FactoryConfig{
-			AzureAPIMetrics:    config.AzureMetricsCollector,
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
-			Logger:     config.Logger,
-		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
-	}
-
 	var tenantRestConfigProvider *tenantcluster.TenantCluster
 	{
 		c := tenantcluster.Config{
@@ -152,7 +130,7 @@ func newTerminateUnhealthyNodeResources(config ControllerConfig, certsSearcher *
 	var terminateUnhealthyNodeResource resource.Interface
 	{
 		c := terminateunhealthynode.Config{
-			AzureClientsFactory:      &organizationClientFactory,
+			WCAzureClientsFactory:    config.WCAzureClientFactory,
 			CtrlClient:               config.K8sClient.CtrlClient(),
 			Logger:                   config.Logger,
 			TenantRestConfigProvider: tenantRestConfigProvider,

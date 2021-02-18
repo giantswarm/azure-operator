@@ -38,7 +38,7 @@ func (r *Resource) GetCurrentState(ctx context.Context, obj interface{}) (interf
 	// the virtual machines are not yet present, we cancel the resource and try
 	// again on the next resync period.
 	{
-		interfacesClient, err := r.getInterfacesClient(ctx)
+		interfacesClient, err := r.wcAzureClientFactory.GetInterfacesClient(ctx, key.ClusterID(&cr))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

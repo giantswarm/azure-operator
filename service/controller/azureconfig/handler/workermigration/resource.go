@@ -18,7 +18,8 @@ const (
 
 type Config struct {
 	CertsSearcher             certs.Interface
-	ClientFactory             *azureclient.Factory
+	MCAzureClientFactory      azureclient.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory      azureclient.CredentialsAwareClientFactoryInterface
 	CPPublicIPAddressesClient *network.PublicIPAddressesClient
 	CtrlClient                client.Client
 	Logger                    micrologger.Logger
@@ -28,12 +29,12 @@ type Config struct {
 }
 
 type Resource struct {
-	clientFactory             *azureclient.Factory
-	cpPublicIPAddressesClient *network.PublicIPAddressesClient
-	ctrlClient                client.Client
-	logger                    micrologger.Logger
-	tenantClientFactory       tenantcluster.Factory
-	wrapAzureAPI              func(cf *azureclient.Factory, clusterID string) azure.API
+	mcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	wcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	ctrlClient           client.Client
+	logger               micrologger.Logger
+	tenantClientFactory  tenantcluster.Factory
+	wrapAzureAPI         func(cf azureclient.CredentialsAwareClientFactoryInterface, clusterID string) azure.API
 
 	installationName string
 	location         string
@@ -43,8 +44,11 @@ func New(config Config) (*Resource, error) {
 	if config.CPPublicIPAddressesClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CPPublicIPAddressesClient must not be empty", config)
 	}
-	if config.ClientFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.ClientFactory must not be empty", config)
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
+	}
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
@@ -70,12 +74,12 @@ func New(config Config) (*Resource, error) {
 	}
 
 	newResource := &Resource{
-		cpPublicIPAddressesClient: config.CPPublicIPAddressesClient,
-		clientFactory:             config.ClientFactory,
-		ctrlClient:                config.CtrlClient,
-		logger:                    config.Logger,
-		tenantClientFactory:       cachedTenantClientFactory,
-		wrapAzureAPI:              azure.GetAPI,
+		mcAzureClientFactory: config.MCAzureClientFactory,
+		wcAzureClientFactory: config.WCAzureClientFactory,
+		ctrlClient:           config.CtrlClient,
+		logger:               config.Logger,
+		tenantClientFactory:  cachedTenantClientFactory,
+		wrapAzureAPI:         azure.GetAPI,
 
 		installationName: config.InstallationName,
 		location:         config.Location,

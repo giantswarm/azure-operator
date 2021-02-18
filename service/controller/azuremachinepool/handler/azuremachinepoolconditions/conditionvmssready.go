@@ -24,7 +24,7 @@ const (
 func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, azureMachinePool *capzexp.AzureMachinePool) error {
 	r.logger.Debugf(ctx, "ensuring condition %s", azureconditions.VMSSReadyCondition)
 
-	deploymentsClient, err := r.azureClientsFactory.GetDeploymentsClient(ctx, key.ClusterID(azureMachinePool))
+	deploymentsClient, err := r.wcAzureClientsFactory.GetDeploymentsClient(ctx, key.ClusterID(azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -43,7 +43,7 @@ func (r *Resource) ensureVMSSReadyCondition(ctx context.Context, azureMachinePoo
 
 	// Deployment is successful, we proceed with checking the actual Azure
 	// VMSS.
-	vmssClient, err := r.azureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(azureMachinePool))
+	vmssClient, err := r.wcAzureClientsFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}

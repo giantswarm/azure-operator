@@ -36,7 +36,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			resourceGroup := key.ResourceGroupName(cr)
 			vpnGatewayName := key.VPNGatewayName(cr)
 
-			guestVPNGateway, err = r.getGuestVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
+			gatewayClient, err := r.mcAzureClientFactory.GetVirtualNetworkGatewaysClient(ctx, key.ClusterID(&cr))
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+			guestVPNGateway, err := gatewayClient.Get(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
 				r.logger.Debugf(ctx, "tenant vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
@@ -61,7 +66,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			resourceGroup := r.azure.HostCluster.ResourceGroup
 			vpnGatewayName := r.azure.HostCluster.VirtualNetworkGateway
 
-			hostVPNGateway, err = r.getHostVirtualNetworkGateway(ctx, resourceGroup, vpnGatewayName)
+			gatewayClient, err := r.wcAzureClientFactory.GetVirtualNetworkGatewaysClient(ctx, key.ClusterID(&cr))
+			if err != nil {
+				return nil, microerror.Mask(err)
+			}
+
+			hostVPNGateway, err := gatewayClient.Get(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
 				r.logger.Debugf(ctx, "host vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)

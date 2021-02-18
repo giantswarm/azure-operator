@@ -57,10 +57,14 @@ func (r *Resource) ensureMasterEtcdLBSourcePrefixesUpdated(ctx context.Context, 
 		return microerror.Maskf(executionFailedError, "security group rules are missing from Azure API response")
 	}
 
-	var err error
 	var publicIPs []string
 	{
-		publicIPs, err = listPublicIPs(ctx, r.cpPublicIPAddressesClient, r.installationName)
+		cpPublicIPAddressesClient, err := r.mcAzureClientFactory.GetPublicIpAddressesClient(ctx, key.ClusterID(&cr))
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		publicIPs, err = listPublicIPs(ctx, cpPublicIPAddressesClient, r.installationName)
 		if err != nil {
 			return microerror.Mask(err)
 		}

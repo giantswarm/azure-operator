@@ -17,7 +17,6 @@ import (
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
 	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/ipam"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
@@ -43,8 +42,8 @@ type ControllerConfig struct {
 	CalicoMTU             int
 	CalicoSubnet          string
 	ClusterIPRange        string
-	CPAzureClientSet      *client.AzureClientSet
-	CredentialProvider    credential.Provider
+	MCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
 	DockerhubToken        string
 	EtcdPrefix            string
 	Ignition              setting.Ignition
@@ -65,8 +64,12 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
 
-	if config.CPAzureClientSet == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CPAzureClientSet must not be empty", config)
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
+	}
+
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 
 	if config.K8sClient == nil {
@@ -114,37 +117,12 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interface, error) {
 	var err error
 
-	var clientFactory *client.Factory
-	{
-		c := client.FactoryConfig{
-			AzureAPIMetrics:    config.AzureMetricsCollector,
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
-			Logger:     config.Logger,
-		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
-	}
-
 	var azureMachinePoolConditionsResource resource.Interface
 	{
 		c := azuremachinepoolconditions.Config{
-			AzureClientsFactory: &organizationClientFactory,
-			CtrlClient:          config.K8sClient.CtrlClient(),
-			Logger:              config.Logger,
+			WCAzureClientsFactory: config.WCAzureClientFactory,
+			CtrlClient:            config.K8sClient.CtrlClient(),
+			Logger:                config.Logger,
 		}
 
 		azureMachinePoolConditionsResource, err = azuremachinepoolconditions.New(c)
@@ -198,16 +176,16 @@ func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interfa
 		Debugger:   newDebugger,
 		Logger:     config.Logger,
 
-		Azure:         config.Azure,
-		ClientFactory: organizationClientFactory,
+		Azure:                config.Azure,
+		WCAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	var vmSKU *vmsku.VMSKUs
 	{
 		vmSKU, err = vmsku.New(vmsku.Config{
-			AzureClientSet: config.CPAzureClientSet,
-			Location:       config.Azure.Location,
-			Logger:         config.Logger,
+			MCAzureClientFactory: config.MCAzureClientFactory,
+			Location:             config.Azure.Location,
+			Logger:               config.Logger,
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)
@@ -218,7 +196,6 @@ func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interfa
 	{
 		c := nodepool.Config{
 			Config:              nodesConfig,
-			CredentialProvider:  config.CredentialProvider,
 			TenantClientFactory: cachedTenantClientFactory,
 			VMSKU:               vmSKU,
 		}
@@ -271,9 +248,9 @@ func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interfa
 	var subnetCollector *ipam.AzureMachinePoolSubnetCollector
 	{
 		c := ipam.AzureMachinePoolSubnetCollectorConfig{
-			AzureClientFactory: organizationClientFactory,
-			CtrlClient:         config.K8sClient.CtrlClient(),
-			Logger:             config.Logger,
+			WCAzureClientFactory: config.WCAzureClientFactory,
+			CtrlClient:           config.K8sClient.CtrlClient(),
+			Logger:               config.Logger,
 		}
 
 		subnetCollector, err = ipam.NewAzureMachineSubnetCollector(c)
@@ -325,7 +302,6 @@ func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interfa
 			CertsSearcher:       certsSearcher,
 			ClusterIPRange:      config.ClusterIPRange,
 			EtcdPrefix:          config.EtcdPrefix,
-			CredentialProvider:  config.CredentialProvider,
 			CtrlClient:          config.K8sClient.CtrlClient(),
 			DockerhubToken:      config.DockerhubToken,
 			Ignition:            config.Ignition,
@@ -345,9 +321,9 @@ func NewAzureMachinePoolResourceSet(config ControllerConfig) ([]resource.Interfa
 	var cloudconfigblobResource resource.Interface
 	{
 		c := cloudconfigblob.Config{
-			ClientFactory: organizationClientFactory,
-			CtrlClient:    config.K8sClient.CtrlClient(),
-			Logger:        config.Logger,
+			WCAzureClientFactory: config.WCAzureClientFactory,
+			CtrlClient:           config.K8sClient.CtrlClient(),
+			Logger:               config.Logger,
 		}
 
 		cloudconfigblobResource, err = cloudconfigblob.New(c)

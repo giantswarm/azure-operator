@@ -17,7 +17,7 @@ func (r *Resource) GetDesiredState(ctx context.Context, obj interface{}) (interf
 		return nil, microerror.Mask(err)
 	}
 
-	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, key.ClusterID(&cr), key.MasterVMSSName(cr))
+	masterNICPrivateIPs, err := r.getMasterNICPrivateIPs(ctx, cr)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

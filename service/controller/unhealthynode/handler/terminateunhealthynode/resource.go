@@ -14,22 +14,22 @@ const (
 )
 
 type Config struct {
-	AzureClientsFactory      *azureclient.OrganizationFactory
+	WCAzureClientsFactory    azureclient.CredentialsAwareClientFactoryInterface
 	CtrlClient               client.Client
 	Logger                   micrologger.Logger
 	TenantRestConfigProvider *tenantcluster.TenantCluster
 }
 
 type Resource struct {
-	azureClientsFactory      *azureclient.OrganizationFactory
+	azureClientsFactory      azureclient.CredentialsAwareClientFactoryInterface
 	ctrlClient               client.Client
 	logger                   micrologger.Logger
 	tenantRestConfigProvider *tenantcluster.TenantCluster
 }
 
 func New(config Config) (*Resource, error) {
-	if config.AzureClientsFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientsFactory must not be empty", config)
+	if config.WCAzureClientsFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientsFactory must not be empty", config)
 	}
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
@@ -42,7 +42,7 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		azureClientsFactory:      config.AzureClientsFactory,
+		azureClientsFactory:      config.WCAzureClientsFactory,
 		ctrlClient:               config.CtrlClient,
 		logger:                   config.Logger,
 		tenantRestConfigProvider: config.TenantRestConfigProvider,

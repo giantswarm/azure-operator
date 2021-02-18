@@ -1,13 +1,10 @@
 package dnsrecord
 
 import (
-	"context"
-
-	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v5/client"
 )
 
 const (
@@ -16,24 +13,33 @@ const (
 )
 
 type Config struct {
-	CPRecordSetsClient dns.RecordSetsClient
-	Logger             micrologger.Logger
+	Logger               micrologger.Logger
+	MCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
-	cpRecordSetsClient dns.RecordSetsClient
-	logger             micrologger.Logger
+	logger               micrologger.Logger
+	mcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
 }
 
 func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.MCAzureClientFactory must not be empty")
+	}
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "config.WCAzureClientFactory must not be empty")
+	}
 
 	r := &Resource{
-		cpRecordSetsClient: config.CPRecordSetsClient,
-		logger:             config.Logger,
+		mcAzureClientFactory: config.MCAzureClientFactory,
+		wcAzureClientFactory: config.WCAzureClientFactory,
+		logger:               config.Logger,
 	}
 
 	return r, nil
@@ -42,22 +48,4 @@ func New(config Config) (*Resource, error) {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-func (r *Resource) getDNSRecordSetsGuestClient(ctx context.Context) (*dns.RecordSetsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.DNSRecordSetsClient, nil
-}
-
-func (r *Resource) getDNSZonesGuestClient(ctx context.Context) (*dns.ZonesClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.DNSZonesClient, nil
 }

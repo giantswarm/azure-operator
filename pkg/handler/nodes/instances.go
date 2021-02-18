@@ -17,7 +17,7 @@ func (r *Resource) GetVMSSInstances(ctx context.Context, azureMachinePool v1alph
 
 	r.Logger.Debugf(ctx, "looking for the scale set %#q", vmssName)
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, key.ClusterID(&azureMachinePool))
+	virtualMachineScaleSetVMsClient, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

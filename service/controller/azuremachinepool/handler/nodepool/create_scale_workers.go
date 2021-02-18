@@ -47,12 +47,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
-	deploymentsClient, err := r.ClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&azureMachinePool))
+	deploymentsClient, err := r.WCAzureClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
 
-	virtualMachineScaleSetVMsClient, err := r.ClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, key.ClusterID(&azureMachinePool))
+	virtualMachineScaleSetVMsClient, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetVMsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return currentState, microerror.Mask(err)
 	}
@@ -152,7 +152,7 @@ func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachi
 	resourceGroup := key.ClusterID(&azureMachinePool)
 	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
+	virtualMachineScaleSetsClient, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return nil, nil, microerror.Mask(err)
 	}
@@ -243,7 +243,7 @@ func (r *Resource) scaleVMSS(ctx context.Context, azureMachinePool capzv1alpha3.
 	resourceGroup := key.ClusterID(&azureMachinePool)
 	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 
-	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
+	virtualMachineScaleSetsClient, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&azureMachinePool))
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -37,11 +37,10 @@ type Config struct {
 	InstallationName string
 	Logger           micrologger.Logger
 
-	Azure                      setting.Azure
-	AzureClientSet             *client.AzureClientSet
-	ClientFactory              client.OrganizationFactory
-	ControlPlaneSubscriptionID string
-	Debug                      setting.Debug
+	Azure                setting.Azure
+	MCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	Debug                setting.Debug
 }
 
 type Resource struct {
@@ -50,11 +49,10 @@ type Resource struct {
 	installationName string
 	logger           micrologger.Logger
 
-	azure                      setting.Azure
-	azureClientSet             *client.AzureClientSet
-	clientFactory              client.OrganizationFactory
-	controlPlaneSubscriptionID string
-	debug                      setting.Debug
+	azure                setting.Azure
+	mcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	debug                setting.Debug
 }
 
 type StorageAccountIpRule struct {
@@ -63,9 +61,6 @@ type StorageAccountIpRule struct {
 }
 
 func New(config Config) (*Resource, error) {
-	if config.AzureClientSet == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientSet must not be empty", config)
-	}
 	if config.Debugger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Debugger must not be empty", config)
 	}
@@ -81,8 +76,11 @@ func New(config Config) (*Resource, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if config.ControlPlaneSubscriptionID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.ControlPlaneSubscriptionID must not be empty", config)
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
+	}
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 
 	r := &Resource{
@@ -91,11 +89,10 @@ func New(config Config) (*Resource, error) {
 		installationName: config.InstallationName,
 		logger:           config.Logger,
 
-		azure:                      config.Azure,
-		azureClientSet:             config.AzureClientSet,
-		clientFactory:              config.ClientFactory,
-		controlPlaneSubscriptionID: config.ControlPlaneSubscriptionID,
-		debug:                      config.Debug,
+		azure:                config.Azure,
+		debug:                config.Debug,
+		mcAzureClientFactory: config.MCAzureClientFactory,
+		wcAzureClientFactory: config.MCAzureClientFactory,
 	}
 
 	return r, nil
@@ -114,7 +111,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	deploymentsClient, err := r.clientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
+	deploymentsClient, err := r.mcAzureClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

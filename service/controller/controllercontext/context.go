@@ -7,7 +7,6 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/release/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/service/controller/cloudconfig"
 )
 
@@ -17,7 +16,6 @@ const controllerKey contextKey = "controller"
 
 type Context struct {
 	MasterLBBackendPoolID string
-	AzureClientSet        *client.AzureClientSet
 	CloudConfig           cloudconfig.Interface
 	ContainerURL          *azblob.ContainerURL
 	MasterSubnetID        string

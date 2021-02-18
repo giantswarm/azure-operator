@@ -132,7 +132,7 @@ func (r *Resource) getBootstrapSecretName(ctx context.Context, machinePool *expc
 func (r *Resource) getContainerURL(ctx context.Context, azureMachinePool *v1alpha3.AzureMachinePool, resourceGroupName, storageAccountName string) (azblob.ContainerURL, error) {
 	r.logger.Debugf(ctx, "Finding ContainerURL to upload bootstrap config")
 
-	storageAccountsClient, err := r.clientFactory.GetStorageAccountsClient(ctx, key.ClusterID(azureMachinePool))
+	storageAccountsClient, err := r.wcAzureClientFactory.GetStorageAccountsClient(ctx, key.ClusterID(azureMachinePool))
 	if err != nil {
 		return azblob.ContainerURL{}, microerror.Mask(err)
 	}

@@ -5,6 +5,8 @@ import (
 	"github.com/giantswarm/micrologger"
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
+
+	"github.com/giantswarm/azure-operator/v5/client"
 )
 
 const (
@@ -14,13 +16,15 @@ const (
 )
 
 type Config struct {
-	K8sClient kubernetes.Interface
-	Logger    micrologger.Logger
+	K8sClient            kubernetes.Interface
+	Logger               micrologger.Logger
+	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
 }
 
 type Resource struct {
-	k8sClient kubernetes.Interface
-	logger    micrologger.Logger
+	k8sClient            kubernetes.Interface
+	logger               micrologger.Logger
+	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
 }
 
 func New(config Config) (*Resource, error) {
@@ -30,10 +34,14 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%t.Logger must not be empty", config)
 	}
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%t.WCAzureClientFactory must not be empty", config)
+	}
 
 	r := &Resource{
-		k8sClient: config.K8sClient,
-		logger:    config.Logger,
+		k8sClient:            config.K8sClient,
+		logger:               config.Logger,
+		wcAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	return r, nil

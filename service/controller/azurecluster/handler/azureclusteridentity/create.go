@@ -38,7 +38,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// Retrieve the legacy secret related to the organization this AzureCluster belongs to.
 	var legacySecret corev1.Secret
 	{
-		credentialSecret, err := r.azureClientsFactory.GetLegacyCredentialSecret(ctx, azureCluster.ObjectMeta)
+		credentialSecret, err := r.wcAzureClientsFactory.GetLegacyCredentialSecret(ctx, key.OrganizationID(&azureCluster))
 		if err != nil {
 			return microerror.Mask(err)
 		}

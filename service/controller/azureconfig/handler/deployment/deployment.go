@@ -23,9 +23,14 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 		return azureresource.Deployment{}, microerror.Mask(err)
 	}
 
+	subscriptionID, err := r.mcAzureClientFactory.GetSubscriptionID(ctx, key.ClusterID(&customObject))
+	if err != nil {
+		return azureresource.Deployment{}, microerror.Mask(err)
+	}
+
 	controlPlaneWorkerSubnetID := fmt.Sprintf(
 		"/subscriptions/%s/resourceGroups/%s/providers/Microsoft.Network/virtualNetworks/%s/subnets/%s_worker_subnet",
-		r.controlPlaneSubscriptionID,
+		subscriptionID,
 		r.installationName,
 		r.azure.HostCluster.VirtualNetwork,
 		r.installationName,
@@ -73,7 +78,12 @@ func (r Resource) newDeployment(ctx context.Context, customObject providerv1alph
 
 // This function retrieves the public IP address for CP masters and workers, as a comma separated list.
 func (r Resource) getControlPlanePublicIPs(ctx context.Context) ([]string, error) {
-	allPublicIPs, err := r.azureClientSet.PublicIpAddressesClient.ListComplete(ctx, r.installationName)
+	publicIpsClient, err := r.mcAzureClientFactory.GetPublicIpAddressesClient(ctx, "")
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	allPublicIPs, err := publicIpsClient.ListComplete(ctx, r.installationName)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}

@@ -5,11 +5,11 @@ import (
 	"fmt"
 	"net/url"
 
-	"github.com/Azure/azure-sdk-for-go/services/storage/mgmt/2019-04-01/storage"
 	"github.com/Azure/azure-storage-blob-go/azblob"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
+	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 )
 
@@ -19,19 +19,27 @@ const (
 
 type Config struct {
 	Logger micrologger.Logger
+
+	MCAzureClientFactory client.CredentialsAwareClientFactoryInterface
 }
 
 type Resource struct {
 	logger micrologger.Logger
+
+	mcAzureClientFactory client.CredentialsAwareClientFactoryInterface
 }
 
 func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.MCAzureClientFactory must not be empty", config)
+	}
 
 	newResource := &Resource{
-		logger: config.Logger,
+		logger:               config.Logger,
+		mcAzureClientFactory: config.MCAzureClientFactory,
 	}
 
 	return newResource, nil
@@ -68,13 +76,4 @@ func (r *Resource) addContainerURLToContext(ctx context.Context, containerName, 
 	r.logger.Debugf(ctx, "set containerurl to context")
 
 	return nil
-}
-
-func (r *Resource) getStorageAccountsClient(ctx context.Context) (*storage.AccountsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.StorageAccountsClient, nil
 }

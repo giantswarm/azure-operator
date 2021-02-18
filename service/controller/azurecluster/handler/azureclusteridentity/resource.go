@@ -14,15 +14,15 @@ const (
 )
 
 type Config struct {
-	AzureClientsFactory client.OrganizationFactory
-	CtrlClient          ctrlclient.Client
-	Logger              micrologger.Logger
+	WCAzureClientsFactory client.CredentialsAwareClientFactoryInterface
+	CtrlClient            ctrlclient.Client
+	Logger                micrologger.Logger
 }
 
 type Resource struct {
-	azureClientsFactory client.OrganizationFactory
-	ctrlClient          ctrlclient.Client
-	logger              micrologger.Logger
+	wcAzureClientsFactory client.CredentialsAwareClientFactoryInterface
+	ctrlClient            ctrlclient.Client
+	logger                micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
@@ -34,9 +34,9 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		azureClientsFactory: config.AzureClientsFactory,
-		ctrlClient:          config.CtrlClient,
-		logger:              config.Logger,
+		wcAzureClientsFactory: config.WCAzureClientsFactory,
+		ctrlClient:            config.CtrlClient,
+		logger:                config.Logger,
 	}
 
 	return r, nil

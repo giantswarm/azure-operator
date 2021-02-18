@@ -3,16 +3,18 @@ package endpoints
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
+	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
+	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
-func (r *Resource) getMasterNICPrivateIPs(ctx context.Context, resourceGroupName, virtualMachineScaleSetName string) ([]string, error) {
+func (r *Resource) getMasterNICPrivateIPs(ctx context.Context, cr v1alpha1.AzureConfig) ([]string, error) {
 	var ips []string
+	resourceGroupName := key.ClusterID(&cr)
+	virtualMachineScaleSetName := key.MasterVMSSName(cr)
 
-	interfacesClient, err := r.getInterfacesClient(ctx)
+	interfacesClient, err := r.wcAzureClientFactory.GetInterfacesClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
@@ -50,13 +52,4 @@ func (r *Resource) getMasterNICPrivateIPs(ctx context.Context, resourceGroupName
 	}
 
 	return ips, nil
-}
-
-func (r *Resource) getInterfacesClient(ctx context.Context) (*network.InterfacesClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.InterfacesClient, nil
 }

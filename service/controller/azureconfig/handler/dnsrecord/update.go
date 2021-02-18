@@ -41,7 +41,12 @@ func (r *Resource) applyUpdateChange(ctx context.Context, change dnsRecords) err
 			}
 		}
 
-		_, err := r.cpRecordSetsClient.CreateOrUpdate(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
+		cpRecordSetsClient, err := r.mcAzureClientFactory.GetDnsRecordSetsClient(ctx, "")
+		if err != nil {
+			return microerror.Mask(err)
+		}
+
+		_, err = cpRecordSetsClient.CreateOrUpdate(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, params, "", "")
 		if err != nil {
 			return microerror.Mask(err)
 		}

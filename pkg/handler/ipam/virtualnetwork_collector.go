@@ -17,14 +17,13 @@ import (
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 type VirtualNetworkCollectorConfig struct {
 	AzureMetricsCollector collector.AzureAPIMetrics
-	CredentialProvider    credential.Provider
+	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
 	InstallationName      string
 	K8sClient             k8sclient.Interface
 	Logger                micrologger.Logger
@@ -35,7 +34,7 @@ type VirtualNetworkCollectorConfig struct {
 
 type VirtualNetworkCollector struct {
 	azureMetricsCollector collector.AzureAPIMetrics
-	credentialProvider    credential.Provider
+	wcAzureClientFactory  client.CredentialsAwareClientFactoryInterface
 	installationName      string
 	k8sclient             k8sclient.Interface
 	logger                micrologger.Logger
@@ -48,8 +47,8 @@ func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualN
 	if config.AzureMetricsCollector == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.AzureMetricsCollector must not be empty", config)
 	}
-	if config.CredentialProvider == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 	if config.K8sClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.K8sClient must not be empty", config)
@@ -67,7 +66,7 @@ func NewVirtualNetworkCollector(config VirtualNetworkCollectorConfig) (*VirtualN
 
 	c := &VirtualNetworkCollector{
 		azureMetricsCollector: config.AzureMetricsCollector,
-		credentialProvider:    config.CredentialProvider,
+		wcAzureClientFactory:  config.WCAzureClientFactory,
 		k8sclient:             config.K8sClient,
 		installationName:      config.InstallationName,
 		logger:                config.Logger,
@@ -162,39 +161,40 @@ func (c *VirtualNetworkCollector) getVirtualNetworksFromAllSubscriptions(ctx con
 	var doneSubscriptions []string
 	var ret []net.IPNet
 	for _, cluster := range tenantClusterList.Items {
-		organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := c.credentialProvider.GetOrganizationAzureCredentials(ctx, key.ClusterID(&cluster))
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		organizationAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, c.azureMetricsCollector, subscriptionID, partnerID)
+		subscriptionID, err := c.wcAzureClientFactory.GetSubscriptionID(ctx, key.ClusterID(&cluster))
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 
 		// We want to check only once per subscription.
-		if inArray(doneSubscriptions, organizationAzureClientSet.SubscriptionID) {
+		if inArray(doneSubscriptions, subscriptionID) {
 			continue
 		}
 
-		nets, err := c.getVirtualNetworksFromSubscription(ctx, organizationAzureClientSet)
+		nets, err := c.getVirtualNetworksFromSubscription(ctx, key.ClusterID(&cluster))
 		if err != nil {
 			// We can't use this Azure credentials. Might be wrong in the Secret file.
 			// We shouldn't block the network calculation for this reason.
-			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Error getting used virtual networks for subscription %s: %s", organizationAzureClientSet.SubscriptionID, err))
+			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Error getting used virtual networks for subscription %s: %s", subscriptionID, err))
 			continue
 		}
 
-		doneSubscriptions = append(doneSubscriptions, organizationAzureClientSet.SubscriptionID)
+		doneSubscriptions = append(doneSubscriptions, subscriptionID)
 		ret = append(ret, nets...)
 	}
 
 	return ret, nil
 }
 
-func (c *VirtualNetworkCollector) getVirtualNetworksFromSubscription(ctx context.Context, clientSet *client.AzureClientSet) ([]net.IPNet, error) {
-	groupsClient := clientSet.GroupsClient
-	vnetClient := clientSet.VirtualNetworkClient
+func (c *VirtualNetworkCollector) getVirtualNetworksFromSubscription(ctx context.Context, clusterID string) ([]net.IPNet, error) {
+	groupsClient, err := c.wcAzureClientFactory.GetGroupsClient(ctx, clusterID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+	vnetClient, err := c.wcAzureClientFactory.GetVirtualNetworksClient(ctx, clusterID)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
 
 	// Look for all resource groups that have a tag named 'GiantSwarmInstallation' with installation name as value.
 	iterator, err := groupsClient.ListComplete(ctx, fmt.Sprintf("tagName eq 'GiantSwarmInstallation' and tagValue eq '%s'", c.installationName), nil)

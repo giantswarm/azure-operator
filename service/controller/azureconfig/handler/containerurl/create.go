@@ -21,7 +21,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	groupName := key.ClusterID(&cr)
 	storageAccountName := key.StorageAccountName(&cr)
 
-	storageAccountsClient, err := r.getStorageAccountsClient(ctx)
+	storageAccountsClient, err := r.mcAzureClientFactory.GetStorageAccountsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

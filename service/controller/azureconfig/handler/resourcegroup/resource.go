@@ -17,9 +17,9 @@ import (
 	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
+	azureclient "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
-	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
@@ -33,8 +33,9 @@ type Config struct {
 	CtrlClient client.Client
 	Logger     micrologger.Logger
 
-	Azure            setting.Azure
-	InstallationName string
+	Azure                setting.Azure
+	InstallationName     string
+	MCAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
 }
 
 // Resource manages Azure resource groups.
@@ -42,8 +43,9 @@ type Resource struct {
 	ctrlClient client.Client
 	logger     micrologger.Logger
 
-	azure            setting.Azure
-	installationName string
+	azure                setting.Azure
+	installationName     string
+	mcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
 }
 
 func New(config Config) (*Resource, error) {
@@ -52,6 +54,9 @@ func New(config Config) (*Resource, error) {
 	}
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
+	}
+	if config.MCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.MCAzureClientFactory must not be empty", config)
 	}
 
 	if err := config.Azure.Validate(); err != nil {
@@ -64,9 +69,10 @@ func New(config Config) (*Resource, error) {
 	r := &Resource{
 		installationName: config.InstallationName,
 
-		azure:      config.Azure,
-		ctrlClient: config.CtrlClient,
-		logger:     config.Logger,
+		azure:                config.Azure,
+		ctrlClient:           config.CtrlClient,
+		logger:               config.Logger,
+		mcAzureClientFactory: config.MCAzureClientFactory,
 	}
 
 	return r, nil
@@ -79,7 +85,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	groupsClient, err := r.getGroupsClient(ctx)
+	groupsClient, err := r.mcAzureClientFactory.GetGroupsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -114,7 +120,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	groupsClient, err := r.getGroupsClient(ctx)
+	groupsClient, err := r.mcAzureClientFactory.GetGroupsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -155,15 +161,6 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 // Name returns the resource name.
 func (r *Resource) Name() string {
 	return Name
-}
-
-func (r *Resource) getGroupsClient(ctx context.Context) (*azureresource.GroupsClient, error) {
-	cc, err := controllercontext.FromContext(ctx)
-	if err != nil {
-		return nil, microerror.Mask(err)
-	}
-
-	return cc.AzureClientSet.GroupsClient, nil
 }
 
 func (r *Resource) checkAndUpdateResourceGroupReadyCondition(ctx context.Context, azureConfig v1alpha1.AzureConfig, groupsClient *azureresource.GroupsClient) error {

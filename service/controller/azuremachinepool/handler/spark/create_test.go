@@ -94,7 +94,7 @@ func Test_CloudConfigRendering(t *testing.T) {
 //		CertsSearcher:      certstest.NewSearcher(certstest.Config{}),
 //		ClusterIPRange:     "10.0.0.0/16",
 //		EtcdPrefix:         "etcd",
-//		CredentialProvider: CredentialProviderStub{},
+//		WCCredentialProvider: CredentialProviderStub{},
 //		CtrlClient:         client,
 //		Ignition: setting.Ignition{
 //			Path: fmt.Sprintf("%s/pkg/mod/github.com/giantswarm/k8scloudconfig/v7@v7.1.0", os.Getenv("GOPATH")),

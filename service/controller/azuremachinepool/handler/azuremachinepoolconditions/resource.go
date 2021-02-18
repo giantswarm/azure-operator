@@ -15,22 +15,22 @@ const (
 )
 
 type Config struct {
-	AzureClientsFactory *azureclient.OrganizationFactory
-	CtrlClient          client.Client
-	Logger              micrologger.Logger
+	WCAzureClientsFactory azureclient.CredentialsAwareClientFactoryInterface
+	CtrlClient            client.Client
+	Logger                micrologger.Logger
 }
 
 // Resource ensures that AzureMachinePool Status Conditions are set.
 type Resource struct {
-	azureClientsFactory *azureclient.OrganizationFactory
-	ctrlClient          client.Client
-	logger              micrologger.Logger
-	deploymentChecker   *azureconditions.DeploymentChecker
+	wcAzureClientsFactory azureclient.CredentialsAwareClientFactoryInterface
+	ctrlClient            client.Client
+	logger                micrologger.Logger
+	deploymentChecker     *azureconditions.DeploymentChecker
 }
 
 func New(config Config) (*Resource, error) {
-	if config.AzureClientsFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.AzureClientsFactory must not be empty", config)
+	if config.WCAzureClientsFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientsFactory must not be empty", config)
 	}
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
@@ -49,10 +49,10 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		azureClientsFactory: config.AzureClientsFactory,
-		ctrlClient:          config.CtrlClient,
-		logger:              config.Logger,
-		deploymentChecker:   dc,
+		wcAzureClientsFactory: config.WCAzureClientsFactory,
+		ctrlClient:            config.CtrlClient,
+		logger:                config.Logger,
+		deploymentChecker:     dc,
 	}
 
 	return r, nil

@@ -13,7 +13,7 @@ import (
 
 // ApplyDeleteChange deletes the resource group via the Azure API.
 func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{}) error {
-	_, err := key.ToCustomResource(obj)
+	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -26,7 +26,12 @@ func (r *Resource) ApplyDeleteChange(ctx context.Context, obj, change interface{
 		for _, record := range dnsRecords {
 			r.logger.Debugf(ctx, "deleting host cluster DNS record '%s'", record.RelativeName)
 
-			_, err := r.cpRecordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
+			cpRecordSetsClient, err := r.mcAzureClientFactory.GetDnsRecordSetsClient(ctx, key.ClusterID(&cr))
+			if err != nil {
+				return microerror.Mask(err)
+			}
+
+			_, err = cpRecordSetsClient.Delete(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS, "")
 			if err != nil {
 				return microerror.Mask(err)
 			}

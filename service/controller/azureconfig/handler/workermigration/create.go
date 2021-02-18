@@ -54,7 +54,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	azureAPI := r.wrapAzureAPI(r.clientFactory, key.ClusterID(&cr))
+	azureAPI := r.wrapAzureAPI(r.wcAzureClientFactory, key.ClusterID(&cr))
 
 	r.logger.Debugf(ctx, "ensuring that legacy workers are migrated to node pool")
 

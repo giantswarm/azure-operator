@@ -20,12 +20,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	vnetClient, err := r.getVirtualNetworkClient(ctx)
+	vnetClient, err := r.wcAzureClientFactory.GetVirtualNetworksClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}
 
-	deploymentsClient, err := r.getDeploymentsClient(ctx)
+	deploymentsClient, err := r.wcAzureClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

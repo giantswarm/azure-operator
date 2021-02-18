@@ -153,7 +153,7 @@ func (r *Resource) reimageInstance(ctx context.Context, customObject providerv1a
 
 	r.Logger.Debugf(ctx, "ensuring instance '%s' to be reimaged", instanceName)
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&customObject))
+	c, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&customObject))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -188,7 +188,7 @@ func (r *Resource) updateInstance(ctx context.Context, customObject providerv1al
 
 	r.Logger.Debugf(ctx, "ensuring instance '%s' to be updated", instanceName)
 
-	c, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&customObject))
+	c, err := r.WCAzureClientFactory.GetVirtualMachineScaleSetsClient(ctx, key.ClusterID(&customObject))
 	if err != nil {
 		return microerror.Mask(err)
 	}

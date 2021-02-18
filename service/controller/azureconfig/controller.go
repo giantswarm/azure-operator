@@ -20,7 +20,6 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 
 	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/ipam"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
@@ -54,17 +53,16 @@ import (
 )
 
 type ControllerConfig struct {
-	CredentialProvider credential.Provider
-	InstallationName   string
-	K8sClient          k8sclient.Interface
-	Locker             locker.Interface
-	Logger             micrologger.Logger
+	InstallationName string
+	K8sClient        k8sclient.Interface
+	Locker           locker.Interface
+	Logger           micrologger.Logger
 
 	Azure                 setting.Azure
 	AzureMetricsCollector collector.AzureAPIMetrics
-	// Azure client set used when managing control plane resources
-	CPAzureClientSet *client.AzureClientSet
-	ProjectName      string
+	MCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	ProjectName           string
 
 	ClusterVNetMaskBits int
 
@@ -130,29 +128,19 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 					return nil, microerror.Mask(err)
 				}
 
-				organizationAzureClientCredentialsConfig, subscriptionID, partnerID, err := config.CredentialProvider.GetOrganizationAzureCredentials(ctx, key.ClusterID(&cr))
-				if err != nil {
-					return nil, microerror.Mask(err)
-				}
-
-				tenantClusterAzureClientSet, err := client.NewAzureClientSet(organizationAzureClientCredentialsConfig, config.AzureMetricsCollector, subscriptionID, partnerID)
-				if err != nil {
-					return nil, microerror.Mask(err)
-				}
-
+				subscriptionID, err := config.WCAzureClientFactory.GetSubscriptionID(ctx, key.ClusterID(&cr))
 				var cloudConfig *cloudconfig.CloudConfig
 				{
 					c := cloudconfig.Config{
-						Azure:                  config.Azure,
-						AzureClientCredentials: organizationAzureClientCredentialsConfig,
-						CtrlClient:             config.K8sClient.CtrlClient(),
-						DockerhubToken:         config.DockerhubToken,
-						Ignition:               config.Ignition,
-						Logger:                 config.Logger,
-						OIDC:                   config.OIDC,
-						RegistryMirrors:        config.RegistryMirrors,
-						SSOPublicKey:           config.SSOPublicKey,
-						SubscriptionID:         subscriptionID,
+						Azure:           config.Azure,
+						CtrlClient:      config.K8sClient.CtrlClient(),
+						DockerhubToken:  config.DockerhubToken,
+						Ignition:        config.Ignition,
+						Logger:          config.Logger,
+						OIDC:            config.OIDC,
+						RegistryMirrors: config.RegistryMirrors,
+						SSOPublicKey:    config.SSOPublicKey,
+						SubscriptionID:  subscriptionID,
 					}
 
 					cloudConfig, err = cloudconfig.New(c)
@@ -162,8 +150,7 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 				}
 
 				c := controllercontext.Context{
-					AzureClientSet: tenantClusterAzureClientSet,
-					CloudConfig:    cloudConfig,
+					CloudConfig: cloudConfig,
 				}
 				ctx = controllercontext.NewContext(ctx, c)
 
@@ -206,31 +193,6 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
-	}
-
-	var clientFactory *client.Factory
-	{
-		c := client.FactoryConfig{
-			AzureAPIMetrics:    config.AzureMetricsCollector,
-			CacheDuration:      30 * time.Minute,
-			CredentialProvider: config.CredentialProvider,
-			Logger:             config.Logger,
-		}
-
-		clientFactory, err = client.NewFactory(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var organizationClientFactory client.OrganizationFactory
-	{
-		c := client.OrganizationFactoryConfig{
-			CtrlClient: config.K8sClient.CtrlClient(),
-			Factory:    clientFactory,
-			Logger:     config.Logger,
-		}
-		organizationClientFactory = client.NewOrganizationFactory(c)
 	}
 
 	var newDebugger *debugger.Debugger
@@ -372,11 +334,9 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 			InstallationName: config.InstallationName,
 			Logger:           config.Logger,
 
-			Azure:                      config.Azure,
-			AzureClientSet:             config.CPAzureClientSet,
-			ClientFactory:              organizationClientFactory,
-			ControlPlaneSubscriptionID: config.CPAzureClientSet.SubscriptionID,
-			Debug:                      config.Debug,
+			Azure:                config.Azure,
+			MCAzureClientFactory: config.MCAzureClientFactory,
+			Debug:                config.Debug,
 		}
 
 		deploymentResource, err = deployment.New(c)
@@ -388,8 +348,8 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
-			CPRecordSetsClient: *config.CPAzureClientSet.DNSRecordSetsClient,
-			Logger:             config.Logger,
+			WCAzureClientFactory: config.WCAzureClientFactory,
+			Logger:               config.Logger,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -426,8 +386,8 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 		Debugger:   newDebugger,
 		Logger:     config.Logger,
 
-		Azure:         config.Azure,
-		ClientFactory: organizationClientFactory,
+		Azure:                config.Azure,
+		WCAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	var mastersResource resource.Interface
@@ -447,11 +407,11 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var workerMigrationResource resource.Interface
 	{
 		c := workermigration.Config{
-			CertsSearcher:             certsSearcher,
-			ClientFactory:             clientFactory,
-			CPPublicIPAddressesClient: config.CPAzureClientSet.PublicIpAddressesClient,
-			CtrlClient:                config.K8sClient.CtrlClient(),
-			Logger:                    config.Logger,
+			CertsSearcher:        certsSearcher,
+			MCAzureClientFactory: config.MCAzureClientFactory,
+			WCAzureClientFactory: config.WCAzureClientFactory,
+			CtrlClient:           config.K8sClient.CtrlClient(),
+			Logger:               config.Logger,
 
 			InstallationName: config.InstallationName,
 			Location:         config.Azure.Location,
@@ -493,7 +453,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	{
 		c := ipam.VirtualNetworkCollectorConfig{
 			AzureMetricsCollector: config.AzureMetricsCollector,
-			CredentialProvider:    config.CredentialProvider,
+			WCAzureClientFactory:  config.WCAzureClientFactory,
 			K8sClient:             config.K8sClient,
 			InstallationName:      config.InstallationName,
 			Logger:                config.Logger,
@@ -608,10 +568,9 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var vpnconnectionResource resource.Interface
 	{
 		c := vpnconnection.Config{
-			Azure:                                    config.Azure,
-			Logger:                                   config.Logger,
-			CPVirtualNetworkGatewaysClient:           *config.CPAzureClientSet.VirtualNetworkGatewaysClient,
-			CPVirtualNetworkGatewayConnectionsClient: *config.CPAzureClientSet.VirtualNetworkGatewayConnectionsClient,
+			Azure:                config.Azure,
+			Logger:               config.Logger,
+			MCAzureClientFactory: config.MCAzureClientFactory,
 		}
 
 		ops, err := vpnconnection.New(c)

@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/credential"
+	azureclient "github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
@@ -29,46 +29,46 @@ const (
 )
 
 type Config struct {
-	APIServerSecurePort int
-	Azure               setting.Azure
-	CalicoCIDRSize      int
-	CalicoMTU           int
-	CalicoSubnet        string
-	CertsSearcher       certs.Interface
-	ClusterIPRange      string
-	CredentialProvider  credential.Provider
-	CtrlClient          client.Client
-	DockerhubToken      string
-	EtcdPrefix          string
-	Ignition            setting.Ignition
-	Logger              micrologger.Logger
-	OIDC                setting.OIDC
-	RegistryDomain      string
-	RegistryMirrors     []string
-	SSHUserList         employees.SSHUserList
-	SSOPublicKey        string
+	APIServerSecurePort  int
+	Azure                setting.Azure
+	CalicoCIDRSize       int
+	CalicoMTU            int
+	CalicoSubnet         string
+	CertsSearcher        certs.Interface
+	ClusterIPRange       string
+	CtrlClient           client.Client
+	DockerhubToken       string
+	EtcdPrefix           string
+	Ignition             setting.Ignition
+	Logger               micrologger.Logger
+	OIDC                 setting.OIDC
+	RegistryDomain       string
+	RegistryMirrors      []string
+	SSHUserList          employees.SSHUserList
+	SSOPublicKey         string
+	WCAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
 }
 
 // Resource simulates a CAPI Bootstrap provider by rendering cloudconfig files while watching Spark CRs.
 type Resource struct {
-	apiServerSecurePort int
-	azure               setting.Azure
-	calicoCIDRSize      int
-	calicoMTU           int
-	calicoSubnet        string
-	certsSearcher       certs.Interface
-	clusterIPRange      string
-	credentialProvider  credential.Provider
-	ctrlClient          client.Client
-	dockerhubToken      string
-	etcdPrefix          string
-	ignition            setting.Ignition
-	logger              micrologger.Logger
-	oidc                setting.OIDC
-	registryDomain      string
-	registryMirrors     []string
-	sshUserList         employees.SSHUserList
-	ssoPublicKey        string
+	apiServerSecurePort  int
+	azure                setting.Azure
+	calicoCIDRSize       int
+	calicoMTU            int
+	calicoSubnet         string
+	certsSearcher        certs.Interface
+	clusterIPRange       string
+	ctrlClient           client.Client
+	dockerhubToken       string
+	etcdPrefix           string
+	ignition             setting.Ignition
+	logger               micrologger.Logger
+	oidc                 setting.OIDC
+	registryDomain       string
+	registryMirrors      []string
+	sshUserList          employees.SSHUserList
+	ssoPublicKey         string
+	wcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
 }
 
 func New(config Config) (*Resource, error) {
@@ -91,10 +91,6 @@ func New(config Config) (*Resource, error) {
 
 	if config.ClusterIPRange == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.ClusterIPRange must not be empty", config)
-	}
-
-	if config.CredentialProvider == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CredentialProvider must not be empty", config)
 	}
 
 	if config.CtrlClient == nil {
@@ -125,25 +121,29 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.SSOPublicKey must not be empty", config)
 	}
 
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
+	}
+
 	r := &Resource{
-		apiServerSecurePort: config.APIServerSecurePort,
-		azure:               config.Azure,
-		calicoCIDRSize:      config.CalicoCIDRSize,
-		calicoMTU:           config.CalicoMTU,
-		calicoSubnet:        config.CalicoSubnet,
-		certsSearcher:       config.CertsSearcher,
-		clusterIPRange:      config.ClusterIPRange,
-		credentialProvider:  config.CredentialProvider,
-		ctrlClient:          config.CtrlClient,
-		dockerhubToken:      config.DockerhubToken,
-		etcdPrefix:          config.EtcdPrefix,
-		ignition:            config.Ignition,
-		logger:              config.Logger,
-		oidc:                config.OIDC,
-		registryDomain:      config.RegistryDomain,
-		registryMirrors:     config.RegistryMirrors,
-		sshUserList:         config.SSHUserList,
-		ssoPublicKey:        config.SSOPublicKey,
+		apiServerSecurePort:  config.APIServerSecurePort,
+		azure:                config.Azure,
+		calicoCIDRSize:       config.CalicoCIDRSize,
+		calicoMTU:            config.CalicoMTU,
+		calicoSubnet:         config.CalicoSubnet,
+		certsSearcher:        config.CertsSearcher,
+		clusterIPRange:       config.ClusterIPRange,
+		ctrlClient:           config.CtrlClient,
+		dockerhubToken:       config.DockerhubToken,
+		etcdPrefix:           config.EtcdPrefix,
+		ignition:             config.Ignition,
+		logger:               config.Logger,
+		oidc:                 config.OIDC,
+		registryDomain:       config.RegistryDomain,
+		registryMirrors:      config.RegistryMirrors,
+		sshUserList:          config.SSHUserList,
+		ssoPublicKey:         config.SSOPublicKey,
+		wcAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	return r, nil
