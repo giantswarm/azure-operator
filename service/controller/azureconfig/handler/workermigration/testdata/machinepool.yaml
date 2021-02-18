@@ -20,7 +20,12 @@ spec:
   template:
     metadata: {}
     spec:
-      bootstrap: {}
+      bootstrap:
+        configRef:
+          apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3
+          kind: Spark
+          name: c6fme
+          namespace: default
       clusterName: c6fme
       infrastructureRef:
         apiVersion: exp.infrastructure.cluster.x-k8s.io/v1alpha3

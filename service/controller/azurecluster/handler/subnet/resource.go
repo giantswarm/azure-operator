@@ -148,6 +148,11 @@ func (r *Resource) ensureSubnets(ctx context.Context, deploymentsClient *azurere
 			return microerror.Mask(err)
 		}
 
+		if len(azureCluster.Spec.NetworkSpec.Subnets[i].CIDRBlocks) == 0 {
+			// Skip subnets that don't have CIDR allocated yet.
+			continue
+		}
+
 		parameters, err := r.getDeploymentParameters(azureCluster, *natGw.ID, azureCluster.Spec.NetworkSpec.Subnets[i])
 		if err != nil {
 			return microerror.Mask(err)
