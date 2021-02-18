@@ -104,10 +104,12 @@ func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx contex
 
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
 
-	auxTenants := []string{
-		k.tenantID,
+	if subscriptionTenantID != k.tenantID {
+		auxTenants := []string{
+			k.tenantID,
+		}
+		credentials.AuxTenants = auxTenants
 	}
-	credentials.AuxTenants = auxTenants
 
 	return &factory.AzureClientCredentialsConfig{
 		ClientCredentialsConfig: credentials,

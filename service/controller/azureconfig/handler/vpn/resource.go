@@ -58,7 +58,8 @@ func New(config Config) (*Resource, error) {
 		debugger:   config.Debugger,
 		logger:     config.Logger,
 
-		azure: config.Azure,
+		azure:                config.Azure,
+		wcAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	return r, nil

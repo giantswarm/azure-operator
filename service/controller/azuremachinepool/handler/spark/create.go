@@ -11,7 +11,6 @@ import (
 	"strings"
 	"sync"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	"github.com/Azure/go-autorest/autorest/to"
 	corev1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/core/v1alpha1"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
@@ -314,7 +313,6 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 		})
 	}
 
-	var organizationAzureClientCredentialsConfig auth.ClientCredentialsConfig
 	var subscriptionID string
 	{
 		subscriptionID, err = r.wcAzureClientFactory.GetSubscriptionID(ctx, cluster.Name)
@@ -329,16 +327,15 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 		// configmap to resource. Some can be hopefully hardcoded here. Some
 		// should be pulled from the outside configmap later (such as OIDC).
 		c := cloudconfig.Config{
-			Azure:                  r.azure,
-			AzureClientCredentials: organizationAzureClientCredentialsConfig,
-			CtrlClient:             r.ctrlClient,
-			DockerhubToken:         r.dockerhubToken,
-			Logger:                 r.logger,
-			Ignition:               r.ignition,
-			OIDC:                   r.oidc,
-			RegistryMirrors:        r.registryMirrors,
-			SSOPublicKey:           r.ssoPublicKey,
-			SubscriptionID:         subscriptionID,
+			Azure:           r.azure,
+			CtrlClient:      r.ctrlClient,
+			DockerhubToken:  r.dockerhubToken,
+			Logger:          r.logger,
+			Ignition:        r.ignition,
+			OIDC:            r.oidc,
+			RegistryMirrors: r.registryMirrors,
+			SSOPublicKey:    r.ssoPublicKey,
+			SubscriptionID:  subscriptionID,
 		}
 		cloudConfig, err = cloudconfig.New(c)
 		if err != nil {

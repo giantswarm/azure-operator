@@ -103,7 +103,7 @@ func (c *CLIFlagsCredentialProvider) GetAzureClientCredentialsConfig(ctx context
 	}
 
 	credentials := auth.NewClientCredentialsConfig(c.managementClusterClientID, c.managementClusterClientSecret, c.managementClusterTenantID)
-	if auxTenantID != "" {
+	if auxTenantID != "" && auxTenantID != c.managementClusterTenantID {
 		auxTenants := []string{auxTenantID}
 		credentials.AuxTenants = auxTenants
 	}

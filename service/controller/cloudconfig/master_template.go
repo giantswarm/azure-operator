@@ -38,14 +38,13 @@ func (c CloudConfig) NewMasterTemplate(ctx context.Context, data IgnitionTemplat
 	var params k8scloudconfig.Params
 	{
 		be := baseExtension{
-			azure:                        c.azure,
-			azureClientCredentialsConfig: c.azureClientCredentials,
-			calicoCIDR:                   data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
-			certFiles:                    data.MasterCertFiles,
-			customObject:                 data.CustomObject,
-			encrypter:                    encrypter,
-			subscriptionID:               c.subscriptionID,
-			vnetCIDR:                     data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
+			azure:          c.azure,
+			calicoCIDR:     data.CustomObject.Spec.Azure.VirtualNetwork.CalicoSubnetCIDR,
+			certFiles:      data.MasterCertFiles,
+			customObject:   data.CustomObject,
+			encrypter:      encrypter,
+			subscriptionID: c.subscriptionID,
+			vnetCIDR:       data.CustomObject.Spec.Azure.VirtualNetwork.CIDR,
 		}
 
 		params = k8scloudconfig.Params{}

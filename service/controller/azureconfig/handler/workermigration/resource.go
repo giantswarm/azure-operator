@@ -1,7 +1,6 @@
 package workermigration
 
 import (
-	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -17,12 +16,11 @@ const (
 )
 
 type Config struct {
-	CertsSearcher             certs.Interface
-	MCAzureClientFactory      azureclient.CredentialsAwareClientFactoryInterface
-	WCAzureClientFactory      azureclient.CredentialsAwareClientFactoryInterface
-	CPPublicIPAddressesClient *network.PublicIPAddressesClient
-	CtrlClient                client.Client
-	Logger                    micrologger.Logger
+	CertsSearcher        certs.Interface
+	MCAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	CtrlClient           client.Client
+	Logger               micrologger.Logger
 
 	InstallationName string
 	Location         string
@@ -41,9 +39,6 @@ type Resource struct {
 }
 
 func New(config Config) (*Resource, error) {
-	if config.CPPublicIPAddressesClient == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CPPublicIPAddressesClient must not be empty", config)
-	}
 	if config.MCAzureClientFactory == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}

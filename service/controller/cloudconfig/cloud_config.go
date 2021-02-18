@@ -3,7 +3,6 @@ package cloudconfig
 import (
 	"context"
 
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	k8scloudconfig "github.com/giantswarm/k8scloudconfig/v10/pkg/template"
@@ -37,29 +36,27 @@ func (k Key) String() string {
 }
 
 type Config struct {
-	Azure                  setting.Azure
-	AzureClientCredentials auth.ClientCredentialsConfig
-	CtrlClient             ctrl.Client
-	DockerhubToken         string
-	Ignition               setting.Ignition
-	Logger                 micrologger.Logger
-	OIDC                   setting.OIDC
-	RegistryMirrors        []string
-	SSOPublicKey           string
-	SubscriptionID         string
+	Azure           setting.Azure
+	CtrlClient      ctrl.Client
+	DockerhubToken  string
+	Ignition        setting.Ignition
+	Logger          micrologger.Logger
+	OIDC            setting.OIDC
+	RegistryMirrors []string
+	SSOPublicKey    string
+	SubscriptionID  string
 }
 
 type CloudConfig struct {
-	azure                  setting.Azure
-	azureClientCredentials auth.ClientCredentialsConfig
-	ctrlClient             ctrl.Client
-	dockerhubToken         string
-	ignition               setting.Ignition
-	logger                 micrologger.Logger
-	OIDC                   setting.OIDC
-	registryMirrors        []string
-	ssoPublicKey           string
-	subscriptionID         string
+	azure           setting.Azure
+	ctrlClient      ctrl.Client
+	dockerhubToken  string
+	ignition        setting.Ignition
+	logger          micrologger.Logger
+	OIDC            setting.OIDC
+	registryMirrors []string
+	ssoPublicKey    string
+	subscriptionID  string
 }
 
 func New(config Config) (*CloudConfig, error) {
@@ -78,24 +75,20 @@ func New(config Config) (*CloudConfig, error) {
 	if err := config.Azure.Validate(); err != nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Azure.%s", config, err)
 	}
-	if config.AzureClientCredentials.ClientID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.azureClientCredentials must not be empty", config)
-	}
 	if config.SubscriptionID == "" {
 		return nil, microerror.Maskf(invalidConfigError, "%T.SubscriptionID must not be empty", config)
 	}
 
 	c := &CloudConfig{
-		azure:                  config.Azure,
-		azureClientCredentials: config.AzureClientCredentials,
-		ctrlClient:             config.CtrlClient,
-		dockerhubToken:         config.DockerhubToken,
-		ignition:               config.Ignition,
-		logger:                 config.Logger,
-		OIDC:                   config.OIDC,
-		registryMirrors:        config.RegistryMirrors,
-		ssoPublicKey:           config.SSOPublicKey,
-		subscriptionID:         config.SubscriptionID,
+		azure:           config.Azure,
+		ctrlClient:      config.CtrlClient,
+		dockerhubToken:  config.DockerhubToken,
+		ignition:        config.Ignition,
+		logger:          config.Logger,
+		OIDC:            config.OIDC,
+		registryMirrors: config.RegistryMirrors,
+		ssoPublicKey:    config.SSOPublicKey,
+		subscriptionID:  config.SubscriptionID,
 	}
 
 	return c, nil

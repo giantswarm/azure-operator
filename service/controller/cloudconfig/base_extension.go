@@ -1,7 +1,6 @@
 package cloudconfig
 
 import (
-	"github.com/Azure/go-autorest/autorest/azure/auth"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	capzexpv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
@@ -12,15 +11,14 @@ import (
 )
 
 type baseExtension struct {
-	azure                        setting.Azure
-	azureClientCredentialsConfig auth.ClientCredentialsConfig
-	azureMachinePool             *capzexpv1alpha3.AzureMachinePool
-	calicoCIDR                   string
-	certFiles                    []certs.File
-	customObject                 providerv1alpha1.AzureConfig
-	encrypter                    encrypter.Interface
-	subscriptionID               string
-	vnetCIDR                     string
+	azure            setting.Azure
+	azureMachinePool *capzexpv1alpha3.AzureMachinePool
+	calicoCIDR       string
+	certFiles        []certs.File
+	customObject     providerv1alpha1.AzureConfig
+	encrypter        encrypter.Interface
+	subscriptionID   string
+	vnetCIDR         string
 }
 
 func (e *baseExtension) templateData(certFiles []certs.File) templateData {
@@ -49,8 +47,6 @@ func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 			CalicoCIDR: e.calicoCIDR,
 		},
 		cloudProviderConfFileParams{
-			AADClientID:                 e.azureClientCredentialsConfig.ClientID,
-			AADClientSecret:             e.azureClientCredentialsConfig.ClientSecret,
 			EnvironmentName:             e.azure.EnvironmentName,
 			Location:                    e.azure.Location,
 			PrimaryScaleSetName:         primaryScaleSetName,
@@ -59,7 +55,6 @@ func (e *baseExtension) templateData(certFiles []certs.File) templateData {
 			SecurityGroupName:           key.WorkerSecurityGroupName(e.customObject),
 			SubnetName:                  subnetName,
 			SubscriptionID:              e.subscriptionID,
-			TenantID:                    e.azureClientCredentialsConfig.TenantID,
 			VnetName:                    key.VnetName(e.customObject),
 			UseManagedIdentityExtension: e.azure.MSI.Enabled,
 		},

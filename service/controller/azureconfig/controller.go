@@ -267,8 +267,9 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 			CtrlClient: config.K8sClient.CtrlClient(),
 			Logger:     config.Logger,
 
-			Azure:            config.Azure,
-			InstallationName: config.InstallationName,
+			Azure:                config.Azure,
+			InstallationName:     config.InstallationName,
+			MCAzureClientFactory: config.MCAzureClientFactory,
 		}
 
 		resourceGroupResource, err = resourcegroup.New(c)
@@ -280,7 +281,8 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var containerURLResource resource.Interface
 	{
 		c := containerurl.Config{
-			Logger: config.Logger,
+			Logger:               config.Logger,
+			MCAzureClientFactory: config.MCAzureClientFactory,
 		}
 
 		containerURLResource, err = containerurl.New(c)
@@ -306,13 +308,14 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var blobObjectResource resource.Interface
 	{
 		c := blobobject.Config{
-			CertsSearcher:  certsSearcher,
-			CtrlClient:     config.K8sClient.CtrlClient(),
-			G8sClient:      config.K8sClient.G8sClient(),
-			K8sClient:      config.K8sClient.K8sClient(),
-			Logger:         config.Logger,
-			RegistryDomain: config.RegistryDomain,
-			SSHUserList:    config.SSHUserList,
+			CertsSearcher:        certsSearcher,
+			CtrlClient:           config.K8sClient.CtrlClient(),
+			G8sClient:            config.K8sClient.G8sClient(),
+			K8sClient:            config.K8sClient.K8sClient(),
+			Logger:               config.Logger,
+			RegistryDomain:       config.RegistryDomain,
+			SSHUserList:          config.SSHUserList,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 		}
 
 		blobObject, err := blobobject.New(c)
@@ -336,6 +339,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 
 			Azure:                config.Azure,
 			MCAzureClientFactory: config.MCAzureClientFactory,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 			Debug:                config.Debug,
 		}
 
@@ -348,8 +352,9 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var dnsrecordResource resource.Interface
 	{
 		c := dnsrecord.Config{
-			WCAzureClientFactory: config.WCAzureClientFactory,
 			Logger:               config.Logger,
+			MCAzureClientFactory: config.MCAzureClientFactory,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 		}
 
 		ops, err := dnsrecord.New(c)
@@ -366,8 +371,9 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var endpointsResource resource.Interface
 	{
 		c := endpoints.Config{
-			K8sClient: config.K8sClient.K8sClient(),
-			Logger:    config.Logger,
+			K8sClient:            config.K8sClient.K8sClient(),
+			Logger:               config.Logger,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 		}
 
 		ops, err := endpoints.New(c)
@@ -556,7 +562,8 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 			Debugger:   newDebugger,
 			Logger:     config.Logger,
 
-			Azure: config.Azure,
+			Azure:                config.Azure,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 		}
 
 		vpnResource, err = vpn.New(c)
@@ -571,6 +578,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 			Azure:                config.Azure,
 			Logger:               config.Logger,
 			MCAzureClientFactory: config.MCAzureClientFactory,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 		}
 
 		ops, err := vpnconnection.New(c)
