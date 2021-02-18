@@ -4,7 +4,6 @@ import (
 	"context"
 
 	"github.com/giantswarm/microerror"
-	"k8s.io/apimachinery/pkg/api/errors"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -23,15 +22,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 	// annotation set correctly in both places.
 	err = helpers.InitAzureMachineAnnotations(ctx, r.ctrlClient, r.logger, &azureMachine)
 	if err != nil {
-		return microerror.Mask(err)
-	}
-
-	err = r.ctrlClient.Update(ctx, &azureMachine)
-	if errors.IsConflict(err) {
-		r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-		r.logger.Debugf(ctx, "cancelling resource")
-		return nil
-	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
