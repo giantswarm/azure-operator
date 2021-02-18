@@ -17,6 +17,7 @@ const (
 	credentialDefaultName      = "credential-default"
 )
 
+// GetLegacyCredentialSecret Tries to find the legacy GS credential secret for the given organization.
 func (k *K8sSecretCredentialProvider) GetLegacyCredentialSecret(ctx context.Context, organizationID string) (*v1alpha1.CredentialSecret, error) {
 	k.logger.Debugf(ctx, "finding credential secret")
 
@@ -37,7 +38,7 @@ func (k *K8sSecretCredentialProvider) GetLegacyCredentialSecret(ctx context.Cont
 	return credentialSecret, nil
 }
 
-// getOrganizationCredentialSecret tries to find a Secret in the organization namespace.
+// getOrganizationCredentialSecret tries to find a Secret for the organization (BYOC).
 func (k *K8sSecretCredentialProvider) getOrganizationCredentialSecret(ctx context.Context, organizationID string) (*v1alpha1.CredentialSecret, error) {
 	k.logger.Debugf(ctx, "try in all namespaces filtering by organization %#q", organizationID)
 	secretList := &corev1.SecretList{}
