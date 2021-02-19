@@ -35,7 +35,7 @@ type Config struct {
 
 	Azure                setting.Azure
 	InstallationName     string
-	MCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsawarefactory.Interface
 }
 
 // Resource manages Azure resource groups.
@@ -45,7 +45,7 @@ type Resource struct {
 
 	azure                setting.Azure
 	installationName     string
-	mcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsawarefactory.Interface
 }
 
 func New(config Config) (*Resource, error) {
@@ -55,8 +55,8 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.MCAzureClientFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.MCAzureClientFactory must not be empty", config)
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 
 	if err := config.Azure.Validate(); err != nil {
@@ -72,7 +72,7 @@ func New(config Config) (*Resource, error) {
 		azure:                config.Azure,
 		ctrlClient:           config.CtrlClient,
 		logger:               config.Logger,
-		mcAzureClientFactory: config.MCAzureClientFactory,
+		wcAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	return r, nil
@@ -85,7 +85,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	groupsClient, err := r.mcAzureClientFactory.GetGroupsClient(ctx, key.ClusterID(&cr))
+	groupsClient, err := r.wcAzureClientFactory.GetGroupsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}
@@ -120,7 +120,7 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	groupsClient, err := r.mcAzureClientFactory.GetGroupsClient(ctx, key.ClusterID(&cr))
+	groupsClient, err := r.wcAzureClientFactory.GetGroupsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

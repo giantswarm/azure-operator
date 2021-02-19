@@ -92,7 +92,7 @@ func New(config Config) (*Resource, error) {
 		azure:                config.Azure,
 		debug:                config.Debug,
 		mcAzureClientFactory: config.MCAzureClientFactory,
-		wcAzureClientFactory: config.MCAzureClientFactory,
+		wcAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	return r, nil
@@ -111,7 +111,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return nil
 	}
 
-	deploymentsClient, err := r.mcAzureClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
+	deploymentsClient, err := r.wcAzureClientFactory.GetDeploymentsClient(ctx, key.ClusterID(&cr))
 	if err != nil {
 		return microerror.Mask(err)
 	}

@@ -20,7 +20,7 @@ const (
 type Config struct {
 	Logger micrologger.Logger
 
-	MCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsawarefactory.Interface
 }
 
 type Resource struct {
@@ -33,13 +33,13 @@ func New(config Config) (*Resource, error) {
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.MCAzureClientFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.MCAzureClientFactory must not be empty", config)
+	if config.WCAzureClientFactory == nil {
+		return nil, microerror.Maskf(invalidConfigError, "%T.WCAzureClientFactory must not be empty", config)
 	}
 
 	newResource := &Resource{
 		logger:               config.Logger,
-		mcAzureClientFactory: config.MCAzureClientFactory,
+		mcAzureClientFactory: config.WCAzureClientFactory,
 	}
 
 	return newResource, nil

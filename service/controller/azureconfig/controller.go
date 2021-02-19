@@ -269,7 +269,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 
 			Azure:                config.Azure,
 			InstallationName:     config.InstallationName,
-			MCAzureClientFactory: config.MCAzureClientFactory,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 		}
 
 		resourceGroupResource, err = resourcegroup.New(c)
@@ -282,7 +282,7 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	{
 		c := containerurl.Config{
 			Logger:               config.Logger,
-			MCAzureClientFactory: config.MCAzureClientFactory,
+			WCAzureClientFactory: config.WCAzureClientFactory,
 		}
 
 		containerURLResource, err = containerurl.New(c)

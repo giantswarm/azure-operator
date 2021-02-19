@@ -30,7 +30,7 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "config.Logger must not be empty")
 	}
 	if config.MCAzureClientFactory == nil {
-		return nil, microerror.Maskf(invalidConfigError, "config.MCAzureClientFactory must not be empty")
+		return nil, microerror.Maskf(invalidConfigError, "config.WCAzureClientFactory must not be empty")
 	}
 	if config.WCAzureClientFactory == nil {
 		return nil, microerror.Maskf(invalidConfigError, "config.WCAzureClientFactory must not be empty")
