@@ -16,6 +16,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Avoid blocking the whole `AzureConfig` handler on cluster creation because we can't update the `StorageClasses`.
+- Avoid overriding the NP size when the scaling is changed by autoscaler. 
 
 ## [5.4.0] - 2021-02-05
 

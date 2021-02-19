@@ -81,7 +81,7 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	if !reflect.DeepEqual(currentParameters.DataDisks, desiredParameters.DataDisks) {
 		changes = append(changes, "dataDisks")
 	}
-	if !reflect.DeepEqual(currentParameters.Scaling, desiredParameters.Scaling) {
+	if currentParameters.Scaling.MinReplicas != desiredParameters.Scaling.MinReplicas || currentParameters.Scaling.MaxReplicas != desiredParameters.Scaling.MaxReplicas {
 		changes = append(changes, "scaling")
 	}
 	if !reflect.DeepEqual(currentParameters.OSImage, desiredParameters.OSImage) {
