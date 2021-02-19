@@ -59,5 +59,6 @@ func InitAzureMachineAnnotations(ctx context.Context, ctrlClient client.Client, 
 	// - Also ,we cannot know if AzureMachine release label was already updated
 	//   or not, as that is done in Cluster controller.
 	azureMachine.Annotations[annotation.LastDeployedReleaseVersion] = clusterLastDeployedReleaseVersion
+
 	return nil
 }
