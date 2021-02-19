@@ -42,18 +42,6 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
-	_, annotationIsSet := azureMachine.Annotations[annotation.LastDeployedReleaseVersion]
-	changed = !annotationWasSet && annotationIsSet
-
-	if changed {
-		err = r.ctrlClient.Update(ctx, &azureMachine)
-		if errors.IsConflict(err) {
-			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
-			r.logger.Debugf(ctx, "cancelling resource")
-			return nil
-		} else if err != nil {
-			return microerror.Mask(err)
-		}
 	}
 
 	r.logger.Debugf(ctx, "ensured that azuremachine has release.giantswarm.io/last-deployed-version annotation initialized")
