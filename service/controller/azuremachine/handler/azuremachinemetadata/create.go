@@ -36,7 +36,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, cr interface{}) error {
 	if changed {
 		err = r.ctrlClient.Update(ctx, &azureMachine)
 		if errors.IsConflict(err) {
-			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently", "stack", microerror.JSON(microerror.Mask(err)))
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 			r.logger.Debugf(ctx, "cancelling resource")
 			return nil
 		} else if err != nil {
