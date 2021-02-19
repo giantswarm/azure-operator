@@ -24,9 +24,9 @@ import (
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v5/client"
-	"github.com/giantswarm/azure-operator/v5/client/credentialprovider"
-	"github.com/giantswarm/azure-operator/v5/client/factory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/basicfactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialprovider"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/flag"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
@@ -251,20 +251,20 @@ func New(config Config) (*Service, error) {
 		reservedCIDRs = append(reservedCIDRs, *ipnet)
 	}
 
-	var azureClientFactory *factory.AzureClientFactory
+	var azureClientFactory *basicfactory.BasicFactory
 	{
-		azureClientFactoryConfig := factory.AzureClientFactoryConfig{
+		azureClientFactoryConfig := basicfactory.Config{
 			Logger: config.Logger,
 		}
 
-		azureClientFactory, err = factory.NewAzureClientFactory(azureClientFactoryConfig)
+		azureClientFactory, err = basicfactory.NewAzureClientFactory(azureClientFactoryConfig)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
 	// This factory will be used when creating AzureClients for Management Clusters.
-	var mcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	var mcAzureClientFactory credentialsawarefactory.Interface
 	{
 		mcCredentialsProvider, err := credentialprovider.NewCLIFlagsCredentialProvider(
 			credentialprovider.CLIFlagsCredentialProviderConfig{
@@ -280,13 +280,13 @@ func New(config Config) (*Service, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		mcAzureClientFactory, err = client.NewCredentialsAwareClientFactory(mcCredentialsProvider, *azureClientFactory)
+		mcAzureClientFactory, err = credentialsawarefactory.NewCredentialsAwareClientFactory(mcCredentialsProvider, *azureClientFactory)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}
 	}
 
-	var wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	var wcAzureClientFactory credentialsawarefactory.Interface
 	{
 		wcCredentialProvider, err := credentialprovider.NewK8sSecretCredentialProvider(credentialprovider.K8sSecretCredentialProviderConfig{
 			CtrlClient: k8sClient.CtrlClient(),
@@ -297,7 +297,7 @@ func New(config Config) (*Service, error) {
 			return nil, microerror.Mask(err)
 		}
 
-		wcAzureClientFactory, err = client.NewCredentialsAwareClientFactory(wcCredentialProvider, *azureClientFactory)
+		wcAzureClientFactory, err = credentialsawarefactory.NewCredentialsAwareClientFactory(wcCredentialProvider, *azureClientFactory)
 		if err != nil {
 			return nil, microerror.Mask(err)
 		}

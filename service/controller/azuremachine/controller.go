@@ -12,7 +12,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	capz "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -22,8 +22,8 @@ import (
 
 type ControllerConfig struct {
 	AzureMetricsCollector collector.AzureAPIMetrics
-	MCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
-	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	MCAzureClientFactory  credentialsawarefactory.Interface
+	WCAzureClientFactory  credentialsawarefactory.Interface
 	K8sClient             k8sclient.Interface
 	Logger                micrologger.Logger
 	SentryDSN             string

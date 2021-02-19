@@ -16,14 +16,14 @@ import (
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	client2 "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 type VirtualNetworkCollectorConfig struct {
 	AzureMetricsCollector collector.AzureAPIMetrics
-	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory  credentialsawarefactory.Interface
 	InstallationName      string
 	K8sClient             k8sclient.Interface
 	Logger                micrologger.Logger
@@ -34,7 +34,7 @@ type VirtualNetworkCollectorConfig struct {
 
 type VirtualNetworkCollector struct {
 	azureMetricsCollector collector.AzureAPIMetrics
-	wcAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	wcAzureClientFactory  credentialsawarefactory.Interface
 	installationName      string
 	k8sclient             k8sclient.Interface
 	logger                micrologger.Logger

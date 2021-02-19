@@ -7,7 +7,7 @@ import (
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
@@ -30,7 +30,7 @@ func (r *Resource) getCurrentState(ctx context.Context, obj providerv1alpha1.Azu
 
 	for i, record := range current {
 		resp, err := recordSetsClient.Get(ctx, record.ZoneRG, record.Zone, record.RelativeName, dns.NS)
-		if client.ResponseWasNotFound(resp.Response) {
+		if azureclient.ResponseWasNotFound(resp.Response) {
 			continue
 		} else if err != nil {
 			return nil, microerror.Mask(err)

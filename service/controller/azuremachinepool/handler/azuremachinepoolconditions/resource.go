@@ -5,7 +5,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	azureclient "github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/azureconditions"
 )
 
@@ -15,14 +15,14 @@ const (
 )
 
 type Config struct {
-	WCAzureClientsFactory azureclient.CredentialsAwareClientFactoryInterface
+	WCAzureClientsFactory credentialsawarefactory.Interface
 	CtrlClient            client.Client
 	Logger                micrologger.Logger
 }
 
 // Resource ensures that AzureMachinePool Status Conditions are set.
 type Resource struct {
-	wcAzureClientsFactory azureclient.CredentialsAwareClientFactoryInterface
+	wcAzureClientsFactory credentialsawarefactory.Interface
 	ctrlClient            client.Client
 	logger                micrologger.Logger
 	deploymentChecker     *azureconditions.DeploymentChecker

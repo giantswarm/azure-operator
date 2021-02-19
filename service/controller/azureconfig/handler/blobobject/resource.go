@@ -12,7 +12,7 @@ import (
 	"k8s.io/client-go/kubernetes"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	azureclient "github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -32,7 +32,7 @@ type Config struct {
 	RegistryDomain        string
 	SSHUserList           employees.SSHUserList
 	StorageAccountsClient *storage.AccountsClient
-	WCAzureClientFactory  azureclient.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory  credentialsawarefactory.Interface
 }
 
 type Resource struct {
@@ -43,7 +43,7 @@ type Resource struct {
 	logger               micrologger.Logger
 	registryDomain       string
 	sshUserList          employees.SSHUserList
-	wcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	wcAzureClientFactory credentialsawarefactory.Interface
 }
 
 func New(config Config) (*Resource, error) {

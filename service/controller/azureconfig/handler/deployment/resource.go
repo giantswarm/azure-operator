@@ -13,7 +13,7 @@ import (
 	"github.com/giantswarm/operatorkit/v4/pkg/controller/context/reconciliationcanceledcontext"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/service/controller/controllercontext"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -38,8 +38,8 @@ type Config struct {
 	Logger           micrologger.Logger
 
 	Azure                setting.Azure
-	MCAzureClientFactory client.CredentialsAwareClientFactoryInterface
-	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	MCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsawarefactory.Interface
 	Debug                setting.Debug
 }
 
@@ -50,8 +50,8 @@ type Resource struct {
 	logger           micrologger.Logger
 
 	azure                setting.Azure
-	mcAzureClientFactory client.CredentialsAwareClientFactoryInterface
-	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	mcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsawarefactory.Interface
 	debug                setting.Debug
 }
 

@@ -4,7 +4,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
 
@@ -16,16 +16,16 @@ const (
 type Config struct {
 	Azure                setting.Azure
 	Logger               micrologger.Logger
-	MCAzureClientFactory client.CredentialsAwareClientFactoryInterface
-	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	MCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsawarefactory.Interface
 }
 
 // Resource manages Azure virtual network peering.
 type Resource struct {
 	azure                setting.Azure
 	logger               micrologger.Logger
-	mcAzureClientFactory client.CredentialsAwareClientFactoryInterface
-	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	mcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsawarefactory.Interface
 }
 
 func New(config Config) (*Resource, error) {

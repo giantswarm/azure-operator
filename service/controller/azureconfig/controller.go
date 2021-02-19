@@ -19,7 +19,7 @@ import (
 	"k8s.io/apimachinery/pkg/labels"
 	"k8s.io/apimachinery/pkg/runtime"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/ipam"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
@@ -60,8 +60,8 @@ type ControllerConfig struct {
 
 	Azure                 setting.Azure
 	AzureMetricsCollector collector.AzureAPIMetrics
-	MCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
-	WCAzureClientFactory  client.CredentialsAwareClientFactoryInterface
+	MCAzureClientFactory  credentialsawarefactory.Interface
+	WCAzureClientFactory  credentialsawarefactory.Interface
 	ProjectName           string
 
 	ClusterVNetMaskBits int

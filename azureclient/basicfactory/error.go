@@ -1,4 +1,4 @@
-package factory
+package basicfactory
 
 import "github.com/giantswarm/microerror"
 

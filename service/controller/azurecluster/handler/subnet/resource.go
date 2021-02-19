@@ -17,7 +17,7 @@ import (
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	subnet "github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/handler/subnet/template"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -29,7 +29,7 @@ const (
 )
 
 type Config struct {
-	WCAzureClientsFactory client.CredentialsAwareClientFactoryInterface
+	WCAzureClientsFactory credentialsawarefactory.Interface
 	CtrlClient            ctrlclient.Client
 	Debugger              *debugger.Debugger
 	Logger                micrologger.Logger
@@ -37,7 +37,7 @@ type Config struct {
 
 // Resource creates a different subnet for every node pool using ARM deployments.
 type Resource struct {
-	wcAzureClientsFactory client.CredentialsAwareClientFactoryInterface
+	wcAzureClientsFactory credentialsawarefactory.Interface
 	ctrlClient            ctrlclient.Client
 	debugger              *debugger.Debugger
 	logger                micrologger.Logger

@@ -1,4 +1,4 @@
-package client
+package azureclient
 
 import (
 	"net/http"

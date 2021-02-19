@@ -4,7 +4,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 )
 
 const (
@@ -14,15 +14,15 @@ const (
 
 type Config struct {
 	Logger               micrologger.Logger
-	MCAzureClientFactory client.CredentialsAwareClientFactoryInterface
-	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	MCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsawarefactory.Interface
 }
 
 // Resource manages Azure resource groups.
 type Resource struct {
 	logger               micrologger.Logger
-	mcAzureClientFactory client.CredentialsAwareClientFactoryInterface
-	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	mcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsawarefactory.Interface
 }
 
 func New(config Config) (*Resource, error) {

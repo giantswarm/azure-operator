@@ -10,8 +10,6 @@ import (
 	v1 "k8s.io/api/core/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/azure-operator/v5/client/factory"
 )
 
 const (
@@ -50,7 +48,7 @@ func NewK8sSecretCredentialProvider(config K8sSecretCredentialProviderConfig) (*
 	}, nil
 }
 
-func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx context.Context, clusterID string) (*factory.AzureClientCredentialsConfig, error) {
+func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx context.Context, clusterID string) (*AzureClientCredentialsConfig, error) {
 	azureClusters := &v1alpha3.AzureClusterList{}
 	err := k.ctrlClient.List(ctx, azureClusters, ctrl.MatchingLabels{label.Cluster: clusterID})
 	if err != nil {
@@ -96,7 +94,7 @@ func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx contex
 	if mcSubscriptionTenantID != "" && subscriptionTenantID != mcSubscriptionTenantID {
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
 		credentials.AuxTenants = append(credentials.AuxTenants, mcSubscriptionTenantID)
-		return &factory.AzureClientCredentialsConfig{
+		return &AzureClientCredentialsConfig{
 			ClientCredentialsConfig: credentials,
 			SubscriptionID:          subscriptionID,
 		}, nil
@@ -111,7 +109,7 @@ func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx contex
 		credentials.AuxTenants = auxTenants
 	}
 
-	return &factory.AzureClientCredentialsConfig{
+	return &AzureClientCredentialsConfig{
 		ClientCredentialsConfig: credentials,
 		SubscriptionID:          subscriptionID,
 	}, nil

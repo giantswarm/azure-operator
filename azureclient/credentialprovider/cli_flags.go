@@ -10,8 +10,6 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
-
-	"github.com/giantswarm/azure-operator/v5/client/factory"
 )
 
 type CLIFlagsCredentialProviderConfig struct {
@@ -68,7 +66,7 @@ func (c *CLIFlagsCredentialProvider) GetLegacyCredentialSecret(ctx context.Conte
 	return nil, microerror.Maskf(notImplementedError, "GetLegacyCredentialSecret is not implemented for CLIFlagsCredentialProvider")
 }
 
-func (c *CLIFlagsCredentialProvider) GetAzureClientCredentialsConfig(ctx context.Context, clusterID string) (*factory.AzureClientCredentialsConfig, error) {
+func (c *CLIFlagsCredentialProvider) GetAzureClientCredentialsConfig(ctx context.Context, clusterID string) (*AzureClientCredentialsConfig, error) {
 	var auxTenantID string
 	{
 		if clusterID != "" {
@@ -108,7 +106,7 @@ func (c *CLIFlagsCredentialProvider) GetAzureClientCredentialsConfig(ctx context
 		credentials.AuxTenants = auxTenants
 	}
 
-	return &factory.AzureClientCredentialsConfig{
+	return &AzureClientCredentialsConfig{
 		ClientCredentialsConfig: credentials,
 		SubscriptionID:          c.managementClusterSubscriptionID,
 	}, nil

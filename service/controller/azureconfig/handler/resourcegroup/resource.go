@@ -17,7 +17,7 @@ import (
 	"sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	azureclient "github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
@@ -35,7 +35,7 @@ type Config struct {
 
 	Azure                setting.Azure
 	InstallationName     string
-	MCAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	MCAzureClientFactory credentialsawarefactory.Interface
 }
 
 // Resource manages Azure resource groups.
@@ -45,7 +45,7 @@ type Resource struct {
 
 	azure                setting.Azure
 	installationName     string
-	mcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	mcAzureClientFactory credentialsawarefactory.Interface
 }
 
 func New(config Config) (*Resource, error) {

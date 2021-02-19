@@ -8,7 +8,7 @@ import (
 	"github.com/giantswarm/certs/v3/pkg/certs"
 	v1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 
-	azureclient "github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
@@ -46,7 +46,7 @@ type Config struct {
 	RegistryMirrors      []string
 	SSHUserList          employees.SSHUserList
 	SSOPublicKey         string
-	WCAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory credentialsawarefactory.Interface
 }
 
 // Resource simulates a CAPI Bootstrap provider by rendering cloudconfig files while watching Spark CRs.
@@ -68,7 +68,7 @@ type Resource struct {
 	registryMirrors      []string
 	sshUserList          employees.SSHUserList
 	ssoPublicKey         string
-	wcAzureClientFactory azureclient.CredentialsAwareClientFactoryInterface
+	wcAzureClientFactory credentialsawarefactory.Interface
 }
 
 func New(config Config) (*Resource, error) {

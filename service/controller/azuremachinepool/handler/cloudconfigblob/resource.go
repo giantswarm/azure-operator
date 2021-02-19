@@ -9,7 +9,7 @@ import (
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 )
 
 const (
@@ -18,14 +18,14 @@ const (
 )
 
 type Config struct {
-	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory credentialsawarefactory.Interface
 	CtrlClient           ctrlclient.Client
 	Logger               micrologger.Logger
 }
 
 // Resource manages the blob saved in Azure Storage Account that contains the cloudconfig files to bootstrap our virtual machines.
 type Resource struct {
-	wcAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	wcAzureClientFactory credentialsawarefactory.Interface
 	ctrlClient           ctrlclient.Client
 	logger               micrologger.Logger
 }

@@ -8,7 +8,7 @@ import (
 	v1 "k8s.io/api/core/v1"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/client"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes/state"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/encrypter"
@@ -22,7 +22,7 @@ type Config struct {
 	Logger     micrologger.Logger
 
 	Azure                setting.Azure
-	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory credentialsawarefactory.Interface
 	Name                 string
 }
 
@@ -33,7 +33,7 @@ type Resource struct {
 	StateMachine state.Machine
 
 	Azure                setting.Azure
-	WCAzureClientFactory client.CredentialsAwareClientFactoryInterface
+	WCAzureClientFactory credentialsawarefactory.Interface
 	name                 string
 }
 
