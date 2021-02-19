@@ -163,7 +163,8 @@ func (c *VirtualNetworkCollector) getVirtualNetworksFromAllSubscriptions(ctx con
 	for _, cluster := range tenantClusterList.Items {
 		subscriptionID, err := c.wcAzureClientFactory.GetSubscriptionID(ctx, key.ClusterID(&cluster))
 		if err != nil {
-			return nil, microerror.Mask(err)
+			c.logger.LogCtx(ctx, "level", "warning", "message", fmt.Sprintf("Cannot retrieve subscription ID for cluster %s: %s", key.ClusterID(&cluster), err))
+			continue
 		}
 
 		// We want to check only once per subscription.
