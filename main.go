@@ -122,8 +122,6 @@ func mainError() error {
 	daemonCommand.PersistentFlags().Bool(f.Service.Azure.MSI.Enabled, true, "Whether to enabled Managed Service Identity (MSI).")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.CIDR, "10.0.0.0/16", "CIDR of the host cluster virtual network used to create a peering.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.ResourceGroup, "", "Host cluster resource group name.")
-	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.TenantID, "", "Tenant ID used for the Control Plane cluster.")
-	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.SubscriptionID, "", "Subscription ID used for the Control Plane cluster.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.Tenant.PartnerID, "", "Partner ID used for the Control Plane cluster.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetwork, "", "Host cluster virtual network name.")
 	daemonCommand.PersistentFlags().String(f.Service.Azure.HostCluster.VirtualNetworkGateway, "", "Host cluster virtual network gateway name.")

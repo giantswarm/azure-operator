@@ -20,14 +20,14 @@ type K8sSecretCredentialProviderConfig struct {
 	CtrlClient ctrl.Client
 	Logger     micrologger.Logger
 
-	TenantID string
+	MCTenantID string
 }
 
 type K8sSecretCredentialProvider struct {
 	ctrlClient ctrl.Client
 	logger     micrologger.Logger
 
-	tenantID string
+	mcTenantID string
 }
 
 func NewK8sSecretCredentialProvider(config K8sSecretCredentialProviderConfig) (*K8sSecretCredentialProvider, error) {
@@ -37,14 +37,14 @@ func NewK8sSecretCredentialProvider(config K8sSecretCredentialProviderConfig) (*
 	if config.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", config)
 	}
-	if config.TenantID == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.TenantID must not be empty", config)
+	if config.MCTenantID == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.MCTenantID must not be empty", config)
 	}
 
 	return &K8sSecretCredentialProvider{
 		ctrlClient: config.CtrlClient,
 		logger:     config.Logger,
-		tenantID:   config.TenantID,
+		mcTenantID: config.MCTenantID,
 	}, nil
 }
 
@@ -84,16 +84,15 @@ func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx contex
 	subscriptionID := azureCluster.Spec.SubscriptionID
 	clientID := azureClusterIdentity.Spec.ClientID
 	subscriptionTenantID := azureClusterIdentity.Spec.TenantID
-	mcSubscriptionTenantID := k.tenantID
 
 	clientSecret, err := valueFromSecret(secret, clientSecretKey)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
 
-	if mcSubscriptionTenantID != "" && subscriptionTenantID != mcSubscriptionTenantID {
+	if k.mcTenantID != "" && subscriptionTenantID != k.mcTenantID {
 		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
-		credentials.AuxTenants = append(credentials.AuxTenants, mcSubscriptionTenantID)
+		credentials.AuxTenants = append(credentials.AuxTenants, k.mcTenantID)
 		return &AzureClientCredentialsConfig{
 			ClientCredentialsConfig: credentials,
 			SubscriptionID:          subscriptionID,
@@ -102,9 +101,9 @@ func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx contex
 
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
 
-	if subscriptionTenantID != k.tenantID {
+	if subscriptionTenantID != k.mcTenantID {
 		auxTenants := []string{
-			k.tenantID,
+			k.mcTenantID,
 		}
 		credentials.AuxTenants = auxTenants
 	}

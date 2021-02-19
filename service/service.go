@@ -291,7 +291,7 @@ func New(config Config) (*Service, error) {
 		wcCredentialProvider, err := credentialprovider.NewK8sSecretCredentialProvider(credentialprovider.K8sSecretCredentialProviderConfig{
 			CtrlClient: k8sClient.CtrlClient(),
 			Logger:     config.Logger,
-			TenantID:   config.Viper.GetString(config.Flag.Service.Azure.TenantID),
+			MCTenantID: config.Viper.GetString(config.Flag.Service.Azure.TenantID),
 		})
 		if err != nil {
 			return nil, microerror.Mask(err)
