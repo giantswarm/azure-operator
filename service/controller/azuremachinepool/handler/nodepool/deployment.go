@@ -61,7 +61,9 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	if key.NodePoolMinReplicas(machinePool) != key.NodePoolMaxReplicas(machinePool) {
 		// Autoscaler is enabled. Will need to use the current number of replicas from the VMSS if it exists.
 		if !vmss.IsHTTPStatus(404) {
-			currentReplicas = int32(*vmss.Sku.Capacity)
+			if int32(*vmss.Sku.Capacity) > currentReplicas {
+				currentReplicas = int32(*vmss.Sku.Capacity)
+			}
 		}
 	}
 
