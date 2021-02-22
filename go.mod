@@ -13,10 +13,10 @@ require (
 	github.com/giantswarm/apiextensions/v2 v2.6.2
 	github.com/giantswarm/apiextensions/v3 v3.18.2
 	github.com/giantswarm/badnodedetector v1.0.1
-	github.com/giantswarm/certs/v3 v3.1.0
+	github.com/giantswarm/certs/v3 v3.1.1
 	github.com/giantswarm/conditions v0.3.0
 	github.com/giantswarm/conditions-handler v0.2.1
-	github.com/giantswarm/errors v0.2.3
+	github.com/giantswarm/errors v0.3.0
 	github.com/giantswarm/exporterkit v0.2.1
 	github.com/giantswarm/ipam v0.2.0
 	github.com/giantswarm/k8sclient/v5 v5.10.0

@@ -286,8 +286,8 @@ github.com/giantswarm/backoff v0.2.0/go.mod h1:Z3WRsFilSJ5H5VlFa4XhraoPr+9pmZgYa
 github.com/giantswarm/badnodedetector v1.0.1 h1:5rKD7SOErceMStnCkiop2nVj1PPiWVnuWE8v/6mE2tA=
 github.com/giantswarm/badnodedetector v1.0.1/go.mod h1:DZ8Nq4gdWL8RUcC1xy6ASxsDjE5IPeAVx0n9PVnrt5M=
 github.com/giantswarm/certs/v3 v3.0.0/go.mod h1:fkmIW3moxlrldZhN99fnbBohsDJaki/WCHeNyIN2sr8=
-github.com/giantswarm/certs/v3 v3.1.0 h1:DV23PHNAFds9v1kHgvL6/gWZMTumu+60qdZ6NESeMJc=
-github.com/giantswarm/certs/v3 v3.1.0/go.mod h1:fkmIW3moxlrldZhN99fnbBohsDJaki/WCHeNyIN2sr8=
+github.com/giantswarm/certs/v3 v3.1.1 h1:42+ApZHTpF/nUGc7eI4toMEXQcKRwGUMnoIO7cuio1Q=
+github.com/giantswarm/certs/v3 v3.1.1/go.mod h1:fkmIW3moxlrldZhN99fnbBohsDJaki/WCHeNyIN2sr8=
 github.com/giantswarm/cluster-api v0.3.13-gs h1:ZgOMYkSuM1KnRmdDkPTfYj8G+Bdn6K1+sI0RnsPoBSc=
 github.com/giantswarm/cluster-api v0.3.13-gs/go.mod h1:BCtzLFd2R77eDAvZGd5P1OlG38exdHlQietjFA/7u+0=
 github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3 h1:hfYVY9E862AYSveiquggZuzmoTUCZax4WmDINBa/0kQ=
@@ -296,8 +296,8 @@ github.com/giantswarm/conditions v0.3.0 h1:sv6b2dVXns2oT1VJ2UIuflJo24cC7EPXD7tdw
 github.com/giantswarm/conditions v0.3.0/go.mod h1:tFjYCLTT5NBJU+PYij0360yBHzETIpw3wnrettuzdsw=
 github.com/giantswarm/conditions-handler v0.2.1 h1:XUgJD0T+H+QsUN1oaPAlla+hL+qJqtNQF150snQSXy8=
 github.com/giantswarm/conditions-handler v0.2.1/go.mod h1:uEnndkR6svfI86fSu7LXVVhqHXqOB2speo6LVQ+rok8=
-github.com/giantswarm/errors v0.2.3 h1:gE1dDSD0RNwYUah5hG6oUQh0unPyZ74tVwR1/PW3ZQ0=
-github.com/giantswarm/errors v0.2.3/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
+github.com/giantswarm/errors v0.3.0 h1:8y3L4496su7mqUjCb79edyXFkli9ythdXoFVaes442I=
+github.com/giantswarm/errors v0.3.0/go.mod h1:Oj1LIWs9Uoj6JGtK5HxTb50iZuqe9f60LDI0nLXA5vU=
 github.com/giantswarm/exporterkit v0.2.0 h1:+HTGl4fmT/1OkTox8HbV3JXeavmsZv94+2CDW8cSrq0=
 github.com/giantswarm/exporterkit v0.2.0/go.mod h1:b4fuHVjsvZgznC9OEPfn0y5zvN8SnEKTiI5zTTfck94=
 github.com/giantswarm/exporterkit v0.2.1 h1:M/Avqdg6O+NdyGtY+LSy5cCpJzhG15WRHQRkhOY/dKs=
