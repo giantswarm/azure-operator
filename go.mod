@@ -31,7 +31,7 @@ require (
 	github.com/giantswarm/tenantcluster/v3 v3.0.0
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.5.0
 	github.com/google/go-cmp v0.5.4
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/markbates/pkger v0.17.1
