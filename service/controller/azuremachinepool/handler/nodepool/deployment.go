@@ -61,7 +61,14 @@ func (r Resource) getDesiredDeployment(ctx context.Context, storageAccountsClien
 	if key.NodePoolMinReplicas(machinePool) != key.NodePoolMaxReplicas(machinePool) {
 		// Autoscaler is enabled. Will need to use the current number of replicas from the VMSS if it exists.
 		if !vmss.IsHTTPStatus(404) {
-			currentReplicas = int32(*vmss.Sku.Capacity)
+			// Update VMSS desired number of nodes in case existing desired
+			// minimum number of nodes is bigger than current desired number of
+			// nodes by cluster auto-scaler. It doesn't automatically increase
+			// the number of nodes to minimum level so it must be triggered via
+			// API here.
+			if int32(*vmss.Sku.Capacity) > currentReplicas {
+				currentReplicas = int32(*vmss.Sku.Capacity)
+			}
 		}
 	}
 
