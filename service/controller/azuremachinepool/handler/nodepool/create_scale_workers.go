@@ -104,8 +104,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	r.Logger.Debugf(ctx, "The desired number of workers is: %d", desiredWorkerCount)
 
 	if desiredWorkerCount == 0 {
-		// The node pool is empty, the upgrade process is not finished.
-
+		// The node pool is empty, the upgrade process can stop here.
 		r.Logger.Debugf(ctx, "The size of the Node Pool is 0: upgrade is complete")
 		return DeploymentUninitialized, nil
 	}
