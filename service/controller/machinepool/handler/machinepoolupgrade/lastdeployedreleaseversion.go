@@ -136,10 +136,10 @@ func allNodePoolNodesUpToDate(ctx context.Context, tenantClusterClient client.Cl
 
 	// azure-admission-controller ensures that machinePool.Spec.Replicas is
 	// always set
-	requiredReplicas := *machinePool.Spec.Replicas
+	minRequiredReplicas := key.NodePoolMinReplicas(machinePool)
 
 	// We want that all required replicas are up-to-date.
-	requiredReplicasAreUpToDate := upToDateNodesCount >= requiredReplicas
+	requiredReplicasAreUpToDate := upToDateNodesCount >= minRequiredReplicas
 
 	// We also want that old nodes are removed.
 	oldNodesAreRemoved := outdatedNodes == 0

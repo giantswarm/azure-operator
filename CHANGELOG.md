@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix a race condition when upgrading node pools with 0 replicas.
+- Fix Upgrading condition for node pools with autoscaler enabled.
+
 ## [5.5.0] - 2021-02-22
 
 ### Added
