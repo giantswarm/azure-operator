@@ -103,6 +103,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 	desiredWorkerCount := int64(len(oldInstances) * 2)
 	r.Logger.Debugf(ctx, "The desired number of workers is: %d", desiredWorkerCount)
 
+	if desiredWorkerCount == 0 {
+		// The node pool is empty, the upgrade process can stop here.
+		r.Logger.Debugf(ctx, "The size of the Node Pool is 0: upgrade is complete")
+		return DeploymentUninitialized, nil
+	}
+
 	if desiredWorkerCount > int64(len(oldInstances)+len(newInstances)) {
 		// Disable cluster autoscaler for this nodepool.
 		err = r.disableClusterAutoscaler(ctx, azureMachinePool)
