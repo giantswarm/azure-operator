@@ -36,12 +36,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			resourceGroup := key.ResourceGroupName(cr)
 			vpnGatewayName := key.VPNGatewayName(cr)
 
-			gatewayClient, err := r.mcAzureClientFactory.GetVirtualNetworkGatewaysClient(ctx, key.ClusterID(&cr))
+			gatewayClient, err := r.wcAzureClientFactory.GetVirtualNetworkGatewaysClient(ctx, key.ClusterID(&cr))
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
-			guestVPNGateway, err := gatewayClient.Get(ctx, resourceGroup, vpnGatewayName)
+			gw, err := gatewayClient.Get(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
 				r.logger.Debugf(ctx, "tenant vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
@@ -51,6 +51,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			} else if err != nil {
 				return connections{}, microerror.Mask(err)
 			}
+
+			guestVPNGateway = &gw
 
 			provisioningState := guestVPNGateway.ProvisioningState
 			if provisioningState != "Succeeded" {
@@ -66,12 +68,12 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			resourceGroup := r.azure.HostCluster.ResourceGroup
 			vpnGatewayName := r.azure.HostCluster.VirtualNetworkGateway
 
-			gatewayClient, err := r.wcAzureClientFactory.GetVirtualNetworkGatewaysClient(ctx, key.ClusterID(&cr))
+			gatewayClient, err := r.mcAzureClientFactory.GetVirtualNetworkGatewaysClient(ctx, key.ClusterID(&cr))
 			if err != nil {
 				return nil, microerror.Mask(err)
 			}
 
-			hostVPNGateway, err := gatewayClient.Get(ctx, resourceGroup, vpnGatewayName)
+			gw, err := gatewayClient.Get(ctx, resourceGroup, vpnGatewayName)
 			if IsVPNGatewayNotFound(err) {
 				r.logger.Debugf(ctx, "host vpn gateway was not found")
 				resourcecanceledcontext.SetCanceled(ctx)
@@ -81,6 +83,8 @@ func (r *Resource) GetDesiredState(ctx context.Context, azureConfig interface{})
 			} else if err != nil {
 				return connections{}, microerror.Mask(err)
 			}
+
+			hostVPNGateway = &gw
 
 			if provisioningState := string(hostVPNGateway.ProvisioningState); provisioningState != "Succeeded" {
 				r.logger.Debugf(ctx, "host vpn gateway is in state '%s'", provisioningState)
