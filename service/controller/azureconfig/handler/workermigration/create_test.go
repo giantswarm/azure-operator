@@ -28,7 +28,7 @@ import (
 	"sigs.k8s.io/controller-runtime/pkg/client/fake"
 	"sigs.k8s.io/yaml"
 
-	azureclient "github.com/giantswarm/azure-operator/v5/azureclient"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
 	"github.com/giantswarm/azure-operator/v5/pkg/mock/mock_tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/mock_azure"
@@ -62,7 +62,7 @@ func TestMigrationWaitsForMasterUpgradeToFinish(t *testing.T) {
 			r := &Resource{
 				ctrlClient:   ctrlClient,
 				logger:       microloggertest.New(),
-				wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API { return nil },
+				wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API { return nil },
 			}
 
 			ensureCRsExist(t, ctrlClient, []string{
@@ -97,7 +97,7 @@ func TestMigrationCreatesMachinePoolCRs(t *testing.T) {
 	r := &Resource{
 		ctrlClient:   ctrlClient,
 		logger:       microloggertest.New(),
-		wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API { return m },
+		wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API { return m },
 	}
 
 	ensureCRsExist(t, ctrlClient, []string{
@@ -196,7 +196,7 @@ func TestMigrationCreatesDrainerConfigCRs(t *testing.T) {
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
 		tenantClientFactory: mockTenantClusterFactory,
-		wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API {
+		wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API {
 			return mockAzureAPI
 		},
 	}
@@ -277,7 +277,7 @@ func TestVMSSIsNotDeletedBeforeDrainingIsDone(t *testing.T) {
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
 		tenantClientFactory: mockTenantCluster,
-		wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API {
+		wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API {
 			return mockAzureAPI
 		},
 	}
@@ -359,7 +359,7 @@ func TestVMSSIsDeletedOnceDrainingIsDone(t *testing.T) {
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
 		tenantClientFactory: mockTenantClusterFactory,
-		wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API {
+		wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API {
 			return mockAzureAPI
 		},
 	}
@@ -447,7 +447,7 @@ func TestLegacyWorkerDeploymentIsDeleted(t *testing.T) {
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
 		tenantClientFactory: mockTenantClusterFactory,
-		wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API {
+		wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API {
 			return mockAzureAPI
 		},
 	}
@@ -519,7 +519,7 @@ func TestLegacyWorkerDeploymentDeletionDoesntErrorInNotFoundCase(t *testing.T) {
 		ctrlClient:          ctrlClient,
 		logger:              microloggertest.New(),
 		tenantClientFactory: mockTenantClusterFactory,
-		wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API {
+		wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API {
 			return mockAzureAPI
 		},
 	}
@@ -590,7 +590,7 @@ func TestFinishedMigration(t *testing.T) {
 	r := &Resource{
 		ctrlClient:   client,
 		logger:       microloggertest.New(),
-		wrapAzureAPI: func(cf *azureclient.Factory, clusterID string) azure.API { return m },
+		wrapAzureAPI: func(cf credentialsawarefactory.Interface, clusterID string) azure.API { return m },
 	}
 
 	ensureCRsExist(t, client, []string{
