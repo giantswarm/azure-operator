@@ -7,6 +7,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.5.1] - 2021-02-24
+
+### Fixed
+
+- Fix a race condition when upgrading node pools with 0 replicas.
+- Fix Upgrading condition for node pools with autoscaler enabled.
+
 ## [5.5.0] - 2021-02-22
 
 ### Added
@@ -336,7 +343,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.5.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.5.1...HEAD
+[5.5.1]: https://github.com/giantswarm/azure-operator/compare/v5.5.0...v5.5.1
 [5.5.0]: https://github.com/giantswarm/azure-operator/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/giantswarm/azure-operator/compare/v5.3.0...v5.4.0
 [5.3.0]: https://github.com/giantswarm/azure-operator/compare/v5.2.1...v5.3.0
