@@ -11,6 +11,6 @@ type CredentialProvider interface {
 	// Returns the azure credentials alongside the subscription ID.
 	GetAzureClientCredentialsConfig(ctx context.Context, clusterID string) (*AzureClientCredentialsConfig, error)
 
-	// Deprecated: retrieves the Legacy GS secret for an organization.
+	// Retrieves the Legacy GS secret for an organization.
 	GetLegacyCredentialSecret(ctx context.Context, organizationID string) (*v1alpha1.CredentialSecret, error)
 }
