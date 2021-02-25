@@ -254,7 +254,9 @@ func New(config Config) (*Service, error) {
 	var azureClientFactory *basicfactory.BasicFactory
 	{
 		azureClientFactoryConfig := basicfactory.Config{
-			Logger: config.Logger,
+			Logger:           config.Logger,
+			MetricsCollector: nil,
+			PartnerID:        config.Viper.GetString(config.Flag.Service.Azure.PartnerID),
 		}
 
 		azureClientFactory, err = basicfactory.NewAzureClientFactory(azureClientFactoryConfig)

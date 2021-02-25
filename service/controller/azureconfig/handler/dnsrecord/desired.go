@@ -7,8 +7,6 @@ import (
 	"github.com/giantswarm/microerror"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
-
-	"github.com/giantswarm/azure-operator/v5/azureclient"
 )
 
 // GetDesiredState returns the desired resource group for this cluster.
@@ -32,7 +30,7 @@ func (r *Resource) getDesiredState(ctx context.Context, obj providerv1alpha1.Azu
 	for i, record := range desired {
 		zone := record.RelativeName + "." + record.Zone
 		resp, err := zonesClient.Get(ctx, key.ResourceGroupName(obj), zone)
-		if azureclient.ResponseWasNotFound(resp.Response) {
+		if responseWasNotFound(resp.Response) {
 			return dnsRecords{}, nil
 		} else if err != nil {
 			return nil, microerror.Mask(err)
