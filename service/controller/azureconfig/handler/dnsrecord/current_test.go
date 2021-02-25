@@ -1,4 +1,4 @@
-package azureclient
+package dnsrecord
 
 import (
 	"net/http"
@@ -48,7 +48,7 @@ func Test_ResponseWasNotFound(t *testing.T) {
 			resp := autorest.Response{
 				Response: tc.response,
 			}
-			notFoundResult := ResponseWasNotFound(resp)
+			notFoundResult := responseWasNotFound(resp)
 			if !cmp.Equal(notFoundResult, tc.expectedResult) {
 				t.Fatalf("\n\n%s\n", cmp.Diff(tc.expectedResult, notFoundResult))
 
