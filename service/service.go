@@ -251,11 +251,36 @@ func New(config Config) (*Service, error) {
 		reservedCIDRs = append(reservedCIDRs, *ipnet)
 	}
 
+	var azureCollector collector.AzureAPIMetrics
+	var collectorSet *exporterkitcollector.Set
+	{
+		azureAPIMetricsCollector, err := collector.NewAzureAPIMetricsCollector(collector.Config{Logger: config.Logger})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		azureCollector = azureAPIMetricsCollector
+
+		c := exporterkitcollector.SetConfig{
+			Collectors: []exporterkitcollector.Interface{
+				azureAPIMetricsCollector,
+			},
+			Logger: config.Logger,
+		}
+
+		collectorSet, err = exporterkitcollector.NewSet(c)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+	}
+
+	var controllers []*operatorkitcontroller.Controller
+
 	var azureClientFactory *basicfactory.BasicFactory
 	{
 		azureClientFactoryConfig := basicfactory.Config{
 			Logger:           config.Logger,
-			MetricsCollector: nil,
+			MetricsCollector: azureCollector,
 			PartnerID:        config.Viper.GetString(config.Flag.Service.Azure.PartnerID),
 		}
 
@@ -304,31 +329,6 @@ func New(config Config) (*Service, error) {
 			return nil, microerror.Mask(err)
 		}
 	}
-
-	var azureCollector collector.AzureAPIMetrics
-	var collectorSet *exporterkitcollector.Set
-	{
-		azureAPIMetricsCollector, err := collector.NewAzureAPIMetricsCollector(collector.Config{Logger: config.Logger})
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-
-		azureCollector = azureAPIMetricsCollector
-
-		c := exporterkitcollector.SetConfig{
-			Collectors: []exporterkitcollector.Interface{
-				azureAPIMetricsCollector,
-			},
-			Logger: config.Logger,
-		}
-
-		collectorSet, err = exporterkitcollector.NewSet(c)
-		if err != nil {
-			return nil, microerror.Mask(err)
-		}
-	}
-
-	var controllers []*operatorkitcontroller.Controller
 
 	var azureClusterController *operatorkitcontroller.Controller
 	{
