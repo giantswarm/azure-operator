@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Use the `AzureClusterIdentity` CR to create Azure API clients.
+- Automatically detect multitenant and singletenant service principals and initiate azure clients accordingly.
+
 ## [5.5.1] - 2021-02-24
 
 ### Fixed
@@ -27,10 +32,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Avoid blocking the whole `AzureConfig` handler on cluster creation because we can't update the `StorageClasses`.
 - Avoid overriding the NP size when the scaling is changed by autoscaler. 
-
-### Changed
-
-- Use the `AzureClusterIdentity` CR to create Azure API clients.
 
 ## [5.4.0] - 2021-02-05
 

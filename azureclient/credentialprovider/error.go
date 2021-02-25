@@ -1,6 +1,11 @@
 package credentialprovider
 
-import "github.com/giantswarm/microerror"
+import (
+	"strings"
+
+	"github.com/Azure/go-autorest/autorest"
+	"github.com/giantswarm/microerror"
+)
 
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
@@ -42,4 +47,21 @@ func IsTooManyCredentials(err error) bool {
 
 var notImplementedError = &microerror.Error{
 	Kind: "notImplementedError",
+}
+
+func IsApplicationNotFoundInADError(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	{
+		dErr, ok := err.(autorest.DetailedError)
+		if ok {
+			if dErr.PackageType == "azure.multiTenantSPTAuthorizer" && dErr.Method == "WithAuthorization" && strings.HasPrefix(dErr.Message, "Failed to refresh one or more Tokens for request to") {
+				return true
+			}
+		}
+	}
+
+	return false
 }

@@ -2,8 +2,11 @@ package credentialprovider
 
 import (
 	"context"
+	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
 	"github.com/Azure/go-autorest/autorest/azure/auth"
+	"github.com/Azure/go-autorest/autorest/to"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
@@ -90,22 +93,26 @@ func (k *K8sSecretCredentialProvider) GetAzureClientCredentialsConfig(ctx contex
 		return nil, microerror.Mask(err)
 	}
 
-	if k.mcTenantID != "" && subscriptionTenantID != k.mcTenantID {
-		credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
-		credentials.AuxTenants = append(credentials.AuxTenants, k.mcTenantID)
-		return &AzureClientCredentialsConfig{
-			ClientCredentialsConfig: credentials,
-			SubscriptionID:          subscriptionID,
-		}, nil
-	}
-
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, subscriptionTenantID)
 
-	if subscriptionTenantID != k.mcTenantID {
-		auxTenants := []string{
-			k.mcTenantID,
+	if k.mcTenantID != "" && subscriptionTenantID != k.mcTenantID {
+		oriAuxTenants := credentials.AuxTenants
+		credentials.AuxTenants = append(oriAuxTenants, k.mcTenantID)
+
+		// Test client to catch a multi tenant error.
+		azureClient := resources.NewGroupsClient(subscriptionID)
+		authorizer, err := credentials.Authorizer()
+		if err != nil {
+			return nil, microerror.Mask(err)
 		}
-		credentials.AuxTenants = auxTenants
+		azureClient.Client.Authorizer = authorizer
+		_, err = azureClient.List(ctx, "", to.Int32Ptr(1))
+		if IsApplicationNotFoundInADError(err) {
+			k.logger.LogCtx(ctx, "level", "error", "message", fmt.Sprintf("Tried to set up auxiliary tenant %q but authentication failed. Disabling multi-tenant", k.mcTenantID))
+			credentials.AuxTenants = oriAuxTenants
+		} else if err != nil {
+			return nil, microerror.Mask(err)
+		}
 	}
 
 	return &AzureClientCredentialsConfig{
