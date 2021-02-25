@@ -236,7 +236,7 @@ func (f *BasicFactory) prepareClient(client *autorest.Client, accc credentialpro
 
 	// Gather metrics from API calls.
 	if f.metricsCollector != nil {
-		senddecorator.MetricsDecorator(name, accc.SubscriptionID, f.metricsCollector)
+		decorators = append(decorators, senddecorator.MetricsDecorator(name, accc.SubscriptionID, f.metricsCollector))
 	}
 
 	senddecorator.WrapClient(client, decorators...)
