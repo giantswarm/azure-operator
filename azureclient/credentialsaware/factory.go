@@ -1,4 +1,4 @@
-package credentialsawarefactory
+package credentialsaware
 
 import (
 	"context"
@@ -15,19 +15,19 @@ import (
 	"github.com/giantswarm/microerror"
 	gocache "github.com/patrickmn/go-cache"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/basicfactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/basic"
 	"github.com/giantswarm/azure-operator/v5/azureclient/credentialprovider"
 )
 
 type CredentialsAwareClientFactory struct {
 	azureCredentialProvider credentialprovider.CredentialProvider
-	azureClientFactory      basicfactory.BasicFactory
+	azureClientFactory      basic.BasicFactory
 
 	cachedClients *gocache.Cache
 	mutex         sync.Mutex
 }
 
-func NewCredentialsAwareClientFactory(azureCredentialProvider credentialprovider.CredentialProvider, azureClientFactory basicfactory.BasicFactory) (*CredentialsAwareClientFactory, error) {
+func NewCredentialsAwareClientFactory(azureCredentialProvider credentialprovider.CredentialProvider, azureClientFactory basic.BasicFactory) (*CredentialsAwareClientFactory, error) {
 	cacheDuration := 5 * time.Minute
 
 	return &CredentialsAwareClientFactory{

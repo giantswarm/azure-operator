@@ -15,7 +15,7 @@ import (
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 )
 
-type CLIFlagsCredentialProviderConfig struct {
+type ManagementClusterCredentialProviderConfig struct {
 	CtrlClient ctrl.Client
 	Logger     micrologger.Logger
 
@@ -25,7 +25,7 @@ type CLIFlagsCredentialProviderConfig struct {
 	ManagementClusterTenantID       string
 }
 
-type CLIFlagsCredentialProvider struct {
+type ManagementClusterCredentialProvider struct {
 	ctrlClient ctrl.Client
 	logger     micrologger.Logger
 
@@ -35,7 +35,7 @@ type CLIFlagsCredentialProvider struct {
 	managementClusterTenantID       string
 }
 
-func NewCLIFlagsCredentialProvider(config CLIFlagsCredentialProviderConfig) (*CLIFlagsCredentialProvider, error) {
+func NewCLIFlagsCredentialProvider(config ManagementClusterCredentialProviderConfig) (*ManagementClusterCredentialProvider, error) {
 	if config.CtrlClient == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CtrlClient must not be empty", config)
 	}
@@ -55,7 +55,7 @@ func NewCLIFlagsCredentialProvider(config CLIFlagsCredentialProviderConfig) (*CL
 		return nil, microerror.Maskf(invalidConfigError, "%T.ManagementClusterTenantID must not be empty", config)
 	}
 
-	return &CLIFlagsCredentialProvider{
+	return &ManagementClusterCredentialProvider{
 		ctrlClient:                      config.CtrlClient,
 		logger:                          config.Logger,
 		managementClusterClientID:       config.ManagementClusterClientID,
@@ -65,11 +65,11 @@ func NewCLIFlagsCredentialProvider(config CLIFlagsCredentialProviderConfig) (*CL
 	}, nil
 }
 
-func (c *CLIFlagsCredentialProvider) GetLegacyCredentialSecret(ctx context.Context, clusterID string) (*v1alpha1.CredentialSecret, error) {
-	return nil, microerror.Maskf(notImplementedError, "GetLegacyCredentialSecret is not implemented for CLIFlagsCredentialProvider")
+func (c *ManagementClusterCredentialProvider) GetLegacyCredentialSecret(ctx context.Context, clusterID string) (*v1alpha1.CredentialSecret, error) {
+	return nil, microerror.Maskf(notImplementedError, "GetLegacyCredentialSecret is not implemented for ManagementClusterCredentialProvider")
 }
 
-func (c *CLIFlagsCredentialProvider) GetAzureClientCredentialsConfig(ctx context.Context, clusterID string) (*AzureClientCredentialsConfig, error) {
+func (c *ManagementClusterCredentialProvider) GetAzureClientCredentialsConfig(ctx context.Context, clusterID string) (*AzureClientCredentialsConfig, error) {
 	var subscriptionID string
 	var auxTenantID string
 	{

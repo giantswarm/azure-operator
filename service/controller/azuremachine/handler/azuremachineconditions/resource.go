@@ -13,7 +13,7 @@ import (
 	capiconditions "sigs.k8s.io/cluster-api/util/conditions"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 	"github.com/giantswarm/azure-operator/v5/pkg/azureconditions"
 )
 
@@ -23,14 +23,14 @@ const (
 )
 
 type Config struct {
-	WCAzureClientsFactory credentialsawarefactory.Interface
+	WCAzureClientsFactory credentialsaware.Factory
 	CtrlClient            client.Client
 	Logger                micrologger.Logger
 }
 
 // Resource ensures that AzureMachinePool Status Conditions are set.
 type Resource struct {
-	wcAzureClientsFactory credentialsawarefactory.Interface
+	wcAzureClientsFactory credentialsaware.Factory
 	ctrlClient            client.Client
 	logger                micrologger.Logger
 

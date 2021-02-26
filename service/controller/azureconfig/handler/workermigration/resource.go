@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 	"github.com/giantswarm/azure-operator/v5/pkg/tenantcluster"
 	"github.com/giantswarm/azure-operator/v5/service/controller/azureconfig/handler/workermigration/internal/azure"
 )
@@ -17,8 +17,8 @@ const (
 
 type Config struct {
 	CertsSearcher        certs.Interface
-	MCAzureClientFactory credentialsawarefactory.Interface
-	WCAzureClientFactory credentialsawarefactory.Interface
+	MCAzureClientFactory credentialsaware.Factory
+	WCAzureClientFactory credentialsaware.Factory
 	CtrlClient           client.Client
 	Logger               micrologger.Logger
 
@@ -27,12 +27,12 @@ type Config struct {
 }
 
 type Resource struct {
-	mcAzureClientFactory credentialsawarefactory.Interface
-	wcAzureClientFactory credentialsawarefactory.Interface
+	mcAzureClientFactory credentialsaware.Factory
+	wcAzureClientFactory credentialsaware.Factory
 	ctrlClient           client.Client
 	logger               micrologger.Logger
 	tenantClientFactory  tenantcluster.Factory
-	wrapAzureAPI         func(cf credentialsawarefactory.Interface, clusterID string) azure.API
+	wrapAzureAPI         func(cf credentialsaware.Factory, clusterID string) azure.API
 
 	installationName string
 	location         string

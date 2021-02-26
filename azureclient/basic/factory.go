@@ -1,4 +1,4 @@
-package basicfactory
+package basic
 
 import (
 	"context"

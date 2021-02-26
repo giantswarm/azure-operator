@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 	"github.com/giantswarm/azure-operator/v5/flag"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/release"
 	"github.com/giantswarm/azure-operator/v5/pkg/label"
@@ -43,8 +43,8 @@ type ControllerConfig struct {
 
 	Azure                 setting.Azure
 	AzureMetricsCollector collector.AzureAPIMetrics
-	MCAzureClientFactory  credentialsawarefactory.Interface
-	WCAzureClientFactory  credentialsawarefactory.Interface
+	MCAzureClientFactory  credentialsaware.Factory
+	WCAzureClientFactory  credentialsaware.Factory
 	ProjectName           string
 	RegistryDomain        string
 

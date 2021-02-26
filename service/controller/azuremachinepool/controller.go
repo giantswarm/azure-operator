@@ -16,7 +16,7 @@ import (
 	"k8s.io/apimachinery/pkg/runtime"
 	"sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/ipam"
 	"github.com/giantswarm/azure-operator/v5/pkg/handler/nodes"
@@ -42,8 +42,8 @@ type ControllerConfig struct {
 	CalicoMTU             int
 	CalicoSubnet          string
 	ClusterIPRange        string
-	MCAzureClientFactory  credentialsawarefactory.Interface
-	WCAzureClientFactory  credentialsawarefactory.Interface
+	MCAzureClientFactory  credentialsaware.Factory
+	WCAzureClientFactory  credentialsaware.Factory
 	DockerhubToken        string
 	EtcdPrefix            string
 	Ignition              setting.Ignition

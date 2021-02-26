@@ -5,7 +5,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 	"github.com/giantswarm/azure-operator/v5/service/controller/debugger"
 	"github.com/giantswarm/azure-operator/v5/service/controller/setting"
 )
@@ -22,7 +22,7 @@ type Config struct {
 	Logger     micrologger.Logger
 
 	Azure                setting.Azure
-	WCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsaware.Factory
 }
 
 // Resource ensures Microsoft Virtual Network Gateways are running.
@@ -32,7 +32,7 @@ type Resource struct {
 	logger     micrologger.Logger
 
 	azure                setting.Azure
-	wcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsaware.Factory
 }
 
 // New validates Config and creates a new Resource with it.

@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 	"sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 )
 
 const (
@@ -14,14 +14,14 @@ const (
 )
 
 type Config struct {
-	WCAzureClientsFactory    credentialsawarefactory.Interface
+	WCAzureClientsFactory    credentialsaware.Factory
 	CtrlClient               client.Client
 	Logger                   micrologger.Logger
 	TenantRestConfigProvider *tenantcluster.TenantCluster
 }
 
 type Resource struct {
-	azureClientsFactory      credentialsawarefactory.Interface
+	azureClientsFactory      credentialsaware.Factory
 	ctrlClient               client.Client
 	logger                   micrologger.Logger
 	tenantRestConfigProvider *tenantcluster.TenantCluster

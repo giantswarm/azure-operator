@@ -13,13 +13,13 @@ import (
 	capzV1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 	"github.com/giantswarm/azure-operator/v5/pkg/helpers"
 	"github.com/giantswarm/azure-operator/v5/service/controller/key"
 )
 
 type AzureMachinePoolSubnetCollectorConfig struct {
-	WCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsaware.Factory
 	CtrlClient           ctrl.Client
 	Logger               micrologger.Logger
 }
@@ -28,7 +28,7 @@ type AzureMachinePoolSubnetCollectorConfig struct {
 // already allocated in tenant cluster virtual network. See Collect function implementation and
 // docs for more details.
 type AzureMachinePoolSubnetCollector struct {
-	wcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsaware.Factory
 	ctrlClient           ctrl.Client
 	logger               micrologger.Logger
 }

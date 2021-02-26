@@ -7,15 +7,15 @@ import (
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	"github.com/giantswarm/microerror"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 )
 
 type api struct {
-	wcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsaware.Factory
 	clusterID            string
 }
 
-func GetAPI(f credentialsawarefactory.Interface, clusterID string) API {
+func GetAPI(f credentialsaware.Factory, clusterID string) API {
 	return &api{
 		wcAzureClientFactory: f,
 		clusterID:            clusterID,

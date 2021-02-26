@@ -6,7 +6,7 @@ import (
 	corev1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/kubernetes"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 )
 
 const (
@@ -18,13 +18,13 @@ const (
 type Config struct {
 	K8sClient            kubernetes.Interface
 	Logger               micrologger.Logger
-	WCAzureClientFactory credentialsawarefactory.Interface
+	WCAzureClientFactory credentialsaware.Factory
 }
 
 type Resource struct {
 	k8sClient            kubernetes.Interface
 	logger               micrologger.Logger
-	wcAzureClientFactory credentialsawarefactory.Interface
+	wcAzureClientFactory credentialsaware.Factory
 }
 
 func New(config Config) (*Resource, error) {

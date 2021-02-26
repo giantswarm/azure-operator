@@ -5,7 +5,7 @@ import (
 	"github.com/giantswarm/micrologger"
 	ctrlclient "sigs.k8s.io/controller-runtime/pkg/client"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 )
 
 const (
@@ -14,13 +14,13 @@ const (
 )
 
 type Config struct {
-	WCAzureClientsFactory credentialsawarefactory.Interface
+	WCAzureClientsFactory credentialsaware.Factory
 	CtrlClient            ctrlclient.Client
 	Logger                micrologger.Logger
 }
 
 type Resource struct {
-	wcAzureClientsFactory credentialsawarefactory.Interface
+	wcAzureClientsFactory credentialsaware.Factory
 	ctrlClient            ctrlclient.Client
 	logger                micrologger.Logger
 }

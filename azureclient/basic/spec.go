@@ -1,4 +1,4 @@
-package basicfactory
+package basic
 
 import (
 	"context"
@@ -13,10 +13,10 @@ import (
 	"github.com/giantswarm/azure-operator/v5/azureclient/credentialprovider"
 )
 
-// The basicfactory.Interface interface defines an interface to return an Azure API Client given the
+// The basic.Factory interface defines an interface to return an Azure API Client given the
 // authentication data provided via a AzureClientCredentialsConfig object.
-// Implementations of this interface are not meant to be run standalone, but to be used by a credentialawarefactory.Interface.
-type Interface interface {
+// Implementations of this interface are not meant to be run standalone, but to be used by a credentialawarefactory.Factory.
+type Factory interface {
 	GetCredentialSecret(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*v1alpha1.CredentialSecret, error)
 	GetDeploymentsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*resources.DeploymentsClient, error)
 	GetGroupsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*resources.GroupsClient, error)

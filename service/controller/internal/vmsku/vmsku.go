@@ -10,7 +10,7 @@ import (
 	"github.com/giantswarm/microerror"
 	"github.com/giantswarm/micrologger"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsawarefactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/credentialsaware"
 )
 
 const (
@@ -21,13 +21,13 @@ const (
 )
 
 type Config struct {
-	MCAzureClientFactory credentialsawarefactory.Interface
+	MCAzureClientFactory credentialsaware.Factory
 	Location             string
 	Logger               micrologger.Logger
 }
 
 type VMSKUs struct {
-	mcAzureClientFactory credentialsawarefactory.Interface
+	mcAzureClientFactory credentialsaware.Factory
 	location             string
 	skus                 map[string]*compute.ResourceSku
 	logger               micrologger.Logger
