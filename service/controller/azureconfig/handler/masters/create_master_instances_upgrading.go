@@ -3,6 +3,9 @@ package masters
 import (
 	"context"
 
+	"github.com/giantswarm/errors/tenant"
+	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
@@ -24,7 +27,15 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	var tenantClusterK8sClient client.Client
 	{
 		tenantClusterK8sClient, err = r.getTenantClusterClient(ctx, &cr)
-		if err != nil {
+		if tenant.IsAPINotAvailable(err) || tenantcluster.IsTimeout(err) {
+			// The kubernetes API is not reachable. This usually happens when a new cluster is being created.
+			// This makes the whole controller to fail and stops next handlers from being executed even if they are
+			// safe to run. We don't want that to happen so we just return and we'll try again during next loop.
+			r.Logger.Debugf(ctx, "tenant API not available yet")
+			r.Logger.Debugf(ctx, "canceling resource")
+
+			return currentState, nil
+		} else if err != nil {
 			return "", microerror.Mask(err)
 		}
 	}
