@@ -1,4 +1,4 @@
-package credentialsawarefactory
+package credentialsaware
 
 import (
 	"github.com/giantswarm/microerror"

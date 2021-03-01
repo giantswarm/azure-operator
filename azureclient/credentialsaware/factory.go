@@ -1,4 +1,4 @@
-package credentialsawarefactory
+package credentialsaware
 
 import (
 	"context"
@@ -15,29 +15,29 @@ import (
 	"github.com/giantswarm/microerror"
 	gocache "github.com/patrickmn/go-cache"
 
-	"github.com/giantswarm/azure-operator/v5/azureclient/basicfactory"
+	"github.com/giantswarm/azure-operator/v5/azureclient/basic"
 	"github.com/giantswarm/azure-operator/v5/azureclient/credentialprovider"
 )
 
-type CredentialsAwareClientFactory struct {
+type factory struct {
 	azureCredentialProvider credentialprovider.CredentialProvider
-	azureClientFactory      basicfactory.BasicFactory
+	azureClientFactory      basic.Factory
 
 	cachedClients *gocache.Cache
 	mutex         sync.Mutex
 }
 
-func NewCredentialsAwareClientFactory(azureCredentialProvider credentialprovider.CredentialProvider, azureClientFactory basicfactory.BasicFactory) (*CredentialsAwareClientFactory, error) {
+func NewCredentialsAwareClientFactory(azureCredentialProvider credentialprovider.CredentialProvider, azureClientFactory basic.Factory) (Factory, error) {
 	cacheDuration := 5 * time.Minute
 
-	return &CredentialsAwareClientFactory{
+	return &factory{
 		azureCredentialProvider: azureCredentialProvider,
 		azureClientFactory:      azureClientFactory,
 		cachedClients:           gocache.New(cacheDuration, 2*cacheDuration),
 	}, nil
 }
 
-func (f *CredentialsAwareClientFactory) GetLegacyCredentialSecret(ctx context.Context, organizationID string) (*v1alpha1.CredentialSecret, error) {
+func (f *factory) GetLegacyCredentialSecret(ctx context.Context, organizationID string) (*v1alpha1.CredentialSecret, error) {
 	legacy, err := f.azureCredentialProvider.GetLegacyCredentialSecret(ctx, organizationID)
 	if err != nil {
 		return nil, microerror.Mask(err)
@@ -46,7 +46,7 @@ func (f *CredentialsAwareClientFactory) GetLegacyCredentialSecret(ctx context.Co
 	return legacy, nil
 }
 
-func (f *CredentialsAwareClientFactory) GetSubscriptionID(ctx context.Context, clusterID string) (string, error) {
+func (f *factory) GetSubscriptionID(ctx context.Context, clusterID string) (string, error) {
 	accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 	if err != nil {
 		return "", microerror.Mask(err)
@@ -55,7 +55,7 @@ func (f *CredentialsAwareClientFactory) GetSubscriptionID(ctx context.Context, c
 	return accc.SubscriptionID, nil
 }
 
-func (f *CredentialsAwareClientFactory) GetDeploymentsClient(ctx context.Context, clusterID string) (*resources.DeploymentsClient, error) {
+func (f *factory) GetDeploymentsClient(ctx context.Context, clusterID string) (*resources.DeploymentsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -78,7 +78,7 @@ func (f *CredentialsAwareClientFactory) GetDeploymentsClient(ctx context.Context
 	return client.(*resources.DeploymentsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetDnsRecordSetsClient(ctx context.Context, clusterID string) (*dns.RecordSetsClient, error) {
+func (f *factory) GetDnsRecordSetsClient(ctx context.Context, clusterID string) (*dns.RecordSetsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -101,7 +101,7 @@ func (f *CredentialsAwareClientFactory) GetDnsRecordSetsClient(ctx context.Conte
 	return client.(*dns.RecordSetsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetGroupsClient(ctx context.Context, clusterID string) (*resources.GroupsClient, error) {
+func (f *factory) GetGroupsClient(ctx context.Context, clusterID string) (*resources.GroupsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -124,7 +124,7 @@ func (f *CredentialsAwareClientFactory) GetGroupsClient(ctx context.Context, clu
 	return client.(*resources.GroupsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetInterfacesClient(ctx context.Context, clusterID string) (*network.InterfacesClient, error) {
+func (f *factory) GetInterfacesClient(ctx context.Context, clusterID string) (*network.InterfacesClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -147,7 +147,7 @@ func (f *CredentialsAwareClientFactory) GetInterfacesClient(ctx context.Context,
 	return client.(*network.InterfacesClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetNatGatewaysClient(ctx context.Context, clusterID string) (*network.NatGatewaysClient, error) {
+func (f *factory) GetNatGatewaysClient(ctx context.Context, clusterID string) (*network.NatGatewaysClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -170,7 +170,7 @@ func (f *CredentialsAwareClientFactory) GetNatGatewaysClient(ctx context.Context
 	return client.(*network.NatGatewaysClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetNetworkSecurityGroupsClient(ctx context.Context, clusterID string) (*network.SecurityGroupsClient, error) {
+func (f *factory) GetNetworkSecurityGroupsClient(ctx context.Context, clusterID string) (*network.SecurityGroupsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -193,7 +193,7 @@ func (f *CredentialsAwareClientFactory) GetNetworkSecurityGroupsClient(ctx conte
 	return client.(*network.SecurityGroupsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetPublicIpAddressesClient(ctx context.Context, clusterID string) (*network.PublicIPAddressesClient, error) {
+func (f *factory) GetPublicIpAddressesClient(ctx context.Context, clusterID string) (*network.PublicIPAddressesClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -216,7 +216,7 @@ func (f *CredentialsAwareClientFactory) GetPublicIpAddressesClient(ctx context.C
 	return client.(*network.PublicIPAddressesClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetResourceSkusClient(ctx context.Context, clusterID string) (*compute.ResourceSkusClient, error) {
+func (f *factory) GetResourceSkusClient(ctx context.Context, clusterID string) (*compute.ResourceSkusClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -239,7 +239,7 @@ func (f *CredentialsAwareClientFactory) GetResourceSkusClient(ctx context.Contex
 	return client.(*compute.ResourceSkusClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetStorageAccountsClient(ctx context.Context, clusterID string) (*storage.AccountsClient, error) {
+func (f *factory) GetStorageAccountsClient(ctx context.Context, clusterID string) (*storage.AccountsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -262,7 +262,7 @@ func (f *CredentialsAwareClientFactory) GetStorageAccountsClient(ctx context.Con
 	return client.(*storage.AccountsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetSubnetsClient(ctx context.Context, clusterID string) (*network.SubnetsClient, error) {
+func (f *factory) GetSubnetsClient(ctx context.Context, clusterID string) (*network.SubnetsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -285,7 +285,7 @@ func (f *CredentialsAwareClientFactory) GetSubnetsClient(ctx context.Context, cl
 	return client.(*network.SubnetsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetVirtualMachineScaleSetsClient(ctx context.Context, clusterID string) (*compute.VirtualMachineScaleSetsClient, error) {
+func (f *factory) GetVirtualMachineScaleSetsClient(ctx context.Context, clusterID string) (*compute.VirtualMachineScaleSetsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -308,7 +308,7 @@ func (f *CredentialsAwareClientFactory) GetVirtualMachineScaleSetsClient(ctx con
 	return client.(*compute.VirtualMachineScaleSetsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, clusterID string) (*compute.VirtualMachineScaleSetVMsClient, error) {
+func (f *factory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, clusterID string) (*compute.VirtualMachineScaleSetVMsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -331,7 +331,7 @@ func (f *CredentialsAwareClientFactory) GetVirtualMachineScaleSetVMsClient(ctx c
 	return client.(*compute.VirtualMachineScaleSetVMsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetVirtualNetworkGatewayConnectionsClient(ctx context.Context, clusterID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+func (f *factory) GetVirtualNetworkGatewayConnectionsClient(ctx context.Context, clusterID string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -354,7 +354,7 @@ func (f *CredentialsAwareClientFactory) GetVirtualNetworkGatewayConnectionsClien
 	return client.(*network.VirtualNetworkGatewayConnectionsClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetVirtualNetworkGatewaysClient(ctx context.Context, clusterID string) (*network.VirtualNetworkGatewaysClient, error) {
+func (f *factory) GetVirtualNetworkGatewaysClient(ctx context.Context, clusterID string) (*network.VirtualNetworkGatewaysClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -377,7 +377,7 @@ func (f *CredentialsAwareClientFactory) GetVirtualNetworkGatewaysClient(ctx cont
 	return client.(*network.VirtualNetworkGatewaysClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetVirtualNetworksClient(ctx context.Context, clusterID string) (*network.VirtualNetworksClient, error) {
+func (f *factory) GetVirtualNetworksClient(ctx context.Context, clusterID string) (*network.VirtualNetworksClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -400,7 +400,7 @@ func (f *CredentialsAwareClientFactory) GetVirtualNetworksClient(ctx context.Con
 	return client.(*network.VirtualNetworksClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) GetZonesClient(ctx context.Context, clusterID string) (*dns.ZonesClient, error) {
+func (f *factory) GetZonesClient(ctx context.Context, clusterID string) (*dns.ZonesClient, error) {
 	initFunc := func(ctx context.Context, clusterID string) (interface{}, error) {
 		accc, err := f.azureCredentialProvider.GetAzureClientCredentialsConfig(ctx, clusterID)
 		if err != nil {
@@ -423,7 +423,7 @@ func (f *CredentialsAwareClientFactory) GetZonesClient(ctx context.Context, clus
 	return client.(*dns.ZonesClient), nil
 }
 
-func (f *CredentialsAwareClientFactory) cacheLookup(ctx context.Context, clientType string, clusterID string, initFunc func(context.Context, string) (interface{}, error)) (interface{}, error) {
+func (f *factory) cacheLookup(ctx context.Context, clientType string, clusterID string, initFunc func(context.Context, string) (interface{}, error)) (interface{}, error) {
 	f.mutex.Lock()
 	defer f.mutex.Unlock()
 

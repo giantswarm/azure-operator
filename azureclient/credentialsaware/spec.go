@@ -1,4 +1,4 @@
-package credentialsawarefactory
+package credentialsaware
 
 import (
 	"context"
@@ -11,10 +11,10 @@ import (
 	"github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 )
 
-// The credentialsawarefactory.Interface interface defines an interface for retrieving an Azure API Client
+// The credentialsaware.Factory interface defines an interface for retrieving an Azure API Client
 // Based on the Giantswarm Cluster ID. Based on the implementation, it can return Azure API Clients for the
 // Management cluster of the Workload Cluster.
-type Interface interface {
+type Factory interface {
 	GetLegacyCredentialSecret(ctx context.Context, clusterID string) (*v1alpha1.CredentialSecret, error)
 	GetSubscriptionID(ctx context.Context, clusterID string) (string, error)
 

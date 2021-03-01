@@ -1,4 +1,4 @@
-package basicfactory
+package basic
 
 import (
 	"context"
@@ -24,24 +24,24 @@ type Config struct {
 	PartnerID        string
 }
 
-type BasicFactory struct {
+type factory struct {
 	logger           micrologger.Logger
 	metricsCollector collector.AzureAPIMetrics
 	partnerID        string
 }
 
-func NewAzureClientFactory(c Config) (*BasicFactory, error) {
+func New(c Config) (*factory, error) {
 	if c.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", c)
 	}
-	return &BasicFactory{
+	return &factory{
 		logger:           c.Logger,
 		partnerID:        c.PartnerID,
 		metricsCollector: c.MetricsCollector,
 	}, nil
 }
 
-func (f *BasicFactory) GetDeploymentsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*resources.DeploymentsClient, error) {
+func (f *factory) GetDeploymentsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*resources.DeploymentsClient, error) {
 	azureClient := resources.NewDeploymentsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "deployments")
@@ -52,7 +52,7 @@ func (f *BasicFactory) GetDeploymentsClient(ctx context.Context, accc credential
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetDnsRecordSetsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*dns.RecordSetsClient, error) {
+func (f *factory) GetDnsRecordSetsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*dns.RecordSetsClient, error) {
 	azureClient := dns.NewRecordSetsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "dns_record_sets")
@@ -63,7 +63,7 @@ func (f *BasicFactory) GetDnsRecordSetsClient(ctx context.Context, accc credenti
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetGroupsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*resources.GroupsClient, error) {
+func (f *factory) GetGroupsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*resources.GroupsClient, error) {
 	azureClient := resources.NewGroupsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "groups")
@@ -74,7 +74,7 @@ func (f *BasicFactory) GetGroupsClient(ctx context.Context, accc credentialprovi
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetInterfacesClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.InterfacesClient, error) {
+func (f *factory) GetInterfacesClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.InterfacesClient, error) {
 	azureClient := network.NewInterfacesClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "interfaces")
@@ -85,7 +85,7 @@ func (f *BasicFactory) GetInterfacesClient(ctx context.Context, accc credentialp
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetNatGatewaysClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.NatGatewaysClient, error) {
+func (f *factory) GetNatGatewaysClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.NatGatewaysClient, error) {
 	azureClient := network.NewNatGatewaysClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "nat_gateways")
@@ -96,7 +96,7 @@ func (f *BasicFactory) GetNatGatewaysClient(ctx context.Context, accc credential
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetNetworkSecurityGroupsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.SecurityGroupsClient, error) {
+func (f *factory) GetNetworkSecurityGroupsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.SecurityGroupsClient, error) {
 	azureClient := network.NewSecurityGroupsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "network_security_groups")
@@ -107,7 +107,7 @@ func (f *BasicFactory) GetNetworkSecurityGroupsClient(ctx context.Context, accc 
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetPublicIpAddressesClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.PublicIPAddressesClient, error) {
+func (f *factory) GetPublicIpAddressesClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.PublicIPAddressesClient, error) {
 	azureClient := network.NewPublicIPAddressesClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "public_ip_addresses")
@@ -118,7 +118,7 @@ func (f *BasicFactory) GetPublicIpAddressesClient(ctx context.Context, accc cred
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetResourceSkusClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*compute.ResourceSkusClient, error) {
+func (f *factory) GetResourceSkusClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*compute.ResourceSkusClient, error) {
 	azureClient := compute.NewResourceSkusClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "resource_skus")
@@ -129,7 +129,7 @@ func (f *BasicFactory) GetResourceSkusClient(ctx context.Context, accc credentia
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetStorageAccountsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*storage.AccountsClient, error) {
+func (f *factory) GetStorageAccountsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*storage.AccountsClient, error) {
 	azureClient := storage.NewAccountsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "storage_accounts")
@@ -140,7 +140,7 @@ func (f *BasicFactory) GetStorageAccountsClient(ctx context.Context, accc creden
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetSubnetsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.SubnetsClient, error) {
+func (f *factory) GetSubnetsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.SubnetsClient, error) {
 	azureClient := network.NewSubnetsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "subnets")
@@ -151,7 +151,7 @@ func (f *BasicFactory) GetSubnetsClient(ctx context.Context, accc credentialprov
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetVirtualMachineScaleSetsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*compute.VirtualMachineScaleSetsClient, error) {
+func (f *factory) GetVirtualMachineScaleSetsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*compute.VirtualMachineScaleSetsClient, error) {
 	azureClient := compute.NewVirtualMachineScaleSetsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "virtual_machine_scale_sets")
@@ -162,7 +162,7 @@ func (f *BasicFactory) GetVirtualMachineScaleSetsClient(ctx context.Context, acc
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
+func (f *factory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*compute.VirtualMachineScaleSetVMsClient, error) {
 	azureClient := compute.NewVirtualMachineScaleSetVMsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "virtual_machine_scale_set_vms")
@@ -173,7 +173,7 @@ func (f *BasicFactory) GetVirtualMachineScaleSetVMsClient(ctx context.Context, a
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetVirtualNetworksClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.VirtualNetworksClient, error) {
+func (f *factory) GetVirtualNetworksClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.VirtualNetworksClient, error) {
 	azureClient := network.NewVirtualNetworksClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "virtual_networks")
@@ -184,7 +184,7 @@ func (f *BasicFactory) GetVirtualNetworksClient(ctx context.Context, accc creden
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetVirtualNetworkGatewayConnectionsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+func (f *factory) GetVirtualNetworkGatewayConnectionsClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.VirtualNetworkGatewayConnectionsClient, error) {
 	azureClient := network.NewVirtualNetworkGatewayConnectionsClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "virtual_network_gateway_connections")
@@ -195,7 +195,7 @@ func (f *BasicFactory) GetVirtualNetworkGatewayConnectionsClient(ctx context.Con
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetVirtualNetworkGatewaysClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.VirtualNetworkGatewaysClient, error) {
+func (f *factory) GetVirtualNetworkGatewaysClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*network.VirtualNetworkGatewaysClient, error) {
 	azureClient := network.NewVirtualNetworkGatewaysClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "virtual_network_gateways")
@@ -206,7 +206,7 @@ func (f *BasicFactory) GetVirtualNetworkGatewaysClient(ctx context.Context, accc
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) GetZonesClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*dns.ZonesClient, error) {
+func (f *factory) GetZonesClient(ctx context.Context, accc credentialprovider.AzureClientCredentialsConfig) (*dns.ZonesClient, error) {
 	azureClient := dns.NewZonesClient(accc.SubscriptionID)
 
 	err := f.prepareClient(&azureClient.Client, accc, "dns_zones")
@@ -217,7 +217,7 @@ func (f *BasicFactory) GetZonesClient(ctx context.Context, accc credentialprovid
 	return &azureClient, nil
 }
 
-func (f *BasicFactory) prepareClient(client *autorest.Client, accc credentialprovider.AzureClientCredentialsConfig, name string) error {
+func (f *factory) prepareClient(client *autorest.Client, accc credentialprovider.AzureClientCredentialsConfig, name string) error {
 	authorizer, err := accc.ClientCredentialsConfig.Authorizer()
 	if err != nil {
 		return microerror.Mask(err)
