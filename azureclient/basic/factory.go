@@ -30,7 +30,7 @@ type factory struct {
 	partnerID        string
 }
 
-func New(c Config) (*factory, error) {
+func New(c Config) (Factory, error) {
 	if c.Logger == nil {
 		return nil, microerror.Maskf(invalidConfigError, "%T.Logger must not be empty", c)
 	}
