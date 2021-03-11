@@ -280,7 +280,7 @@
           },
           "scheduledEventsProfile": {
             "terminateNotificationProfile": {
-              "notBeforeTimeout": "PT5M",
+              "notBeforeTimeout": "PT15M",
               "enable": true
             }
           }
