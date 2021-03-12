@@ -4,3 +4,5 @@ description: "Azure operator to create k8s clusters on Azure"
 appVersion: "[[ .AppVersion ]]"
 home: "https://github.com/giantswarm/azure-operator"
 apiVersion: v1
+annotations:
+  application.giantswarm.io/team: "celestial"
