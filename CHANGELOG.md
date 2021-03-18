@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Increase VMSS termination events timeout to 15 minutes.
+
 ### Fixed
 
 - Avoid logging errors when trying to create the workload cluster k8s client and cluster is not ready yet.
