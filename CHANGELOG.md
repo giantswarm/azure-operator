@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.5.2] - 2021-03-18
+
 ### Changed
 
 - Increase VMSS termination events timeout to 15 minutes.
@@ -347,7 +349,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.5.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.5.2...HEAD
+[5.5.2]: https://github.com/giantswarm/azure-operator/compare/v5.5.1...v5.5.2
 [5.5.1]: https://github.com/giantswarm/azure-operator/compare/v5.5.0...v5.5.1
 [5.5.0]: https://github.com/giantswarm/azure-operator/compare/v5.4.0...v5.5.0
 [5.4.0]: https://github.com/giantswarm/azure-operator/compare/v5.3.0...v5.4.0
