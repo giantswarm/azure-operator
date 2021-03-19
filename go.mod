@@ -32,7 +32,7 @@ require (
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
 	github.com/golang/mock v1.4.4
-	github.com/google/go-cmp v0.5.4
+	github.com/google/go-cmp v0.5.5
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/markbates/pkger v0.17.1
 	github.com/patrickmn/go-cache v2.1.0+incompatible
@@ -47,7 +47,7 @@ require (
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v0.18.9
 	sigs.k8s.io/cluster-api v0.3.14
-	sigs.k8s.io/cluster-api-provider-azure v0.4.11
+	sigs.k8s.io/cluster-api-provider-azure v0.4.13
 	sigs.k8s.io/controller-runtime v0.6.4
 	sigs.k8s.io/yaml v1.2.0
 )
