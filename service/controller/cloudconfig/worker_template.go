@@ -38,7 +38,7 @@ func (c CloudConfig) NewWorkerTemplate(ctx context.Context, data IgnitionTemplat
 					"-v /var/lib/waagent:/var/lib/waagent:ro",
 				},
 				CommandExtraArgs: []string{
-					"--cloud-config=/etc/kubernetes/config/azure.yaml",
+					"--cloud-config=/etc/kubernetes/azure.json",
 				},
 			},
 		}
@@ -78,7 +78,7 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 	filesMeta := []k8scloudconfig.FileMetadata{
 		{
 			AssetContent: ignition.CloudProviderConf,
-			Path:         "/etc/kubernetes/config/azure.yaml",
+			Path:         "/etc/kubernetes/azure.json",
 			Owner: k8scloudconfig.Owner{
 				Group: k8scloudconfig.Group{
 					ID: FileOwnerGroupIDNobody,
