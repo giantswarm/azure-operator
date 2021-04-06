@@ -45,7 +45,7 @@ require (
 	k8s.io/apiextensions-apiserver v0.18.9
 	k8s.io/apimachinery v0.18.9
 	k8s.io/client-go v0.18.9
-	sigs.k8s.io/cluster-api v0.3.14
+	sigs.k8s.io/cluster-api v0.3.15
 	sigs.k8s.io/cluster-api-provider-azure v0.4.13
 	sigs.k8s.io/controller-runtime v0.6.4
 	sigs.k8s.io/yaml v1.2.0
@@ -54,6 +54,7 @@ require (
 replace (
 	github.com/Microsoft/hcsshim v0.8.7 => github.com/Microsoft/hcsshim v0.8.10
 	github.com/coreos/etcd v3.3.13+incompatible => github.com/coreos/etcd v3.3.24+incompatible
+	github.com/gogo/protobuf v1.3.1 => github.com/gogo/protobuf v1.3.2
 	sigs.k8s.io/cluster-api => github.com/giantswarm/cluster-api v0.3.13-gs
 	sigs.k8s.io/cluster-api-provider-azure => github.com/giantswarm/cluster-api-provider-azure v0.4.12-gsalpha3
 )
