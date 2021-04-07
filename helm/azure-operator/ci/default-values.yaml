@@ -1,52 +1,55 @@
 ---
-Installation:
-  V1:
-    Name: ""
-    Registry:
-      Domain: ""
-    Guest:
-      Calico:
-        CIDR: ""
-        Subnet: ""
-      Docker:
-        CIDR: ""
-      Ingress:
-        Version: "0.9.0-beta.11"
-      Kubectl:
-        Version: "f51f93c30d27927d2b33122994c0929b3e6f2432"
-      IPAM:
-        NetworkCIDR: "10.1.0.0/8"
-        CIDRMask: 16
-      Kubernetes:
-        API:
-          Auth:
-            Provider:
-              OIDC:
-                ClientID: ""
-                IssuerURL: ""
-                UsernameClaim: ""
-                GroupsClaim: ""
-          ClusterIPRange: "172.31.0.0/16"
-          EndpointBase: "k8s.{{.Base}}"
-        ClusterDomain: "cluster.local"
-        IngressController:
-          BaseDomain: "k8s.{{.Base}}"
-      SSH:
-        SSOPublicKey: ""
-        UserList: ""
-    Secret:
-      AzureOperator:
-        SecretYaml: ""
-      Registry:
-        Dockerhub:
-          Token: ""
-    Provider:
-      Azure:
-        Cloud: ""
-        HostCluster:
-          CIDR: ""
-          VirtualNetwork: ""
-          VirtualNetworkGateway: ""
-        Location: ""
-        MSI:
-          Enabled: true
+azure:
+  environmentName: ""
+  hostCluster:
+    cidr: ""
+    resourceGroup: ""
+    virtualNetwork: ""
+    virtualNetworkGateway: ""
+  location: ""
+  msi:
+    enabled: true
+azureOperatorSecret:
+  service:
+    azure:
+      clientid: ""
+      clientsecret: ""
+      sptenantid: ""
+      subscriptionid: ""
+      tenantid: ""
+cluster:
+  baseDomain: ""
+  calico:
+    cidr: ""
+    subnet: ""
+  docker:
+    daemon:
+      cidr: ""
+  kubernetes:
+    ingressController:
+      baseDomain: ""
+    ssh:
+      userList: ""
+installation:
+  guest:
+    ipam:
+      network:
+        cidr: ""
+        subnetMaskBits: ""
+    tenant:
+      kubernetes:
+        api:
+          auth:
+            provider:
+              oidc:
+                clientID: ""
+                groupsClaim: ""
+                issuerURL: ""
+                usernameClaim: ""
+  name: ""
+registry:
+  dockerhub:
+    token: ""
+tenant:
+  ssh:
+    ssoPublicKey: ""
