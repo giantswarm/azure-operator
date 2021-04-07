@@ -86,6 +86,6 @@ data:
         mirrors: 'giantswarm.azurecr.io'
       tenant:
         ssh:
-          ssoPublicKey: '{{ .Values.tenant.ssh.ssoPublicKey }}'
+          ssoPublicKey: {{ .Values.tenant.ssh.ssoPublicKey | quote }}
       sentry:
         dsn: 'https://632f9667d01c47719beb5b405962de53@o346224.ingest.sentry.io/5544796'
