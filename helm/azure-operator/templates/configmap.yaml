@@ -53,7 +53,8 @@ data:
             labels: ''
             port: 10250
           ssh:
-            userList: '{{ .Values.cluster.kubernetes.ssh.userList }}'
+            userList: |
+              {{ .Values.cluster.kubernetes.ssh.userList | nindent 14 }}
       {{- if .Values.debug }}
       {{- if .Values.debug.insecureStorageAccount }}
       debug:
