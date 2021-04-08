@@ -73,8 +73,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			}
 		}
 
-		for _, m := range azureMachineList.Items {
-			if key.IsControlPlaneMachine(&m) {
+		for i, m := range azureMachineList.Items {
+			if key.IsControlPlaneMachine(&azureMachineList.Items[i]) {
 				masterMachines = append(masterMachines, m)
 			} else {
 				workerMachines = append(workerMachines, m)

@@ -695,7 +695,7 @@ func NodePoolInstanceName(nodePoolName, instanceID string) string {
 
 func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
 	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMinSize]
-	size, err := strconv.Atoi(sizeStr)
+	size, err := strconv.Atoi(sizeStr) // nolint:gosec
 	if err != nil {
 		// Annotation not found or invalid.
 		return *machinePool.Spec.Replicas
@@ -706,7 +706,7 @@ func NodePoolMinReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
 
 func NodePoolMaxReplicas(machinePool *expcapiv1alpha3.MachinePool) int32 {
 	sizeStr := machinePool.Annotations[apiextensionsannotations.NodePoolMaxSize]
-	size, err := strconv.Atoi(sizeStr)
+	size, err := strconv.Atoi(sizeStr) // nolint:gosec
 	if err != nil {
 		// Annotation not found or invalid.
 		return *machinePool.Spec.Replicas

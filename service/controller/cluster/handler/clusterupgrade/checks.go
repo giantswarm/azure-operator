@@ -12,8 +12,8 @@ import (
 func isAnyMachinePoolUpgrading(cr capi.Cluster, machinePools []capiexp.MachinePool) (bool, error) {
 	desiredRelease := cr.Labels[label.ReleaseVersion]
 
-	for _, machinePool := range machinePools {
-		isUpgrading, err := isMachinePoolUpgradingInProgress(&machinePool, desiredRelease)
+	for i := range machinePools {
+		isUpgrading, err := isMachinePoolUpgradingInProgress(&machinePools[i], desiredRelease)
 		if err != nil {
 			return false, microerror.Mask(err)
 		}

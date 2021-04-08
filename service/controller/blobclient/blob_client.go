@@ -59,7 +59,7 @@ func GetBlockBlob(ctx context.Context, blobName string, containerURL *azblob.Con
 	retryReaderOptions := azblob.RetryReaderOptions{
 		MaxRetryRequests: maxRetriesRequests,
 	}
-	defer response.Body(retryReaderOptions).Close()
+	defer response.Body(retryReaderOptions).Close() // nolint:errcheck
 	blobData, err := ioutil.ReadAll(response.Body(retryReaderOptions))
 	if err != nil {
 		return nil, microerror.Mask(err)

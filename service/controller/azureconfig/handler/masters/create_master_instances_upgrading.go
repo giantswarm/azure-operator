@@ -58,8 +58,8 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	r.Logger.Debugf(ctx, "found out that all tenant cluster master nodes are Ready")
 
 	versionValue := map[string]string{}
-	for _, node := range tenantNodes {
-		versionValue[node.Name] = key.ReleaseVersion(&node)
+	for i, node := range tenantNodes {
+		versionValue[node.Name] = key.ReleaseVersion(&tenantNodes[i])
 	}
 
 	var masterUpgradeInProgress bool
@@ -82,7 +82,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 			}
 
 			desiredVersion := key.ReleaseVersion(&cr)
-			for _, vm := range allMasterInstances {
+			for i, vm := range allMasterInstances {
 				instanceName := key.MasterInstanceName(cr, *vm.InstanceID)
 				instanceVersion, ok := versionValue[instanceName]
 				if !ok {
@@ -96,7 +96,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 				// Ensure that VM has latest VMSS configuration (includes ignition template etc.).
 				if !*vm.VirtualMachineScaleSetVMProperties.LatestModelApplied {
-					err = r.updateInstance(ctx, cr, &vm, key.MasterVMSSName, key.MasterInstanceName)
+					err = r.updateInstance(ctx, cr, &allMasterInstances[i], key.MasterVMSSName, key.MasterInstanceName)
 					if err != nil {
 						return "", microerror.Mask(err)
 					}
@@ -106,7 +106,7 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 				}
 
 				// Once the VM instance configuration has been updated, it can be reimaged.
-				err = r.reimageInstance(ctx, cr, &vm, key.MasterVMSSName, key.MasterInstanceName)
+				err = r.reimageInstance(ctx, cr, &allMasterInstances[i], key.MasterVMSSName, key.MasterInstanceName)
 				if err != nil {
 					return "", microerror.Mask(err)
 				}
