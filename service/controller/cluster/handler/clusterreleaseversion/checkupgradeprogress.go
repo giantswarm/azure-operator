@@ -92,9 +92,9 @@ func (r *Resource) areNodePoolsUpgraded(ctx context.Context, cluster *capi.Clust
 	// are upgraded to this release version.
 	desiredClusterReleaseVersion := key.ReleaseVersion(cluster)
 
-	for _, machinePool := range machinePools.Items {
-		if !isUpgradedToDesiredReleaseVersion(&machinePool, desiredClusterReleaseVersion) {
-			r.logger.Debugf(ctx, "MachinePool %s has not been upgraded yet", machinePool.Name)
+	for i := range machinePools.Items {
+		if !isUpgradedToDesiredReleaseVersion(&machinePools.Items[i], desiredClusterReleaseVersion) {
+			r.logger.Debugf(ctx, "MachinePool %s has not been upgraded yet", machinePools.Items[i].Name)
 			return false, nil
 		}
 	}

@@ -30,8 +30,8 @@ func (r *Resource) EnsureDeleted(ctx context.Context, obj interface{}) error {
 			return microerror.Mask(err)
 		}
 
-		for _, m := range mList.Items {
-			err = r.ctrlClient.Delete(ctx, &m)
+		for i := range mList.Items {
+			err = r.ctrlClient.Delete(ctx, &mList.Items[i])
 			if errors.IsNotFound(err) {
 				continue
 			} else if err != nil {

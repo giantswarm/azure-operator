@@ -231,8 +231,8 @@ func givenNodePool(ctx context.Context, ctrclient client.Client, ready bool, rep
 }
 
 func givenNodes(ctx context.Context, ctrlClient client.Client, nodes []corev1.Node) error {
-	for _, node := range nodes {
-		err := ctrlClient.Create(ctx, &node)
+	for i := range nodes {
+		err := ctrlClient.Create(ctx, &nodes[i])
 		if err != nil {
 			return err
 		}

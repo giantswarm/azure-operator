@@ -213,9 +213,9 @@ func (r *Resource) deleteTimedOutDrainerConfigs(ctx context.Context, cr provider
 		return microerror.Mask(err)
 	}
 
-	for _, dc := range dcList.Items {
+	for i, dc := range dcList.Items {
 		if dc.Status.HasTimeoutCondition() {
-			err = r.ctrlClient.Delete(ctx, &dc)
+			err = r.ctrlClient.Delete(ctx, &dcList.Items[i])
 			if err != nil {
 				return microerror.Mask(err)
 			}

@@ -639,8 +639,8 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 
 		if o.GetObjectKind().GroupVersionKind().Kind == "DrainerConfigList" {
 			lst := o.(*corev1alpha1.DrainerConfigList)
-			for _, i := range lst.Items {
-				err = client.Create(context.Background(), &i)
+			for i := range lst.Items {
+				err = client.Create(context.Background(), &lst.Items[i])
 				if err != nil {
 					t.Fatalf("failed to create object from input file %s: %#v", f, err)
 				}
@@ -650,8 +650,8 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 
 		if o.GetObjectKind().GroupVersionKind().Kind == "NamespaceList" {
 			lst := o.(*corev1.NamespaceList)
-			for _, i := range lst.Items {
-				err = client.Create(context.Background(), &i)
+			for i := range lst.Items {
+				err = client.Create(context.Background(), &lst.Items[i])
 				if err != nil {
 					t.Fatalf("failed to create object from input file %s: %#v", f, err)
 				}
@@ -826,7 +826,8 @@ func setDrainerConfigsAsDrained(t *testing.T, ctrlClient client.Client, cr *prov
 		t.Fatal(err)
 	}
 
-	for _, dc := range dcList.Items {
+	for i := range dcList.Items {
+		dc := dcList.Items[i]
 		dc.Status.Conditions = append(dc.Status.Conditions, dc.Status.NewDrainedCondition())
 		err = ctrlClient.Status().Update(context.Background(), &dc)
 		if err != nil {
