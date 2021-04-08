@@ -59,7 +59,7 @@ func (p *Pool) startWorker() {
 
 			// Random wait time between 10 and 100 milliseconds, so we avoid
 			// infinite loop with idling jobs.
-			waitTime := time.Duration((rand.Intn(10) + 1) * 10)
+			waitTime := time.Duration((rand.Intn(10) + 1) * 10) // nolint:gosec
 			time.Sleep(waitTime * time.Millisecond)
 		}
 	}()
