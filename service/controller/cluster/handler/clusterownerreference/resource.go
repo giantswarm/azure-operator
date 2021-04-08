@@ -170,7 +170,9 @@ func (r *Resource) ensureMachinePools(ctx context.Context, cluster capiv1alpha3.
 		return microerror.Mask(err)
 	}
 
-	for _, machinePool := range mpList.Items {
+	for i := range mpList.Items {
+		machinePool := mpList.Items[i]
+
 		if !machinePool.GetDeletionTimestamp().IsZero() {
 			r.logger.Debugf(ctx, "MachinePool %#q is being deleted, skipping setting owner references", machinePool.Name)
 			continue

@@ -86,7 +86,8 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		return microerror.Mask(err)
 	}
 
-	for _, desiredObj := range defaultSCs {
+	for i := range defaultSCs {
+		desiredObj := defaultSCs[i]
 		if desiredObj.Provisioner == provisionerAzureFile {
 			r.logger.Debugf(ctx, "storage class %q uses provisioner %q; skipping as unsupported", desiredObj.Name, desiredObj.Provisioner)
 			continue

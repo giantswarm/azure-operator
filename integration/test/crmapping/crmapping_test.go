@@ -23,7 +23,7 @@ import (
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
-	"sigs.k8s.io/controller-runtime/pkg/client/fake"
+	"sigs.k8s.io/controller-runtime/pkg/client/fake" // nolint:staticcheck
 	"sigs.k8s.io/yaml"
 
 	"github.com/giantswarm/azure-operator/v5/service/controller/azurecluster/handler/azureconfig"
@@ -229,8 +229,8 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 
 		if o.GetObjectKind().GroupVersionKind().Kind == "NamespaceList" {
 			lst := o.(*corev1.NamespaceList)
-			for _, i := range lst.Items {
-				err = client.Create(context.Background(), &i)
+			for i := range lst.Items {
+				err = client.Create(context.Background(), &lst.Items[i])
 				if err != nil {
 					t.Fatalf("failed to create object from input file %s: %#v", f, err)
 				}

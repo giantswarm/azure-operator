@@ -202,7 +202,9 @@ func machinePoolsNotUpgradedYet(cr capiv1alpha3.Cluster, machinePools []expcapiv
 
 	var pendingUpgrade []expcapiv1alpha3.MachinePool
 
-	for _, machinePool := range machinePools {
+	for i := range machinePools {
+		machinePool := machinePools[i]
+
 		isUpgrading, err := isMachinePoolUpgradingInProgress(&machinePool, desiredRelease)
 		if err != nil {
 			return nil, microerror.Mask(err)

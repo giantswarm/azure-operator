@@ -133,13 +133,13 @@ func (r *Resource) ensureMachinePoolCRsDeleted(ctx context.Context, cr capiv1alp
 		return false, microerror.Mask(err)
 	}
 
-	for _, mp := range mpList.Items {
+	for i, mp := range mpList.Items {
 		if !mp.GetDeletionTimestamp().IsZero() {
 			// Don't handle deleted child
 			continue
 		}
 
-		err = r.ctrlClient.Delete(ctx, &mp)
+		err = r.ctrlClient.Delete(ctx, &mpList.Items[i])
 		if errors.IsNotFound(err) {
 			r.logger.Debugf(ctx, "ensured MachinePool CR %q is deleted", mp.Name)
 			continue
