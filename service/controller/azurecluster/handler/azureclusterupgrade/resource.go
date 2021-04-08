@@ -66,7 +66,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// All found AzureMachines belonging to same cluster are processed at once.
 	// This will change when HA masters story is implemented.
 	for i := range azureMachineList.Items {
-		m := azureMachineList.Items[i]
+		m := &azureMachineList.Items[i]
 		changed := false
 		if m.Labels == nil {
 			m.Labels = make(map[string]string)
