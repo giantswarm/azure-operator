@@ -66,7 +66,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	// All found AzureMachines belonging to same cluster are processed at once.
 	// This will change when HA masters story is implemented.
 	for i := range azureMachineList.Items {
-		m := &azureMachineList.Items[i]
+		m := azureMachineList.Items[i]
 		changed := false
 		if m.Labels == nil {
 			m.Labels = make(map[string]string)
@@ -79,7 +79,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		// we do not know which controller/handler will be executed first, and
 		// we need annotation set correctly in both places.
 		_, annotationWasSet := cr.Annotations[annotation.LastDeployedReleaseVersion]
-		err = helpers.InitAzureMachineAnnotations(ctx, r.ctrlClient, r.logger, m)
+		err = helpers.InitAzureMachineAnnotations(ctx, r.ctrlClient, r.logger, &m)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -95,7 +95,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		if changed {
-			err = r.ctrlClient.Update(ctx, m)
+			err = r.ctrlClient.Update(ctx, &m)
 			if apierrors.IsConflict(err) {
 				r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
 				r.logger.Debugf(ctx, "cancelling resource")
