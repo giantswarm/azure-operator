@@ -36,16 +36,11 @@ installation:
       network:
         cidr: ""
         subnetMaskBits: ""
-    tenant:
-      kubernetes:
-        api:
-          auth:
-            provider:
-              oidc:
-                clientID: ""
-                groupsClaim: ""
-                issuerURL: ""
-                usernameClaim: ""
+  oidc:
+    clientID: ""
+    groupsClaim: ""
+    issuerURL: ""
+    usernameClaim: ""
   name: ""
 registry:
   dockerhub:
