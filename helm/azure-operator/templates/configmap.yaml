@@ -74,10 +74,10 @@ data:
               auth:
                 provider:
                   oidc:
-                    clientID: '{{ .Values.installation.guest.tenant.kubernetes.api.auth.provider.oidc.clientID }}'
-                    issuerURL: '{{ .Values.installation.guest.tenant.kubernetes.api.auth.provider.oidc.issuerURL }}'
-                    usernameClaim: '{{ .Values.installation.guest.tenant.kubernetes.api.auth.provider.oidc.usernameClaim }}'
-                    groupsClaim: '{{ .Values.installation.guest.tenant.kubernetes.api.auth.provider.oidc.groupsClaim }}'
+                    clientID: '{{ .Values.installation.oidc.clientID }}'
+                    issuerURL: '{{ .Values.installation.oidc.issuerURL }}'
+                    usernameClaim: '{{ .Values.installation.oidc.usernameClaim }}'
+                    groupsClaim: '{{ .Values.installation.oidc.groupsClaim }}'
       kubernetes:
         incluster: true
       registry:
