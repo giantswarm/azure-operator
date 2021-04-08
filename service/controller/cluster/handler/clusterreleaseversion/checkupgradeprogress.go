@@ -70,8 +70,8 @@ func (r *Resource) isControlPlaneUpgraded(ctx context.Context, cluster *capi.Clu
 	// plane nodes are upgraded to this release version.
 	desiredClusterReleaseVersion := key.ReleaseVersion(cluster)
 
-	for _, azureMachines := range azureMachineList.Items {
-		if !isUpgradedToDesiredReleaseVersion(&azureMachines, desiredClusterReleaseVersion) {
+	for i := range azureMachineList.Items {
+		if !isUpgradedToDesiredReleaseVersion(&azureMachineList.Items[i], desiredClusterReleaseVersion) {
 			r.logger.Debugf(ctx, "AzureMachine %s has not been upgraded yet", azureMachines.Name)
 			return false, nil
 		}

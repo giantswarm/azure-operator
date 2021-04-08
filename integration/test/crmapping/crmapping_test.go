@@ -229,8 +229,8 @@ func ensureCRsExist(t *testing.T, client client.Client, inputFiles []string) {
 
 		if o.GetObjectKind().GroupVersionKind().Kind == "NamespaceList" {
 			lst := o.(*corev1.NamespaceList)
-			for _, i := range lst.Items {
-				err = client.Create(context.Background(), &i)
+			for i := range lst.Items {
+				err = client.Create(context.Background(), &lst.Items[i])
 				if err != nil {
 					t.Fatalf("failed to create object from input file %s: %#v", f, err)
 				}
