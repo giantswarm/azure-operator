@@ -40,10 +40,10 @@ data:
           prefix: 'giantswarm.io'
         kubernetes:
           api:
-            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.'
+            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local'
             clusterIPRange: '172.31.0.0/16'
             securePort: 443
-          domain: 'cluster.domain'
+          domain: 'cluster.local'
           ingressController:
             baseDomain:  '{{ .Values.cluster.kubernetes.ingressController.baseDomain }}'
             insecurePort: 30010
