@@ -68,6 +68,7 @@ data:
             Network:
               CIDR: '{{ .Values.installation.guest.ipam.network.cidr }}'
               subnetMaskBits: '{{ .Values.installation.guest.ipam.network.subnetMaskBits }}'
+        {{- if hasKey .Values.installation "oidc" }}
         tenant:
           kubernetes:
             api:
@@ -78,6 +79,7 @@ data:
                     issuerURL: '{{ .Values.installation.oidc.issuerURL }}'
                     usernameClaim: '{{ .Values.installation.oidc.usernameClaim }}'
                     groupsClaim: '{{ .Values.installation.oidc.groupsClaim }}'
+        {{- end }}
       kubernetes:
         incluster: true
       registry:
