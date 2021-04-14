@@ -49,7 +49,7 @@ data:
             insecurePort: 30010
             securePort: 30011
           kubelet:
-            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.'
+            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local'
             labels: ''
             port: 10250
           ssh:
