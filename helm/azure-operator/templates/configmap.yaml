@@ -17,10 +17,10 @@ data:
       azure:
         environmentName: '{{ .Values.azure.environmentName }}'
         hostCluster:
-          cidr: '{{ .Values.azure.hostCluster.cidr }}'
-          resourceGroup: '{{ .Values.azure.hostCluster.resourceGroup }}'
-          virtualNetwork: '{{ .Values.azure.hostCluster.virtualNetwork }}'
-          virtualNetworkGateway: '{{ .Values.azure.hostCluster.virtualNetworkGateway }}'
+          cidr: '{{ .Values.azure.managementClusterCluster.cidr }}'
+          resourceGroup: '{{ .Values.azure.managementClusterCluster.resourceGroup }}'
+          virtualNetwork: '{{ .Values.azure.managementClusterCluster.virtualNetwork }}'
+          virtualNetworkGateway: '{{ .Values.azure.managementClusterCluster.virtualNetworkGateway }}'
         location: '{{ .Values.azure.location }}'
         msi:
           enabled: {{ .Values.azure.msi.enabled }}
@@ -66,19 +66,19 @@ data:
         guest:
           IPAM:
             Network:
-              CIDR: '{{ .Values.tenant.ipam.network.cidr }}'
-              subnetMaskBits: '{{ .Values.tenant.ipam.network.subnetMaskBits }}'
-        {{- if hasKey .Values.tenant "oidc" }}
+              CIDR: '{{ .Values.workloadCluster.ipam.network.cidr }}'
+              subnetMaskBits: '{{ .Values.workloadCluster.ipam.network.subnetMaskBits }}'
+        {{- if hasKey .Values.workloadCluster "oidc" }}
         tenant:
           kubernetes:
             api:
               auth:
                 provider:
                   oidc:
-                    clientID: '{{ .Values.tenant.oidc.clientID }}'
-                    issuerURL: '{{ .Values.tenant.oidc.issuerURL }}'
-                    usernameClaim: '{{ .Values.tenant.oidc.usernameClaim }}'
-                    groupsClaim: '{{ .Values.tenant.oidc.groupsClaim }}'
+                    clientID: '{{ .Values.workloadCluster.oidc.clientID }}'
+                    issuerURL: '{{ .Values.workloadCluster.oidc.issuerURL }}'
+                    usernameClaim: '{{ .Values.workloadCluster.oidc.usernameClaim }}'
+                    groupsClaim: '{{ .Values.workloadCluster.oidc.groupsClaim }}'
         {{- end }}
       kubernetes:
         incluster: true
@@ -89,6 +89,6 @@ data:
         mirrors: 'giantswarm.azurecr.io'
       tenant:
         ssh:
-          ssoPublicKey: {{ .Values.tenant.ssh.ssoPublicKey | quote }}
+          ssoPublicKey: {{ .Values.workloadCluster.ssh.ssoPublicKey | quote }}
       sentry:
         dsn: 'https://632f9667d01c47719beb5b405962de53@o346224.ingest.sentry.io/5544796'
