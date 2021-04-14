@@ -6,3 +6,4 @@ home: "https://github.com/giantswarm/azure-operator"
 apiVersion: v1
 annotations:
   application.giantswarm.io/team: "celestial"
+  config.giantswarm.io/version: 1.x.x

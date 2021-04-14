@@ -15,24 +15,24 @@ data:
         address: 'http://0.0.0.0:8000'
     service:
       azure:
-        environmentName: '{{ .Values.Installation.V1.Provider.Azure.Cloud }}'
+        environmentName: '{{ .Values.azure.environmentName }}'
         hostCluster:
-          cidr: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.CIDR }}'
-          resourceGroup: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.ResourceGroup }}'
-          virtualNetwork: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.VirtualNetwork }}'
-          virtualNetworkGateway: '{{ .Values.Installation.V1.Provider.Azure.HostCluster.VirtualNetworkGateway }}'
-        location: '{{ .Values.Installation.V1.Provider.Azure.Location }}'
+          cidr: '{{ .Values.azure.hostCluster.cidr }}'
+          resourceGroup: '{{ .Values.azure.hostCluster.resourceGroup }}'
+          virtualNetwork: '{{ .Values.azure.hostCluster.virtualNetwork }}'
+          virtualNetworkGateway: '{{ .Values.azure.hostCluster.virtualNetworkGateway }}'
+        location: '{{ .Values.azure.location }}'
         msi:
-          enabled: '{{ .Values.Installation.V1.Provider.Azure.MSI.Enabled }}'
+          enabled: {{ .Values.azure.msi.enabled }}
       cluster:
-        baseDomain: '{{ .Values.Installation.V1.BaseDomain }}'
+        baseDomain: '{{ .Values.cluster.baseDomain }}'
         calico:
-          cidr: '{{ .Values.Installation.V1.Guest.Calico.CIDR }}'
+          cidr: '{{ .Values.cluster.cni.mask }}'
           mtu: 1430
-          subnet: '{{ .Values.Installation.V1.Guest.Calico.Subnet }}'
+          subnet: '{{ .Values.cluster.cni.subnet }}'
         docker:
           daemon:
-            cidr: '{{ .Values.Installation.V1.Guest.Docker.CIDR }}'
+            cidr: '{{ .Values.cluster.docker.daemon.cidr }}'
             extraArgs: '--log-opt max-size=25m --log-opt max-file=2 --log-opt labels=io.kubernetes.container.hash,io.kubernetes.container.name,io.kubernetes.pod.name,io.kubernetes.pod.namespace,io.kubernetes.pod.uid'
         etcd:
           altNames: ''
@@ -40,44 +40,45 @@ data:
           prefix: 'giantswarm.io'
         kubernetes:
           api:
-            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.{{ .Values.Installation.V1.Guest.Kubernetes.API.Domain }}'
-            clusterIPRange: '{{ .Values.Installation.V1.Guest.Kubernetes.API.ClusterIPRange }}'
+            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local'
+            clusterIPRange: '172.31.0.0/16'
             securePort: 443
-          domain: '{{ .Values.Installation.V1.Guest.Kubernetes.ClusterDomain }}'
+          domain: 'cluster.local'
           ingressController:
-            baseDomain:  '{{ .Values.Installation.V1.Guest.Kubernetes.IngressController.BaseDomain }}'
+            baseDomain:  '{{ .Values.cluster.kubernetes.ingressController.baseDomain }}'
             insecurePort: 30010
             securePort: 30011
           kubelet:
-            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.{{ .Values.Installation.V1.Guest.Kubernetes.ClusterDomain }}'
+            altNames: 'kubernetes,kubernetes.default,kubernetes.default.svc,kubernetes.default.svc.cluster.local'
             labels: ''
             port: 10250
           ssh:
-            userList: '{{ .Values.Installation.V1.Guest.SSH.UserList }}'
-      {{- if .Values.Installation.V1.Debug }}
-      {{- if .Values.Installation.V1.Debug.InsecureStorageAccount }}
+            userList: |
+              {{ .Values.cluster.kubernetes.ssh.userList | nindent 14 }}
+      {{- if .Values.debug }}
+      {{- if .Values.debug.insecureStorageAccount }}
       debug:
         insecureStorageAccount: true
       {{- end }}
       {{- end }}
       installation:
-        name: '{{ .Values.Installation.V1.Name }}'
-      {{- if .Values.Installation.V1.Guest }}
+        name: '{{ .Values.installation }}'
         guest:
           IPAM:
             Network:
-              CIDR: '{{ .Values.Installation.V1.Guest.IPAM.NetworkCIDR }}'
-              subnetMaskBits: '{{ .Values.Installation.V1.Guest.IPAM.CIDRMask }}'
+              CIDR: '{{ .Values.tenant.ipam.network.cidr }}'
+              subnetMaskBits: '{{ .Values.tenant.ipam.network.subnetMaskBits }}'
+        {{- if hasKey .Values.tenant "oidc" }}
         tenant:
           kubernetes:
             api:
               auth:
                 provider:
                   oidc:
-                    clientID: '{{ .Values.Installation.V1.Guest.Kubernetes.API.Auth.Provider.OIDC.ClientID }}'
-                    issuerURL: '{{ .Values.Installation.V1.Guest.Kubernetes.API.Auth.Provider.OIDC.IssuerURL }}'
-                    usernameClaim: '{{ .Values.Installation.V1.Guest.Kubernetes.API.Auth.Provider.OIDC.UsernameClaim }}'
-                    groupsClaim: '{{ .Values.Installation.V1.Guest.Kubernetes.API.Auth.Provider.OIDC.GroupsClaim }}'
+                    clientID: '{{ .Values.tenant.oidc.clientID }}'
+                    issuerURL: '{{ .Values.tenant.oidc.issuerURL }}'
+                    usernameClaim: '{{ .Values.tenant.oidc.usernameClaim }}'
+                    groupsClaim: '{{ .Values.tenant.oidc.groupsClaim }}'
         {{- end }}
       kubernetes:
         incluster: true
@@ -88,6 +89,6 @@ data:
         mirrors: 'giantswarm.azurecr.io'
       tenant:
         ssh:
-          ssoPublicKey: '{{ .Values.Installation.V1.Guest.SSH.SSOPublicKey }}'
+          ssoPublicKey: {{ .Values.tenant.ssh.ssoPublicKey | quote }}
       sentry:
         dsn: 'https://632f9667d01c47719beb5b405962de53@o346224.ingest.sentry.io/5544796'
