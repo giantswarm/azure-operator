@@ -272,7 +272,7 @@ func (f *Factory) GetVirtualNetworkGatewaysClient(credentialNamespace, credentia
 }
 
 func (f *Factory) GetVirtualNetworkGatewayConnectionsClient(credentialNamespace, credentialName string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
-	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworkGatewaysClient", newVirtualNetworkGatewayConnectionsClient)
+	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworkGatewayConnectionsClient", newVirtualNetworkGatewayConnectionsClient)
 	if err != nil {
 		return nil, microerror.Mask(err)
 	}
