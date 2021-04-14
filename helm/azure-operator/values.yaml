@@ -4,10 +4,7 @@ project:
 image:
   name: "giantswarm/azure-operator"
   tag: "[[ .Version ]]"
-Installation:
-  V1:
-    Registry:
-      Domain: quay.io
+
 pod:
   user:
     id: 1000
@@ -18,3 +15,52 @@ ports:
     - name: "http"
       port: 8000
       protocol: "TCP"
+
+azure:
+  environmentName: ""
+  managementCluster:
+    cidr: ""
+    resourceGroup: ""
+    virtualNetwork: ""
+    virtualNetworkGateway: ""
+  location: ""
+  msi:
+    enabled: true
+azureOperatorSecret:
+  service:
+    azure:
+      clientid: ""
+      clientsecret: ""
+      sptenantid: ""
+      subscriptionid: ""
+      tenantid: ""
+cluster:
+  baseDomain: ""
+  cni:
+    mask: ""
+    subnet: ""
+  docker:
+    daemon:
+      cidr: ""
+  kubernetes:
+    ingressController:
+      baseDomain: ""
+    ssh:
+      userList: ""
+installation: ""
+workloadCluster:
+  ipam:
+    network:
+      cidr: ""
+      subnetMaskBits: ""
+  oidc:
+    clientID: ""
+    groupsClaim: ""
+    issuerURL: ""
+    usernameClaim: ""
+  name: ""
+  ssh:
+    ssoPublicKey: ""
+registry:
+  dockerhub:
+    token: ""
