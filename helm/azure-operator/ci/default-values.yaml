@@ -1,7 +1,7 @@
 ---
 azure:
   environmentName: ""
-  hostCluster:
+  managementCluster:
     cidr: ""
     resourceGroup: ""
     virtualNetwork: ""
@@ -31,7 +31,7 @@ cluster:
     ssh:
       userList: ""
 installation: ""
-tenant:
+workloadCluster:
   ipam:
     network:
       cidr: ""
