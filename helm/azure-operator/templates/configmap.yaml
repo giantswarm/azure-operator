@@ -27,9 +27,9 @@ data:
       cluster:
         baseDomain: '{{ .Values.cluster.baseDomain }}'
         calico:
-          cidr: '{{ .Values.cluster.calico.cidr }}'
+          cidr: '{{ .Values.cluster.cni.mask }}'
           mtu: 1430
-          subnet: '{{ .Values.cluster.calico.subnet }}'
+          subnet: '{{ .Values.cluster.cni.subnet }}'
         docker:
           daemon:
             cidr: '{{ .Values.cluster.docker.daemon.cidr }}'
