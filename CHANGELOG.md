@@ -9,6 +9,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace VPN Gateway with VNet Peering.
 - Update OperatorKit to `v4.3.1` to drop usage of self-link which is not supported in k8s 1.20 anymore.
 
 ## [5.5.2] - 2021-03-18
@@ -41,10 +42,6 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Avoid blocking the whole `AzureConfig` handler on cluster creation because we can't update the `StorageClasses`.
 - Avoid overriding the NP size when the scaling is changed by autoscaler. 
-
-### Changed
-
-- Replace VPN Gateway with VNet Peering.
 
 ## [5.4.0] - 2021-02-05
 
