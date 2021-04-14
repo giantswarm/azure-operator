@@ -4,8 +4,6 @@ project:
 image:
   name: "giantswarm/azure-operator"
   tag: "[[ .Version ]]"
-registry:
-  domain: "quay.io"
 
 pod:
   user:
@@ -64,5 +62,6 @@ workloadCluster:
   ssh:
     ssoPublicKey: ""
 registry:
+  domain: "quay.io"
   dockerhub:
     token: ""
