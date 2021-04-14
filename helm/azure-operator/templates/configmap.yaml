@@ -17,10 +17,10 @@ data:
       azure:
         environmentName: '{{ .Values.azure.environmentName }}'
         hostCluster:
-          cidr: '{{ .Values.azure.managementClusterCluster.cidr }}'
-          resourceGroup: '{{ .Values.azure.managementClusterCluster.resourceGroup }}'
-          virtualNetwork: '{{ .Values.azure.managementClusterCluster.virtualNetwork }}'
-          virtualNetworkGateway: '{{ .Values.azure.managementClusterCluster.virtualNetworkGateway }}'
+          cidr: '{{ .Values.azure.managementCluster.cidr }}'
+          resourceGroup: '{{ .Values.azure.managementCluster.resourceGroup }}'
+          virtualNetwork: '{{ .Values.azure.managementCluster.virtualNetwork }}'
+          virtualNetworkGateway: '{{ .Values.azure.managementCluster.virtualNetworkGateway }}'
         location: '{{ .Values.azure.location }}'
         msi:
           enabled: {{ .Values.azure.msi.enabled }}
