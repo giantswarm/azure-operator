@@ -19,8 +19,8 @@ azureOperatorSecret:
       tenantid: ""
 cluster:
   baseDomain: ""
-  calico:
-    cidr: ""
+  cni:
+    mask: ""
     subnet: ""
   docker:
     daemon:
@@ -30,21 +30,20 @@ cluster:
       baseDomain: ""
     ssh:
       userList: ""
-installation:
-  guest:
-    ipam:
-      network:
-        cidr: ""
-        subnetMaskBits: ""
+installation: ""
+tenant:
+  ipam:
+    network:
+      cidr: ""
+      subnetMaskBits: ""
   oidc:
     clientID: ""
     groupsClaim: ""
     issuerURL: ""
     usernameClaim: ""
   name: ""
+  ssh:
+    ssoPublicKey: ""
 registry:
   dockerhub:
     token: ""
-tenant:
-  ssh:
-    ssoPublicKey: ""
