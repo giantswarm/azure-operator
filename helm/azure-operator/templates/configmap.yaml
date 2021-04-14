@@ -62,23 +62,23 @@ data:
       {{- end }}
       {{- end }}
       installation:
-        name: '{{ .Values.installation.name }}'
+        name: '{{ .Values.installation }}'
         guest:
           IPAM:
             Network:
-              CIDR: '{{ .Values.installation.guest.ipam.network.cidr }}'
-              subnetMaskBits: '{{ .Values.installation.guest.ipam.network.subnetMaskBits }}'
-        {{- if hasKey .Values.installation "oidc" }}
+              CIDR: '{{ .Values.tenant.ipam.network.cidr }}'
+              subnetMaskBits: '{{ .Values.tenant.ipam.network.subnetMaskBits }}'
+        {{- if hasKey .Values.tenant "oidc" }}
         tenant:
           kubernetes:
             api:
               auth:
                 provider:
                   oidc:
-                    clientID: '{{ .Values.installation.oidc.clientID }}'
-                    issuerURL: '{{ .Values.installation.oidc.issuerURL }}'
-                    usernameClaim: '{{ .Values.installation.oidc.usernameClaim }}'
-                    groupsClaim: '{{ .Values.installation.oidc.groupsClaim }}'
+                    clientID: '{{ .Values.tenant.oidc.clientID }}'
+                    issuerURL: '{{ .Values.tenant.oidc.issuerURL }}'
+                    usernameClaim: '{{ .Values.tenant.oidc.usernameClaim }}'
+                    groupsClaim: '{{ .Values.tenant.oidc.groupsClaim }}'
         {{- end }}
       kubernetes:
         incluster: true
