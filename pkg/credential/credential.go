@@ -82,14 +82,14 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, cred
 
 	fmt.Printf("Subscription = %s\n", subscriptionID)
 	fmt.Printf("Client = %s\n", clientID)
-	fmt.Printf("Main = %s\n", k.gsTenantID)
-	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, k.gsTenantID)
+	fmt.Printf("Main = %s\n", tenantID)
+	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
 	if tenantID == k.gsTenantID {
 		k.logger.Debugf(ctx, "Azure subscription %#q belongs to the same tenant ID %#q that owns the service principal. Using single tenant authentication", subscriptionID, tenantID)
 	} else {
-		fmt.Printf("Aux = %s\n", tenantID)
+		fmt.Printf("Aux = %s\n", k.gsTenantID)
 		k.logger.Debugf(ctx, "Azure subscription %#q belongs to the tenant ID %#q which is different than the Tenant ID %#q that owns the Service Principal. Using multi tenant authentication", subscriptionID, tenantID, k.gsTenantID)
-		credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
+		credentials.AuxTenants = append(credentials.AuxTenants, k.gsTenantID)
 	}
 
 	return credentials, subscriptionID, partnerID, nil
