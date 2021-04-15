@@ -80,6 +80,8 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, cred
 		return auth.ClientCredentialsConfig{}, "", "", microerror.Maskf(oldStyleCredentialsError, "This version of azure operator requires multi tenant service principal setup")
 	}
 
+	fmt.Printf("Subscription = %s\n", subscriptionID)
+	fmt.Printf("Client = %s\n", clientID)
 	fmt.Printf("Main = %s\n", k.gsTenantID)
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, k.gsTenantID)
 	if tenantID == k.gsTenantID {
