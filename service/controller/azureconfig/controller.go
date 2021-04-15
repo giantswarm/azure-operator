@@ -591,11 +591,11 @@ func newAzureConfigResources(config ControllerConfig, certsSearcher certs.Interf
 	var vnetPeeringResource resource.Interface
 	{
 		c := vnetpeering.Config{
-			ClientFactory:          organizationClientFactory,
-			CPAzureClientSet:       config.CPAzureClientSet,
-			HostResourceGroup:      config.InstallationName,
-			HostVirtualNetworkName: config.InstallationName,
-			Logger:                 config.Logger,
+			ClientFactory:        organizationClientFactory,
+			CPAzureClientSet:     config.CPAzureClientSet,
+			MCResourceGroup:      config.InstallationName,
+			MCVirtualNetworkName: config.InstallationName,
+			Logger:               config.Logger,
 		}
 
 		vnetPeeringResource, err = vnetpeering.New(c)
