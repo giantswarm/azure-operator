@@ -12,19 +12,19 @@ const (
 )
 
 type Config struct {
-	ClientFactory          client.OrganizationFactory
-	CPAzureClientSet       *client.AzureClientSet
-	HostResourceGroup      string
-	HostVirtualNetworkName string
-	Logger                 micrologger.Logger
+	ClientFactory        client.OrganizationFactory
+	CPAzureClientSet     *client.AzureClientSet
+	MCResourceGroup      string
+	MCVirtualNetworkName string
+	Logger               micrologger.Logger
 }
 
 type Resource struct {
-	clientFactory          client.OrganizationFactory
-	cpAzureClientSet       *client.AzureClientSet
-	hostResourceGroup      string
-	hostVirtualNetworkName string
-	logger                 micrologger.Logger
+	clientFactory        client.OrganizationFactory
+	cpAzureClientSet     *client.AzureClientSet
+	mcResourceGroup      string
+	mcVirtualNetworkName string
+	logger               micrologger.Logger
 }
 
 func New(config Config) (*Resource, error) {
@@ -32,12 +32,12 @@ func New(config Config) (*Resource, error) {
 		return nil, microerror.Maskf(invalidConfigError, "%T.CPAzureClientSet must not be empty", config)
 	}
 
-	if config.HostResourceGroup == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.HostResourceGroup must not be empty", config)
+	if config.MCResourceGroup == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.MCResourceGroup must not be empty", config)
 	}
 
-	if config.HostVirtualNetworkName == "" {
-		return nil, microerror.Maskf(invalidConfigError, "%T.HostVirtualNetworkName must not be empty", config)
+	if config.MCVirtualNetworkName == "" {
+		return nil, microerror.Maskf(invalidConfigError, "%T.MCVirtualNetworkName must not be empty", config)
 	}
 
 	if config.Logger == nil {
@@ -45,11 +45,11 @@ func New(config Config) (*Resource, error) {
 	}
 
 	r := &Resource{
-		clientFactory:          config.ClientFactory,
-		cpAzureClientSet:       config.CPAzureClientSet,
-		hostResourceGroup:      config.HostResourceGroup,
-		hostVirtualNetworkName: config.HostVirtualNetworkName,
-		logger:                 config.Logger,
+		clientFactory:        config.ClientFactory,
+		cpAzureClientSet:     config.CPAzureClientSet,
+		mcResourceGroup:      config.MCResourceGroup,
+		mcVirtualNetworkName: config.MCVirtualNetworkName,
+		logger:               config.Logger,
 	}
 
 	return r, nil

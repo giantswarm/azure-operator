@@ -48,9 +48,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 	var cpVnet network.VirtualNetwork
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if CP virtual network %#q exists in resource group %#q", r.hostVirtualNetworkName, r.hostResourceGroup))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Checking if CP virtual network %#q exists in resource group %#q", r.mcVirtualNetworkName, r.mcResourceGroup))
 
-		cpVnet, err = r.cpAzureClientSet.VirtualNetworkClient.Get(ctx, r.hostResourceGroup, r.hostVirtualNetworkName, "")
+		cpVnet, err = r.cpAzureClientSet.VirtualNetworkClient.Get(ctx, r.mcResourceGroup, r.mcVirtualNetworkName, "")
 		if IsNotFound(err) {
 			r.logger.LogCtx(ctx, "level", "debug", "message", "CP Virtual network does not exist in resource group")
 			reconciliationcanceledcontext.SetCanceled(ctx)
@@ -64,7 +64,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the tenant cluster vnet %#q in resource group %#q", r.hostVirtualNetworkName, key.VnetName(cr), key.ResourceGroupName(cr)))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the tenant cluster vnet %#q in resource group %#q", r.mcVirtualNetworkName, key.VnetName(cr), key.ResourceGroupName(cr)))
 
 		vnetPeeringsClient, err := r.clientFactory.GetVnetPeeringsClient(ctx, cr.ObjectMeta)
 		if err != nil {
@@ -72,16 +72,16 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		tcPeering := r.getTCVnetPeering(*cpVnet.ID)
-		_, err = vnetPeeringsClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), key.VnetName(cr), r.hostVirtualNetworkName, tcPeering)
+		_, err = vnetPeeringsClient.CreateOrUpdate(ctx, key.ResourceGroupName(cr), key.VnetName(cr), r.mcVirtualNetworkName, tcPeering)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 	}
 
 	{
-		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the control plane vnet %#q in resource group %#q", key.ResourceGroupName(cr), r.hostVirtualNetworkName, r.hostResourceGroup))
+		r.logger.LogCtx(ctx, "level", "debug", "message", fmt.Sprintf("Ensuring vnet peering %#q exists on the control plane vnet %#q in resource group %#q", key.ResourceGroupName(cr), r.mcVirtualNetworkName, r.mcResourceGroup))
 		cpPeering := r.getCPVnetPeering(*tcVnet.ID)
-		_, err = r.cpAzureClientSet.VnetPeeringClient.CreateOrUpdate(ctx, r.hostResourceGroup, r.hostVirtualNetworkName, key.ResourceGroupName(cr), cpPeering)
+		_, err = r.cpAzureClientSet.VnetPeeringClient.CreateOrUpdate(ctx, r.mcResourceGroup, r.mcVirtualNetworkName, key.ResourceGroupName(cr), cpPeering)
 		if err != nil {
 			return microerror.Mask(err)
 		}
