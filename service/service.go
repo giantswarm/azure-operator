@@ -287,8 +287,6 @@ func New(config Config) (*Service, error) {
 		for tenant := range aux {
 			gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, tenant)
 		}
-
-		fmt.Printf("Management Cluster Azure Client Config:\n  Main: %s\n  Aux := %v\n", gsClientCredentialsConfig.TenantID, gsClientCredentialsConfig.AuxTenants)
 	}
 
 	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID), config.Logger)
