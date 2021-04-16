@@ -284,7 +284,7 @@ func New(config Config) (*Service, error) {
 			}
 		}
 
-		for tenant, _ := range aux {
+		for tenant := range aux {
 			gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, tenant)
 		}
 
