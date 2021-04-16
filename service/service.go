@@ -19,16 +19,19 @@ import (
 	operatorkitcontroller "github.com/giantswarm/operatorkit/v4/pkg/controller"
 	"github.com/giantswarm/versionbundle"
 	"github.com/spf13/viper"
+	v1 "k8s.io/api/core/v1"
 	"k8s.io/client-go/rest"
 	capzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	expcapzv1alpha3 "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"
 	capiv1alpha3 "sigs.k8s.io/cluster-api/api/v1alpha3"
 	expcapiv1alpha3 "sigs.k8s.io/cluster-api/exp/api/v1alpha3"
+	ctrl "sigs.k8s.io/controller-runtime/pkg/client"
 
 	"github.com/giantswarm/azure-operator/v5/client"
 	"github.com/giantswarm/azure-operator/v5/flag"
 	"github.com/giantswarm/azure-operator/v5/pkg/credential"
 	"github.com/giantswarm/azure-operator/v5/pkg/employees"
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/azure-operator/v5/pkg/locker"
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 	"github.com/giantswarm/azure-operator/v5/service/collector"
@@ -252,13 +255,38 @@ func New(config Config) (*Service, error) {
 	}
 
 	// These credentials will be used when creating AzureClients for Control Plane clusters.
-	gsClientCredentialsConfig, err := credential.NewAzureCredentials(
-		config.Viper.GetString(config.Flag.Service.Azure.ClientID),
-		config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
-		config.Viper.GetString(config.Flag.Service.Azure.TenantID),
-	)
-	if err != nil {
-		return nil, microerror.Mask(err)
+	var gsClientCredentialsConfig auth.ClientCredentialsConfig
+	{
+		mcTenant := config.Viper.GetString(config.Flag.Service.Azure.TenantID)
+
+		gsClientCredentialsConfig, err = credential.NewAzureCredentials(
+			config.Viper.GetString(config.Flag.Service.Azure.ClientID),
+			config.Viper.GetString(config.Flag.Service.Azure.ClientSecret),
+			mcTenant,
+		)
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		// Need to set all Organization Credentials' tenant ID as aux tenant.
+		secretList := &v1.SecretList{}
+		err = k8sClient.CtrlClient().List(context.Background(), secretList, ctrl.MatchingLabels{label.App: "credentiald"})
+		if err != nil {
+			return nil, microerror.Mask(err)
+		}
+
+		// Using a map to avoid duplicates.
+		aux := map[string]interface{}{}
+		for _, secret := range secretList.Items {
+			tenant := string(secret.Data["azure.azureoperator.tenantid"])
+			if tenant != mcTenant {
+				aux[tenant] = ""
+			}
+		}
+
+		for tenant := range aux {
+			gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, tenant)
+		}
 	}
 
 	credentialProvider := credential.NewK8SCredentialProvider(k8sClient, config.Viper.GetString(config.Flag.Service.Azure.TenantID), config.Logger)
@@ -532,13 +560,6 @@ func buildK8sRestConfig(config Config) (*rest.Config, error) {
 
 // NewCPAzureClientSet return an Azure client set configured for the Control Plane cluster.
 func NewCPAzureClientSet(config Config, gsClientCredentialsConfig auth.ClientCredentialsConfig, metricsCollector collector.AzureAPIMetrics) (*client.AzureClientSet, error) {
-	cpTenantID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.TenantID)
-	if cpTenantID != "" {
-		// We want the code to work both when using Single Tenant Service Principal and Multi Tenant Service Principal.
-		// We only add the CP Tenant ID as auxiliary id if an explicit CP Tenant ID has been passed.
-		gsClientCredentialsConfig.AuxTenants = append(gsClientCredentialsConfig.AuxTenants, cpTenantID)
-	}
-
 	cpSubscriptionID := config.Viper.GetString(config.Flag.Service.Azure.HostCluster.Tenant.SubscriptionID)
 	if cpSubscriptionID == "" {
 		cpSubscriptionID = config.Viper.GetString(config.Flag.Service.Azure.SubscriptionID)
