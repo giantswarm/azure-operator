@@ -14,7 +14,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Removed
 
-- Support for single tenant BYOC credentials.
+- Support for single tenant BYOC credentials (warning: the operator will error at startup if any organization credentials is not multi tenant).
 
 ## [5.5.2] - 2021-03-18
 
