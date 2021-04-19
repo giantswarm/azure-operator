@@ -76,7 +76,7 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, cred
 	}
 
 	if _, exists := secret.GetLabels()[label.SingleTenantSP]; exists {
-		return auth.ClientCredentialsConfig{}, "", "", microerror.Maskf(oldStyleCredentialsError, "This version of azure operator requires multi tenant service principal setup")
+		return auth.ClientCredentialsConfig{}, "", "", microerror.Maskf(oldStyleCredentialsError, "This version of azure operator requires multi tenant service principal setup (secret %q has label %q)", secret.Name, label.SingleTenantSP)
 	}
 
 	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
