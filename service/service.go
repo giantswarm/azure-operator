@@ -278,6 +278,10 @@ func New(config Config) (*Service, error) {
 		// Using a map to avoid duplicates.
 		aux := map[string]interface{}{}
 		for _, secret := range secretList.Items {
+			if _, skip := secret.Labels[label.SingleTenantSP]; skip {
+				config.Logger.Log("level", "warning", "message", fmt.Sprintf("Skipping aux tenant from secret %q because it has label %q set", secret.Name, label.SingleTenantSP))
+				continue
+			}
 			tenant := string(secret.Data["azure.azureoperator.tenantid"])
 			if tenant != mcTenant {
 				aux[tenant] = ""
