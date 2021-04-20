@@ -11,3 +11,7 @@ var missingValueError = &microerror.Error{
 var invalidConfigError = &microerror.Error{
 	Kind: "invalidConfigError",
 }
+
+var oldStyleCredentialsError = &microerror.Error{
+	Kind: "oldStyleCredentialsError",
+}

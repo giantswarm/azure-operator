@@ -9,7 +9,12 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Replace VPN Gateway with VNet Peering.
 - Update OperatorKit to `v4.3.1` to drop usage of self-link which is not supported in k8s 1.20 anymore.
+
+### Removed
+
+- Support for single tenant BYOC credentials (warning: the operator will error at startup if any organization credentials is not multi tenant).
 
 ## [5.5.2] - 2021-03-18
 

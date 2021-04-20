@@ -253,6 +253,33 @@ func (f *Factory) GetResourceSkusClient(credentialNamespace, credentialName stri
 	return toResourceSkusClient(client), nil
 }
 
+func (f *Factory) GetVirtualNetworkPeeringsClient(credentialNamespace, credentialName string) (*network.VirtualNetworkPeeringsClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworkPeeringsClient", newVnetPeeringClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toVirtualNetworkPeeringsClient(client), nil
+}
+
+func (f *Factory) GetVirtualNetworkGatewaysClient(credentialNamespace, credentialName string) (*network.VirtualNetworkGatewaysClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworkGatewaysClient", newVirtualNetworkGatewaysClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toVirtualNetworkGatewaysClient(client), nil
+}
+
+func (f *Factory) GetVirtualNetworkGatewayConnectionsClient(credentialNamespace, credentialName string) (*network.VirtualNetworkGatewayConnectionsClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "VirtualNetworkGatewayConnectionsClient", newVirtualNetworkGatewayConnectionsClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toVirtualNetworkGatewayConnectionsClient(client), nil
+}
+
 func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {
 	l := f.logger.With(
 		logLevelLogKey, logLevelDebug,

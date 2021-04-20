@@ -66,7 +66,7 @@ func NewController(config ControllerConfig) (*controller.Controller, error) {
 	}
 
 	if config.CPAzureClientSet == nil {
-		return nil, microerror.Maskf(invalidConfigError, "%T.CPAzureClientSet must not be empty", config)
+		return nil, microerror.Maskf(invalidConfigError, "%T.cpAzureClientSet must not be empty", config)
 	}
 
 	if config.K8sClient == nil {
