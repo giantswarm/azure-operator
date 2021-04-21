@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.6.0-beta1] - 2021-04-21
+
 ### Changed
 
 - Replace VPN Gateway with VNet Peering.
@@ -358,7 +360,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.5.2...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.6.0-beta1...HEAD
+[5.6.0-beta1]: https://github.com/giantswarm/azure-operator/compare/v5.5.2...v5.6.0-beta1
 [5.5.2]: https://github.com/giantswarm/azure-operator/compare/v5.5.1...v5.5.2
 [5.5.1]: https://github.com/giantswarm/azure-operator/compare/v5.5.0...v5.5.1
 [5.5.0]: https://github.com/giantswarm/azure-operator/compare/v5.4.0...v5.5.0
