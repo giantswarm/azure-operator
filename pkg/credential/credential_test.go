@@ -187,8 +187,8 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePr
 	ctx := context.Background()
 	expectedClientID := clientIDFromCredentialSecret
 	expectedClientSecret := clientSecretFromCredentialSecret
-	expectedTenantID := "giantswarmTenantID"
-	organizationTenantID := "differentTenantID"
+	mcTenantID := "mcTenantID"
+	organizationTenantID := "orgTenantID"
 
 	organizationCredentialSecret, err := createOrganizationCredentialSecret(fakeK8sClient, ctx, expectedClientID, expectedClientSecret, organizationTenantID, noLabels)
 	if err != nil {
@@ -196,7 +196,7 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePr
 	}
 
 	azureConfig := createAzureConfigUsingThisOrganizationCredentialSecret("test-cluster", "giantswarm", organizationCredentialSecret)
-	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, "giantswarmTenantID", microloggertest.New())
+	credentialProvider := NewK8SCredentialProvider(fakeK8sClient, mcTenantID, microloggertest.New())
 	clientCredentialsConfig, _, _, err := credentialProvider.GetOrganizationAzureCredentials(ctx, key.CredentialNamespace(*azureConfig), key.CredentialName(*azureConfig))
 	if err != nil {
 		t.Fatal(err)
@@ -208,8 +208,8 @@ func TestCredentialsAreConfiguredUsingOrganizationSecretWithMultiTenantServicePr
 	if clientCredentialsConfig.ClientSecret != expectedClientSecret {
 		t.Fatalf("clientSecret has the wrong value: expected %#q, got %#q", expectedClientSecret, clientCredentialsConfig.ClientSecret)
 	}
-	if clientCredentialsConfig.TenantID != expectedTenantID {
-		t.Fatalf("tenantID has the wrong value: expected %#q, got %#q", expectedTenantID, clientCredentialsConfig.TenantID)
+	if clientCredentialsConfig.TenantID != organizationTenantID {
+		t.Fatalf("tenantID has the wrong value: expected %#q, got %#q", organizationTenantID, clientCredentialsConfig.TenantID)
 	}
 	if len(clientCredentialsConfig.AuxTenants) != 1 {
 		t.Fatalf("giantswarm tenant id should be an auxiliary tenant id for a multi tenant service principal: expected 1, got %#q auxiliary tenants", clientCredentialsConfig.AuxTenants)
