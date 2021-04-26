@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.5.3] - 2021-04-26
+
 ### Fixed
 
 - Fix wrong setup of multi-account service principals.
@@ -353,7 +355,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.5.2...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.5.3...HEAD
+[5.5.3]: https://github.com/giantswarm/azure-operator/compare/v5.5.2...v5.5.3
 [5.5.2]: https://github.com/giantswarm/azure-operator/compare/v5.5.1...v5.5.2
 [5.5.1]: https://github.com/giantswarm/azure-operator/compare/v5.5.0...v5.5.1
 [5.5.0]: https://github.com/giantswarm/azure-operator/compare/v5.4.0...v5.5.0
