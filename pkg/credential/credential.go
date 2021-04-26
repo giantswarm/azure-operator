@@ -84,8 +84,8 @@ func (k K8SCredential) GetOrganizationAzureCredentials(ctx context.Context, cred
 
 	// The tenant cluster resources will belong to a subscription that belongs to a different Tenant ID than the one used for authentication.
 	k.logger.Debugf(ctx, "Azure subscription %#q belongs to the tenant ID %#q which is different than the Tenant ID %#q that owns the Service Principal. Using multi tenant authentication", subscriptionID, tenantID, k.gsTenantID)
-	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, k.gsTenantID)
-	credentials.AuxTenants = append(credentials.AuxTenants, tenantID)
+	credentials := auth.NewClientCredentialsConfig(clientID, clientSecret, tenantID)
+	credentials.AuxTenants = append(credentials.AuxTenants, k.gsTenantID)
 
 	return credentials, subscriptionID, partnerID, nil
 }
