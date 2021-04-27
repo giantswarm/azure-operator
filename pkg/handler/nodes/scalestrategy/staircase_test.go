@@ -48,7 +48,7 @@ func TestSafeQuick_GetNodeCount(t *testing.T) {
 	}
 	for _, tt := range tests {
 		t.Run(tt.name, func(t *testing.T) {
-			i := SafeQuick{}
+			i := Staircase{}
 			if got := i.GetNodeCount(tt.currentCount, tt.desiredCount); got != tt.want {
 				t.Errorf("GetNodeCount() = %v, want %v", got, tt.want)
 			}
