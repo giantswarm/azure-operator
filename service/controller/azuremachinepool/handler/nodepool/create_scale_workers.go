@@ -66,7 +66,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
-	strategy := scalestrategy.Quick{}
+	strategy := scalestrategy.SafeQuick{}
 
 	// Ensure the deployment is successful before we move on with scaling.
 	currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolDeploymentName(&azureMachinePool))
