@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Avoid creating too many worker nodes at the same time when upgrading node pools.
+
 ## [5.6.0] - 2021-04-21
 
 ### Changed

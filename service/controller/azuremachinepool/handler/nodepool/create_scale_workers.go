@@ -66,7 +66,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
-	strategy := scalestrategy.Quick{}
+	strategy := scalestrategy.Staircase{}
 
 	// Ensure the deployment is successful before we move on with scaling.
 	currentDeployment, err := deploymentsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolDeploymentName(&azureMachinePool))
@@ -116,12 +116,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		err = r.scaleVMSS(ctx, azureMachinePool, desiredWorkerCount, strategy)
+		newCount, err := r.scaleVMSS(ctx, azureMachinePool, desiredWorkerCount, strategy)
 		if err != nil {
 			return DeploymentUninitialized, microerror.Mask(err)
 		}
 
-		r.Logger.Debugf(ctx, "scaled worker VMSS to %d nodes", desiredWorkerCount)
+		r.Logger.Debugf(ctx, "scaled worker VMSS to %d nodes (desired count is %d)", newCount, desiredWorkerCount)
 
 		// Let's stay in the current state.
 		return currentState, nil
@@ -245,31 +245,31 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 	return false, nil
 }
 
-func (r *Resource) scaleVMSS(ctx context.Context, azureMachinePool capzv1alpha3.AzureMachinePool, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) error {
+func (r *Resource) scaleVMSS(ctx context.Context, azureMachinePool capzv1alpha3.AzureMachinePool, desiredNodeCount int64, scaleStrategy scalestrategy.Interface) (int64, error) {
 	resourceGroup := key.ClusterID(&azureMachinePool)
 	vmssName := key.NodePoolVMSSName(&azureMachinePool)
 
 	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
-		return microerror.Mask(err)
+		return 0, microerror.Mask(err)
 	}
 
 	vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroup, vmssName)
 	if err != nil {
-		return microerror.Mask(err)
+		return 0, microerror.Mask(err)
 	}
 
 	computedCount := scaleStrategy.GetNodeCount(*vmss.Sku.Capacity, desiredNodeCount)
 	*vmss.Sku.Capacity = computedCount
 	res, err := virtualMachineScaleSetsClient.CreateOrUpdate(ctx, resourceGroup, vmssName, vmss)
 	if err != nil {
-		return microerror.Mask(err)
+		return 0, microerror.Mask(err)
 	}
 
 	_, err = virtualMachineScaleSetsClient.CreateOrUpdateResponder(res.Response())
 	if err != nil {
-		return microerror.Mask(err)
+		return 0, microerror.Mask(err)
 	}
 
-	return nil
+	return computedCount, nil
 }
