@@ -31,6 +31,11 @@ func (r *Resource) waitForWorkersToBecomeReadyTransition(ctx context.Context, ob
 		return currentState, nil
 	}
 
+	if azureMachinePool.Spec.Template.SpotVMOptions != nil {
+		r.Logger.Debugf(ctx, "Skipping state %s because node pool is using Spot Instances.", currentState)
+		return TerminateOldWorkerInstances, nil
+	}
+
 	tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
 	if tenantcluster.IsAPINotAvailableError(err) {
 		r.Logger.Debugf(ctx, "tenant API not available yet")
