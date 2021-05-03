@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Avoid creating too many worker nodes at the same time when upgrading node pools.
+- Don't wait for new workers to be up during spot instances node pools upgrades.
 
 ## [5.6.0] - 2021-04-21
 
