@@ -7,6 +7,7 @@ import (
 	"sync"
 	"time"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/authorization/mgmt/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
@@ -278,6 +279,15 @@ func (f *Factory) GetVirtualNetworkGatewayConnectionsClient(credentialNamespace,
 	}
 
 	return toVirtualNetworkGatewayConnectionsClient(client), nil
+}
+
+func (f *Factory) GetRoleAssignmentsClient(credentialNamespace, credentialName string) (*authorization.RoleAssignmentsClient, error) {
+	client, err := f.getClient(credentialNamespace, credentialName, "RoleAssignmentsClient", newRoleAssignmentsClient)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return toRoleAssignmentsClient(client), nil
 }
 
 func (f *Factory) getClient(credentialNamespace, credentialName string, clientType string, createClient clientCreatorFunc) (interface{}, error) {

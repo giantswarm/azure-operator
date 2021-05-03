@@ -12,6 +12,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Avoid creating too many worker nodes at the same time when upgrading node pools.
 - Don't wait for new workers to be up during spot instances node pools upgrades.
 
+### Fixed
+
+- When deleting a node pool, also delete the VMSS role assignment.
+
 ## [5.6.0] - 2021-04-21
 
 ### Changed

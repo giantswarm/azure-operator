@@ -3,6 +3,7 @@ package client
 import (
 	"fmt"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/2019-03-01/authorization/mgmt/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
@@ -349,6 +350,13 @@ func newResourceSkusClient(authorizer autorest.Authorizer, metricsCollector coll
 	return &client, nil
 }
 
+func newRoleAssignmentsClient(authorizer autorest.Authorizer, metricsCollector collector.AzureAPIMetrics, subscriptionID, partnerID string) (interface{}, error) {
+	client := authorization.NewRoleAssignmentsClient(subscriptionID)
+	prepareClient(&client.Client, authorizer, metricsCollector, "role_assignments", subscriptionID, partnerID)
+
+	return &client, nil
+}
+
 func toDeploymentsClient(client interface{}) *resources.DeploymentsClient {
 	return client.(*resources.DeploymentsClient)
 }
@@ -419,4 +427,8 @@ func toVirtualNetworkGatewaysClient(client interface{}) *network.VirtualNetworkG
 
 func toVirtualNetworkGatewayConnectionsClient(client interface{}) *network.VirtualNetworkGatewayConnectionsClient {
 	return client.(*network.VirtualNetworkGatewayConnectionsClient)
+}
+
+func toRoleAssignmentsClient(client interface{}) *authorization.RoleAssignmentsClient {
+	return client.(*authorization.RoleAssignmentsClient)
 }
