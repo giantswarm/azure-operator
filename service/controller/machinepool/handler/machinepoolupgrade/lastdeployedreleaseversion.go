@@ -116,7 +116,6 @@ func allNodePoolNodesUpToDate(ctx context.Context, tenantClusterClient client.Cl
 	}
 
 	desiredVersion := semver.New(desiredAzureOperatorVersion)
-	var upToDateNodesCount int32
 	var outdatedNodes int32
 
 	for _, node := range nodes.Items {
@@ -129,20 +128,8 @@ func allNodePoolNodesUpToDate(ctx context.Context, tenantClusterClient client.Cl
 
 		if nodeOperatorVersion.LessThan(*desiredVersion) {
 			outdatedNodes++
-		} else {
-			upToDateNodesCount++
 		}
 	}
 
-	// azure-admission-controller ensures that machinePool.Spec.Replicas is
-	// always set
-	minRequiredReplicas := key.NodePoolMinReplicas(machinePool)
-
-	// We want that all required replicas are up-to-date.
-	requiredReplicasAreUpToDate := upToDateNodesCount >= minRequiredReplicas
-
-	// We also want that old nodes are removed.
-	oldNodesAreRemoved := outdatedNodes == 0
-
-	return requiredReplicasAreUpToDate && oldNodesAreRemoved, nil
+	return outdatedNodes == 0, nil
 }

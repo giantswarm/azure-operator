@@ -11,6 +11,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 - Avoid creating too many worker nodes at the same time when upgrading node pools.
 
+### Fixed
+
+- Rely on k8s nodes instead of Azure instances when counting up-to-date nodes to decide if upgrade has finished.
+
 ## [5.6.0] - 2021-04-21
 
 ### Changed
