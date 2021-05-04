@@ -3,6 +3,7 @@ package client
 import (
 	"context"
 
+	"github.com/Azure/azure-sdk-for-go/profiles/latest/authorization/mgmt/authorization"
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/dns/mgmt/2018-05-01/dns"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
@@ -44,6 +45,7 @@ type Interface interface {
 	GetVirtualNetworkGatewaysClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkGatewaysClient, error)
 	GetVirtualNetworkGatewayConnectionsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.VirtualNetworkGatewayConnectionsClient, error)
 	GetPublicIpAddressesClient(ctx context.Context, objectMeta v1.ObjectMeta) (*network.PublicIPAddressesClient, error)
+	GetRoleAssignmentsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*authorization.RoleAssignmentsClient, error)
 }
 
 type OrganizationFactoryConfig struct {
@@ -217,6 +219,15 @@ func (f *OrganizationFactory) GetPublicIpAddressesClient(ctx context.Context, ob
 	}
 
 	return f.factory.GetPublicIPAddressesClient(credentialSecret.Namespace, credentialSecret.Name)
+}
+
+func (f *OrganizationFactory) GetRoleAssignmentsClient(ctx context.Context, objectMeta v1.ObjectMeta) (*authorization.RoleAssignmentsClient, error) {
+	credentialSecret, err := f.GetCredentialSecret(ctx, objectMeta)
+	if err != nil {
+		return nil, microerror.Mask(err)
+	}
+
+	return f.factory.GetRoleAssignmentsClient(credentialSecret.Namespace, credentialSecret.Name)
 }
 
 func (f *OrganizationFactory) GetCredentialSecret(ctx context.Context, objectMeta v1.ObjectMeta) (*v1alpha1.CredentialSecret, error) {

@@ -142,12 +142,30 @@ func (r *Resource) deleteARMDeployment(ctx context.Context, azureMachinePool *ca
 
 // deleteVMSS deletes the VMSS from Azure.
 func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, resourceGroupName, vmssName string) error {
-	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS")
-
 	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
 	if err != nil {
 		return microerror.Mask(err)
 	}
+
+	// Delete role assignment related to this VMSS.
+	{
+		vmss, err := virtualMachineScaleSetsClient.Get(ctx, resourceGroupName, vmssName)
+		if IsNotFound(err) {
+			r.Logger.LogCtx(ctx, "message", "Machine pool VMSS was already deleted")
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		if vmss.Identity.PrincipalID != nil {
+			err = r.removeRoleAssignmentForPrincipalID(ctx, azureMachinePool, *vmss.Identity.PrincipalID)
+			if err != nil {
+				return microerror.Mask(err)
+			}
+		}
+	}
+
+	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS")
 
 	_, err = virtualMachineScaleSetsClient.Delete(ctx, resourceGroupName, vmssName)
 	if IsNotFound(err) {
@@ -158,6 +176,42 @@ func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1al
 	}
 
 	r.Logger.LogCtx(ctx, "message", "Deleted machine pool VMSS")
+
+	return nil
+}
+
+// removeRoleAssignment deletes the role assignment from a node pool's VMSS to allow recreation of a node pool with the same name.
+func (r *Resource) removeRoleAssignmentForPrincipalID(ctx context.Context, azureMachinePool *capzexpv1alpha3.AzureMachinePool, principalID string) error {
+	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS's role assignment(s)")
+
+	roleAssignmentsClient, err := r.ClientFactory.GetRoleAssignmentsClient(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	scope := fmt.Sprintf("/subscriptions/%s/resourcegroups/%s", roleAssignmentsClient.SubscriptionID, key.ClusterID(azureMachinePool))
+
+	results, err := roleAssignmentsClient.ListForScope(ctx, scope, fmt.Sprintf("principalId eq '%s'", principalID))
+	if err != nil {
+		return microerror.Mask(err)
+	}
+
+	r.Logger.Debugf(ctx, "Found %d role assignments to delete", len(results.Values()))
+
+	for _, roleAssignment := range results.Values() {
+		r.Logger.Debugf(ctx, "Deleting role assignment %q", *roleAssignment.Name)
+		_, err = roleAssignmentsClient.Delete(ctx, scope, *roleAssignment.Name)
+		if IsNotFound(err) {
+			r.Logger.Debugf(ctx, "Role assignment %q was already deleted", *roleAssignment.Name)
+			return nil
+		} else if err != nil {
+			return microerror.Mask(err)
+		}
+
+		r.Logger.Debugf(ctx, "Deleted role assignment %q", *roleAssignment.Name)
+	}
+
+	r.Logger.Debugf(ctx, "Deleted %d machine pool VMSS's role assignment(s)", len(results.Values()))
 
 	return nil
 }
