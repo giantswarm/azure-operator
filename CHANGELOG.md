@@ -10,6 +10,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Avoid creating too many worker nodes at the same time when upgrading node pools.
+- Don't reimage master instances unless the masters VMSS has the right model.
 
 ### Fixed
 

@@ -6,6 +6,8 @@ import (
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/project"
+
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/Azure/go-autorest/autorest/to"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
@@ -22,6 +24,14 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 	cr, err := key.ToCustomResource(obj)
 	if err != nil {
 		return "", microerror.Mask(err)
+	}
+
+	// We have a weird race condition somewhere that makes this state to be applied when it still contains old
+	// configuration values like the cloudconfig blob. To work around it we check if the masters VMSS is
+	// up to date.
+	isMastersVmssUpToDate, err := r.isMastersVmssUpToDate(ctx, &cr)
+	if err != nil || !isMastersVmssUpToDate {
+		return "", nil
 	}
 
 	var tenantClusterK8sClient client.Client
@@ -126,6 +136,27 @@ func (r *Resource) masterInstancesUpgradingTransition(ctx context.Context, obj i
 
 	// Upgrade still in progress. Keep current state.
 	return currentState, nil
+}
+
+// isMastersVmssUpToDate checks whether or not the masters VMSS has been updated. We rely on the tag containing the az-op
+// version, as we are mostly interested on the cloudconfig blob, which depends on the az-op version.
+func (r *Resource) isMastersVmssUpToDate(ctx context.Context, azureConfig *providerv1alpha1.AzureConfig) (bool, error) {
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureConfig.ObjectMeta)
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	mastersVMSS, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(azureConfig), key.MasterVMSSName(*azureConfig))
+	if err != nil {
+		return false, microerror.Mask(err)
+	}
+
+	azureOperatorVersionTag, ok := mastersVMSS.Tags["gs-azure-operator.giantswarm.io-version"]
+	if !ok || *azureOperatorVersionTag != project.Version() {
+		return false, nil
+	}
+
+	return true, nil
 }
 
 func (r *Resource) getTenantClusterNodes(ctx context.Context, tenantClusterK8sClient client.Client) ([]corev1.Node, error) {
