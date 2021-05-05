@@ -10,10 +10,13 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Changed
 
 - Avoid creating too many worker nodes at the same time when upgrading node pools.
+- Don't reimage master instances unless the masters VMSS has the right model.
 - Don't wait for new workers to be up during spot instances node pools upgrades.
 
 ### Fixed
 
+- Rely on k8s nodes instead of Azure instances when counting up-to-date nodes to decide if upgrade has finished.
+- Fixed logic that decides whether or not to update an `AzureMachine` based on the `release.giantswarm.io/last-deployed-version` annotation.
 - When deleting a node pool, also delete the VMSS role assignment.
 
 ## [5.6.0] - 2021-04-21

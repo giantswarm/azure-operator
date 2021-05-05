@@ -78,12 +78,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		// controller (clusterupgrade) and in AzureMachine controller, because
 		// we do not know which controller/handler will be executed first, and
 		// we need annotation set correctly in both places.
-		_, annotationWasSet := cr.Annotations[annotation.LastDeployedReleaseVersion]
+		_, annotationWasSet := m.Annotations[annotation.LastDeployedReleaseVersion]
 		err = helpers.InitAzureMachineAnnotations(ctx, r.ctrlClient, r.logger, &m)
 		if err != nil {
 			return microerror.Mask(err)
 		}
-		_, annotationIsSet := cr.Annotations[annotation.LastDeployedReleaseVersion]
+		_, annotationIsSet := m.Annotations[annotation.LastDeployedReleaseVersion]
 		changed = !annotationWasSet && annotationIsSet
 
 		if m.Labels[label.AzureOperatorVersion] != cr.Labels[label.AzureOperatorVersion] ||
