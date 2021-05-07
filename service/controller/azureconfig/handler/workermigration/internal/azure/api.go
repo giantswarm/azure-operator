@@ -3,7 +3,7 @@ package azure
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/Azure/azure-sdk-for-go/services/network/mgmt/2019-11-01/network"
 	providerv1alpha1 "github.com/giantswarm/apiextensions/v3/pkg/apis/provider/v1alpha1"
 	"github.com/giantswarm/microerror"
@@ -57,7 +57,7 @@ func (a *api) DeleteVMSS(ctx context.Context, resourceGroupName, vmssName string
 		return microerror.Mask(err)
 	}
 
-	_, err = client.Delete(ctx, resourceGroupName, vmssName)
+	_, err = client.Delete(ctx, resourceGroupName, vmssName, nil)
 	if err != nil {
 		return microerror.Mask(err)
 	}

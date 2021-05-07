@@ -6,7 +6,7 @@ import (
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/giantswarm/apiextensions/v3/pkg/annotation"
 	"github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/badnodedetector/pkg/detector"
@@ -170,7 +170,7 @@ func (r *Resource) terminateNode(ctx context.Context, node corev1.Node, cluster 
 		}
 
 		r.logger.Debugf(ctx, "Deleting instance with ID %q from vmss %q", instanceID, vmssName)
-		res, err := vmssClient.DeleteInstances(ctx, cluster.Name, vmssName, compute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIds: &[]string{instanceID}})
+		res, err := vmssClient.DeleteInstances(ctx, cluster.Name, vmssName, compute.VirtualMachineScaleSetVMInstanceRequiredIDs{InstanceIds: &[]string{instanceID}}, nil)
 		if err != nil {
 			return microerror.Mask(err)
 		}

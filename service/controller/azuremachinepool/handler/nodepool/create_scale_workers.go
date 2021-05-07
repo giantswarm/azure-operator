@@ -3,7 +3,7 @@ package nodepool
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	"github.com/coreos/go-semver/semver"
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
@@ -122,6 +122,12 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		}
 
 		r.Logger.Debugf(ctx, "scaled worker VMSS to %d nodes (desired count is %d)", newCount, desiredWorkerCount)
+
+		if azureMachinePool.Spec.Template.SpotVMOptions != nil {
+			// TODO change msg
+			r.Logger.Debugf(ctx, "Skipping state %s because node pool is using Spot Instances.", currentState)
+			return WaitForWorkersToBecomeReady, nil
+		}
 
 		// Let's stay in the current state.
 		return currentState, nil

@@ -3,7 +3,7 @@ package azuremachinepoolconditions
 import (
 	"context"
 
-	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
+	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2020-12-01/compute"
 	azureconditions "github.com/giantswarm/apiextensions/v3/pkg/conditions/azure"
 	"github.com/giantswarm/microerror"
 	capzexp "sigs.k8s.io/cluster-api-provider-azure/exp/api/v1alpha3"

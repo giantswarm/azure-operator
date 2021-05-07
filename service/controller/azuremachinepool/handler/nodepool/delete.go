@@ -167,7 +167,7 @@ func (r *Resource) deleteVMSS(ctx context.Context, azureMachinePool *capzexpv1al
 
 	r.Logger.LogCtx(ctx, "message", "Deleting machine pool VMSS")
 
-	_, err = virtualMachineScaleSetsClient.Delete(ctx, resourceGroupName, vmssName)
+	_, err = virtualMachineScaleSetsClient.Delete(ctx, resourceGroupName, vmssName, nil)
 	if IsNotFound(err) {
 		r.Logger.LogCtx(ctx, "message", "Machine pool VMSS was already deleted")
 		return nil

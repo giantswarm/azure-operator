@@ -3,7 +3,7 @@ module github.com/giantswarm/azure-operator/v5
 go 1.15
 
 require (
-	github.com/Azure/azure-sdk-for-go v48.2.2+incompatible
+	github.com/Azure/azure-sdk-for-go v54.0.0+incompatible
 	github.com/Azure/azure-storage-blob-go v0.11.0
 	github.com/Azure/go-autorest/autorest v0.11.18
 	github.com/Azure/go-autorest/autorest/azure/auth v0.5.7
