@@ -47,9 +47,17 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 			}
 
 			for _, i := range oldInstances {
+				r.Logger.Debugf(ctx, "evicting instance with ID %q", *i.InstanceID)
+
 				_, err = virtualMachineScaleSetVMsClient.SimulateEviction(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), *i.InstanceID)
-				if err != nil {
-					return DeploymentUninitialized, microerror.Mask(err)
+				if IsHttpConflict(err) {
+					// Error evicting the VM, try with normal deletion.
+					_, err = virtualMachineScaleSetVMsClient.Delete(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), *i.InstanceID, nil)
+					if err != nil {
+						return currentState, microerror.Mask(err)
+					}
+				} else if err != nil {
+					return currentState, microerror.Mask(err)
 				}
 			}
 
@@ -73,11 +81,11 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 			res, err := virtualMachineScaleSetsClient.DeleteInstances(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool), ids, nil)
 			if err != nil {
-				return DeploymentUninitialized, microerror.Mask(err)
+				return currentState, microerror.Mask(err)
 			}
 			_, err = virtualMachineScaleSetsClient.DeleteInstancesResponder(res.Response())
 			if err != nil {
-				return DeploymentUninitialized, microerror.Mask(err)
+				return currentState, microerror.Mask(err)
 			}
 		}
 
@@ -87,6 +95,7 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 	}
 
 	// All old nodes are terminated.
+	r.Logger.Debugf(ctx, "no old workers were found")
 
 	// Enable cluster autoscaler for this nodepool.
 	err = r.enableClusterAutoscaler(ctx, azureMachinePool)

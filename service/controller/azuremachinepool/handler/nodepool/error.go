@@ -162,3 +162,23 @@ var unexpectedUpstreamResponseError = &microerror.Error{
 func IsUnexpectedUpstreamResponse(err error) bool {
 	return microerror.Cause(err) == unexpectedUpstreamResponseError
 }
+
+// IsHttpConflict asserts 409 response from azure API.
+func IsHttpConflict(err error) bool {
+	if err == nil {
+		return false
+	}
+
+	c := microerror.Cause(err)
+
+	{
+		dErr, ok := c.(autorest.DetailedError)
+		if ok {
+			if dErr.StatusCode == 409 {
+				return true
+			}
+		}
+	}
+
+	return false
+}

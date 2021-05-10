@@ -12,6 +12,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Avoid creating too many worker nodes at the same time when upgrading node pools.
 - Don't reimage master instances unless the masters VMSS has the right model.
 - Don't wait for new workers to be up during spot instances node pools upgrades.
+- Use `Simulate Eviction` to delete spot instances nodes during upgrades to get the `Preempt` event notified and attempt draining.
 
 ### Fixed
 
