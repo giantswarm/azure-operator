@@ -18,7 +18,6 @@ const (
 	DeploymentUninitialized     = ""
 	ScaleUpWorkerVMSS           = "ScaleUpWorkerVMSS"
 	TerminateOldWorkerInstances = "TerminateOldWorkerInstances"
-	WaitForOldWorkersToBeGone   = "WaitForOldWorkersToBeGone"
 	WaitForWorkersToBecomeReady = "WaitForWorkersToBecomeReady"
 )
 
