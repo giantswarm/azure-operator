@@ -66,6 +66,27 @@ func (r *Resource) terminateOldWorkersTransition(ctx context.Context, obj interf
 
 		r.Logger.Debugf(ctx, "terminated %d old worker instances", len(oldInstances))
 
+		if azureMachinePool.Spec.Template.SpotVMOptions != nil {
+			r.Logger.Debugf(ctx, "node pool is using spot instances, deleting nodes from kubernetes API to speed up upgrade process")
+			tenantClusterK8sClient, err := r.tenantClientFactory.GetClient(ctx, cluster)
+			if err != nil {
+				return currentState, microerror.Mask(err)
+			}
+
+			for _, i := range oldInstances {
+				n, err := r.getK8sWorkerNodeForInstance(ctx, tenantClusterK8sClient, azureMachinePool.Name, i)
+				if err != nil {
+					return currentState, microerror.Mask(err)
+				}
+
+				err = tenantClusterK8sClient.Delete(ctx, n)
+				if err != nil {
+					return currentState, microerror.Mask(err)
+				}
+			}
+			r.Logger.Debugf(ctx, "deleted nodes from kubernetes API to speed up upgrade process")
+		}
+
 		return currentState, nil
 	}
 
