@@ -6,7 +6,6 @@ import (
 
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
-	"github.com/pingcap/errors"
 	corev1 "k8s.io/api/core/v1"
 	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
@@ -129,7 +128,7 @@ func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secr
 
 	existing := &corev1.Secret{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: newNamespace, Name: newName}, existing)
-	if errors.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "Secret %q wasn't found in namespace %q, creating it", newName, newNamespace)
 
 		// We need to create the secret.
@@ -197,7 +196,7 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 
 	existing := &v1alpha3.AzureClusterIdentity{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: newNamespace, Name: newName}, existing)
-	if errors.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "AzureClusterIdentity %q wasn't found in namespace %q, creating it", newName, newNamespace)
 
 		// We need to create the AzureClusterIdentity.
