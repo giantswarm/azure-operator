@@ -70,7 +70,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Namespace: identity.Namespace,
 		}
 		err = r.ctrlClient.Update(ctx, &azureCluster)
-		if err != nil {
+		if errors.IsConflict(err) {
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
+			r.logger.Debugf(ctx, "canceling resource")
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
