@@ -57,13 +57,16 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, microerror.Mask(err)
 	}
 
-	allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
-	if err != nil {
-		return DeploymentUninitialized, microerror.Mask(err)
-	}
-	// Not all workers are Running in Azure, wait for next reconciliation loop.
-	if !allReady {
-		return currentState, nil
+	// We don't want to check for VMs health state for spot instances node pools as it might deadlock the upgrade process.
+	if azureMachinePool.Spec.Template.SpotVMOptions == nil {
+		allReady, err := vmsscheck.InstancesAreRunning(ctx, r.Logger, virtualMachineScaleSetVMsClient, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+		if err != nil {
+			return DeploymentUninitialized, microerror.Mask(err)
+		}
+		// Not all workers are Running in Azure, wait for next reconciliation loop.
+		if !allReady {
+			return currentState, nil
+		}
 	}
 
 	strategy := scalestrategy.Staircase{}
@@ -223,8 +226,10 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 	}
 
 	if n == nil {
-		// Kubernetes node related to this instance not found, we consider the node old.
-		return true, nil
+		// Kubernetes node related to this instance not found, we can't tell if this is new or old.
+		// We consider it as "new" to avoid deleting nodes being created right now.
+		// (Might happen when upgrading spot instances node pools).
+		return false, nil
 	}
 
 	myVersion := semver.New(project.Version())

@@ -23,7 +23,6 @@ func (r *Resource) createStateMachine() state.Machine {
 			ScaleUpWorkerVMSS:           r.scaleUpWorkerVMSSTransition,
 			WaitForWorkersToBecomeReady: r.waitForWorkersToBecomeReadyTransition,
 			TerminateOldWorkerInstances: r.terminateOldWorkersTransition,
-			WaitForOldWorkersToBeGone:   r.waitForOldWorkersToBeGoneTransition,
 		},
 	}
 
