@@ -61,7 +61,3 @@ workloadCluster:
   name: ""
   ssh:
     ssoPublicKey: ""
-registry:
-  domain: "quay.io"
-  dockerhub:
-    token: ""
