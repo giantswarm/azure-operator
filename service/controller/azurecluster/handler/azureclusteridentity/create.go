@@ -7,7 +7,7 @@ import (
 	apiextensionslabels "github.com/giantswarm/apiextensions/v3/pkg/label"
 	"github.com/giantswarm/microerror"
 	corev1 "k8s.io/api/core/v1"
-	"k8s.io/apimachinery/pkg/api/errors"
+	apierrors "k8s.io/apimachinery/pkg/api/errors"
 	metav1 "k8s.io/apimachinery/pkg/apis/meta/v1"
 	"sigs.k8s.io/cluster-api-provider-azure/api/v1alpha3"
 	"sigs.k8s.io/controller-runtime/pkg/client"
@@ -43,7 +43,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		err = r.ctrlClient.Get(ctx, client.ObjectKey{Name: credentialSecret.Name, Namespace: credentialSecret.Namespace}, &legacySecret)
-		if errors.IsNotFound(err) {
+		if apierrors.IsNotFound(err) {
 			// Legacy secret does not exist, we can do nothing but hope the IdentityRef is set.
 			return nil
 		} else if err != nil {
@@ -70,7 +70,11 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			Namespace: identity.Namespace,
 		}
 		err = r.ctrlClient.Update(ctx, &azureCluster)
-		if err != nil {
+		if apierrors.IsConflict(err) {
+			r.logger.Debugf(ctx, "conflict trying to save object in k8s API concurrently")
+			r.logger.Debugf(ctx, "canceling resource")
+			return nil
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 
@@ -124,7 +128,7 @@ func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secr
 
 	existing := &corev1.Secret{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: newNamespace, Name: newName}, existing)
-	if errors.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "Secret %q wasn't found in namespace %q, creating it", newName, newNamespace)
 
 		// We need to create the secret.
@@ -192,7 +196,7 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 
 	existing := &v1alpha3.AzureClusterIdentity{}
 	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: newNamespace, Name: newName}, existing)
-	if errors.IsNotFound(err) {
+	if apierrors.IsNotFound(err) {
 		r.logger.Debugf(ctx, "AzureClusterIdentity %q wasn't found in namespace %q, creating it", newName, newNamespace)
 
 		// We need to create the AzureClusterIdentity.
