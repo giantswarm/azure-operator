@@ -61,6 +61,3 @@ workloadCluster:
   name: ""
   ssh:
     ssoPublicKey: ""
-registry:
-  dockerhub:
-    token: ""
