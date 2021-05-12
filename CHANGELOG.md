@@ -13,6 +13,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Don't reimage master instances unless the masters VMSS has the right model.
 - Don't wait for new workers to be up during spot instances node pools upgrades.
 - Bumped `k8scloudconfig` to `10.5.0` to support kubernetes 1.20.
+- Removed Docker registry and Dockerhub token from Helm values.
 
 ### Fixed
 
