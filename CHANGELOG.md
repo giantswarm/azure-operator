@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- `AzureClusterIdentity`, and the secret it references are created in the `AzureCluster` namespace instead of `giantswarm`.
+- Don't update `AzureClusterIdentity` CR's that are not managed by azure-operator.
+
 ## [5.7.0] - 2021-05-13
 
 ### Changed
@@ -63,7 +68,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 ### Fixed
 
 - Avoid blocking the whole `AzureConfig` handler on cluster creation because we can't update the `StorageClasses`.
-- Avoid overriding the NP size when the scaling is changed by autoscaler. 
+- Avoid overriding the NP size when the scaling is changed by autoscaler.
 
 ## [5.4.0] - 2021-02-05
 

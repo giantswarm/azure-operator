@@ -54,12 +54,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	if azureCluster.Spec.IdentityRef == nil {
 		r.logger.Debugf(ctx, "AzureCluster %q has no IdentityRef set, setting it from Secret %q in namespace %q", azureCluster.Name, legacySecret.Name, legacySecret.Namespace)
 
-		err = r.ensureNewSecret(ctx, legacySecret)
+		err = r.ensureNewSecret(ctx, &azureCluster, legacySecret)
 		if err != nil {
 			return microerror.Mask(err)
 		}
 
-		identity, err := r.ensureAzureClusterIdentity(ctx, legacySecret)
+		identity, err := r.ensureAzureClusterIdentity(ctx, &azureCluster, legacySecret)
 		if err != nil {
 			return microerror.Mask(err)
 		}
@@ -85,6 +85,12 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		err := r.ctrlClient.Get(ctx, client.ObjectKey{Name: azureCluster.Spec.IdentityRef.Name, Namespace: azureCluster.Spec.IdentityRef.Namespace}, &azureClusterIdentity)
 		if err != nil {
 			return microerror.Mask(err)
+		}
+
+		// If AzureClusterIdentity was not created by azure-operator, ignore it
+		managedBy := azureClusterIdentity.Labels[apiextensionslabels.ManagedBy]
+		if managedBy != project.Name() {
+			return nil
 		}
 
 		newSecret := corev1.Secret{}
@@ -118,24 +124,23 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	return nil
 }
 
-func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secret) error {
+func (r *Resource) ensureNewSecret(ctx context.Context, azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret) error {
 	newName := newSecretName(legacySecret)
-	newNamespace := newSecretNamespace(legacySecret)
 
-	r.logger.Debugf(ctx, "Looking for Secret %q in namespace %q", newName, newNamespace)
+	r.logger.Debugf(ctx, "Looking for Secret %q in namespace %q", newName, azureCluster.Namespace)
 
 	clientSecret := string(legacySecret.Data[legacySecretClientSecretFieldName])
 
 	existing := &corev1.Secret{}
-	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: newNamespace, Name: newName}, existing)
+	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureCluster.Namespace, Name: newName}, existing)
 	if apierrors.IsNotFound(err) {
-		r.logger.Debugf(ctx, "Secret %q wasn't found in namespace %q, creating it", newName, newNamespace)
+		r.logger.Debugf(ctx, "Secret %q wasn't found in namespace %q, creating it", newName, azureCluster.Namespace)
 
 		// We need to create the secret.
 		newSecret := &corev1.Secret{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      newName,
-				Namespace: newNamespace,
+				Namespace: azureCluster.Namespace,
 				Labels: map[string]string{
 					apiextensionslabels.ManagedBy:    project.Name(),
 					apiextensionslabels.Organization: legacySecret.GetLabels()[apiextensionslabels.Organization],
@@ -151,14 +156,14 @@ func (r *Resource) ensureNewSecret(ctx context.Context, legacySecret corev1.Secr
 			return microerror.Mask(err)
 		}
 
-		r.logger.Debugf(ctx, "Secret %q created in namespace %q", newName, newNamespace)
+		r.logger.Debugf(ctx, "Secret %q created in namespace %q", newName, azureCluster.Namespace)
 
 		return nil
 	} else if err != nil {
 		return microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "Secret %q found in namespace %q", newName, newNamespace)
+	r.logger.Debugf(ctx, "Secret %q found in namespace %q", newName, azureCluster.Namespace)
 
 	return nil
 }
@@ -186,24 +191,22 @@ func (r *Resource) ensureNewSecretUpdated(ctx context.Context, legacySecret core
 	return nil
 }
 
-func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret corev1.Secret) (*v1alpha3.AzureClusterIdentity, error) {
+func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, azureCluster *v1alpha3.AzureCluster, legacySecret corev1.Secret) (*v1alpha3.AzureClusterIdentity, error) {
 	newName := newSecretName(legacySecret)
-	newNamespace := newSecretNamespace(legacySecret)
-
 	desiredSpec := getAzureClusterIdentitySpec(legacySecret)
 
-	r.logger.Debugf(ctx, "Looking for AzureClusterIdentity %q in namespace %q", newName, newNamespace)
+	r.logger.Debugf(ctx, "Looking for AzureClusterIdentity %q in namespace %q", newName, azureCluster.Namespace)
 
 	existing := &v1alpha3.AzureClusterIdentity{}
-	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: newNamespace, Name: newName}, existing)
+	err := r.ctrlClient.Get(ctx, client.ObjectKey{Namespace: azureCluster.Namespace, Name: newName}, existing)
 	if apierrors.IsNotFound(err) {
-		r.logger.Debugf(ctx, "AzureClusterIdentity %q wasn't found in namespace %q, creating it", newName, newNamespace)
+		r.logger.Debugf(ctx, "AzureClusterIdentity %q wasn't found in namespace %q, creating it", newName, azureCluster.Namespace)
 
 		// We need to create the AzureClusterIdentity.
 		aci := &v1alpha3.AzureClusterIdentity{
 			ObjectMeta: metav1.ObjectMeta{
 				Name:      newName,
-				Namespace: newNamespace,
+				Namespace: azureCluster.Namespace,
 				Labels: map[string]string{
 					apiextensionslabels.ManagedBy:    project.Name(),
 					apiextensionslabels.Organization: legacySecret.GetLabels()[apiextensionslabels.Organization],
@@ -217,7 +220,7 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 			return nil, microerror.Mask(err)
 		}
 
-		r.logger.Debugf(ctx, "AzureClusterIdentity %q created in namespace %q", newName, newNamespace)
+		r.logger.Debugf(ctx, "AzureClusterIdentity %q created in namespace %q", newName, azureCluster.Namespace)
 
 		return aci, nil
 
@@ -225,7 +228,7 @@ func (r *Resource) ensureAzureClusterIdentity(ctx context.Context, legacySecret 
 		return nil, microerror.Mask(err)
 	}
 
-	r.logger.Debugf(ctx, "AzureClusterIdentity %q found in namespace %q", newName, newNamespace)
+	r.logger.Debugf(ctx, "AzureClusterIdentity %q found in namespace %q", newName, azureCluster.Namespace)
 
 	return existing, nil
 }
