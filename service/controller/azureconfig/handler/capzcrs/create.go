@@ -95,7 +95,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	}
 
 	err = r.updateCRs(ctx, mappedCRs)
-	if err != nil {
+	if errors.IsConflict(microerror.Cause(err)) {
 		return microerror.Mask(err)
 	}
 
