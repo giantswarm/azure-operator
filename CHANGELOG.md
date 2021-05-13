@@ -20,6 +20,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rely on k8s nodes instead of Azure instances when counting up-to-date nodes to decide if upgrade has finished.
 - Fixed logic that decides whether or not to update an `AzureMachine` based on the `release.giantswarm.io/last-deployed-version` annotation.
 - When deleting a node pool, also delete the VMSS role assignment.
+- Check errors coming from k8s API using the wrapped error.
 
 ## [5.6.0] - 2021-04-21
 
