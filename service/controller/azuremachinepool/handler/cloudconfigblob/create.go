@@ -46,7 +46,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 	var payload string
 	{
 		payload, err = r.getCloudConfigFromBootstrapSecret(ctx, machinePool)
-		if errors.IsNotFound(err) {
+		if errors.IsNotFound(microerror.Cause(err)) {
 			r.logger.Debugf(ctx, "bootstrap CR or cloudconfig secret were not found")
 			r.logger.Debugf(ctx, "cancelling reconciliation")
 			reconciliationcanceledcontext.SetCanceled(ctx)
