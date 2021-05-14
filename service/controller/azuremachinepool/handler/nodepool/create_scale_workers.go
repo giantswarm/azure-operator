@@ -182,7 +182,9 @@ func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachi
 
 			skuChanged := *i.Sku.Name != *vmss.Sku.Name
 
-			if old || skuChanged {
+			imageChanged := *i.StorageProfile.ImageReference.Version != *vmss.VirtualMachineProfile.StorageProfile.ImageReference.Version
+
+			if old || skuChanged || imageChanged {
 				oldInstances = append(oldInstances, i)
 			} else {
 				newInstances = append(newInstances, i)
