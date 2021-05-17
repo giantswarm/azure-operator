@@ -7,6 +7,11 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Changed
+
+- Consider node pools out of date if flatcar image has changed.
+- Consider node pools out of date if kubernetes version has changed.
+
 ## [5.7.0] - 2021-05-13
 
 ### Changed
