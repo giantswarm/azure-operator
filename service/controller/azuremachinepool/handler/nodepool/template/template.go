@@ -2,7 +2,6 @@ package template
 
 import (
 	"encoding/json"
-	"fmt"
 	"reflect"
 
 	azureresource "github.com/Azure/azure-sdk-for-go/services/resources/mgmt/2019-05-01/resources"
@@ -64,7 +63,6 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	if currentParameters.ClusterID != desiredParameters.ClusterID {
 		changes = append(changes, "clusterID")
 	}
-	fmt.Printf("current = %q, desired = %q\n", currentParameters.KubernetesVersion, desiredParameters.KubernetesVersion)
 	if currentParameters.KubernetesVersion != desiredParameters.KubernetesVersion {
 		changes = append(changes, "kubernetesVersion")
 	}
