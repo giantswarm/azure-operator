@@ -351,7 +351,7 @@ func (r *Resource) createIgnitionBlob(ctx context.Context, cluster *capiv1alpha3
 		certificateEncryptionSecretName := key.CertificateEncryptionSecretName(cluster)
 
 		encrypterObject, err = r.toEncrypterObject(ctx, certificateEncryptionSecretName)
-		if errors.IsNotFound(err) {
+		if errors.IsNotFound(microerror.Cause(err)) {
 			r.logger.Debugf(ctx, "encryptionkey resource is not ready")
 			return nil, microerror.Mask(requirementsNotMetError)
 		} else if err != nil {
