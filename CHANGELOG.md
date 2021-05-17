@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.0] - 2021-05-13
+
 ### Changed
 
 - Avoid creating too many worker nodes at the same time when upgrading node pools.
@@ -19,6 +21,7 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - Rely on k8s nodes instead of Azure instances when counting up-to-date nodes to decide if upgrade has finished.
 - Fixed logic that decides whether or not to update an `AzureMachine` based on the `release.giantswarm.io/last-deployed-version` annotation.
 - When deleting a node pool, also delete the VMSS role assignment.
+- Check errors coming from k8s API using the wrapped error.
 
 ## [5.6.0] - 2021-04-21
 
@@ -373,7 +376,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.6.0...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.7.0...HEAD
+[5.7.0]: https://github.com/giantswarm/azure-operator/compare/v5.6.0...v5.7.0
 [5.6.0]: https://github.com/giantswarm/azure-operator/compare/v5.5.2...v5.6.0
 [5.5.2]: https://github.com/giantswarm/azure-operator/compare/v5.5.1...v5.5.2
 [5.5.1]: https://github.com/giantswarm/azure-operator/compare/v5.5.0...v5.5.1
