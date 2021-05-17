@@ -2,6 +2,7 @@ package nodepool
 
 import (
 	"context"
+	"fmt"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
 	"github.com/coreos/go-semver/semver"
@@ -108,7 +109,7 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 
 	if desiredWorkerCount == 0 {
 		// The node pool is empty, the upgrade process can stop here.
-		r.Logger.Debugf(ctx, "The size of the Node Pool is 0: upgrade is complete")
+		r.Logger.Debugf(ctx, "No outdated instances found: no need to roll out nodes")
 		return DeploymentUninitialized, nil
 	}
 
@@ -180,11 +181,10 @@ func (r *Resource) splitInstancesByUpdatedStatus(ctx context.Context, azureMachi
 				return nil, nil, microerror.Mask(err)
 			}
 
-			skuChanged := *i.Sku.Name != *vmss.Sku.Name
+			sizeChanged := *i.Sku.Name != *vmss.Sku.Name
+			flatcarChanged := *i.StorageProfile.ImageReference.Version != *vmss.VirtualMachineProfile.StorageProfile.ImageReference.Version
 
-			imageChanged := *i.StorageProfile.ImageReference.Version != *vmss.VirtualMachineProfile.StorageProfile.ImageReference.Version
-
-			if old || skuChanged || imageChanged {
+			if old || sizeChanged || flatcarChanged {
 				oldInstances = append(oldInstances, i)
 			} else {
 				newInstances = append(newInstances, i)
@@ -237,18 +237,22 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 	myVersion := semver.New(project.Version())
 
 	v, exists := n.GetLabels()[label.OperatorVersion]
-	if !exists {
-		// Label does not exist, this normally happens when a new node is coming up but did not finish
-		// its kubernetes bootstrap yet and thus doesn't have all the needed labels.
-		// We'll ignore this node for now and wait for it to bootstrap correctly.
-		return false, nil
+	if exists {
+		// Azure operator version is changed, node is outdated.
+		nodeVersion := semver.New(v)
+		if nodeVersion.LessThan(*myVersion) {
+			return true, nil
+		}
 	}
 
-	nodeVersion := semver.New(v)
-	if nodeVersion.LessThan(*myVersion) {
+	// kubernetes version is changed, node is outdated.
+	nodeK8sVersion := n.Status.NodeInfo.KubeletVersion    // v1.20.6
+	vmssK8sVersion := instance.Tags["kubernetes-version"] // 1.20.6
+	if nodeK8sVersion != "" && vmssK8sVersion != nil && nodeK8sVersion != fmt.Sprintf("v%s", *vmssK8sVersion) {
 		return true, nil
 	}
 
+	// We don't have enough data to say if the node is outdated. Default to false for safety.
 	return false, nil
 }
 
