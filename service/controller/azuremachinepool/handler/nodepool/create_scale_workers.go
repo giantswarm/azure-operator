@@ -245,7 +245,7 @@ func (r *Resource) isWorkerInstanceFromPreviousRelease(ctx context.Context, clus
 		}
 	}
 
-	// kubernetes version is changed, node is outdated.
+	// Kubernetes version has changed, node is outdated.
 	nodeK8sVersion := n.Status.NodeInfo.KubeletVersion    // v1.20.6
 	vmssK8sVersion := instance.Tags["kubernetes-version"] // 1.20.6
 	if nodeK8sVersion != "" && vmssK8sVersion != nil && nodeK8sVersion != fmt.Sprintf("v%s", *vmssK8sVersion) {
