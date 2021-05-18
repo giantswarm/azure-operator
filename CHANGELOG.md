@@ -9,6 +9,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ### Changed
 
+- Consider node pools out of date if flatcar image has changed.
+- Consider node pools out of date if kubernetes version has changed.
 - `AzureClusterIdentity`, and the secret it references are created in the `AzureCluster` namespace instead of `giantswarm`.
 - Don't update `AzureClusterIdentity` CR's that are not managed by azure-operator.
 

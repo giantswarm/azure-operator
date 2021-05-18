@@ -160,6 +160,7 @@ func newParameters(parameters map[string]interface{}, cast func(param interface{
 		ClusterID:                   cast(parameters["clusterID"]).(string),
 		DataDisks:                   dataDisks,
 		EnableAcceleratedNetworking: cast(parameters["enableAcceleratedNetworking"]).(bool),
+		KubernetesVersion:           cast(parameters["kubernetesVersion"]).(string),
 		NodepoolName:                cast(parameters["nodepoolName"]).(string),
 		OSImage: OSImage{
 			Publisher: cast(parameters["osImagePublisher"]).(string),
