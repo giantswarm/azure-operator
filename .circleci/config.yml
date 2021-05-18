@@ -1,5 +1,5 @@
 orbs:
-  architect: giantswarm/architect@2.8.0
+  architect: giantswarm/architect@2.9.0
 
 version: 2.1
 workflows:
