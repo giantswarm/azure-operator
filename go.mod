@@ -29,7 +29,7 @@ require (
 	github.com/giantswarm/tenantcluster/v3 v3.0.0
 	github.com/giantswarm/to v0.3.0
 	github.com/giantswarm/versionbundle v0.2.0
-	github.com/golang/mock v1.4.4
+	github.com/golang/mock v1.6.0
 	github.com/google/go-cmp v0.5.6
 	github.com/imdario/mergo v0.3.11 // indirect
 	github.com/markbates/pkger v0.17.1
@@ -39,7 +39,7 @@ require (
 	github.com/spf13/afero v1.5.1 // indirect
 	github.com/spf13/cast v1.3.1 // indirect
 	github.com/spf13/viper v1.7.1
-	golang.org/x/sync v0.0.0-20201207232520-09787c993a3a
+	golang.org/x/sync v0.0.0-20210220032951-036812b2e83c
 	k8s.io/api v0.18.19
 	k8s.io/apiextensions-apiserver v0.18.19
 	k8s.io/apimachinery v0.18.19
