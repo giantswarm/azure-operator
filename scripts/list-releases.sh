@@ -1,5 +1,5 @@
  #!/bin/bash
-
+#yolo
 if [ "$1" = "" ]; then
     echo "Error: please provide provider parameter"
     echo "./list-releases {provider} {release_active_tag(optional)}"
