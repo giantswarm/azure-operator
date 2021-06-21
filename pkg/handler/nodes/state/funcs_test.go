@@ -54,7 +54,7 @@ func Test_StateMachine(t *testing.T) {
 			},
 			currentState:     "half-way",
 			expectedNewState: "",
-			errorMatcher:     IsExecutionFailedError,
+			errorMatcher:     IsUnkownStateError,
 		},
 		{
 			name: "case 2: unknown new state",
@@ -75,7 +75,7 @@ func Test_StateMachine(t *testing.T) {
 			machine:          Machine{},
 			currentState:     "start",
 			expectedNewState: "",
-			errorMatcher:     IsExecutionFailedError,
+			errorMatcher:     IsUnkownStateError,
 		},
 	}
 
