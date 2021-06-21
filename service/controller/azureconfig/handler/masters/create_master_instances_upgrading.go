@@ -3,9 +3,10 @@ package masters
 import (
 	"context"
 
-	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
+
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 
