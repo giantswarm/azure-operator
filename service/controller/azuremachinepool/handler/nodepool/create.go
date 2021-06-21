@@ -62,6 +62,7 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 			// We move directly to `ScaleUpWorkerVMSS`. If for any reason the ARM deployment is not applied then the
 			// `ScaleUpWorkerVMSS` handler will detect the situation and go back to the `DeploymentUninitialized` state.
 			r.Logger.Debugf(ctx, "Azure Machine Pool was in state %q that is unknown to this azure operator version's state machine. To avoid blocking an upgrade the state will be set to %q.", currentState, ScaleUpWorkerVMSS)
+			newState = ScaleUpWorkerVMSS
 		} else if err != nil {
 			return microerror.Mask(err)
 		}
