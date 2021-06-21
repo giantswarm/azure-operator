@@ -94,6 +94,26 @@ func (r *Resource) scaleUpWorkerVMSSTransition(ctx context.Context, obj interfac
 		return currentState, nil
 	}
 
+	virtualMachineScaleSetsClient, err := r.ClientFactory.GetVirtualMachineScaleSetsClient(ctx, azureMachinePool.ObjectMeta)
+	if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	vmss, err := virtualMachineScaleSetsClient.Get(ctx, key.ClusterID(&azureMachinePool), key.NodePoolVMSSName(&azureMachinePool))
+	if IsNotFound(err) {
+		// vmss not found, we need to apply the deployment again.
+		r.Logger.Debugf(ctx, "Node Pool VMSS was not found, going back to initial state.")
+		return DeploymentUninitialized, nil
+	} else if err != nil {
+		return currentState, microerror.Mask(err)
+	}
+
+	// Check if the azure operator tag is up to date.
+	if currentVersion, found := vmss.Tags[label.AzureOperatorVersionTag]; !found || *currentVersion != project.Version() {
+		r.Logger.Debugf(ctx, "Node Pool VMSS's has an outdated %q label.", label.AzureOperatorVersionTag)
+		return DeploymentUninitialized, nil
+	}
+
 	oldInstances, newInstances, err := r.splitInstancesByUpdatedStatus(ctx, azureMachinePool)
 	if tenantcluster.IsAPINotAvailableError(err) {
 		r.Logger.Debugf(ctx, "tenant API not available yet")

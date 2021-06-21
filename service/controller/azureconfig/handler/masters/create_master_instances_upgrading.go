@@ -3,6 +3,7 @@ package masters
 import (
 	"context"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 
@@ -151,7 +152,7 @@ func (r *Resource) isMastersVmssUpToDate(ctx context.Context, azureConfig *provi
 		return false, microerror.Mask(err)
 	}
 
-	azureOperatorVersionTag, ok := mastersVMSS.Tags["gs-azure-operator.giantswarm.io-version"]
+	azureOperatorVersionTag, ok := mastersVMSS.Tags[label.AzureOperatorVersionTag]
 	if !ok || *azureOperatorVersionTag != project.Version() {
 		return false, nil
 	}

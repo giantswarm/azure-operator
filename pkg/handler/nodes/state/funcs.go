@@ -9,7 +9,7 @@ import (
 func (m Machine) Execute(ctx context.Context, obj interface{}, currentState State) (State, error) {
 	transitionFunc, exists := m.Transitions[currentState]
 	if !exists {
-		return "", microerror.Maskf(executionFailedError, "State: %q is not configured in this state machine", currentState)
+		return "", microerror.Maskf(unknownStateError, "State: %q is not configured in this state machine", currentState)
 	}
 
 	newState, err := transitionFunc(ctx, obj, currentState)

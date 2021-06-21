@@ -13,3 +13,11 @@ import "github.com/giantswarm/microerror"
 var executionFailedError = &microerror.Error{
 	Kind: "executionFailedError",
 }
+
+var unknownStateError = &microerror.Error{
+	Kind: "unknownStateError",
+}
+
+func IsUnkownStateError(err error) bool {
+	return microerror.Cause(err) == unknownStateError
+}
