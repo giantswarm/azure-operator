@@ -16,4 +16,6 @@ const (
 	ClusterOperatorVersion = "cluster-operator.giantswarm.io/version"
 	ReleaseVersion         = "release.giantswarm.io/version"
 	SingleTenantSP         = "giantswarm.io/single-tenant-service-principal"
+
+	AzureOperatorVersionTag = "gs-azure-operator.giantswarm.io-version"
 )

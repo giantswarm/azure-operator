@@ -53,7 +53,17 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 
 		r.Logger.Debugf(ctx, "current state: %s", currentState)
 		newState, err = r.StateMachine.Execute(ctx, obj, currentState)
-		if err != nil {
+		if state.IsUnkownStateError(err) {
+			// This can happen if there is a race condition with a previous version of the azure operator
+			// or if the node pool at upgrade time was in a state that doesn't exists any more in this azure
+			// operator version.
+			// At this stage if this error happened while upgrading to a new release and the ARM deployment was already applied
+			// we need to ensure nodes are going to be rolled out.
+			// We move directly to `ScaleUpWorkerVMSS`. If for any reason the ARM deployment is not applied then the
+			// `ScaleUpWorkerVMSS` handler will detect the situation and go back to the `DeploymentUninitialized` state.
+			r.Logger.Debugf(ctx, "Azure Machine Pool was in state %q that is unknown to this azure operator version's state machine. To avoid blocking an upgrade the state will be set to %q.", currentState, ScaleUpWorkerVMSS)
+			newState = ScaleUpWorkerVMSS
+		} else if err != nil {
 			return microerror.Mask(err)
 		}
 	}

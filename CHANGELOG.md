@@ -14,6 +14,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 - `AzureClusterIdentity`, and the secret it references are created in the `AzureCluster` namespace instead of `giantswarm`.
 - Don't update `AzureClusterIdentity` CR's that are not managed by azure-operator.
 
+### Fixed
+
+- Don't get the node pool upgrade stuck if the current state of `AzureMachinePool` is invalid. 
+
 ## [5.7.0] - 2021-05-13
 
 ### Changed

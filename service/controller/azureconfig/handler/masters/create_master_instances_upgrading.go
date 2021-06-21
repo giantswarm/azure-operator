@@ -6,6 +6,8 @@ import (
 	"github.com/giantswarm/errors/tenant"
 	"github.com/giantswarm/tenantcluster/v3/pkg/tenantcluster"
 
+	"github.com/giantswarm/azure-operator/v5/pkg/label"
+
 	"github.com/giantswarm/azure-operator/v5/pkg/project"
 
 	"github.com/Azure/azure-sdk-for-go/services/compute/mgmt/2019-07-01/compute"
@@ -151,7 +153,7 @@ func (r *Resource) isMastersVmssUpToDate(ctx context.Context, azureConfig *provi
 		return false, microerror.Mask(err)
 	}
 
-	azureOperatorVersionTag, ok := mastersVMSS.Tags["gs-azure-operator.giantswarm.io-version"]
+	azureOperatorVersionTag, ok := mastersVMSS.Tags[label.AzureOperatorVersionTag]
 	if !ok || *azureOperatorVersionTag != project.Version() {
 		return false, nil
 	}
