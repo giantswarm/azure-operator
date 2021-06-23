@@ -41,10 +41,10 @@ func NewDeployment(templateParams Parameters) (azureresource.Deployment, error) 
 	}, nil
 }
 
-func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) ([]string, error) {
+func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment, currentReplicas int32) ([]string, error) {
 	var changes []string
 
-	currentParameters, err := NewFromExtendedDeployment(currentDeployment)
+	currentParameters, err := NewFromExtendedDeployment(currentDeployment, currentReplicas)
 	if err != nil {
 		return changes, microerror.Mask(err)
 	}
@@ -81,7 +81,9 @@ func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment 
 	if !reflect.DeepEqual(currentParameters.DataDisks, desiredParameters.DataDisks) {
 		changes = append(changes, "dataDisks")
 	}
-	if currentParameters.Scaling.MinReplicas != desiredParameters.Scaling.MinReplicas || currentParameters.Scaling.MaxReplicas != desiredParameters.Scaling.MaxReplicas {
+	if currentParameters.Scaling.MinReplicas != desiredParameters.Scaling.MinReplicas ||
+		currentParameters.Scaling.MaxReplicas != desiredParameters.Scaling.MaxReplicas ||
+		(desiredParameters.Scaling.MinReplicas == desiredParameters.Scaling.MaxReplicas && currentParameters.Scaling.CurrentReplicas != desiredParameters.Scaling.CurrentReplicas) {
 		changes = append(changes, "scaling")
 	}
 	if !reflect.DeepEqual(currentParameters.OSImage, desiredParameters.OSImage) {

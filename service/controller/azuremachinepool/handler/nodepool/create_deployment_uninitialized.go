@@ -119,7 +119,11 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	deploymentNeedsToBeSubmitted := currentDeployment.IsHTTPStatus(http.StatusNotFound)
 	nodesNeedToBeRolled := false
 	if !deploymentNeedsToBeSubmitted {
-		changes, err := template.Diff(currentDeployment, desiredDeployment)
+		currentReplicas := int32(-1)
+		if !vmss.IsHTTPStatus(404) {
+			currentReplicas = int32(*vmss.Sku.Capacity)
+		}
+		changes, err := template.Diff(currentDeployment, desiredDeployment, currentReplicas)
 		if err != nil {
 			return currentState, microerror.Mask(err)
 		}

@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Ensure the node pool deployment is applied when the node pool size is changed externally.
+
 ## [5.7.1] - 2021-06-21
 
 ### Changed
