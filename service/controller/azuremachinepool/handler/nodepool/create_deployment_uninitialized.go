@@ -124,6 +124,17 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 			return currentState, microerror.Mask(err)
 		}
 
+		if !contains(changes, "scaling") {
+			desiredParameters, err := template.NewFromDeployment(desiredDeployment)
+			if err != nil {
+				return currentState, microerror.Mask(err)
+			}
+
+			if desiredParameters.Scaling.MinReplicas == desiredParameters.Scaling.MaxReplicas && desiredParameters.Scaling.CurrentReplicas != int32(*vmss.Sku.Capacity) {
+				changes = append(changes, "scaling")
+			}
+		}
+
 		// When customer is only scaling the cluster,
 		// we don't need to move to the next state of the state machine which will rollout all the nodes.
 		numberOfChangedParameters := len(changes)
