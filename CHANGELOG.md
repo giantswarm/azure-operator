@@ -7,6 +7,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+## [5.7.2] - 2021-06-24
+
 ### Fixed
 
 - Ensure the node pool deployment is applied when the node pool size is changed externally.
@@ -393,7 +395,8 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 
 
-[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.7.1...HEAD
+[Unreleased]: https://github.com/giantswarm/azure-operator/compare/v5.7.2...HEAD
+[5.7.2]: https://github.com/giantswarm/azure-operator/compare/v5.7.1...v5.7.2
 [5.7.1]: https://github.com/giantswarm/azure-operator/compare/v5.7.0...v5.7.1
 [5.7.0]: https://github.com/giantswarm/azure-operator/compare/v5.6.0...v5.7.0
 [5.6.0]: https://github.com/giantswarm/azure-operator/compare/v5.5.2...v5.6.0
