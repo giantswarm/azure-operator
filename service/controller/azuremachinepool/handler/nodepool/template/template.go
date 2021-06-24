@@ -41,10 +41,10 @@ func NewDeployment(templateParams Parameters) (azureresource.Deployment, error) 
 	}, nil
 }
 
-func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment, currentReplicas int32) ([]string, error) {
+func Diff(currentDeployment azureresource.DeploymentExtended, desiredDeployment azureresource.Deployment) ([]string, error) {
 	var changes []string
 
-	currentParameters, err := NewFromExtendedDeployment(currentDeployment, currentReplicas)
+	currentParameters, err := NewFromExtendedDeployment(currentDeployment)
 	if err != nil {
 		return changes, microerror.Mask(err)
 	}

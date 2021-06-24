@@ -119,13 +119,20 @@ func (r *Resource) deploymentUninitializedTransition(ctx context.Context, obj in
 	deploymentNeedsToBeSubmitted := currentDeployment.IsHTTPStatus(http.StatusNotFound)
 	nodesNeedToBeRolled := false
 	if !deploymentNeedsToBeSubmitted {
-		currentReplicas := int32(-1)
-		if !vmss.IsHTTPStatus(404) {
-			currentReplicas = int32(*vmss.Sku.Capacity)
-		}
-		changes, err := template.Diff(currentDeployment, desiredDeployment, currentReplicas)
+		changes, err := template.Diff(currentDeployment, desiredDeployment)
 		if err != nil {
 			return currentState, microerror.Mask(err)
+		}
+
+		if !contains(changes, "scaling") {
+			desiredParameters, err := template.NewFromDeployment(desiredDeployment)
+			if err != nil {
+				return currentState, microerror.Mask(err)
+			}
+
+			if desiredParameters.Scaling.MinReplicas == desiredParameters.Scaling.MaxReplicas && desiredParameters.Scaling.CurrentReplicas != int32(*vmss.Sku.Capacity) {
+				changes = append(changes, "scaling")
+			}
 		}
 
 		// When customer is only scaling the cluster,

@@ -52,22 +52,13 @@ func NewFromDeployment(deployment azureresource.Deployment) (Parameters, error) 
 	return newParameters(parameters, castDesired)
 }
 
-func NewFromExtendedDeployment(deployment azureresource.DeploymentExtended, currentReplicas int32) (Parameters, error) {
+func NewFromExtendedDeployment(deployment azureresource.DeploymentExtended) (Parameters, error) {
 	parameters, ok := deployment.Properties.Parameters.(map[string]interface{})
 	if !ok {
 		return Parameters{}, microerror.Maskf(wrongTypeError, "expected '%T', got '%T'", map[string]interface{}{}, deployment.Properties.Parameters)
 	}
 
-	params, err := newParameters(parameters, castCurrent)
-	if err != nil {
-		return Parameters{}, microerror.Mask(err)
-	}
-
-	if currentReplicas >= 0 {
-		params.Scaling.CurrentReplicas = currentReplicas
-	}
-
-	return params, nil
+	return newParameters(parameters, castCurrent)
 }
 
 // ToDeployParams prepares the parameters to the format that ARM API understand.
