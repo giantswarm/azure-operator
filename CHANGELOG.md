@@ -9,6 +9,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [5.5.4] - 2021-06-28
 
+### Changed
+
+- No changes compared to `v5.5.3`. This is an additional meta release to enforce node rolling on upgrade.
+
 ## [5.5.3] - 2021-04-26
 
 ### Fixed
