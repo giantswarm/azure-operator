@@ -31,5 +31,4 @@ ENV{DEVTYPE}=="disk", SYMLINK+="disk/azure/$env{fabric_name}", TAG+="systemd"
 ENV{DEVTYPE}=="partition", SYMLINK+="disk/azure/$env{fabric_name}-part%n", TAG+="systemd"
 
 LABEL="azure_end"
-
 `
