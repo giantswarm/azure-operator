@@ -7,6 +7,10 @@ and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0
 
 ## [Unreleased]
 
+### Fixed
+
+- Fix udev rules that caused `/boot` automount to fail
+
 ### Changed
 
 - Upgrade `k8scloudconfig` to `v10.8.1` from `v10.5.0`.
