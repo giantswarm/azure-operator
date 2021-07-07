@@ -89,6 +89,19 @@ func (we *workerExtension) Files() ([]k8scloudconfig.FileAsset, error) {
 			},
 			Permissions: CloudProviderFilePermission,
 		},
+		{ // Only needed until https://github.com/kinvolk/init/pull/41 is included into flatcar image.
+			AssetContent: ignition.UdevRules,
+			Path:         "/etc/udev/rules.d/66-azure-storage.rules",
+			Owner: k8scloudconfig.Owner{
+				Group: k8scloudconfig.Group{
+					Name: FileOwnerGroupName,
+				},
+				User: k8scloudconfig.User{
+					Name: FileOwnerUserName,
+				},
+			},
+			Permissions: CloudProviderFilePermission,
+		},
 	}
 
 	data := we.templateData(we.certFiles)
