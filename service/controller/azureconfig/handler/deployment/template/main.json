@@ -87,6 +87,10 @@
       "metadata": {
         "description": "List of the public IPs of the control plane nodes (both masters and workers)"
       }
+    },
+    "workersEgressExistingPublicIP": {
+      "type":"string",
+      "defaultValue": ""
     }
   },
   "variables":{
@@ -703,6 +707,10 @@
               "defaultValue":{
                 "provider":"F80D01C0-7AAC-4440-98F6-5061511962AD"
               }
+            },
+            "egressExistingPublicIP": {
+              "type": "string",
+              "defaultValue":""
             }
           },
           "variables":{
@@ -712,6 +720,7 @@
           "resources": [
             {
               "type": "Microsoft.Network/publicIPAddresses",
+              "condition": "[empty(parameters('egressExistingPublicIP'))]",
               "apiVersion": "[parameters('publicIPAddressesAPIVersion')]",
               "name": "[variables('publicIpName')]",
               "location": "[resourceGroup().location]",
@@ -740,7 +749,7 @@
               "properties": {
                 "publicIPAddresses": [
                   {
-                    "id": "[resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName'))]"
+                    "id": "[if(empty(parameters('egressExistingPublicIP')), resourceId('Microsoft.Network/publicIPAddresses', variables('publicIpName')), parameters('egressExistingPublicIP'))]"
                   }
                 ],
                 "publicIPPrefixes": [],
@@ -761,6 +770,9 @@
         "parameters":{
           "GiantSwarmTags":{
             "value":"[parameters('GiantSwarmTags')]"
+          },
+          "egressExistingPublicIP": {
+            "value":"[parameters('workersEgressExistingPublicIP')]"
           }
         }
       }
