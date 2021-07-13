@@ -153,6 +153,9 @@ func (r *Resource) EnsureCreated(ctx context.Context, obj interface{}) error {
 		}
 
 		// Ensure External IP address annotation is up to date.
+		if presentAzureConfig.Annotations == nil {
+			presentAzureConfig.Annotations = make(map[string]string)
+		}
 		presentAzureConfig.Annotations[localannotation.WorkersEgressExternalPublicIP] = mappedAzureConfig.Annotations[localannotation.WorkersEgressExternalPublicIP]
 
 		if changed {
